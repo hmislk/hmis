@@ -55,8 +55,6 @@
                                 itemLabel="#{ix.name}" 
                                 itemValue="#{ix}" 
                                 size="30" 
-                                required="true"
-                                requiredMessage="Please enter a collecting centre"
                                 maxResults="20"                                
                                 >
                                 <f:ajax  event="itemSelect" execute="creditCom"  />
@@ -79,8 +77,6 @@
                             <p:selectOneMenu  
                                 id="cmbPs" 
                                 class="w-100"
-                                required="true"
-                                requiredMessage="Please enter a Payment Method"
                                 value="#{agentPaymentRecieveBillController.current.paymentMethod}"> 
                                 <f:selectItem itemLabel="Select Payment Method"></f:selectItem>
                                 <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
@@ -160,7 +156,7 @@
                 <h:panelGroup id="gpBillPreview">
                     <bi:agent billController="#{agentPaymentRecieveBillController}"  bill="#{agentPaymentRecieveBillController.current}" dup="false"/>     
                 </h:panelGroup>
-
+                
             </p:panel>        
 
         </h:form>

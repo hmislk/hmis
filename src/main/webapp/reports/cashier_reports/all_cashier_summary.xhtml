@@ -62,18 +62,24 @@
                             value="#{searchController.site}" >
                         </p:autoComplete>
 
-                        <h:outputLabel value="Payment Method"/>
-                        <p:autoComplete
-                            class="w-100  "
-                            inputStyleClass="w-100"
-                            id="cmbPayment"
-                            placeholder="All Payment Method"
-                            forceSelection="true"
-                            completeMethod="#{institutionController.completeSite}"
-                            var="s" itemLabel="#{s.name}"
-                            itemValue="#{s}"
-                            value="#{searchController.site}" >
-                        </p:autoComplete>
+                        <h:outputLabel value="Payment Method"/>                                
+                        <p:selectOneMenu class="w-100 " value="#{searchController.paymentMethod}" filter="true" >
+                            <f:selectItem itemLabel="All Payment Methods" ></f:selectItem>
+                            <f:selectItems value="#{enumController.allPaymentMethods}" var="s" itemLabel="#{s.label}" itemValue="#{s}" ></f:selectItems>
+                        </p:selectOneMenu>
+
+                        <!--                        <h:outputLabel value="Payment Method"/>
+                                                <p:autoComplete
+                                                    class="w-100  "
+                                                    inputStyleClass="w-100"
+                                                    id="cmbPayment"
+                                                    placeholder="All Payment Method"
+                                                    forceSelection="true"
+                                                    completeMethod="#{institutionController.completeSite}"
+                                                    var="s" itemLabel="#{s.name}"
+                                                    itemValue="#{s}"
+                                                    value="#{searchController.site}" >
+                                                </p:autoComplete>-->
                     </h:panelGrid>
                     <h:panelGrid columns="3" class="my-2" >
 
@@ -84,15 +90,23 @@
                             class="ui-button-warning" icon="fas fa-cogs">
                         </p:commandButton>
 
+                        <p:commandButton 
+                            value="Download Excel" 
+                            ajax="false" 
+                            class="mx-2 ui-button-success" 
+                            icon="fa fa-file-excel">
+                            <p:dataExporter target="tblCashier" fileName="All_Cashier_Summary" type="xlsx" ></p:dataExporter>
+                        </p:commandButton>
+
                     </h:panelGrid>
 
 
 
                     <p:dataTable value="#{searchController.bundle.reportTemplateRows}" var="summary"
-                                 paginator="true" rows="10"
+                                 paginator="true" rows="10" id="tblCashier"
                                  paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
                                  currentPageReportTemplate="(Page {currentPage} of {totalPages})"
-                                 paginatorPosition="bottom">
+                                 paginatorPosition="top">
 
 
 
@@ -115,7 +129,7 @@
                         </p:column>
 
                         <p:column headerText="Cash" 
-                                  style="text-align: right;"
+                                  style="text-align: left;"
                                   sortBy="#{summary.cashValue}" filterBy="#{summary.cashValue}" rendered="#{searchController.bundle.hasCashTransaction}" >
                             <h:outputText value="#{summary.cashValue}"  style="text-align: right;">
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
@@ -133,18 +147,18 @@
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </h:outputText>
                             <f:facet name="footer">
-                                <h:outputText value="#{yourControllerName.totalCardValue}">
+                                <h:outputText value="#{searchController.bundle.cardValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </f:facet>
                         </p:column>
 
-                        <p:column headerText="Multiple Payment Methods" sortBy="#{summary.multiplePaymentMethodsValue}" filterBy="#{summary.multiplePaymentMethodsValue}"  rendered="false" >
+                        <p:column headerText="Multiple Payment Methods" sortBy="#{summary.multiplePaymentMethodsValue}" filterBy="#{summary.multiplePaymentMethodsValue}"  rendered="#{searchController.bundle.hasMultiplePaymentMethodsTransaction}" >
                             <h:outputText value="#{summary.multiplePaymentMethodsValue}" >
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </h:outputText>
                             <f:facet name="footer">
-                                <h:outputText value="#{yourControllerName.totalMultiplePaymentMethodsValue}">
+                                <h:outputText value="#{searchController.bundle.multiplePaymentMethodsValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </f:facet>
@@ -155,7 +169,7 @@
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </h:outputText>
                             <f:facet name="footer">
-                                <h:outputText value="#{yourControllerName.totalCreditValue}">
+                                <h:outputText value="#{searchController.bundle.creditValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </f:facet>
@@ -167,7 +181,18 @@
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </h:outputText>
                             <f:facet name="footer">
-                                <h:outputText value="#{yourControllerName.totalStaffWelfareValue}">
+                                <h:outputText value="#{searchController.bundle.staffWelfareValue}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </f:facet>
+                        </p:column>
+
+                        <p:column headerText="Staff" sortBy="#{summary.staffValue}" filterBy="#{summary.staffValue}"  rendered="#{searchController.bundle.hasStaffTransaction}" >
+                            <h:outputText value="#{summary.staffValue}" >
+                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            </h:outputText>
+                            <f:facet name="footer">
+                                <h:outputText value="#{searchController.bundle.staffValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </f:facet>
@@ -178,7 +203,7 @@
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </h:outputText>
                             <f:facet name="footer">
-                                <h:outputText value="#{yourControllerName.totalVoucherValue}">
+                                <h:outputText value="#{searchController.bundle.voucherValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </f:facet>
@@ -189,7 +214,7 @@
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </h:outputText>
                             <f:facet name="footer">
-                                <h:outputText value="#{yourControllerName.totalIouValue}">
+                                <h:outputText value="#{searchController.bundle.iouValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </f:facet>
@@ -200,7 +225,7 @@
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </h:outputText>
                             <f:facet name="footer">
-                                <h:outputText value="#{yourControllerName.totalAgentValue}">
+                                <h:outputText value="#{searchController.bundle.agentValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </f:facet>
@@ -211,7 +236,7 @@
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </h:outputText>
                             <f:facet name="footer">
-                                <h:outputText value="#{yourControllerName.totalChequeValue}">
+                                <h:outputText value="#{searchController.bundle.chequeValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </f:facet>
@@ -222,7 +247,7 @@
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </h:outputText>
                             <f:facet name="footer">
-                                <h:outputText value="#{yourControllerName.totalSlipValue}">
+                                <h:outputText value="#{searchController.bundle.slipValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </f:facet>
@@ -233,7 +258,7 @@
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </h:outputText>
                             <f:facet name="footer">
-                                <h:outputText value="#{yourControllerName.totalEWalletValue}">
+                                <h:outputText value="#{searchController.bundle.ewalletValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </f:facet>
@@ -244,7 +269,7 @@
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </h:outputText>
                             <f:facet name="footer">
-                                <h:outputText value="#{yourControllerName.totalPatientDepositValue}">
+                                <h:outputText value="#{searchController.bundle.patientDepositValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </f:facet>
@@ -255,7 +280,7 @@
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </h:outputText>
                             <f:facet name="footer">
-                                <h:outputText value="#{yourControllerName.totalPatientPointsValue}">
+                                <h:outputText value="#{searchController.bundle.patientPointsValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </f:facet>
@@ -266,12 +291,25 @@
                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                             </h:outputText>
                             <f:facet name="footer">
-                                <h:outputText value="#{yourControllerName.totalOnlineSettlementValue}">
+                                <h:outputText value="#{searchController.bundle.onlineSettlementValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </f:facet>
                         </p:column>
+                        
+                        <p:column headerText="Grand Total">
+                            <f:facet name="footer">
+                            <h:outputText value="#{searchController.bundle.cashValue + searchController.bundle.cardValue + searchController.bundle.multiplePaymentMethodsValue + 
+                                                   searchController.bundle.creditValue + searchController.bundle.staffWelfareValue + searchController.bundle.staffValue + searchController.bundle.voucherValue + 
+                                                   searchController.bundle.iouValue + searchController.bundle.agentValue + searchController.bundle.chequeValue + searchController.bundle.slipValue + 
+                                                   searchController.bundle.ewalletValue + searchController.bundle.patientDepositValue + searchController.bundle.patientPointsValue + searchController.bundle.onlineSettlementValue}" 
+                                          style="text-align: right;">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </f:facet>
+                        </p:column>
 
+                        
 
                     </p:dataTable>
 

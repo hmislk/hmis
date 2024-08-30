@@ -250,6 +250,14 @@
                                                 value="OPD Discount by Department" 
                                                 actionListener="#{opdMemberShipDiscountController.recreateModel()}" 
                                                 ajax="false"/>
+                                            
+                                             <p:commandButton 
+                                                class="w-100" 
+                                                action="#{navigationController.navigateToPaymentSchemeDiscountOpdBySite()}" 
+                                                value="OPD Discount by Site" 
+                                                actionListener="#{opdMemberShipDiscountController.recreateModel()}" 
+                                                ajax="false"/>
+                                             
                                             <p:commandButton 
                                                 class="w-100" 
                                                 action="#{navigationController.navigateToPaymentSchemeDiscountOpdBtCategory()}" 

@@ -71,6 +71,10 @@ public class PriceMatrix implements Serializable {
     AdmissionType admissionType;
     @ManyToOne
     Category roomCategory;
+    
+    @ManyToOne
+    private Institution toInstitution;
+    
 
     public Item getItem() {
         return item;
@@ -283,6 +287,14 @@ public class PriceMatrix implements Serializable {
 
     public void setDiscountPercent(double discountPercent) {
         this.discountPercent = discountPercent;
+    }
+
+    public Institution getToInstitution() {
+        return toInstitution;
+    }
+
+    public void setToInstitution(Institution toInstitution) {
+        this.toInstitution = toInstitution;
     }
 
 }
