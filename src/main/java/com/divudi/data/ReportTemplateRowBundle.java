@@ -633,6 +633,9 @@ public class ReportTemplateRowBundle {
     }
 
     public List<ReportTemplateRowBundle> getBundles() {
+        if(bundles==null){
+            bundles = new ArrayList<>();
+        }
         return bundles;
     }
 
