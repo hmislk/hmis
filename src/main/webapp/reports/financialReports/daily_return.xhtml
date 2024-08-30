@@ -90,15 +90,13 @@
                       
 
 
-                        <ez:report_bundle bundle="#{searchController.bundle}"/>
+                        <ez:report_bundle bundle="#{searchController.bundle.bundleType}"/>
 
 
                         <ui:repeat value="#{searchController.bundle.bundles}" var="bundle" >
 
-                            <h:panelGroup rendered="#{bundle}" >
-
-                                <ez:report_bundle/>
-
+                            <h:panelGroup rendered="#{bundle.bundleType eq ''}" >
+                                <ez:report_bundle bundle="#{bundle}"/>
                             </h:panelGroup>
 
                         </ui:repeat>

@@ -11522,6 +11522,13 @@ public class SearchController implements Serializable {
 
     public void generateDailyReturn() {
         bundle = new ReportTemplateRowBundle();
+        
+        ReportTemplateRowBundle opdBundle = new ReportTemplateRowBundle();
+        
+        opdBundle.setName("OPD Services");
+        opdBundle.setBundleType("CategoryAndItemSummary");
+        
+        
         String jpql = "select bi "
                 + " from BillItem bi "
                 + " where bi.bill.retired=:br "
@@ -11556,7 +11563,9 @@ public class SearchController implements Serializable {
         System.out.println("jpql = " + jpql);
         List<BillItem> bis = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         System.out.println("bis = " + bis);
-        billItemsToBundleForOpd(bundle, bis);
+        billItemsToBundleForOpd(opdBundle, bis);
+        bundle.getBundles().add(opdBundle);
+        
     }
 
     public void updateBillItenValues() {
