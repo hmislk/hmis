@@ -95,7 +95,7 @@
 
                         <ui:repeat value="#{searchController.bundle.bundles}" var="bundle" >
 
-                            <h:panelGroup rendered="#{bundle.bundleType eq 'CategoryAndItemSummary'}" >
+                            <h:panelGroup  >
                                 <ez:category_and_item_summary bundle="#{bundle}"/>
                             </h:panelGroup>
 
