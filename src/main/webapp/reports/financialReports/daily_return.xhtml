@@ -75,14 +75,19 @@
                                 value="Process" 
                                 ajax="false"
                                 action="#{searchController.generateDailyReturn()}" 
-                                class="ui-button-warning" icon="fas fa-cogs">
+                                class="ui-button-success" icon="fas fa-cogs">
+                            </p:commandButton>
+                            
+                             <p:commandButton  
+                                value="Update" 
+                                ajax="false"
+                                action="#{searchController.updateBillItenValues()}" 
+                                class="ui-button-danger" icon="fas fa-cogs">
                             </p:commandButton>
 
                         </h:panelGrid>
 
-                        <h1>
-                            #{searchController.bundle.reportTemplateRows}
-                        </h1>
+                      
 
 
                         <ez:report_bundle bundle="#{searchController.bundle}"/>
