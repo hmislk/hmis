@@ -6,6 +6,7 @@ import com.divudi.data.lab.Analyzer;
 import java.util.ArrayList;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.lab.PatientSample;
+import com.divudi.entity.lab.Sample;
 import com.divudi.facade.PatientSampleFacade;
 import com.divudi.facade.WebUserFacade;
 import javax.inject.Inject;
@@ -74,11 +75,23 @@ public class MiddlewareController {
 
             List<String> testNames = limsMiddlewareController.generateTestCodesForAnalyzer(queryRecord.getSampleId());
             if (testNames == null || testNames.isEmpty()) {
-                testNames = Arrays.asList("HDL", "RF2", "GLU");
+                testNames = Arrays.asList("GLU");
             }
+            PatientSample ptSample = limsMiddlewareController.patientSampleFromId(queryRecord.getSampleId());
+            if (ptSample == null) {
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            }
+
             OrderRecord or = new OrderRecord(0, queryRecord.getSampleId(), testNames, "S", new Date(), "testInformation");
             pdb.getOrderRecords().add(or);
-            PatientRecord pr = new PatientRecord(0, "1010101", "111111", "Buddhika Ariyaratne", "M H B", "Male", "Sinhalese", null, "Galle", "0715812399", "Dr Niluka");
+            PatientRecord pr = new PatientRecord(0,
+                    ptSample.getPatient().getIdStr(),
+                    ptSample.getIdStr(),
+                    ptSample.getPatient().getPerson().getNameWithTitle(),
+                    "", ptSample.getPatient().getPerson().getSex().getLabel(),
+                    "", null,
+                    ptSample.getPatient().getPerson().getAddress(),
+                     ptSample.getPatient().getPerson().getPhone(), ptSample.getBill().getReferredBy().getPerson().getNameWithTitle());
             pdb.setPatientRecord(pr);
 
             // Convert the PatientDataBundle to JSON and send it in the response

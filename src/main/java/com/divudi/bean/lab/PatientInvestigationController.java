@@ -78,6 +78,7 @@ import com.divudi.entity.lab.Machine;
 import com.divudi.entity.lab.Sample;
 import com.divudi.java.CommonFunctions;
 import com.divudi.ws.lims.Lims;
+import com.divudi.ws.lims.LimsMiddlewareController;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -1655,6 +1656,28 @@ public class PatientInvestigationController implements Serializable {
         }
 
         JsfUtil.addSuccessMessage("Selected Samples Are Rejected");
+    }
+
+    private String testDetails;
+    @Inject
+    LimsMiddlewareController limsMiddlewareController;
+
+    public void generateSampleCodesSamples() {
+        if (selectedPatientSamples == null || selectedPatientSamples.isEmpty()) {
+            JsfUtil.addErrorMessage("No samples selected");
+            return;
+        }
+        listingEntity = ListingEntity.PATIENT_SAMPLES;
+
+        testDetails = "";
+
+
+        // Update sample rejection details and gather associated patient investigations
+        for (PatientSample ps : selectedPatientSamples) {
+            testDetails += limsMiddlewareController.generateTestCodesForAnalyzer(ps.getIdStr());
+        }
+
+        JsfUtil.addSuccessMessage("Selected Samples Details created");
     }
 
     public void listPatientInvestigationAwaitingSamplling() {
@@ -3575,6 +3598,14 @@ public class PatientInvestigationController implements Serializable {
 
     public void setSampleRejectionComment(String sampleRejectionComment) {
         this.sampleRejectionComment = sampleRejectionComment;
+    }
+
+    public String getTestDetails() {
+        return testDetails;
+    }
+
+    public void setTestDetails(String testDetails) {
+        this.testDetails = testDetails;
     }
 
     /**
