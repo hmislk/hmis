@@ -190,6 +190,8 @@ public class BillSearch implements Serializable {
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     ChannelSearchController channelSearchController;
+    @Inject
+    CollectingCentreApplicationController collectingCentreApplicationController;
     /**
      * Class Variables
      */
@@ -234,6 +236,7 @@ public class BillSearch implements Serializable {
     private Institution creditCompany;
     private PatientInvestigation patientInvestigation;
     private Institution institution;
+    private Institution collectingCenter;
     private Department department;
     private double refundTotal = 0;
     private double refundDiscount = 0;
@@ -2021,6 +2024,30 @@ public class BillSearch implements Serializable {
 
         return cb;
     }
+    
+    private CancelledBill createCollectingCenterCancelBill(Bill originalBill) {
+        CancelledBill cb = new CancelledBill();
+        if (originalBill == null) {
+            return null;
+        }
+
+        cb.copy(originalBill);
+        cb.copyValue(originalBill);
+        cb.invertValue(originalBill);
+        cb.setBillTypeAtomic(BillTypeAtomic.CC_BILL_CANCELLATION);
+        cb.setBalance(0.0);
+        cb.setPaymentMethod(paymentMethod);
+        cb.setBilledBill(originalBill);
+        cb.setBillDate(new Date());
+        cb.setBillTime(new Date());
+        cb.setCreatedAt(new Date());
+        cb.setCreater(getSessionController().getLoggedUser());
+        cb.setDepartment(getSessionController().getDepartment());
+        cb.setInstitution(getSessionController().getInstitution());
+        cb.setComments(comment);
+
+        return cb;
+    }
 
     private CancelledBill createProfessionalPaymentCancelBill(Bill originalBill) {
         CancelledBill cb = new CancelledBill();
@@ -2124,6 +2151,8 @@ public class BillSearch implements Serializable {
 
         return false;
     }
+    
+    
 
     private boolean errorsPresentOnProfessionalPaymentBillCancellation() {
         if (getBill().isCancelled()) {
@@ -2220,6 +2249,42 @@ public class BillSearch implements Serializable {
 //          TODO:         To Implement cancellation approval
 //            getEjbApplication().getBillsToCancel().add(cb);
 //            JsfUtil.addSuccessMessage("Awaiting Cancellation");
+    }
+    
+    public void cancelCollectingCentreBill() {
+        if (getBill() == null) {
+            JsfUtil.addErrorMessage("No bill");
+            return;
+        }
+        if (getBill().getId() == null) {
+            JsfUtil.addErrorMessage("No Saved bill");
+            return;
+        }
+       
+
+        CancelledBill cancellationBill = createCollectingCenterCancelBill(bill);
+        billController.save(cancellationBill);
+        Payment p = getOpdPreSettleController().createPaymentForCancellationsforOPDBill(cancellationBill, paymentMethod);
+        List<BillItem> list = cancelBillItems(getBill(), cancellationBill, p);
+        cancellationBill.setBillItems(list);
+        billFacade.edit(cancellationBill);
+
+        getBill().setCancelled(true);
+        getBill().setCancelledBill(cancellationBill);
+        
+        billController.save(getBill());
+        JsfUtil.addSuccessMessage("Cancelled");
+        collectingCentreApplicationController.updateBalance(
+                collectingCenter,
+                bill.getTotalCenterFee(),
+                (bill.getHospitalFee() + bill.getStaffFee()),
+                bill.getNetTotal(),
+                HistoryType.CollectingCentreBilling, 
+                bill,
+                comment);
+        bill = billFacade.find(bill.getId());
+        printPreview = true;
+        comment = null;
     }
 
     public WebUserFacade getWebUserFacade() {
@@ -4131,6 +4196,14 @@ public class BillSearch implements Serializable {
 
     public void setStaffFacade(StaffFacade staffFacade) {
         this.staffFacade = staffFacade;
+    }
+
+    public Institution getCollectingCenter() {
+        return collectingCenter;
+    }
+
+    public void setCollectingCenter(Institution collectingCenter) {
+        this.collectingCenter = collectingCenter;
     }
 
     public class PaymentSummary {

@@ -15,6 +15,7 @@ import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.ItemLight;
 import com.divudi.entity.Category;
 import com.divudi.entity.Institution;
 import java.io.IOException;
@@ -323,21 +324,21 @@ public class ItemFeeManager implements Serializable {
     public void fillForSiteItemFees() {
         itemFees = fillFees(null, forSite, null);
     }
-    
+
     public void updateFeesForSiteItemFees() {
-        for(ItemFee tif:itemFees){
+        for (ItemFee tif : itemFees) {
             updateSiteFeeValues(tif.getItem(), forSite);
         }
     }
-    
+
     public void updateFeesForListFees() {
-        for(ItemFee tif:itemFees){
+        for (ItemFee tif : itemFees) {
             updateListFeeValues(tif.getItem(), feeListType);
         }
     }
-    
+
     public void updateFeesForCcFees() {
-        for(ItemFee tif:itemFees){
+        for (ItemFee tif : itemFees) {
             updateSiteFeeValues(tif.getItem(), collectingCentre);
         }
     }
@@ -527,8 +528,6 @@ public class ItemFeeManager implements Serializable {
         itemFees = fillFees(item);
     }
 
-    
-    
     public void updateItemAndCollectingCentreFees() {
         itemFees = new ArrayList<>();
         if (item == null) {
@@ -561,7 +560,7 @@ public class ItemFeeManager implements Serializable {
                 .sum();
         feeValueController.updateFeeValue(ti, si, tlf, tfff);
     }
-    
+
     public void updateCcFeeValues(Item ti, Institution cc) {
         List<ItemFee> tfs = fillFees(ti, cc);
         double tlf = tfs.stream()
@@ -574,9 +573,7 @@ public class ItemFeeManager implements Serializable {
                 .sum();
         feeValueController.updateFeeValue(ti, cc, tlf, tfff);
     }
-    
-    
-    
+
     public void updateListFeeValues(Item ti, Category fl) {
         List<ItemFee> tfs = fillFees(ti, fl);
         double tlf = tfs.stream()
@@ -589,7 +586,6 @@ public class ItemFeeManager implements Serializable {
                 .sum();
         feeValueController.updateFeeValue(ti, fl, tlf, tfff);
     }
-    
 
     public void updateItemAndSiteFees() {
         itemFees = new ArrayList<>();
@@ -743,6 +739,40 @@ public class ItemFeeManager implements Serializable {
         System.out.println("m = " + m);
         System.out.println("jpql = " + jpql);
         List<ItemFee> fs = itemFeeFacade.findByJpql(jpql, m);
+        System.out.println("fs = " + fs);
+        return fs;
+    }
+
+    public List<ItemLight> fillItemLightsForSite(Institution forInstitution) {
+        System.out.println("fillFees");
+        System.out.println("forInstitution = " + forInstitution);
+        String jpql = "SELECT new com.divudi.data.ItemLight("
+                + "f.item.id, "
+                + "f.item.department.name, "
+                + "f.item.name, "
+                + "f.item.code, "
+                + "f.item.total, "
+                + "f.item.department.id) "
+                + " from ItemFee f "
+                + " where f.retired=:ret ";
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+
+        if (forInstitution != null) {
+            jpql += " and f.forInstitution=:ins";
+            m.put("ins", forInstitution);
+        } else {
+            jpql += " and f.forInstitution is null";
+        }
+
+        jpql += " and f.forCategory is null";
+        
+        jpql += " GROUP BY f.item "
+                + " ORDER BY f.item.name";
+
+        System.out.println("m = " + m);
+        System.out.println("jpql = " + jpql);
+        List<ItemLight> fs = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, m);
         System.out.println("fs = " + fs);
         return fs;
     }
