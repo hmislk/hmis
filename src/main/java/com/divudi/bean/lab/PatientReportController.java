@@ -847,7 +847,7 @@ public class PatientReportController implements Serializable {
         }
 
         String sex = pr.getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getSex() == Sex.Male ? "male" : "female";
-        int ageInYears = pr.getPatientInvestigation().getBillItem().getBill().getPatient().getAgeYearsonBilledDate();
+        int ageInYears = pr.getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getAgeYearsComponent();
 
         System.out.println("Debug: Sex is " + sex + ", Age is " + ageInYears);
 

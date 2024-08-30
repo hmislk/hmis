@@ -4129,6 +4129,7 @@ public class PatientInvestigationController implements Serializable {
 
                     if (pts.getIdStr() != null && !ptixw.getPatientInvestigation().getSampleIds().contains(pts.getIdStr())) {
                         ptixw.getPatientInvestigation().setSampleIds(ptixw.getPatientInvestigation().getSampleIds() + " " + pts.getIdStr());
+                        ejbFacade.edit(ptixw.getPatientInvestigation());
                     }
                     rPatientSamplesMap.put(pts.getId(), pts);
 

@@ -285,6 +285,9 @@ public class PatientInvestigation implements Serializable {
     }
 
     public String getSampleIds() {
+        if(sampleIds == null){
+            sampleIds = "";
+        }
         return sampleIds;
     }
 

@@ -65,7 +65,7 @@
                                 <h:panelGroup rendered="#{itemFeeManager.item ne null and itemFeeManager.forSite ne null}" >
                                     <p:outputLabel value="Local Fee" />
                                     <p:inputText 
-                                        value="#{feeValueController.getFeeForLocals(itemFeeManager.item, itemFeeManager.forSite)}" 
+                                        value="#{feeValueController.getFeeForLocals(itemFeeManager.item,itemFeeManager.forSite)}" 
                                         class="w-100">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:inputText>
