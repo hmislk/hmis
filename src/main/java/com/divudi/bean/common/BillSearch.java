@@ -2274,13 +2274,14 @@ public class BillSearch implements Serializable {
         
         billController.save(getBill());
         JsfUtil.addSuccessMessage("Cancelled");
+        System.out.println("colle = " + collectingCenter);
         collectingCentreApplicationController.updateBalance(
                 collectingCenter,
                 bill.getTotalCenterFee(),
                 (bill.getHospitalFee() + bill.getStaffFee()),
                 bill.getNetTotal(),
                 HistoryType.CollectingCentreBilling, 
-                bill,
+                cancellationBill,
                 comment);
         bill = billFacade.find(bill.getId());
         printPreview = true;
