@@ -16,7 +16,7 @@
 
 
 
-                        <h:panelGrid columns="2" class="w-100">
+                        <h:panelGrid columns="1" class="w-100">
                             <h:outputLabel value="From"/>
                             <p:calendar 
                                 class="w-100 " 
@@ -80,11 +80,14 @@
 
                         </h:panelGrid>
 
-                        <p:dataTable value="#{searchController.bundle.bundles}" var="mybundle" >
-                            <p:column >
-                                <ez:category_and_item_summary bundle="#{mybundle}"/>
-                            </p:column>
-                        </p:dataTable>
+
+
+
+                        <ui:repeat value="#{searchController.bundle.bundles}" var="bundle" >
+                            <h:panelGroup rendered="#{bundle.bundleType eq 'CategoryAndItemSummary'}" >
+                                <ez:category_and_item_summary bundle="#{bundle}"/>
+                            </h:panelGroup>
+                        </ui:repeat>
 
 
                     </p:panel>

@@ -11,6 +11,7 @@ package com.divudi.bean.channel.analytics;
 import com.divudi.bean.common.*;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
+import com.divudi.data.PaymentMethod;
 import com.divudi.data.ReportTemplateRow;
 import com.divudi.data.ReportTemplateRowBundle;
 import com.divudi.data.analytics.ReportTemplateColumn;
@@ -162,6 +163,26 @@ public class ReportTemplateController implements Serializable {
 
     }
 
+    
+    
+    
+    
+    public ReportTemplateRowBundle generateReport(
+            List<BillTypeAtomic> btas,
+            List<PaymentMethod> paymentMethods,
+            Date paramFromDate,
+            Date paramToDate,
+            Institution paramInstitution,
+            Department paramDepartment,
+            Institution site) {
+        String jpql = "sele";
+        
+        
+    }
+    
+    
+    
+    
     public ReportTemplateRowBundle generateReport(
             ReportTemplateType type,
             List<BillTypeAtomic> btas,
@@ -2306,6 +2327,7 @@ public class ReportTemplateController implements Serializable {
             Institution paramCreditCompany,
             Long paramStartId,
             Long paramEndId) {
+        ReportTemplateRowBundle b = new ReportTemplateRowBundle();
         return new ReportTemplateRowBundle();
     }
 

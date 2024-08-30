@@ -56,8 +56,13 @@ import com.divudi.bean.opd.OpdBillController;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
 import com.divudi.data.BillCategory;
 import com.divudi.data.BillClassType;
+import static com.divudi.data.BillClassType.Bill;
+import static com.divudi.data.BillClassType.BilledBill;
+import static com.divudi.data.BillClassType.CancelledBill;
+import static com.divudi.data.BillClassType.RefundBill;
 import com.divudi.data.BillFinanceType;
 import com.divudi.data.BillTypeAtomic;
+import com.divudi.data.PaymentContext;
 import com.divudi.data.ReportTemplateRow;
 import com.divudi.data.ReportTemplateRowBundle;
 import com.divudi.data.ServiceType;
@@ -1746,9 +1751,6 @@ public class SearchController implements Serializable {
     public void setCategory(Category category) {
         this.category = category;
     }
-
-    
-    
 
     public List<CashBookEntry> getCashBookEntries() {
         return cashBookEntries;
@@ -11525,12 +11527,34 @@ public class SearchController implements Serializable {
 
     public void generateDailyReturn() {
         bundle = new ReportTemplateRowBundle();
+        ReportTemplateRowBundle opdServiceCollection = generateOpdServiceCollection();
+        bundle.getBundles().add(opdServiceCollection);
 
+        ReportTemplateRowBundle pharmacyCollection = new ReportTemplateRowBundle();
+        
+        
+
+    }
+    
+    public ReportTemplateRowBundle generateOpdServiceCollection() {
+        ReportTemplateRowBundle pb = new ReportTemplateRowBundle();
+        List<BillTypeAtomic> pharmacyBillTypesAtomics=new ArrayList<>();
+        List<PaymentMethod> paymentMethods=PaymentMethod.getMethodsByContext(PaymentContext.PURCHASES);
+        
+        pb = reportTemplateController.generateReport(
+                pharmacyBillTypesAtomics,
+                paymentMethods,
+                fromDate,
+                toDate,
+                institution,
+                department,
+                site);
+    }
+
+    public ReportTemplateRowBundle generateOpdServiceCollection() {
         ReportTemplateRowBundle opdBundle = new ReportTemplateRowBundle();
-
         opdBundle.setName("OPD Services");
         opdBundle.setBundleType("CategoryAndItemSummary");
-
         String jpql = "select bi "
                 + " from BillItem bi "
                 + " where bi.bill.retired=:br "
@@ -11544,8 +11568,6 @@ public class SearchController implements Serializable {
         if (!btas.isEmpty()) {
             jpql += " and bi.bill.billTypeAtomic in :bts ";
             m.put("bts", btas);
-        } else {
-            // Handle the case where no bill types are found, perhaps by logging or throwing an exception
         }
 
         if (department != null) {
@@ -11566,8 +11588,74 @@ public class SearchController implements Serializable {
         List<BillItem> bis = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         System.out.println("bis = " + bis);
         billItemsToBundleForOpd(opdBundle, bis);
-        bundle.getBundles().add(opdBundle);
 
+        Map<String, ReportTemplateRow> categoryMap = new HashMap<>();
+        Map<String, ReportTemplateRow> itemMap = new HashMap<>();
+        List<ReportTemplateRow> rowsToAdd = new ArrayList<>();
+
+        for (BillItem bi : bis) {
+            System.out.println("Processing BillItem: " + bi);
+            String categoryName = bi.getItem() != null && bi.getItem().getCategory() != null ? bi.getItem().getCategory().getName() : "No Category";
+            String itemName = bi.getItem() != null ? bi.getItem().getName() : "No Item";
+            String itemKey = categoryName + "->" + itemName;
+
+            System.out.println("Item Key: " + itemKey);
+            System.out.println("Category: " + categoryName + ", Item: " + itemName);
+
+            categoryMap.putIfAbsent(categoryName, new ReportTemplateRow());
+            itemMap.putIfAbsent(itemKey, new ReportTemplateRow());
+
+            ReportTemplateRow categoryRow = categoryMap.get(categoryName);
+            ReportTemplateRow itemRow = itemMap.get(itemKey);
+
+            if (bi.getItem() != null) {
+                categoryRow.setCategory(bi.getItem().getCategory());
+                itemRow.setItem(bi.getItem());
+            }
+
+            long countModifier = 1;
+            double grossValue = bi.getGrossValue();
+            double hospitalFee = bi.getHospitalFee();
+            double discount = bi.getDiscount();
+            double staffFee = bi.getStaffFee();
+            double netValue = bi.getNetValue();
+
+            switch (bi.getBill().getBillClassType()) {
+                case CancelledBill:
+                case RefundBill:
+                    countModifier = -1;
+                    // Apply abs to ensure all values are positive before negating
+                    grossValue = -Math.abs(grossValue);
+                    hospitalFee = -Math.abs(hospitalFee);
+                    discount = -Math.abs(discount);
+                    staffFee = -Math.abs(staffFee);
+                    netValue = -Math.abs(netValue);
+                    break;
+                case BilledBill:
+                case Bill:
+                    // Positive adjustments, no need to change the sign or apply abs
+                    break;
+                default:
+                    // Do nothing for other types of bills
+                    continue;  // Skip processing for unrecognized or unhandled bill types
+            }
+            System.out.println("hospitalFee = " + hospitalFee);
+            updateRow(categoryRow, countModifier, grossValue, hospitalFee, discount, staffFee, netValue);
+            updateRow(itemRow, countModifier, grossValue, hospitalFee, discount, staffFee, netValue);
+        }
+
+        categoryMap.forEach((categoryName, catRow) -> {
+            System.out.println("Adding category row to bundle: " + categoryName);
+            rowsToAdd.add(catRow);
+            itemMap.values().stream()
+                    .filter(iRow -> iRow.getItem() != null && iRow.getItem().getCategory() != null && iRow.getItem().getCategory().getName().equals(categoryName))
+                    .forEach(iRow -> {
+                        System.out.println("Adding item row to bundle under category " + categoryName + ": " + iRow.getItem().getName());
+                        rowsToAdd.add(iRow);
+                    });
+        });
+        opdBundle.getReportTemplateRows().addAll(rowsToAdd);
+        return opdBundle;
     }
 
     public void updateBillItenValues() {
@@ -11635,6 +11723,10 @@ public class SearchController implements Serializable {
 
             billItemFacade.edit(bi);
         }
+
+    }
+
+    public void billItemsToBundleForOpd(ReportTemplateRowBundle rtrb, List<BillItem> billItems) {
 
     }
 
@@ -12468,8 +12560,6 @@ public class SearchController implements Serializable {
         return fileBillsAndBillItemsForDownload;
     }
 
-    
-    
     public List<BillTypeAtomic> prepareDistinctBillTypeAtomic() {
         String jpql = "SELECT DISTINCT b.billTypeAtomic FROM Bill b JOIN b.payments p";
         List<?> results = billFacade.findLightsByJpql(jpql);
