@@ -40,10 +40,6 @@
                                         maxResults="10"
                                         class="w-100 mb-1"
                                         inputStyleClass="form-control">
-                                        <p:ajax event="itemSelect" 
-                                                process="@this" 
-                                                update="gpFees gpTotals gpTotalsF" 
-                                                listener="#{itemFeeManager.fillForInstitutionFees()}"></p:ajax>
                                         <p:column headerText="Code" style="padding: 6px;">#{vt.institutionCode}</p:column>
                                         <p:column headerText="Name" style="padding: 6px;">#{vt.name}</p:column>
                                     </p:autoComplete>
@@ -52,6 +48,14 @@
                                                      action="#{itemFeeManager.fillForCollectingCentreItemFees()}" 
                                                      icon="fa fa-file" 
                                                      styleClass="ui-button-primary m-2"></p:commandButton>
+
+                                    <p:commandButton value="Update Fee Totals" ajax="false" 
+                                                     action="#{itemFeeManager.updateFeesForListFees()}" 
+                                                     icon="fa fa-file" 
+                                                     styleClass="ui-button-primary m-2"></p:commandButton>
+
+                                </h:panelGroup >
+
                             </p:panelGrid>
 
                         </h:form>
@@ -73,6 +77,12 @@
                                 value="Upload and Replace Fee Values"
                                 action="#{dataUploadController.uploadAddReplaceFeesFromId()}"
                                 ajax="false"/>
+
+                            <p:commandButton value="Update Fee Totals" ajax="false" 
+                                             action="#{itemFeeManager.updateFeesForListFees()}" 
+                                             icon="fa fa-file" 
+                                             styleClass="ui-button-primary m-2"></p:commandButton>
+
                         </h:form>
 
                     </p:panelGrid>

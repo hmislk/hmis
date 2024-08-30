@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -180,7 +181,7 @@ public class PatientInvestigation implements Serializable {
     private Institution outsourcedInstitution;
     @OneToMany(mappedBy = "patientInvestigation", fetch = FetchType.EAGER)
     List<PatientReport> patientReports;
-    @Enumerated
+    @Enumerated(EnumType.ORDINAL)
     private PatientInvestigationStatus status;
     // Report Distributes
     private Boolean reportDistributed = false;
@@ -272,6 +273,29 @@ public class PatientInvestigation implements Serializable {
     private WebUser sampleRevertedBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date sampleRevertedAt;
+    
+    String sampleIds;
+
+    
+    
+    public PatientInvestigation() {
+        if (status == null) {
+            status = PatientInvestigationStatus.ORDERED;
+        }
+    }
+
+    public String getSampleIds() {
+        if(sampleIds == null){
+            sampleIds = "";
+        }
+        return sampleIds;
+    }
+
+    public void setSampleIds(String sampleIds) {
+        this.sampleIds = sampleIds;
+    }
+    
+    
 
     public List<PatientReport> getPatientReports() {
         if (patientReports == null) {

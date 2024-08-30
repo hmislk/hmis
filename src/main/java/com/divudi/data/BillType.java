@@ -150,6 +150,8 @@ public enum BillType {
     // Cash Handling and Transfer Processes
     ShiftStartFundBill, // For handling initial funds, be it cash, cheque, or electronic funds, at the beginning of a cashier's shift
     ShiftEndFundBill, // For summarising and finalising all transaction types, balances, and notes at the end of a cashier's shift
+    CashHandoverCreateBill,
+    CashHandoverAcceptBill,
     FundTransferBill, // For transferring the total balance from one shift to another
     FundTransferReceivedBill, // For receiving the transferred balance from one shift to another
     DepositFundBill, // For processing deposits of all payment types into the bank by the main or bulk cashier
@@ -162,8 +164,7 @@ public enum BillType {
     FinancialReconciliationBill, // For reconciling all types of recorded transactions against actual bank statements and balances
     @Deprecated
     FinancialAuditingBill, // For broader auditing purposes, ensuring compliance with policies and regulatory requirements
-    StaffCreditSettle
-    ;
+    StaffCreditSettle;
 
     public String getLabel() {
         switch (this) {
@@ -294,6 +295,24 @@ public enum BillType {
                 return this.toString();
         }
     }
+
+    public String getCode() {
+    switch (this) {
+        case OpdBathcBill:
+            return "OBB";
+        case CollectingCentreBill:
+            return "CCB";
+        default:
+            String originalString = this.getLabel();
+            String[] words = originalString.split(" ");
+
+            for (int i = 0; i < words.length && i < 3; i++) {
+                words[i] = words[i].substring(0, 1).toUpperCase() + words[i].substring(1);
+            }
+
+            return String.join("", words); 
+    }
+}
 
     private BillType parent = null;
 

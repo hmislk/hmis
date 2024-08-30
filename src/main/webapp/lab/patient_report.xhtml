@@ -14,7 +14,6 @@
 
             <ui:define name="content" rendered="#{webUserController.hasPrivilege('LabAutherizing') eq true or webUserController.hasPrivilege('LabDataentry') eq true or webUserController.hasPrivilege('LabPrinting') eq true   }" >
                 <h:form>
-
                     <h:outputStylesheet library="css" name="lab.css" ></h:outputStylesheet>
                     <p:panel>
                         <f:facet  name="header" >
@@ -113,11 +112,13 @@
                                                             class="mx-1 ui-button-success"
                                                             action="#{searchController.listReportsAwaitingApproval()}" ajax="false"   >
                                         </p:commandButton>
-                                        <p:commandButton  ajax="false" value="Back to Visit"
-                                                          action="/clinical/clinical_new_opd_visit.xhtml" 
-                                                          icon="fa-solid fa-arrow-left"
-                                                          class=""
-                                                          style="float: right;"  ></p:commandButton>
+                                        <p:commandButton  
+                                            ajax="false" value="Back"
+                                            action="/lab/generate_barcode_p?faces-redirect=true"
+                                            icon="fa-solid fa-arrow-left"
+                                            class=""
+                                            style="float: right;"  >
+                                        </p:commandButton>
                                     </div>
                                 </div>
                             </div>
@@ -534,7 +535,7 @@
 
                                 <h:panelGroup  id="divPrint" >
 
-                                 
+
 
                                     <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType eq 'HtmlTemplate'}"  >
                                         <div id="divReport"  class="labReport" >
@@ -591,6 +592,16 @@
                                                 <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
                                                     <h:outputLabel value="#{prv.displayValue}" rendered="#{prv.investigationItem.ixItemType eq 'Calculation' }" escape="false" >
                                                     </h:outputLabel>
+                                                </div>
+                                            </ui:repeat>
+                                            <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
+                                                <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
+                                                    <p:graphicImage value="https://upload.wikimedia.org/wikipedia/en/e/e2/IMG_Academy_Logo.svg"
+                                                                    style="width: #{prv.investigationItem.wtPix};overflow: visible; display: block;" 
+                                                                    height="#{prv.investigationItem.htPix}"
+                                                                  
+                                                                    width="#{prv.investigationItem.wtPix}">
+                                                    </p:graphicImage>
                                                 </div>
                                             </ui:repeat>
                                             <ui:repeat value="#{patientReportController.currentPatientReport.item.reportItems}" var="myIi" >
@@ -659,6 +670,18 @@
                                                             </div>
                                                         </h:panelGroup>
                                                     </ui:repeat>
+                                                    
+                                                     <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
+                                                <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
+                                                    <p:graphicImage value="https://upload.wikimedia.org/wikipedia/en/e/e2/IMG_Academy_Logo.svg"
+                                                                    style="width: #{prv.investigationItem.wtPix};overflow: visible; display: block;" 
+                                                                    height="#{prv.investigationItem.htPix}"
+                                                                    
+                                                                    width="#{prv.investigationItem.wtPix}">
+                                                    </p:graphicImage>
+                                                </div>
+                                            </ui:repeat>
+                                                    
                                                 </div>
                                                 <div style="clear: left;padding-top: 1%;">
                                                     <h:outputLabel value="--- End of Report ---" style="font-size: 14px; font-weight: bold; "></h:outputLabel>

@@ -106,8 +106,7 @@ public class FeeValueController implements Serializable {
 
         return getFacade().findFirstByJpql(jpql, params);
     }
-    
-    
+
     public FeeValue getFeeValue(Long itemId, Category category) {
         String jpql = "SELECT f FROM FeeValue f WHERE f.item.id = :iid AND f.category = :category";
         Map<String, Object> params = new HashMap<>();
@@ -115,6 +114,105 @@ public class FeeValueController implements Serializable {
         params.put("category", category);
 
         return getFacade().findFirstByJpql(jpql, params);
+    }
+
+    public FeeValue getCollectingCentreFeeValue(Long itemId, Institution collectingCentre) {
+        System.out.println("Starting getCollectingCentreFeeValue");
+        System.out.println("Item ID: " + itemId);
+        System.out.println("Collecting Centre: " + collectingCentre);
+
+        String jpql = "SELECT f "
+                + " FROM FeeValue f "
+                + " WHERE f.item.id = :iid "
+                + " AND f.totalValueForLocals > 0 "
+                + " AND f.retired=:ret "
+                + " AND f.institution = :collectingCentre";
+        Map<String, Object> params = new HashMap<>();
+        params.put("iid", itemId);
+        params.put("ret", false);
+        params.put("collectingCentre", collectingCentre);
+
+        System.out.println("Executing JPQL: " + jpql);
+        System.out.println("Parameters: " + params);
+
+        FeeValue fv = getFacade().findFirstByJpql(jpql, params);
+
+        if (fv != null) {
+            System.out.println("FeeValue found in first query: " + fv);
+            return fv;
+        }
+
+        System.out.println("No FeeValue found in the first query, executing the second query.");
+
+        jpql = "SELECT f "
+                + " FROM FeeValue f "
+                + " WHERE f.item.id = :iid "
+                + " AND f.totalValueForLocals > 0 "
+                + " AND f.retired=:ret "
+                + " AND f.category = :category";
+        params = new HashMap<>();
+        params.put("iid", itemId);
+        params.put("ret", false);
+        params.put("category", collectingCentre.getFeeListType());
+
+        System.out.println("Executing fallback JPQL: " + jpql);
+        System.out.println("Fallback Parameters: " + params);
+
+        fv = getFacade().findFirstByJpql(jpql, params);
+
+        System.out.println("Returning FeeValue: " + fv);
+
+        return fv;
+    }
+    
+    
+    public FeeValue getSiteFeeValue(Long itemId, Institution site) {
+        System.out.println("Starting getSiteFeeValue");
+        System.out.println("Item ID: " + itemId);
+        System.out.println("Site: " + site);
+
+        String jpql = "SELECT f "
+                + " FROM FeeValue f "
+                + " WHERE f.item.id = :iid "
+                + " AND f.totalValueForLocals > 0 "
+                + " AND f.retired=:ret "
+                + " AND f.institution = :site";
+        Map<String, Object> params = new HashMap<>();
+        params.put("iid", itemId);
+        params.put("ret", false);
+        params.put("site", site);
+
+        System.out.println("Executing JPQL: " + jpql);
+        System.out.println("Parameters: " + params);
+
+        FeeValue fv = getFacade().findFirstByJpql(jpql, params);
+
+        if (fv != null) {
+            System.out.println("FeeValue found in first query: " + fv);
+            return fv;
+        }
+
+        System.out.println("No FeeValue found in the first query, executing the second query.");
+
+        jpql = "SELECT f "
+                + " FROM FeeValue f "
+                + " WHERE f.item.id = :iid "
+                + " AND f.totalValueForLocals > 0 "
+                + " AND f.retired=:ret "
+                + " AND f.category is null"
+                + " AND f.institution is null";
+        params = new HashMap<>();
+        params.put("iid", itemId);
+        params.put("ret", false);
+
+        System.out.println("Executing fallback JPQL: " + jpql);
+        System.out.println("Fallback Parameters: " + params);
+
+        fv = getFacade().findFirstByJpql(jpql, params);
+
+        System.out.println("Returning FeeValue: " + fv);
+
+        return fv;
     }
 
     public FeeValue getFeeValue(Item item, Department dept, Institution ins, Category category) {
@@ -171,8 +269,7 @@ public class FeeValueController implements Serializable {
         }
         return null; // Or return 0.0 if you prefer to return a default value
     }
-    
-    
+
     public Double getFeeValueForLocalsByItemIdForLoggedSite(Long id) {
         String jpql = "SELECT f.totalValueForLocals "
                 + " FROM FeeValue f "
@@ -183,7 +280,6 @@ public class FeeValueController implements Serializable {
         params.put("institution", sessionController.getDepartment().getSite());
         return getFacade().findDoubleByJpql(jpql, params);
     }
-    
 
     public Double getFeeValueForForeigners(Item item, Department dept, Institution ins, Category category) {
         FeeValue feeValue = getFeeValue(item, dept, ins, category);

@@ -37,7 +37,7 @@
                                 <p:ajax event="itemSelect" 
                                         process="@this" 
                                         update="gpFees localFee foreignerFee" 
-                                        listener="#{itemFeeManager.fillForSiteFees()}"></p:ajax>
+                                        listener="#{itemFeeManager.updateItemAndSiteFees()}"></p:ajax>
                             </p:autoComplete>
 
                             <p:outputLabel value="Select Item" />
@@ -46,7 +46,7 @@
                                 id="acIx" 
                                 forceSelection="true" 
                                 value="#{itemFeeManager.item}"
-                                completeMethod="#{itemController.completeAllServicesAndInvestigations}" 
+                                completeMethod="#{itemController.completeInwardItems}" 
                                 var="ix" 
                                 itemLabel="#{ix.name}" 
                                 itemValue="#{ix}" 
@@ -57,29 +57,37 @@
                                 <p:ajax event="itemSelect" 
                                         process="@this" 
                                         update="gpFees localFee foreignerFee" 
-                                        listener="#{itemFeeManager.fillForSiteFees()}"></p:ajax>
+                                        listener="#{itemFeeManager.updateItemAndSiteFees()}"></p:ajax>
                             </p:autoComplete>
 
 
-                            <h:panelGroup id="localFee" rendered="#{itemFeeManager.item ne null and itemFeeManager.forSite ne null}" >
-                                <p:outputLabel value="Local Fee" />
-                                <p:inputText 
-                                    value="#{feeValueController.getFeeForLocals(itemFeeManager.item, itemFeeManager.forSite)}" 
-                                    class="w-100">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </p:inputText>
+                            <h:panelGroup  id="localFee">
+                                <h:panelGroup rendered="#{itemFeeManager.item ne null and itemFeeManager.forSite ne null}" >
+                                    <p:outputLabel value="Local Fee" />
+                                    <p:inputText 
+                                        value="#{feeValueController.getFeeForLocals(itemFeeManager.item,itemFeeManager.forSite)}" 
+                                        class="w-100">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:inputText>
+                                </h:panelGroup>
                             </h:panelGroup>
 
 
 
-                            <h:panelGroup id="foreignerFee"  rendered="#{itemFeeManager.item ne null and itemFeeManager.forSite ne null}" >
-                                <p:outputLabel value="Foreigner Fee" />
-                                <p:inputText 
-                                    value="#{feeValueController.getFeeForForeigners(itemFeeManager.item, itemFeeManager.forSite)}" 
-                                    class="w-100">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </p:inputText>
+
+                            <h:panelGroup id="foreignerFee"  >
+                                <h:panelGroup rendered="#{itemFeeManager.item ne null and itemFeeManager.forSite ne null}" >
+                                    <p:outputLabel value="Foreigner Fee" />
+                                    <p:inputText 
+                                        value="#{feeValueController.getFeeForForeigners(itemFeeManager.item, itemFeeManager.forSite)}" 
+                                        class="w-100">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:inputText>
+                                </h:panelGroup>
                             </h:panelGroup>
+
+
+
 
                         </p:panelGrid>
 

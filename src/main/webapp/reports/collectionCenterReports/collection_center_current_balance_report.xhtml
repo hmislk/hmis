@@ -20,7 +20,7 @@
                         <p:dataTable
                             value="#{reportController.collectionCenters}" 
                             var="c"
-                            row
+                            rowKey="#{c.id}"
                             >
                             <p:column headerText="S. No" >
                                 <h:outputText value="" ></h:outputText>

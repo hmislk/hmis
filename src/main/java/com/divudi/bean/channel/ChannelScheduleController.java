@@ -59,6 +59,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -168,14 +169,14 @@ public class ChannelScheduleController implements Serializable {
     }
 
     public void updateSessionEndTime() {
-        String sessionDuration = configOptionApplicationController.getShortTextValueByKey("Default Channel Session Duration","2");
+        String sessionDuration = configOptionApplicationController.getShortTextValueByKey("Default Channel Session Duration", "2");
         int duration = 0;
-        if(isNumeric(sessionDuration)){
+        if (isNumeric(sessionDuration)) {
             duration = Integer.parseInt(sessionDuration);
-        }else{
+        } else {
             duration = 2;
         }
-        
+
         if (getCurrent().getStartingTime() == null) {
             getCurrent().setEndingTime(null);
         } else {
@@ -889,6 +890,12 @@ public class ChannelScheduleController implements Serializable {
     }
 
     private boolean checkError() {
+        if (configOptionApplicationController.getBooleanValueByKey("The Session Category is mandatory in Channel Schedule Management")) {
+            if (current.getCategory() == null) {
+                JsfUtil.addErrorMessage("Please add the Session Category");
+                return true;
+            }
+        }
         if (current.getStartingTime() == null) {
             JsfUtil.addErrorMessage("Starting time Must be Filled");
             return true;
@@ -1008,6 +1015,29 @@ public class ChannelScheduleController implements Serializable {
         if (getCurrent().getSessionNumberGenerator() == null) {
             SessionNumberGenerator ss = saveSessionNumber();
             current.setSessionNumberGenerator(ss);
+        }
+
+        if (current.getEndingTime() == null) {
+            JsfUtil.addErrorMessage("Can't save session without session endtime !");
+            return;
+        }
+
+        if (current.getSessionStartingNumber() != null) {
+            if (!current.getSessionStartingNumber().trim().equals("")) {
+                int[] resnumbers = Arrays.stream(current.getReserveNumbers().split(","))
+                        .filter(s -> !s.isEmpty())
+                        .mapToInt(Integer::parseInt)
+                        .toArray();
+                System.out.println(Arrays.toString(resnumbers));
+                int sessStartnumber = Integer.valueOf(current.getSessionStartingNumber());
+                boolean allLower = IntStream.of(resnumbers).allMatch(n -> n < sessStartnumber);
+                System.out.println("All values are lower than " + sessStartnumber + ": " + allLower);
+                if (allLower) {
+                    JsfUtil.addErrorMessage("All reserveNumbers are lower than session starting number");
+                    return;
+                }
+
+            }
         }
 
         getCurrent().setStaff(currentStaff);

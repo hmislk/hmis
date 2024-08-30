@@ -35,7 +35,7 @@ public class ComponentDetail {
     private int creditDuration;
     private Staff toStaff;
     private String referralNo;
-    
+    private String referenceNo;
     
 
     public List<ComponentDetail> getMultiplePaymentMethodComponentDetails() {
@@ -150,6 +150,14 @@ public class ComponentDetail {
 
     public void setReferralNo(String referralNo) {
         this.referralNo = referralNo;
+    }
+
+    public String getReferenceNo() {
+        return referenceNo;
+    }
+
+    public void setReferenceNo(String referenceNo) {
+        this.referenceNo = referenceNo;
     }
 
 }

@@ -50,14 +50,21 @@ public class CollectingCentreController implements Serializable {
 
     public List<Institution> completeCollecting(String query) {
         List<Institution> suggestions;
-        String sql;
-        if (query == null) {
-            suggestions = new ArrayList<Institution>();
-        } else {
-            sql = "select p from Institution p where p.retired=false and p.institutionType=com.divudi.data.InstitutionType.CollectingCentre and (p.name) like '%" + query.toUpperCase() + "%' order by p.name";
-            //////// // System.out.println(sql);
-            suggestions = getFacade().findByJpql(sql);
-        }
+        String jpql;
+        Map<String, Object> m = new HashMap<>();
+
+        jpql = "select p "
+                + "from Institution p "
+                + "where p.retired = :ret "
+                + "and p.institutionType = :insType "
+                + "and upper(p.name) like :qry "
+                + "order by p.name";
+
+        m.put("ret", false);
+        m.put("insType", InstitutionType.CollectingCentre);
+        m.put("qry", "%" + query.toUpperCase() + "%");
+
+        suggestions = getFacade().findByJpql(jpql, m);
 
         return suggestions;
     }

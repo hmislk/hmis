@@ -259,6 +259,7 @@ public class EnumController implements Serializable {
     public ItemListingStrategy[] getOpdItemListingStrategys() {
         ItemListingStrategy[] sts
                 = {ItemListingStrategy.ALL_ITEMS,
+                    ItemListingStrategy.SITE_FEE_ITEMS,
                     ItemListingStrategy.ITEMS_OF_LOGGED_DEPARTMENT,
                     ItemListingStrategy.ITEMS_OF_LOGGED_INSTITUTION,
                     ItemListingStrategy.ITEMS_MAPPED_TO_LOGGED_DEPARTMENT,
