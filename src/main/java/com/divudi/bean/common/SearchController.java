@@ -11882,7 +11882,7 @@ public class SearchController implements Serializable {
                 System.out.println("bf = " + bf);
                 System.out.println("bf value = " + bf.getFeeValue());
                 if (bf.getInstitution() != null && bf.getInstitution().getInstitutionType() == InstitutionType.CollectingCentre) {
-                    collectingCentreFeesCalculateByBillFees += bf.getFeeValue();
+                    collectingCentreFeesCalculateByBillFees += bf.getFeeGrossValue();
                     System.out.println("ccFee = " + collectingCentreFeesCalculateByBillFees);
                 } else if (bf.getStaff() != null || bf.getSpeciality() != null) {
                     staffFeesCalculatedByBillFees += bf.getFeeValue();
