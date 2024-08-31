@@ -47,6 +47,17 @@
             </p:column>
             <p:column>
                 <f:facet name="header">
+                    <h:outputText value="Card Ref.Number" />
+                </f:facet>                
+                <ui:repeat value="#{row.payment.bill.payments}" var="ps">
+                    <h:panelGroup rendered="#{ps.paymentMethod eq 'Card' }" >
+                        <h:outputText 
+                            value="#{ps}"/>
+                    </h:panelGroup>
+                </ui:repeat>
+            </p:column>
+            <p:column>
+                <f:facet name="header">
                     <h:outputText value="Bank Code" />
                 </f:facet>                
                 <ui:repeat value="#{row.payment.bill.payments}" var="ps">
