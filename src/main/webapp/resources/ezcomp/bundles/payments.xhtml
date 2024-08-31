@@ -18,24 +18,36 @@
         <!--<p:dataTable value="#{cc.attrs.bundle.reportTemplateRows}" var="row" >-->
 
         <p:dataTable value="#{cc.attrs.bundle.reportTemplateRows}" var="row" >
-             <f:facet name="header" >
+            <f:facet name="header" >
                 <h:outputText value="#{cc.attrs.bundle.name}" ></h:outputText>
             </f:facet>
-            
             <p:column>
                 <f:facet name="header">
-                    <h:outputText value="Department" />
+                    <h:outputText value="Bil No" />
                 </f:facet>
-                <h:outputText value="#{row.department.name}"  />
+                <h:outputText value="#{row.bill.deptId}"  />
             </p:column>
             <p:column>
                 <f:facet name="header">
-                    <h:outputText value="Hospital Fee" />
+                    <h:outputText value="Bil No" />
                 </f:facet>
-                <h:outputText value="#{row.rowValue}">
-                    <f:convertNumber pattern="#,##0.00" />
+                <h:outputText value="#{row.billTypeAtomic.label}"  />
+            </p:column>
+            <p:column>
+                <f:facet name="header">
+                    <h:outputText value="Referance Number" />
+                </f:facet>
+                <h:outputText value="#{row.bill.fromInstitution.name}"  />
+            </p:column>
+            <p:column>
+                <f:facet name="header">
+                    <h:outputText value="Fee" />
+                </f:facet>
+                <h:outputText value="#{row.bill.paidValue}"  >
+                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                 </h:outputText>
             </p:column>
+
         </p:dataTable>
 
 

@@ -83,13 +83,25 @@
 
 
 
-                        <ui:repeat value="#{searchController.bundle.bundles}" var="bundle" >
-                            <h:panelGroup rendered="#{bundle.bundleType ne 'CategoryAndItemSummary'}" >
-                                <ez:category_and_item_summary bundle="#{bundle}"/>
+
+                        <ui:repeat value="#{searchController.bundle.bundles}" var="myBundle" >
+                            <h:panelGroup  rendered="#{myBundle.bundleType eq 'CategoryAndItemCountsAndValues'}">
+                                <ez:category_and_item_summary bundle="#{myBundle}"/>
                             </h:panelGroup>
-                            <h:panelGroup rendered="#{bundle.bundleType eq 'CollectionValueByDepartment'}" >
-                                <ez:department_and_total bundle="#{bundle}"/>
+                            <h:panelGroup rendered="#{myBundle.bundleType eq 'CollectionValueByDepartment'}" >
+                                <ez:department_and_total bundle="#{myBundle}"/>
                             </h:panelGroup>
+                            <h:panelGroup rendered="#{myBundle.bundleType eq 'PayentBillReport'}" >
+                                <ez:bill_for_agency_payment bundle="#{myBundle}"/>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{myBundle.bundleType eq 'ProfessionalPaymentBillReport'}" >
+                                <ez:bill_for_professional_payment bundle="#{myBundle}"/>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{myBundle.bundleType eq 'ProfessionalPaymentBillReport'}" >
+                                <ez:payments bundle="#{myBundle}"/>
+                            </h:panelGroup>
+                            <br/>
+                            <hr/>
                         </ui:repeat>
 
 
