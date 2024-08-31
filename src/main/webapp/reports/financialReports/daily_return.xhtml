@@ -41,7 +41,7 @@
                             <h:outputLabel value="Institution"/>                                
                             <p:selectOneMenu class="w-100 " value="#{searchController.institution}" filter="true" >
                                 <f:selectItem itemLabel="All Institution" ></f:selectItem>
-                                <f:selectItems value="#{sessionController.loggableInstitutions}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
+                                <f:selectItems value="#{institutionController.items}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
                             </p:selectOneMenu>
 
 
