@@ -978,10 +978,6 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     private BillSearch billSearch;
 
     public void cancellAll() {
-        Bill tmp = new CancelledBill();
-        tmp.setCreatedAt(new Date());
-        tmp.setCreater(getSessionController().getLoggedUser());
-        getBillFacade().create(tmp);
 
         Bill billedBill = null;
         for (Bill b : bills) {
@@ -989,15 +985,8 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             getBillSearch().setBill((BilledBill) b);
             getBillSearch().setPaymentMethod(b.getPaymentMethod());
             getBillSearch().setComment("Batch Cancell");
-            //////// // System.out.println("ggg : " + getBillSearch().getComment());
             getBillSearch().cancelOpdBill();
         }
-
-        tmp.copy(billedBill);
-        tmp.setBilledBill(billedBill);
-
-        WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(tmp, getSessionController().getLoggedUser());
-        getSessionController().setLoggedUser(wb);
     }
 
     public void dateChangeListen() {
