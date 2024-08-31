@@ -118,6 +118,11 @@ public class ReportTemplateRow {
         this.sessionInstance = sessionInstance;
     }
 
+    public ReportTemplateRow(Department department, Double rowValue) {
+        this.rowValue = rowValue;
+        this.department = department;
+    }
+
     public ReportTemplateRow(Department department, Date date,
             double cashValue, double cardValue, double multiplePaymentMethodsValue,
             double staffValue, double creditValue, double staffWelfareValue,

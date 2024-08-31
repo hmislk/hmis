@@ -84,8 +84,11 @@
 
 
                         <ui:repeat value="#{searchController.bundle.bundles}" var="bundle" >
-                            <h:panelGroup rendered="#{bundle.bundleType eq 'CategoryAndItemSummary'}" >
+                            <h:panelGroup rendered="#{bundle.bundleType ne 'CategoryAndItemSummary'}" >
                                 <ez:category_and_item_summary bundle="#{bundle}"/>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{bundle.bundleType eq 'CollectionValueByDepartment'}" >
+                                <ez:department_and_total bundle="#{bundle}"/>
                             </h:panelGroup>
                         </ui:repeat>
 
