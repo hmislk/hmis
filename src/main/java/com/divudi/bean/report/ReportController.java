@@ -444,6 +444,37 @@ public class ReportController implements Serializable {
 
         billItems = billItemFacade.findByJpql(jpql, m);
     }
+    
+    public void processCollectingCentreStatementReportNew() {
+        
+        String jpql = "select ah "
+                + " from AgentHistory ah "
+                + " where ah.retired=:ret"
+                + " and ah.createdAt between :fd and :td ";
+         
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        
+        if (collectingCentre != null) {
+            jpql += " and ah.agency = :cc ";
+            m.put("cc", collectingCentre);
+        }
+    
+        
+        if (institution != null) {
+            jpql += " and ah.bill.institution = :ins ";
+            m.put("ins", institution);
+        }
+
+        if (invoiceNumber != null && !invoiceNumber.isEmpty()) {
+            jpql += " and ah.bill.insId = :inv ";
+            m.put("inv", invoiceNumber);
+        }
+        
+        agentHistories = agentHistoryFacade.findByJpql(jpql, m,TemporalType.TIMESTAMP);  
+    }
 
     public void processCollectingCentreStatementReport() {
         String jpql = "select bi "
