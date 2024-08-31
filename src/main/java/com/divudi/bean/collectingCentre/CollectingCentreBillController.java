@@ -990,6 +990,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             getBillSearch().setBill((BilledBill) b);
             getBillSearch().setPaymentMethod(b.getPaymentMethod());
             getBillSearch().setComment("Batch Cancell");
+            getBillSearch().setCollectingCenter(collectingCentre);
             //////// // System.out.println("ggg : " + getBillSearch().getComment());
             getBillSearch().cancelCollectingCentreBill();
         }

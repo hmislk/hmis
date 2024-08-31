@@ -595,14 +595,16 @@
                                                 </div>
                                             </ui:repeat>
                                             <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
-                                                <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
-                                                    <p:graphicImage value="https://upload.wikimedia.org/wikipedia/en/e/e2/IMG_Academy_Logo.svg"
+                                                <h:panelGroup layout="block" style="#{prv.investigationItem.cssStyle}; position:absolute;" rendered="#{prv.investigationItem.ixItemType eq 'Image'}" >
+                                                    <img style="height: 350px; width: 350px; z-index: 100;" src="#{prv.investigationItem.htmltext}" ></img>
+                                                    <p:graphicImage
+                                                        value="#{prv.lobValue}"
                                                                     style="width: #{prv.investigationItem.wtPix};overflow: visible; display: block;" 
                                                                     height="#{prv.investigationItem.htPix}"
                                                                   
                                                                     width="#{prv.investigationItem.wtPix}">
                                                     </p:graphicImage>
-                                                </div>
+                                                </h:panelGroup>
                                             </ui:repeat>
                                             <ui:repeat value="#{patientReportController.currentPatientReport.item.reportItems}" var="myIi" >
                                                 <div style="#{myIi.cssStyle}; position:absolute;">
