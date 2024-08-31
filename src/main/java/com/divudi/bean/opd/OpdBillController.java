@@ -150,6 +150,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     @Inject
     private ItemController itemController;
     @Inject
+    private ItemFeeManager itemFeeManager;
+    @Inject
     private ItemApplicationController itemApplicationController;
     @Inject
     private ItemMappingController itemMappingController;
@@ -430,6 +432,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 break;
             case ITEMS_OF_LOGGED_INSTITUTION:
                 temItems = itemController.getInstitutionItems();
+                break;
+            case SITE_FEE_ITEMS:
+                temItems = itemFeeManager.fillItemLightsForSite(sessionController.getDepartment().getSite());
                 break;
             default:
                 temItems = itemApplicationController.getInvestigationsAndServices();
@@ -2690,7 +2695,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         System.out.println("addAllBillFees = " + addAllBillFees);
 
         if (addAllBillFees) {
-
             allBillFees = getBillBean().billFeefromBillItem(bi);
         } else if (siteBasedBillFees) {
             allBillFees = getBillBean().forInstitutionBillFeefromBillItem(bi, sessionController.getDepartment().getSite());

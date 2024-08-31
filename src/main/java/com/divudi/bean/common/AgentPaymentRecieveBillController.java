@@ -233,8 +233,9 @@ public class AgentPaymentRecieveBillController implements Serializable {
         if (errorCheckCreditNoteDebitNote()) {
             return;
         }
-        getCurrent().setPaymentMethod(PaymentMethod.Slip);
+        getCurrent().setPaymentMethod(PaymentMethod.None);
         getCurrent().setNetTotal(getAmount());
+        getCurrent().setBillTypeAtomic(BillTypeAtomic.CC_CREDIT_NOTE);
         creditDebitNote(BillType.CollectingCentreCreditNoteBill, HistoryType.CollectingCentreCreditNote, HistoryType.CollectingCentreBalanceUpdateBill, BillNumberSuffix.CCCN);
 
     }
@@ -243,8 +244,9 @@ public class AgentPaymentRecieveBillController implements Serializable {
         if (errorCheckCreditNoteDebitNote()) {
             return;
         }
-        getCurrent().setPaymentMethod(PaymentMethod.Slip);
+        getCurrent().setPaymentMethod(PaymentMethod.None);
         getCurrent().setNetTotal(0 - getAmount());
+        getCurrent().setBillTypeAtomic(BillTypeAtomic.CC_DEBIT_NOTE);
         creditDebitNote(BillType.CollectingCentreDebitNoteBill, HistoryType.CollectingCentreDebitNote, HistoryType.CollectingCentreBalanceUpdateBill, BillNumberSuffix.CCDN);
 
     }
@@ -323,6 +325,8 @@ public class AgentPaymentRecieveBillController implements Serializable {
                     break;
                 case MultiplePaymentMethods:
                     break;
+                case None:
+                    break;
             }
     }
 
@@ -348,6 +352,7 @@ public class AgentPaymentRecieveBillController implements Serializable {
     }
 
     public void createAgentHistory(Institution ins, double transactionValue, HistoryType historyType, Bill bill) {
+        System.out.println("transactionValue = " + transactionValue);
         AgentHistory agentHistory = new AgentHistory();
         agentHistory.setCreatedAt(new Date());
         agentHistory.setCreater(getSessionController().getLoggedUser());
@@ -355,11 +360,13 @@ public class AgentPaymentRecieveBillController implements Serializable {
         agentHistory.setAgency(ins);
         agentHistory.setBalanceBeforeTransaction(ins.getBallance());
         agentHistory.setTransactionValue(transactionValue);
+        agentHistory.setBalanceAfterTransaction(ins.getBallance() + transactionValue);
         agentHistory.setHistoryType(historyType);
         agentHistoryFacade.create(agentHistory);
 
         ins.setBallance(ins.getBallance() + transactionValue);
         getInstitutionFacade().edit(ins);
+        System.out.println("agentHistory = saved 2");
 
     }
 

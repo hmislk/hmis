@@ -70,32 +70,32 @@ public class FinancialTransactionController implements Serializable {
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
-    BillFacade billFacade;
+    private BillFacade billFacade;
     @EJB
-    PaymentFacade paymentFacade;
+    private PaymentFacade paymentFacade;
     @EJB
-    BillComponentFacade billComponentFacade;
+    private BillComponentFacade billComponentFacade;
     @EJB
-    PaymentMethodValueFacade paymentMethodValueFacade;
+    private PaymentMethodValueFacade paymentMethodValueFacade;
     // </editor-fold>  
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
-    SessionController sessionController;
+    private SessionController sessionController;
     @Inject
-    CashBookEntryController cashBookEntryController;
+    private CashBookEntryController cashBookEntryController;
     @Inject
-    ReportTemplateController reportTemplateController;
+    private ReportTemplateController reportTemplateController;
     @Inject
-    BillController billController;
+    private BillController billController;
     @Inject
-    PaymentController paymentController;
+    private PaymentController paymentController;
     @Inject
-    SearchController searchController;
+    private SearchController searchController;
     @Inject
-    BillSearch billSearch;
+    private BillSearch billSearch;
     @Inject
-    ConfigOptionApplicationController configOptionApplicationController;
+    private ConfigOptionApplicationController configOptionApplicationController;
     // </editor-fold>  
 
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
@@ -107,7 +107,7 @@ public class FinancialTransactionController implements Serializable {
     private ReportTemplateRowBundle channellingBundle;
     private ReportTemplateRowBundle opdDocPayment;
     private ReportTemplateRowBundle channellingDocPayment;
-    boolean handoverValuesCreated = false;
+    private boolean handoverValuesCreated = false;
 
     private ReportTemplateRowBundle opdBilled;
     private ReportTemplateRowBundle opdReturns;
@@ -197,8 +197,12 @@ public class FinancialTransactionController implements Serializable {
     private ReportTemplateRowBundle paymentSummaryBundle;
 
     private Department department;
-    
-    
+    private WebUser user;
+    private Staff fromStaff;
+    private Staff toStaff;
+    private Department forDepartment;
+    private Department toDepartment;
+    private Date forDate;
 
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Constructors">
@@ -3783,6 +3787,166 @@ public class FinancialTransactionController implements Serializable {
 
     public void setHandovertBillsToReceive(List<Bill> handovertBillsToReceive) {
         this.handovertBillsToReceive = handovertBillsToReceive;
+    }
+
+    public BillFacade getBillFacade() {
+        return billFacade;
+    }
+
+    public void setBillFacade(BillFacade billFacade) {
+        this.billFacade = billFacade;
+    }
+
+    public PaymentFacade getPaymentFacade() {
+        return paymentFacade;
+    }
+
+    public void setPaymentFacade(PaymentFacade paymentFacade) {
+        this.paymentFacade = paymentFacade;
+    }
+
+    public BillComponentFacade getBillComponentFacade() {
+        return billComponentFacade;
+    }
+
+    public void setBillComponentFacade(BillComponentFacade billComponentFacade) {
+        this.billComponentFacade = billComponentFacade;
+    }
+
+    public PaymentMethodValueFacade getPaymentMethodValueFacade() {
+        return paymentMethodValueFacade;
+    }
+
+    public void setPaymentMethodValueFacade(PaymentMethodValueFacade paymentMethodValueFacade) {
+        this.paymentMethodValueFacade = paymentMethodValueFacade;
+    }
+
+    public SessionController getSessionController() {
+        return sessionController;
+    }
+
+    public void setSessionController(SessionController sessionController) {
+        this.sessionController = sessionController;
+    }
+
+    public CashBookEntryController getCashBookEntryController() {
+        return cashBookEntryController;
+    }
+
+    public void setCashBookEntryController(CashBookEntryController cashBookEntryController) {
+        this.cashBookEntryController = cashBookEntryController;
+    }
+
+    public ReportTemplateController getReportTemplateController() {
+        return reportTemplateController;
+    }
+
+    public void setReportTemplateController(ReportTemplateController reportTemplateController) {
+        this.reportTemplateController = reportTemplateController;
+    }
+
+    public BillController getBillController() {
+        return billController;
+    }
+
+    public void setBillController(BillController billController) {
+        this.billController = billController;
+    }
+
+    public PaymentController getPaymentController() {
+        return paymentController;
+    }
+
+    public void setPaymentController(PaymentController paymentController) {
+        this.paymentController = paymentController;
+    }
+
+    public SearchController getSearchController() {
+        return searchController;
+    }
+
+    public void setSearchController(SearchController searchController) {
+        this.searchController = searchController;
+    }
+
+    public BillSearch getBillSearch() {
+        return billSearch;
+    }
+
+    public void setBillSearch(BillSearch billSearch) {
+        this.billSearch = billSearch;
+    }
+
+    public ConfigOptionApplicationController getConfigOptionApplicationController() {
+        return configOptionApplicationController;
+    }
+
+    public void setConfigOptionApplicationController(ConfigOptionApplicationController configOptionApplicationController) {
+        this.configOptionApplicationController = configOptionApplicationController;
+    }
+
+    public boolean isHandoverValuesCreated() {
+        return handoverValuesCreated;
+    }
+
+    public void setHandoverValuesCreated(boolean handoverValuesCreated) {
+        this.handoverValuesCreated = handoverValuesCreated;
+    }
+
+    public WebUser getUser() {
+        return user;
+    }
+
+    public void setUser(WebUser user) {
+        this.user = user;
+    }
+
+    public Staff getFromStaff() {
+        return fromStaff;
+    }
+
+    public void setFromStaff(Staff fromStaff) {
+        this.fromStaff = fromStaff;
+    }
+
+    public Staff getToStaff() {
+        return toStaff;
+    }
+
+    public void setToStaff(Staff toStaff) {
+        this.toStaff = toStaff;
+    }
+
+    public Department getForDepartment() {
+        return forDepartment;
+    }
+
+    public void setForDepartment(Department forDepartment) {
+        this.forDepartment = forDepartment;
+    }
+
+    public Department getToDepartment() {
+        return toDepartment;
+    }
+
+    public void setToDepartment(Department toDepartment) {
+        this.toDepartment = toDepartment;
+    }
+
+    public Date getForDate() {
+        return forDate;
+    }
+
+    public void setForDate(Date forDate) {
+        this.forDate = forDate;
+    }
+
+    public int getHandoverBillsToReceiveCount() {
+        return handoverBillsToReceiveCount;
+    }
+
+    public void setHandoverBillsToReceiveCount(int handoverBillsToReceiveCount) {
+        this.handoverBillsToReceiveCount = handoverBillsToReceiveCount;
     }
 
 }

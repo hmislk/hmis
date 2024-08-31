@@ -1,40 +1,37 @@
 package com.divudi.data;
 
 import java.util.List;
-
-import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.stream.Collectors;
+import java.lang.reflect.Field;
 
 public enum PaymentMethod {
-
-    // Enum constants with @Deprecated where necessary
-    OnCall("On Call", PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
-    Cash("Cash", PaymentContext.PURCHASES, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.CREDIT_SETTLEMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
-    Card("Credit Card", PaymentContext.PURCHASES, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
-    MultiplePaymentMethods("Multiple Payment Methods", PaymentContext.ACCEPTING_PAYMENTS),
-    Staff("Staff Credit", PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
-    Credit("Credit", PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING, PaymentContext.PURCHASES),
-    Staff_Welfare("Staff Welfare", PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
-    @Deprecated
-    Voucher("Voucher", PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
-    IOU("IOU", PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
-    Agent("Agent Payment", PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
-    Cheque("Cheque", PaymentContext.PURCHASES, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
-    Slip("Slip Payment", PaymentContext.PURCHASES, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING, PaymentContext.CREDIT_SETTLEMENTS),
-    ewallet("e-Wallet Payment", PaymentContext.PURCHASES, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING, PaymentContext.CREDIT_SETTLEMENTS),
-    PatientDeposit("Patient Deposit", PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
-    PatientPoints("Patient Points", PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING, PaymentContext.CREDIT_SETTLEMENTS),
-    OnlineSettlement("Online Settlement", PaymentContext.ACCEPTING_PAYMENTS),
-    
-    @Deprecated
-    YouOweMe("You Owe Me", PaymentContext.ACCEPTING_PAYMENTS);
+    OnCall("On Call", PaymentType.NONE, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
+    Cash("Cash", PaymentType.NON_CREDIT, PaymentContext.PURCHASES, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.CREDIT_SETTLEMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
+    Card("Credit Card", PaymentType.CREDIT, PaymentContext.PURCHASES, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
+    MultiplePaymentMethods("Multiple Payment Methods", PaymentType.NONE, PaymentContext.ACCEPTING_PAYMENTS),
+    Staff("Staff Credit", PaymentType.CREDIT, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
+    Credit("Credit", PaymentType.CREDIT, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING, PaymentContext.PURCHASES),
+    Staff_Welfare("Staff Welfare", PaymentType.NON_CREDIT, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
+    Voucher("Voucher", PaymentType.NON_CREDIT, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING), // Assuming deprecated
+    IOU("IOU", PaymentType.NON_CREDIT, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
+    Agent("Agent Payment", PaymentType.NON_CREDIT, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
+    Cheque("Cheque", PaymentType.NON_CREDIT, PaymentContext.PURCHASES, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
+    Slip("Slip Payment", PaymentType.NON_CREDIT, PaymentContext.PURCHASES, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING, PaymentContext.CREDIT_SETTLEMENTS),
+    ewallet("e-Wallet Payment", PaymentType.NON_CREDIT, PaymentContext.PURCHASES, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING, PaymentContext.CREDIT_SETTLEMENTS),
+    PatientDeposit("Patient Deposit", PaymentType.NON_CREDIT, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
+    PatientPoints("Patient Points", PaymentType.NON_CREDIT, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING, PaymentContext.CREDIT_SETTLEMENTS),
+    OnlineSettlement("Online Settlement", PaymentType.NON_CREDIT, PaymentContext.ACCEPTING_PAYMENTS),
+    None("None", PaymentType.NONE, PaymentContext.PURCHASES, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.CREDIT_SETTLEMENTS),
+    YouOweMe("You Owe Me", PaymentType.NON_CREDIT, PaymentContext.ACCEPTING_PAYMENTS); // Assuming deprecated
 
     private final String label;
+    private final PaymentType paymentType;
     private final List<PaymentContext> contexts;
 
-    PaymentMethod(String label, PaymentContext... contexts) {
+    PaymentMethod(String label, PaymentType paymentType, PaymentContext... contexts) {
         this.label = label;
+        this.paymentType = paymentType;
         this.contexts = Arrays.asList(contexts);
     }
 
@@ -42,20 +39,32 @@ public enum PaymentMethod {
         return label;
     }
 
+    public PaymentType getPaymentType() {
+        return paymentType;
+    }
+
+    public List<PaymentContext> getContexts() {
+        return contexts;
+    }
+
     public static List<PaymentMethod> getMethodsByContext(PaymentContext context) {
         return Arrays.stream(PaymentMethod.values())
-                .filter(pm -> !isDeprecated(pm)) // Filter out deprecated enums
-                .filter(pm -> pm.contexts.contains(context))
+                .filter(pm -> pm.contexts.contains(context) && !isDeprecated(pm))
                 .collect(Collectors.toList());
     }
 
+    public static List<PaymentMethod> getMethodsByType(PaymentType type) {
+        return Arrays.stream(PaymentMethod.values())
+                .filter(pm -> pm.paymentType == type)
+                .collect(Collectors.toList());
+    }
 
     private static boolean isDeprecated(PaymentMethod method) {
         try {
             Field field = PaymentMethod.class.getField(method.name());
             return field.isAnnotationPresent(Deprecated.class);
         } catch (NoSuchFieldException e) {
-            return false;  // Should not happen unless enum name is incorrect
+            return false; // Should not happen unless enum name is incorrect
         }
     }
 
@@ -89,11 +98,11 @@ public enum PaymentMethod {
                 return "e-Wallet Payment Received";
             default:
                 return this.toString();
-
         }
     }
-    
+
     public static List<PaymentMethod> asList() {
         return Arrays.asList(PaymentMethod.values());
     }
+
 }

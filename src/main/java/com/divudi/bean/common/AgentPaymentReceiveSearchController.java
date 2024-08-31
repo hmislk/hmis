@@ -7,6 +7,7 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.HistoryType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.ejb.BillNumberGenerator;
@@ -19,6 +20,7 @@ import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
+import com.divudi.entity.Payment;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.BillFacade;
@@ -27,6 +29,7 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.BilledBillFacade;
 import com.divudi.facade.CancelledBillFacade;
 import com.divudi.facade.InstitutionFacade;
+import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.RefundBillFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -78,6 +81,9 @@ public class AgentPaymentReceiveSearchController implements Serializable {
     AgentPaymentRecieveBillController agentPaymentRecieveBillController;
     @EJB
     EjbApplication ejbApplication;
+    @EJB
+    PaymentFacade paymentFacade;
+    
     private List<BillItem> tempbillItems;
     private String comment;
     WebUser user;
@@ -281,12 +287,16 @@ public class AgentPaymentReceiveSearchController implements Serializable {
             //Copy & paste
             //if (webUserController.hasPrivilege("LabBillCancelling")) {
             if (true) {
+                cb.setBillTypeAtomic(BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL);
                 getCancelledBillFacade().create(cb);
                 cancelBillItems(cb);
                 getBill().setCancelled(true);
                 getBill().setCancelledBill(cb);
                 getBilledBillFacade().edit(getBill());
                 JsfUtil.addSuccessMessage("Cancelled");
+                createPayment(cb, paymentMethod);
+                
+                System.out.println("cb.getNetTotal() = " + cb.getNetTotal());
 
                 //for channel agencyHistory Update
                 getAgentPaymentRecieveBillController().createAgentHistory(cb.getFromInstitution(), cb.getNetTotal(), historyType, cb);
@@ -335,6 +345,29 @@ public class AgentPaymentReceiveSearchController implements Serializable {
 //
 //        billForCancel = null;
 //    }
+    
+    public Payment createPayment(Bill bill, PaymentMethod pm) {
+        Payment p = new Payment();
+        p.setBill(bill);
+        setPaymentMethodData(p, pm);
+        return p;
+    }
+
+    public void setPaymentMethodData(Payment p, PaymentMethod pm) {
+
+        p.setInstitution(getSessionController().getInstitution());
+        p.setDepartment(getSessionController().getDepartment());
+        p.setCreatedAt(new Date());
+        p.setCreater(getSessionController().getLoggedUser());
+        p.setPaymentMethod(pm);
+
+        p.setPaidValue(p.getBill().getNetTotal());
+
+        if (p.getId() == null) {
+            paymentFacade.create(p);
+        }
+
+    }
 
     public List<Bill> getBillsToApproveCancellation() {
         //////// // System.out.println("1");

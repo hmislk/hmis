@@ -148,17 +148,22 @@
                                     </h:panelGrid>
                                     <h:panelGrid columns="1" class="w-100">
                                         <h:outputLabel class="w-100" value="By Collection Center"/>
+                                       
                                         <p:autoComplete 
-                                            class="w-100" 
-                                            id="acCollectionCenter" 
-                                            value="#{patientInvestigationController.collectionCenter}" 
-                                            completeMethod="#{collectingCentreController.completeCollecting}" 
-                                            var="acCollectingCentre" 
-                                            itemLabel="#{acCollectingCentre.name}" 
-                                            itemValue="#{acCollectingCentre}" 
-                                            forceSelection="true" 
-                                            minQueryLength="4"
-                                            maxResults="5"/>
+                                            converter="deal" 
+                                            value="#{patientInvestigationController.collectionCenter}"
+                                            id="acCollectionCenter"
+                                            completeMethod="#{institutionController.completeCollectingCenter}" 
+                                            var="vt" 
+                                            itemLabel="#{vt.name}" 
+                                            itemValue="#{vt}" 
+                                            maxResults="15" 
+                                            class="w-100 mb-1"
+                                            forceSelection="true"
+                                            inputStyleClass="form-control">
+                                            <p:column style="padding: 6px;">#{vt.code}</p:column>
+                                            <p:column style="padding: 6px;">#{vt.name}</p:column>
+                                        </p:autoComplete>
 
                                     </h:panelGrid>
                                     <h:panelGrid columns="1" class="w-100">
@@ -347,18 +352,9 @@
                                                                action="#{patientReportController.navigateToNewlyCreatedPatientReport(patientInvestigation)}"   >
                                                     <p:graphicImage library="image" styleClass="standedicon" name="data_entry.png" ></p:graphicImage>
                                                 </p:commandLink>
-
-
-
                                             </h:panelGroup>
-
-
                                         </p:column>
-
-
-
                                     </p:dataTable>
-
 
                                 </h:panelGroup>
 
@@ -452,8 +448,16 @@
                                             <h:outputLabel value="#{b.toDepartment.name}" />
                                         </p:column>
 
+                                        <p:column headerText="Status" width="15em" style="vertical-align: top;">
+                                            <h:outputLabel value="#{b.status.label}" />
+                                        </p:column>
+
                                         <p:column headerText="Actions" width="10em">
-                                            <p:commandButton value="Generate Barcodes" ajax="false" action="#{patientInvestigationController.generateBarcodesForSelectedBill(b)}" ></p:commandButton>
+                                            <p:commandButton 
+                                                value="Generate Barcodes" 
+                                                ajax="false" 
+                                                action="#{patientInvestigationController.generateBarcodesForSelectedBill(b)}" >
+                                            </p:commandButton>
                                         </p:column>
 
                                     </p:dataTable>
@@ -875,7 +879,7 @@
                                                      styleClass="m-1  w-100 ui-button-info" />
 
                                     <hr/>
-                                    
+
                                     <p:inputText value="#{patientInvestigationController.sampleRejectionComment}" ></p:inputText>
 
                                     <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"

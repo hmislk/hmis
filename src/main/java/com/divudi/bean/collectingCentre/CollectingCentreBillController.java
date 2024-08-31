@@ -981,21 +981,23 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         Bill tmp = new CancelledBill();
         tmp.setCreatedAt(new Date());
         tmp.setCreater(getSessionController().getLoggedUser());
+        tmp.setBillTypeAtomic(BillTypeAtomic.CC_BILL_CANCELLATION);
         getBillFacade().create(tmp);
 
         Bill billedBill = null;
         for (Bill b : bills) {
-            billedBill = b.getBackwardReferenceBill();
+            billedBill = b;           
             getBillSearch().setBill((BilledBill) b);
             getBillSearch().setPaymentMethod(b.getPaymentMethod());
             getBillSearch().setComment("Batch Cancell");
+            getBillSearch().setCollectingCenter(collectingCentre);
             //////// // System.out.println("ggg : " + getBillSearch().getComment());
-            getBillSearch().cancelOpdBill();
+            getBillSearch().cancelCollectingCentreBill();
         }
-
         tmp.copy(billedBill);
         tmp.setBilledBill(billedBill);
-
+        
+        
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(tmp, getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
     }
