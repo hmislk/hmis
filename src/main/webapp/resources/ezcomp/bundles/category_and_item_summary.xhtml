@@ -17,7 +17,11 @@
         <!--<p:dataTable value="#{cc.attrs.bundle.reportTemplateRows}" var="row" ></p:dataTable>-->
         <!--<p:dataTable value="#{cc.attrs.bundle.reportTemplateRows}" var="row" >-->
 
+        
         <p:dataTable value="#{cc.attrs.bundle.reportTemplateRows}" var="row" >
+            <f:facet name="header" >
+                <h:outputText value="#{cc.attrs.bundle.name}" ></h:outputText>
+            </f:facet>
             <p:column>
                 <f:facet name="header">
                     <h:outputText value="Category" />
