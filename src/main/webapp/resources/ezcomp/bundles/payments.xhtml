@@ -66,20 +66,20 @@
             </p:column>
             <p:columnGroup type="footer">  
                 <p:row>    
-                    <p:column footerText="Total" style=" text-align: right">
+                    <p:column style=" text-align: left">
                         <f:facet name="footer">
-                            <h:outputLabel value="#{cc.attrs.data.cash}">
+                            <h:outputLabel value="Total"/>
+
+                        </f:facet>
+                    </p:column>
+                    <p:column colspan="4" style=" text-align: left;font">  
+                        <f:facet name="footer">
+                            <h:outputLabel value="00.00">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </f:facet>
                     </p:column>
-                    <p:column footerText="#{cc.attrs.data.credit}" style=" text-align: right">
-                        <f:facet name="footer">
-                            <h:outputLabel value="#{cc.attrs.data.credit}">
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputLabel>
-                        </f:facet>
-                    </p:column>
+
                 </p:row>  
             </p:columnGroup>  
 
