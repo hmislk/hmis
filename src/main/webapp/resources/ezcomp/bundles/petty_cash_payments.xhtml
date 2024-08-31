@@ -4,7 +4,8 @@
       xmlns:cc="http://xmlns.jcp.org/jsf/composite"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:h="http://xmlns.jcp.org/jsf/html">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -27,23 +28,21 @@
                 </f:facet>
                 <h:outputText value="#{row.bill.deptId}"  />
             </p:column>
-
             <p:column>
                 <f:facet name="header">
-                    <h:outputText value="Institution" />
+                    <h:outputText value="Bill Type" />
                 </f:facet>
-                <h:outputText value="#{row.bill.fromInstitution.name}"  />
+                <h:outputText value="#{row.bill.billTypeAtomic.label}"  />
             </p:column>
-
             <p:column>
                 <f:facet name="header">
-                    <h:outputText value="Institution" />
+                    <h:outputText value="Fee" />
                 </f:facet>
-                <h:outputText value="#{row.bill.fromInstitution.code}"  />
+                <h:outputText value="#{row.bill.netTotal}"  >
+                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                </h:outputText>
             </p:column>
-
-
-            <p:column>
+              <p:column>
                 <f:facet name="header">
                     <h:outputText value="Fee" />
                 </f:facet>
