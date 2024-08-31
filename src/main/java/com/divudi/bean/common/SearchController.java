@@ -11885,10 +11885,10 @@ public class SearchController implements Serializable {
                     collectingCentreFeesCalculateByBillFees += bf.getFeeGrossValue();
                     System.out.println("ccFee = " + collectingCentreFeesCalculateByBillFees);
                 } else if (bf.getStaff() != null || bf.getSpeciality() != null) {
-                    staffFeesCalculatedByBillFees += bf.getFeeValue();
+                    staffFeesCalculatedByBillFees += bf.getFeeGrossValue();
                     System.out.println("staffFee = " + staffFeesCalculatedByBillFees);
                 } else {
-                    hospitalFeeCalculatedByBillFess = bf.getFeeValue();
+                    hospitalFeeCalculatedByBillFess = bf.getFeeGrossValue();
                     System.out.println("hosFee = " + hospitalFeeCalculatedByBillFess);
                 }
             }

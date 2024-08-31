@@ -282,25 +282,38 @@ public class LimsMiddlewareController {
             System.out.println("pi = " + pi);
             List<PatientReport> prs = new ArrayList<>();
 
+            Investigation ix = null;
+            ix = pi.getInvestigation();
+
+            if (ix == null) {
+                continue;
+            }
+            
+            if(ix.getReportedAs()!=null){
+                if(ix.getReportedAs() instanceof Investigation){
+                    ix = (Investigation) ix.getReportedAs();
+                }
+            }
+
             System.out.println("pi.getInvestigation() = " + pi.getInvestigation());
             if (pi.getInvestigation() == null) {
                 continue;
             }
 
-            System.out.println("pi.getInvestigation().getMachine() = " + pi.getInvestigation().getMachine());
-            if (pi.getInvestigation().getMachine() != null && pi.getInvestigation().getMachine().equals(analyzer)) {
+            System.out.println("pi.getInvestigation().getMachine() = " + ix.getMachine());
+            if (ix.getMachine() != null && ix.getMachine().equals(analyzer)) {
                 System.out.println("Match Machine");
                 PatientReport tpr = getUnsavedPatientReport(pi);
                 System.out.println("tpr = " + tpr);
                 if (tpr == null) {
-                    tpr = createNewPatientReport(pi, pi.getInvestigation(), departmentAnalyzer, wu);
+                    tpr = createNewPatientReport(pi, ix, departmentAnalyzer, wu);
                 }
                 System.out.println("tpr = " + tpr);
                 prs.add(tpr);
             }
             System.out.println("prs = " + prs);
             if (prs.isEmpty()) {
-                List<Item> temItems = getItemsForParentItem(pi.getInvestigation());
+                List<Item> temItems = getItemsForParentItem(ix);
                 for (Item ti : temItems) {
                     System.out.println("ti = " + ti);
                     if (ti instanceof Investigation) {
@@ -1666,7 +1679,7 @@ public class LimsMiddlewareController {
                             System.out.println("1. tii.getTest().getCode() = " + tii.getTest().getCode());
                         }
                     }
-                } 
+                }
             }
         }
         System.out.println("tests = " + tests);
