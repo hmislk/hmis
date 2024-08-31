@@ -83,11 +83,30 @@
 
 
 
-                        <ui:repeat value="#{searchController.bundle.bundles}" var="bundle" >
-                            <h:panelGroup rendered="#{bundle.bundleType eq 'CategoryAndItemSummary'}" >
-                                <ez:category_and_item_summary bundle="#{bundle}"/>
-                            </h:panelGroup>
-                        </ui:repeat>
+                        <p:commandButton value="Print" icon="fas fa-print">
+                            <p:printer target="printPanel" />
+                        </p:commandButton>
+                        <h:panelGroup id="printPanel">                           
+                            <ui:repeat value="#{searchController.bundle.bundles}" var="myBundle" >
+                                <h:panelGroup  rendered="#{myBundle.bundleType eq 'CategoryAndItemCountsAndValues'}">
+                                    <ez:category_and_item_summary bundle="#{myBundle}"/>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{myBundle.bundleType eq 'CollectionValueByDepartment'}" >
+                                    <ez:department_and_total bundle="#{myBundle}"/>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{myBundle.bundleType eq 'PayentBillReport'}" >
+                                    <ez:bill_for_agency_payment bundle="#{myBundle}"/>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{myBundle.bundleType eq 'ProfessionalPaymentBillReport'}" >
+                                    <ez:bill_for_professional_payment bundle="#{myBundle}"/>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{myBundle.bundleType eq 'PaymentReport'}" >
+                                    <ez:payments bundle="#{myBundle}"/>
+                                </h:panelGroup>
+                                <br/>
+                                <hr/>
+                            </ui:repeat>
+                        </h:panelGroup>
 
 
                     </p:panel>

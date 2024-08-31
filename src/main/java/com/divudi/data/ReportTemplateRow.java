@@ -6,6 +6,7 @@ import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
+import com.divudi.entity.Payment;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.channel.SessionInstance;
@@ -23,6 +24,8 @@ public class ReportTemplateRow {
     private String uuid;
 
     private Category category;
+    private Bill bill;
+    private Payment payment;
 
     private Item item;
 
@@ -116,6 +119,11 @@ public class ReportTemplateRow {
 
     public ReportTemplateRow(SessionInstance sessionInstance) {
         this.sessionInstance = sessionInstance;
+    }
+
+    public ReportTemplateRow(Department department, Double rowValue) {
+        this.rowValue = rowValue;
+        this.department = department;
     }
 
     public ReportTemplateRow(Department department, Date date,
@@ -956,4 +964,30 @@ public class ReportTemplateRow {
         this.rowType = rowType;
     }
 
+    public Bill getBill() {
+        return bill;
+    }
+
+    public void setBill(Bill bill) {
+        this.bill = bill;
+    }
+
+    public ReportTemplateRow(Bill bill) {
+        this.bill = bill;
+    }
+
+    public Payment getPayment() {
+        return payment;
+    }
+
+    public void setPayment(Payment payment) {
+        this.payment = payment;
+    }
+
+    public ReportTemplateRow(Payment payment) {
+        this.payment = payment;
+    }
+
+    
+    
 }
