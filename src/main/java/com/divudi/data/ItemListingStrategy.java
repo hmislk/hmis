@@ -10,6 +10,7 @@ package com.divudi.data;
 public enum ItemListingStrategy {
 
     ALL_ITEMS("All Items"),
+    SITE_FEE_ITEMS("Items with site fees"),
     ITEMS_OF_LOGGED_DEPARTMENT("Items of the Logged Department"),
     ITEMS_OF_LOGGED_INSTITUTION("Items of the Logged Institution"),
     ITEMS_OF_SELECTED_DEPARTMENT("Items of the Selected Department"),

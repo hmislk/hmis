@@ -273,12 +273,29 @@ public class PatientInvestigation implements Serializable {
     private WebUser sampleRevertedBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date sampleRevertedAt;
+    
+    String sampleIds;
 
+    
+    
     public PatientInvestigation() {
         if (status == null) {
             status = PatientInvestigationStatus.ORDERED;
         }
     }
+
+    public String getSampleIds() {
+        if(sampleIds == null){
+            sampleIds = "";
+        }
+        return sampleIds;
+    }
+
+    public void setSampleIds(String sampleIds) {
+        this.sampleIds = sampleIds;
+    }
+    
+    
 
     public List<PatientReport> getPatientReports() {
         if (patientReports == null) {

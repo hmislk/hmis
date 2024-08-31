@@ -43,6 +43,7 @@ public class CollectingCentreApplicationController {
             HistoryType historyType,
             Bill bill,
             String refNo) {
+        System.out.println("collectingCentre = " + collectingCentre);
         Long collectingCentreId = collectingCentre.getId(); // Assuming each Institution has a unique ID
         Lock lock = lockMap.computeIfAbsent(collectingCentreId, id -> new ReentrantLock());
         lock.lock();
@@ -72,6 +73,7 @@ public class CollectingCentreApplicationController {
                 agentHistory.setCompanyBalanceAfter(collectingCentre.getCompanyBalance());
                 
                 agentHistory.setCompanyTransactionValue(valueWithoutccFee);
+                agentHistory.setTransactionValue(valueWithoutccFee);
                 
                 agentHistory.setCollectingCentertransactionValue(collectingCenterFeeValue);
                 agentHistoryFacade.create(agentHistory);

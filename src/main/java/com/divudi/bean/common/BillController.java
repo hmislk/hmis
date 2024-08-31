@@ -2600,6 +2600,7 @@ public class BillController implements Serializable {
         this.billSessions = billSessions;
     }
 
+    @Deprecated
     public void addToBill() {
 
         if (getCurrentBillItem() == null) {

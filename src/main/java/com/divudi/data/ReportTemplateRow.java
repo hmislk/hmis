@@ -6,6 +6,7 @@ import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
+import com.divudi.entity.Payment;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.channel.SessionInstance;
@@ -21,6 +22,33 @@ import java.util.UUID;
 public class ReportTemplateRow {
 
     private String uuid;
+
+    private Category category;
+    private Bill bill;
+    private Payment payment;
+
+    private Item item;
+
+    private Long categoryCount;
+    private Double categoryTotal;
+    private Double categoryHospitalFee;
+    private Double categoryDiscountAmount;
+    private Double categoryCollectingCentreFee;
+    private Double categoryDiscount;
+    private Double categoryProfessionalFee;
+    private Double categoryNetTotal;
+
+    private Long itemCount;
+    private Double itemTotal;
+    private Double itemHospitalFee;
+    private Double itemDiscountAmount;
+    private Double itemCollectingCentreFee;
+    private Double itemDiscount;
+    private Double itemProfessionalFee;
+    private Double itemNetTotal;
+
+    private List<Bill> cashHnadovers;
+
     private String feeName;
     private String categoryName;
     private String toDepartmentName;
@@ -45,9 +73,6 @@ public class ReportTemplateRow {
     private Long long9;
     private Long long10;
 
-    private Category category;
-
-    private Item item;
     private ServiceType serviceType;
     private BillTypeAtomic billTypeAtomic;
     private Institution creditCompany;
@@ -89,13 +114,16 @@ public class ReportTemplateRow {
     private double patientDepositValue;
     private double patientPointsValue;
     private double onlineSettlementValue;
-    
-   
 
-    private List<Bill> cashHnadovers;
+    private String rowType;
 
     public ReportTemplateRow(SessionInstance sessionInstance) {
         this.sessionInstance = sessionInstance;
+    }
+
+    public ReportTemplateRow(Department department, Double rowValue) {
+        this.rowValue = rowValue;
+        this.department = department;
     }
 
     public ReportTemplateRow(Department department, Date date,
@@ -122,7 +150,7 @@ public class ReportTemplateRow {
         this.patientPointsValue = patientPointsValue;
         this.onlineSettlementValue = onlineSettlementValue;
     }
-    
+
     public ReportTemplateRow(Department department, Date date, WebUser user,
             double cashValue, double cardValue, double multiplePaymentMethodsValue,
             double staffValue, double creditValue, double staffWelfareValue,
@@ -132,7 +160,7 @@ public class ReportTemplateRow {
         this.department = department;
         this.date = date;
         this.cashValue = cashValue;
-        this.user=user;
+        this.user = user;
         this.cardValue = cardValue;
         this.multiplePaymentMethodsValue = multiplePaymentMethodsValue;
         this.staffValue = staffValue;
@@ -800,7 +828,166 @@ public class ReportTemplateRow {
         this.eWalletValue = eWalletValue;
     }
 
-    
-    
+    public Long getCategoryCount() {
+        return categoryCount;
+    }
 
+    public void setCategoryCount(Long categoryCount) {
+        this.categoryCount = categoryCount;
+    }
+
+    public Double getCategoryTotal() {
+        return categoryTotal;
+    }
+
+    public void setCategoryTotal(Double categoryTotal) {
+        this.categoryTotal = categoryTotal;
+    }
+
+    public Double getCategoryHospitalFee() {
+        return categoryHospitalFee;
+    }
+
+    public void setCategoryHospitalFee(Double categoryHospitalFee) {
+        this.categoryHospitalFee = categoryHospitalFee;
+    }
+
+    public Double getCategoryDiscountAmount() {
+        return categoryDiscountAmount;
+    }
+
+    public void setCategoryDiscountAmount(Double categoryDiscountAmount) {
+        this.categoryDiscountAmount = categoryDiscountAmount;
+    }
+
+    public Double getCategoryCollectingCentreFee() {
+        return categoryCollectingCentreFee;
+    }
+
+    public void setCategoryCollectingCentreFee(Double categoryCollectingCentreFee) {
+        this.categoryCollectingCentreFee = categoryCollectingCentreFee;
+    }
+
+    public Double getCategoryDiscount() {
+        return categoryDiscount;
+    }
+
+    public void setCategoryDiscount(Double categoryDiscount) {
+        this.categoryDiscount = categoryDiscount;
+    }
+
+    public Double getCategoryProfessionalFee() {
+        return categoryProfessionalFee;
+    }
+
+    public void setCategoryProfessionalFee(Double categoryProfessionalFee) {
+        this.categoryProfessionalFee = categoryProfessionalFee;
+    }
+
+    public Double getCategoryNetTotal() {
+        return categoryNetTotal;
+    }
+
+    public void setCategoryNetTotal(Double categoryNetTotal) {
+        this.categoryNetTotal = categoryNetTotal;
+    }
+
+    public Long getItemCount() {
+        return itemCount;
+    }
+
+    public void setItemCount(Long itemCount) {
+        this.itemCount = itemCount;
+    }
+
+    public Double getItemTotal() {
+        return itemTotal;
+    }
+
+    public void setItemTotal(Double itemTotal) {
+        this.itemTotal = itemTotal;
+    }
+
+    public Double getItemHospitalFee() {
+        return itemHospitalFee;
+    }
+
+    public void setItemHospitalFee(Double itemHospitalFee) {
+        this.itemHospitalFee = itemHospitalFee;
+    }
+
+    public Double getItemDiscountAmount() {
+        return itemDiscountAmount;
+    }
+
+    public void setItemDiscountAmount(Double itemDiscountAmount) {
+        this.itemDiscountAmount = itemDiscountAmount;
+    }
+
+    public Double getItemCollectingCentreFee() {
+        return itemCollectingCentreFee;
+    }
+
+    public void setItemCollectingCentreFee(Double itemCollectingCentreFee) {
+        this.itemCollectingCentreFee = itemCollectingCentreFee;
+    }
+
+    public Double getItemDiscount() {
+        return itemDiscount;
+    }
+
+    public void setItemDiscount(Double itemDiscount) {
+        this.itemDiscount = itemDiscount;
+    }
+
+    public Double getItemProfessionalFee() {
+        return itemProfessionalFee;
+    }
+
+    public void setItemProfessionalFee(Double itemProfessionalFee) {
+        this.itemProfessionalFee = itemProfessionalFee;
+    }
+
+    public Double getItemNetTotal() {
+        return itemNetTotal;
+    }
+
+    public void setItemNetTotal(Double itemNetTotal) {
+        this.itemNetTotal = itemNetTotal;
+    }
+
+    public String getRowType() {
+        return rowType;
+    }
+
+    public void setRowType(String rowType) {
+        this.rowType = rowType;
+    }
+
+    public Bill getBill() {
+        return bill;
+    }
+
+    public void setBill(Bill bill) {
+        this.bill = bill;
+    }
+
+    public ReportTemplateRow(Bill bill) {
+        this.bill = bill;
+    }
+
+    public Payment getPayment() {
+        return payment;
+    }
+
+    public void setPayment(Payment payment) {
+        this.payment = payment;
+    }
+
+    public ReportTemplateRow(Payment payment) {
+        this.payment = payment;
+    }
+
+    
+    
 }

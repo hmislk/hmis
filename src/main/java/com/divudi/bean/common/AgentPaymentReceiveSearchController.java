@@ -7,6 +7,7 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.HistoryType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.ejb.BillNumberGenerator;
@@ -286,6 +287,7 @@ public class AgentPaymentReceiveSearchController implements Serializable {
             //Copy & paste
             //if (webUserController.hasPrivilege("LabBillCancelling")) {
             if (true) {
+                cb.setBillTypeAtomic(BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL);
                 getCancelledBillFacade().create(cb);
                 cancelBillItems(cb);
                 getBill().setCancelled(true);

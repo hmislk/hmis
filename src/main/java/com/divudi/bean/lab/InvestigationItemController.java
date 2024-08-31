@@ -1659,6 +1659,29 @@ public class InvestigationItemController implements Serializable {
         listInvestigationItem();
         listInvestigationItem();
     }
+    
+    public void addNewImage() {
+        if (currentInvestigation == null) {
+            JsfUtil.addErrorMessage("Please select an investigation");
+            return;
+        }
+        current = new InvestigationItem();
+        current.setName("New Image");
+        current.setItem(currentInvestigation);
+        current.setIxItemType(InvestigationItemType.Image);
+        InvestigationItem lastItem = getLastReportItem();
+        if (lastItem != null) {
+            current.setCssFontFamily(lastItem.getCssFontFamily());
+            current.setCssFontSize(lastItem.getCssFontSize());
+            current.setCssFontStyle(lastItem.getCssFontStyle());
+            current.setCssFontWeight(lastItem.getCssFontWeight());
+        }
+//        getEjbFacade().create(current);
+        currentInvestigation.getReportItems().add(current);
+        getIxFacade().edit(currentInvestigation);
+        listInvestigationItem();
+        listInvestigationItem();
+    }
 
     public void prepareAdd() {
         current = new InvestigationItem();
@@ -2110,6 +2133,7 @@ public class InvestigationItemController implements Serializable {
         l.add(InvestigationItemType.Template);
         l.add(InvestigationItemType.Barcode);
         l.add(InvestigationItemType.BarcodeVertical);
+        l.add(InvestigationItemType.Image);
 //            Label,
 //    Value,
 //    Calculation,

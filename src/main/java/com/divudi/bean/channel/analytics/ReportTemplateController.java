@@ -11,6 +11,7 @@ package com.divudi.bean.channel.analytics;
 import com.divudi.bean.common.*;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
+import com.divudi.data.PaymentMethod;
 import com.divudi.data.ReportTemplateRow;
 import com.divudi.data.ReportTemplateRowBundle;
 import com.divudi.data.analytics.ReportTemplateColumn;
@@ -162,6 +163,232 @@ public class ReportTemplateController implements Serializable {
 
     }
 
+    public ReportTemplateRowBundle generateValueByDepartmentReport(
+            List<BillTypeAtomic> btas,
+            List<PaymentMethod> paymentMethods,
+            Date paramFromDate,
+            Date paramToDate,
+            Institution paramInstitution,
+            Department paramDepartment,
+            Institution paramSite) {
+
+        ReportTemplateRowBundle pb = new ReportTemplateRowBundle();
+
+        Map<String, Object> parameters = new HashMap<>();
+
+        String jpql = "select new com.divudi.data.ReportTemplateRow("
+                + " bill.department, sum(bill.netTotal)) "
+                + " from Payment p"
+                + " join p.bill bill "
+                + " where bill.retired=false "
+                + " and p.retired=false";
+
+        if (btas != null && !btas.isEmpty()) {
+            jpql += " and bill.billTypeAtomic in :btas ";
+            parameters.put("btas", btas);
+            System.out.println("Filtered by BillTypeAtomics: " + btas);
+        }
+
+        if (paymentMethods != null && !paymentMethods.isEmpty()) {
+            jpql += " and p.paymentMethod in :pms ";
+            parameters.put("pms", paymentMethods);
+            System.out.println("Filtered by PaymentMethods: " + paymentMethods);
+        }
+
+        if (paramFromDate != null) {
+            jpql += " and bill.billDate >= :fd ";
+            parameters.put("fd", paramFromDate);
+            System.out.println("Filtered from Date: " + paramFromDate);
+        }
+
+        if (paramToDate != null) {
+            jpql += " and bill.billDate <= :td ";
+            parameters.put("td", paramToDate);
+            System.out.println("Filtered to Date: " + paramToDate);
+        }
+
+        if (paramInstitution != null) {
+            jpql += " and bill.department.institution = :ins ";
+            parameters.put("ins", paramInstitution);
+            System.out.println("Filtered by Institution: " + paramInstitution);
+        }
+
+        if (paramDepartment != null) {
+            jpql += " and bill.department = :dep ";
+            parameters.put("dep", paramDepartment);
+            System.out.println("Filtered by Department: " + paramDepartment);
+        }
+
+        if (paramSite != null) {
+            jpql += " and bill.department.site = :site ";
+            parameters.put("site", paramSite);
+            System.out.println("Filtered by Site: " + paramSite);
+        }
+
+        jpql += " group by bill.department";
+
+        System.out.println("Final JPQL Query: " + jpql);
+        System.out.println("Parameters: " + parameters);
+
+        // Assuming you have an EJB or similar service to run the query
+        List<ReportTemplateRow> results = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
+        System.out.println("Query Results: " + results);
+
+        // Properly handle empty or null results
+        if (results == null || results.isEmpty()) {
+            System.out.println("No results found.");
+            return pb; // Consider returning an empty ReportTemplateRowBundle instead
+        }
+        pb.setReportTemplateRows(results); 
+        return pb;
+    }
+
+    
+     public ReportTemplateRowBundle generateBillReport(
+            List<BillTypeAtomic> btas,
+            Date paramFromDate,
+            Date paramToDate,
+            Institution paramInstitution,
+            Department paramDepartment,
+            Institution paramSite) {
+
+        ReportTemplateRowBundle pb = new ReportTemplateRowBundle();
+
+        Map<String, Object> parameters = new HashMap<>();
+
+        String jpql = "select new com.divudi.data.ReportTemplateRow("
+                + " bill) "
+                + " from Bill bill "
+                + " where bill.retired=false ";
+
+        if (btas != null && !btas.isEmpty()) {
+            jpql += " and bill.billTypeAtomic in :btas ";
+            parameters.put("btas", btas);
+            System.out.println("Filtered by BillTypeAtomics: " + btas);
+        }
+
+       
+
+        if (paramFromDate != null) {
+            jpql += " and bill.billDate >= :fd ";
+            parameters.put("fd", paramFromDate);
+            System.out.println("Filtered from Date: " + paramFromDate);
+        }
+
+        if (paramToDate != null) {
+            jpql += " and bill.billDate <= :td ";
+            parameters.put("td", paramToDate);
+            System.out.println("Filtered to Date: " + paramToDate);
+        }
+
+        if (paramInstitution != null) {
+            jpql += " and bill.department.institution = :ins ";
+            parameters.put("ins", paramInstitution);
+            System.out.println("Filtered by Institution: " + paramInstitution);
+        }
+
+        if (paramDepartment != null) {
+            jpql += " and bill.department = :dep ";
+            parameters.put("dep", paramDepartment);
+            System.out.println("Filtered by Department: " + paramDepartment);
+        }
+
+        if (paramSite != null) {
+            jpql += " and bill.department.site = :site ";
+            parameters.put("site", paramSite);
+            System.out.println("Filtered by Site: " + paramSite);
+        }
+
+        jpql += " group by bill";
+
+        System.out.println("Final JPQL Query: " + jpql);
+        System.out.println("Parameters: " + parameters);
+
+        // Assuming you have an EJB or similar service to run the query
+        List<ReportTemplateRow> results = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
+        System.out.println("Query Results: " + results);
+
+        // Properly handle empty or null results
+        if (results == null || results.isEmpty()) {
+            System.out.println("No results found.");
+            return pb; // Consider returning an empty ReportTemplateRowBundle instead
+        }
+        pb.setReportTemplateRows(results); 
+        return pb;
+    }
+     
+     public ReportTemplateRowBundle generatePaymentReport(
+            PaymentMethod pm,
+            Date paramFromDate,
+            Date paramToDate,
+            Institution paramInstitution,
+            Department paramDepartment,
+            Institution paramSite) {
+
+        ReportTemplateRowBundle pb = new ReportTemplateRowBundle();
+
+        Map<String, Object> parameters = new HashMap<>();
+
+        String jpql = "select new com.divudi.data.ReportTemplateRow("
+                + " p) "
+                + " from Payment p "
+                + " join p.bill bill "
+                + " where bill.retired=false ";
+
+        if (pm != null) {
+            jpql += " and p.paymentMethod=:pm ";
+            parameters.put("pm", pm);
+        }
+
+        if (paramFromDate != null) {
+            jpql += " and bill.billDate >= :fd ";
+            parameters.put("fd", paramFromDate);
+            System.out.println("Filtered from Date: " + paramFromDate);
+        }
+
+        if (paramToDate != null) {
+            jpql += " and bill.billDate <= :td ";
+            parameters.put("td", paramToDate);
+            System.out.println("Filtered to Date: " + paramToDate);
+        }
+
+        if (paramInstitution != null) {
+            jpql += " and bill.department.institution = :ins ";
+            parameters.put("ins", paramInstitution);
+            System.out.println("Filtered by Institution: " + paramInstitution);
+        }
+
+        if (paramDepartment != null) {
+            jpql += " and bill.department = :dep ";
+            parameters.put("dep", paramDepartment);
+            System.out.println("Filtered by Department: " + paramDepartment);
+        }
+
+        if (paramSite != null) {
+            jpql += " and bill.department.site = :site ";
+            parameters.put("site", paramSite);
+            System.out.println("Filtered by Site: " + paramSite);
+        }
+
+        jpql += " group by p";
+
+        System.out.println("Final JPQL Query: " + jpql);
+        System.out.println("Parameters: " + parameters);
+
+        // Assuming you have an EJB or similar service to run the query
+        List<ReportTemplateRow> results = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
+        System.out.println("Query Results: " + results);
+
+        // Properly handle empty or null results
+        if (results == null || results.isEmpty()) {
+            System.out.println("No results found.");
+            return pb; // Consider returning an empty ReportTemplateRowBundle instead
+        }
+        pb.setReportTemplateRows(results); 
+        return pb;
+    }
+    
+    
     public ReportTemplateRowBundle generateReport(
             ReportTemplateType type,
             List<BillTypeAtomic> btas,
@@ -2306,6 +2533,7 @@ public class ReportTemplateController implements Serializable {
             Institution paramCreditCompany,
             Long paramStartId,
             Long paramEndId) {
+        ReportTemplateRowBundle b = new ReportTemplateRowBundle();
         return new ReportTemplateRowBundle();
     }
 
