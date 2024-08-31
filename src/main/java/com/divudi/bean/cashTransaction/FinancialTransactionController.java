@@ -197,6 +197,8 @@ public class FinancialTransactionController implements Serializable {
     private ReportTemplateRowBundle paymentSummaryBundle;
 
     private Department department;
+    
+    
 
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Constructors">
