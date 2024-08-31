@@ -6,6 +6,7 @@ import com.divudi.data.lab.Analyzer;
 import java.util.ArrayList;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.lab.PatientSample;
+import com.divudi.entity.lab.Sample;
 import com.divudi.facade.PatientSampleFacade;
 import com.divudi.facade.WebUserFacade;
 import javax.inject.Inject;
@@ -67,26 +68,67 @@ public class MiddlewareController {
     public Response processTestOrdersForSampleRequests(String jsonInput) {
         try {
             // Deserialize the incoming JSON into QueryRecord
+            System.out.println("Deserializing JSON input...");
             QueryRecord queryRecord = gson.fromJson(jsonInput, QueryRecord.class);
+            if (queryRecord == null) {
+                System.out.println("QueryRecord is null after deserialization.");
+                return Response.status(Response.Status.BAD_REQUEST).entity("Invalid input data").build();
+            }
 
             // Logic to create a PatientDataBundle based on the QueryRecord
             PatientDataBundle pdb = new PatientDataBundle();
 
+            System.out.println("Generating test codes for analyzer...");
             List<String> testNames = limsMiddlewareController.generateTestCodesForAnalyzer(queryRecord.getSampleId());
             if (testNames == null || testNames.isEmpty()) {
-                testNames = Arrays.asList("HDL", "RF2", "GLU");
+                System.out.println("Test names are null or empty. Defaulting to GLU.");
+                testNames = Arrays.asList("GLU");
             }
+
+            System.out.println("Fetching patient sample for Sample ID: " + queryRecord.getSampleId());
+            PatientSample ptSample = limsMiddlewareController.patientSampleFromId(queryRecord.getSampleId());
+            if (ptSample == null) {
+                System.out.println("Patient sample not found for Sample ID: " + queryRecord.getSampleId());
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Patient sample not found").build();
+            }
+
             OrderRecord or = new OrderRecord(0, queryRecord.getSampleId(), testNames, "S", new Date(), "testInformation");
             pdb.getOrderRecords().add(or);
-            PatientRecord pr = new PatientRecord(0, "1010101", "111111", "Buddhika Ariyaratne", "M H B", "Male", "Sinhalese", null, "Galle", "0715812399", "Dr Niluka");
+
+            System.out.println("Creating PatientRecord...");
+            if (ptSample.getPatient() == null) {
+                System.out.println("Patient is null in PatientSample.");
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Invalid patient data").build();
+            }
+            if (ptSample.getPatient().getPerson() == null) {
+                System.out.println("Person is null in Patient.");
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Invalid person data").build();
+            }
+            if (ptSample.getBill() == null || ptSample.getBill().getReferredBy() == null || ptSample.getBill().getReferredBy().getPerson() == null) {
+                System.out.println("Referred by or person in referred by is null in Bill.");
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Invalid referred by data").build();
+            }
+
+            PatientRecord pr = new PatientRecord(0,
+                    ptSample.getPatient().getIdStr(),
+                    ptSample.getIdStr(),
+                    ptSample.getPatient().getPerson().getNameWithTitle(),
+                    "", ptSample.getPatient().getPerson().getSex().getLabel(),
+                    "", null,
+                    ptSample.getPatient().getPerson().getAddress(),
+                    ptSample.getPatient().getPerson().getPhone(),
+                    ptSample.getBill().getReferredBy().getPerson().getNameWithTitle());
             pdb.setPatientRecord(pr);
 
             // Convert the PatientDataBundle to JSON and send it in the response
+            System.out.println("Converting PatientDataBundle to JSON...");
             String jsonResponse = gson.toJson(pdb);
+            System.out.println("Response JSON: " + jsonResponse);
             return Response.ok(jsonResponse).build();
         } catch (Exception e) {
+            System.out.println("Exception caught: " + e.getMessage());
             e.printStackTrace();
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("An error occurred").build();
         }
     }
 

@@ -1603,14 +1603,16 @@ public class LimsMiddlewareController {
     }
 
     public List<String> generateTestCodesForAnalyzer(String sampleId) {
-
+        System.out.println("generateTestCodesForAnalyzer");
         PatientSample ps = patientSampleFromId(sampleId);
+        System.out.println("ps = " + ps);
         if (ps == null) {
             System.out.println("No PS");
             return null;
         }
 
         List<PatientSampleComponant> pscs = getPatientSampleComponents(ps);
+        System.out.println("pscs = " + pscs);
         if (pscs == null || pscs.isEmpty()) {
             System.out.println("PSCS NULL OR EMPTY");
             return null;
@@ -1618,12 +1620,22 @@ public class LimsMiddlewareController {
 
         List<String> tests = new ArrayList<>();
 
-        MyPatient p = new MyPatient();
-        MySpeciman s = new MySpeciman();
-        MySampleTests t;
-
         for (PatientSampleComponant c : pscs) {
-            for (InvestigationItem tii : c.getPatientInvestigation().getInvestigation().getReportItems()) {
+            System.out.println("c = " + c);
+            Investigation myIx = c.getPatientInvestigation().getInvestigation();
+
+            if (myIx == null) {
+                return null;
+            }
+
+            if (myIx.getReportedAs() != null) {
+                if (myIx.getReportedAs() instanceof Investigation) {
+                    myIx = (Investigation) myIx.getReportedAs();
+                }
+            }
+
+            for (InvestigationItem tii : myIx.getReportItems()) {
+                System.out.println("tii = " + tii);
                 if (tii.getIxItemType() == InvestigationItemType.Value) {
                     String sampleTypeName;
                     String samplePriority;
@@ -1640,20 +1652,21 @@ public class LimsMiddlewareController {
                     MySpeciman ms = new MySpeciman();
                     ms.setSpecimanName(sampleTypeName);
                     if (tii.getItem().isHasMoreThanOneComponant()) {
+                        System.out.println("tti = " + tii);
                         if (tii.getTest() != null && !tii.getTest().getName().trim().equals("")) {
                             if (tii.getSampleComponent().equals(ps.getInvestigationComponant())) {
                                 tests.add(tii.getTest().getCode());
-                                tests.add(tii.getTest().getName());
+                                System.out.println("1. tii.getTest().getCode() = " + tii.getTest().getCode());
+//                                tests.add(tii.getTest().getName());
                             }
                         }
                     } else {
                         if (tii.getTest() != null && !tii.getTest().getName().trim().equals("")) {
-                            t = new MySampleTests();
                             tests.add(tii.getTest().getCode());
-                            tests.add(tii.getTest().getName());
+                            System.out.println("1. tii.getTest().getCode() = " + tii.getTest().getCode());
                         }
                     }
-                }
+                } 
             }
         }
         System.out.println("tests = " + tests);
