@@ -11866,30 +11866,36 @@ public class SearchController implements Serializable {
         System.out.println("bis = " + bis);
         for (BillItem bi : bis) {
 
-            double hosFee = 0.0;
-            double discount = 0.0;
-            double staffFee = 0.0;
-            double ccFee = 0.0;
+            
+            
+            double billItemDiscount = bi.getDiscount();
+            double billItemNetValue = bi.getNetValue();
+            double billItemGrossValue = bi.getGrossValue();
+            
+            double staffFeesCalculatedByBillFees = 0.0;
+            double collectingCentreFeesCalculateByBillFees = 0.0;
+            double hospitalFeeCalculatedByBillFess = 0.0;
+            
             List<BillFee> bfs = billBean.findSavedBillFeefromBillItem(bi);
             System.out.println("bfs = " + bfs);
             for (BillFee bf : bfs) {
                 System.out.println("bf = " + bf);
                 System.out.println("bf value = " + bf.getFeeValue());
                 if (bf.getInstitution() != null && bf.getInstitution().getInstitutionType() == InstitutionType.CollectingCentre) {
-                    ccFee += bf.getFeeValue();
-                    System.out.println("ccFee = " + ccFee);
+                    collectingCentreFeesCalculateByBillFees += bf.getFeeValue();
+                    System.out.println("ccFee = " + collectingCentreFeesCalculateByBillFees);
                 } else if (bf.getStaff() != null || bf.getSpeciality() != null) {
-                    staffFee += bf.getFeeValue();
-                    System.out.println("staffFee = " + staffFee);
+                    staffFeesCalculatedByBillFees += bf.getFeeValue();
+                    System.out.println("staffFee = " + staffFeesCalculatedByBillFees);
                 } else {
-                    hosFee = bf.getFeeValue();
-                    System.out.println("hosFee = " + hosFee);
+                    hospitalFeeCalculatedByBillFess = bf.getFeeValue();
+                    System.out.println("hosFee = " + hospitalFeeCalculatedByBillFess);
                 }
             }
 
-            bi.setCollectingCentreFee(ccFee);
-            bi.setStaffFee(staffFee);
-            bi.setHospitalFee(hosFee - bi.getDiscount());
+            bi.setCollectingCentreFee(collectingCentreFeesCalculateByBillFees);
+            bi.setStaffFee(staffFeesCalculatedByBillFees);
+            bi.setHospitalFee(hospitalFeeCalculatedByBillFess);
 
             billItemFacade.edit(bi);
         }
