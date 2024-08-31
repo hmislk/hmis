@@ -4,7 +4,8 @@
       xmlns:cc="http://xmlns.jcp.org/jsf/composite"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:h="http://xmlns.jcp.org/jsf/html">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -29,15 +30,31 @@
             </p:column>
             <p:column>
                 <f:facet name="header">
-                    <h:outputText value="Bil No" />
+                    <h:outputText value="Bill Type" />
                 </f:facet>
                 <h:outputText value="#{row.payment.bill.billTypeAtomic.label}"  />
             </p:column>
             <p:column>
                 <f:facet name="header">
-                    <h:outputText value="Referance Number" />
-                </f:facet>
-                <h:outputText value="#{row.payment.bill.fromInstitution.name}"  />
+                    <h:outputText value="Card Ref.Number" />
+                </f:facet>                
+                <ui:repeat value="#{row.payment.bill.payments}" var="ps">
+                    <h:panelGroup rendered="#{ps.paymentMethod eq 'Card' }" >
+                        <h:outputText 
+                            value="#{ps.creditCardRefNo}"/>
+                    </h:panelGroup>
+                </ui:repeat>
+            </p:column>
+            <p:column>
+                <f:facet name="header">
+                    <h:outputText value="Bank Code" />
+                </f:facet>                
+                <ui:repeat value="#{row.payment.bill.payments}" var="ps">
+                    <h:panelGroup rendered="#{ps.paymentMethod eq 'Card' }" >
+                        <h:outputText 
+                            value="#{ps.bank.code}"/>
+                    </h:panelGroup>
+                </ui:repeat>
             </p:column>
             <p:column>
                 <f:facet name="header">
@@ -47,6 +64,24 @@
                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                 </h:outputText>
             </p:column>
+            <p:columnGroup type="footer">  
+                <p:row>    
+                    <p:column footerText="Total" style=" text-align: right">
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{cc.attrs.data.cash}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+                    <p:column footerText="#{cc.attrs.data.credit}" style=" text-align: right">
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{cc.attrs.data.credit}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+                </p:row>  
+            </p:columnGroup>  
 
         </p:dataTable>
 
