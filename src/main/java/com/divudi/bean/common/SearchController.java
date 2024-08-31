@@ -11528,22 +11528,21 @@ public class SearchController implements Serializable {
     }
 
     public void generateDailyReturn() {
-//        System.out.println("generateDailyReturn = ");
         bundle = new ReportTemplateRowBundle();
-//        System.out.println("1 bundle = " + bundle.getBundles().size());
 
-//        System.out.println("2 bundle = " + bundle.getBundles().size());
+        // Generate OPD service collection and add to the main bundle
         ReportTemplateRowBundle opdServiceCollection = generateOpdServiceCollection();
         bundle.getBundles().add(opdServiceCollection);
-//        System.out.println("2 bundle = " + bundle.getBundles().size());
 
-//        System.out.println("4 bundle = " + bundle.getBundles().size());
+        // Generate pharmacy collection and add to the main bundle
         ReportTemplateRowBundle pharmacyCollection = generatePharmacyCollection();
         bundle.getBundles().add(pharmacyCollection);
 
+        // Generate collecting centre collection and add to the main bundle
         ReportTemplateRowBundle ccCollection = generateCcCollection();
         bundle.getBundles().add(ccCollection);
 
+        // Generate agency collection and add to the main bundle
         ReportTemplateRowBundle agencyCollection = generateAgencyCollection();
         bundle.getBundles().add(agencyCollection);
 
@@ -11558,11 +11557,28 @@ public class SearchController implements Serializable {
         // Generate OPD professional payments and add to the main bundle
         ReportTemplateRowBundle opdProfessionalPayments = generateOpdProfessionalPayments();
         bundle.getBundles().add(opdProfessionalPayments);
-        
+
+        // Payment methods
         ReportTemplateRowBundle cardPayments = generateCreditCardPayments();
         bundle.getBundles().add(cardPayments);
-        
 
+        ReportTemplateRowBundle staffPayments = generateStaffPayments();
+        bundle.getBundles().add(staffPayments);
+
+        ReportTemplateRowBundle voucherPayments = generateVoucherPayments();
+        bundle.getBundles().add(voucherPayments);
+
+        ReportTemplateRowBundle chequePayments = generateChequePayments();
+        bundle.getBundles().add(chequePayments);
+
+        ReportTemplateRowBundle ewalletPayments = generateEwalletPayments();
+        bundle.getBundles().add(ewalletPayments);
+
+        ReportTemplateRowBundle patientDepositPayments = generatePatientDepositPayments();
+        bundle.getBundles().add(patientDepositPayments);
+
+        ReportTemplateRowBundle slipPayments = generateSlipPayments();
+        bundle.getBundles().add(slipPayments);
     }
 
     public ReportTemplateRowBundle generateOpdServiceCollection() {
@@ -11714,8 +11730,7 @@ public class SearchController implements Serializable {
         ap.setBundleType("ProfessionalPaymentBillReport");
         return ap;
     }
-    
-    
+
     public ReportTemplateRowBundle generateCreditCardPayments() {
         ReportTemplateRowBundle ap;
         ap = reportTemplateController.generatePaymentReport(
@@ -11729,7 +11744,90 @@ public class SearchController implements Serializable {
         ap.setBundleType("PaymentReport");
         return ap;
     }
-    
+
+    public ReportTemplateRowBundle generateStaffPayments() {
+        ReportTemplateRowBundle ap;
+        ap = reportTemplateController.generatePaymentReport(
+                PaymentMethod.Staff_Welfare,
+                fromDate,
+                toDate,
+                institution,
+                department,
+                site);
+        ap.setName("Staff Welfare Payments");
+        ap.setBundleType("PaymentReport");
+        return ap;
+    }
+
+    public ReportTemplateRowBundle generateVoucherPayments() {
+        ReportTemplateRowBundle ap;
+        ap = reportTemplateController.generatePaymentReport(
+                PaymentMethod.Voucher,
+                fromDate,
+                toDate,
+                institution,
+                department,
+                site);
+        ap.setName("Voucher Payments");
+        ap.setBundleType("PaymentReport");
+        return ap;
+    }
+
+    public ReportTemplateRowBundle generateChequePayments() {
+        ReportTemplateRowBundle ap;
+        ap = reportTemplateController.generatePaymentReport(
+                PaymentMethod.Cheque,
+                fromDate,
+                toDate,
+                institution,
+                department,
+                site);
+        ap.setName("Cheque Payments");
+        ap.setBundleType("PaymentReport");
+        return ap;
+    }
+
+    public ReportTemplateRowBundle generateEwalletPayments() {
+        ReportTemplateRowBundle ap;
+        ap = reportTemplateController.generatePaymentReport(
+                PaymentMethod.ewallet,
+                fromDate,
+                toDate,
+                institution,
+                department,
+                site);
+        ap.setName("e-Wallet Payments");
+        ap.setBundleType("PaymentReport");
+        return ap;
+    }
+
+    public ReportTemplateRowBundle generatePatientDepositPayments() {
+        ReportTemplateRowBundle ap;
+        ap = reportTemplateController.generatePaymentReport(
+                PaymentMethod.PatientDeposit,
+                fromDate,
+                toDate,
+                institution,
+                department,
+                site);
+        ap.setName("Patient Deposit Payments");
+        ap.setBundleType("PaymentReport");
+        return ap;
+    }
+
+    public ReportTemplateRowBundle generateSlipPayments() {
+        ReportTemplateRowBundle ap;
+        ap = reportTemplateController.generatePaymentReport(
+                PaymentMethod.Slip,
+                fromDate,
+                toDate,
+                institution,
+                department,
+                site);
+        ap.setName("Slip Payments");
+        ap.setBundleType("PaymentReport");
+        return ap;
+    }
 
     public void updateBillItenValues() {
         bundle = new ReportTemplateRowBundle();
