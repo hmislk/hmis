@@ -3,6 +3,7 @@
  * (94) 71 5812399 open the currentlate in the editor.
  */
 package com.divudi.bean.common;
+import com.divudi.bean.cashTransaction.CashBookEntryController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.inward.AdmissionController;
 import com.divudi.bean.membership.PaymentSchemeController;
@@ -10,20 +11,38 @@ import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
+import com.divudi.data.PaymentMethod;
+import static com.divudi.data.PaymentMethod.Agent;
+import static com.divudi.data.PaymentMethod.Card;
+import static com.divudi.data.PaymentMethod.Cash;
+import static com.divudi.data.PaymentMethod.Cheque;
+import static com.divudi.data.PaymentMethod.Credit;
+import static com.divudi.data.PaymentMethod.MultiplePaymentMethods;
+import static com.divudi.data.PaymentMethod.OnCall;
+import static com.divudi.data.PaymentMethod.OnlineSettlement;
+import static com.divudi.data.PaymentMethod.PatientDeposit;
+import static com.divudi.data.PaymentMethod.Slip;
+import static com.divudi.data.PaymentMethod.Staff;
+import static com.divudi.data.PaymentMethod.YouOweMe;
+import static com.divudi.data.PaymentMethod.ewallet;
+import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.CreditBean;
+import com.divudi.ejb.StaffBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.Institution;
 import com.divudi.entity.PatientEncounter;
+import com.divudi.entity.Payment;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.inward.Admission;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PatientEncounterFacade;
+import com.divudi.facade.PaymentFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -52,8 +71,15 @@ public class CashRecieveBillController implements Serializable {
     private BillFacade billFacade;
     @EJB
     private BillItemFacade billItemFacade;
+    @EJB
+    StaffBean staffBean;
+    @EJB
+    PaymentFacade paymentFacade;
     @Inject
     private BillController billController;
+    @Inject
+    CashBookEntryController cashBookEntryController;
+    
     private BillItem currentBillItem;
     private BillItem removingItem;
     private List<BillItem> billItems;
@@ -576,6 +602,8 @@ public class CashRecieveBillController implements Serializable {
 
         saveBill(BillType.CashRecieveBill, BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED );
         saveBillItem();
+        
+        createPayment(current, current.getPaymentMethod());
 
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getCurrent(), getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
@@ -634,6 +662,116 @@ public class CashRecieveBillController implements Serializable {
 
         
 
+    }
+    
+    public List<Payment> createPayment(Bill bill, PaymentMethod pm) {
+        List<Payment> ps = new ArrayList<>();
+        if (bill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                Payment p = new Payment();
+                p.setBill(bill);
+                p.setInstitution(getSessionController().getInstitution());
+                p.setDepartment(getSessionController().getDepartment());
+                p.setCreatedAt(new Date());
+                p.setCreater(getSessionController().getLoggedUser());
+                p.setPaymentMethod(cd.getPaymentMethod());
+
+                switch (cd.getPaymentMethod()) {
+                    case Card:
+                        p.setBank(cd.getPaymentMethodData().getCreditCard().getInstitution());
+                        p.setCreditCardRefNo(cd.getPaymentMethodData().getCreditCard().getNo());
+                        p.setPaidValue(cd.getPaymentMethodData().getCreditCard().getTotalValue());
+                        break;
+                    case Cheque:
+                        p.setChequeDate(cd.getPaymentMethodData().getCheque().getDate());
+                        p.setChequeRefNo(cd.getPaymentMethodData().getCheque().getNo());
+                        p.setPaidValue(cd.getPaymentMethodData().getCheque().getTotalValue());
+                        break;
+                    case Cash:
+                        p.setPaidValue(cd.getPaymentMethodData().getCash().getTotalValue());
+                        break;
+                    case ewallet:
+                        break;
+                    case Agent:
+                        break;
+                    case Credit:
+                        break;
+                    case PatientDeposit:
+                        break;
+                    case Slip:
+                        p.setPaidValue(cd.getPaymentMethodData().getSlip().getTotalValue());
+                        p.setBank(cd.getPaymentMethodData().getSlip().getInstitution());
+                        p.setRealizedAt(cd.getPaymentMethodData().getSlip().getDate());
+                        break;
+                    case OnCall:
+                        break;
+                    case OnlineSettlement:
+                        break;
+                    case Staff:
+                        p.setPaidValue(cd.getPaymentMethodData().getStaffCredit().getTotalValue());
+                        if (cd.getPaymentMethodData().getStaffCredit().getToStaff() != null) {
+                            staffBean.updateStaffCredit(cd.getPaymentMethodData().getStaffCredit().getToStaff(), cd.getPaymentMethodData().getStaffCredit().getTotalValue());
+                            JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
+                        }
+                        break;
+                    case YouOweMe:
+                        break;
+                    case MultiplePaymentMethods:
+                        break;
+                }
+
+                paymentFacade.create(p);
+                ps.add(p);
+            }
+        } else {
+            Payment p = new Payment();
+            p.setBill(bill);
+            p.setInstitution(getSessionController().getInstitution());
+            p.setDepartment(sessionController.getDepartment());
+            p.setCreatedAt(new Date());
+            p.setCreater(getSessionController().getLoggedUser());
+            p.setPaymentMethod(pm);
+
+            switch (pm) {
+                case Card:
+                    p.setBank(paymentMethodData.getCreditCard().getInstitution());
+                    p.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
+                    break;
+                case Cheque:
+                    p.setChequeDate(paymentMethodData.getCheque().getDate());
+                    p.setChequeRefNo(paymentMethodData.getCheque().getNo());
+                    break;
+                case Cash:
+                    break;
+                case ewallet:
+                    break;
+                case Agent:
+                    break;
+                case Credit:
+                    break;
+                case PatientDeposit:
+                    break;
+                case Slip:
+                    p.setBank(paymentMethodData.getSlip().getInstitution());
+                    p.setRealizedAt(paymentMethodData.getSlip().getDate());
+                case OnCall:
+                    break;
+                case OnlineSettlement:
+                    break;
+                case Staff:
+                    break;
+                case YouOweMe:
+                    break;
+                case MultiplePaymentMethods:
+                    break;
+            }
+
+            p.setPaidValue(p.getBill().getNetTotal());
+            paymentFacade.create(p);
+            cashBookEntryController.writeCashBookEntryAtPaymentCreation(p);
+            ps.add(p);
+        }
+        return ps;
     }
 
     private void savePayments() {
