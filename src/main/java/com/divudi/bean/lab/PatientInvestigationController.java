@@ -2408,6 +2408,7 @@ public class PatientInvestigationController implements Serializable {
         return patientInvestigations;
     }
 
+    
 //    public void listBillsWithGeneratedBarcodes() {
 //        String jpql;
 //        Map params = new HashMap();
