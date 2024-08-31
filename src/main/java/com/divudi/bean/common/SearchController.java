@@ -12900,9 +12900,9 @@ public class SearchController implements Serializable {
             billRow.createCell(colIdx++).setCellValue(bill.getStaff() != null && bill.getStaff().getPerson() != null ? bill.getStaff().getPerson().getNameWithTitle() : "");
             billRow.createCell(colIdx++).setCellValue(bill.getCreater() != null && bill.getCreater().getWebUserPerson() != null ? bill.getCreater().getWebUserPerson().getName() : "");
             billRow.createCell(colIdx++).setCellValue(bill.getBillType() != null ? bill.getBillType().getLabel() : "");
-            billRow.createCell(colIdx++).setCellValue(bill.getGrantTotal() != null ? bill.getGrantTotal().toString() : "");
-            billRow.createCell(colIdx++).setCellValue(bill.getDiscount() != null ? bill.getDiscount().toString() : "");
-            billRow.createCell(colIdx++).setCellValue(bill.getNetTotal() != null ? bill.getNetTotal().toString() : "");
+            billRow.createCell(colIdx++).setCellValue(bill.getGrantTotal());
+            billRow.createCell(colIdx++).setCellValue(bill.getDiscount());
+            billRow.createCell(colIdx++).setCellValue(bill.getNetTotal());
             billRow.createCell(colIdx++).setCellValue(bill.getPaymentMethod() != null ? bill.getPaymentMethod().getLabel() : "");
 
             // Leave the bill item columns empty in the bill row
@@ -12925,10 +12925,10 @@ public class SearchController implements Serializable {
                         itemRow.createCell(itemColIdx++).setCellValue(bi.getItem() != null ? bi.getItem().getCode() : "");
                         itemRow.createCell(itemColIdx++).setCellValue(bi.getItem() != null ? bi.getItem().getItemType() != null ? bi.getItem().getItemType().toString() : "" : "");
                         itemRow.createCell(itemColIdx++).setCellValue(bi.getQty() != null ? bi.getQty().toString() : "");
-                        itemRow.createCell(itemColIdx++).setCellValue(bi.getRate() != null ? bi.getRate().toString() : "");
-                        itemRow.createCell(itemColIdx++).setCellValue(bi.getGrossValue() != null ? bi.getGrossValue().toString() : "");
-                        itemRow.createCell(itemColIdx++).setCellValue(bi.getDiscount() != null ? bi.getDiscount().toString() : "");
-                        itemRow.createCell(itemColIdx++).setCellValue(bi.getNetValue() != null ? bi.getNetValue().toString() : "");
+                        itemRow.createCell(itemColIdx++).setCellValue(bi.getRate());
+                        itemRow.createCell(itemColIdx++).setCellValue(bi.getGrossValue());
+                        itemRow.createCell(itemColIdx++).setCellValue(bi.getDiscount());
+                        itemRow.createCell(itemColIdx++).setCellValue(bi.getNetValue());
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
