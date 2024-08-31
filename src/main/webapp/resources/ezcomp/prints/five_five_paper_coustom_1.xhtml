@@ -26,18 +26,18 @@
         <div class="fiveinchbill" style="page-break-after: always" >
 
             <div class="institutionName">
-                <h:outputLabel value="#{cc.attrs.bill.institution.name}" />
+                <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
             </div>
             <div class="institutionContact" >
                 <div>
                     <h:outputLabel value="#{cc.attrs.bill.department.address}"/>
                 </div>
                 <div >
-                    <h:outputLabel value="Tel : #{cc.attrs.bill.institution.phone} "/>
+                    <h:outputLabel value="Tel : #{cc.attrs.bill.department.phone} "/>
                 </div>
             </div>
             <div class="institutionContact" >
-                <h:outputLabel value="Email : #{cc.attrs.bill.institution.email} "/>
+                <h:outputLabel value="Email : #{cc.attrs.bill.department.email} "/>
             </div>
             <div  class="institutionContact" >
                 <h:outputLabel value="Web : #{cc.attrs.bill.institution.web}"/>
