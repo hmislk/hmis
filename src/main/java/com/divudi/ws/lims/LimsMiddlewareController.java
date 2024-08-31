@@ -1008,16 +1008,15 @@ public class LimsMiddlewareController {
         }
         for (PatientInvestigation pi : ptixs) {
             System.out.println("Patient Investigation = " + pi);
-            
+
             Investigation ix = pi.getInvestigation();
-            
-            if(ix.getReportedAs()!=null){
-                if(ix.getReportedAs() instanceof Investigation){
+
+            if (ix.getReportedAs() != null) {
+                if (ix.getReportedAs() instanceof Investigation) {
                     ix = (Investigation) ix.getReportedAs();
                 }
             }
-            
-            
+
             List<PatientReport> prs = new ArrayList<>();
             PatientReport tpr;
             tpr = getUnapprovedPatientReport(pi);
@@ -1496,7 +1495,7 @@ public class LimsMiddlewareController {
 
     public PatientSample patientSampleFromId(Long id) {
         PatientSample ps = patientSampleFacade.find(id);
-        if(ps!=null){
+        if (ps != null) {
             return ps;
         }
         String j = "Select ps "
@@ -1504,7 +1503,7 @@ public class LimsMiddlewareController {
                 + " where ps.sampleId=:sid ";
         Map m = new HashMap<>();
         m.put("sid", id);
-        return patientSampleFacade.findFirstByJpql(j,m);
+        return patientSampleFacade.findFirstByJpql(j, m);
     }
 
     public List<PatientSampleComponant> getPatientSampleComponents(PatientSample ps) {
@@ -1601,6 +1600,64 @@ public class LimsMiddlewareController {
 
     public void setLoggedInstitution(Institution loggedInstitution) {
         this.loggedInstitution = loggedInstitution;
+    }
+
+    public List<String> generateTestCodesForAnalyzer(String sampleId) {
+
+        PatientSample ps = patientSampleFromId(sampleId);
+        if (ps == null) {
+            System.out.println("No PS");
+            return null;
+        }
+
+        List<PatientSampleComponant> pscs = getPatientSampleComponents(ps);
+        if (pscs == null || pscs.isEmpty()) {
+            System.out.println("PSCS NULL OR EMPTY");
+            return null;
+        }
+
+        List<String> tests = new ArrayList<>();
+
+        MyPatient p = new MyPatient();
+        MySpeciman s = new MySpeciman();
+        MySampleTests t;
+
+        for (PatientSampleComponant c : pscs) {
+            for (InvestigationItem tii : c.getPatientInvestigation().getInvestigation().getReportItems()) {
+                if (tii.getIxItemType() == InvestigationItemType.Value) {
+                    String sampleTypeName;
+                    String samplePriority;
+                    if (tii.getSample() != null) {
+                        sampleTypeName = tii.getSample().getName();
+                    } else {
+                        sampleTypeName = "serum";
+                    }
+                    if (tii.getItem().getPriority() != null) {
+                        samplePriority = tii.getItem().getPriority().toString();
+                    } else {
+                        samplePriority = (Priority.Routeine).toString();
+                    }
+                    MySpeciman ms = new MySpeciman();
+                    ms.setSpecimanName(sampleTypeName);
+                    if (tii.getItem().isHasMoreThanOneComponant()) {
+                        if (tii.getTest() != null && !tii.getTest().getName().trim().equals("")) {
+                            if (tii.getSampleComponent().equals(ps.getInvestigationComponant())) {
+                                tests.add(tii.getTest().getCode());
+                                tests.add(tii.getTest().getName());
+                            }
+                        }
+                    } else {
+                        if (tii.getTest() != null && !tii.getTest().getName().trim().equals("")) {
+                            t = new MySampleTests();
+                            tests.add(tii.getTest().getCode());
+                            tests.add(tii.getTest().getName());
+                        }
+                    }
+                }
+            }
+        }
+        System.out.println("tests = " + tests);
+        return tests;
     }
 
     private static class MySampleTests {
