@@ -279,28 +279,27 @@ public class LimsMiddlewareController {
         // Process the patient investigations and reports
         System.out.println("Process the patient investigations and reports = ");
         for (PatientInvestigation pi : ptixs) {
-            System.out.println("pi = " + pi);
-            List<PatientReport> prs = new ArrayList<>();
 
-            Investigation ix = null;
-            ix = pi.getInvestigation();
+            Investigation ix=null;
 
-            if (ix == null) {
+            if (pi.getInvestigation() == null) {
                 continue;
             }
             
-            if(ix.getReportedAs()!=null){
-                if(ix.getReportedAs() instanceof Investigation){
+            ix=pi.getInvestigation() ;
+
+            if (ix.getReportedAs() != null) {
+                if (ix.getReportedAs() instanceof Investigation) {
                     ix = (Investigation) ix.getReportedAs();
                 }
             }
 
-            System.out.println("pi.getInvestigation() = " + pi.getInvestigation());
-            if (pi.getInvestigation() == null) {
-                continue;
-            }
+            System.out.println("pi = " + pi);
+            List<PatientReport> prs = new ArrayList<>();
 
-            System.out.println("pi.getInvestigation().getMachine() = " + ix.getMachine());
+            System.out.println("ix = " + ix);
+            
+            System.out.println("pi.getInvestigation().getMachine() = " + pi.getInvestigation().getMachine());
             if (ix.getMachine() != null && ix.getMachine().equals(analyzer)) {
                 System.out.println("Match Machine");
                 PatientReport tpr = getUnsavedPatientReport(pi);
