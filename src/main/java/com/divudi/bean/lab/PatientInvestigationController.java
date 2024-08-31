@@ -1348,8 +1348,12 @@ public class PatientInvestigationController implements Serializable {
         }
 
         for (PatientInvestigationWrapper piw : bb.getPatientInvestigationWrappers()) {
-            piw.getPatientInvestigation().setBarcodeGenerated(true);
-            piw.getPatientInvestigation().setBarcodeGeneratedAt(new Date());
+            if (billForBarcode.getStatus() == patientInvestigationStatus.ORDERED) {
+                piw.getPatientInvestigation().setBarcodeGenerated(true);
+                piw.getPatientInvestigation().setBarcodeGeneratedAt(new Date());
+
+            }
+
             // Properly add unique sample IDs to PatientInvestigation
             String[] idsToAdd = sampleIDs.trim().split("\\s+");
             String existingSampleIds = piw.getPatientInvestigation().getSampleIds();
@@ -1359,12 +1363,18 @@ public class PatientInvestigationController implements Serializable {
                 }
             }
             piw.getPatientInvestigation().setSampleIds(existingSampleIds.trim());
-            piw.getPatientInvestigation().setBarcodeGeneratedBy(sessionController.getLoggedUser());
-            piw.getPatientInvestigation().setStatus(PatientInvestigationStatus.SAMPLE_GENERATED);
+            if (billForBarcode.getStatus() == patientInvestigationStatus.ORDERED) {
+                piw.getPatientInvestigation().setBarcodeGeneratedBy(sessionController.getLoggedUser());
+                piw.getPatientInvestigation().setStatus(PatientInvestigationStatus.SAMPLE_GENERATED);
+            }
+            piw.getPatientInvestigation().setSampleIds(existingSampleIds.trim());
+
             ejbFacade.edit(piw.getPatientInvestigation());
         }
+        if (billForBarcode.getStatus() == patientInvestigationStatus.ORDERED) {
+            billForBarcode.setStatus(PatientInvestigationStatus.SAMPLE_GENERATED);
+        }
 
-        billForBarcode.setStatus(PatientInvestigationStatus.SAMPLE_GENERATED);
         billFacade.edit(billForBarcode);
         bb.setPatientSampleWrappers(psws);
 
@@ -1379,9 +1389,8 @@ public class PatientInvestigationController implements Serializable {
             return;
         }
 
-        
 //        for (PatientInvestigation pi : selectedItems) {
-//            if (pi.getStatus() != patientInvestigationStatus.ORDERED) {
+//            if (pi.getBillItem().getBill().getStatus() != patientInvestigationStatus.ORDERED) {
 //                JsfUtil.addErrorMessage("Barcode is already generated for Selected " + pi.getBillItem().getItem().getName() + " Investigation");
 //                return;
 //            }
@@ -1649,6 +1658,33 @@ public class PatientInvestigationController implements Serializable {
 
         JsfUtil.addSuccessMessage("Selected Samples Are Rejected");
     }
+    
+    private String testDetails;
+    
+    public void generateSampleCodesSamples() {
+        if (selectedPatientSamples == null || selectedPatientSamples.isEmpty()) {
+            JsfUtil.addErrorMessage("No samples selected");
+            return;
+        }
+        listingEntity = ListingEntity.PATIENT_SAMPLES;
+        
+        testDetails="";
+
+        Map<Long, PatientInvestigation> rejectedPtixs = new HashMap<>();
+        Map<Long, Bill> affectedBills = new HashMap<>();
+
+        // Update sample rejection details and gather associated patient investigations
+        for (PatientSample ps : selectedPatientSamples) {
+            
+        }
+
+       
+
+        JsfUtil.addSuccessMessage("Selected Samples Details created");
+    }
+    
+    
+    
 
     public void listPatientInvestigationAwaitingSamplling() {
         String temSql;
@@ -3570,6 +3606,14 @@ public class PatientInvestigationController implements Serializable {
         this.sampleRejectionComment = sampleRejectionComment;
     }
 
+    public String getTestDetails() {
+        return testDetails;
+    }
+
+    public void setTestDetails(String testDetails) {
+        this.testDetails = testDetails;
+    }
+
     /**
      *
      */
@@ -4116,13 +4160,16 @@ public class PatientInvestigationController implements Serializable {
                         pts.setBill(b.getBill());
                         pts.setInvestigationComponant(ixi.getSampleComponent());
                         pts.setBarcodeGenerated(true);
-                        pts.setBarcodeGeneratedDepartment(sessionController.getDepartment());
-                        pts.setBarcodeGeneratedInstitution(sessionController.getInstitution());
-                        pts.setBarcodeGenerator(sessionController.getLoggedUser());
-                        pts.setBarcodeGeneratedAt(new Date());
-                        pts.setStatus(PatientInvestigationStatus.SAMPLE_GENERATED);
-                        pts.setCreatedAt(new Date());
+
                         pts.setCreater(sessionController.getLoggedUser());
+                        if (pts.getPatientInvestigation().getBillItem().getBill().getStatus() == patientInvestigationStatus.ORDERED) {
+                            pts.setBarcodeGeneratedDepartment(sessionController.getDepartment());
+                            pts.setBarcodeGeneratedInstitution(sessionController.getInstitution());
+                            pts.setBarcodeGenerator(sessionController.getLoggedUser());
+                            pts.setBarcodeGeneratedAt(new Date());
+                            pts.setStatus(PatientInvestigationStatus.SAMPLE_GENERATED);
+                            pts.setCreatedAt(new Date());
+                        }
 
                         patientSampleFacade.create(pts);
                         System.out.println("new pts = " + pts);
@@ -4165,12 +4212,16 @@ public class PatientInvestigationController implements Serializable {
                         patientSampleComponantFacade.create(ptsc);
                     }
                 }
-                ptix.setSampleGenerated(true);
-                ptix.setSampleGeneratedAt(new Date());
-                ptix.setSampleGeneratedBy(sessionController.getLoggedUser());
-                ptix.setSampleDepartment(sessionController.getDepartment());
-                ptix.setSampleInstitution(sessionController.getInstitution());
-                ptix.setStatus(PatientInvestigationStatus.SAMPLE_GENERATED);
+
+                if (ptix.getBillItem().getBill().getStatus() == patientInvestigationStatus.ORDERED) {
+                    ptix.setSampleGenerated(true);
+                    ptix.setSampleGeneratedAt(new Date());
+                    ptix.setSampleGeneratedBy(sessionController.getLoggedUser());
+                    ptix.setSampleDepartment(sessionController.getDepartment());
+                    ptix.setSampleInstitution(sessionController.getInstitution());
+                    ptix.setStatus(PatientInvestigationStatus.SAMPLE_GENERATED);
+                }
+
                 ejbFacade.edit(ptix);
 
             }
