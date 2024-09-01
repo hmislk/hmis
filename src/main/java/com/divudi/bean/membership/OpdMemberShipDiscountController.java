@@ -244,7 +244,6 @@ public class OpdMemberShipDiscountController implements Serializable {
         a.setCreatedAt(new Date());
         a.setCreater(getSessionController().getLoggedUser());
         getFacade().create(a);
-        System.out.println("a = " + a);
         JsfUtil.addSuccessMessage("Saved Successfully");
         createItemsChannelPaymentScheme();
         clearInstanceVars();

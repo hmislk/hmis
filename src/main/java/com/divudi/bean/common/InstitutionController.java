@@ -671,7 +671,6 @@ public class InstitutionController implements Serializable {
         agentHistory.setAgency(ins);
         agentHistory.setInstitution(ins);
         agentHistoryFacade.create(agentHistory);
-        System.out.println("agentHistory =  saved");
         JsfUtil.addSuccessMessage("History Saved");
     }
 

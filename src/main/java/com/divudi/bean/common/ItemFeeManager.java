@@ -270,11 +270,11 @@ public class ItemFeeManager implements Serializable {
                 style.setShowRowStripes(true);
             } else {
                 // Optionally log or handle the case where the style is not applied
-                System.out.println("Table style could not be applied.");
+
             }
         } else {
             // Log or handle the case where no data is present for the table
-            System.out.println("No data available to create a table.");
+
         }
 
         // Lock the sheet except for the unlocked cells
@@ -413,9 +413,8 @@ public class ItemFeeManager implements Serializable {
         removingFee.setRetirer(sessionController.getLoggedUser());
         itemFeeFacade.edit(removingFee);
         itemFees = null;
-        fillFees();
         updateTotal();
-        JsfUtil.addSuccessMessage("Removed");
+        JsfUtil.addSuccessMessage("Removed. Reload Items");
     }
 
     public void fillDepartments() {
@@ -739,7 +738,6 @@ public class ItemFeeManager implements Serializable {
         System.out.println("m = " + m);
         System.out.println("jpql = " + jpql);
         List<ItemFee> fs = itemFeeFacade.findByJpql(jpql, m);
-        System.out.println("fs = " + fs);
         return fs;
     }
 
@@ -773,7 +771,6 @@ public class ItemFeeManager implements Serializable {
         System.out.println("m = " + m);
         System.out.println("jpql = " + jpql);
         List<ItemLight> fs = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, m);
-        System.out.println("fs = " + fs);
         return fs;
     }
 

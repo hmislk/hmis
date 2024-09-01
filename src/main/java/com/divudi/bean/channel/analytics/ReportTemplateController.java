@@ -186,43 +186,36 @@ public class ReportTemplateController implements Serializable {
         if (btas != null && !btas.isEmpty()) {
             jpql += " and bill.billTypeAtomic in :btas ";
             parameters.put("btas", btas);
-            System.out.println("Filtered by BillTypeAtomics: " + btas);
         }
 
         if (paymentMethods != null && !paymentMethods.isEmpty()) {
             jpql += " and p.paymentMethod in :pms ";
             parameters.put("pms", paymentMethods);
-            System.out.println("Filtered by PaymentMethods: " + paymentMethods);
         }
 
         if (paramFromDate != null) {
             jpql += " and bill.billDate >= :fd ";
             parameters.put("fd", paramFromDate);
-            System.out.println("Filtered from Date: " + paramFromDate);
         }
 
         if (paramToDate != null) {
             jpql += " and bill.billDate <= :td ";
             parameters.put("td", paramToDate);
-            System.out.println("Filtered to Date: " + paramToDate);
         }
 
         if (paramInstitution != null) {
             jpql += " and bill.department.institution = :ins ";
             parameters.put("ins", paramInstitution);
-            System.out.println("Filtered by Institution: " + paramInstitution);
         }
 
         if (paramDepartment != null) {
             jpql += " and bill.department = :dep ";
             parameters.put("dep", paramDepartment);
-            System.out.println("Filtered by Department: " + paramDepartment);
         }
 
         if (paramSite != null) {
             jpql += " and bill.department.site = :site ";
             parameters.put("site", paramSite);
-            System.out.println("Filtered by Site: " + paramSite);
         }
 
         jpql += " group by bill.department";
@@ -232,19 +225,16 @@ public class ReportTemplateController implements Serializable {
 
         // Assuming you have an EJB or similar service to run the query
         List<ReportTemplateRow> results = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
-        System.out.println("Query Results: " + results);
 
         // Properly handle empty or null results
         if (results == null || results.isEmpty()) {
-            System.out.println("No results found.");
             return pb; // Consider returning an empty ReportTemplateRowBundle instead
         }
-        pb.setReportTemplateRows(results); 
+        pb.setReportTemplateRows(results);
         return pb;
     }
 
-    
-     public ReportTemplateRowBundle generateBillReport(
+    public ReportTemplateRowBundle generateBillReport(
             List<BillTypeAtomic> btas,
             Date paramFromDate,
             Date paramToDate,
@@ -264,39 +254,31 @@ public class ReportTemplateController implements Serializable {
         if (btas != null && !btas.isEmpty()) {
             jpql += " and bill.billTypeAtomic in :btas ";
             parameters.put("btas", btas);
-            System.out.println("Filtered by BillTypeAtomics: " + btas);
         }
-
-       
 
         if (paramFromDate != null) {
             jpql += " and bill.billDate >= :fd ";
             parameters.put("fd", paramFromDate);
-            System.out.println("Filtered from Date: " + paramFromDate);
         }
 
         if (paramToDate != null) {
             jpql += " and bill.billDate <= :td ";
             parameters.put("td", paramToDate);
-            System.out.println("Filtered to Date: " + paramToDate);
         }
 
         if (paramInstitution != null) {
             jpql += " and bill.department.institution = :ins ";
             parameters.put("ins", paramInstitution);
-            System.out.println("Filtered by Institution: " + paramInstitution);
         }
 
         if (paramDepartment != null) {
             jpql += " and bill.department = :dep ";
             parameters.put("dep", paramDepartment);
-            System.out.println("Filtered by Department: " + paramDepartment);
         }
 
         if (paramSite != null) {
             jpql += " and bill.department.site = :site ";
             parameters.put("site", paramSite);
-            System.out.println("Filtered by Site: " + paramSite);
         }
 
         jpql += " group by bill";
@@ -306,18 +288,22 @@ public class ReportTemplateController implements Serializable {
 
         // Assuming you have an EJB or similar service to run the query
         List<ReportTemplateRow> results = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
-        System.out.println("Query Results: " + results);
 
         // Properly handle empty or null results
         if (results == null || results.isEmpty()) {
-            System.out.println("No results found.");
             return pb; // Consider returning an empty ReportTemplateRowBundle instead
         }
-        pb.setReportTemplateRows(results); 
+        pb.setReportTemplateRows(results);
+
+        double bundleTotal = pb.getReportTemplateRows().stream()
+                .mapToDouble(r -> r.getBill().getNetTotal())
+                .sum();
+        pb.setTotal(bundleTotal);
+
         return pb;
     }
-     
-     public ReportTemplateRowBundle generatePaymentReport(
+
+    public ReportTemplateRowBundle generatePaymentReport(
             PaymentMethod pm,
             Date paramFromDate,
             Date paramToDate,
@@ -343,31 +329,26 @@ public class ReportTemplateController implements Serializable {
         if (paramFromDate != null) {
             jpql += " and bill.billDate >= :fd ";
             parameters.put("fd", paramFromDate);
-            System.out.println("Filtered from Date: " + paramFromDate);
         }
 
         if (paramToDate != null) {
             jpql += " and bill.billDate <= :td ";
             parameters.put("td", paramToDate);
-            System.out.println("Filtered to Date: " + paramToDate);
         }
 
         if (paramInstitution != null) {
             jpql += " and bill.department.institution = :ins ";
             parameters.put("ins", paramInstitution);
-            System.out.println("Filtered by Institution: " + paramInstitution);
         }
 
         if (paramDepartment != null) {
             jpql += " and bill.department = :dep ";
             parameters.put("dep", paramDepartment);
-            System.out.println("Filtered by Department: " + paramDepartment);
         }
 
         if (paramSite != null) {
             jpql += " and bill.department.site = :site ";
             parameters.put("site", paramSite);
-            System.out.println("Filtered by Site: " + paramSite);
         }
 
         jpql += " group by p";
@@ -377,18 +358,15 @@ public class ReportTemplateController implements Serializable {
 
         // Assuming you have an EJB or similar service to run the query
         List<ReportTemplateRow> results = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
-        System.out.println("Query Results: " + results);
 
         // Properly handle empty or null results
         if (results == null || results.isEmpty()) {
-            System.out.println("No results found.");
             return pb; // Consider returning an empty ReportTemplateRowBundle instead
         }
-        pb.setReportTemplateRows(results); 
+        pb.setReportTemplateRows(results);
         return pb;
     }
-    
-    
+
     public ReportTemplateRowBundle generateReport(
             ReportTemplateType type,
             List<BillTypeAtomic> btas,
@@ -946,14 +924,11 @@ public class ReportTemplateController implements Serializable {
         jpql += " group by bill.billTypeAtomic";
 
         System.out.println("jpql = " + jpql);
-        System.out.println("parameters = " + parameters);
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
 
         if (rs == null || rs.isEmpty()) {
-            System.out.println("No results found.");
         } else {
-            System.out.println("Results found: " + rs.size());
         }
 
         long idCounter = 1;
@@ -1119,14 +1094,11 @@ public class ReportTemplateController implements Serializable {
         jpql += " group by bill.billTypeAtomic";
 
         System.out.println("jpql = " + jpql);
-        System.out.println("parameters = " + parameters);
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
 
         if (rs == null || rs.isEmpty()) {
-            System.out.println("No results found.");
         } else {
-            System.out.println("Results found: " + rs.size());
         }
 
         long idCounter = 1;
@@ -1287,14 +1259,11 @@ public class ReportTemplateController implements Serializable {
         jpql += " group by bill.billTypeAtomic";
 
         System.out.println("jpql = " + jpql);
-        System.out.println("parameters = " + parameters);
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
 
         if (rs == null || rs.isEmpty()) {
-            System.out.println("No results found.");
         } else {
-            System.out.println("Results found: " + rs.size());
         }
 
         long idCounter = 1;
@@ -1455,7 +1424,6 @@ public class ReportTemplateController implements Serializable {
         }
 
         System.out.println("jpql = " + jpql);
-        System.out.println("parameters = " + parameters);
 
         Double sumResult = ejbFacade.findSingleResultByJpql(jpql, parameters, TemporalType.DATE);
 
@@ -1801,14 +1769,11 @@ public class ReportTemplateController implements Serializable {
         jpql += " group by bi.item.category ";
 
         System.out.println("jpql = " + jpql);
-        System.out.println("parameters = " + parameters);
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
 
         if (rs == null || rs.isEmpty()) {
-            System.out.println("No results found.");
         } else {
-            System.out.println("Results found: " + rs.size());
         }
 
         long idCounter = 1;
@@ -1966,14 +1931,11 @@ public class ReportTemplateController implements Serializable {
         jpql += " group by bi.item.category ";
 
         System.out.println("jpql = " + jpql);
-        System.out.println("parameters = " + parameters);
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
 
         if (rs == null || rs.isEmpty()) {
-            System.out.println("No results found.");
         } else {
-            System.out.println("Results found: " + rs.size());
         }
 
         long idCounter = 1;
@@ -2137,12 +2099,8 @@ public class ReportTemplateController implements Serializable {
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
 
-        System.out.println("rs = " + rs);
-
         if (rs == null || rs.isEmpty()) {
-            System.out.println("No results found.");
         } else {
-            System.out.println("Results found: " + rs.size());
         }
 
         long idCounter = 1;
@@ -2301,14 +2259,11 @@ public class ReportTemplateController implements Serializable {
         jpql += " group by bi.item ";
 
         System.out.println("jpql = " + jpql);
-        System.out.println("parameters = " + parameters);
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
 
         if (rs == null || rs.isEmpty()) {
-            System.out.println("No results found.");
         } else {
-            System.out.println("Results found: " + rs.size());
         }
 
         long idCounter = 1;
@@ -2419,15 +2374,12 @@ public class ReportTemplateController implements Serializable {
         }
 
         System.out.println("jpql = " + jpql);
-        System.out.println("parameters = " + parameters);
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
 
         if (rs == null || rs.isEmpty()) {
-            System.out.println("No results found.");
             return null;
         } else {
-            System.out.println("Results found: " + rs.size());
         }
 
         long idCounter = 1;

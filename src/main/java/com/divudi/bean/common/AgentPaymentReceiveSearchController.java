@@ -296,7 +296,6 @@ public class AgentPaymentReceiveSearchController implements Serializable {
                 JsfUtil.addSuccessMessage("Cancelled");
                 createPayment(cb, paymentMethod);
                 
-                System.out.println("cb.getNetTotal() = " + cb.getNetTotal());
 
                 //for channel agencyHistory Update
                 getAgentPaymentRecieveBillController().createAgentHistory(cb.getFromInstitution(), cb.getNetTotal(), historyType, cb);
