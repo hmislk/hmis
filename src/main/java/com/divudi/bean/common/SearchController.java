@@ -11535,21 +11535,41 @@ public class SearchController implements Serializable {
         // Generate OPD service collection and add to the main bundle
         ReportTemplateRowBundle opdServiceCollection = generateOpdServiceCollection();
         bundle.getBundles().add(opdServiceCollection);
-        collectionForTheDay=bundle.getTotal();
+        collectionForTheDay += opdServiceCollection.getTotal();
 
         // Generate pharmacy collection and add to the main bundle
         ReportTemplateRowBundle pharmacyCollection = generatePharmacyCollection();
         bundle.getBundles().add(pharmacyCollection);
-        collectionForTheDay=bundle.getTotal();
+        collectionForTheDay += pharmacyCollection.getTotal();
 
         // Generate collecting centre collection and add to the main bundle
         ReportTemplateRowBundle ccCollection = generateCcCollection();
         bundle.getBundles().add(ccCollection);
+        collectionForTheDay += ccCollection.getTotal();
+
+        // Generate OPD Credit Company Payment Collection and add to the main bundle
+        ReportTemplateRowBundle opdCreditCompanyCollection = generateCreditCompanyCollectionForOpd();
+        bundle.getBundles().add(opdCreditCompanyCollection);
+        collectionForTheDay += opdCreditCompanyCollection.getTotal();
+
+        // Generate Inward Credit Company Payment Collection and add to the main bundle
+        ReportTemplateRowBundle inwardCreditCompanyCollection = generateCreditCompanyCollectionForInward();
+        bundle.getBundles().add(inwardCreditCompanyCollection);
+        collectionForTheDay += inwardCreditCompanyCollection.getTotal();
+
+        // Generate Pharmacy Credit Company Payment Collection and add to the main bundle
+        ReportTemplateRowBundle pharmacyCreditCompanyCollection = generateCreditCompanyCollectionForPharmacy();
+        bundle.getBundles().add(pharmacyCreditCompanyCollection);
+        collectionForTheDay += pharmacyCreditCompanyCollection.getTotal();
+
+        // Generate Channelling Credit Company Payment Collection and add to the main bundle
+        ReportTemplateRowBundle channellingCreditCompanyCollection = generateCreditCompanyCollectionForChannelling();
+        bundle.getBundles().add(channellingCreditCompanyCollection);
+        collectionForTheDay += channellingCreditCompanyCollection.getTotal();
 
         // Generate agency collection and add to the main bundle
-        ReportTemplateRowBundle agencyCollection = generateAgencyCollection();
-        bundle.getBundles().add(agencyCollection);
-
+//        ReportTemplateRowBundle agencyCollection = generateAgencyCollection();
+//        bundle.getBundles().add(agencyCollection);
         // Generate inward professional payments and add to the main bundle
         ReportTemplateRowBundle inwardProfessionalPayments = generateInwardProfessionalPayments();
         bundle.getBundles().add(inwardProfessionalPayments);
@@ -11561,22 +11581,6 @@ public class SearchController implements Serializable {
         // Generate OPD professional payments and add to the main bundle
         ReportTemplateRowBundle opdProfessionalPayments = generateOpdProfessionalPayments();
         bundle.getBundles().add(opdProfessionalPayments);
-
-        // Generate OPD Credit Company Payment Collection and add to the main bundle
-        ReportTemplateRowBundle opdCreditCompanyCollection = generateCreditCompanyCollectionForOpd();
-        bundle.getBundles().add(opdCreditCompanyCollection);
-
-        // Generate Inward Credit Company Payment Collection and add to the main bundle
-        ReportTemplateRowBundle inwardCreditCompanyCollection = generateCreditCompanyCollectionForInward();
-        bundle.getBundles().add(inwardCreditCompanyCollection);
-
-        // Generate Pharmacy Credit Company Payment Collection and add to the main bundle
-        ReportTemplateRowBundle pharmacyCreditCompanyCollection = generateCreditCompanyCollectionForPharmacy();
-        bundle.getBundles().add(pharmacyCreditCompanyCollection);
-
-        // Generate Channelling Credit Company Payment Collection and add to the main bundle
-        ReportTemplateRowBundle channellingCreditCompanyCollection = generateCreditCompanyCollectionForChannelling();
-        bundle.getBundles().add(channellingCreditCompanyCollection);
 
         // Collection for the day
         // Total Cash Payments
@@ -11643,7 +11647,7 @@ public class SearchController implements Serializable {
 //        bundle.getBundles().add(opdServiceCollection);
 
         opdServiceCollection.setName("OPD Service Collection");
-        opdServiceCollection.setBundleType("CategoryAndItemCountsAndValues");
+        opdServiceCollection.setBundleType("opdServiceCollection");
         return opdServiceCollection;
     }
 
@@ -11662,10 +11666,10 @@ public class SearchController implements Serializable {
                 department,
                 site);
         pb.setName("Pharmacy Sale");
-        pb.setBundleType("CollectionValueByDepartment");
-        double pharmacyCollectionTotal=0.0;
-        for(ReportTemplateRow row:pb.getReportTemplateRows()){
-            pharmacyCollectionTotal+=row.getRowValue();
+        pb.setBundleType("pharmacyCollection");
+        double pharmacyCollectionTotal = 0.0;
+        for (ReportTemplateRow row : pb.getReportTemplateRows()) {
+            pharmacyCollectionTotal += row.getRowValue();
         }
         pb.setTotal(pharmacyCollectionTotal);
         return pb;
@@ -11684,10 +11688,10 @@ public class SearchController implements Serializable {
                 department,
                 site);
         pb.setName("Collecting Centre Collection");
-        pb.setBundleType("PayentBillReport");
-        double ccCollectionTotal=0.0;
-        for(ReportTemplateRow row:pb.getReportTemplateRows()){
-            ccCollectionTotal+=row.getBill().getNetTotal();
+        pb.setBundleType("ccCollection");
+        double ccCollectionTotal = 0.0;
+        for (ReportTemplateRow row : pb.getReportTemplateRows()) {
+            ccCollectionTotal += row.getBill().getNetTotal();
         }
         pb.setTotal(ccCollectionTotal);
         return pb;
@@ -12033,7 +12037,7 @@ public class SearchController implements Serializable {
         Map<String, ReportTemplateRow> categoryMap = new HashMap<>();
         Map<String, ReportTemplateRow> itemMap = new HashMap<>();
         List<ReportTemplateRow> rowsToAdd = new ArrayList<>();
-        double totalOpdServiceCollection=0.0;
+        double totalOpdServiceCollection = 0.0;
         for (BillItem bi : billItems) {
             System.out.println("Processing BillItem: " + bi);
 
@@ -12091,7 +12095,7 @@ public class SearchController implements Serializable {
                     // Do nothing for other types of bills
                     continue;  // Skip processing for unrecognized or unhandled bill types
             }
-            totalOpdServiceCollection+=netValue;
+            totalOpdServiceCollection += netValue;
             System.out.println("hospitalFee = " + hospitalFee);
             updateRow(categoryRow, countModifier, grossValue, hospitalFee, discount, staffFee, netValue);
             updateRow(itemRow, countModifier, grossValue, hospitalFee, discount, staffFee, netValue);

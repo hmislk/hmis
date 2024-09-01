@@ -297,6 +297,12 @@ public class ReportTemplateController implements Serializable {
             return pb; // Consider returning an empty ReportTemplateRowBundle instead
         }
         pb.setReportTemplateRows(results); 
+        
+        double bundleTotal=0.0;
+        for(ReportTemplateRow r:pb.getReportTemplateRows()){
+            r.getBill().getNetTotal();
+        }
+        pb.setTotal(bundleTotal);
         return pb;
     }
      

@@ -93,12 +93,17 @@
                             
                             
                             <ui:repeat value="#{searchController.bundle.bundles}" var="myBundle" >
-                                <h:panelGroup  rendered="#{myBundle.bundleType eq 'CategoryAndItemCountsAndValues'}">
-                                    <ez:category_and_item_summary bundle="#{myBundle}"/>
+                                <h:panelGroup  rendered="#{myBundle.bundleType eq 'opdServiceCollection'}">
+                                    <ez:opdServiceCollection bundle="#{myBundle}"/>
                                 </h:panelGroup>
-                                <h:panelGroup rendered="#{myBundle.bundleType eq 'CollectionValueByDepartment'}" >
-                                    <ez:department_and_total bundle="#{myBundle}"/>
+                                <h:panelGroup rendered="#{myBundle.bundleType eq 'pharmacyCollection'}" >
+                                    <ez:pharmacyCollection bundle="#{myBundle}"/>
                                 </h:panelGroup>
+                                <h:panelGroup rendered="#{myBundle.bundleType eq 'ccCollection'}" >
+                                    <ez:ccCollection bundle="#{myBundle}"/>
+                                </h:panelGroup>
+                                
+
                                 <h:panelGroup rendered="#{myBundle.bundleType eq 'PayentBillReport'}" >
                                     <ez:bill_for_agency_payment bundle="#{myBundle}"/>
                                 </h:panelGroup>
