@@ -12,6 +12,7 @@ import com.divudi.data.PaymentMethod;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillTypeAtomic;
 import static com.divudi.data.PaymentMethod.Agent;
 import static com.divudi.data.PaymentMethod.Card;
 import static com.divudi.data.PaymentMethod.Cash;
@@ -272,7 +273,7 @@ public class CreditCompanyBillSearch implements Serializable {
         CancelledBill cb = new CancelledBill();
         cb.copy(getBill());
         cb.invertValue(getBill());
-
+        
         cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.CashRecieveBill, BillClassType.CancelledBill, BillNumberSuffix.CRDCAN));
         cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.CashRecieveBill, BillClassType.CancelledBill, BillNumberSuffix.CRDCAN));
 
@@ -375,6 +376,7 @@ public class CreditCompanyBillSearch implements Serializable {
             //Copy & paste
             //  if (webUserController.hasPrivilege("LabBillCancelling")) {
             if (true) {
+                cb.setBillTypeAtomic(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION);
                 getCancelledBillFacade().create(cb);
                 cancelBillItems(cb);
                 getBill().setCancelled(true);
@@ -383,8 +385,8 @@ public class CreditCompanyBillSearch implements Serializable {
                 JsfUtil.addSuccessMessage("Cancelled");
                 WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cb, getSessionController().getLoggedUser());
                 getSessionController().setLoggedUser(wb);
-                printPreview = true;
                 createPayment(cb, paymentMethod);
+                printPreview = true;             
             } else {
                 getEjbApplication().getBillsToCancel().add(cb);
                 JsfUtil.addSuccessMessage("Awaiting Cancellation");
