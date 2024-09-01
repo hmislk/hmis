@@ -22,6 +22,9 @@
             <f:facet name="header" >
                 <h:outputText value="#{cc.attrs.bundle.name}" ></h:outputText>
             </f:facet>
+            <f:facet name="footer" >
+                <h1>Total</h1> <p:spacer width="50" ></p:spacer>  <h:outputText value="#{cc.attrs.bundle.total}" ></h:outputText>
+            </f:facet>
             <p:column>
                 <f:facet name="header">
                     <h:outputText value="Bil No" />
@@ -42,7 +45,7 @@
                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                 </h:outputText>
             </p:column>
-             <p:column>
+            <p:column>
                 <f:facet name="header">
                     <h:outputText value="Credit Company" />
                 </f:facet>

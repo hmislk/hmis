@@ -135,10 +135,10 @@ public class FinancialTransactionController implements Serializable {
     private List<Bill> fundBillsForClosureBills;
     private Bill selectedBill;
     private Bill nonClosedShiftStartFundBill;
-    
+
     private ReportTemplateRowBundle refundBundle;
-    private ReportTemplateRowBundle cancelledBundle ;
-    
+    private ReportTemplateRowBundle cancelledBundle;
+
     private List<Payment> paymentsFromShiftSratToNow;
     private List<Payment> cardPaymentsFromShiftSratToNow;
     private List<Payment> chequeFromShiftSratToNow;
@@ -2143,19 +2143,26 @@ public class FinancialTransactionController implements Serializable {
             return;
         }
         Long shiftStartBillId = nonClosedShiftStartFundBill.getId();
+
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_IN));
+        btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_OUT));
+
         Map<String, Object> m = new HashMap<>();
-        String jpql = "SELECT p "
-                + "FROM Payment p "
+        String jpql = "SELECT p FROM Payment p JOIN p.bill b "
                 + "WHERE p.creater = :cr "
                 + "AND p.retired = :ret "
                 + "AND p.id > :cid "
-                + "AND p.cashbookEntryStated = :started ";
-        jpql += "AND FUNCTION('DATE', p.createdAt) = :createdDate ";
-        jpql += "AND p.bill.department = :dept ";
+                + "AND b.billTypeAtomic IN :btas "
+                + "AND p.cashbookEntryStated = :started "
+                + "AND FUNCTION('DATE', p.createdAt) = :createdDate "
+                + "AND b.department = :dept "
+                + "ORDER BY p.id DESC";
+
         m.put("dept", cashbookDepartment);
+        m.put("btas", btas);
         m.put("createdDate", cashbookDate);
         m.put("started", false);
-        jpql += "ORDER BY p.id DESC";
         m.put("cr", nonClosedShiftStartFundBill.getCreater());
         m.put("ret", false);
         m.put("cid", shiftStartBillId);
@@ -2176,8 +2183,8 @@ public class FinancialTransactionController implements Serializable {
                 .collect(Collectors.toSet());
 
 // Create bundles for cancelled and refunded bills
-         cancelledBundle = new ReportTemplateRowBundle();
-         refundBundle = new ReportTemplateRowBundle();
+        cancelledBundle = new ReportTemplateRowBundle();
+        refundBundle = new ReportTemplateRowBundle();
 
 // Add unique cancelled bills to the cancelled bundle
         for (Bill bill : cancelledBills) {
@@ -4028,6 +4035,4 @@ public class FinancialTransactionController implements Serializable {
         this.cancelledBundle = cancelledBundle;
     }
 
-    
-    
 }
