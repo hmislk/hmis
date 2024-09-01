@@ -112,7 +112,7 @@
 
                                 </h:outputText>
                             </div>
-                            
+
                             <div class="col-7">
                                 <p:selectBooleanButton 
                                     onLabel="Yes" 
@@ -127,7 +127,7 @@
                         </div>
 
                         #{packageItemController.current.item.canRemoveItemfromPackage}
-                        
+
                         <f:facet name="footer">
                             <p:commandButton 
                                 id="btnEdit"
@@ -155,7 +155,9 @@
                                 selectionMode="single" 
                                 selection="#{packageItemController.currentItem}"
                                 filteredValue="#{packageItemController.filteredItems}">
-
+                                <p:column headerText="Code" sortBy="#{i.code}" filterBy="#{i.code}" style="padding: 5px; " filterMatchMode="contains">
+                                    #{i.code}
+                                </p:column>
                                 <p:column headerText="Item" sortBy="#{i.name}" filterBy="#{i.name}" style="padding: 5px; " filterMatchMode="contains">
                                     #{i.name}
                                 </p:column>
