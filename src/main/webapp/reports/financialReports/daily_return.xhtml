@@ -134,6 +134,11 @@
                                     <ez:companyPaymentBillOpd bundle="#{myBundle}"/>
                                 </h:panelGroup>
 
+                                <h:panelGroup rendered="#{myBundle.bundleType eq 'paymentReportCards'}" >
+                                    <ez:paymentReportCards bundle="#{myBundle}"/>
+                                </h:panelGroup>
+
+
 <!--                                <h:panelGroup rendered="#{myBundle.bundleType eq 'PayentBillReport'}" >
                                     <ez:bill_for_agency_payment bundle="#{myBundle}"/>
                                 </h:panelGroup>

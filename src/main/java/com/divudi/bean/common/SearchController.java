@@ -11883,7 +11883,7 @@ public class SearchController implements Serializable {
                 department,
                 site);
         ap.setName("Credit Card Payments");
-        ap.setBundleType("PaymentReport");
+        ap.setBundleType("paymentReportCards");
         return ap;
     }
 
