@@ -661,18 +661,14 @@
                                                     </h:outputText>
                                                 </p:column>
                                                 <p:column style="width: 2em;">
-                                                    <h:commandButton id="btnRemove" value="X" action="#{opdBillController.removeBillItem}" >
+                                                    <p:commandButton id="btnRemove" value="X" action="#{opdBillController.removeBillItem}" process="btnRemove" update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('tabBillFeeBundled',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"  >
                                                         <f:setPropertyActionListener  value="#{rowIndex}" target="#{opdBillController.index}" />
-                                                        <p:ajax  process="btnRemove" update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('tabBillFee',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" />
-                                                    </h:commandButton>
+                                                    </p:commandButton>
                                                 </p:column>
                                             </p:dataTable>
                                         </p:tab>
 
                                         <p:tab id="tabBillFee" title="Fees" rendered="false" >
-
-
-
                                             <p:dataTable rowIndexVar="rowIndex" value="#{opdBillController.lstBillFees}" var="bif" rowKey="#{bif.id}" class="w-100">
                                                 <p:column>
                                                     <f:facet name="header">Item Name</f:facet>
@@ -803,7 +799,6 @@
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-
                                                     <ui:repeat value="#{opdBillController.billFeeBundleEntrys}" var="billFeeBundleEntry">
                                                         <tr>
                                                             <td>
