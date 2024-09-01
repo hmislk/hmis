@@ -3272,14 +3272,17 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             }
         }
         for (BillFeeBundleEntry bfe : billFeeBundleEntrys) {
-            if (bfe.getSelectedBillFee().getFee().getItem() != r.getBillItem().getItem()) {
+            if (bfe.getSelectedBillFee().getBillItem().getItem() != r.getBillItem().getItem()) {
                 newListOfBillFeeBundleEntries.add(bfe);
             }
         }
         billFeeBundleEntrys = newListOfBillFeeBundleEntries;
+        System.out.println("billFeeBundleEntrys = " + billFeeBundleEntrys.size());
         lstBillEntries = temp;
         lstBillComponents = getBillBean().billComponentsFromBillEntries(lstBillEntries);
+        System.out.println("lstBillEntries.size() = " + lstBillEntries.size());
         lstBillFees = getBillBean().billFeesFromBillEntries(lstBillEntries);
+        System.out.println("lstBillFees = " + lstBillFees.size());
     }
 
     public void createPaymentsForBills(Bill b, List<BillEntry> billEntrys) {
