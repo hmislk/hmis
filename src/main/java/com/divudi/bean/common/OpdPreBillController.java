@@ -740,7 +740,6 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
             getBillFacade().edit(newPreBill);
 
             getBillBean().calculateBillItems(newPreBill, tmp);
-            System.out.println("newPreBill = " + newPreBill);
             bills.add(newPreBill);
         }
 
@@ -941,7 +940,6 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         double tmpBatchBillTotalOfNetTotals = 0.0;
 
         for (Bill b : bills) {
-            System.out.println("b backward save= " + b);
             double preGrossTotal = tmpBatchBillTotalOfGrossTotals;
             double preDiscountTotal = tmpBatchBillTotalOfDiscounts;
             double preNetTotal = tmpBatchBillTotalOfNetTotals;

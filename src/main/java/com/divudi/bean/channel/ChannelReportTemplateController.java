@@ -725,10 +725,10 @@ public class ChannelReportTemplateController implements Serializable {
 //        hm.put("bt", bts);
         hm.put("ftp", FeeType.Staff);
 //        hm.put("class", BilledBill.class);
+//        hm.put("class", BilledBill.class);
         System.out.println("sql = " + sql);
         System.out.println("hm = " + hm);
         Long count = billFeeFacade.findLongByJpql(sql, hm, TemporalType.TIMESTAMP);
-        System.out.println("count = " + count);
         return count;
     }
 
@@ -746,15 +746,12 @@ public class ChannelReportTemplateController implements Serializable {
                 + " and si.sessionDate between :fd and :td ";
 
         if (institution != null) {
-            System.out.println("Institution is not null: " + institution);
             m.put("ins", institution);
             j += " and si.institution=:ins ";
         } else {
-            System.out.println("Institution is null.");
         }
 
         if (fromDate == null || toDate == null) {
-            System.out.println("fromDate or toDate is null. Exiting method.");
             return;  // or throw an appropriate exception
         }
 
@@ -766,10 +763,8 @@ public class ChannelReportTemplateController implements Serializable {
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) billFacade.findLightsByJpql(j, m, TemporalType.DATE);
 
         if (rs == null || rs.isEmpty()) {
-            System.out.println("No results found.");
             return;
         } else {
-            System.out.println("Results found: " + rs.size());
         }
 
         Long long1 = 0L;
@@ -784,13 +779,11 @@ public class ChannelReportTemplateController implements Serializable {
         System.out.println("Processing result rows...");
         for (ReportTemplateRow r : rs) {
             if (r == null) {
-                System.out.println("Encountered null ReportTemplateRow. Skipping...");
                 continue;
             }
 
             SessionInstance si = r.getSessionInstance();
             if (si == null) {
-                System.out.println("SessionInstance is null. Skipping...");
                 continue;
             }
 
@@ -805,9 +798,6 @@ public class ChannelReportTemplateController implements Serializable {
             long remainingCount = si.getRemainingPatientCount() != null ? si.getRemainingPatientCount() : 0;
             long paidToDoctorCount = si.getPaidToDoctorPatientCount() != null ? si.getPaidToDoctorPatientCount() : 0;
             long cancelPaidCount = si.getCancelPaidPatientCount() != null ? si.getCancelPaidPatientCount() : 0;
-            System.out.println("Booked: " + bookedCount + ", Paid: " + paidCount + ", Completed: " + completedCount
-                    + ", CancelledOnCall: " + cancelOnCallCount + ", Refunded: " + refundedCount + ", Remaining: " + remainingCount
-                    + ", PaidToDoctor: " + paidToDoctorCount + ", CancelledPaid: " + cancelPaidCount);
 
             long1 += bookedCount;
             long2 += paidCount;
@@ -823,7 +813,6 @@ public class ChannelReportTemplateController implements Serializable {
                 + ", long4=" + long4 + ", long5=" + long5 + ", long6=" + long6 + ", long7=" + long7 + ", long8=" + long8);
 
         if (bundle != null) {
-            System.out.println("Setting values in bundle...");
             bundle.setReportTemplateRows(rs);
             bundle.setLong1(long1);
             bundle.setLong2(long2);
@@ -834,10 +823,8 @@ public class ChannelReportTemplateController implements Serializable {
             bundle.setLong7(long7);
             bundle.setLong7(long8);
         } else {
-            System.out.println("Bundle is null.");
         }
 
-        System.out.println("Completed processAndfillDailySessionCounts.");
     }
 
     public void fillCategorySessionCounts() {
@@ -4472,7 +4459,6 @@ public class ChannelReportTemplateController implements Serializable {
                 Area a = (Area) ob[0];
                 BillClassType classType = (BillClassType) ob[1];
                 long count = (long) ob[2];
-                System.err.println("****************");
                 //System.out.println("a.getName() = " + a.getName());
                 if (classType == BillClassType.BilledBill) {
                     total += count;
@@ -4520,7 +4506,6 @@ public class ChannelReportTemplateController implements Serializable {
                 Area a = (Area) ob[1];
                 BillClassType classType = (BillClassType) ob[2];
                 long count = (long) ob[3];
-                System.err.println("****************");
                 //System.out.println("s.getPerson().getName() = " + s.getPerson().getName());
                 if (classType == BillClassType.BilledBill) {
                     total += count;

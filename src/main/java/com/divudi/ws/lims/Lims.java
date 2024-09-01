@@ -615,11 +615,9 @@ public class Lims {
     }
 
     private JSONArray constructUnitBarcodesJson(BillItem bi, Long startBarcode, Long endBarcode) {
-        System.out.println("constructUnitBarcodesJson - startBarcode: " + startBarcode + ", endBarcode: " + endBarcode);
         JSONArray jsonArray = new JSONArray();
 
         if (bi == null || startBarcode == null || endBarcode == null || startBarcode > endBarcode) {
-            System.out.println("Invalid parameters in constructUnitBarcodesJson");
             return jsonArray;  // Return an empty array if input is invalid
         }
 
@@ -631,7 +629,6 @@ public class Lims {
                 formattedRate = rateFormatter.format(rate);
             }
         } catch (Exception e) {
-            System.out.println("Error in formatting rate: " + e);
         }
 
         Long barcode = startBarcode;
@@ -646,7 +643,6 @@ public class Lims {
                 barcode++;
             }
         } catch (Exception e) {
-            System.out.println("Error while constructing JSON array: " + e);
         }
 
         return jsonArray;
@@ -683,7 +679,6 @@ public class Lims {
                 formattedRate = rateFormatter.format(rate);
             }
         } catch (Exception e) {
-            System.out.println("Error in formatting rate: " + e);
         }
 
         Long barcode = stock.getStartBarcode();
@@ -699,7 +694,6 @@ public class Lims {
                 barcode++;
             }
         } catch (Exception e) {
-            System.out.println("Error while constructing JSON array: " + e);
         }
 
         return jsonArray;
@@ -808,7 +802,6 @@ public class Lims {
     }
 
     public List<PatientSample> prepareSampleCollectionByBillsForRequestss(List<Bill> bills, WebUser wu) {
-        System.out.println("prepareSampleCollectionByBillsForRequestss");
 
         String j = "";
         Map m;
@@ -872,7 +865,6 @@ public class Lims {
                             }
                         }
                         if (ixi.getTube() == null) {
-                            System.out.println("No tube is set");
                             continue;
                         }
 //                        if (ixi.getSample() == null) {
@@ -1034,7 +1026,6 @@ public class Lims {
                             }
                         }
                         if (ixi.getTube() == null) {
-                            System.out.println("No tube is set");
                             continue;
                         }
 //                        if (ixi.getSample() == null) {

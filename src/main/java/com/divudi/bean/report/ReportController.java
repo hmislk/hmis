@@ -176,7 +176,6 @@ public class ReportController implements Serializable {
         m.put("toDate", getToDate());
 
         System.out.println(m);
-        System.err.println(jpql);
 
         bills = billFacade.findByJpql(jpql, m);
     }

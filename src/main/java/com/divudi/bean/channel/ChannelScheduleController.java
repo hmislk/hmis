@@ -1031,7 +1031,6 @@ public class ChannelScheduleController implements Serializable {
                 System.out.println(Arrays.toString(resnumbers));
                 int sessStartnumber = Integer.valueOf(current.getSessionStartingNumber());
                 boolean allLower = IntStream.of(resnumbers).allMatch(n -> n < sessStartnumber);
-                System.out.println("All values are lower than " + sessStartnumber + ": " + allLower);
                 if (allLower) {
                     JsfUtil.addErrorMessage("All reserveNumbers are lower than session starting number");
                     return;

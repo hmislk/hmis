@@ -11530,13 +11530,17 @@ public class SearchController implements Serializable {
     public void generateDailyReturn() {
         bundle = new ReportTemplateRowBundle();
 
+        double collectionForTheDay = 0.0;
+
         // Generate OPD service collection and add to the main bundle
         ReportTemplateRowBundle opdServiceCollection = generateOpdServiceCollection();
         bundle.getBundles().add(opdServiceCollection);
+        collectionForTheDay=bundle.getTotal();
 
         // Generate pharmacy collection and add to the main bundle
         ReportTemplateRowBundle pharmacyCollection = generatePharmacyCollection();
         bundle.getBundles().add(pharmacyCollection);
+        collectionForTheDay=bundle.getTotal();
 
         // Generate collecting centre collection and add to the main bundle
         ReportTemplateRowBundle ccCollection = generateCcCollection();
@@ -11627,7 +11631,7 @@ public class SearchController implements Serializable {
             m.put("ins", institution);
         }
         if (site != null) {
-            jpql += " and bi.bill.site=:site ";
+            jpql += " and bi.bill.department.site=:site ";
             m.put("site", site);
         }
 //        System.out.println("btas = " + btas);
@@ -11659,6 +11663,11 @@ public class SearchController implements Serializable {
                 site);
         pb.setName("Pharmacy Sale");
         pb.setBundleType("CollectionValueByDepartment");
+        double pharmacyCollectionTotal=0.0;
+        for(ReportTemplateRow row:pb.getReportTemplateRows()){
+            pharmacyCollectionTotal+=row.getRowValue();
+        }
+        pb.setTotal(pharmacyCollectionTotal);
         return pb;
     }
 
@@ -11676,6 +11685,11 @@ public class SearchController implements Serializable {
                 site);
         pb.setName("Collecting Centre Collection");
         pb.setBundleType("PayentBillReport");
+        double ccCollectionTotal=0.0;
+        for(ReportTemplateRow row:pb.getReportTemplateRows()){
+            ccCollectionTotal+=row.getBill().getNetTotal();
+        }
+        pb.setTotal(ccCollectionTotal);
         return pb;
     }
 
@@ -11989,7 +12003,7 @@ public class SearchController implements Serializable {
             m.put("ins", institution);
         }
         if (site != null) {
-            jpql += " and bi.bill.site=:site ";
+            jpql += " and bi.bill.department.site=:site ";
             m.put("site", site);
         }
         List<BillItem> bis = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
@@ -12019,7 +12033,7 @@ public class SearchController implements Serializable {
         Map<String, ReportTemplateRow> categoryMap = new HashMap<>();
         Map<String, ReportTemplateRow> itemMap = new HashMap<>();
         List<ReportTemplateRow> rowsToAdd = new ArrayList<>();
-
+        double totalOpdServiceCollection=0.0;
         for (BillItem bi : billItems) {
             System.out.println("Processing BillItem: " + bi);
 
@@ -12077,6 +12091,7 @@ public class SearchController implements Serializable {
                     // Do nothing for other types of bills
                     continue;  // Skip processing for unrecognized or unhandled bill types
             }
+            totalOpdServiceCollection+=netValue;
             System.out.println("hospitalFee = " + hospitalFee);
             updateRow(categoryRow, countModifier, grossValue, hospitalFee, discount, staffFee, netValue);
             updateRow(itemRow, countModifier, grossValue, hospitalFee, discount, staffFee, netValue);
@@ -12097,6 +12112,7 @@ public class SearchController implements Serializable {
         System.out.println("rowsToAdd = " + rowsToAdd);
         System.out.println("rtrb.getReportTemplateRows() = " + rtrb.getReportTemplateRows());
         rtrb.getReportTemplateRows().addAll(rowsToAdd);
+        rtrb.setTotal(totalOpdServiceCollection);
     }
 
     private void updateRow(ReportTemplateRow row, long count, double total, double hospitalFee, double discount, double professionalFee, double netTotal) {
@@ -12953,7 +12969,6 @@ public class SearchController implements Serializable {
                 .build();
     }
 
-    
     public void prepareDataBillsAndBillItemsDownload(boolean old) {
         // Fetch all bills and their associated bill items, excluding fees
         List<BillTypeAtomic> billTypeAtomics = prepareDistinctBillTypeAtomic();

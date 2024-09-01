@@ -54,12 +54,10 @@ public class ConfigResource {
         String apiKey = headers.getHeaderString("Config");
         System.out.println("apiKey = " + apiKey);
         if (!apiKeyController.isValidKey(apiKey)) {
-            System.out.println("unautherized");
             return unauthorizedResponse();
         }
         System.out.println("setting");
         configOptionApplicationController.setBooleanValueByKey(key, value);
-        System.out.println("success = " );
         return successResponse();
     }
 

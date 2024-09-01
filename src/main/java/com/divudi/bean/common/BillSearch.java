@@ -2274,7 +2274,6 @@ public class BillSearch implements Serializable {
         
         billController.save(getBill());
         JsfUtil.addSuccessMessage("Cancelled");
-        System.out.println("colle = " + collectingCenter);
         collectingCentreApplicationController.updateBalance(
                 collectingCenter,
                 bill.getTotalCenterFee(),
@@ -3313,14 +3312,12 @@ public class BillSearch implements Serializable {
     }
 
     public List<BillFee> getBillFees2() {
-        System.out.println("getBill.getId() = " + getBill().getId());
         if (billFees == null) {
             if (getBill() != null) {
                 Map m = new HashMap();
                 String sql = "SELECT b FROM BillFee b WHERE b.retired=false and b.bill=:cb";
                 m.put("cb", getBill());
                 billFees = getBillFeeFacade().findByJpql(sql, m);
-                System.out.println("billFees = " + billFees.size());
             }
 
             if (getBillSearch() != null) {
@@ -3328,12 +3325,10 @@ public class BillSearch implements Serializable {
                 String sql = "SELECT b FROM BillFee b WHERE b.bill=:cb";
                 m.put("cb", getBill());
                 billFees = getBillFeeFacade().findByJpql(sql, m);
-                System.out.println("billFees2 = " + billFees.size());
             }
 
             if (billFees == null) {
                 billFees = new ArrayList<>();
-                System.out.println("this = " + this);
             }
         }
 
@@ -4067,9 +4062,7 @@ public class BillSearch implements Serializable {
         for (BillItem bi : b.getBillItems()) {
             double billItemTotal = 0.0;
             for (BillFee bf : bi.getBillFees()) {
-                System.out.println("bf = " + bf.getFee().getName());
                 if (bf.getFeeValue() != 0.0) {
-                    System.out.println(bf.getFee().getName() + "  " + bf.getFeeValue());
                     double bfv = bf.getFeeValue();
                     bfv = Math.abs(bfv);
                     bf.setFeeValue(0 - bfv);
