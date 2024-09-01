@@ -890,6 +890,18 @@
                                                      title="Reject Samples"
                                                      icon="pi pi-times-circle"
                                                      styleClass="m-1  w-100 ui-button-danger" />
+                                    
+                                    
+                                    <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
+                                                     id="btnGenerateTestCodes"
+                                                     value="Check Analyzer Test Codes"
+                                                     ajax="false"
+                                                     action="#{patientInvestigationController.generateSampleCodesSamples()}"
+                                                     title="Reject Samples"
+                                                     icon="pi pi-times-circle"
+                                                     styleClass="m-1  w-100 ui-button-danger" />
+                                    
+                                    <p:inputTextarea value="#{patientInvestigationController.testDetails}" ></p:inputTextarea>
 
                                     <hr/>
                                 </h:panelGrid>

@@ -4,6 +4,7 @@
  */
 package com.divudi.ejb;
 
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -39,6 +40,7 @@ import javax.ejb.Singleton;
 import javax.persistence.TemporalType;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
+import javax.inject.Inject;
 
 /**
  *
@@ -60,6 +62,9 @@ public class BillNumberGenerator {
     ItemFacade itemFacade;
     @EJB
     BillNumberFacade billNumberFacade;
+    
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     private final ConcurrentHashMap<String, ReentrantLock> lockMap = new ConcurrentHashMap<>();
 
@@ -510,7 +515,7 @@ public class BillNumberGenerator {
 
         if (BillNumberSuffix.NONE != billNumberSuffix) {
             result.append(billNumberSuffix);
-        }
+        }   
         result.append("/");
         b++;
         result.append(b);
@@ -1243,6 +1248,10 @@ public class BillNumberGenerator {
         if (toDept == null) {
             return "";
         }
+        
+        String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Sufix for " + billType, billType.getCode());
+        System.out.println("billType = " + billType);
+        
         BillNumber billNumber = fetchLastBillNumber(dep, toDept, billType, billClassType);
         Long dd = billNumber.getLastBillNumber();
         StringBuilder result = new StringBuilder();
@@ -1251,6 +1260,9 @@ public class BillNumberGenerator {
 
         result.append(toDept.getDepartmentCode());
 
+        result.append("/");
+        result.append(billSuffix);
+        
         result.append("/");
 //        dd++;
         result.append(dd);
@@ -1305,11 +1317,13 @@ public class BillNumberGenerator {
         billNumberFacade.edit(billNumber);
         return result.toString();
     }
-
+    
     public String departmentBillNumberGeneratorYearly(Institution ins, Department dep, BillType billType, BillClassType billClassType) {
         // Fetch the last bill number for this combination
         BillNumber billNumber = fetchLastBillNumberForYear(ins, dep, billType, billClassType);
 
+        String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Sufix for " + billType, billType.getCode());
+        
         // Get the last bill number
         Long dd = billNumber.getLastBillNumber();
 
@@ -1330,6 +1344,8 @@ public class BillNumberGenerator {
 
         // Append department code
         result.append(dep.getDepartmentCode());
+        result.append("/");
+        result.append(billSuffix);
 
         // Append current year (last two digits)
         int year = Calendar.getInstance().get(Calendar.YEAR) % 100; // Get last two digits of year

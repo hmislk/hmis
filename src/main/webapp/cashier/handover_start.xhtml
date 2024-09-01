@@ -347,14 +347,14 @@
                                 <p:outputLabel value="Hand over to Staff" class="font-weight-bold" ></p:outputLabel>
 
                                 <p:autoComplete
-                                    completeMethod="#{webUserController.completeUser}"
+                                    completeMethod="#{staffController.completeStaff}"
                                     class="mx-2"
                                     id="acStaff" 
                                     value="#{financialTransactionController.currentBill.toStaff}" 
-                                    var="s"
+                                    var="staff"
                                     scrollHeight="450"
-                                    itemLabel="#{s.person.nameWithTitle}" 
-                                    itemValue="#{s.staff}" >
+                                    itemLabel="#{staff.name}" 
+                                    itemValue="#{staff.staff}" >
                                 </p:autoComplete>
 
                                 <p:commandButton 

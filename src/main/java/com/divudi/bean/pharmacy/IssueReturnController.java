@@ -187,7 +187,6 @@ public class IssueReturnController implements Serializable {
     private void saveBill() {
         getBill().setEditor(getSessionController().getLoggedUser());
         getBill().setEditedAt(Calendar.getInstance().getTime());
-        System.out.println("getBill() = " + getBill().getBillClassType());
 
 //        getReturnBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyIssue, BillClassType.PreBill, BillNumberSuffix.PHISSRET));
 //        getReturnBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyIssue, BillClassType.PreBill, BillNumberSuffix.PHISSRET));
@@ -285,7 +284,6 @@ public class IssueReturnController implements Serializable {
 
             PharmaceuticalBillItem tmpPh = i.getPharmaceuticalBillItem();
             i.setPharmaceuticalBillItem(tmpPh);
-            System.out.println("tmpPh = " + tmpPh.getId());
             if (i.getId() == null) {
                 getBillItemFacade().create(i);
             }
@@ -373,7 +371,6 @@ public class IssueReturnController implements Serializable {
     public void generateBillComponent() {
         billItems=new ArrayList<>();
         for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getBill())) {
-            System.out.println("i = " + i.getId());
             BillItem bi = new BillItem();
             bi.setBill(getReturnBill());
             bi.setReferenceBill(getBill());

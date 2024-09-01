@@ -695,7 +695,6 @@ public class ChannelStaffPaymentBillController implements Serializable {
         hm.put("classes", classes);
         hm.put("pay", paymentMethod.OnCall);
         System.out.println("sql = " + sql);
-        System.out.println("hm = " + hm);
         dueBillFees = billFeeFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
 

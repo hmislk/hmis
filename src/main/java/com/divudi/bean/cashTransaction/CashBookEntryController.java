@@ -88,7 +88,6 @@ public class CashBookEntryController implements Serializable {
         if (!chackPaymentMethodForCashBookEntryAtHandover(p.getPaymentMethod())) {
             return;
         }
-        System.out.println("p.getPaidValue() = " + p.getPaidValue());
         current = new CashBookEntry();
         current.setInstitution(p.getInstitution());
         current.setDepartment(p.getDepartment());
@@ -314,7 +313,6 @@ public class CashBookEntryController implements Serializable {
         m.put("ret", false);
         cashBookEntryList = cashbookEntryFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         System.out.println("cashBookEntryList = " + cashBookEntryList.size());
-        System.out.println("jpql = " + jpql);
         return cashBookEntryList;
     }
 

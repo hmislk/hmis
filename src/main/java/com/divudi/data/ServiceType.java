@@ -10,9 +10,10 @@ public enum ServiceType {
     PHARMACY("Pharmacy"),
     STORE("Store"),
     CHANNELLING("Channelling"),
-    COLLECTING_CENTRE("Colelcting Centre"),
+    COLLECTING_CENTRE("Collecting Centre"),
     OTHER("Other"),
-    INWARD("Inward");
+    INWARD("Inward"),
+    AGENCY("Agency");  // Added new service type for agency-related transactions
 
     private final String label;
 

@@ -3,6 +3,7 @@
  * (94) 71 5812399 open the currentlate in the editor.
  */
 package com.divudi.bean.common;
+
 import com.divudi.bean.cashTransaction.CashBookEntryController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.membership.PaymentSchemeController;
@@ -82,7 +83,7 @@ public class AgentPaymentRecieveBillController implements Serializable {
     StaffBean staffBean;
     @EJB
     PaymentFacade paymentFacade;
-    
+
     @Inject
     private PaymentSchemeController paymentSchemeController;
     @Inject
@@ -110,8 +111,6 @@ public class AgentPaymentRecieveBillController implements Serializable {
 
     public AgentPaymentRecieveBillController() {
     }
-
-    
 
     private boolean errorCheck() {
         if (getCurrent().getFromInstitution() == null) {
@@ -196,7 +195,6 @@ public class AgentPaymentRecieveBillController implements Serializable {
         getCurrent().setBillTypeAtomic(BillTypeAtomic.CC_PAYMENT_RECEIVED_BILL);
         settleBill(BillType.CollectingCentrePaymentReceiveBill, HistoryType.CollectingCentreDeposit, HistoryType.CollectingCentreBalanceUpdateBill, BillNumberSuffix.CCPAY);
 
-        
     }
 
     public void channellAgencyPaymentRecieveSettleBill() {
@@ -206,7 +204,6 @@ public class AgentPaymentRecieveBillController implements Serializable {
 
         settleBill(BillType.AgentPaymentReceiveBill, HistoryType.ChannelDeposit, HistoryType.AgentBalanceUpdateBill, BillNumberSuffix.AGNPAY);
 
-        
     }
 
     public void channelAgencyCreditNoteSettleBill() {
@@ -255,8 +252,40 @@ public class AgentPaymentRecieveBillController implements Serializable {
 
     }
 
-   public void settleBill(BillType billType, HistoryType historyType, HistoryType updatHistoryType, BillNumberSuffix billNumberSuffix) {
-        addPaymentMethordValueToTotal(current,getCurrent().getPaymentMethod());
+    public void collectingCenterPaymentReciptBill(BillType billType, HistoryType historyType, HistoryType updatHistoryType, BillNumberSuffix billNumberSuffix) {
+        addPaymentMethordValueToTotal(current, getCurrent().getPaymentMethod());
+        addToBill();
+        if (errorCheck()) {
+            return;
+        }
+        getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
+
+        getCurrent().setTotal(getCurrent().getNetTotal());
+
+        saveBill(billType, billNumberSuffix);
+        saveBillItem();
+        createPayment(current, getCurrent().getPaymentMethod());
+        //for channel agencyHistory Update
+        createAgentHistory(getCurrent().getFromInstitution(), getCurrent().getNetTotal(), historyType, getCurrent());
+        //for channel agencyHistory Update
+
+        //Update Agent Max Credit Limit
+        if ((getCurrent().getNetTotal() > (getCurrent().getFromInstitution().getMaxCreditLimit() - getCurrent().getFromInstitution().getStandardCreditLimit())) && (getCurrent().getFromInstitution().getMaxCreditLimit() != getCurrent().getFromInstitution().getStandardCreditLimit())) {
+            institutionController.createAgentCreditLimitUpdateHistory(getCurrent().getFromInstitution(), getCurrent().getFromInstitution().getAllowedCredit(), getCurrent().getFromInstitution().getStandardCreditLimit(), updatHistoryType, "Agent Payment Allowed Credit Limit Update");
+            getCurrent().getFromInstitution().setAllowedCredit(getCurrent().getFromInstitution().getStandardCreditLimit());
+            getInstitutionFacade().edit(getCurrent().getFromInstitution());
+        }
+        //Update Agent Max Credit Limit
+
+        ///////////////////
+
+        JsfUtil.addSuccessMessage("Bill Saved");
+        printPreview = true;
+
+    }
+
+    public void settleBill(BillType billType, HistoryType historyType, HistoryType updatHistoryType, BillNumberSuffix billNumberSuffix) {
+        addPaymentMethordValueToTotal(current, getCurrent().getPaymentMethod());
         addToBill();
         if (!billType.equals(BillType.AgentDebitNoteBill) && !billType.equals(BillType.AgentCreditNoteBill)
                 && !billType.equals(BillType.CollectingCentreCreditNoteBill) && !billType.equals(BillType.CollectingCentreDebitNoteBill)) {
@@ -282,48 +311,43 @@ public class AgentPaymentRecieveBillController implements Serializable {
             getInstitutionFacade().edit(getCurrent().getFromInstitution());
         }
         //Update Agent Max Credit Limit
-
-        ///////////////////
-        WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getCurrent(), getSessionController().getLoggedUser());
-        getSessionController().setLoggedUser(wb);
-
         JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
 
     }
-   
-   public void addPaymentMethordValueToTotal(Bill b,PaymentMethod pm){
+
+    public void addPaymentMethordValueToTotal(Bill b, PaymentMethod pm) {
         switch (pm) {
-                case Card:
-                    b.setNetTotal(paymentMethodData.getCreditCard().getTotalValue());
-                    break;
-                case Cheque:
-                   b.setNetTotal(paymentMethodData.getCheque().getTotalValue());
-                    break;
-                case Cash:
-                    break;
-                case ewallet:
-                    break;
-                case Agent:
-                    break;
-                case Credit:
-                    break;
-                case PatientDeposit:
-                    break;
-                case Slip:
-                    b.setNetTotal(paymentMethodData.getSlip().getTotalValue());
-                   break;
-                case OnCall:
-                    break;
-                case OnlineSettlement:
-                    break;
-                case Staff:
-                    break;
-                case YouOweMe:
-                    break;
-                case MultiplePaymentMethods:
-                    break;
-            }
+            case Card:
+                b.setNetTotal(paymentMethodData.getCreditCard().getTotalValue());
+                break;
+            case Cheque:
+                b.setNetTotal(paymentMethodData.getCheque().getTotalValue());
+                break;
+            case Cash:
+                break;
+            case ewallet:
+                break;
+            case Agent:
+                break;
+            case Credit:
+                break;
+            case PatientDeposit:
+                break;
+            case Slip:
+                b.setNetTotal(paymentMethodData.getSlip().getTotalValue());
+                break;
+            case OnCall:
+                break;
+            case OnlineSettlement:
+                break;
+            case Staff:
+                break;
+            case YouOweMe:
+                break;
+            case MultiplePaymentMethods:
+                break;
+        }
     }
 
     private void saveBillItem() {
@@ -348,7 +372,6 @@ public class AgentPaymentRecieveBillController implements Serializable {
     }
 
     public void createAgentHistory(Institution ins, double transactionValue, HistoryType historyType, Bill bill) {
-        System.out.println("transactionValue = " + transactionValue);
         AgentHistory agentHistory = new AgentHistory();
         agentHistory.setCreatedAt(new Date());
         agentHistory.setCreater(getSessionController().getLoggedUser());
@@ -356,13 +379,11 @@ public class AgentPaymentRecieveBillController implements Serializable {
         agentHistory.setAgency(ins);
         agentHistory.setBalanceBeforeTransaction(ins.getBallance());
         agentHistory.setTransactionValue(transactionValue);
-        agentHistory.setBalanceAfterTransaction(ins.getBallance() + transactionValue);
         agentHistory.setHistoryType(historyType);
         agentHistoryFacade.create(agentHistory);
 
         ins.setBallance(ins.getBallance() + transactionValue);
         getInstitutionFacade().edit(ins);
-        System.out.println("agentHistory = saved 2");
 
     }
 
@@ -370,7 +391,7 @@ public class AgentPaymentRecieveBillController implements Serializable {
         recreateModel();
         return "";
     }
-    
+
     public List<Payment> createPayment(Bill bill, PaymentMethod pm) {
         List<Payment> ps = new ArrayList<>();
         if (bill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {

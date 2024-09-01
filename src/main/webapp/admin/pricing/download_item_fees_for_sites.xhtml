@@ -114,6 +114,9 @@
                             <!-- Item Name Column with sorting and filtering -->
                             <p:column headerText="Item Name" width="20em" sortBy="#{f.item.name}" filterBy="#{f.item.name}" filterMatchMode="contains">
                                 <h:outputText value="#{f.item.name}" ></h:outputText>
+                                <h:outputText value="#{f.item.retired?'Deleted':''}" ></h:outputText>
+                                <h:outputText value="#{f.item.retiredAt}" ></h:outputText>
+                                <h:outputText value="#{f.item.retirer.webUserPerson.nameWithTitle}" ></h:outputText>
                             </p:column>
 
 

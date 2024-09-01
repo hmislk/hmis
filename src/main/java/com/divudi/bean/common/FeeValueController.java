@@ -138,7 +138,6 @@ public class FeeValueController implements Serializable {
         FeeValue fv = getFacade().findFirstByJpql(jpql, params);
 
         if (fv != null) {
-            System.out.println("FeeValue found in first query: " + fv);
             return fv;
         }
 
@@ -160,7 +159,6 @@ public class FeeValueController implements Serializable {
 
         fv = getFacade().findFirstByJpql(jpql, params);
 
-        System.out.println("Returning FeeValue: " + fv);
 
         return fv;
     }
@@ -188,7 +186,6 @@ public class FeeValueController implements Serializable {
         FeeValue fv = getFacade().findFirstByJpql(jpql, params);
 
         if (fv != null) {
-            System.out.println("FeeValue found in first query: " + fv);
             return fv;
         }
 
@@ -210,7 +207,6 @@ public class FeeValueController implements Serializable {
 
         fv = getFacade().findFirstByJpql(jpql, params);
 
-        System.out.println("Returning FeeValue: " + fv);
 
         return fv;
     }

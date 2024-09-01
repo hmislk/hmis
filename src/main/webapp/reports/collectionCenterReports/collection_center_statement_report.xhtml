@@ -65,9 +65,10 @@
                                     style=" max-width: 100%; overflow-x: auto; "
                                     class="w-100"
                                     value="#{reportController.collectingCentre}"
-                                    filter="true">
+                                    filter="true"
+                                    filterMatchMode="contains">
                                     <f:selectItem itemLabel="Select Agent"/>
-                                    <f:selectItems var="r" itemLabel="#{r.name}" 
+                                    <f:selectItems var="r" itemLabel="#{r.name} - #{r.code}" 
                                                    value="#{collectingCentreController.items}" 
                                                    itemValue="#{r}" />
                                 </p:selectOneMenu>
@@ -88,14 +89,14 @@
                             </div>
                             <div class="col-md-4">
 
-                            </div>
+                            </div> 
                         </div>
 
                         <p:commandButton 
                             class="my-2"
                             ajax="false" 
                             value="Process" 
-                            action="#{reportController.processCollectingCentreStatementReport()}" >
+                            action="#{reportController.processCollectingCentreStatementReportNew()}" >
                         </p:commandButton>
 
 
@@ -117,24 +118,43 @@
                         </h:panelGrid>
 
                     </div>
-                    <p:dataTable value="#{reportController.billItems}" var="bi">
-                        <p:column headerText="CC Code" >
-                            <h:outputText value="#{bi.bill.fromInstitution.code}" ></h:outputText>
+                    <p:dataTable value="#{reportController.agentHistories}" var="bi">
+                        <p:column headerText="DOC NO" >
+                            <h:outputText value="#{bi.bill.insId}" ></h:outputText>
                         </p:column>
-                        <p:column headerText="Leaf No" >
+                        <p:column headerText="LEAF NO" >
                             <h:outputText value="#{bi.bill.referenceNumber}" ></h:outputText>
                         </p:column>
-                        <p:column headerText="MRN" >
-                            <h:outputText value="#{bi.bill.patient.phn}" ></h:outputText>
+                        <p:column headerText="Bill Type" >
+                            <h:outputText value="#{bi.bill.billTypeAtomic.label}" ></h:outputText>
                         </p:column>
-                        <p:column headerText="Patient Name" >
-                            <h:outputText value="#{bi.bill.patient.person.nameWithTitle}" ></h:outputText>
+                        <p:column headerText="HOS FEE" >
+                            <h:outputText value="#{bi.bill.totalHospitalFee}" ></h:outputText>
                         </p:column>
-                        <p:column headerText="Invoice Date" >
-                            <h:outputText value="#{bi.bill.billDate}" ></h:outputText>
+                        <p:column headerText="STAFF FEE" >
+                            <h:outputText value="#{bi.bill.totalStaffFee}" ></h:outputText>
                         </p:column>
-                        <p:column headerText="Invoice No" >
-                            <h:outputText value="#{bi.bill.deptId}" ></h:outputText>
+                        <p:column headerText="REC AMT" >
+                            <h:outputText rendered="#{bi.bill.billTypeAtomic eq 'CC_PAYMENT_RECEIVED_BILL'}" value="#{bi.bill.netTotal}" ></h:outputText>
+                            <h:outputText value="0.00" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="CC FEE" >
+                            <h:outputText value="#{bi.bill.totalCenterFee}" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="C PAY" >
+                            <h:outputText value="0.00" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="ADJ AMT" >
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="BEFORE BAL" >
+                            <h:outputText value="#{bi.balanceBeforeTransaction}" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="TR AMT" >
+                            <h:outputText value="#{bi.transactionValue}" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="AFTER BAL" >
+                            <h:outputText value="#{bi.balanceAfterTransaction}" ></h:outputText>
                         </p:column>
 
                     </p:dataTable>

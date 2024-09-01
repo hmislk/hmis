@@ -12,11 +12,21 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:dataTable id="#{cc.id}"  value="#{cc.attrs.data.bills}" var="b7"   sortBy="#{b7.billType}" rendered="#{cc.attrs.data.bills.size()>0}">
+        <p:dataTable id="#{cc.id}"  value="#{cc.attrs.data.bills}" var="b7"  class="w-100"  sortBy="#{b7.billType}" rendered="#{cc.attrs.data.bills.size()>0}">
             <f:facet name="header">  
                 <h:outputLabel value="Collocting Centre Payment Cancel"/>
             </f:facet> 
-            <p:column headerText="Time" style="width:16%; " >
+            <p:column headerText="Bill No" >
+                <h:outputLabel value="#{b7.insId}" >
+                    
+                </h:outputLabel>
+            </p:column>
+            <p:column headerText="Bill Type" >
+                <h:outputLabel value="#{b7.billType.label}" >
+                    
+                </h:outputLabel>
+            </p:column>
+            <p:column headerText="Time" >
                 <f:facet name="header">  
                     <h:outputLabel value="Time"/>
                 </f:facet>
@@ -31,7 +41,7 @@
                 </f:facet>
                 <h:outputLabel value="#{b7.insId}"/>
             </p:column>
-            <p:column headerText="Collocting Centre"  style=""> 
+            <p:column headerText="Collocting Centre"  style="width:250px"> 
                 <f:facet name="header">  
                     <h:outputLabel value="Collocting Centre"/>
                 </f:facet>
@@ -87,7 +97,7 @@
 
             <p:columnGroup type="footer">  
                 <p:row>  
-                    <p:column colspan="3" style="text-align:left" footerText="Totals:"/>  
+                    <p:column colspan="5" style="text-align:left" footerText="Totals:"/>  
                     <p:column footerText="#{cc.attrs.data.cash}" style=" text-align: right">
                         <f:facet name="footer">
                             <h:outputLabel value="#{cc.attrs.data.cash}">
