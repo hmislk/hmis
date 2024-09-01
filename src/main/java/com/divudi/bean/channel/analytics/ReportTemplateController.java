@@ -363,6 +363,12 @@ public class ReportTemplateController implements Serializable {
         if (results == null || results.isEmpty()) {
             return pb; // Consider returning an empty ReportTemplateRowBundle instead
         }
+
+        double bundleTotal = pb.getReportTemplateRows().stream()
+                .mapToDouble(r -> r.getPayment().getPaidValue())
+                .sum();
+        pb.setTotal(bundleTotal);
+
         pb.setReportTemplateRows(results);
         return pb;
     }

@@ -11,149 +11,112 @@
             <ui:define name="subcontent">
 
                 <h:form >
+                    <p:panel header="Collection Centre Statement Report" styleClass="w-100">
+                        <p:panelGrid columns="4" styleClass="mb-2" columnClasses="col-md-2, col-md-4, col-md-2, col-md-4">
+                            <p:outputLabel value="From Date" />
+                            <p:datePicker  showTime="true" value="#{reportController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+
+                            <p:outputLabel value="To Date" />
+                            <p:datePicker showTime="true" value="#{reportController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+
+                            <p:outputLabel value="Institution/Branch" />
+                            <p:selectOneMenu filter="true" id="cmdInstitution" style=" max-width: 100%; overflow-x: auto;" class="w-100" value="#{reportController.institution}">
+                                <f:selectItem itemLabel="All" />
+                                <f:selectItems value="#{institutionController.companies}" var="i" itemLabel="#{i.name}" itemValue="#{i}" />
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Collecting Centre" />
+
+                            <p:autoComplete 
+                                id="creditCom" 
+                                forceSelection="true" 
+                                value="#{reportController.collectingCentre}" 
+                                completeMethod="#{institutionController.completeCollectingCenter}" 
+                                var="ix" 
+                                class="w-100"
+                                inputStyleClass="form-control"
+                                itemLabel="#{ix.name}" 
+                                itemValue="#{ix}" 
+                                size="30" 
+                                maxResults="20"                                
+                                >
+                                <f:ajax  event="itemSelect" execute="creditCom"  />
+                                <p:column headerText="Code" style="padding: 5px; width: 150px;">#{ix.institutionCode}</p:column>
+                                <p:column headerText="Collecting Centre Name" style="padding: 5px;">#{ix.name}</p:column>
+                                <p:column headerText="Balance" style="padding: 5px; width: 150px; text-align: right;">
+                                    <p:outputLabel value="#{ix.ballance}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </p:outputLabel>
+                                </p:column>
+                            </p:autoComplete>
 
 
+                            <p:outputLabel value="Invoice No." />
+                            <p:inputText style=" max-width: 100%; overflow-x: auto;" class="w-100" value="#{reportController.invoiceNumber}" />
 
-                    <div class="container">
-                        <div class="row mb-2">
-                            <div class="col-12">
-                                <h2>Collection Centre Statement Report</h2>
-                            </div>
-                        </div>
-
-                        <div class="row mb-2">
-                            <div class="col-md-2">
-                                <p:outputLabel value="From Date" >
-                                </p:outputLabel>
-                            </div>
-                            <div class="col-md-4">
-                                <p:datePicker value="#{reportController.fromDate}" 
-                                              pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
-                            </div>
-                            <div class="col-md-2">
-                                <p:outputLabel value="To Date" >
-                                </p:outputLabel>
-                            </div>
-                            <div class="col-md-4">
-                                <p:datePicker value="#{reportController.toDate}"
-                                              pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
-                            </div>
-                        </div>
-
-                        <div class="row mb-2">
-                            <div class="col-md-2">
-                                <p:outputLabel value="Institution/Branch" >
-                                </p:outputLabel>
-                            </div>
-                            <div class="col-md-4">
-                                <p:selectOneMenu filter="true" id="cmdInstitution" 
-                                                 style=" max-width: 100%; overflow-x: auto; "
-                                                 class="w-100"
-                                                 value="#{reportController.institution}">
-                                    <f:selectItem itemLabel="All" />
-                                    <f:selectItems value="#{institutionController.companies}"
-                                                   var="i"
-                                                   itemLabel="#{i.name}"
-                                                   itemValue="#{i}" />
-                                </p:selectOneMenu>
-                            </div>
-                            <div class="col-md-2">
-                                <p:outputLabel value="Agent Name" />
-                            </div>
-                            <div class="col-md-4">
-                                <p:selectOneMenu 
-                                    style=" max-width: 100%; overflow-x: auto; "
-                                    class="w-100"
-                                    value="#{reportController.collectingCentre}"
-                                    filter="true"
-                                    filterMatchMode="contains">
-                                    <f:selectItem itemLabel="Select Agent"/>
-                                    <f:selectItems var="r" itemLabel="#{r.name} - #{r.code}" 
-                                                   value="#{collectingCentreController.items}" 
-                                                   itemValue="#{r}" />
-                                </p:selectOneMenu>
-                            </div>
-                        </div>
-
-                        <div class="row mb-2">
-                            <div class="col-md-2">
-                                <p:outputLabel value="Invoice No." />
-                            </div>
-                            <div class="col-md-4">
-                                <p:inputText  style=" max-width: 100%; overflow-x: auto; "
-                                              class="w-100"
-                                              value="#{reportController.invoiceNumber}" />
-                            </div>
-                            <div class="col-md-2">
-
-                            </div>
-                            <div class="col-md-4">
-
-                            </div> 
-                        </div>
+                            <!-- Empty spaces for alignment -->
+                            <p:outputLabel value="" />
+                            <p:outputLabel value="" />
+                        </p:panelGrid>
 
                         <p:commandButton 
-                            class="my-2"
+                            class="my-2" 
                             ajax="false" 
                             value="Process" 
-                            action="#{reportController.processCollectingCentreStatementReportNew()}" >
-                        </p:commandButton>
+                            action="#{reportController.processCollectingCentreStatementReportNew()}" 
+                            icon="pi pi-check" />
 
-
-
-                        <h5>Have to make Summary letter with test name get download</h5>
-                        <h:panelGrid columns="2">
-
-                            <h:outputLabel value="From Date :  "/>
-                            <h:outputLabel value="#{reportController.fromDate}"  >
+                        <h:panelGrid columns="2" styleClass="mt-4">
+                            <h:outputLabel value="From Date :" />
+                            <h:outputLabel value="#{reportController.fromDate}">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                             </h:outputLabel>
 
-                            <h:outputLabel value="To Date :  "/>
-                            <h:outputLabel value="#{reportController.toDate}"  >
+                            <h:outputLabel value="To Date :" />
+                            <h:outputLabel value="#{reportController.toDate}">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                             </h:outputLabel>
-
-
                         </h:panelGrid>
 
-                    </div>
+                        <h5 class="mt-4">Have to make Summary letter with test name get download</h5>
+                    </p:panel>
+
                     <p:dataTable value="#{reportController.agentHistories}" var="bi">
-                        <p:column headerText="DOC NO" >
+                        <p:column headerText="Bill Number" >
                             <h:outputText value="#{bi.bill.insId}" ></h:outputText>
                         </p:column>
-                        <p:column headerText="LEAF NO" >
+                        <p:column headerText="Referrance Remove" >
                             <h:outputText value="#{bi.bill.referenceNumber}" ></h:outputText>
                         </p:column>
                         <p:column headerText="Bill Type" >
                             <h:outputText value="#{bi.bill.billTypeAtomic.label}" ></h:outputText>
                         </p:column>
-                        <p:column headerText="HOS FEE" >
+                        <p:column headerText="Hospital Fee" >
                             <h:outputText value="#{bi.bill.totalHospitalFee}" ></h:outputText>
                         </p:column>
-                        <p:column headerText="STAFF FEE" >
+                        <p:column headerText="Staff Fee" >
                             <h:outputText value="#{bi.bill.totalStaffFee}" ></h:outputText>
                         </p:column>
-                        <p:column headerText="REC AMT" >
+                        <p:column headerText="Transaction Amount" >
                             <h:outputText rendered="#{bi.bill.billTypeAtomic eq 'CC_PAYMENT_RECEIVED_BILL'}" value="#{bi.bill.netTotal}" ></h:outputText>
                             <h:outputText value="0.00" ></h:outputText>
                         </p:column>
-                        <p:column headerText="CC FEE" >
+                        <p:column headerText="CC Value" > // Payment Done from CC Blance
                             <h:outputText value="#{bi.bill.totalCenterFee}" ></h:outputText>
                         </p:column>
-                        <p:column headerText="C PAY" >
+                        <p:column headerText="CC Payments" > // Payment Done by Hospital to CC
                             <h:outputText value="0.00" ></h:outputText>
                         </p:column>
-                        <p:column headerText="ADJ AMT" >
+                        <p:column headerText="CC Agjustment" >
                             <h:outputText value="" ></h:outputText>
                         </p:column>
-                        <p:column headerText="BEFORE BAL" >
+                        <p:column headerText="CC Balance Before Transaction" >
                             <h:outputText value="#{bi.balanceBeforeTransaction}" ></h:outputText>
                         </p:column>
-                        <p:column headerText="TR AMT" >
+                        <p:column headerText="Transaction Amount" > // Hospital Fee
                             <h:outputText value="#{bi.transactionValue}" ></h:outputText>
                         </p:column>
-                        <p:column headerText="AFTER BAL" >
+                        <p:column headerText="CC Balance After Transaction" >
                             <h:outputText value="#{bi.balanceAfterTransaction}" ></h:outputText>
                         </p:column>
 
