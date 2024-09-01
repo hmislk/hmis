@@ -8277,11 +8277,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public double getCashBalance() {
         if (feeTotalForSelectedBill != null) {
-            if (feeNetTotalForSelectedBill == null) {
-                feeNetTotalForSelectedBill = 0.0;
-            }
-            System.out.println("feeNetTotalForSelectedBill = " + feeNetTotalForSelectedBill);
-            cashBalance = feeNetTotalForSelectedBill - cashPaid;
+            cashBalance = feeTotalForSelectedBill - cashPaid;
+        }else{
+            feeTotalForSelectedBill=0.0;
+            cashBalance=feeTotalForSelectedBill-cashPaid;
         }
         return cashBalance;
     }
