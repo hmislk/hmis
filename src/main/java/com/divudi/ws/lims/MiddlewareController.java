@@ -87,6 +87,9 @@ public class MiddlewareController {
 
             System.out.println("Fetching patient sample for Sample ID: " + queryRecord.getSampleId());
             PatientSample ptSample = limsMiddlewareController.patientSampleFromId(queryRecord.getSampleId());
+
+            PatientSample ps = limsMiddlewareController.patientSampleFromId(queryRecord.getSampleId());
+
             if (ptSample == null) {
                 System.out.println("Patient sample not found for Sample ID: " + queryRecord.getSampleId());
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Patient sample not found").build();
@@ -104,9 +107,11 @@ public class MiddlewareController {
                 System.out.println("Person is null in Patient.");
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Invalid person data").build();
             }
+            String referringDoc = "No Referring Doctor";
             if (ptSample.getBill() == null || ptSample.getBill().getReferredBy() == null || ptSample.getBill().getReferredBy().getPerson() == null) {
                 System.out.println("Referred by or person in referred by is null in Bill.");
-                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Invalid referred by data").build();
+            } else {
+                referringDoc = ptSample.getBill().getReferredBy().getPerson().getNameWithTitle();
             }
 
             PatientRecord pr = new PatientRecord(0,
@@ -117,7 +122,7 @@ public class MiddlewareController {
                     "", null,
                     ptSample.getPatient().getPerson().getAddress(),
                     ptSample.getPatient().getPerson().getPhone(),
-                    ptSample.getBill().getReferredBy().getPerson().getNameWithTitle());
+                    referringDoc);
             pdb.setPatientRecord(pr);
 
             // Convert the PatientDataBundle to JSON and send it in the response

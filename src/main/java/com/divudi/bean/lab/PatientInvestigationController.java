@@ -78,6 +78,8 @@ import com.divudi.entity.lab.Machine;
 import com.divudi.entity.lab.Sample;
 import com.divudi.java.CommonFunctions;
 import com.divudi.ws.lims.Lims;
+import com.divudi.ws.lims.LimsMiddlewareController;
+import com.divudi.ws.lims.MiddlewareController;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -1330,7 +1332,6 @@ public class PatientInvestigationController implements Serializable {
 //            JsfUtil.addErrorMessage("This Bill has has Already Barcode Genatared");
 //            return;
 //        }
-
         BillBarcode bb = new BillBarcode(billForBarcode);
         List<PatientSampleWrapper> psws = new ArrayList<>();
         List<PatientSample> pss = prepareSampleCollectionByBillsForPhlebotomyRoom(billForBarcode, sessionController.getLoggedUser());
@@ -1395,7 +1396,6 @@ public class PatientInvestigationController implements Serializable {
 //                return;
 //            }
 //        }
-
         // Create a set to track unique bills
         Set<Bill> uniqueBills = new HashSet<>();
         Bill ptIxBill = null;
@@ -1658,34 +1658,30 @@ public class PatientInvestigationController implements Serializable {
 
         JsfUtil.addSuccessMessage("Selected Samples Are Rejected");
     }
-    
+
+    @Inject
+    LimsMiddlewareController limsMiddlewareController;
+
     private String testDetails;
-    
+
     public void generateSampleCodesSamples() {
         if (selectedPatientSamples == null || selectedPatientSamples.isEmpty()) {
             JsfUtil.addErrorMessage("No samples selected");
             return;
         }
-        listingEntity = ListingEntity.PATIENT_SAMPLES;
-        
-        testDetails="";
-
-        Map<Long, PatientInvestigation> rejectedPtixs = new HashMap<>();
-        Map<Long, Bill> affectedBills = new HashMap<>();
-
-        // Update sample rejection details and gather associated patient investigations
         for (PatientSample ps : selectedPatientSamples) {
-            
+            List<String> tests = limsMiddlewareController.generateTestCodesForAnalyzer(ps.getIdStr());
+            for (String test : tests) {
+                // Here you can manipulate or use each test string
+                testDetails = test; // Assigning the test string to testDetails
+                // If you need to accumulate all test strings, you could append them instead
+                // testDetails += test + ";"; 
+            }
         }
-
-       
-
-        JsfUtil.addSuccessMessage("Selected Samples Details created");
     }
-    
-    
-    
 
+    
+    
     public void listPatientInvestigationAwaitingSamplling() {
         String temSql;
         Map temMap = new HashMap();
@@ -1724,7 +1720,6 @@ public class PatientInvestigationController implements Serializable {
 //        List<PatientInvestigation> pis = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
 //        billBarcodes = createBilBarcodeObjects(pis);
 //    }
-
     public void clearFilters() {
         // Reset search filters
         this.searchDateType = null;
@@ -2102,7 +2097,6 @@ public class PatientInvestigationController implements Serializable {
 //        List<PatientInvestigation> pis = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
 //        billBarcodes = createBilBarcodeObjects(pis);
 //    }
-
     public void searchPatientInvestigations() {
         System.out.println("searchPatientInvestigations");
         listingEntity = ListingEntity.PATIENT_INVESTIGATIONS;
@@ -2408,7 +2402,6 @@ public class PatientInvestigationController implements Serializable {
         return patientInvestigations;
     }
 
-    
 //    public void listBillsWithGeneratedBarcodes() {
 //        String jpql;
 //        Map params = new HashMap();
@@ -2437,7 +2430,6 @@ public class PatientInvestigationController implements Serializable {
 //        List<PatientInvestigation> pis = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
 //        billBarcodes = createBilBarcodeObjects(pis);
 //    }
-
     private List<BillBarcode> createBilBarcodeObjects(List<PatientInvestigation> ptis) {
         if (ptis == null) {
             JsfUtil.addErrorMessage("No Patient Investigations");
