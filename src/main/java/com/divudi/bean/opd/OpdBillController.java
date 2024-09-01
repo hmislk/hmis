@@ -2144,7 +2144,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         if (paymentMethod == PaymentMethod.Credit) {
             String creditRefNo = paymentMethodData.getCredit().getReferenceNo();
             newBill.setReferenceNumber(creditRefNo);
-            System.out.println("this is the ref no for credit" + creditRefNo);
         }
 
 //        newBill.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(patient, getSessionController().getApplicationPreference().isMembershipExpires()));
@@ -2692,7 +2691,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         boolean addAllBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are the same for all departments, institutions and sites.", true);
         boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the site", false);
         System.out.println("siteBasedBillFees = " + siteBasedBillFees);
-        System.out.println("addAllBillFees = " + addAllBillFees);
 
         if (addAllBillFees) {
             allBillFees = getBillBean().billFeefromBillItem(bi);
@@ -3074,7 +3072,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     public String navigateToNewOpdBill() {
         Boolean opdBillingAfterShiftStart = sessionController.getApplicationPreference().isOpdBillingAftershiftStart();
         Boolean opdBillItemSearchByAutocomplete = configOptionApplicationController.getBooleanValueByKey("OPD Bill Item Search By Autocomplete", false);
-        System.out.println("opdBillItemSearchByAutocomplete = " + opdBillItemSearchByAutocomplete);
         if (opdBillingAfterShiftStart) {
             financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
             if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {

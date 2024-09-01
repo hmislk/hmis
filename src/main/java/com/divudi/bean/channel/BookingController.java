@@ -507,7 +507,6 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         m.put("ret", false);
         m.put("cd", currentDate);
         sessionInstanceByDoctor = sessionInstanceFacade.findByJpql(jpql.toString(), m, TemporalType.DATE);
-        System.out.println("sessionInstanceByDoctor = " + sessionInstanceByDoctor.size());
     }
 
     public void sessionReschedule() {
@@ -558,7 +557,6 @@ public class BookingController implements Serializable, ControllerWithPatient, C
 
     public String createSmsForChannelBookingReschedule(Bill b, BillSession b1, String template) {
         if (b == null) {
-            System.out.println("b = " + b);
             return "";
         }
         if (b.getSingleBillSession() == null) {
@@ -571,7 +569,6 @@ public class BookingController implements Serializable, ControllerWithPatient, C
             return "";
         }
         if (b1 == null) {
-            System.out.println("billsession = " + b1);
         }
         SessionInstance si = b.getSingleBillSession().getSessionInstance();
         BillSession bs = b.getSingleBillSession();
@@ -615,11 +612,9 @@ public class BookingController implements Serializable, ControllerWithPatient, C
     private void createBillSessionForReschedule(BillSession bs, SessionInstance si) {
         BillSession newBillSession = new BillSession();
         if (bs == null) {
-            System.out.println("bs = " + bs);
             return;
         }
         if (si == null) {
-            System.out.println("si = " + si);
             return;
         }
 
@@ -641,12 +636,10 @@ public class BookingController implements Serializable, ControllerWithPatient, C
 
         if (selectedBillSession.isReservedBooking()) {
             if (lastSessionReservedNumbers.isEmpty()) {
-                System.out.println("selectedBillSession.isReservedBooking() = " + selectedBillSession.isReservedBooking());
                 JsfUtil.addErrorMessage("No Reserved Numbers FInd !");
                 return;
             }
             for (Integer rn : lastSessionReservedNumbers) {
-                System.out.println("rn = " + rn);
                 if (bs.getSerialNo() == rn) {
                     count = serviceSessionBean.getNextAvailableReservedNumber(getSelectedSessionInstanceForRechedule(), reservedNumbers, selectedReserverdBookingNumber);
                     if (count == null) {
@@ -661,10 +654,8 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         }
         if (count != null) {
             newBillSession.setSerialNo(count);
-            System.out.println("count = " + count);
         } else {
             newBillSession.setSerialNo(1);
-            System.out.println("count serial number= " + bs.getSerialNo());
         }
         getBillSessionFacade().create(newBillSession);
         bs.setRecheduledSession(true);
@@ -746,7 +737,6 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         for (BillSession bs : billSessions) {
             if (configOptionApplicationController.getBooleanValueByKey("Sent Channelling Status Update Notification SMS on Channel Session Start", true)) {
                 sendChannellingStatusUpdateNotificationSms(bs);
-                System.out.println("bs = " + bs);
             }
             if (!firstIncompleteFound && !bs.isCompleted()) {
                 bs.setNextInLine(true);
@@ -3131,7 +3121,6 @@ public class BookingController implements Serializable, ControllerWithPatient, C
     }
 
     private Bill saveBilledBill(boolean forReservedNumbers) {
-        System.out.println("forReservedNumbers = " + forReservedNumbers);
         Bill savingBill = createBill();
         BillItem savingBillItem = createSessionItem(savingBill);
         BillItem additionalBillItem = createAdditionalItem(savingBill, itemToAddToBooking);
@@ -3924,7 +3913,6 @@ public class BookingController implements Serializable, ControllerWithPatient, C
     }
 
     private BillSession createBillSession(Bill bill, BillItem billItem, boolean forReservedNumbers) {
-        System.out.println("forReservedNumbers createBillSession = " + forReservedNumbers);
         BillSession bs = new BillSession();
         bs.setAbsent(false);
         bs.setBill(bill);

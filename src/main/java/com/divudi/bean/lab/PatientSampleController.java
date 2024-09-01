@@ -229,7 +229,6 @@ public class PatientSampleController implements Serializable {
                 + " order by s.id";
         Map m = new HashMap();
         m.put("pi",pi);
-        System.out.println("PatientSample = " + getFacade().findByJpql(jpql, m).size());
         return getFacade().findByJpql(jpql, m);
     }
 
