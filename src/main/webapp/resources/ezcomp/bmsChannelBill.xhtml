@@ -136,10 +136,8 @@
                         <h:outputLabel value=":" ></h:outputLabel>
                     </td>
                     <td>
-
-                        <h:outputLabel value="#{cc.attrs.bill.singleBillSession.sessionInstance.roomNo}" style="font-weight: bold;">
+                        <h:outputLabel rendered="#{cc.attrs.bill.singleBillSession.sessionInstance.roomNo ne 0}" value="#{cc.attrs.bill.singleBillSession.sessionInstance.roomNo}" style="font-weight: bold;">
                         </h:outputLabel>
-
                     </td>
 
                 </tr>

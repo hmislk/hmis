@@ -3432,7 +3432,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         if (configOptionApplicationController.getBooleanValueByKey("Allow Tenderd amount for channel booking")) {
             if (paymentMethod == PaymentMethod.Cash) {
-                if (strTenderedValue == "" || strTenderedValue.isEmpty()) {
+                if (strTenderedValue == null) {
                     JsfUtil.addErrorMessage("Please Enter Tenderd Amount");
                     return;
                 }
@@ -6790,7 +6790,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private boolean errorCheckForSettle() {
 
         if (settlePaymentMethod == null) {
-            JsfUtil.addErrorMessage("Settle Payment Method for Settling");
+            settlePaymentMethod=paymentMethod.Cash;
             return true;
         }
 
@@ -6844,6 +6844,15 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                     return;
                 }
             }
+            if (configOptionApplicationController.getBooleanValueByKey("Allow Tenderd amount for channel booking")) {
+            if (settlePaymentMethod == PaymentMethod.Cash) {
+                if (strTenderedValue == null) {
+                    JsfUtil.addErrorMessage("Pleace Enter Tenderd Amount !");
+                    return;
+                }
+                
+            }
+        }
             if (errorChecksettle()) {
                 return;
             }
@@ -8249,10 +8258,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void setStrTenderedValue(String strTenderedValue) {
-
         this.strTenderedValue = strTenderedValue;
         try {
+            System.out.println("strTenderedValue = " + strTenderedValue);
             cashPaid = Double.parseDouble(strTenderedValue);
+            System.out.println("cashPaid = " + cashPaid);
         } catch (NumberFormatException e) {
         }
     }
@@ -8267,13 +8277,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public double getCashBalance() {
         if (feeTotalForSelectedBill != null) {
-//            System.out.println("feeNetTotalForSelectedBill = " + feeNetTotalForSelectedBill);
-//            System.out.println("cashPaid = " + cashPaid);
             if (feeNetTotalForSelectedBill == null) {
                 feeNetTotalForSelectedBill = 0.0;
             }
+            System.out.println("feeNetTotalForSelectedBill = " + feeNetTotalForSelectedBill);
             cashBalance = feeNetTotalForSelectedBill - cashPaid;
-//            System.out.println("cashBalance = " + cashBalance);
         }
         return cashBalance;
     }
