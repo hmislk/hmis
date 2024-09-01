@@ -11547,6 +11547,11 @@ public class SearchController implements Serializable {
         bundle.setName("collectionForTheDay");
         bundle.setBundleType("collectionForTheDay");
         bundle.getBundles().add(ccCollection);
+        
+        // Collection for the day
+        // Total Cash Payments
+        ReportTemplateRowBundle pettyCashPayments = generatePettyCashPayments();
+        bundle.getBundles().add(pettyCashPayments);
 
         // Generate OPD Credit Company Payment Collection and add to the main bundle
         ReportTemplateRowBundle opdCreditCompanyCollection = generateCreditCompanyCollectionForOpd();
@@ -11585,10 +11590,7 @@ public class SearchController implements Serializable {
         collectionForTheDayBundle.setBundleType("collectionForTheDay");
         collectionForTheDayBundle.setTotal(collectionForTheDay);
 
-        // Collection for the day
-        // Total Cash Payments
-        ReportTemplateRowBundle pettyCashPayments = generatePettyCashPayments();
-        bundle.getBundles().add(pettyCashPayments);
+        
 
         // Payment methods
         ReportTemplateRowBundle cardPayments = generateCreditCardPayments();
@@ -11754,7 +11756,7 @@ public class SearchController implements Serializable {
                 department,
                 site);
         ap.setName("OPD Credit Company Payment Collection");
-        ap.setBundleType("PaymentBillReport");
+        ap.setBundleType("companyPaymentBillOpd");
         return ap;
     }
 
@@ -11773,7 +11775,7 @@ public class SearchController implements Serializable {
                 department,
                 site);
         ap.setName("Inpatient Credit Company Payment Collection");
-        ap.setBundleType("PaymentBillReport");
+        ap.setBundleType("companyPaymentBillInward");
         return ap;
     }
 
@@ -11792,7 +11794,7 @@ public class SearchController implements Serializable {
                 department,
                 site);
         ap.setName("Pharmacy Credit Company Payment Collection");
-        ap.setBundleType("PaymentBillReport");
+        ap.setBundleType("companyPaymentBillPharmacy");
         return ap;
     }
 
@@ -11811,7 +11813,7 @@ public class SearchController implements Serializable {
                 department,
                 site);
         ap.setName("Channelling Credit Company Payment Collection");
-        ap.setBundleType("PaymentBillReport");
+        ap.setBundleType("companyPaymentBillChannelling");
         return ap;
     }
 
