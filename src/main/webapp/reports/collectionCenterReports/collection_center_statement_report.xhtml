@@ -91,32 +91,32 @@
                         <p:column headerText="Bill Type" >
                             <h:outputText value="#{bi.bill.billTypeAtomic.label}" ></h:outputText>
                         </p:column>
-                        <p:column headerText="HOS FEE" >
+                        <p:column headerText="Hospital Fee" >
                             <h:outputText value="#{bi.bill.totalHospitalFee}" ></h:outputText>
                         </p:column>
-                        <p:column headerText="STAFF FEE" >
+                        <p:column headerText="Staff Fee" >
                             <h:outputText value="#{bi.bill.totalStaffFee}" ></h:outputText>
                         </p:column>
-                        <p:column headerText="REC AMT" >
+                        <p:column headerText="Transaction Amount" >
                             <h:outputText rendered="#{bi.bill.billTypeAtomic eq 'CC_PAYMENT_RECEIVED_BILL'}" value="#{bi.bill.netTotal}" ></h:outputText>
                             <h:outputText value="0.00" ></h:outputText>
                         </p:column>
-                        <p:column headerText="CC FEE" >
+                        <p:column headerText="CC Value" > // Payment Done from CC Blance
                             <h:outputText value="#{bi.bill.totalCenterFee}" ></h:outputText>
                         </p:column>
-                        <p:column headerText="C PAY" >
+                        <p:column headerText="CC Payments" > // Payment Done by Hospital to CC
                             <h:outputText value="0.00" ></h:outputText>
                         </p:column>
-                        <p:column headerText="ADJ AMT" >
+                        <p:column headerText="CC Agjustment" >
                             <h:outputText value="" ></h:outputText>
                         </p:column>
-                        <p:column headerText="BEFORE BAL" >
+                        <p:column headerText="CC Balance Before Transaction" >
                             <h:outputText value="#{bi.balanceBeforeTransaction}" ></h:outputText>
                         </p:column>
-                        <p:column headerText="TR AMT" >
+                        <p:column headerText="Transaction Amount" > // Hospital Fee
                             <h:outputText value="#{bi.transactionValue}" ></h:outputText>
                         </p:column>
-                        <p:column headerText="AFTER BAL" >
+                        <p:column headerText="CC Balance After Transaction" >
                             <h:outputText value="#{bi.balanceAfterTransaction}" ></h:outputText>
                         </p:column>
 
