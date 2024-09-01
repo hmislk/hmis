@@ -78,6 +78,7 @@ import com.divudi.entity.lab.Machine;
 import com.divudi.entity.lab.Sample;
 import com.divudi.java.CommonFunctions;
 import com.divudi.ws.lims.Lims;
+import com.divudi.ws.lims.LimsMiddlewareController;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -1216,7 +1217,7 @@ public class PatientInvestigationController implements Serializable {
         if (searchInvestigationsForLoggedDepartment) {
             orderedDepartment = sessionController.getDepartment();
         }
-//        listBillsToGenerateBarcodes();
+        listBillsToGenerateBarcodes();
         return "/lab/generate_barcode_p?faces-redirect=true";
     }
 
@@ -1229,7 +1230,7 @@ public class PatientInvestigationController implements Serializable {
         if (searchInvestigationsForLoggedDepartment) {
             orderedDepartment = sessionController.getDepartment();
         }
-//        listBillsToGenerateBarcodes();
+        listBillsToGenerateBarcodes();
         return "/collecting_centre/courier/generate_barcode_p_cup?faces-redirect=true";
     }
 
@@ -1330,7 +1331,6 @@ public class PatientInvestigationController implements Serializable {
 //            JsfUtil.addErrorMessage("This Bill has has Already Barcode Genatared");
 //            return;
 //        }
-
         BillBarcode bb = new BillBarcode(billForBarcode);
         List<PatientSampleWrapper> psws = new ArrayList<>();
         List<PatientSample> pss = prepareSampleCollectionByBillsForPhlebotomyRoom(billForBarcode, sessionController.getLoggedUser());
@@ -1362,7 +1362,6 @@ public class PatientInvestigationController implements Serializable {
                     existingSampleIds += " " + id;
                 }
             }
-            piw.getPatientInvestigation().setSampleIds(existingSampleIds.trim());
             if (billForBarcode.getStatus() == patientInvestigationStatus.ORDERED) {
                 piw.getPatientInvestigation().setBarcodeGeneratedBy(sessionController.getLoggedUser());
                 piw.getPatientInvestigation().setStatus(PatientInvestigationStatus.SAMPLE_GENERATED);
@@ -1389,12 +1388,12 @@ public class PatientInvestigationController implements Serializable {
             return;
         }
 
-//        for (PatientInvestigation pi : selectedItems) {
-//            if (pi.getBillItem().getBill().getStatus() != patientInvestigationStatus.ORDERED) {
-//                JsfUtil.addErrorMessage("Barcode is already generated for Selected " + pi.getBillItem().getItem().getName() + " Investigation");
-//                return;
-//            }
-//        }
+        for (PatientInvestigation pi : selectedItems) {
+            if (pi.getBillItem().getBill().getStatus() != patientInvestigationStatus.ORDERED) {
+                JsfUtil.addErrorMessage("Barcode is already generated for Selected " + pi.getBillItem().getItem().getName() + " Investigation");
+                return;
+            }
+        }
 
         // Create a set to track unique bills
         Set<Bill> uniqueBills = new HashSet<>();
@@ -1658,33 +1657,28 @@ public class PatientInvestigationController implements Serializable {
 
         JsfUtil.addSuccessMessage("Selected Samples Are Rejected");
     }
-    
+
     private String testDetails;
-    
+    @Inject
+    LimsMiddlewareController limsMiddlewareController;
+
     public void generateSampleCodesSamples() {
         if (selectedPatientSamples == null || selectedPatientSamples.isEmpty()) {
             JsfUtil.addErrorMessage("No samples selected");
             return;
         }
         listingEntity = ListingEntity.PATIENT_SAMPLES;
-        
-        testDetails="";
 
-        Map<Long, PatientInvestigation> rejectedPtixs = new HashMap<>();
-        Map<Long, Bill> affectedBills = new HashMap<>();
+        testDetails = "";
+
 
         // Update sample rejection details and gather associated patient investigations
         for (PatientSample ps : selectedPatientSamples) {
-            
+            testDetails += limsMiddlewareController.generateTestCodesForAnalyzer(ps.getIdStr());
         }
-
-       
 
         JsfUtil.addSuccessMessage("Selected Samples Details created");
     }
-    
-    
-    
 
     public void listPatientInvestigationAwaitingSamplling() {
         String temSql;
@@ -1696,34 +1690,34 @@ public class PatientInvestigationController implements Serializable {
         lstForSampleManagement = getFacade().findByJpql(temSql, temMap, TemporalType.TIMESTAMP);
     }
 
-//    public void listBillsToGenerateBarcodes() {
-//        String jpql;
-//        Map params = new HashMap();
-//        jpql = "SELECT i "
-//                + " FROM PatientInvestigation i "
-//                + " where i.retired=:ret  "
-//                + " and i.barcodeGenerated=:bg "
-//                + " and i.billItem.bill.billDate between :fromDate and :toDate ";
-//
-//        if (orderedInstitution != null) {
-//            jpql += " and i.billItem.bill.institution=:ins ";
-//            params.put("ins", getOrderedInstitution());
-//        }
-//
-//        if (orderedInstitution != null) {
-//            jpql += " and i.billItem.bill.department=:dep ";
-//            params.put("dep", getOrderedDepartment());
-//        }
-//
-//        jpql += " order by i.id desc";
-//        params.put("fromDate", getFromDate());
-//        params.put("toDate", getToDate());
-//        params.put("ret", false);
-//        params.put("bg", false);
-//        billBarcodes = new ArrayList<>();
-//        List<PatientInvestigation> pis = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
-//        billBarcodes = createBilBarcodeObjects(pis);
-//    }
+    public void listBillsToGenerateBarcodes() {
+        String jpql;
+        Map params = new HashMap();
+        jpql = "SELECT i "
+                + " FROM PatientInvestigation i "
+                + " where i.retired=:ret  "
+                + " and i.barcodeGenerated=:bg "
+                + " and i.billItem.bill.billDate between :fromDate and :toDate ";
+
+        if (orderedInstitution != null) {
+            jpql += " and i.billItem.bill.institution=:ins ";
+            params.put("ins", getOrderedInstitution());
+        }
+
+        if (orderedInstitution != null) {
+            jpql += " and i.billItem.bill.department=:dep ";
+            params.put("dep", getOrderedDepartment());
+        }
+
+        jpql += " order by i.id desc";
+        params.put("fromDate", getFromDate());
+        params.put("toDate", getToDate());
+        params.put("ret", false);
+        params.put("bg", false);
+        billBarcodes = new ArrayList<>();
+        List<PatientInvestigation> pis = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        billBarcodes = createBilBarcodeObjects(pis);
+    }
 
     public void clearFilters() {
         // Reset search filters
@@ -2073,35 +2067,35 @@ public class PatientInvestigationController implements Serializable {
         System.out.println("items = " + bills);
     }
 
-//    @Deprecated
-//    public void searchBills1() {
-//        listingEntity = ListingEntity.PATIENT_INVESTIGATIONS;
-//        String jpql;
-//        Map params = new HashMap();
-//        jpql = "SELECT i "
-//                + " FROM PatientInvestigation i "
-//                + " where i.retired=:ret  "
-//                + " and i.billItem.bill.billDate between :fromDate and :toDate ";
-//
-//        if (orderedInstitution != null) {
-//            jpql += " and i.billItem.bill.institution=:ins ";
-//            params.put("ins", getOrderedInstitution());
-//        }
-//
-//        if (orderedInstitution != null) {
-//            jpql += " and i.billItem.bill.department=:dep ";
-//            params.put("dep", getOrderedDepartment());
-//        }
-//
-//        jpql += " order by i.id desc";
-//        params.put("fromDate", getFromDate());
-//        params.put("toDate", getToDate());
-//        params.put("ret", false);
-//        params.put("bg", false);
-//        billBarcodes = new ArrayList<>();
-//        List<PatientInvestigation> pis = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
-//        billBarcodes = createBilBarcodeObjects(pis);
-//    }
+    @Deprecated
+    public void searchBills1() {
+        listingEntity = ListingEntity.PATIENT_INVESTIGATIONS;
+        String jpql;
+        Map params = new HashMap();
+        jpql = "SELECT i "
+                + " FROM PatientInvestigation i "
+                + " where i.retired=:ret  "
+                + " and i.billItem.bill.billDate between :fromDate and :toDate ";
+
+        if (orderedInstitution != null) {
+            jpql += " and i.billItem.bill.institution=:ins ";
+            params.put("ins", getOrderedInstitution());
+        }
+
+        if (orderedInstitution != null) {
+            jpql += " and i.billItem.bill.department=:dep ";
+            params.put("dep", getOrderedDepartment());
+        }
+
+        jpql += " order by i.id desc";
+        params.put("fromDate", getFromDate());
+        params.put("toDate", getToDate());
+        params.put("ret", false);
+        params.put("bg", false);
+        billBarcodes = new ArrayList<>();
+        List<PatientInvestigation> pis = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        billBarcodes = createBilBarcodeObjects(pis);
+    }
 
     public void searchPatientInvestigations() {
         System.out.println("searchPatientInvestigations");
@@ -2408,35 +2402,34 @@ public class PatientInvestigationController implements Serializable {
         return patientInvestigations;
     }
 
-    
-//    public void listBillsWithGeneratedBarcodes() {
-//        String jpql;
-//        Map params = new HashMap();
-//        jpql = "SELECT i "
-//                + " FROM PatientInvestigation i "
-//                + " where i.retired=:ret  "
-//                + " and i.barcodeGenerated=:bg "
-//                + " and i.billItem.bill.billDate between :fromDate and :toDate ";
-//
-//        if (orderedInstitution != null) {
-//            jpql += " and i.billItem.bill.institution=:ins ";
-//            params.put("ins", getOrderedInstitution());
-//        }
-//
-//        if (orderedInstitution != null) {
-//            jpql += " and i.billItem.bill.department=:dep ";
-//            params.put("dep", getOrderedDepartment());
-//        }
-//
-//        jpql += " order by i.id desc";
-//        params.put("fromDate", getFromDate());
-//        params.put("toDate", getToDate());
-//        params.put("ret", false);
-//        params.put("bg", true);
-//        billBarcodes = new ArrayList<>();
-//        List<PatientInvestigation> pis = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
-//        billBarcodes = createBilBarcodeObjects(pis);
-//    }
+    public void listBillsWithGeneratedBarcodes() {
+        String jpql;
+        Map params = new HashMap();
+        jpql = "SELECT i "
+                + " FROM PatientInvestigation i "
+                + " where i.retired=:ret  "
+                + " and i.barcodeGenerated=:bg "
+                + " and i.billItem.bill.billDate between :fromDate and :toDate ";
+
+        if (orderedInstitution != null) {
+            jpql += " and i.billItem.bill.institution=:ins ";
+            params.put("ins", getOrderedInstitution());
+        }
+
+        if (orderedInstitution != null) {
+            jpql += " and i.billItem.bill.department=:dep ";
+            params.put("dep", getOrderedDepartment());
+        }
+
+        jpql += " order by i.id desc";
+        params.put("fromDate", getFromDate());
+        params.put("toDate", getToDate());
+        params.put("ret", false);
+        params.put("bg", true);
+        billBarcodes = new ArrayList<>();
+        List<PatientInvestigation> pis = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        billBarcodes = createBilBarcodeObjects(pis);
+    }
 
     private List<BillBarcode> createBilBarcodeObjects(List<PatientInvestigation> ptis) {
         if (ptis == null) {
