@@ -13,8 +13,6 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-
-     
         <p:dataTable value="#{cc.attrs.bundle.reportTemplateRows}" var="row" >
             <f:facet name="header" >
                  <h:outputText value="Collection for the day" />
@@ -24,11 +22,6 @@
                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                 </h:outputText>
             </f:facet>
-            
-
         </p:dataTable>
-
-
-
     </cc:implementation>
 </html>
