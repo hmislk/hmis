@@ -230,12 +230,11 @@ public class ReportTemplateController implements Serializable {
         if (results == null || results.isEmpty()) {
             return pb; // Consider returning an empty ReportTemplateRowBundle instead
         }
-        pb.setReportTemplateRows(results); 
+        pb.setReportTemplateRows(results);
         return pb;
     }
 
-    
-     public ReportTemplateRowBundle generateBillReport(
+    public ReportTemplateRowBundle generateBillReport(
             List<BillTypeAtomic> btas,
             Date paramFromDate,
             Date paramToDate,
@@ -256,8 +255,6 @@ public class ReportTemplateController implements Serializable {
             jpql += " and bill.billTypeAtomic in :btas ";
             parameters.put("btas", btas);
         }
-
-       
 
         if (paramFromDate != null) {
             jpql += " and bill.billDate >= :fd ";
@@ -296,17 +293,17 @@ public class ReportTemplateController implements Serializable {
         if (results == null || results.isEmpty()) {
             return pb; // Consider returning an empty ReportTemplateRowBundle instead
         }
-        pb.setReportTemplateRows(results); 
-        
-        double bundleTotal=0.0;
-        for(ReportTemplateRow r:pb.getReportTemplateRows()){
-            r.getBill().getNetTotal();
-        }
+        pb.setReportTemplateRows(results);
+
+        double bundleTotal = pb.getReportTemplateRows().stream()
+                .mapToDouble(r -> r.getBill().getNetTotal())
+                .sum();
         pb.setTotal(bundleTotal);
+
         return pb;
     }
-     
-     public ReportTemplateRowBundle generatePaymentReport(
+
+    public ReportTemplateRowBundle generatePaymentReport(
             PaymentMethod pm,
             Date paramFromDate,
             Date paramToDate,
@@ -366,11 +363,10 @@ public class ReportTemplateController implements Serializable {
         if (results == null || results.isEmpty()) {
             return pb; // Consider returning an empty ReportTemplateRowBundle instead
         }
-        pb.setReportTemplateRows(results); 
+        pb.setReportTemplateRows(results);
         return pb;
     }
-    
-    
+
     public ReportTemplateRowBundle generateReport(
             ReportTemplateType type,
             List<BillTypeAtomic> btas,
@@ -2102,7 +2098,6 @@ public class ReportTemplateController implements Serializable {
         System.out.println("parameters = " + parameters);
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
-
 
         if (rs == null || rs.isEmpty()) {
         } else {

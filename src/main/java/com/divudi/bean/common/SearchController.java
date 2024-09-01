@@ -11535,41 +11535,39 @@ public class SearchController implements Serializable {
         // Generate OPD service collection and add to the main bundle
         ReportTemplateRowBundle opdServiceCollection = generateOpdServiceCollection();
         bundle.getBundles().add(opdServiceCollection);
-        collectionForTheDay += opdServiceCollection.getTotal();
+        collectionForTheDay += getSafeTotal(opdServiceCollection);
 
         // Generate pharmacy collection and add to the main bundle
         ReportTemplateRowBundle pharmacyCollection = generatePharmacyCollection();
         bundle.getBundles().add(pharmacyCollection);
-        collectionForTheDay += pharmacyCollection.getTotal();
+        collectionForTheDay += getSafeTotal(pharmacyCollection);
 
         // Generate collecting centre collection and add to the main bundle
         ReportTemplateRowBundle ccCollection = generateCcCollection();
+        bundle.setName("collectionForTheDay");
+        bundle.setBundleType("collectionForTheDay");
         bundle.getBundles().add(ccCollection);
-        collectionForTheDay += ccCollection.getTotal();
 
         // Generate OPD Credit Company Payment Collection and add to the main bundle
         ReportTemplateRowBundle opdCreditCompanyCollection = generateCreditCompanyCollectionForOpd();
         bundle.getBundles().add(opdCreditCompanyCollection);
-        collectionForTheDay += opdCreditCompanyCollection.getTotal();
+        collectionForTheDay += getSafeTotal(opdCreditCompanyCollection);
 
         // Generate Inward Credit Company Payment Collection and add to the main bundle
         ReportTemplateRowBundle inwardCreditCompanyCollection = generateCreditCompanyCollectionForInward();
         bundle.getBundles().add(inwardCreditCompanyCollection);
-        collectionForTheDay += inwardCreditCompanyCollection.getTotal();
+        collectionForTheDay += getSafeTotal(inwardCreditCompanyCollection);
 
         // Generate Pharmacy Credit Company Payment Collection and add to the main bundle
         ReportTemplateRowBundle pharmacyCreditCompanyCollection = generateCreditCompanyCollectionForPharmacy();
         bundle.getBundles().add(pharmacyCreditCompanyCollection);
-        collectionForTheDay += pharmacyCreditCompanyCollection.getTotal();
+        collectionForTheDay += getSafeTotal(pharmacyCreditCompanyCollection);
 
         // Generate Channelling Credit Company Payment Collection and add to the main bundle
         ReportTemplateRowBundle channellingCreditCompanyCollection = generateCreditCompanyCollectionForChannelling();
         bundle.getBundles().add(channellingCreditCompanyCollection);
-        collectionForTheDay += channellingCreditCompanyCollection.getTotal();
+        collectionForTheDay += getSafeTotal(channellingCreditCompanyCollection);
 
-        // Generate agency collection and add to the main bundle
-//        ReportTemplateRowBundle agencyCollection = generateAgencyCollection();
-//        bundle.getBundles().add(agencyCollection);
         // Generate inward professional payments and add to the main bundle
         ReportTemplateRowBundle inwardProfessionalPayments = generateInwardProfessionalPayments();
         bundle.getBundles().add(inwardProfessionalPayments);
@@ -11581,6 +11579,11 @@ public class SearchController implements Serializable {
         // Generate OPD professional payments and add to the main bundle
         ReportTemplateRowBundle opdProfessionalPayments = generateOpdProfessionalPayments();
         bundle.getBundles().add(opdProfessionalPayments);
+
+        ReportTemplateRowBundle collectionForTheDayBundle = new ReportTemplateRowBundle();
+        collectionForTheDayBundle.setName("Collection for the day");
+        collectionForTheDayBundle.setBundleType("collectionForTheDay");
+        collectionForTheDayBundle.setTotal(collectionForTheDay);
 
         // Collection for the day
         // Total Cash Payments
@@ -11608,6 +11611,10 @@ public class SearchController implements Serializable {
 
         ReportTemplateRowBundle slipPayments = generateSlipPayments();
         bundle.getBundles().add(slipPayments);
+    }
+
+    private double getSafeTotal(ReportTemplateRowBundle bundle) {
+        return bundle != null && bundle.getTotal() != null ? bundle.getTotal() : 0.0;
     }
 
     public ReportTemplateRowBundle generateOpdServiceCollection() {
@@ -11738,6 +11745,7 @@ public class SearchController implements Serializable {
         ccCollection.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION);
         ccCollection.add(BillTypeAtomic.OPD_CREDIT_COMPANY_CREDIT_NOTE);
         ccCollection.add(BillTypeAtomic.OPD_CREDIT_COMPANY_DEBIT_NOTE);
+
         ap = reportTemplateController.generateBillReport(
                 ccCollection,
                 fromDate,
