@@ -17,10 +17,15 @@
         <!--<p:dataTable value="#{cc.attrs.bundle.reportTemplateRows}" var="row" ></p:dataTable>-->
         <!--<p:dataTable value="#{cc.attrs.bundle.reportTemplateRows}" var="row" >-->
 
-        
+
         <p:dataTable value="#{cc.attrs.bundle.reportTemplateRows}" var="row" >
             <f:facet name="header" >
                 <h:outputText value="#{cc.attrs.bundle.name}" ></h:outputText>
+            </f:facet>
+            <f:facet name="footer" >
+                <h:outputText value="OPD Service Collection Total" ></h:outputText>
+                <p:spacer width="50" ></p:spacer>
+                <h:outputText value="#{cc.attrs.bundle.total}" ></h:outputText>
             </f:facet>
             <p:column>
                 <f:facet name="header">

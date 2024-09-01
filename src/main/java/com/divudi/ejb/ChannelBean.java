@@ -766,7 +766,6 @@ public class ChannelBean {
                 cWorkingDate.add(Calendar.DATE, 1); // Increment the date
             }
         }
-        System.out.println("sessionInstances = " + sessionInstances.size());
         Collections.sort(sessionInstances, new Comparator<SessionInstance>() {
             @Override
             public int compare(SessionInstance s1, SessionInstance s2) {

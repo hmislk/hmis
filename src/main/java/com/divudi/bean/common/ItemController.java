@@ -331,10 +331,8 @@ public class ItemController implements Serializable {
                 style.setShowColumnStripes(true);
                 style.setShowRowStripes(true);
             } else {
-                System.out.println("Table style could not be applied.");
             }
         } else {
-            System.out.println("No data available to create a table.");
         }
 
         // Lock the sheet except for the unlocked cells
@@ -944,7 +942,6 @@ public class ItemController implements Serializable {
                 item.setCode(code);
                 getFacade().create(item);
             }
-            System.out.println("findAndCreateItemByNameAndCode (item) = " + item.getId());
             return item;
         } catch (Exception e) {
             return null;
@@ -971,7 +968,6 @@ public class ItemController implements Serializable {
                 item.setCode(code);
                 getFacade().create(item);
             }
-            System.out.println("findAndCreateItemByNameAndCode (item) = " + item.getId());
             return item;
         } catch (Exception e) {
             return null;
@@ -3335,9 +3331,8 @@ public class ItemController implements Serializable {
             Long longId = Long.parseLong(id); // Convert String to Long
             return findItemById(longId); // Reuse the existing method
         } catch (NumberFormatException e) {
-            // Log the error if the string is not a valid Long
-            System.err.println("Invalid ID format: " + id);
-            return null;
+// Log the error if the string is not a valid Long
+                        return null;
         }
     }
 

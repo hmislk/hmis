@@ -426,7 +426,6 @@ public class Payment implements Serializable {
                     }
                 }
             } catch (Exception e) {
-                System.out.println("Error deserializing currency denominations: " + e.getMessage());
                 this.currencyDenominations = new ArrayList<>(); // Initialize to an empty list on error
             }
         } else {

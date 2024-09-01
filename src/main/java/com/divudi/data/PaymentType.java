@@ -8,5 +8,6 @@ package com.divudi.data;
 public enum PaymentType {
     CREDIT,
     NON_CREDIT,
+    MULTIPLE,
     NONE,
 }

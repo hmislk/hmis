@@ -7,8 +7,9 @@ package com.divudi.data;
 public enum PaymentCategory {
     CREDIT_COLLECTION("Credit Collection"),
     NON_CREDIT_COLLECTION("Non-Credit Collection"),
-    CASH_SPEND("Cash Spend"),
-    NON_CASH_SPEND("Non-Cash Spend"),
+    NON_CREDIT_SPEND("Cash Spend"),
+    CREDIT_SPEND("Non-Cash Spend"),
+    NO_PAYMENT("No Payment Involved"),
     OTHER("Other");
 
     private final String description;
