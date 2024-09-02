@@ -11,6 +11,7 @@ package com.divudi.bean.lab;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.entity.lab.PatientSample;
 import com.divudi.facade.PatientSampleFacade;
 import com.divudi.java.CommonFunctions;
@@ -218,6 +219,17 @@ public class PatientSampleController implements Serializable {
             getFacade().create(s);
         }
 
+    }
+    
+    public List<PatientSample> listPatientSamples(PatientInvestigation pi) {
+        String jpql;
+        jpql = "select s from "
+                + " PatientSample s "
+                + " where patientInvestigation=:pi "
+                + " order by s.id";
+        Map m = new HashMap();
+        m.put("pi",pi);
+        return getFacade().findByJpql(jpql, m);
     }
 
     public void setFromDate(Date fromDate) {

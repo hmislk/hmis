@@ -626,6 +626,65 @@ public class BillSearch implements Serializable {
 
     }
 
+    
+    
+    public void fillCashierDetails() {
+        
+        
+        //For Auditing Purposes
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+        String url = request.getRequestURL().toString();
+        String ipAddress = request.getRemoteAddr();
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("fillTransactionTypeSummery()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        List<BillType> bts = new ArrayList<>();
+        bts.add(BillType.OpdBill);
+        bts.add(BillType.PharmacySale);
+        bts.add(BillType.PharmacyWholeSale);
+        bts.add(BillType.InwardPaymentBill);
+        bts.add(BillType.CollectingCentrePaymentReceiveBill);
+        bts.add(BillType.PaymentBill);
+        bts.add(BillType.PatientPaymentReceiveBill);
+        bts.add(BillType.CollectingCentreBill);
+        bts.add(BillType.PaymentBill);
+        bts.add(BillType.ChannelCash);
+        bts.add(BillType.ChannelPaid);
+        bts.add(BillType.ChannelAgent);
+        bts.add(BillType.ChannelProPayment);
+        bts.add(BillType.ChannelAgencyCommission);
+        bts.add(BillType.PettyCash);
+
+        billSummeries = generateBillSummaries(institution, department, user, bts, billClassType, fromDate, toDate);
+
+        overallSummary = aggregateBillSummaries(billSummeries);
+
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+    }
+
     public void fillCashierSummery() {
         //For Auditing Purposes
         FacesContext context = FacesContext.getCurrentInstance();
@@ -2024,7 +2083,7 @@ public class BillSearch implements Serializable {
 
         return cb;
     }
-    
+
     private CancelledBill createCollectingCenterCancelBill(Bill originalBill) {
         CancelledBill cb = new CancelledBill();
         if (originalBill == null) {
@@ -2151,8 +2210,6 @@ public class BillSearch implements Serializable {
 
         return false;
     }
-    
-    
 
     private boolean errorsPresentOnProfessionalPaymentBillCancellation() {
         if (getBill().isCancelled()) {
@@ -2250,7 +2307,7 @@ public class BillSearch implements Serializable {
 //            getEjbApplication().getBillsToCancel().add(cb);
 //            JsfUtil.addSuccessMessage("Awaiting Cancellation");
     }
-    
+
     public void cancelCollectingCentreBill() {
         if (getBill() == null) {
             JsfUtil.addErrorMessage("No bill");
@@ -2260,7 +2317,6 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage("No Saved bill");
             return;
         }
-       
 
         CancelledBill cancellationBill = createCollectingCenterCancelBill(bill);
         billController.save(cancellationBill);
@@ -2271,7 +2327,7 @@ public class BillSearch implements Serializable {
 
         getBill().setCancelled(true);
         getBill().setCancelledBill(cancellationBill);
-        
+
         billController.save(getBill());
         JsfUtil.addSuccessMessage("Cancelled");
         collectingCentreApplicationController.updateBalance(
@@ -2279,8 +2335,8 @@ public class BillSearch implements Serializable {
                 bill.getTotalCenterFee(),
                 (bill.getHospitalFee() + bill.getStaffFee()),
                 bill.getNetTotal(),
-                HistoryType.CollectingCentreBilling, 
-                bill,
+                HistoryType.CollectingCentreBilling,
+                cancellationBill,
                 comment);
         bill = billFacade.find(bill.getId());
         printPreview = true;
@@ -3312,14 +3368,12 @@ public class BillSearch implements Serializable {
     }
 
     public List<BillFee> getBillFees2() {
-        System.out.println("getBill.getId() = " + getBill().getId());
         if (billFees == null) {
             if (getBill() != null) {
                 Map m = new HashMap();
                 String sql = "SELECT b FROM BillFee b WHERE b.retired=false and b.bill=:cb";
                 m.put("cb", getBill());
                 billFees = getBillFeeFacade().findByJpql(sql, m);
-                System.out.println("billFees = " + billFees.size());
             }
 
             if (getBillSearch() != null) {
@@ -3327,12 +3381,10 @@ public class BillSearch implements Serializable {
                 String sql = "SELECT b FROM BillFee b WHERE b.bill=:cb";
                 m.put("cb", getBill());
                 billFees = getBillFeeFacade().findByJpql(sql, m);
-                System.out.println("billFees2 = " + billFees.size());
             }
 
             if (billFees == null) {
                 billFees = new ArrayList<>();
-                System.out.println("this = " + this);
             }
         }
 
@@ -4066,9 +4118,7 @@ public class BillSearch implements Serializable {
         for (BillItem bi : b.getBillItems()) {
             double billItemTotal = 0.0;
             for (BillFee bf : bi.getBillFees()) {
-                System.out.println("bf = " + bf.getFee().getName());
                 if (bf.getFeeValue() != 0.0) {
-                    System.out.println(bf.getFee().getName() + "  " + bf.getFeeValue());
                     double bfv = bf.getFeeValue();
                     bfv = Math.abs(bfv);
                     bf.setFeeValue(0 - bfv);

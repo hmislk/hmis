@@ -5,7 +5,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp/bundles">
 
     <h:body class="w-100 border">
 
@@ -16,7 +16,7 @@
 
 
 
-                        <h:panelGrid columns="8" class="w-100">
+                        <h:panelGrid columns="1" class="w-100">
                             <h:outputLabel value="From"/>
                             <p:calendar 
                                 class="w-100 " 
@@ -38,25 +38,18 @@
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                             </p:calendar>
 
-                            <p:spacer ></p:spacer>
-                            <p:spacer ></p:spacer>
-                            <p:spacer ></p:spacer>
-
                             <h:outputLabel value="Institution"/>                                
                             <p:selectOneMenu class="w-100 " value="#{searchController.institution}" filter="true" >
                                 <f:selectItem itemLabel="All Institution" ></f:selectItem>
-                                <f:selectItems value="#{sessionController.loggableInstitutions}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
+                                <f:selectItems value="#{institutionController.items}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
                             </p:selectOneMenu>
 
-                            <p:spacer width="20" ></p:spacer>
 
                             <h:outputLabel value="Department"/>                                
                             <p:selectOneMenu class="w-100 "  value="#{searchController.department}" filter="true">
                                 <f:selectItem itemLabel="All Departments" ></f:selectItem>
                                 <f:selectItems value="#{sessionController.loggableDepartments}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
                             </p:selectOneMenu>
-
-                            <p:spacer width="20" ></p:spacer>
 
                             <h:outputLabel value="Site*"/>   
                             <p:selectOneMenu class="w-100 "  value="#{searchController.site}" filter="true">
@@ -75,28 +68,149 @@
                                 value="Process" 
                                 ajax="false"
                                 action="#{searchController.generateDailyReturn()}" 
-                                class="ui-button-warning" icon="fas fa-cogs">
+                                class="ui-button-success" icon="fas fa-cogs">
+                            </p:commandButton>
+
+                            <p:commandButton  
+                                value="Update" 
+                                ajax="false"
+                                action="#{searchController.updateBillItenValues()}" 
+                                class="ui-button-danger" icon="fas fa-cogs">
                             </p:commandButton>
 
                         </h:panelGrid>
 
-                        <h1>
-                            #{searchController.bundle.reportTemplateRows}
-                        </h1>
 
 
-                        <ez:report_bundle bundle="#{searchController.bundle}"/>
+
+                        <p:commandButton value="Print" icon="fas fa-print">
+                            <p:printer target="printPanel" />
+                        </p:commandButton>
+
+                        <h:panelGroup style="display: none;" >
+                            <ui:repeat value="#{searchController.bundle.bundles}" var="myBundle1" >
+                                #{myBundle1.name} - #{myBundle1.bundleType} <br/>
+                            </ui:repeat>
+                        </h:panelGroup>
 
 
-                        <ui:repeat value="#{searchController.bundle.bundles}" var="bundle" >
+                        <h:panelGroup id="printPanel">        
 
-                            <h:panelGroup rendered="#{bundle}" >
 
-                                <ez:report_bundle/>
 
-                            </h:panelGroup>
+                            <ui:repeat value="#{searchController.bundle.bundles}" var="myBundle">
+                                <h1>#{myBundle.bundleType}</h1>
 
-                        </ui:repeat>
+                                <h:panelGroup rendered="#{myBundle.bundleType eq 'opdServiceCollection'}">
+                                    <ez:opdServiceCollection bundle="#{myBundle}"/>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{myBundle.bundleType eq 'pharmacyCollection'}">
+                                    <ez:pharmacyCollection bundle="#{myBundle}"/>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{myBundle.bundleType eq 'ccCollection'}">
+                                    <ez:ccCollection bundle="#{myBundle}"/>
+                                </h:panelGroup>
+
+
+                                <h:panelGroup rendered="#{myBundle.bundleType eq 'companyPaymentBillOpd'}">
+                                    <ez:companyPaymentBillOpd bundle="#{myBundle}"/>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{myBundle.bundleType eq 'companyPaymentBillInward'}">
+                                    <ez:companyPaymentBillInward bundle="#{myBundle}"/>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{myBundle.bundleType eq 'companyPaymentBillPharmacy'}">
+                                    <ez:companyPaymentBillPharmacy bundle="#{myBundle}"/>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{myBundle.bundleType eq 'companyPaymentBillChannelling'}">
+                                    <ez:companyPaymentBillChannelling bundle="#{myBundle}"/>
+                                </h:panelGroup>
+
+
+
+                                <h:panelGroup rendered="#{myBundle.bundleType eq 'collectionForTheDay'}">
+                                    <ez:collectionForTheDay bundle="#{myBundle}"/>
+                                </h:panelGroup>
+
+
+
+                                <h:panelGroup rendered="#{myBundle.bundleType eq 'pettyCashPayments'}">
+                                    <ez:pettyCashPayments bundle="#{myBundle}"/>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{myBundle.bundleType eq 'professionalPaymentBillOpd'}">
+                                    <ez:professionalPaymentBillOpd bundle="#{myBundle}"/>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{myBundle.bundleType eq 'professionalPaymentBillInward'}">
+                                    <ez:professionalPaymentBillInward bundle="#{myBundle}"/>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{myBundle.bundleType eq 'professionalPaymentBillPharmacy'}">
+                                    <ez:professionalPaymentBillPharmacy bundle="#{myBundle}"/>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{myBundle.bundleType eq 'paymentReportCards'}">
+                                    <ez:paymentReportCards bundle="#{myBundle}"/>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{myBundle.bundleType eq 'paymentReportStaffWelfare'}">
+                                    <ez:staffPayments bundle="#{myBundle}"/>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{myBundle.bundleType eq 'paymentReportVoucher'}">
+                                    <ez:voucherPayments bundle="#{myBundle}"/>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{myBundle.bundleType eq 'paymentReportCheque'}">
+                                    <ez:chequePayments bundle="#{myBundle}"/>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{myBundle.bundleType eq 'paymentReportEwallet'}">
+                                    <ez:ewalletPayments bundle="#{myBundle}"/>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{myBundle.bundleType eq 'paymentReportPatientDeposit'}">
+                                    <ez:patientDepositPayments bundle="#{myBundle}"/>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{myBundle.bundleType eq 'slipPayments'}">
+                                    <ez:slipPayments bundle="#{myBundle}"/>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{myBundle.bundleType eq 'netCash'}">
+                                    <ez:netCashForTheDay bundle="#{myBundle}"/>
+                                </h:panelGroup>
+
+                                <br/>
+                                <hr/>
+                            </ui:repeat>
+
+
+
+
+<!--                                <h:panelGroup rendered="#{myBundle.bundleType eq 'PayentBillReport'}" >
+        <ez:bill_for_agency_payment bundle="#{myBundle}"/>
+    </h:panelGroup>
+    <h:panelGroup rendered="#{myBundle.bundleType eq 'ProfessionalPaymentBillReport'}" >
+        <ez:bill_for_professional_payment bundle="#{myBundle}"/>
+    </h:panelGroup>
+    <h:panelGroup rendered="#{myBundle.bundleType eq 'companyPaymentBillOpd'}" >
+        <ez:payments bundle="#{myBundle}"/>
+    </h:panelGroup>
+                            -->
+
+
+                            <ui:repeat value="#{searchController.bundle.bundles}" var="myBundle1" >
+                                #{myBundle1.name} - #{myBundle1.bundleType} <br/>
+                            </ui:repeat>
+
+
+                        </h:panelGroup>
 
 
                     </p:panel>

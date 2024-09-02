@@ -17,6 +17,12 @@
             <f:facet name="header">  
                 <h:outputLabel  value="Petty Cash Payment Cancel"/>
             </f:facet> 
+            <p:column headerText="Bill No" style="width:16%; " >
+                <h:outputLabel value="#{b4.insId}"/>
+            </p:column>
+            <p:column headerText="Bill Type" style="width:16%; " >
+                <h:outputLabel value="#{b4.billType}"/>
+            </p:column>
             <p:column headerText="Time" style="width:16%; " >
                 <f:facet name="header">  
                     <h:outputLabel value="Time"/>
@@ -27,12 +33,7 @@
 
             </p:column>
 
-            <p:column headerText="Id" >
-                <f:facet name="header">  
-                    <h:outputLabel value="Id"/>
-                </f:facet> 
-                <h:outputLabel value="#{b4.insId}"/>
-            </p:column>
+            
             <p:column headerText="For Whome" >
                 <f:facet name="header">  
                     <h:outputLabel value="For Whome"/>
@@ -79,7 +80,13 @@
 
             <p:columnGroup type="footer">  
                 <p:row>  
-                    <p:column colspan="3" style="text-align:left" footerText="Totals:"/>  
+                    <p:column>
+
+                    </p:column>
+                    <p:column>
+
+                    </p:column>
+                    <p:column colspan="2" style="text-align:left" footerText="Totals:"/>  
                     <p:column footerText="#{cc.attrs.data.cash}" style=" text-align: right"> 
                         <f:facet name="footer">
                             <h:outputLabel value="#{cc.attrs.data.cash}">

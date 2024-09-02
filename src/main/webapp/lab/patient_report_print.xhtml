@@ -40,12 +40,12 @@
                             </p:commandButton>
                         </f:facet>
 
-                        <h:panelGroup id="divPrint" >
-                            <h:outputLabel value="Show Background" class="mx-1 my-1" style="font-weight: bold; font-size: 20px;"></h:outputLabel>
-                            <p:selectBooleanButton class="mt-1 mx-4 my-1" offLabel="No" onLabel="Yes"  value="#{patientReportController.showBackground}" >
-                                <p:ajax process="@this" update="divPrint" event="change"/>
-                            </p:selectBooleanButton>
+                        <h:outputLabel value="Show Background" class="mx-1 my-1" style="font-weight: bold; font-size: 20px;"></h:outputLabel>
+                        <p:selectBooleanButton class="mt-1 mx-4 my-1" offLabel="No" onLabel="Yes"  value="#{patientReportController.showBackground}" >
+                            <p:ajax process="@this" update="divPrint" event="change"/>
+                        </p:selectBooleanButton>
 
+                        <h:panelGroup id="divPrint" >
                             <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType ne 'Microbiology'}" >
                                 <div id="divReport"  class="labReport1" >
                                     <ez:common_report 

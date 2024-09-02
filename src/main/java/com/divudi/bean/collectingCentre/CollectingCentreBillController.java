@@ -990,6 +990,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             getBillSearch().setBill((BilledBill) b);
             getBillSearch().setPaymentMethod(b.getPaymentMethod());
             getBillSearch().setComment("Batch Cancell");
+            getBillSearch().setCollectingCenter(collectingCentre);
             //////// // System.out.println("ggg : " + getBillSearch().getComment());
             getBillSearch().cancelCollectingCentreBill();
         }
@@ -1404,7 +1405,6 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
             for (BillFee bf : be.getLstBillFees()) {
 
-                System.out.println("bf = " + bf);
 
                 entryGross += bf.getFeeGrossValue();
                 entryNet += bf.getFeeValue();
@@ -1439,7 +1439,6 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             System.out.println("bi = " + bi.getNetValue());
             System.out.println("bi = " + bi.getHospitalFee());
             System.out.println("bi = " + bi.getCollectingCentreFee());
-            System.out.println("bi = " + bi.getStaffFee());
 
             billGross += bi.getGrossValue();
             billNet += bi.getNetValue();

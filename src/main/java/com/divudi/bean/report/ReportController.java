@@ -176,7 +176,6 @@ public class ReportController implements Serializable {
         m.put("toDate", getToDate());
 
         System.out.println(m);
-        System.err.println(jpql);
 
         bills = billFacade.findByJpql(jpql, m);
     }
@@ -443,6 +442,39 @@ public class ReportController implements Serializable {
         }
 
         billItems = billItemFacade.findByJpql(jpql, m);
+    }
+    
+    public void processCollectingCentreStatementReportNew() {
+        
+        String jpql = "select ah "
+                + " from AgentHistory ah "
+                + " where ah.retired=:ret"
+                + " and ah.createdAt between :fd and :td ";
+         
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        
+        if (collectingCentre != null) {
+            jpql += " and ah.agency = :cc ";
+            m.put("cc", collectingCentre);
+        }
+    
+        
+        if (institution != null) {
+            jpql += " and ah.bill.institution = :ins ";
+            m.put("ins", institution);
+        }
+
+        if (invoiceNumber != null && !invoiceNumber.isEmpty()) {
+            jpql += " and (ah.bill.insId = :inv or ah.bill.deptId = :inv) ";
+            m.put("inv", invoiceNumber);
+        }
+        System.out.println("m = " + m);
+        System.out.println("jpql = " + jpql);
+        agentHistories = agentHistoryFacade.findByJpql(jpql, m,TemporalType.TIMESTAMP);  
+        System.out.println("agentHistories = " + agentHistories);
     }
 
     public void processCollectingCentreStatementReport() {

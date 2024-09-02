@@ -135,10 +135,20 @@ public class FinancialTransactionController implements Serializable {
     private List<Bill> fundBillsForClosureBills;
     private Bill selectedBill;
     private Bill nonClosedShiftStartFundBill;
+
+    private ReportTemplateRowBundle refundBundle;
+    private ReportTemplateRowBundle cancelledBundle;
+
     private List<Payment> paymentsFromShiftSratToNow;
+    private List<Payment> cardPaymentsFromShiftSratToNow;
+    private List<Payment> chequeFromShiftSratToNow;
     private List<Payment> paymentsSelected;
     private List<Payment> recievedBIllPayments;
     private List<Bill> allBillsShiftStartToNow;
+
+    private ReportTemplateRowBundle chequeTransactionPaymentBundle;
+    private ReportTemplateRowBundle cardTransactionPaymentBundle;
+
     @Deprecated
     private PaymentMethodValues paymentMethodValues;
     private AtomicBillTypeTotals atomicBillTypeTotalsByBills;
@@ -301,8 +311,6 @@ public class FinancialTransactionController implements Serializable {
                 paramStartId,
                 paramEndId);
 
-        System.out.println("outes = " + outs.getReportTemplateRows().size());
-
         bundle = combineBundlesByCategory(ins, outs);
 
         return bundle;
@@ -368,8 +376,6 @@ public class FinancialTransactionController implements Serializable {
                 paramStartId,
                 paramEndId);
 
-        System.out.println("outes = " + outs.getReportTemplateRows().size());
-
         bundle = combineBundlesByBillTypeAtomic(ins, outs);
 
         return bundle;
@@ -432,8 +438,6 @@ public class FinancialTransactionController implements Serializable {
                 paramCreditCompany,
                 paramStartId,
                 paramEndId);
-
-        System.out.println("outes = " + outs.getReportTemplateRows().size());
 
         bundle = combineBundlesByItemDepartment(ins, outs);
 
@@ -823,15 +827,12 @@ public class FinancialTransactionController implements Serializable {
         final Object NULL_DEPARTMENT_KEY = new Object();  // Placeholder for null departments
 
         if (inBundle != null && inBundle.getReportTemplateRows() != null) {
-            System.out.println("Processing inBundle");
             for (ReportTemplateRow inRow : inBundle.getReportTemplateRows()) {
                 if (inRow != null) {
                     Department d = inRow.getItemDepartment();
                     Object key = (d != null) ? d : NULL_DEPARTMENT_KEY;
                     if (d == null) {
-                        System.out.println("Department is null in inRow");
                     } else {
-                        System.out.println("Processing inRow for Department: " + d.getName());
                     }
                     if (!combinedRows.containsKey(key)) {
                         combinedRows.put(key, new ReportTemplateRow(d));
@@ -840,23 +841,18 @@ public class FinancialTransactionController implements Serializable {
                     combinedRow.setRowCountIn((combinedRow.getRowCountIn() != null ? combinedRow.getRowCountIn() : 0L) + (inRow.getRowCount() != null ? inRow.getRowCount() : 0L));
                     combinedRow.setRowValueIn((combinedRow.getRowValueIn() != null ? combinedRow.getRowValueIn() : 0.0) + (inRow.getRowValue() != null ? inRow.getRowValue() : 0.0));
                 } else {
-                    System.out.println("inRow is null");
                 }
             }
         } else {
-            System.out.println("inBundle or inBundle.getReportTemplateRows() is null");
         }
 
         if (outBundle != null && outBundle.getReportTemplateRows() != null) {
-            System.out.println("Processing outBundle");
             for (ReportTemplateRow outRow : outBundle.getReportTemplateRows()) {
                 if (outRow != null) {
                     Department d = outRow.getItemDepartment();
                     Object key = (d != null) ? d : NULL_DEPARTMENT_KEY;
                     if (d == null) {
-                        System.out.println("Department is null in outRow");
                     } else {
-                        System.out.println("Processing outRow for Department: " + d.getName());
                     }
                     if (!combinedRows.containsKey(key)) {
                         combinedRows.put(key, new ReportTemplateRow(d));
@@ -865,11 +861,9 @@ public class FinancialTransactionController implements Serializable {
                     combinedRow.setRowCountOut((combinedRow.getRowCountOut() != null ? combinedRow.getRowCountOut() : 0L) + (outRow.getRowCount() != null ? outRow.getRowCount() : 0L));
                     combinedRow.setRowValueOut((combinedRow.getRowValueOut() != null ? combinedRow.getRowValueOut() : 0.0) + (outRow.getRowValue() != null ? outRow.getRowValue() : 0.0));
                 } else {
-                    System.out.println("outRow is null");
                 }
             }
         } else {
-            System.out.println("outBundle or outBundle.getReportTemplateRows() is null");
         }
 
         long totalInCount = 0;
@@ -879,7 +873,6 @@ public class FinancialTransactionController implements Serializable {
 
         for (ReportTemplateRow row : combinedRows.values()) {
             String deptName = (row.getItemDepartment() != null) ? row.getItemDepartment().getName() : "NULL_DEPARTMENT";
-            System.out.println("Combining row for Department: " + deptName);
             row.setRowCount((row.getRowCountIn() != null ? row.getRowCountIn() : 0L) + (row.getRowCountOut() != null ? row.getRowCountOut() : 0L));
             row.setRowValue((row.getRowValueIn() != null ? row.getRowValueIn() : 0.0) + (row.getRowValueOut() != null ? row.getRowValueOut() : 0.0));
             temOutBundle.getReportTemplateRows().add(row);
@@ -902,7 +895,6 @@ public class FinancialTransactionController implements Serializable {
         System.out.println("Total In Value: " + totalInValue);
         System.out.println("Total Out Value: " + totalOutValue);
 
-        System.out.println("Finished combineBundlesByDepartment method");
         return temOutBundle;
     }
 
@@ -916,15 +908,12 @@ public class FinancialTransactionController implements Serializable {
         final Object NULL_DEPARTMENT_KEY = new Object();  // Placeholder for null departments
 
         if (inBundle != null && inBundle.getReportTemplateRows() != null) {
-            System.out.println("Processing inBundle");
             for (ReportTemplateRow inRow : inBundle.getReportTemplateRows()) {
                 if (inRow != null) {
                     BillTypeAtomic d = inRow.getBillTypeAtomic();
                     Object key = (d != null) ? d : NULL_DEPARTMENT_KEY;
                     if (d == null) {
-                        System.out.println("Department is null in inRow");
                     } else {
-                        System.out.println("Processing inRow for Department: " + d.getLabel());
                     }
                     if (!combinedRows.containsKey(key)) {
                         combinedRows.put(key, new ReportTemplateRow(d));
@@ -933,23 +922,18 @@ public class FinancialTransactionController implements Serializable {
                     combinedRow.setRowCountIn((combinedRow.getRowCountIn() != null ? combinedRow.getRowCountIn() : 0L) + (inRow.getRowCount() != null ? inRow.getRowCount() : 0L));
                     combinedRow.setRowValueIn((combinedRow.getRowValueIn() != null ? combinedRow.getRowValueIn() : 0.0) + (inRow.getRowValue() != null ? inRow.getRowValue() : 0.0));
                 } else {
-                    System.out.println("inRow is null");
                 }
             }
         } else {
-            System.out.println("inBundle or inBundle.getReportTemplateRows() is null");
         }
 
         if (outBundle != null && outBundle.getReportTemplateRows() != null) {
-            System.out.println("Processing outBundle");
             for (ReportTemplateRow outRow : outBundle.getReportTemplateRows()) {
                 if (outRow != null) {
                     BillTypeAtomic d = outRow.getBillTypeAtomic();
                     Object key = (d != null) ? d : NULL_DEPARTMENT_KEY;
                     if (d == null) {
-                        System.out.println("Department is null in outRow");
                     } else {
-                        System.out.println("Processing outRow for Department: " + d.getLabel());
                     }
                     if (!combinedRows.containsKey(key)) {
                         combinedRows.put(key, new ReportTemplateRow(d));
@@ -958,11 +942,9 @@ public class FinancialTransactionController implements Serializable {
                     combinedRow.setRowCountOut((combinedRow.getRowCountOut() != null ? combinedRow.getRowCountOut() : 0L) + (outRow.getRowCount() != null ? outRow.getRowCount() : 0L));
                     combinedRow.setRowValueOut((combinedRow.getRowValueOut() != null ? combinedRow.getRowValueOut() : 0.0) + (outRow.getRowValue() != null ? outRow.getRowValue() : 0.0));
                 } else {
-                    System.out.println("outRow is null");
                 }
             }
         } else {
-            System.out.println("outBundle or outBundle.getReportTemplateRows() is null");
         }
 
         long totalInCount = 0;
@@ -972,7 +954,6 @@ public class FinancialTransactionController implements Serializable {
 
         for (ReportTemplateRow row : combinedRows.values()) {
             String deptName = (row.getItemDepartment() != null) ? row.getItemDepartment().getName() : "NULL_DEPARTMENT";
-            System.out.println("Combining row for Department: " + deptName);
             row.setRowCount((row.getRowCountIn() != null ? row.getRowCountIn() : 0L) + (row.getRowCountOut() != null ? row.getRowCountOut() : 0L));
             row.setRowValue((row.getRowValueIn() != null ? row.getRowValueIn() : 0.0) + (row.getRowValueOut() != null ? row.getRowValueOut() : 0.0));
             temOutBundle.getReportTemplateRows().add(row);
@@ -995,7 +976,6 @@ public class FinancialTransactionController implements Serializable {
         System.out.println("Total In Value: " + totalInValue);
         System.out.println("Total Out Value: " + totalOutValue);
 
-        System.out.println("Finished combineBundlesByDepartment method");
         return temOutBundle;
     }
 
@@ -1881,7 +1861,6 @@ public class FinancialTransactionController implements Serializable {
     }
 
     private void createPaymentSummery() {
-        System.out.println("createPaymentSummery");
 
         if (paymentsFromShiftSratToNow == null) {
             return;
@@ -2017,7 +1996,6 @@ public class FinancialTransactionController implements Serializable {
         System.out.println("m = " + m);
         System.out.println("jpql = " + jpql);
         paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m);
-        System.out.println("paymentsFromShiftSratToNow = " + paymentsFromShiftSratToNow);
 
 //        paymentMethodValues = new PaymentMethodValues(PaymentMethod.values());
         atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
@@ -2056,7 +2034,6 @@ public class FinancialTransactionController implements Serializable {
         System.out.println("jpql = " + jpql);
         System.out.println("m = " + m);
         paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m);
-        System.out.println("paymentsFromShiftSratToNow = " + paymentsFromShiftSratToNow);
 
         atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
 
@@ -2066,18 +2043,15 @@ public class FinancialTransactionController implements Serializable {
         for (Payment p : paymentsFromShiftSratToNow) {
             Bill bill = p.getBill();
             if (bill == null) {
-                System.out.println("No Bill for Payment " + p);
                 continue;
             }
 
             if (bill.getBillTypeAtomic() == null) {
-                System.out.println("No atomic bill type for Bill = " + bill);
             } else {
                 Department dept = bill.getDepartment();
                 if (dept != null) {
                     uniqueDepartments.add(dept);
                 } else {
-                    System.out.println("No Department for the Bill " + bill);
                 }
 
                 if (p.getCreatedAt() != null) {
@@ -2086,7 +2060,6 @@ public class FinancialTransactionController implements Serializable {
                             .toLocalDate();
                     uniqueDates.add(createdDateOnly);
                 } else {
-                    System.out.println("No createdAt for Payment " + p);
                 }
 
                 atomicBillTypeTotalsByPayments.addOrUpdateAtomicRecord(bill.getBillTypeAtomic(), p.getPaymentMethod(), p.getPaidValue());
@@ -2120,7 +2093,6 @@ public class FinancialTransactionController implements Serializable {
         System.out.println("jpql = " + jpql);
         System.out.println("m = " + m);
         paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m);
-        System.out.println("paymentsFromShiftSratToNow 12 = " + paymentsFromShiftSratToNow);
 
         atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
         currentBillPayments = paymentsFromShiftSratToNow;
@@ -2130,18 +2102,15 @@ public class FinancialTransactionController implements Serializable {
         for (Payment p : paymentsFromShiftSratToNow) {
             Bill bill = p.getBill();
             if (bill == null) {
-                System.out.println("No Bill for Payment " + p);
                 continue;
             }
 
             if (bill.getBillTypeAtomic() == null) {
-                System.out.println("No atomic bill type for Bill = " + bill);
             } else {
                 Department dept = bill.getDepartment();
                 if (dept != null) {
                     uniqueDepartments.add(dept);
                 } else {
-                    System.out.println("No Department for the Bill " + bill);
                 }
 
                 if (p.getCreatedAt() != null) {
@@ -2150,7 +2119,6 @@ public class FinancialTransactionController implements Serializable {
                             .toLocalDate();
                     uniqueDates.add(createdDateOnly);
                 } else {
-                    System.out.println("No createdAt for Payment " + p);
                 }
 
                 atomicBillTypeTotalsByPayments.addOrUpdateAtomicRecord(bill.getBillTypeAtomic(), p.getPaymentMethod(), p.getPaidValue());
@@ -2175,41 +2143,118 @@ public class FinancialTransactionController implements Serializable {
             return;
         }
         Long shiftStartBillId = nonClosedShiftStartFundBill.getId();
+
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_IN));
+        btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_OUT));
+
         Map<String, Object> m = new HashMap<>();
-        String jpql = "SELECT p "
-                + "FROM Payment p "
+        String jpql = "SELECT p FROM Payment p JOIN p.bill b "
                 + "WHERE p.creater = :cr "
                 + "AND p.retired = :ret "
                 + "AND p.id > :cid "
-                + "AND p.cashbookEntryStated = :started ";
-        jpql += "AND FUNCTION('DATE', p.createdAt) = :createdDate ";
-        jpql += "AND p.bill.department = :dept ";
+                + "AND b.billTypeAtomic IN :btas "
+                + "AND p.cashbookEntryStated = :started "
+                + "AND FUNCTION('DATE', p.createdAt) = :createdDate "
+                + "AND b.department = :dept "
+                + "ORDER BY p.id DESC";
+
         m.put("dept", cashbookDepartment);
+        m.put("btas", btas);
         m.put("createdDate", cashbookDate);
         m.put("started", false);
-        jpql += "ORDER BY p.id DESC";
         m.put("cr", nonClosedShiftStartFundBill.getCreater());
         m.put("ret", false);
         m.put("cid", shiftStartBillId);
         System.out.println("jpql = " + jpql);
         System.out.println("m = " + m);
         paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m);
-        System.out.println("paymentsFromShiftSratToNow = " + paymentsFromShiftSratToNow);
+
+// Filter and collect unique cancelled bills
+        Set<Bill> cancelledBills = paymentsFromShiftSratToNow.stream()
+                .map(Payment::getBill)
+                .filter(bill -> bill.getBillClassType() == BillClassType.CancelledBill)
+                .collect(Collectors.toSet()); // Using a Set to ensure uniqueness
+
+// Filter and collect unique refunded bills
+        Set<Bill> refundedBills = paymentsFromShiftSratToNow.stream()
+                .map(Payment::getBill)
+                .filter(bill -> bill.getBillClassType() == BillClassType.RefundBill)
+                .collect(Collectors.toSet());
+
+// Create bundles for cancelled and refunded bills
+        cancelledBundle = new ReportTemplateRowBundle();
+        refundBundle = new ReportTemplateRowBundle();
+
+// Add unique cancelled bills to the cancelled bundle
+        for (Bill bill : cancelledBills) {
+            ReportTemplateRow row = new ReportTemplateRow();
+            row.setBill(bill); // Assuming you have a method to set a Bill in ReportTemplateRow
+            cancelledBundle.getReportTemplateRows().add(row);
+        }
+
+// Add unique refunded bills to the refund bundle
+        for (Bill bill : refundedBills) {
+            ReportTemplateRow row = new ReportTemplateRow();
+            row.setBill(bill); // Assuming you have a method to set a Bill in ReportTemplateRow
+            refundBundle.getReportTemplateRows().add(row);
+        }
+
+// Optionally, set other properties for the bundles
+        cancelledBundle.setName("Cancelled Bills");
+        cancelledBundle.setBundleType("cancelledBillBundle");
+
+        refundBundle.setName("Refunded Bills");
+        refundBundle.setBundleType("refundBillBundle");
+//        
+        chequeFromShiftSratToNow = paymentsFromShiftSratToNow.stream()
+                .filter(p -> p.getPaymentMethod() == PaymentMethod.Cheque)
+                .collect(Collectors.toList());
+
+        cardPaymentsFromShiftSratToNow = paymentsFromShiftSratToNow.stream()
+                .filter(p -> p.getPaymentMethod() == PaymentMethod.Card)
+                .collect(Collectors.toList());
+
+        // Create bundles for cash and cheque transactions
+        cardTransactionPaymentBundle = new ReportTemplateRowBundle();
+        chequeTransactionPaymentBundle = new ReportTemplateRowBundle();
+
+// Add filtered cheque payments to the cheque transaction bundle
+        for (Payment currentPayment : chequeFromShiftSratToNow) {
+            ReportTemplateRow row = new ReportTemplateRow();
+            row.setPayment(currentPayment);
+            chequeTransactionPaymentBundle.getReportTemplateRows().add(row);
+        }
+
+// Add filtered card payments to the cash transaction bundle
+        for (Payment currentPayment : cardPaymentsFromShiftSratToNow) {
+            ReportTemplateRow row = new ReportTemplateRow();
+            row.setPayment(currentPayment);
+            cardTransactionPaymentBundle.getReportTemplateRows().add(row);
+        }
+
+// Optionally, set other properties for the bundles
+        cardTransactionPaymentBundle.setName("Card Payments");
+        cardTransactionPaymentBundle.setBundleType("paymentReportCard");
+
+        chequeTransactionPaymentBundle.setName("Cheque Payments");
+        chequeTransactionPaymentBundle.setBundleType("paymentReportCheque");
+
         atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
+
         for (Payment p : paymentsFromShiftSratToNow) {
             Bill bill = p.getBill();
             if (bill == null) {
-                System.out.println("No Bill for Payment " + p);
                 continue;
             }
 
             if (bill.getBillTypeAtomic() == null) {
-                System.out.println("No atomic bill type for Bill = " + bill);
             } else {
                 atomicBillTypeTotalsByPayments.addOrUpdateAtomicRecord(bill.getBillTypeAtomic(), p.getPaymentMethod(), p.getPaidValue());
             }
         }
         financialReportByPayments = new FinancialReport(atomicBillTypeTotalsByPayments);
+        financialReportByPayments.getRefundedCash();
     }
 
     public void fillPaymentsForDateRange() {
@@ -2224,7 +2269,6 @@ public class FinancialTransactionController implements Serializable {
         m.put("fd", getFromDate());
         m.put("td", getToDate());
         m.put("ret", true);
-        System.out.println("m = " + m);
     }
 
     public void fillPaymentsFromShiftStartToNow(Bill startBill, WebUser user) {
@@ -2289,7 +2333,6 @@ public class FinancialTransactionController implements Serializable {
         System.out.println("jpql = " + jpql);
 
         paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m);
-        System.out.println("paymentsFromShiftSratToNow = " + paymentsFromShiftSratToNow);
         atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
         for (Payment p : paymentsFromShiftSratToNow) {
             if (p.getBill().getBillTypeAtomic() == null) {
@@ -2329,7 +2372,6 @@ public class FinancialTransactionController implements Serializable {
         System.out.println("jpql = " + jpql);
 
         paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m);
-        System.out.println("paymentsFromShiftSratToNow = " + paymentsFromShiftSratToNow);
         atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
         for (Payment p : paymentsFromShiftSratToNow) {
             if (p.getBill().getBillTypeAtomic() == null) {
@@ -2850,14 +2892,12 @@ public class FinancialTransactionController implements Serializable {
 
     }
 
-    
-    
     public List<Bill> findHandoverCompletionBills(ReportTemplateRow row) {
         String sql;
         Staff forStaff = row.getUser().getStaff();
         Date forDate = row.getDate();
-        Department forDepartment=row.getDepartment();
-        
+        Department forDepartment = row.getDepartment();
+
         List<Bill> bills;
         Map tempMap = new HashMap();
         sql = "select s "
@@ -2874,7 +2914,7 @@ public class FinancialTransactionController implements Serializable {
         bills = billFacade.findByJpql(sql, tempMap);
         return bills;
     }
-    
+
     public String settleFundTransferReceiveBill() {
         if (currentBill == null) {
             JsfUtil.addErrorMessage("Error");
@@ -2950,7 +2990,6 @@ public class FinancialTransactionController implements Serializable {
             System.out.println("p = " + p);
             PaymentMethod method = p.getPaymentMethod();
             Double amount = p.getPaidValue();
-            System.out.println("amount = " + amount);
             p.setCashbookEntryCompleted(true);
             p.setHandoverAcceptBill(currentBill);
             paymentController.save(p);
@@ -3140,7 +3179,6 @@ public class FinancialTransactionController implements Serializable {
             total += denomination.getValue() * value;
         }
         currentPayment.setPaidValue(total);
-        System.out.println("Total value calculated: " + total);
 
         // Serialize updated denominations to JSON
         JSONArray jsonArray = new JSONArray();
@@ -3947,6 +3985,54 @@ public class FinancialTransactionController implements Serializable {
 
     public void setHandoverBillsToReceiveCount(int handoverBillsToReceiveCount) {
         this.handoverBillsToReceiveCount = handoverBillsToReceiveCount;
+    }
+
+    public List<Payment> getCardPaymentsFromShiftSratToNow() {
+        return cardPaymentsFromShiftSratToNow;
+    }
+
+    public void setCardPaymentsFromShiftSratToNow(List<Payment> cardPaymentsFromShiftSratToNow) {
+        this.cardPaymentsFromShiftSratToNow = cardPaymentsFromShiftSratToNow;
+    }
+
+    public List<Payment> getChequeFromShiftSratToNow() {
+        return chequeFromShiftSratToNow;
+    }
+
+    public void setChequeFromShiftSratToNow(List<Payment> chequeFromShiftSratToNow) {
+        this.chequeFromShiftSratToNow = chequeFromShiftSratToNow;
+    }
+
+    public ReportTemplateRowBundle getChequeTransactionPaymentBundle() {
+        return chequeTransactionPaymentBundle;
+    }
+
+    public void setChequeTransactionPaymentBundle(ReportTemplateRowBundle chequeTransactionPaymentBundle) {
+        this.chequeTransactionPaymentBundle = chequeTransactionPaymentBundle;
+    }
+
+    public ReportTemplateRowBundle getCardTransactionPaymentBundle() {
+        return cardTransactionPaymentBundle;
+    }
+
+    public void setCardTransactionPaymentBundle(ReportTemplateRowBundle cardTransactionPaymentBundle) {
+        this.cardTransactionPaymentBundle = cardTransactionPaymentBundle;
+    }
+
+    public ReportTemplateRowBundle getRefundBundle() {
+        return refundBundle;
+    }
+
+    public void setRefundBundle(ReportTemplateRowBundle refundBundle) {
+        this.refundBundle = refundBundle;
+    }
+
+    public ReportTemplateRowBundle getCancelledBundle() {
+        return cancelledBundle;
+    }
+
+    public void setCancelledBundle(ReportTemplateRowBundle cancelledBundle) {
+        this.cancelledBundle = cancelledBundle;
     }
 
 }
