@@ -70,7 +70,10 @@ public class MiddlewareController {
             // Deserialize the incoming JSON into QueryRecord
             System.out.println("Deserializing JSON input...");
 // Deserialize the incoming JSON into QueryRecord
-                        QueryRecord queryRecord = gson.fromJson(jsonInput, QueryRecord.class);
+            DataBundle dataBundle = gson.fromJson(jsonInput, DataBundle.class);
+            String analyzerName = dataBundle.getMiddlewareSettings().getAnalyzerDetails().getAnalyzerName();
+            QueryRecord queryRecord = dataBundle.getQueryRecords().get(0) ;
+
             if (queryRecord == null) {
                 return Response.status(Response.Status.BAD_REQUEST).entity("Invalid input data").build();
             }
@@ -79,7 +82,7 @@ public class MiddlewareController {
             PatientDataBundle pdb = new PatientDataBundle();
 
             System.out.println("Generating test codes for analyzer...");
-            List<String> testNames = limsMiddlewareController.generateTestCodesForAnalyzer(queryRecord.getSampleId());
+            List<String> testNames = limsMiddlewareController.generateTestCodesForAnalyzer(queryRecord.getSampleId(), analyzerName);
             if (testNames == null || testNames.isEmpty()) {
                 testNames = Arrays.asList("GLU");
             }
@@ -95,14 +98,21 @@ public class MiddlewareController {
 
             System.out.println("Creating PatientRecord...");
             if (ptSample.getPatient() == null) {
+                System.out.println("Invalid patient data ");
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Invalid patient data").build();
             }
             if (ptSample.getPatient().getPerson() == null) {
+                System.out.println("Invalid person data");
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Invalid person data").build();
             }
+            String referringDoc = "";
             if (ptSample.getBill() == null || ptSample.getBill().getReferredBy() == null || ptSample.getBill().getReferredBy().getPerson() == null) {
-                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Invalid referred by data").build();
+
+            } else {
+                referringDoc = ptSample.getBill().getReferredBy().getPerson().getNameWithTitle();
             }
+
+            System.out.println("AA");
 
             PatientRecord pr = new PatientRecord(0,
                     ptSample.getPatient().getIdStr(),
@@ -112,9 +122,10 @@ public class MiddlewareController {
                     "", null,
                     ptSample.getPatient().getPerson().getAddress(),
                     ptSample.getPatient().getPerson().getPhone(),
-                    ptSample.getBill().getReferredBy().getPerson().getNameWithTitle());
+                    referringDoc);
             pdb.setPatientRecord(pr);
             // Convert the PatientDataBundle to JSON and send it in the response
+            System.out.println("BB");
 
             // Convert the PatientDataBundle to JSON and send it in the response
             System.out.println("Converting PatientDataBundle to JSON...");
