@@ -368,12 +368,40 @@ public class SmsManagerEjb {
         }
         boolean sendSmsWithOAuth2 = configOptionApplicationController.getBooleanValueByKey("SMS Sent Using OAuth 2.0 Supported SMS Gateway", false);
         boolean sendSmsWithBasicAuthentication = configOptionApplicationController.getBooleanValueByKey("SMS Sent Using Basic Authentication Supported SMS Gateway", false);
+        boolean sendSmsViaESms = configOptionApplicationController.getBooleanValueByKey("SMS Sent Using E -SMS Supported SMS Gateway", false);
         if (sendSmsWithOAuth2) {
             return sendSmsByOauth2(sms);
         } else if (sendSmsWithBasicAuthentication) {
             return sendSmsByBasicAuthentication(sms);
+        }else if (sendSmsViaESms){
+            return sendSmsByESms(sms);
         }
         return false;
+    }
+    
+    public boolean sendSmsByESms(Sms sms) {
+        if (doNotSendAnySms) {
+            return false;
+        }
+        String smsUsername = configOptionApplicationController.getShortTextValueByKey("SMS Gateway via E-SMS - Username");
+        String smsPassword = configOptionApplicationController.getShortTextValueByKey("SMS Gateway via E-SMS - Password");
+        String smsUserAlias = configOptionApplicationController.getShortTextValueByKey("SMS Gateway via E-SMS - User Alias");
+        String smsUrl = configOptionApplicationController.getShortTextValueByKey("SMS Gateway via E-SMS - URL");
+
+        // Create an instance of eSmsManager
+        eSmsManager smsManager = new eSmsManager();
+
+        boolean send = smsManager.sendSms(smsUsername,smsPassword,smsUserAlias,sms.getReceipientNumber(),sms.getSendingMessage());
+        
+        if(send){
+            sms.setSentSuccessfully(true);
+            saveSms(sms);
+            return send;
+        }else{
+            sms.setSentSuccessfully(false);
+            saveSms(sms);
+            return send;
+        }
     }
 
     public boolean sendSmsByBasicAuthentication(Sms sms) {
