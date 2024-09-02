@@ -72,7 +72,7 @@ public class MiddlewareController {
 // Deserialize the incoming JSON into QueryRecord
             DataBundle dataBundle = gson.fromJson(jsonInput, DataBundle.class);
             String analyzerName = dataBundle.getMiddlewareSettings().getAnalyzerDetails().getAnalyzerName();
-            QueryRecord queryRecord = dataBundle.getQueryRecords().get(0) ;
+            QueryRecord queryRecord = dataBundle.getQueryRecords().get(0);
 
             if (queryRecord == null) {
                 return Response.status(Response.Status.BAD_REQUEST).entity("Invalid input data").build();
@@ -272,7 +272,7 @@ public class MiddlewareController {
     }
 
     public Response processResultsCommon(DataBundle dataBundle) {
-        List<String> observationDetails = new ArrayList<>();
+        List<ResultsRecord> observationDetails = new ArrayList<>();
 
         for (ResultsRecord rr : dataBundle.getResultsRecords()) {
             String sampleId = rr.getSampleId();
@@ -286,16 +286,24 @@ public class MiddlewareController {
 
             boolean thisOk = limsMiddlewareController.addResultToReport(sampleId, testStr, result, unit, error);
 
-            // Add result status to observation details
+            // Set the result status in the ResultsRecord object
             if (thisOk) {
-                observationDetails.add("Sample ID: " + sampleId + " Test: " + testStr + " Status: Success");
+                rr.setStatus("Success"); // Assuming ResultsRecord has a setStatus method
             } else {
-                observationDetails.add("Sample ID: " + sampleId + " Test: " + testStr + " Status: Failure");
+                rr.setStatus("Failure"); // Assuming ResultsRecord has a setStatus method
             }
+
+            // Add the result record to the observation details
+            observationDetails.add(rr);
         }
 
-        // Always return OK with details of each observation
-        return Response.ok("{\"status\":\"SmartLyte Plus processed with details.\", \"details\": " + observationDetails + "}").build();
+        // Create the response data as a map
+        String statusMessage = "SmartLyte Plus processed with details.";
+        Gson gson = new Gson();
+        String jsonResponse = gson.toJson(observationDetails);
+
+        // Return the JSON response
+        return Response.ok("{\"status\":\"" + statusMessage + "\", \"details\":" + jsonResponse + "}").build();
     }
 
     public PatientSample patientSampleFromId(Long id) {
