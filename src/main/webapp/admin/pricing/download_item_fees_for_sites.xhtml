@@ -119,6 +119,13 @@
                                 <h:outputText value="#{f.item.retirer.webUserPerson.nameWithTitle}" ></h:outputText>
                             </p:column>
 
+                             <p:column headerText="CATEGORY" width="20em" sortBy="#{f.item.name}" filterBy="#{f.item.name}" filterMatchMode="contains">
+                                <h:outputText value="#{f.item.category.name}" ></h:outputText>
+                                <h:outputText value="#{f.item.category.retired?'Deleted':''}" ></h:outputText>
+                                <h:outputText value="#{f.item.category.retiredAt}" ></h:outputText>
+                                <h:outputText value="#{f.item.category.retirer.webUserPerson.nameWithTitle}" ></h:outputText>
+                            </p:column>
+                            
 
                             <!-- Name Column with sorting and filtering -->
                             <p:column headerText="Fee Name"  width="15em" sortBy="#{f.name}" filterBy="#{f.name}" filterMatchMode="contains">

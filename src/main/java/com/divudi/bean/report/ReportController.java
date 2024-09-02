@@ -468,11 +468,13 @@ public class ReportController implements Serializable {
         }
 
         if (invoiceNumber != null && !invoiceNumber.isEmpty()) {
-            jpql += " and ah.bill.insId = :inv ";
+            jpql += " and (ah.bill.insId = :inv or ah.bill.deptId = :inv) ";
             m.put("inv", invoiceNumber);
         }
-        
+        System.out.println("m = " + m);
+        System.out.println("jpql = " + jpql);
         agentHistories = agentHistoryFacade.findByJpql(jpql, m,TemporalType.TIMESTAMP);  
+        System.out.println("agentHistories = " + agentHistories);
     }
 
     public void processCollectingCentreStatementReport() {

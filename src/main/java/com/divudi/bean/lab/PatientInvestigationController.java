@@ -1382,13 +1382,13 @@ public class PatientInvestigationController implements Serializable {
             JsfUtil.addErrorMessage("No Patient Investigations are Selected");
             return;
         }
-
-        for (PatientInvestigation pi : selectedItems) {
-            if (pi.getBillItem().getBill().getStatus() != patientInvestigationStatus.ORDERED) {
-                JsfUtil.addErrorMessage("Barcode is already generated for Selected " + pi.getBillItem().getItem().getName() + " Investigation");
-                return;
-            }
-        }
+//
+//        for (PatientInvestigation pi : selectedItems) {
+//            if (pi.getBillItem().getBill().getStatus() != patientInvestigationStatus.ORDERED) {
+//                JsfUtil.addErrorMessage("Barcode is already generated for Selected " + pi.getBillItem().getItem().getName() + " Investigation");
+//                return;
+//            }
+//        }
 
         // Create a set to track unique bills
         Set<Bill> uniqueBills = new HashSet<>();
