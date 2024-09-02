@@ -70,10 +70,7 @@ public class MiddlewareController {
             // Deserialize the incoming JSON into QueryRecord
             System.out.println("Deserializing JSON input...");
 // Deserialize the incoming JSON into QueryRecord
-            DataBundle dataBundle = gson.fromJson(jsonInput, DataBundle.class);
-            String analyzerName = dataBundle.getMiddlewareSettings().getAnalyzerDetails().getAnalyzerName();
-            QueryRecord queryRecord = dataBundle.getQueryRecords().get(0);
-
+                        QueryRecord queryRecord = gson.fromJson(jsonInput, QueryRecord.class);
             if (queryRecord == null) {
                 return Response.status(Response.Status.BAD_REQUEST).entity("Invalid input data").build();
             }
@@ -82,7 +79,7 @@ public class MiddlewareController {
             PatientDataBundle pdb = new PatientDataBundle();
 
             System.out.println("Generating test codes for analyzer...");
-            List<String> testNames = limsMiddlewareController.generateTestCodesForAnalyzer(queryRecord.getSampleId(), analyzerName);
+            List<String> testNames = limsMiddlewareController.generateTestCodesForAnalyzer(queryRecord.getSampleId());
             if (testNames == null || testNames.isEmpty()) {
                 testNames = Arrays.asList("GLU");
             }
@@ -90,29 +87,26 @@ public class MiddlewareController {
             System.out.println("Fetching patient sample for Sample ID: " + queryRecord.getSampleId());
             PatientSample ptSample = limsMiddlewareController.patientSampleFromId(queryRecord.getSampleId());
             if (ptSample == null) {
+                System.out.println("pt sample is null");
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Patient sample not found").build();
             }
 
+            System.out.println("order record created = ");
             OrderRecord or = new OrderRecord(0, queryRecord.getSampleId(), testNames, "S", new Date(), "testInformation");
             pdb.getOrderRecords().add(or);
 
             System.out.println("Creating PatientRecord...");
             if (ptSample.getPatient() == null) {
-                System.out.println("Invalid patient data ");
+                System.out.println("pt is null");
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Invalid patient data").build();
             }
             if (ptSample.getPatient().getPerson() == null) {
-                System.out.println("Invalid person data");
+                System.out.println("person null");
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Invalid person data").build();
             }
-            String referringDoc = "";
             if (ptSample.getBill() == null || ptSample.getBill().getReferredBy() == null || ptSample.getBill().getReferredBy().getPerson() == null) {
-
-            } else {
-                referringDoc = ptSample.getBill().getReferredBy().getPerson().getNameWithTitle();
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Invalid referred by data").build();
             }
-
-            System.out.println("AA");
 
             PatientRecord pr = new PatientRecord(0,
                     ptSample.getPatient().getIdStr(),
@@ -122,10 +116,9 @@ public class MiddlewareController {
                     "", null,
                     ptSample.getPatient().getPerson().getAddress(),
                     ptSample.getPatient().getPerson().getPhone(),
-                    referringDoc);
+                    ptSample.getBill().getReferredBy().getPerson().getNameWithTitle());
             pdb.setPatientRecord(pr);
             // Convert the PatientDataBundle to JSON and send it in the response
-            System.out.println("BB");
 
             // Convert the PatientDataBundle to JSON and send it in the response
             System.out.println("Converting PatientDataBundle to JSON...");
@@ -178,6 +171,7 @@ public class MiddlewareController {
                     case MaglumiX3HL7:
                         return processMaglumiX3HL7(dataBundle);
                     case MindrayBC5150:
+                        return processMindrayBC5150(dataBundle);
                     case IndikoPlus:
                     case SmartLytePlus:
                         return processResultsCommon(dataBundle);
@@ -271,45 +265,30 @@ public class MiddlewareController {
     }
 
     public Response processResultsCommon(DataBundle dataBundle) {
-        System.out.println("processResultsCommon");
-        List<ResultsRecord> observationDetails = new ArrayList<>();
-        System.out.println("observationDetails = " + observationDetails);
-        System.out.println("dataBundle = " + dataBundle);
-        
+        List<String> observationDetails = new ArrayList<>();
+
         for (ResultsRecord rr : dataBundle.getResultsRecords()) {
-            System.out.println("dataBundle = " + dataBundle);
             String sampleId = rr.getSampleId();
             System.out.println("sampleId = " + sampleId);
             String testStr = rr.getTestCode();
             System.out.println("testStr = " + testStr);
-            String result = rr.getResultValueString();
-            if(result==null || result.trim().equals("")){
-                result = rr.getResultValue() + "";
-            }
+            String result = rr.getResultValue() + "";
             System.out.println("result = " + result);
             String unit = rr.getResultUnits();
             String error = "";
 
             boolean thisOk = limsMiddlewareController.addResultToReport(sampleId, testStr, result, unit, error);
 
-            // Set the result status in the ResultsRecord object
+            // Add result status to observation details
             if (thisOk) {
-                rr.setStatus("Success"); // Assuming ResultsRecord has a setStatus method
+                observationDetails.add("Sample ID: " + sampleId + " Test: " + testStr + " Status: Success");
             } else {
-                rr.setStatus("Failure"); // Assuming ResultsRecord has a setStatus method
+                observationDetails.add("Sample ID: " + sampleId + " Test: " + testStr + " Status: Failure");
             }
-
-            // Add the result record to the observation details
-            observationDetails.add(rr);
         }
 
-        // Create the response data as a map
-        String statusMessage = "Results Plus processed with details.";
-        Gson gson = new Gson();
-        String jsonResponse = gson.toJson(observationDetails);
-
-        // Return the JSON response
-        return Response.ok("{\"status\":\"" + statusMessage + "\", \"details\":" + jsonResponse + "}").build();
+        // Always return OK with details of each observation
+        return Response.ok("{\"status\":\"SmartLyte Plus processed with details.\", \"details\": " + observationDetails + "}").build();
     }
 
     public PatientSample patientSampleFromId(Long id) {
