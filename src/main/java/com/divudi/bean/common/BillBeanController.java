@@ -3046,6 +3046,25 @@ public class BillBeanController implements Serializable {
     @Inject
     SessionController sessionController;
 
+    private boolean billFeeIsThereAsSelectedInBillFeeBundle(BillFee bf, List<BillFeeBundleEntry> bundleFeeEntries) {
+        if (bf == null) {
+            return false;
+        }
+        if (bf.getFee() == null) {
+            return false;
+        }
+        if (bundleFeeEntries == null || bundleFeeEntries.isEmpty()) {
+            return true;
+        }
+        boolean found = false;
+        for (BillFeeBundleEntry bfbe : bundleFeeEntries) {
+            if (bfbe.getSelectedBillFee().equals(bf)) {
+                found = true;
+            }
+        }
+        return found;
+    }
+
     public void calculateBillItems(Bill bill, List<BillEntry> billEntrys) {
         double staff = 0.0;
         double ins = 0.0;
@@ -3056,6 +3075,7 @@ public class BillBeanController implements Serializable {
 
         for (BillEntry e : billEntrys) {
             for (BillFee bf : e.getLstBillFees()) {
+
                 tot += bf.getFeeGrossValue();
                 net += bf.getFeeValue();
                 dis += bf.getFeeDiscount();
@@ -3070,6 +3090,88 @@ public class BillBeanController implements Serializable {
                     getBillFeeFacade().create(bf);
                 } else {
                     getBillFeeFacade().edit(bf);
+                }
+
+            }
+        }
+
+        bill.setStaffFee(staff);
+        bill.setPerformInstitutionFee(ins);
+
+//        bill.setTotal(tot);
+//        bill.setNetTotal(net);
+//        bill.setDiscount(dis);
+        if (sessionController.getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
+            ////System.out.println("cashRemain" + billController.getCashRemain());
+            if (billController.getCashRemain() != 0) {
+                if (tot > billController.getCashRemain()) {
+                    bill.setBalance(tot - billController.getCashRemain());
+                    bill.setTotal(tot);
+                    bill.setNetTotal(billController.getCashRemain());
+                    bill.setDiscount(dis);
+                    bill.setCashPaid(billController.getCashRemain());
+                    billController.setCashRemain(0.0);
+                } else {
+                    bill.setBalance(0.0);
+                    bill.setTotal(tot);
+                    bill.setNetTotal(net);
+                    bill.setDiscount(dis);
+                    bill.setCashPaid(tot);
+                    billController.setCashRemain(billController.getCashRemain() - tot);
+                }
+
+            } else {
+                bill.setBalance(tot);
+                bill.setTotal(tot);
+                bill.setNetTotal(0.0);
+                bill.setCashPaid(0.0);
+                bill.setDiscount(dis);
+            }
+            ////System.out.println(".................");
+
+        } else {
+            bill.setGrantTotal(tot);
+            bill.setTotal(tot);
+            bill.setNetTotal(net);
+            bill.setBillTotal(net);
+            bill.setDiscount(dis);
+        }
+
+        bill.setVat(vat);
+        bill.setVatPlusNetTotal(vat + bill.getNetTotal());
+
+        getBillFacade().edit(bill);
+    }
+
+    public void calculateBillItemsForOpdBill(Bill bill, List<BillEntry> billEntrys, List<BillFeeBundleEntry> bundleFeeEntries) {
+        double staff = 0.0;
+        double ins = 0.0;
+        double tot = 0.0;
+        double dis = 0;
+        double net = 0;
+        double vat = 0.0;
+
+        for (BillEntry e : billEntrys) {
+            for (BillFee bf : e.getLstBillFees()) {
+
+                boolean needToAdd = billFeeIsThereAsSelectedInBillFeeBundle(bf, bundleFeeEntries);
+                if (needToAdd) {
+
+                    tot += bf.getFeeGrossValue();
+                    net += bf.getFeeValue();
+                    dis += bf.getFeeDiscount();
+                    vat += bf.getFeeVat();
+
+                    if (bf.getFee().getFeeType() != FeeType.Staff) {
+                        ins += bf.getFeeValue();
+                    } else {
+                        staff += bf.getFeeValue();
+                    }
+                    if (bf.getId() == null || bf.getId() == 0) {
+                        getBillFeeFacade().create(bf);
+                    } else {
+                        getBillFeeFacade().edit(bf);
+                    }
                 }
             }
         }
@@ -3254,10 +3356,7 @@ public class BillBeanController implements Serializable {
                 woccfee += bf.getFeeValue();
             }
             list.add(bf);
-            
-            
-            
-            
+
         }
         e.getBillItem().setTransCCFee(ccfee);
         e.getBillItem().setTransWithOutCCFee(woccfee);
@@ -4285,7 +4384,6 @@ public class BillBeanController implements Serializable {
             System.out.println("jpql = " + jpql);
 
             List<ItemFee> itemFee = getItemFeeFacade().findByJpql(jpql, params);
-
 
             for (Fee i : itemFee) {
                 f = new BillFee();
