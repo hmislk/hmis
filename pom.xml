@@ -270,12 +270,6 @@
             <version>2.0</version>
         </dependency>
         
-        <dependency>
-            <groupId>lk.mobitel.esms</groupId>
-            <artifactId>esmslib</artifactId>
-            <version>4.0</version>
-        </dependency>
-        
         <!-- Java EE -->
         <dependency>
             <groupId>javax</groupId>
