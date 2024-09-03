@@ -378,7 +378,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public List<Staff> specialityStaff() {
         consultants = staffController.getSpecialityStaff(speciality);
-        System.out.println("consultants = " + consultants.size());
         return consultants;
     }
 
@@ -386,7 +385,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         System.out.println("Speciality = " + speciality);
         System.out.println("Doctor = " + consultant);
         findSessions();
-        System.out.println("Sessions Calendar OK");
     }
 
     /**
@@ -398,7 +396,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void onDateSelect(SelectEvent<LocalDateTime> selectEvent) {
-        System.out.println("onDateSelect Start");
         event = (ChannelScheduleEvent) DefaultScheduleEvent.builder()
                 .startDate(selectEvent.getObject())
                 .endDate(selectEvent.getObject().plusHours(1))
@@ -467,11 +464,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         try {
             System.out.println("try");
             sessionInstances = getChannelBean().generateSesionInstancesFromServiceSessions(selectedServiceSessions);
-            System.out.println("sessionInstances = " + sessionInstances.size());
         } catch (Exception e) {
-            System.out.println("Error = " + e);
         }
-        System.out.println("Ending Error");
         generateChaneelSessionEvents(sessionInstances);
     }
 
@@ -510,9 +504,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
             channelModel.addEvent(event);
             System.out.println(si.getName() + " Add");
-            System.out.println("channelModel = " + channelModel.getEventCount());
         }
-        System.out.println("channelModel = " + channelModel);
     }
 
     //----------------------------------------------
@@ -2406,7 +2398,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 //            System.out.println("Staff Credit Balance Updated");
         }
 
-        System.out.println("****");
         sendSmsOnChannelCancellationBookings();
         comment = null;
         printPreviewC = true;
@@ -3441,7 +3432,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         if (configOptionApplicationController.getBooleanValueByKey("Allow Tenderd amount for channel booking")) {
             if (paymentMethod == PaymentMethod.Cash) {
-                if (strTenderedValue == "" || strTenderedValue.isEmpty()) {
+                if (strTenderedValue == null) {
                     JsfUtil.addErrorMessage("Please Enter Tenderd Amount");
                     return;
                 }
@@ -4902,7 +4893,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
        if (selectedSessionInstance.getOriginatingSession().getSessionStartingNumber() != null 
     && !selectedSessionInstance.getOriginatingSession().getSessionStartingNumber().trim().equals("")) {
     
-    System.out.println("selectedSessionInstance.getOriginatingSession().getSessionStartingNumber() = " + selectedSessionInstance.getOriginatingSession().getSessionStartingNumber());
     
     int ssn = Integer.parseInt(selectedSessionInstance.getOriginatingSession().getSessionStartingNumber().trim());
     sessionStartingNumber = ssn;
@@ -6800,7 +6790,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private boolean errorCheckForSettle() {
 
         if (settlePaymentMethod == null) {
-            JsfUtil.addErrorMessage("Settle Payment Method for Settling");
+            settlePaymentMethod=paymentMethod.Cash;
             return true;
         }
 
@@ -6854,6 +6844,15 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                     return;
                 }
             }
+            if (configOptionApplicationController.getBooleanValueByKey("Allow Tenderd amount for channel booking")) {
+            if (settlePaymentMethod == PaymentMethod.Cash) {
+                if (strTenderedValue == null) {
+                    JsfUtil.addErrorMessage("Pleace Enter Tenderd Amount !");
+                    return;
+                }
+                
+            }
+        }
             if (errorChecksettle()) {
                 return;
             }

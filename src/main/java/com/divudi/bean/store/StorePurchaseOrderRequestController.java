@@ -251,7 +251,6 @@ public class StorePurchaseOrderRequestController implements Serializable {
     }
 
     public void finalizeBill() {
-        System.out.println("currentBill.getId() = " + currentBill.getId());
         if (currentBill == null) {
             JsfUtil.addErrorMessage("No Bill");
             return;

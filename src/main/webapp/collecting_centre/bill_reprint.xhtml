@@ -19,12 +19,12 @@
                             <div class="col-12 d-flex justify-content-between ">
                                 <!-- Command Buttons -->
                                 <div class="d-flex m-1 col-6">
-                                    <p:commandButton ajax="false" value="To Cancel" action="/opd/bill_cancel" disabled="#{billSearch.bill.cancelled or billSearch.bill.refundedBill ne null}" class="ui-button-danger m-1 w-25" icon="fa fa-times" >                           
+                                    <p:commandButton ajax="false" value="To Cancel" action="/collecting_centre/bill_cancel" disabled="#{billSearch.bill.cancelled or billSearch.bill.refundedBill ne null}" class="ui-button-danger m-1 w-25" icon="fa fa-times" >                           
                                     </p:commandButton>
                                     <p:commandButton
                                         ajax="false" 
                                         value="To Refund" 
-                                        action="#{billSearch.navigateToRefundOpdBill}" 
+                                        action="#{billSearch.navigateToRefundCollectingCentreBill}" 
                                         disabled="#{billSearch.bill.cancelled}" 
                                         class="ui-button-warning m-1 w-25" 
                                         icon="fa fa-money-bill-wave">                          
@@ -62,13 +62,13 @@
                                             value="#{opdBillController.bills[0].patient}" 
                                             target="#{patientController.current}" />
                                     </p:commandButton>
-                                    
+
                                     <p:commandButton  
-                                                     class="ui-button-secondary m-1"
-                                                     icon="fa-solid fa-arrow-left"
-                                                     action="#{opdBillController.navigateToSearchOpdBills()}"
-                                                     ajax="false">
-                                       
+                                        class="ui-button-secondary m-1"
+                                        icon="fa-solid fa-arrow-left"
+                                        action="#{opdBillController.navigateToSearchOpdBills()}"
+                                        ajax="false">
+
                                     </p:commandButton>
 
 
@@ -78,10 +78,6 @@
 
                             </div>
                         </div>
-
-                        <p:panelGrid columns="7" >
-
-                        </p:panelGrid>
 
                         <div class="row">
                             <div class="col-6">
@@ -110,6 +106,9 @@
                                         <ui:repeat value="#{billSearch.bill}" var="pp">
                                             <prints:posOpdBill bill="#{pp}" duplicate="true"/>                        
                                         </ui:repeat>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}">
+                                        <prints:five_five_paper_coustom_1 bill="#{billSearch.bill}" refunded="true"  duplicate="true"/>
                                     </h:panelGroup>
                                 </h:panelGroup>
                             </div>
@@ -140,17 +139,17 @@
                                                 <div class="col-md-2"><h:outputLabel value="Payment Type " ></h:outputLabel></div>
                                                 <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
                                                 <div class="col-md-8"><h:outputLabel value="#{billSearch.bill.paymentMethod}" /></div>
-                                                    
-                                                </div>
+
+                                            </div>
                                             <h:panelGroup rendered="#{billSearch.bill.chequeRefNo ne null}">
                                                 <div class="row">
-                                                <div class="col-md-2"><h:outputLabel value="Cheque No" /></div>
-                                                <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
-                                                <div class="col-md-8"><h:outputLabel value="#{billSearch.bill.chequeRefNo}" ></h:outputLabel></div>
-                                            </div>
+                                                    <div class="col-md-2"><h:outputLabel value="Cheque No" /></div>
+                                                    <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                                    <div class="col-md-8"><h:outputLabel value="#{billSearch.bill.chequeRefNo}" ></h:outputLabel></div>
+                                                </div>
                                             </h:panelGroup>
-                                            
-                                            
+
+
                                             <div class="row">
                                                 <div class="col-md-2"><h:outputLabel value="Total" ></h:outputLabel></div>
                                                 <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>

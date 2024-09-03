@@ -1251,7 +1251,6 @@ public class BillNumberGenerator {
         
         String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Sufix for " + billType, billType.getCode());
         System.out.println("billType = " + billType);
-        System.out.println("Code = " + billType.getCode());
         
         BillNumber billNumber = fetchLastBillNumber(dep, toDept, billType, billClassType);
         Long dd = billNumber.getLastBillNumber();

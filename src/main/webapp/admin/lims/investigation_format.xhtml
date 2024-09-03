@@ -336,7 +336,8 @@
                                                     <p:selectOneMenu 
                                                         class="w-100" 
                                                         id="cmbItemType" 
-
+                                                        filter="true"
+                                                        filterMatchMode="contains"
                                                         value="#{investigationItemController.current.ixItemType}">
                                                         <f:selectItem itemLabel="Please select" />
                                                         <f:selectItems value="#{enumController.investigationItemTypes}" var="iit" itemLabel="#{iit}" itemValue="#{iit}" >
@@ -347,7 +348,8 @@
                                                     <p:selectOneMenu 
                                                         class="w-100" 
                                                         id="cmbValueType" 
-
+                                                        filter="true"
+                                                        filterMatchMode="contains"
                                                         value="#{investigationItemController.current.ixItemValueType}">
                                                         <f:selectItem itemLabel="Please select" />
                                                         <f:selectItems value="#{enumController.investigationItemValueTypes}" />
@@ -390,8 +392,8 @@
                                                         <p:inputText  style="width: 60px;" maxlength="2" autocomplete="off" id="txtHeight" value="#{investigationItemController.current.riHeight}"/>
                                                     </div>
                                                     <div class="col-3 d-flex gap-1">
-                                                       <h:outputText value="Height PX" class="mt-2" />
-                                                       <p:inputText style="width: 60px;" maxlength="2" autocomplete="off" id="txtHtPx" value="#{investigationItemController.current.htPix}"/>
+                                                        <h:outputText value="Height PX" class="mt-2" />
+                                                        <p:inputText style="width: 60px;" maxlength="2" autocomplete="off" id="txtHtPx" value="#{investigationItemController.current.htPix}"/>
                                                     </div>
                                                     <div class="col-3 d-flex gap-1">
                                                         <h:outputText value="Width Px" class="mt-2"/>
