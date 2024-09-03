@@ -40,6 +40,9 @@ public class AgentHistory implements Serializable {
     double balanceAfterTransaction;
     double transactionValue;
     
+    private Double adjustmentToAgencyBalance;
+    private Double paidAmountToAgency;
+    private Double paidAmountByAgency;
     
     private double companyTransactionValue;
     private double companyBalanceBefore;
@@ -340,6 +343,30 @@ public class AgentHistory implements Serializable {
 
     public void setBeforeBallance(double ballance) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    public Double getAdjustmentToAgencyBalance() {
+        return adjustmentToAgencyBalance;
+    }
+
+    public void setAdjustmentToAgencyBalance(Double adjustmentToAgencyBalance) {
+        this.adjustmentToAgencyBalance = adjustmentToAgencyBalance;
+    }
+
+    public Double getPaidAmountToAgency() {
+        return paidAmountToAgency;
+    }
+
+    public void setPaidAmountToAgency(Double paidAmountToAgency) {
+        this.paidAmountToAgency = paidAmountToAgency;
+    }
+
+    public Double getPaidAmountByAgency() {
+        return paidAmountByAgency;
+    }
+
+    public void setPaidAmountByAgency(Double paidAmountByAgency) {
+        this.paidAmountByAgency = paidAmountByAgency;
     }
 
 }
