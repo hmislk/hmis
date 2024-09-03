@@ -1562,7 +1562,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 myBill.setCashPaid(cashPaid);
             }
             getBillFacade().edit(myBill);
-            getBillBean().calculateBillItems(myBill, tmp);
+            getBillBean().calculateBillItemsForOpdBill(myBill, tmp, getBillFeeBundleEntrys());
             createPaymentsForBills(myBill, tmp);
             getBillBean().checkBillItemFeesInitiated(myBill);
             getBills().add(myBill);
@@ -1608,7 +1608,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 myBill.setCashPaid(cashPaid);
             }
             getBillFacade().edit(myBill);
-            getBillBean().calculateBillItems(myBill, tmp);
+            getBillBean().calculateBillItemsForOpdBill(myBill, tmp, getBillFeeBundleEntrys());
             createPaymentsForBills(myBill, tmp);
             getBillBean().checkBillItemFeesInitiated(myBill);
             getBills().add(myBill);
@@ -1652,7 +1652,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
                 // Finalizing the Bill
                 getBillFacade().edit(myBill);
-                getBillBean().calculateBillItems(myBill, tmp);
+                getBillBean().calculateBillItemsForOpdBill(myBill, tmp, getBillFeeBundleEntrys());
                 createPaymentsForBills(myBill, tmp);
                 getBillBean().checkBillItemFeesInitiated(myBill);
 
@@ -1761,7 +1761,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             newSingleBill.setBillTotal(newSingleBill.getNetTotal());
             newSingleBill.setIpOpOrCc("OP");
             getBillFacade().edit(newSingleBill);
-            getBillBean().calculateBillItems(newSingleBill, getLstBillEntries());
+            getBillBean().calculateBillItemsForOpdBill(newSingleBill, getLstBillEntries(), getBillFeeBundleEntrys());
             if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
                 newSingleBill.setCashPaid(cashPaid);
                 if (cashPaid >= newSingleBill.getTransSaleBillTotalMinusDiscount()) {
@@ -1860,7 +1860,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     b = saveBill(sessionController.getDepartment(), temp);
                     break;
             }
-
             if (b == null) {
                 return false;
             }
@@ -1871,7 +1870,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             b.setBillItems(list);
             b.setBillTotal(b.getNetTotal());
             getBillFacade().edit(b);
-            getBillBean().calculateBillItems(b, getLstBillEntries());
+            getBillBean().calculateBillItemsForOpdBill(b, getLstBillEntries(), getBillFeeBundleEntrys() ) ;
             if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
                 b.setCashPaid(cashPaid);
                 if (cashPaid >= b.getTransSaleBillTotalMinusDiscount()) {
