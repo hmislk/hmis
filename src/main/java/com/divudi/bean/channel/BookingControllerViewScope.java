@@ -8258,10 +8258,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void setStrTenderedValue(String strTenderedValue) {
-
         this.strTenderedValue = strTenderedValue;
         try {
+            System.out.println("strTenderedValue = " + strTenderedValue);
             cashPaid = Double.parseDouble(strTenderedValue);
+            System.out.println("cashPaid = " + cashPaid);
         } catch (NumberFormatException e) {
         }
     }
@@ -8276,13 +8277,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public double getCashBalance() {
         if (feeTotalForSelectedBill != null) {
-//            System.out.println("feeNetTotalForSelectedBill = " + feeNetTotalForSelectedBill);
-//            System.out.println("cashPaid = " + cashPaid);
-            if (feeNetTotalForSelectedBill == null) {
-                feeNetTotalForSelectedBill = 0.0;
-            }
-            cashBalance = feeNetTotalForSelectedBill - cashPaid;
-//            System.out.println("cashBalance = " + cashBalance);
+            cashBalance = feeTotalForSelectedBill - cashPaid;
+        }else{
+            feeTotalForSelectedBill=0.0;
+            cashBalance=feeTotalForSelectedBill-cashPaid;
         }
         return cashBalance;
     }
