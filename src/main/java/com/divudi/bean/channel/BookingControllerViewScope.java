@@ -3404,6 +3404,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             }
         }
         
+        
         if (configOptionApplicationController.getBooleanValueByKey("Channel EEG Sessions Require Item Presence")) {
             if (!(itemsAvailableToAddToBooking.isEmpty())) {
                 if (itemsAddedToBooking == null || itemsAddedToBooking.isEmpty()) {
