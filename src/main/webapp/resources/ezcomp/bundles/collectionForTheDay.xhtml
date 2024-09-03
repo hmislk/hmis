@@ -13,15 +13,22 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:dataTable value="#{cc.attrs.bundle.reportTemplateRows}" var="row" >
-            <f:facet name="header" >
-                 <h:outputText value="Collection for the day" />
-            </f:facet>
-             <f:facet name="header" >
-                <h:outputText value="#{cc.attrs.bundle.name}" >
-                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                </h:outputText>
-            </f:facet>
-        </p:dataTable>
+        <div class="row" >
+            <div class="col" >
+                <h1>
+                    <h:outputText value="#{cc.attrs.bundle.name}" ></h:outputText>
+                </h1>
+
+            </div>
+            <div class="col" >
+                <h1>
+                    <h:outputText value="#{cc.attrs.bundle.total}" >
+                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                    </h:outputText>
+                </h1>
+
+            </div>
+        </div>
+
     </cc:implementation>
 </html>

@@ -21,11 +21,6 @@
             <f:facet name="header" >
                 <h:outputText value="#{cc.attrs.bundle.name}" ></h:outputText>
             </f:facet>
-            <f:facet name="footer" >
-                <h:outputText value="Collecting Centre Collection Total" ></h:outputText>
-                <p:spacer width="50" ></p:spacer>
-                <h:outputText value="#{cc.attrs.bundle.total}" ></h:outputText>
-            </f:facet>
             <p:column>
                 <f:facet name="header">
                     <h:outputText value="Bil No" />
@@ -35,29 +30,13 @@
 
             <p:column>
                 <f:facet name="header">
-                    <h:outputText value="Collecting Centre Name" />
+                    <h:outputText value="Institution" />
                 </f:facet>
                 <h:outputText value="#{row.bill.fromInstitution.name}"  />
             </p:column>
 
-            <p:column>
-                <f:facet name="header">
-                    <h:outputText value="Collecting Centre Code" />
-                </f:facet>
-                <h:outputText value="#{row.bill.fromInstitution.code}"  />
-            </p:column>
+          
 
-            <p:column>
-                <f:facet name="header">
-                    <h:outputText value="Referane Bill" />
-                </f:facet>
-                <h:outputText value="#{row.bill.backwardReferenceBill.deptId}"  />
-                <h:outputText value="#{row.bill.forwardReferenceBill.deptId}"  />
-                <h:outputText value="#{row.bill.referenceBill.deptId}"  />
-                <h:outputText value="#{row.bill.refundedBill.deptId}"  />
-                <h:outputText value="#{row.bill.cancelledBill.deptId}"  />
-                <h:outputText value="#{row.bill.billedBill.deptId}"  />
-            </p:column>
 
             <p:column>
                 <f:facet name="header">

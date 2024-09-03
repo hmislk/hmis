@@ -30,30 +30,6 @@
             </p:column>
             <p:column>
                 <f:facet name="header">
-                    <h:outputText value="Bill Class" />
-                </f:facet>
-                <h:outputText value="#{row.payment.bill.billClassType}" 
-                              style="#{row.payment.bill.billClassType eq 'Bill' ? 'color: blue;' : 
-                                       row.payment.bill.billClassType eq 'BilledBill' ? 'color: green;' : 
-                                       row.payment.bill.billClassType eq 'CancelledBill' ? 'color: red;' : 
-                                       row.payment.bill.billClassType eq 'RefundBill' ? 'color: orange;' : 
-                                       row.payment.bill.billClassType eq 'PreBill' ? 'color: purple;' : 
-                                       row.payment.bill.billClassType eq 'OtherBill' ? 'color: gray;' : ''}" />
-
-                <h:outputText 
-                    rendered="#{row.payment.bill.cancelledBill ne null}" 
-                    value="#{row.payment.bill.cancelledBill.deptId}" 
-                    style="#{row.payment.bill.billClassType eq 'Bill' ? 'color: blue;' : 
-                             row.payment.bill.billClassType eq 'BilledBill' ? 'color: green;' : 
-                             row.payment.bill.billClassType eq 'CancelledBill' ? 'color: red;' : 
-                             row.payment.bill.billClassType eq 'RefundBill' ? 'color: orange;' : 
-                             row.payment.bill.billClassType eq 'PreBill' ? 'color: purple;' : 
-                             row.payment.bill.billClassType eq 'OtherBill' ? 'color: gray;' : ''}" />
-
-
-            </p:column>
-            <p:column>
-                <f:facet name="header">
                     <h:outputText value="Bill Type" />
                 </f:facet>
                 <h:outputText value="#{row.payment.bill.billTypeAtomic.label}"  />
@@ -62,22 +38,34 @@
                 <f:facet name="header">
                     <h:outputText value="Card Ref.Number" />
                 </f:facet>                
-                <h:outputText 
-                    value="#{row.payment.creditCardRefNo}"/>
+                <ui:repeat value="#{row.payment.bill.payments}" var="ps">
+                    <h:panelGroup rendered="#{ps.paymentMethod eq 'Card' }" >
+                        <h:outputText 
+                            value="#{ps.creditCardRefNo}"/>
+                    </h:panelGroup>
+                </ui:repeat>
             </p:column>
             <p:column>
                 <f:facet name="header">
                     <h:outputText value="Card Ref.Number" />
                 </f:facet>                
-                <h:outputText 
-                    value="#{row.payment.creditCardRefNo}"/>
+                <ui:repeat value="#{row.payment.bill.payments}" var="ps">
+                    <h:panelGroup rendered="#{ps.paymentMethod eq 'Card' }" >
+                        <h:outputText 
+                            value="#{ps}"/>
+                    </h:panelGroup>
+                </ui:repeat>
             </p:column>
             <p:column>
                 <f:facet name="header">
-                    <h:outputText value="Bank*" />
-                </f:facet>    
-                <h:outputText 
-                    value="#{row.payment.bank.name}"/>
+                    <h:outputText value="Bank Code" />
+                </f:facet>                
+                <ui:repeat value="#{row.payment.bill.payments}" var="ps">
+                    <h:panelGroup rendered="#{ps.paymentMethod eq 'Card' }" >
+                        <h:outputText 
+                            value="#{ps.bank.code}"/>
+                    </h:panelGroup>
+                </ui:repeat>
             </p:column>
             <p:column>
                 <f:facet name="header">
@@ -87,18 +75,6 @@
                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                 </h:outputText>
             </p:column>
-            <p:column>
-                <f:facet name="header">
-                    <h:outputText value="Referane Bill" />
-                </f:facet>
-                <h:outputText value="#{row.payment.bill.backwardReferenceBill.deptId}"  />
-                <h:outputText value="#{row.payment.bill.forwardReferenceBill.deptId}"  />
-                <h:outputText value="#{row.payment.bill.referenceBill.deptId}"  />
-                <h:outputText value="#{row.payment.bill.refundedBill.deptId}"  />
-                <h:outputText value="#{row.payment.bill.cancelledBill.deptId}"  />
-                <h:outputText value="#{row.payment.bill.billedBill.deptId}"  />
-            </p:column>
-
             <p:columnGroup type="footer">  
                 <p:row>    
                     <p:column style=" text-align: left">
@@ -109,7 +85,7 @@
                     </p:column>
                     <p:column colspan="4" style=" text-align: left;font">  
                         <f:facet name="footer">
-                            <h:outputLabel value="#{cc.attrs.bundle.total}">
+                            <h:outputLabel value="00.00">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </f:facet>

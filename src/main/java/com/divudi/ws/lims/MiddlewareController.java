@@ -87,17 +87,21 @@ public class MiddlewareController {
             System.out.println("Fetching patient sample for Sample ID: " + queryRecord.getSampleId());
             PatientSample ptSample = limsMiddlewareController.patientSampleFromId(queryRecord.getSampleId());
             if (ptSample == null) {
+                System.out.println("pt sample is null");
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Patient sample not found").build();
             }
 
+            System.out.println("order record created = ");
             OrderRecord or = new OrderRecord(0, queryRecord.getSampleId(), testNames, "S", new Date(), "testInformation");
             pdb.getOrderRecords().add(or);
 
             System.out.println("Creating PatientRecord...");
             if (ptSample.getPatient() == null) {
+                System.out.println("pt is null");
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Invalid patient data").build();
             }
             if (ptSample.getPatient().getPerson() == null) {
+                System.out.println("person null");
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Invalid person data").build();
             }
             if (ptSample.getBill() == null || ptSample.getBill().getReferredBy() == null || ptSample.getBill().getReferredBy().getPerson() == null) {
