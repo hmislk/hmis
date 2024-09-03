@@ -148,7 +148,7 @@
                                     </h:panelGrid>
                                     <h:panelGrid columns="1" class="w-100">
                                         <h:outputLabel class="w-100" value="By Collection Center"/>
-                                       
+
                                         <p:autoComplete 
                                             converter="deal" 
                                             value="#{patientInvestigationController.collectionCenter}"
@@ -216,7 +216,7 @@
 
                     <h:form >
                         <div class="row" >
-                            <div class="col-10" >
+                            <div class="col-10 w-80" >
 
                                 <h:panelGroup rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_INVESTIGATIONS'}" >
 
@@ -231,14 +231,15 @@
                                         selection="#{patientInvestigationController.selectedItems}"
                                         rows="10"
                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                        rowsPerPageTemplate="10,25,50">
+                                        rowsPerPageTemplate="10,25,50"
+                                        style="table-layout: fixed; width: 100%;">
 
                                         <!-- Selection Box Column -->
-                                        <p:column selectionBox="true" width="2em" style="vertical-align: top;">
+                                        <p:column selectionBox="true" style="width: 1em; vertical-align: top;">
                                         </p:column>
 
                                         <!-- Bill Number Column with Icon and Colour -->
-                                        <p:column headerText="Bill Number" width="10em" style="vertical-align: top;">
+                                        <p:column headerText="Bill Number" style="width: 5em; vertical-align: top;">
                                             <p:commandLink 
                                                 ajax="false" 
                                                 class="m-2 text-primary"
@@ -269,7 +270,7 @@
                                         </p:column>
 
                                         <!-- Patient Details Column with Icons -->
-                                        <p:column headerText="Patient" style="vertical-align: top;">
+                                        <p:column headerText="Patient" style="width: 10em; vertical-align: top;">
                                             <i class="fas fa-user text-primary"></i> <!-- Name Icon -->
                                             <h:outputLabel value="#{patientInvestigation.billItem.bill.patient.person.nameWithTitle}" />
                                             <br/>
@@ -287,19 +288,19 @@
                                         </p:column>
 
                                         <!-- Investigation Name Column -->
-                                        <p:column headerText="Investigations" width="15em" style="vertical-align: top;">
+                                        <p:column headerText="Investigations" style="width: 7em; vertical-align: top;">
                                             <i class="fas fa-vial text-danger"></i> <!-- Investigation Icon -->
                                             <h:outputLabel value="#{patientInvestigation.investigation.name}"/>
                                         </p:column>
 
                                         <!-- Status Column -->
-                                        <p:column headerText="Status" width="5em" style="vertical-align: top;">
+                                        <p:column headerText="Status" style="width: 7em; vertical-align: top;">
                                             <i class="fas fa-info-circle text-info"></i> <!-- Status Icon -->
                                             <h:outputLabel value="#{patientInvestigation.status}"/>
                                         </p:column>
 
                                         <!-- Ordered Institution and Department Column with Icons -->
-                                        <p:column headerText="Ordered Institute" width="15em" style="vertical-align: top;">
+                                        <p:column headerText="Ordered Institute" style="width: 8em; vertical-align: top;">
                                             <h:panelGroup rendered="#{patientInvestigation.billItem.bill.collectingCentre == null}">
                                                 <i class="fas fa-hospital text-info"></i> <!-- Institution Icon -->
                                                 <h:outputLabel value="#{patientInvestigation.billItem.bill.institution.name}" />
@@ -314,7 +315,7 @@
                                         </p:column>
 
                                         <!-- Lab Institution and Department Column with Icons -->
-                                        <p:column headerText="Lab" width="15em" style="vertical-align: top;">
+                                        <p:column headerText="Lab" style="width: 5em; vertical-align: top;">
                                             <i class="fas fa-flask text-danger"></i> <!-- Lab Institution Icon -->
                                             <h:outputLabel value="#{patientInvestigation.billItem.bill.toInstitution.name}" />
                                             <br/>
@@ -322,7 +323,8 @@
                                             <h:outputLabel value="#{patientInvestigation.billItem.bill.toDepartment.name}" />
                                         </p:column>
 
-                                        <p:column headerText="Samples" width="10em">
+                                        <!-- Samples Column -->
+                                        <p:column headerText="Samples" style="width: 5em; vertical-align: top;">
                                             <ui:repeat value="#{patientInvestigationController.getPatientSampleComponentsByInvestigation(patientInvestigation)}" var="psc">
                                                 <div class="ui-g" style="margin-bottom: 10px;">
                                                     <div class="ui-g-6">
@@ -337,14 +339,13 @@
                                             </ui:repeat>
                                         </p:column>
 
-                                        <p:column headerText="Actions" >
+                                        <!-- Actions Column -->
+                                        <p:column headerText="Actions" style="width: 8em; vertical-align: top;">
                                             <h:panelGroup rendered="#{patientInvestigation.billItem.bill.cancelled ne true}">
                                                 <p:commandLink class="m-1" ajax="false" id="btnPrintWorksheets" disabled="#{patientInvestigation.sampleAccepted ne true}" action="/lab/single_worksheet?faces-redirect=true" >
                                                     <f:setPropertyActionListener value="#{patientInvestigation}" target="#{patientInvestigationController.current}" ></f:setPropertyActionListener>
                                                     <p:graphicImage library="image" styleClass="standedicon" name="worksheet.gif" ></p:graphicImage>
                                                 </p:commandLink>
-
-
 
                                                 <p:commandLink id="btnNewReport" 
                                                                class="m-1"
@@ -355,6 +356,7 @@
                                             </h:panelGroup>
                                         </p:column>
                                     </p:dataTable>
+
 
                                 </h:panelGroup>
 
@@ -369,10 +371,11 @@
                                         paginatorPosition="bottom"
                                         rows="10"
                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                        rowsPerPageTemplate="10,25,50">
+                                        rowsPerPageTemplate="10,25,50"
+                                        style="table-layout: fixed; width: 100%;">
 
                                         <!-- Bill Number and Date Column -->
-                                        <p:column headerText="Bill No." width="10em" style="vertical-align: top;">
+                                        <p:column headerText="Bill No." width="10em" style="width: 8em; vertical-align: top;">
                                             <p:commandLink 
                                                 ajax="false" 
                                                 class="m-2 text-primary"
@@ -407,7 +410,7 @@
                                         </p:column>
 
                                         <!-- Patient Details Column with Icons -->
-                                        <p:column headerText="Patient"  style="vertical-align: top;">
+                                        <p:column headerText="Patient"  style="width: 10em; vertical-align: top;">
                                             <i class="fas fa-user text-primary"></i> <!-- Name Icon -->
                                             <h:outputLabel value="#{b.patient.person.nameWithTitle}" />
                                             <br/>
@@ -425,7 +428,7 @@
                                         </p:column>
 
                                         <!-- Ordered Institution and Department Column -->
-                                        <p:column headerText="Ordered Institute" width="15em" style="vertical-align: top;">
+                                        <p:column headerText="Ordered Institute"  style="width: 5em; vertical-align: top;">
                                             <h:panelGroup rendered="#{b.collectingCentre == null}">
                                                 <i class="fas fa-hospital text-info"></i> <!-- Institution Icon -->
                                                 <h:outputLabel value="#{b.institution.name}" />
@@ -440,7 +443,7 @@
                                         </p:column>
 
                                         <!-- Lab Institution and Department Column -->
-                                        <p:column headerText="Lab" width="15em" style="vertical-align: top;">
+                                        <p:column headerText="Lab" style="width: 5em; vertical-align: top;">
                                             <i class="fas fa-flask text-danger"></i> <!-- Lab Institution Icon -->
                                             <h:outputLabel value="#{b.toInstitution.name}" />
                                             <br/>
@@ -448,11 +451,11 @@
                                             <h:outputLabel value="#{b.toDepartment.name}" />
                                         </p:column>
 
-                                        <p:column headerText="Status" width="15em" style="vertical-align: top;">
+                                        <p:column headerText="Status"  style="width: 5em; vertical-align: top;">
                                             <h:outputLabel value="#{b.status.label}" />
                                         </p:column>
 
-                                        <p:column headerText="Actions" width="10em">
+                                        <p:column headerText="Actions" width="8em">
                                             <p:commandButton 
                                                 value="Generate Barcodes" 
                                                 ajax="false" 
@@ -555,7 +558,8 @@
                                         selection="#{patientInvestigationController.selectedPatientSamples}"
                                         rows="10"
                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                        rowsPerPageTemplate="10,25,50">
+                                        rowsPerPageTemplate="10,25,50" 
+                                        style="table-layout: fixed; width: 100%;">
 
                                         <!-- Selection Box Column -->
                                         <p:column selectionBox="true" width="2em" style="vertical-align: top;">
@@ -653,7 +657,8 @@
                                         selection="#{patientInvestigationController.selectedPatientReports}"
                                         rows="10"
                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                        rowsPerPageTemplate="10,25,50">
+                                        rowsPerPageTemplate="10,25,50" 
+                                        style="table-layout: fixed; width: 100%;">
 
                                         <!-- Selection Box Column -->
                                         <p:column selectionBox="true" width="2em" style="vertical-align: top;">
@@ -890,8 +895,8 @@
                                                      title="Reject Samples"
                                                      icon="pi pi-times-circle"
                                                      styleClass="m-1  w-100 ui-button-danger" />
-                                    
-                                    
+
+
                                     <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
                                                      id="btnGenerateTestCodes"
                                                      value="Check Analyzer Test Codes"
@@ -900,7 +905,7 @@
                                                      title="Reject Samples"
                                                      icon="pi pi-times-circle"
                                                      styleClass="m-1  w-100 ui-button-danger" />
-                                    
+
                                     <p:inputTextarea value="#{patientInvestigationController.testDetails}" ></p:inputTextarea>
 
                                     <hr/>
