@@ -135,10 +135,20 @@ public class FinancialTransactionController implements Serializable {
     private List<Bill> fundBillsForClosureBills;
     private Bill selectedBill;
     private Bill nonClosedShiftStartFundBill;
+
+    private ReportTemplateRowBundle refundBundle;
+    private ReportTemplateRowBundle cancelledBundle;
+
     private List<Payment> paymentsFromShiftSratToNow;
+    private List<Payment> cardPaymentsFromShiftSratToNow;
+    private List<Payment> chequeFromShiftSratToNow;
     private List<Payment> paymentsSelected;
     private List<Payment> recievedBIllPayments;
     private List<Bill> allBillsShiftStartToNow;
+
+    private ReportTemplateRowBundle chequeTransactionPaymentBundle;
+    private ReportTemplateRowBundle cardTransactionPaymentBundle;
+
     @Deprecated
     private PaymentMethodValues paymentMethodValues;
     private AtomicBillTypeTotals atomicBillTypeTotalsByBills;
@@ -301,7 +311,6 @@ public class FinancialTransactionController implements Serializable {
                 paramStartId,
                 paramEndId);
 
-
         bundle = combineBundlesByCategory(ins, outs);
 
         return bundle;
@@ -367,7 +376,6 @@ public class FinancialTransactionController implements Serializable {
                 paramStartId,
                 paramEndId);
 
-
         bundle = combineBundlesByBillTypeAtomic(ins, outs);
 
         return bundle;
@@ -430,7 +438,6 @@ public class FinancialTransactionController implements Serializable {
                 paramCreditCompany,
                 paramStartId,
                 paramEndId);
-
 
         bundle = combineBundlesByItemDepartment(ins, outs);
 
@@ -2136,26 +2143,105 @@ public class FinancialTransactionController implements Serializable {
             return;
         }
         Long shiftStartBillId = nonClosedShiftStartFundBill.getId();
+
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_IN));
+        btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_OUT));
+
         Map<String, Object> m = new HashMap<>();
-        String jpql = "SELECT p "
-                + "FROM Payment p "
+        String jpql = "SELECT p FROM Payment p JOIN p.bill b "
                 + "WHERE p.creater = :cr "
                 + "AND p.retired = :ret "
                 + "AND p.id > :cid "
-                + "AND p.cashbookEntryStated = :started ";
-        jpql += "AND FUNCTION('DATE', p.createdAt) = :createdDate ";
-        jpql += "AND p.bill.department = :dept ";
+                + "AND b.billTypeAtomic IN :btas "
+                + "AND p.cashbookEntryStated = :started "
+                + "AND FUNCTION('DATE', p.createdAt) = :createdDate "
+                + "AND b.department = :dept "
+                + "ORDER BY p.id DESC";
+
         m.put("dept", cashbookDepartment);
+        m.put("btas", btas);
         m.put("createdDate", cashbookDate);
         m.put("started", false);
-        jpql += "ORDER BY p.id DESC";
         m.put("cr", nonClosedShiftStartFundBill.getCreater());
         m.put("ret", false);
         m.put("cid", shiftStartBillId);
         System.out.println("jpql = " + jpql);
         System.out.println("m = " + m);
         paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m);
+
+// Filter and collect unique cancelled bills
+        Set<Bill> cancelledBills = paymentsFromShiftSratToNow.stream()
+                .map(Payment::getBill)
+                .filter(bill -> bill.getBillClassType() == BillClassType.CancelledBill)
+                .collect(Collectors.toSet()); // Using a Set to ensure uniqueness
+
+// Filter and collect unique refunded bills
+        Set<Bill> refundedBills = paymentsFromShiftSratToNow.stream()
+                .map(Payment::getBill)
+                .filter(bill -> bill.getBillClassType() == BillClassType.RefundBill)
+                .collect(Collectors.toSet());
+
+// Create bundles for cancelled and refunded bills
+        cancelledBundle = new ReportTemplateRowBundle();
+        refundBundle = new ReportTemplateRowBundle();
+
+// Add unique cancelled bills to the cancelled bundle
+        for (Bill bill : cancelledBills) {
+            ReportTemplateRow row = new ReportTemplateRow();
+            row.setBill(bill); // Assuming you have a method to set a Bill in ReportTemplateRow
+            cancelledBundle.getReportTemplateRows().add(row);
+        }
+
+// Add unique refunded bills to the refund bundle
+        for (Bill bill : refundedBills) {
+            ReportTemplateRow row = new ReportTemplateRow();
+            row.setBill(bill); // Assuming you have a method to set a Bill in ReportTemplateRow
+            refundBundle.getReportTemplateRows().add(row);
+        }
+
+// Optionally, set other properties for the bundles
+        cancelledBundle.setName("Cancelled Bills");
+        cancelledBundle.setBundleType("cancelledBillBundle");
+
+        refundBundle.setName("Refunded Bills");
+        refundBundle.setBundleType("refundBillBundle");
+//        
+        chequeFromShiftSratToNow = paymentsFromShiftSratToNow.stream()
+                .filter(p -> p.getPaymentMethod() == PaymentMethod.Cheque)
+                .collect(Collectors.toList());
+
+        cardPaymentsFromShiftSratToNow = paymentsFromShiftSratToNow.stream()
+                .filter(p -> p.getPaymentMethod() == PaymentMethod.Card)
+                .collect(Collectors.toList());
+
+        // Create bundles for cash and cheque transactions
+        cardTransactionPaymentBundle = new ReportTemplateRowBundle();
+        chequeTransactionPaymentBundle = new ReportTemplateRowBundle();
+
+// Add filtered cheque payments to the cheque transaction bundle
+        for (Payment currentPayment : chequeFromShiftSratToNow) {
+            ReportTemplateRow row = new ReportTemplateRow();
+            row.setPayment(currentPayment);
+            chequeTransactionPaymentBundle.getReportTemplateRows().add(row);
+        }
+
+// Add filtered card payments to the cash transaction bundle
+        for (Payment currentPayment : cardPaymentsFromShiftSratToNow) {
+            ReportTemplateRow row = new ReportTemplateRow();
+            row.setPayment(currentPayment);
+            cardTransactionPaymentBundle.getReportTemplateRows().add(row);
+        }
+
+// Optionally, set other properties for the bundles
+        cardTransactionPaymentBundle.setName("Card Payments");
+        cardTransactionPaymentBundle.setBundleType("paymentReportCard");
+
+        chequeTransactionPaymentBundle.setName("Cheque Payments");
+        chequeTransactionPaymentBundle.setBundleType("paymentReportCheque");
+
         atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
+
         for (Payment p : paymentsFromShiftSratToNow) {
             Bill bill = p.getBill();
             if (bill == null) {
@@ -2168,6 +2254,7 @@ public class FinancialTransactionController implements Serializable {
             }
         }
         financialReportByPayments = new FinancialReport(atomicBillTypeTotalsByPayments);
+        financialReportByPayments.getRefundedCash();
     }
 
     public void fillPaymentsForDateRange() {
@@ -2805,14 +2892,12 @@ public class FinancialTransactionController implements Serializable {
 
     }
 
-    
-    
     public List<Bill> findHandoverCompletionBills(ReportTemplateRow row) {
         String sql;
         Staff forStaff = row.getUser().getStaff();
         Date forDate = row.getDate();
-        Department forDepartment=row.getDepartment();
-        
+        Department forDepartment = row.getDepartment();
+
         List<Bill> bills;
         Map tempMap = new HashMap();
         sql = "select s "
@@ -2829,7 +2914,7 @@ public class FinancialTransactionController implements Serializable {
         bills = billFacade.findByJpql(sql, tempMap);
         return bills;
     }
-    
+
     public String settleFundTransferReceiveBill() {
         if (currentBill == null) {
             JsfUtil.addErrorMessage("Error");
@@ -3900,6 +3985,54 @@ public class FinancialTransactionController implements Serializable {
 
     public void setHandoverBillsToReceiveCount(int handoverBillsToReceiveCount) {
         this.handoverBillsToReceiveCount = handoverBillsToReceiveCount;
+    }
+
+    public List<Payment> getCardPaymentsFromShiftSratToNow() {
+        return cardPaymentsFromShiftSratToNow;
+    }
+
+    public void setCardPaymentsFromShiftSratToNow(List<Payment> cardPaymentsFromShiftSratToNow) {
+        this.cardPaymentsFromShiftSratToNow = cardPaymentsFromShiftSratToNow;
+    }
+
+    public List<Payment> getChequeFromShiftSratToNow() {
+        return chequeFromShiftSratToNow;
+    }
+
+    public void setChequeFromShiftSratToNow(List<Payment> chequeFromShiftSratToNow) {
+        this.chequeFromShiftSratToNow = chequeFromShiftSratToNow;
+    }
+
+    public ReportTemplateRowBundle getChequeTransactionPaymentBundle() {
+        return chequeTransactionPaymentBundle;
+    }
+
+    public void setChequeTransactionPaymentBundle(ReportTemplateRowBundle chequeTransactionPaymentBundle) {
+        this.chequeTransactionPaymentBundle = chequeTransactionPaymentBundle;
+    }
+
+    public ReportTemplateRowBundle getCardTransactionPaymentBundle() {
+        return cardTransactionPaymentBundle;
+    }
+
+    public void setCardTransactionPaymentBundle(ReportTemplateRowBundle cardTransactionPaymentBundle) {
+        this.cardTransactionPaymentBundle = cardTransactionPaymentBundle;
+    }
+
+    public ReportTemplateRowBundle getRefundBundle() {
+        return refundBundle;
+    }
+
+    public void setRefundBundle(ReportTemplateRowBundle refundBundle) {
+        this.refundBundle = refundBundle;
+    }
+
+    public ReportTemplateRowBundle getCancelledBundle() {
+        return cancelledBundle;
+    }
+
+    public void setCancelledBundle(ReportTemplateRowBundle cancelledBundle) {
+        this.cancelledBundle = cancelledBundle;
     }
 
 }
