@@ -110,8 +110,10 @@
                                                 <h:outputLabel value="#{bs.serialNoStr}" ></h:outputLabel>
                                             </p:column>
 
-                                            <p:column headerText="Name" width="25em">
-
+                                            <p:column headerText="Name" 
+                                                      filterMatchMode="contains"
+                                                      filterBy="#{bs.bill.patient.person.name}"
+                                                      width="25em">
                                                 <p:panel header="(#{bs.bill.patient.person.smsNumber})" collapsed="true" 
                                                          toggleOrientation="vertical" toggleable="true"  >
                                                     <f:facet name="header" >
