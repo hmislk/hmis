@@ -3383,7 +3383,28 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 return;
             }
         }
+        
         if (configOptionApplicationController.getBooleanValueByKey("Channel Scan Sessions Require Item Presence")) {
+            if (!(itemsAvailableToAddToBooking.isEmpty())) {
+                if (itemsAddedToBooking == null || itemsAddedToBooking.isEmpty()) {
+                    JsfUtil.addErrorMessage("There is No Item Added");
+                    settleSucessFully = false;
+                    return;
+                }
+            }
+        }
+        
+        if (configOptionApplicationController.getBooleanValueByKey("Channel Hearing Test Sessions Require Item Presence")) {
+            if (!(itemsAvailableToAddToBooking.isEmpty())) {
+                if (itemsAddedToBooking == null || itemsAddedToBooking.isEmpty()) {
+                    JsfUtil.addErrorMessage("There is No Item Added");
+                    settleSucessFully = false;
+                    return;
+                }
+            }
+        }
+        
+        if (configOptionApplicationController.getBooleanValueByKey("Channel EEG Sessions Require Item Presence")) {
             if (!(itemsAvailableToAddToBooking.isEmpty())) {
                 if (itemsAddedToBooking == null || itemsAddedToBooking.isEmpty()) {
                     JsfUtil.addErrorMessage("There is No Item Added");
