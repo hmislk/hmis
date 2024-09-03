@@ -178,7 +178,6 @@ public class MiddlewareController {
                     case MaglumiX3HL7:
                         return processMaglumiX3HL7(dataBundle);
                     case MindrayBC5150:
-                        return processMindrayBC5150(dataBundle);
                     case IndikoPlus:
                     case SmartLytePlus:
                         return processResultsCommon(dataBundle);
@@ -272,14 +271,21 @@ public class MiddlewareController {
     }
 
     public Response processResultsCommon(DataBundle dataBundle) {
+        System.out.println("processResultsCommon");
         List<ResultsRecord> observationDetails = new ArrayList<>();
-
+        System.out.println("observationDetails = " + observationDetails);
+        System.out.println("dataBundle = " + dataBundle);
+        
         for (ResultsRecord rr : dataBundle.getResultsRecords()) {
+            System.out.println("dataBundle = " + dataBundle);
             String sampleId = rr.getSampleId();
             System.out.println("sampleId = " + sampleId);
             String testStr = rr.getTestCode();
             System.out.println("testStr = " + testStr);
-            String result = rr.getResultValue() + "";
+            String result = rr.getResultValueString();
+            if(result==null || result.trim().equals("")){
+                result = rr.getResultValue() + "";
+            }
             System.out.println("result = " + result);
             String unit = rr.getResultUnits();
             String error = "";
@@ -298,7 +304,7 @@ public class MiddlewareController {
         }
 
         // Create the response data as a map
-        String statusMessage = "SmartLyte Plus processed with details.";
+        String statusMessage = "Results Plus processed with details.";
         Gson gson = new Gson();
         String jsonResponse = gson.toJson(observationDetails);
 
