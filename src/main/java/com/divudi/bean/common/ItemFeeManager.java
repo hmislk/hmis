@@ -271,14 +271,6 @@ public class ItemFeeManager implements Serializable {
         XSSFTable table = sheet.createTable(area);
         table.setName("BaseItemFeesTable");
         table.setDisplayName("BaseItemFeesTable");
-
-        // Set the table style, with a null check to avoid the NullPointerException
-        XSSFTableStyleInfo style = (XSSFTableStyleInfo) table.getStyle();
-        if (style != null) {
-            style.setName("TableStyleMedium9");
-            style.setShowColumnStripes(true);
-            style.setShowRowStripes(true);
-        }
     }
 
     // Write the output to the response
