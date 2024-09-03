@@ -54,6 +54,8 @@ public class AgentHistory implements Serializable {
     private double agentBalanceAfter;
     
     
+    double staffTrasnactionValue;
+    
     private double collectingCentertransactionValue;
     @Enumerated(EnumType.STRING)
     HistoryType historyType;

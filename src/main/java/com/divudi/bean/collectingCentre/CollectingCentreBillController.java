@@ -864,7 +864,16 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 //        saveBatchBill();
         saveBillItemSessions();
 
-        collectingCentreApplicationController.updateBalance(collectingCentre, totalCCFee, (totalHosFee + totalStaffFee), b.getNetTotal(), HistoryType.CollectingCentreBilling, b, comment);
+        
+        
+        
+        collectingCentreApplicationController.updateBalance(collectingCentre, 
+                totalCCFee,
+                (totalHosFee + totalStaffFee),
+                b.getNetTotal(),
+                HistoryType.CollectingCentreBilling, 
+                b, 
+                comment);
 
 //        updateBallance(collectingCentre, 0 - Math.abs(feeTotalExceptCcfs), HistoryType.CollectingCentreBilling, b, b.getReferenceNumber());
         JsfUtil.addSuccessMessage("Bill Saved");
