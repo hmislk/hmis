@@ -2081,6 +2081,28 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         calculateSelectedBillSessionTotal();
         return "/channel/manage_booking_by_date?faces-redirect=true";
     }
+    
+    public void markBillSessionForAbsent(){
+        if (getSelectedBillSession()==null) {
+            JsfUtil.addErrorMessage("Select Patient First !");
+            return;
+        }
+        getSelectedBillSession().setAbsent(true);
+        getSelectedBillSession().setAbsentMarkedAt(new Date());
+        getSelectedBillSession().setAbsentMarkedUser(sessionController.getLoggedUser());
+        billSessionFacade.edit(getSelectedBillSession());
+    }
+    
+    public void unMarkBillSessionForAbsent(){
+        if (getSelectedBillSession()==null) {
+            JsfUtil.addErrorMessage("Select Patient First !");
+            return;
+        }
+        getSelectedBillSession().setAbsent(false);
+        getSelectedBillSession().setAbsentUnmarkedAt(new Date());
+        getSelectedBillSession().setAbsentUnmarkedUser(sessionController.getLoggedUser());
+        billSessionFacade.edit(getSelectedBillSession());
+    }
 
     public String navigateToOpdBilling(BillSession bs) {
         selectedBillSession = bs;
@@ -3383,7 +3405,29 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 return;
             }
         }
+        
         if (configOptionApplicationController.getBooleanValueByKey("Channel Scan Sessions Require Item Presence")) {
+            if (!(itemsAvailableToAddToBooking.isEmpty())) {
+                if (itemsAddedToBooking == null || itemsAddedToBooking.isEmpty()) {
+                    JsfUtil.addErrorMessage("There is No Item Added");
+                    settleSucessFully = false;
+                    return;
+                }
+            }
+        }
+        
+        if (configOptionApplicationController.getBooleanValueByKey("Channel Hearing Test Sessions Require Item Presence")) {
+            if (!(itemsAvailableToAddToBooking.isEmpty())) {
+                if (itemsAddedToBooking == null || itemsAddedToBooking.isEmpty()) {
+                    JsfUtil.addErrorMessage("There is No Item Added");
+                    settleSucessFully = false;
+                    return;
+                }
+            }
+        }
+        
+        
+        if (configOptionApplicationController.getBooleanValueByKey("Channel EEG Sessions Require Item Presence")) {
             if (!(itemsAvailableToAddToBooking.isEmpty())) {
                 if (itemsAddedToBooking == null || itemsAddedToBooking.isEmpty()) {
                     JsfUtil.addErrorMessage("There is No Item Added");
@@ -7802,6 +7846,11 @@ public void setManagingBillSession(BillSession managingBillSession) {
         selectedBillSession.getBill().setPatient(patient);
         billFacade.edit(selectedBillSession.getBill());
         JsfUtil.addSuccessMessage("Patient Changed");
+        
+        if (getSelectedBillSession().isAbsent()) {
+            unMarkBillSessionForAbsent();
+        }
+        
         return navigateToManageBooking(selectedBillSession);
     }
 
