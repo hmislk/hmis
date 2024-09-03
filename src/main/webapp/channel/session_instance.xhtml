@@ -30,6 +30,12 @@
                                              class="ui-button-danger mx-1"
                                              rendered="#{bookingControllerViewScope.selectedSessionInstance.completed}">
                             </p:commandButton>
+                             <p:commandButton 
+                                value="Mark To Absent"
+                                ajax="false" 
+                                action="#{bookingControllerViewScope.markBillSessionForAbsent}" 
+                                class="ui-button-warning mx-2">
+                            </p:commandButton>
                             <p:commandButton 
                                 rendered="#{!bookingControllerViewScope.selectedSessionInstance.arrived}"
                                 id="btnArrival"
@@ -38,7 +44,6 @@
                                 class="ui-button-info mx-1"
                                 action="#{bookingControllerViewScope.markAsArrived()}"
                                 icon="fa-solid fa-check" />
-
                             <p:commandButton action="#{bookingControllerViewScope.navigateToNurseView()}" 
                                              value="Veiws"
                                              ajax="false"
@@ -105,6 +110,7 @@
                                                      selection="#{bookingControllerViewScope.selectedBillSession}" 
                                                      selectionMode="single"
                                                      styleClass="w-100 fullHeightListbox">
+
 
                                             <p:column headerText="Serial No" width="2em">
                                                 <h:outputLabel value="#{bs.serialNoStr}" ></h:outputLabel>
@@ -195,6 +201,16 @@
                                                 </h:panelGroup>
                                             </p:column>
 
+                                            <p:column>
+                                                <p:commandButton 
+                                                    rendered="#{bs.absent}"
+                                                    value="Change Patient"
+                                                    ajax="false" 
+                                                    action="#{bookingControllerViewScope.navigateToManageBooking(bs)}" 
+                                                    class="ui-button-secondary ">
+                                                </p:commandButton>
+                                            </p:column>
+
 
                                         </p:dataTable>
                                     </p:tab>
@@ -261,7 +277,7 @@
                                                 <div class="d-flex align-items-center justify-content-between">
                                                     <p:outputLabel value="#{bs.bill.patient.person.nameWithTitle}" style="font-size: 12px;" />
                                                     <p:badge rendered="#{bs.recheduledSession}" value="Resheduled" class="m-1" severity="warning">
-                                                     
+
                                                     </p:badge>
                                                 </div>
                                             </p:column>
