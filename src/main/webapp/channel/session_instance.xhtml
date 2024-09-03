@@ -258,7 +258,12 @@
                                             </p:column>
 
                                             <p:column headerText="Patient Name" style="font-size: 12px; width: 70%; padding: 1px" >
-                                                <p:outputLabel value="#{bs.bill.patient.person.nameWithTitle}" style="font-size: 12px;" />
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <p:outputLabel value="#{bs.bill.patient.person.nameWithTitle}" style="font-size: 12px;" />
+                                                    <p:badge rendered="#{bs.recheduledSession}" value="Resheduled" class="m-1" severity="warning">
+                                                     
+                                                    </p:badge>
+                                                </div>
                                             </p:column>
                                             <p:column headerText="Booked At" style="font-size: 12px; width: 33%!important; padding: 1px" >
                                                 <p:outputLabel value="#{bs.createdAt}" style="font-size: 12px;" >
