@@ -1896,7 +1896,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         saveBatchBill();
         createPaymentsForBills(getBatchBill(), getLstBillEntries());
         saveBillItemSessions();
-
         if (toStaff != null && getPaymentMethod() == PaymentMethod.Staff_Welfare) {
             staffBean.updateStaffWelfare(toStaff, netPlusVat);
             JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
