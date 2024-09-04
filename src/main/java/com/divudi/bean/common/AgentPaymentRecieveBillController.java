@@ -251,6 +251,7 @@ public class AgentPaymentRecieveBillController implements Serializable {
         }
         saveBillItem();
         createPayment(current, getCurrent().getPaymentMethod());
+        
         createAgentHistory(getCurrent().getFromInstitution(), getCurrent().getNetTotal(), HistoryType.CollectingCentreDeposit, getCurrent());
 
         if ((getCurrent().getNetTotal() > (getCurrent().getFromInstitution().getMaxCreditLimit() - getCurrent().getFromInstitution().getStandardCreditLimit())) && (getCurrent().getFromInstitution().getMaxCreditLimit() != getCurrent().getFromInstitution().getStandardCreditLimit())) {

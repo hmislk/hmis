@@ -77,47 +77,85 @@
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                             </h:outputLabel>
                         </h:panelGrid>
-
-                        <h5 class="mt-4">Have to make Summary letter with test name get download</h5>
                     </p:panel>
 
-                    <p:dataTable value="#{reportController.agentHistories}" var="bi">
-                        <p:column headerText="Bill Number" >
-                            <h:outputText value="#{bi.bill.insId}" ></h:outputText>
+                    <p:dataTable value="#{reportController.agentHistories}" var="agentHx" paginator="true" rows="10" 
+                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                                 rowsPerPageTemplate="5,10,20"
+                                 currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords} entries"
+                                 widgetVar="agentHistoryTable" 
+                                 sortMode="multiple">
+
+                        <p:column headerText="Bill Number" sortBy="#{agentHx.bill.insId}" filterBy="#{agentHx.bill.insId}" filterMatchMode="contains">
+                            <h:outputText value="#{agentHx.bill.insId}" />
                         </p:column>
-                        <p:column headerText="Referrance Remove" >
-                            <h:outputText value="#{bi.bill.referenceNumber}" ></h:outputText>
+                        
+                        <p:column headerText="Data &nbsp; Time" sortBy="#{agentHx.createdAt}" filterBy="#{agentHx.createdAt}" filterMatchMode="contains">
+                            <h:outputText value="#{agentHx.createdAt}" >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
+                            </h:outputText>
                         </p:column>
-                        <p:column headerText="Bill Type" >
-                            <h:outputText value="#{bi.bill.billTypeAtomic.label}" ></h:outputText>
+
+                        <p:column headerText="Bill Type" sortBy="#{agentHx.bill.billTypeAtomic.label}" filterBy="#{agentHx.bill.billTypeAtomic.label}" filterMatchMode="contains">
+                            <h:outputText value="#{agentHx.bill.billTypeAtomic.label}" />
                         </p:column>
-                        <p:column headerText="Hospital Fee" >
-                            <h:outputText value="#{bi.bill.totalHospitalFee}" ></h:outputText>
+
+                        <p:column headerText="Reference No." sortBy="#{agentHx.bill.referenceNumber}" filterBy="#{agentHx.bill.referenceNumber}" filterMatchMode="contains">
+                            <h:outputText value="#{agentHx.bill.referenceNumber}" />
                         </p:column>
-                        <p:column headerText="Staff Fee" >
-                            <h:outputText value="#{bi.bill.totalStaffFee}" ></h:outputText>
+
+                        <p:column headerText="Hospital Fee" sortBy="#{agentHx.bill.totalHospitalFee}" filterBy="#{agentHx.bill.totalHospitalFee}">
+                            <h:outputText value="#{agentHx.companyTransactionValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
                         </p:column>
-                        <p:column headerText="Transaction Amount" >
-                            <h:outputText rendered="#{bi.bill.billTypeAtomic eq 'CC_PAYMENT_RECEIVED_BILL'}" value="#{bi.bill.netTotal}" ></h:outputText>
-                            <h:outputText value="0.00" ></h:outputText>
+
+                        <p:column headerText="Staff Fee" sortBy="#{agentHx.bill.totalStaffFee}" filterBy="#{agentHx.bill.totalStaffFee}">
+                            <h:outputText value="#{agentHx.staffTrasnactionValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
                         </p:column>
-                        <p:column headerText="CC Value" > // Payment Done from CC Blance
-                            <h:outputText value="#{bi.bill.totalCenterFee}" ></h:outputText>
+
+                        <p:column headerText="CC Fee" sortBy="#{agentHx.bill.totalCenterFee}" filterBy="#{agentHx.bill.totalCenterFee}">
+                            <h:outputText value="#{agentHx.bill.totalCenterFee}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
                         </p:column>
-                        <p:column headerText="CC Payments" > // Payment Done by Hospital to CC
-                            <h:outputText value="0.00" ></h:outputText>
+
+                        <p:column headerText="Received from CC" sortBy="#{agentHx.paidAmountByAgency}" filterBy="#{agentHx.paidAmountByAgency}">
+                            <h:outputText value="#{agentHx.paidAmountByAgency}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
                         </p:column>
-                        <p:column headerText="CC Agjustment" >
-                            <h:outputText value="" ></h:outputText>
+
+                        <p:column headerText="Paid to CC" sortBy="#{agentHx.paidAmountToAgency}" filterBy="#{agentHx.paidAmountToAgency}">
+                            <h:outputText value="#{agentHx.paidAmountToAgency}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
                         </p:column>
-                        <p:column headerText="CC Balance Before Transaction" >
-                            <h:outputText value="#{bi.balanceBeforeTransaction}" ></h:outputText>
+
+                        <p:column headerText="Adjustments to CC Balance" sortBy="#{agentHx.adjustmentToAgencyBalance}" filterBy="#{agentHx.adjustmentToAgencyBalance}">
+                            <h:outputText value="#{agentHx.adjustmentToAgencyBalance}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
                         </p:column>
-                        <p:column headerText="Transaction Amount" > // Hospital Fee
-                            <h:outputText value="#{bi.transactionValue}" ></h:outputText>
+
+                        <p:column headerText="CC Balance Before Transaction" sortBy="#{agentHx.balanceBeforeTransaction}" filterBy="#{agentHx.balanceBeforeTransaction}">
+                            <h:outputText value="#{agentHx.balanceBeforeTransaction}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
                         </p:column>
-                        <p:column headerText="CC Balance After Transaction" >
-                            <h:outputText value="#{bi.balanceAfterTransaction}" ></h:outputText>
+
+                        <p:column headerText="Transaction Amount" sortBy="#{agentHx.transactionValue}" filterBy="#{agentHx.transactionValue}">
+                            <h:outputText value="#{agentHx.transactionValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </p:column>
+
+                        <p:column headerText="CC Balance After Transaction" sortBy="#{agentHx.balanceAfterTransaction}" filterBy="#{agentHx.balanceAfterTransaction}">
+                            <h:outputText value="#{agentHx.balanceAfterTransaction}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
                         </p:column>
 
                     </p:dataTable>
