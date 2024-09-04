@@ -5,6 +5,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.CashBookEntryController;
+import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
@@ -12,6 +13,7 @@ import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.HistoryType;
+import com.divudi.data.InstitutionType;
 import com.divudi.data.PaymentMethod;
 import static com.divudi.data.PaymentMethod.Agent;
 import static com.divudi.data.PaymentMethod.Card;
@@ -88,6 +90,8 @@ public class AgentPaymentRecieveBillController implements Serializable {
     @EJB
     PaymentFacade paymentFacade;
 
+    @Inject
+    CollectingCentreApplicationController collectingCentreApplicationController;
     @Inject
     private PaymentSchemeController paymentSchemeController;
     @Inject
@@ -219,7 +223,6 @@ public class AgentPaymentRecieveBillController implements Serializable {
 
         getCurrent().setTotal(getCurrent().getNetTotal());
 
-
         String deptId;
 
         deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(
@@ -228,7 +231,6 @@ public class AgentPaymentRecieveBillController implements Serializable {
                 BillType.CollectingCentrePaymentReceiveBill,
                 BillClassType.BilledBill);
 
-       
         getCurrent().setInsId(deptId);
         getCurrent().setDeptId(deptId);
         getCurrent().setBillType(BillType.CollectingCentrePaymentReceiveBill);
@@ -250,14 +252,35 @@ public class AgentPaymentRecieveBillController implements Serializable {
             getBillFacade().edit(getCurrent());
         }
         saveBillItem();
-        createPayment(current, getCurrent().getPaymentMethod());
-        
-        createAgentHistory(getCurrent().getFromInstitution(), getCurrent().getNetTotal(), HistoryType.CollectingCentreDeposit, getCurrent());
+        if (getCurrent() != null) {
+            if (getCurrent().getFromInstitution() != null) {
+                if (getCurrent().getFromInstitution().getInstitutionType() == InstitutionType.CollectingCentre) {
+                    getCurrent().setCollectingCentre(getCurrent().getFromInstitution());
+                }
+            }
+        }
 
+        createPayment(current, getCurrent().getPaymentMethod());
+        collectingCentreApplicationController.updateBalance(
+                current.getFromInstitution(),
+                0,
+                getCurrent().getNetTotal(),
+                0,
+                getCurrent().getNetTotal(),
+                HistoryType.CollectingCentreDeposit,
+                getCurrent());
         if ((getCurrent().getNetTotal() > (getCurrent().getFromInstitution().getMaxCreditLimit() - getCurrent().getFromInstitution().getStandardCreditLimit())) && (getCurrent().getFromInstitution().getMaxCreditLimit() != getCurrent().getFromInstitution().getStandardCreditLimit())) {
-            institutionController.createAgentCreditLimitUpdateHistory(getCurrent().getFromInstitution(), getCurrent().getFromInstitution().getAllowedCredit(), getCurrent().getFromInstitution().getStandardCreditLimit(), HistoryType.CollectingCentreBalanceUpdateBill, "Agent Payment Allowed Credit Limit Update");
             getCurrent().getFromInstitution().setAllowedCredit(getCurrent().getFromInstitution().getStandardCreditLimit());
             getInstitutionFacade().edit(getCurrent().getFromInstitution());
+            collectingCentreApplicationController.updateBalance(
+                    current.getFromInstitution(),
+                    0,
+                    0,
+                    0,
+                    0,
+                    HistoryType.CollectingCentreBalanceUpdateBill,
+                    getCurrent(),
+                    "Agent Payment Allowed Credit Limit Reset");
         }
         JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
