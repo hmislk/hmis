@@ -176,7 +176,6 @@ public class MiddlewareController {
                         return processBA400(dataBundle);
 
                     case MaglumiX3HL7:
-                        return processMaglumiX3HL7(dataBundle);
                     case MindrayBC5150:
                     case IndikoPlus:
                     case SmartLytePlus:
