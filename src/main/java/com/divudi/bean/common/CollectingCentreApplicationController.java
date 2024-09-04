@@ -77,6 +77,12 @@ public class CollectingCentreApplicationController {
             case CollectingCentreBilling:
                 handleCollectingCentreBilling(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill);
                 break;
+            case CollectingCentreBillingRefund:
+                handleBillingRefund(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill);
+                break;
+            case CollectingCentreCreditNote:
+
+            case CollectingCentreDebitNoteCancel:
             default:
                 handleDefault(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill);
                 break;
@@ -111,12 +117,10 @@ public class CollectingCentreApplicationController {
             agentHistory.setBalanceBeforeTransaction(balanceBeforeTx);
             agentHistory.setBalanceAfterTransaction(balanceAfterTx);
 
-            
             agentHistoryFacade.create(agentHistory);
 
 //            collectingCentre.setBallance(balanceAfterTx);
 //            institutionFacade.edit(collectingCentre);
-
         } finally {
             lock.unlock();
         }
@@ -138,10 +142,10 @@ public class CollectingCentreApplicationController {
             agentHistory.setAgency(collectingCentre);
             agentHistory.setReferenceNumber(bill.getAgentRefNo());
             agentHistory.setHistoryType(HistoryType.CollectingCentreBillingCancel);
-            agentHistory.setCompanyTransactionValue(0- Math.abs(hospitalFee));
-            agentHistory.setAgentTransactionValue(0- Math.abs(collectingCentreFee));
-            agentHistory.setStaffTrasnactionValue(0- Math.abs(staffFee));
-            agentHistory.setTransactionValue(0-Math.abs(transactionValue));
+            agentHistory.setCompanyTransactionValue(0 - Math.abs(hospitalFee));
+            agentHistory.setAgentTransactionValue(0 - Math.abs(collectingCentreFee));
+            agentHistory.setStaffTrasnactionValue(0 - Math.abs(staffFee));
+            agentHistory.setTransactionValue(0 - Math.abs(transactionValue));
             agentHistory.setPaidAmountByAgency(null);
 
             double balanceBeforeTx = collectingCentre.getBallance();
@@ -150,7 +154,43 @@ public class CollectingCentreApplicationController {
             agentHistory.setBalanceBeforeTransaction(balanceBeforeTx);
             agentHistory.setBalanceAfterTransaction(balanceAfterTx);
 
-            
+            agentHistoryFacade.create(agentHistory);
+
+            collectingCentre.setBallance(balanceAfterTx);
+            institutionFacade.edit(collectingCentre);
+
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    private void handleBillingRefund(Institution collectingCentre, double hospitalFee, double collectingCentreFee, double staffFee, double transactionValue, Bill bill) {
+        Long collectingCentreId = collectingCentre.getId(); // Assuming each Institution has a unique ID
+        Lock lock = lockMap.computeIfAbsent(collectingCentreId, id -> new ReentrantLock());
+        lock.lock();
+        try {
+
+            AgentHistory agentHistory = new AgentHistory();
+            agentHistory.setCreatedAt(new Date());
+            agentHistory.setCreater(bill.getCreater());
+            agentHistory.setBill(bill);
+            agentHistory.setInstitution(bill.getInstitution());
+            agentHistory.setDepartment(bill.getDepartment());
+            agentHistory.setAgency(collectingCentre);
+            agentHistory.setReferenceNumber(bill.getAgentRefNo());
+            agentHistory.setHistoryType(HistoryType.CollectingCentreBillingCancel);
+            agentHistory.setCompanyTransactionValue(0 - Math.abs(hospitalFee));
+            agentHistory.setAgentTransactionValue(0 - Math.abs(collectingCentreFee));
+            agentHistory.setStaffTrasnactionValue(0 - Math.abs(staffFee));
+            agentHistory.setTransactionValue(0 - Math.abs(transactionValue));
+            agentHistory.setPaidAmountByAgency(null);
+
+            double balanceBeforeTx = collectingCentre.getBallance();
+            double balanceAfterTx = balanceBeforeTx + Math.abs(collectingCentreFee);
+
+            agentHistory.setBalanceBeforeTransaction(balanceBeforeTx);
+            agentHistory.setBalanceAfterTransaction(balanceAfterTx);
+
             agentHistoryFacade.create(agentHistory);
 
             collectingCentre.setBallance(balanceAfterTx);
@@ -197,7 +237,6 @@ public class CollectingCentreApplicationController {
             agentHistory.setBalanceBeforeTransaction(balanceBeforeTx);
             agentHistory.setBalanceAfterTransaction(balanceAfterTx);
 
-            
             agentHistoryFacade.create(agentHistory);
 
             collectingCentre.setBallance(balanceAfterTx);
@@ -212,7 +251,6 @@ public class CollectingCentreApplicationController {
         // Implementation for CollectingCentreDepositCancel
     }
 
-    
     private void handleCollectingCentreBilling(Institution collectingCentre,
             double hospitalFee,
             double collectingCentreFee,
@@ -240,12 +278,11 @@ public class CollectingCentreApplicationController {
 
             double balanceBeforeTx = collectingCentre.getBallance();
 
-            double balanceAfterTx = balanceBeforeTx - collectingCentreFee;
+            double balanceAfterTx = balanceBeforeTx - hospitalFee;
 
             agentHistory.setBalanceBeforeTransaction(balanceBeforeTx);
             agentHistory.setBalanceAfterTransaction(balanceAfterTx);
 
-            
             agentHistoryFacade.create(agentHistory);
 
             collectingCentre.setBallance(balanceAfterTx);
@@ -261,7 +298,7 @@ public class CollectingCentreApplicationController {
         // Default case handling if necessary
     }
 
-    @Deprecated    
+    @Deprecated
     public void updateBalance(Institution collectingCentre,
             double collectingCenterFeeValue,
             double valueWithoutccFee,
