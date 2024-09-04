@@ -275,17 +275,22 @@ public class MiddlewareController {
         List<ResultsRecord> observationDetails = new ArrayList<>();
         System.out.println("observationDetails = " + observationDetails);
         System.out.println("dataBundle = " + dataBundle);
-        
+
         for (ResultsRecord rr : dataBundle.getResultsRecords()) {
             System.out.println("dataBundle = " + dataBundle);
             String sampleId = rr.getSampleId();
             System.out.println("sampleId = " + sampleId);
             String testStr = rr.getTestCode();
             System.out.println("testStr = " + testStr);
+
             String result = rr.getResultValueString();
-            if(result==null || result.trim().equals("")){
-                result = rr.getResultValue() + "";
-            }
+            
+
+            System.out.println("Initial result = " + result);
+
+
+            System.out.println("Final result = " + result);
+
             System.out.println("result = " + result);
             String unit = rr.getResultUnits();
             String error = "";
