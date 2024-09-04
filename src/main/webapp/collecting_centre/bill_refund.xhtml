@@ -27,7 +27,7 @@
                                             value="Refund Bill" 
                                             icon="fa fa-money-bill-wave"
                                             style="float: right"
-                                            class="ui-button-warning" action="#{billSearch.refundBill()}"
+                                            class="ui-button-warning" action="#{billSearch.refundCollectingCenterBill()}"
                                             onclick="if (!confirm('Are you sure you want to Refund This Bill ?'))
                                                         return false;" >
                                         </p:commandButton>  
@@ -71,6 +71,13 @@
                                                 <h:outputLabel value="Bill Details" class="mx-2"></h:outputLabel>
                                             </f:facet>
                                             <p:panelGrid columns="2">
+                                                <h:outputLabel value="Collecting Centre Name:" ></h:outputLabel>
+                                                <h:outputLabel value="#{billSearch.bill.collectingCentre.name}" ></h:outputLabel>
+                                                <h:outputLabel value="Collecting Centre Code:" ></h:outputLabel>
+                                                <h:outputLabel value="#{billSearch.bill.collectingCentre.code}" ></h:outputLabel>
+                                                <h:outputLabel value="Route :" ></h:outputLabel>
+                                                <h:outputLabel value="#{billSearch.bill.collectingCentre.route.name}" ></h:outputLabel>
+
                                                 <h:outputLabel value="Bill No :" ></h:outputLabel>
                                                 <h:outputLabel value="#{billSearch.bill.insId}" ></h:outputLabel>
                                                 <h:outputLabel value="Total :" ></h:outputLabel>
@@ -141,18 +148,18 @@
 
                         <p:panel rendered="#{billSearch.printPreview}" >
                             <f:facet name="header">
-                                
+
                                 <div class="d-flex justify-content-between">
                                     <h:outputLabel  value="Bill Preview" class="mt-2"/>
                                     <p:commandButton 
-                                    class="ui-button-info d-flex justify-content-end"
-                                    value="Print" 
-                                    icon="fa fa-print"
-                                    ajax="false" action="#"  >
-                                    <p:printer target="printPreview" ></p:printer>
-                                </p:commandButton>
+                                        class="ui-button-info d-flex justify-content-end"
+                                        value="Print" 
+                                        icon="fa fa-print"
+                                        ajax="false" action="#"  >
+                                        <p:printer target="printPreview" ></p:printer>
+                                    </p:commandButton>
                                 </div>
-                                
+
                             </f:facet>
                             <div class="d-flex justify-content-end">
                                 <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>

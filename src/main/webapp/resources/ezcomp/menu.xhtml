@@ -62,7 +62,7 @@
                             icon="fa fa-fw fa-notes-medical" 
                             rendered="#{webUserController.hasPrivilege('OpdBilling')}" ></p:menuitem>
 
-                        
+
                         <p:menuitem 
                             ajax="false" 
                             action="#{opdPreBillController.navigateToBillingForCashierFromMenu()}"  
@@ -386,52 +386,52 @@
                     <p:menuitem  ajax="false"  action="/inward/inward_reports?faces-redirect=true" value="Inward Analytics" rendered="#{webUserController.hasPrivilege('InwardReport')}" ></p:menuitem>
 
                 </p:submenu>
-                
+
                 <p:submenu id="smCC" icon="fas fa-city" rendered="#{webUserController.hasPrivilege('OpdCollectingCentreBilling')}">
-                   <p:menuitem 
-                            ajax="false" 
-                            action="#{collectingCentreBillController.navigateToCollectingCenterBillingromMenu()}"    
-                            value="Collecting Centre Billing"
-                            icon="fa fa-fw fa-hospital-alt" 
-                            rendered="#{webUserController.hasPrivilege('OpdCollectingCentreBilling')}" >
-                    </p:menuitem>
-                    
                     <p:menuitem 
-                            ajax="false" 
-                            action="/collecting_centre/collecting_centre_search_bill_own?faces-redirect=true"
-                            actionListener="#{searchController.makeListNull}"
-                            value="Collecting Centre Bill Search" 
-                            icon="fa fa-search"
-                            rendered="#{webUserController.hasPrivilege('OpdCollectingCentreBilling')}" >
+                        ajax="false" 
+                        action="#{collectingCentreBillController.navigateToCollectingCenterBillingromMenu()}"    
+                        value="Collecting Centre Billing"
+                        icon="fa fa-fw fa-hospital-alt" 
+                        rendered="#{webUserController.hasPrivilege('OpdCollectingCentreBilling')}" >
                     </p:menuitem>
-                    
+
+                    <p:menuitem 
+                        ajax="false" 
+                        action="/collecting_centre/collecting_centre_search_bill_own?faces-redirect=true"
+                        actionListener="#{searchController.makeListNull}"
+                        value="Collecting Centre Bill Search" 
+                        icon="fa fa-search"
+                        rendered="#{webUserController.hasPrivilege('OpdCollectingCentreBilling')}" >
+                    </p:menuitem>
+
                     <p:submenu label="Payments" icon="fas fa-money-check-dollar"  rendered="#{webUserController.hasPrivilege('Payment')}">
                         <p:menuitem icon="fas fa-money-bill-wave"  ajax="false"  action="/lab/collecting_centre_bill?faces-redirect=true" value="Collecting Centre Payment" actionListener="#{agentPaymentRecieveBillController.prepareNewBill()}" ></p:menuitem>
-                            <p:menuitem  ajax="false" icon="fa fa-search" action="/lab/collecting_centre_bill_search_own?faces-redirect=true"
-                                         actionListener="#{searchController.makeListNull}"  value="Collecting Centre Bill Search"  ></p:menuitem>
+                        <p:menuitem  ajax="false" icon="fa fa-search" action="/lab/collecting_centre_bill_search_own?faces-redirect=true"
+                                     actionListener="#{searchController.makeListNull}"  value="Collecting Centre Bill Search"  ></p:menuitem>
                     </p:submenu>
-                    
+
                     <p:menuitem  ajax="false" icon="fas fa-book" action="/lab/agent_referece_book?faces-redirect=true" value="Add Lab Book to Collecting Centre"  ></p:menuitem>
-                    
+
                     <p:submenu label="Credit/Debit Note" rendered="#{webUserController.hasPrivilege('ChannelCrdeitNote') or webUserController.hasPrivilege('ChannelDebitNote')}" >
-                                <p:menuitem  ajax="false"  value="Credit Note"  action="/collecting_centre/collecting_center_credit_note_bill?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannelCrdeitNote')}" actionListener="#{agentPaymentRecieveBillController.prepareNewBill()}" ></p:menuitem>
-                                <p:menuitem  ajax="false"  value="Credit Note Search"  action="/collecting_centre/collecting_center_credit_note_bill_search_own?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannelCrdeitNoteSearch')}" actionListener="#{searchController.makeListNull}" ></p:menuitem>
-                                <p:menuitem  ajax="false"  value="Debit Note"  action="/collecting_centre/collecting_center_debit_note_bill?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannelDebitNote')}" actionListener="#{agentPaymentRecieveBillController.prepareNewBill()}" ></p:menuitem>
-                                <p:menuitem  ajax="false"  value="Debit Note Search"  action="/collecting_centre/collecting_center_note_bill_search_own?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannelDebitNoteSearch')}" actionListener="#{searchController.makeListNull}" ></p:menuitem>
-                            </p:submenu>
-                    
+                        <p:menuitem  ajax="false"  value="Credit Note"  action="/collecting_centre/collecting_center_credit_note_bill?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannelCrdeitNote')}" actionListener="#{agentPaymentRecieveBillController.prepareNewBill()}" ></p:menuitem>
+                        <p:menuitem  ajax="false"  value="Credit Note Search"  action="/collecting_centre/collecting_center_credit_note_bill_search_own?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannelCrdeitNoteSearch')}" actionListener="#{searchController.makeListNull}" ></p:menuitem>
+                        <p:menuitem  ajax="false"  value="Debit Note"  action="/collecting_centre/collecting_center_debit_note_bill?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannelDebitNote')}" actionListener="#{agentPaymentRecieveBillController.prepareNewBill()}" ></p:menuitem>
+                        <p:menuitem  ajax="false"  value="Debit Note Search"  action="/collecting_centre/collecting_center_note_bill_search_own?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannelDebitNoteSearch')}" actionListener="#{searchController.makeListNull}" ></p:menuitem>
+                    </p:submenu>
+
                     <p:submenu label="Collecting Centre Reports">
-                            
-                            <p:menuitem  ajax="false"  action="/lab/report_collecting_center_referece_book?faces-redirect=true" value="Collecting Centre Book Report"  ></p:menuitem>
-                            <p:menuitem  ajax="false"  action="/lab/institutions_udate_credit_limit?faces-redirect=true" value="Collecting Centre Credit Limit Update" actionListener="#{institutionController.makeNull()}" rendered="#{webUserController.hasPrivilege('ChangeCreditLimitInCC')}"></p:menuitem>
-                            <p:menuitem  ajax="false"  action="/reportLab/collecting_centre_report_agent_history?faces-redirect=true" value="Collecting Centre History"  ></p:menuitem>
-                            <p:menuitem  ajax="false"  action="/reportLab/collecting_center_report_history_1?faces-redirect=true" value="Collecting Centre Statement"  ></p:menuitem>
-                            <p:menuitem  ajax="false"  action="/reportLab/report_collecting_center_payment_bill?faces-redirect=true" value="Collecting Centre Diposits"  ></p:menuitem>
-                            <p:menuitem  ajax="false"  action="/reportLab/report_collecting_center_balance?faces-redirect=true" value="Collecting Center Current Balance"  ></p:menuitem>
-                            
-                        </p:submenu>
+
+                        <p:menuitem  ajax="false"  action="/lab/report_collecting_center_referece_book?faces-redirect=true" value="Collecting Centre Book Report"  ></p:menuitem>
+                        <p:menuitem  ajax="false"  action="/lab/institutions_udate_credit_limit?faces-redirect=true" value="Collecting Centre Credit Limit Update" actionListener="#{institutionController.makeNull()}" rendered="#{webUserController.hasPrivilege('ChangeCreditLimitInCC')}"></p:menuitem>
+                        <p:menuitem  ajax="false"  action="/reportLab/collecting_centre_report_agent_history?faces-redirect=true" value="Collecting Centre History"  ></p:menuitem>
+                        <p:menuitem  ajax="false"  action="/reportLab/collecting_center_report_history_1?faces-redirect=true" value="Collecting Centre Statement"  ></p:menuitem>
+                        <p:menuitem  ajax="false"  action="/reportLab/report_collecting_center_payment_bill?faces-redirect=true" value="Collecting Centre Diposits"  ></p:menuitem>
+                        <p:menuitem  ajax="false"  action="/reportLab/report_collecting_center_balance?faces-redirect=true" value="Collecting Center Current Balance"  ></p:menuitem>
 
                     </p:submenu>
+
+                </p:submenu>
 
                 <p:submenu id="smLab" icon="fa fa-fw fa-flask"  rendered="#{webUserController.hasPrivilege('Lab')}">
 <!--                    <p:submenu label="Billing" rendered="#{webUserController.hasPrivilege('LabBilling')}">
@@ -1023,14 +1023,26 @@
                         ajax="false"  
                         action="#{financialTransactionController.navigateToFinancialTransactionIndex()}"
                         value="Financial Transaction Manager" 
+                        icon="pi pi-wallet"
                         rendered="#{webUserController.hasPrivilege('PaymentBilling')}" >
                     </p:menuitem>
+
                     <p:menuitem  
                         ajax="false"  
                         action="/payments/pay_index?faces-redirect=true"
                         value="Cash To Pay" 
+                        icon="pi pi-money-bill"
                         rendered="#{webUserController.hasPrivilege('PaymentBilling')}" >
                     </p:menuitem>
+
+                    <p:menuitem  
+                        ajax="false"  
+                        action="/collecting_centre/index?faces-redirect=true"
+                        value="Collecting Centre Management" 
+                        icon="pi pi-briefcase"
+                        rendered="#{webUserController.hasPrivilege('PaymentBilling')}" >
+                    </p:menuitem>
+
                     <p:submenu label="Cash">
 
                         <p:menuitem  

@@ -1029,11 +1029,13 @@ public class ChannelScheduleController implements Serializable {
                         .mapToInt(Integer::parseInt)
                         .toArray();
                 System.out.println(Arrays.toString(resnumbers));
-                int sessStartnumber = Integer.valueOf(current.getSessionStartingNumber());
-                boolean allLower = IntStream.of(resnumbers).allMatch(n -> n < sessStartnumber);
-                if (allLower) {
-                    JsfUtil.addErrorMessage("All reserveNumbers are lower than session starting number");
-                    return;
+                if (resnumbers.length != 0) {
+                    int sessStartnumber = Integer.valueOf(current.getSessionStartingNumber());
+                    boolean allLower = IntStream.of(resnumbers).allMatch(n -> n < sessStartnumber);
+                    if (allLower) {
+                        JsfUtil.addErrorMessage("All reserveNumbers are lower than session starting number");
+                        return;
+                    }
                 }
 
             }

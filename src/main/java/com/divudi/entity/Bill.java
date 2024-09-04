@@ -2299,6 +2299,9 @@ public class Bill implements Serializable {
     }
 
     public PatientInvestigationStatus getStatus() {
+        if(status==null){
+            status=PatientInvestigationStatus.ORDERED;
+        }
         return status;
     }
 
