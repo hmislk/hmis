@@ -81,7 +81,8 @@ public class CollectingCentreApplicationController {
                 handleBillingRefund(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill);
                 break;
             case CollectingCentreCreditNote:
-
+                handleCollectingCentreCreditNote(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill);
+                break;
             case CollectingCentreDebitNoteCancel:
             default:
                 handleDefault(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill);
@@ -149,7 +150,7 @@ public class CollectingCentreApplicationController {
             agentHistory.setPaidAmountByAgency(null);
 
             double balanceBeforeTx = collectingCentre.getBallance();
-            double balanceAfterTx = balanceBeforeTx + Math.abs(collectingCentreFee);
+            double balanceAfterTx = balanceBeforeTx + Math.abs(hospitalFee);
 
             agentHistory.setBalanceBeforeTransaction(balanceBeforeTx);
             agentHistory.setBalanceAfterTransaction(balanceAfterTx);
@@ -186,7 +187,44 @@ public class CollectingCentreApplicationController {
             agentHistory.setPaidAmountByAgency(null);
 
             double balanceBeforeTx = collectingCentre.getBallance();
-            double balanceAfterTx = balanceBeforeTx + Math.abs(collectingCentreFee);
+            double balanceAfterTx = balanceBeforeTx + Math.abs(hospitalFee);
+
+            agentHistory.setBalanceBeforeTransaction(balanceBeforeTx);
+            agentHistory.setBalanceAfterTransaction(balanceAfterTx);
+
+            agentHistoryFacade.create(agentHistory);
+
+            collectingCentre.setBallance(balanceAfterTx);
+            institutionFacade.edit(collectingCentre);
+
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    private void handleCollectingCentreCreditNote(Institution collectingCentre, double hospitalFee, double collectingCentreFee, double staffFee, double transactionValue, Bill bill) {
+        Long collectingCentreId = collectingCentre.getId(); // Assuming each Institution has a unique ID
+        Lock lock = lockMap.computeIfAbsent(collectingCentreId, id -> new ReentrantLock());
+        lock.lock();
+        try {
+
+            AgentHistory agentHistory = new AgentHistory();
+            agentHistory.setCreatedAt(new Date());
+            agentHistory.setCreater(bill.getCreater());
+            agentHistory.setBill(bill);
+            agentHistory.setInstitution(bill.getInstitution());
+            agentHistory.setDepartment(bill.getDepartment());
+            agentHistory.setAgency(collectingCentre);
+            agentHistory.setReferenceNumber(bill.getAgentRefNo());
+            agentHistory.setHistoryType(HistoryType.CollectingCentreCreditNote);
+            agentHistory.setCompanyTransactionValue(0);
+            agentHistory.setAgentTransactionValue(0);
+            agentHistory.setStaffTrasnactionValue(0);
+            agentHistory.setTransactionValue(Math.abs(transactionValue));
+            agentHistory.setPaidAmountByAgency(null);
+
+            double balanceBeforeTx = collectingCentre.getBallance();
+            double balanceAfterTx = balanceBeforeTx + Math.abs(transactionValue);
 
             agentHistory.setBalanceBeforeTransaction(balanceBeforeTx);
             agentHistory.setBalanceAfterTransaction(balanceAfterTx);
@@ -206,7 +244,40 @@ public class CollectingCentreApplicationController {
     }
 
     private void handleDebitNote(Institution collectingCentre, double hospitalFee, double collectingCentreFee, double staffFee, double transactionValue, Bill bill) {
-        // Implementation for CollectingCentreDebitNote
+        Long collectingCentreId = collectingCentre.getId(); // Assuming each Institution has a unique ID
+        Lock lock = lockMap.computeIfAbsent(collectingCentreId, id -> new ReentrantLock());
+        lock.lock();
+        try {
+
+            AgentHistory agentHistory = new AgentHistory();
+            agentHistory.setCreatedAt(new Date());
+            agentHistory.setCreater(bill.getCreater());
+            agentHistory.setBill(bill);
+            agentHistory.setInstitution(bill.getInstitution());
+            agentHistory.setDepartment(bill.getDepartment());
+            agentHistory.setAgency(collectingCentre);
+            agentHistory.setReferenceNumber(bill.getAgentRefNo());
+            agentHistory.setHistoryType(HistoryType.CollectingCentreDebitNote);
+            agentHistory.setCompanyTransactionValue(0);
+            agentHistory.setAgentTransactionValue(0);
+            agentHistory.setStaffTrasnactionValue(0);
+            agentHistory.setTransactionValue(Math.abs(transactionValue));
+            agentHistory.setPaidAmountByAgency(null);
+
+            double balanceBeforeTx = collectingCentre.getBallance();
+            double balanceAfterTx = balanceBeforeTx - Math.abs(transactionValue);
+
+            agentHistory.setBalanceBeforeTransaction(balanceBeforeTx);
+            agentHistory.setBalanceAfterTransaction(balanceAfterTx);
+
+            agentHistoryFacade.create(agentHistory);
+
+            collectingCentre.setBallance(balanceAfterTx);
+            institutionFacade.edit(collectingCentre);
+
+        } finally {
+            lock.unlock();
+        }
     }
 
     private void handleDeposit(Institution collectingCentre, double hospitalFee, double collectingCentreFee, double staffFee, double transactionValue, Bill bill) {

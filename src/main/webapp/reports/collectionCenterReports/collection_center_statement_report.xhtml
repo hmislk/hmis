@@ -129,7 +129,7 @@
                         </p:column>
 
                         <p:column headerText="CC Fee" sortBy="#{agentHx.bill.totalCenterFee}" filterBy="#{agentHx.bill.totalCenterFee}">
-                            <h:outputText value="#{agentHx.bill.totalCenterFee}">
+                            <h:outputText value="#{agentHx.agentTransactionValue}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                         </p:column>
