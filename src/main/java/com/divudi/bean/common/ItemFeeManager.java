@@ -182,7 +182,7 @@ public class ItemFeeManager implements Serializable {
 
     // Create a workbook and a sheet
     XSSFWorkbook workbook = new XSSFWorkbook();
-    XSSFSheet sheet = workbook.createSheet("Base Item Fees");
+    XSSFSheet sheet = workbook.createSheet("Item Fees");
 
     // Create the header row
     Row headerRow = sheet.createRow(0);
@@ -191,15 +191,12 @@ public class ItemFeeManager implements Serializable {
                         "Institution", "Department", "Staff", "Value for Locals", "Value for Foreigners"};
 
     // Apply header formatting
-    CellStyle headerStyle = workbook.createCellStyle();
     Font headerFont = workbook.createFont();
     headerFont.setBold(true);
-    headerStyle.setFont(headerFont);
 
     for (int i = 0; i < headers.length; i++) {
         Cell headerCell = headerRow.createCell(i);
         headerCell.setCellValue(headers[i]);
-        headerCell.setCellStyle(headerStyle);
     }
 
     // Fill the data into the sheet
@@ -271,14 +268,6 @@ public class ItemFeeManager implements Serializable {
         XSSFTable table = sheet.createTable(area);
         table.setName("BaseItemFeesTable");
         table.setDisplayName("BaseItemFeesTable");
-
-        // Set the table style, with a null check to avoid the NullPointerException
-        XSSFTableStyleInfo style = (XSSFTableStyleInfo) table.getStyle();
-        if (style != null) {
-            style.setName("TableStyleMedium9");
-            style.setShowColumnStripes(true);
-            style.setShowRowStripes(true);
-        }
     }
 
     // Write the output to the response
@@ -304,9 +293,10 @@ public class ItemFeeManager implements Serializable {
         } else if (value instanceof Number) {
             cell.setCellValue(((Number) value).doubleValue());
         }
-        CellStyle style = workbook.createCellStyle();
-        style.setLocked(!unlock); // Lock unless specified to unlock
-        cell.setCellStyle(style);
+//        CellStyle style = workbook.createCellStyle();
+//        style.setLocked(!unlock); // Lock unless specified to unlock
+//        cell.setCellStyle(style);
+
     }
 
 // Method to create unlocked cells

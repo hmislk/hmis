@@ -90,7 +90,7 @@
                             <h:outputText value="#{agentHx.bill.insId}" />
                         </p:column>
                         
-                        <p:column headerText="Data &absp Time" sortBy="#{agentHx.createdAt}" filterBy="#{agentHx.createdAt}" filterMatchMode="contains">
+                        <p:column headerText="Data &nbsp; Time" sortBy="#{agentHx.createdAt}" filterBy="#{agentHx.createdAt}" filterMatchMode="contains">
                             <h:outputText value="#{agentHx.createdAt}" >
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
                             </h:outputText>
@@ -111,7 +111,7 @@
                         </p:column>
 
                         <p:column headerText="Staff Fee" sortBy="#{agentHx.bill.totalStaffFee}" filterBy="#{agentHx.bill.totalStaffFee}">
-                            <h:outputText value="#{agentHx.st }">
+                            <h:outputText value="#{agentHx.staffTrasnactionValue}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                         </p:column>

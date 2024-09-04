@@ -54,7 +54,7 @@ public class AgentHistory implements Serializable {
     private double agentBalanceAfter;
     
     
-    double staffTrasnactionValue;
+    private double staffTrasnactionValue;
     
     private double collectingCentertransactionValue;
     @Enumerated(EnumType.STRING)
@@ -237,6 +237,8 @@ public class AgentHistory implements Serializable {
     public void setTransCumilativeTotal(double transCumilativeTotal) {
         this.transCumilativeTotal = transCumilativeTotal;
     }
+    
+    
 
     @Override
     public int hashCode() {
@@ -369,6 +371,14 @@ public class AgentHistory implements Serializable {
 
     public void setPaidAmountByAgency(Double paidAmountByAgency) {
         this.paidAmountByAgency = paidAmountByAgency;
+    }
+
+    public double getStaffTrasnactionValue() {
+        return staffTrasnactionValue;
+    }
+
+    public void setStaffTrasnactionValue(double staffTrasnactionValue) {
+        this.staffTrasnactionValue = staffTrasnactionValue;
     }
 
 }
