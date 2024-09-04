@@ -626,11 +626,8 @@ public class BillSearch implements Serializable {
 
     }
 
-    
-    
     public void fillCashierDetails() {
-        
-        
+
         //For Auditing Purposes
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
@@ -2330,14 +2327,23 @@ public class BillSearch implements Serializable {
 
         billController.save(getBill());
         JsfUtil.addSuccessMessage("Cancelled");
+
+//        Institution collectingCentre,
+//            double hospitalFee,
+//            double collectingCentreFee,
+//            double staffFee,
+//            double transactionValue,
+//            HistoryType historyType,
+//            Bill bill
         collectingCentreApplicationController.updateBalance(
                 collectingCenter,
+                bill.getTotalHospitalFee(),
                 bill.getTotalCenterFee(),
-                (bill.getHospitalFee() + bill.getStaffFee()),
+                bill.getTotalStaffFee(),
                 bill.getNetTotal(),
-                HistoryType.CollectingCentreBilling,
-                cancellationBill,
-                comment);
+                HistoryType.CollectingCentreBillingCancel,
+                getBill());
+
         bill = billFacade.find(bill.getId());
         printPreview = true;
         comment = null;

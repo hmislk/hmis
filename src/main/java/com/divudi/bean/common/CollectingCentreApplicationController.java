@@ -124,7 +124,41 @@ public class CollectingCentreApplicationController {
     }
 
     private void handleBillingCancel(Institution collectingCentre, double hospitalFee, double collectingCentreFee, double staffFee, double transactionValue, Bill bill) {
-        // Implementation for CollectingCentreBillingCancel
+        Long collectingCentreId = collectingCentre.getId(); // Assuming each Institution has a unique ID
+        Lock lock = lockMap.computeIfAbsent(collectingCentreId, id -> new ReentrantLock());
+        lock.lock();
+        try {
+
+            AgentHistory agentHistory = new AgentHistory();
+            agentHistory.setCreatedAt(new Date());
+            agentHistory.setCreater(bill.getCreater());
+            agentHistory.setBill(bill);
+            agentHistory.setInstitution(bill.getInstitution());
+            agentHistory.setDepartment(bill.getDepartment());
+            agentHistory.setAgency(collectingCentre);
+            agentHistory.setReferenceNumber(bill.getAgentRefNo());
+            agentHistory.setHistoryType(HistoryType.CollectingCentreBillingCancel);
+            agentHistory.setCompanyTransactionValue(0- Math.abs(hospitalFee));
+            agentHistory.setAgentTransactionValue(0- Math.abs(collectingCentreFee));
+            agentHistory.setStaffTrasnactionValue(0- Math.abs(staffFee));
+            agentHistory.setTransactionValue(0-Math.abs(transactionValue));
+            agentHistory.setPaidAmountByAgency(null);
+
+            double balanceBeforeTx = collectingCentre.getBallance();
+            double balanceAfterTx = balanceBeforeTx + Math.abs(collectingCentreFee);
+
+            agentHistory.setBalanceBeforeTransaction(balanceBeforeTx);
+            agentHistory.setBalanceAfterTransaction(balanceAfterTx);
+
+            
+            agentHistoryFacade.create(agentHistory);
+
+            collectingCentre.setBallance(balanceAfterTx);
+            institutionFacade.edit(collectingCentre);
+
+        } finally {
+            lock.unlock();
+        }
     }
 
     private void handleCreditNoteCancel(Institution collectingCentre, double hospitalFee, double collectingCentreFee, double staffFee, double transactionValue, Bill bill) {
@@ -154,6 +188,7 @@ public class CollectingCentreApplicationController {
             agentHistory.setAgentTransactionValue(transactionValue);
             agentHistory.setStaffTrasnactionValue(0);
             agentHistory.setTransactionValue(transactionValue);
+            agentHistory.setPaidAmountByAgency(transactionValue);
 
             double balanceBeforeTx = collectingCentre.getBallance();
 
