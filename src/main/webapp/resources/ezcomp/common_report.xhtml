@@ -68,30 +68,32 @@
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'InvestigationName' and  myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.investigation.name}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'Speciman' and  myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.investigation.sample.name}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'SampledTime' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.sampledAt}" style="#{myIi.innerCssStyle};" escape="false" >
-                    <f:convertDateTime pattern="dd/MM/yyyy hh:mm a"/>
+                    <f:convertDateTime pattern="hh:mm a"/>
                 </h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'CollectingCenter' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.billItem.bill.collectingCentre.name}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'BilledDate' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.billItem.bill.createdAt}" style="#{myIi.innerCssStyle};" escape="false" >
-                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
+                    <f:convertDateTime pattern="dd/MM/yyyy"/>
                 </h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'BilledTime' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.billItem.bill.createdAt}" style="#{myIi.innerCssStyle};" escape="false" >
-                    <f:convertDateTime pattern="dd/MM/yyyy hh:mm a"/>
+                    <f:convertDateTime pattern="hh:mm a"/>
                 </h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'SampledDate' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.sampledAt}" style="#{myIi.innerCssStyle};" escape="false" >
-                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
+                    <f:convertDateTime pattern="dd/MM/yyyy"/>
                 </h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'BillNo' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.billItem.bill.insId}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
 
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'DepartmentBillNo' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.billItem.bill.deptId}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
-                
+
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'ReportedDate' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.createdAt}" style="#{myIi.innerCssStyle};" escape="false" >
-                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
+                    <f:convertDateTime pattern="dd/MM/yyyy"/>
                 </h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'ReportedTime' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.createdAt}" style="#{myIi.innerCssStyle};" escape="false" >
-                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
+                    <f:convertDateTime pattern="hh:mm a"/>
                 </h:outputText>
-                <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'ReferringDoctor' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.billItem.bill.referredInstituteOrDoctor.name}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
-                <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'SampledAt' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.sampleInstitution.name}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
+                <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'ReferringDoctor' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.billItem.bill.referredBy.person.nameWithTitle}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
+                <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'SampledAt' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.sampledAt}" style="#{myIi.innerCssStyle};" escape="false" >
+                    <f:convertDateTime pattern="dd/MM/yyyy hh:mm a"/>
+                </h:outputText>
 
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'ApprovedAt' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.approveAt}" style="#{myIi.innerCssStyle};" escape="false" >
                     <f:convertDateTime pattern="dd/MM/yyyy hh:mm a"/>
@@ -102,12 +104,26 @@
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'PrintedAt' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.printingAt}" style="#{myIi.innerCssStyle};" escape="false" >
                     <f:convertDateTime pattern="dd/MM/yyyy hh:mm a"/>
                 </h:outputText>
-
-                <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'AutherizedName' and myCli.retired eq false  and cc.attrs.patientReport.approveUser.staff.id ne null}"  value="#{cc.attrs.patientReport.approveUser.staff.person.nameWithTitle}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
+                
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'AutherizedCode' and myCli.retired eq false  and cc.attrs.patientReport.approveUser.staff.id ne null}"  value="#{cc.attrs.patientReport.approveUser.staff.code}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'AutherizedPosition' and myCli.retired eq false  and cc.attrs.patientReport.approveUser.staff.id ne null}"  value="#{cc.attrs.patientReport.approveUser.staff.speciality.name}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'AutherizedQualification' and myCli.retired eq false  and cc.attrs.patientReport.approveUser.staff.id ne null}" value="#{cc.attrs.patientReport.approveUser.staff.qualification}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
 
+                <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'MRN' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.patient.phn}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
+                <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'SampledID' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.getId()}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
+                <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'BillingDepartment' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.billItem.bill.department.name}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
+                <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'PerformDepartment' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.billItem.bill.toDepartment.name}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
+                <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'BillingInstitution' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.billItem.bill.institution.name}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
+                <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'PerformInstitution' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.billItem.bill.toInstitution.name}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
+                <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'VisitType' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.billItem.bill.ipOpOrCc}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
+                <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'BHT' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.encounter.bhtNo}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
+
+                <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'CollectedOn' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.sampleCollectedAt}" style="#{myIi.innerCssStyle};" escape="false" >
+                    <f:convertDateTime pattern="dd/MM/yyyy hh:mm a"/>
+                </h:outputText>
+                <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'ReceivedOn' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.receivedAt}" style="#{myIi.innerCssStyle};" escape="false" >
+                    <f:convertDateTime pattern="dd/MM/yyyy hh:mm a"/>
+                </h:outputText>
 
                 <p:graphicImage rendered="#{myCli.reportItemType eq 'AutherizedSignature' and myCli.retired eq false and cc.attrs.patientReport.approveUser.staff.id ne null }"    
                                 value="#{staffImageController.signatureFromPatientReport}" style="width: #{myCli.wtPix};overflow: visible; display: block;" 

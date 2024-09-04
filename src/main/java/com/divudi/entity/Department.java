@@ -45,43 +45,46 @@ public class Department implements Serializable {
     String telephone2;
     String fax;
     String email;
+
     @ManyToOne
-    @JsonIgnore
     Institution institution;
+
     @ManyToOne
-    @JsonIgnore
+    private Institution site;
+
+    @ManyToOne
     Department superDepartment;
     @Enumerated(EnumType.STRING)
     DepartmentType departmentType;
     @ManyToOne
-    @JsonIgnore
+
     Department sampleDepartment;
     @ManyToOne
-    @JsonIgnore
+
     Department labDepartment;
 
     @ManyToOne
-    @JsonIgnore
+
     Institution sampleInstitution;
     @ManyToOne
-    @JsonIgnore
+
     Institution labInstitution;
 //     double maxDiscount;
 
     //Created Properties
     @ManyToOne
-    @JsonIgnore
+
     WebUser creater;
-    @JsonIgnore
+
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date createdAt;
     //Retairing properties
-    @JsonIgnore
+
     boolean retired;
-    @JsonIgnore
+
     @ManyToOne
     WebUser retirer;
-    @JsonIgnore
+
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date retiredAt;
     String retireComments;
@@ -90,9 +93,6 @@ public class Department implements Serializable {
     double margin;
     double pharmacyMarginFromPurchaseRate;
 
-    
-    
-    
     public double getPharmacyMarginFromPurchaseRate() {
         return pharmacyMarginFromPurchaseRate;
     }
@@ -286,6 +286,13 @@ public class Department implements Serializable {
     }
 
     public String getDepartmentCode() {
+        if (departmentCode == null || departmentCode.trim().isEmpty()) {
+            if (code != null && !code.trim().isEmpty()) {
+                departmentCode = code;
+            } else if (name != null && name.trim().length() >= 2) {
+                departmentCode = name.trim().substring(0, 2).toUpperCase(); // Extract the first two letters and make them uppercase
+            }
+        }
         return departmentCode;
     }
 
@@ -355,4 +362,13 @@ public class Department implements Serializable {
     public void setActive(Boolean active) {
         this.active = active;
     }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
+    }
+
 }

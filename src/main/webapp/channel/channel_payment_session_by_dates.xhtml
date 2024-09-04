@@ -118,6 +118,7 @@
                                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                     currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
                                     rowsPerPageTemplate="{ShowAll|'All'}"
+                                    selectionMode="multiple"
                                     >
 
                                     <f:ajax  event="rowSelectCheckbox" execute="tblFee" listener="#{channelStaffPaymentBillController.performCalculations()}"   
@@ -132,7 +133,7 @@
                                     <f:ajax  event="rowSelect" execute="tblFee" listener="#{channelStaffPaymentBillController.performCalculations()}"   
                                              render=":#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId}"  />
 
-                                    <p:column selectionMode="multiple" width="10"></p:column>
+                                    <p:column selectionBox="true" width="10"></p:column>
 
                                     <p:column headerText="No" width="3em">
                                         <h:outputLabel value="#{bf.bill.singleBillSession.serialNo}">
@@ -159,9 +160,14 @@
                                         <p:tag class="m-1"  severity="success" rendered="#{bf.bill.singleBillSession.completed}" value="Completed" />
                                         <p:tag class="m-1"  severity="danger" rendered="#{bf.bill.cancelled}" value="Cancelled"/>
                                         <p:tag class="m-1"  severity="warning" rendered="#{bf.bill.refunded}" value="Refunded"/>
-                                    </p:column>
+                                    </p:column> 
                                     <p:column headerText="Fee" width="6em">
                                         <h:outputLabel  value="#{bf.feeValue}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Paid to Doctor" width="6em">
+                                        <h:outputLabel  value="#{bf.paidValue}" >
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputLabel>
                                     </p:column>
@@ -171,6 +177,21 @@
                                         </h:outputLabel>
                                     </p:column>
 
+                                    <p:column headerText="Bill Type" width="16em">
+                                        <h:outputLabel  value="#{bf.bill.billClass}" >
+                                        </h:outputLabel>
+                                    </p:column>
+                                    
+                                    <p:column headerText="Bill Class Type" width="16em">
+                                        <h:outputLabel  value="#{bf.bill.billType}" >
+                                        </h:outputLabel>
+                                    </p:column>
+                                    
+                                     <p:column headerText="Paid Bill ID" width="16em">
+                                         <h:outputLabel  value="#{bf.bill.paidBill}" >
+                                        </h:outputLabel>
+                                    </p:column>
+                                    
                                     <p:column headerText="Professional Fee Paid" width="6em">
                                         <h:outputLabel  value="#{bf.paidValue}" >
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>

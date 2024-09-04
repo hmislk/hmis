@@ -537,7 +537,6 @@ public class PriceMatrixController implements Serializable {
                 + " and i.billType=:bt "
                 + " and i.category=:cat ";
         System.out.println("hm = " + hm);
-        System.out.println("sql = " + sql);
         return paymentSchemeDiscountFacade.findFirstByJpql(sql, hm);
     }
 

@@ -11,10 +11,9 @@
     <ui:define name="content">
         <div class="p-1 w-100" >  
             <div class="row" >
-                <div class="col-md-3" >
+                <div class="col-md-2" >
                     <h:form class="w-100">
-
-                        <p:panel header="Reports" rendered="true">
+                        <p:panel header="Reports" rendered="true" class="m-1" >
                             <p:accordionPanel activeIndex="#{investigationCategoryController.manageItemIndex}" >
                                 <p:ajax process="@this" ></p:ajax>
                                 <p:tab title="Asset Reports">
@@ -55,23 +54,28 @@
                                 </p:tab>
                                 <p:tab title="Cashier Reports">
                                     <div class="d-grid gap-2">
-                                        <p:commandButton   class="w-100"  ajax="false" value="1. All Cashier Summary" ></p:commandButton>
-                                        <p:commandButton   class="w-100"  ajax="false" value="2. Shift End Summary" ></p:commandButton>
+                                        <p:commandButton  
+                                            action="#{searchController.navigatToAllCashierSummary()}"
+                                            class="w-100"  ajax="false" value="1. All Cashier Summary" ></p:commandButton>
+                                        <p:commandButton  
+                                            action="#{searchController.navigatToCashierSummary()}"
+                                            class="w-100"  ajax="false" value="2. Cashier Summary" ></p:commandButton>
+                                        <p:commandButton   class="w-100"  ajax="false" value="3. Shift End Summary" ></p:commandButton>
 
                                     </div>
                                 </p:tab>
                                 <p:tab title="Collection Center Reports">
                                     <div class="d-grid gap-2">
-                                        <p:commandButton   class="w-100"  ajax="false" value="1. Collection Center Reports Print" action="/reports/collectionCenterReports/collection_center_report_print"></p:commandButton>
-                                        <p:commandButton   class="w-100"  ajax="false" value="2. Collection Center Current Balance" action="/reports/collectionCenterReports/collection_center_current_balance_report" ></p:commandButton>
-                                        <p:commandButton   class="w-100"  ajax="false" value="2. Collection Center Balance" action="/reports/collectionCenterReports/collection_center_balance_report" ></p:commandButton>
-                                        <p:commandButton   class="w-100"  ajax="false" value="3. Collection Center Receipt" action="/reports/collectionCenterReports/collection_center_recipt_reports"></p:commandButton>
-                                        <p:commandButton   class="w-100"  ajax="false" value="4. Collection Center Bill Wise Detail" action="/reports/collectionCenterReports/collection_center_bill_wise_detail_report"></p:commandButton>
-                                        <p:commandButton   class="w-100"  ajax="false" value="5. Collection Center Wise Transaction Reports" action="/reports/collectionCenterReports/collection_center_wise_transaction_reports"></p:commandButton>
-                                        <p:commandButton   class="w-100"  ajax="false" value="6. Collection Center Statement" action="/reports/collectionCenterReports/collection_center_statement_report"></p:commandButton>
-                                        <p:commandButton   class="w-100"  ajax="false" value="7. Collection Center Wise Summary" action="/reports/collectionCenterReports/collection_center_wise_summary_report"></p:commandButton>
-                                        <p:commandButton   class="w-100"  ajax="false" value="8. Collection Center Test Wise Count" action="/reports/collectionCenterReports/collection_center_test_wise_count_report"></p:commandButton>
-                                        <p:commandButton   class="w-100"  ajax="false" value="9. Route Analysis" action="/reports/collectionCenterReports/route_analysis_report"></p:commandButton>
+                                        <p:commandButton   class="w-100"  ajax="false" value="1. Collection Center Reports Print" action="/reports/collectionCenterReports/collection_center_report_print?faces-redirect=true"></p:commandButton>
+                                        <p:commandButton   class="w-100"  ajax="false" value="2. Collection Center Current Balance" action="/reports/collectionCenterReports/collection_center_current_balance_report?faces-redirect=true" ></p:commandButton>
+                                        <p:commandButton   class="w-100"  ajax="false" value="2. Collection Center Balance" action="/reports/collectionCenterReports/collection_center_balance_report?faces-redirect=true" ></p:commandButton>
+                                        <p:commandButton   class="w-100"  ajax="false" value="3. Collection Center Receipt" action="/reports/collectionCenterReports/collection_center_recipt_reports?faces-redirect=true"></p:commandButton>
+                                        <p:commandButton   class="w-100"  ajax="false" value="4. Collection Center Bill Wise Detail" action="/reports/collectionCenterReports/collection_center_bill_wise_detail_report?faces-redirect=true"></p:commandButton>
+                                        <p:commandButton   class="w-100"  ajax="false" value="5. Collection Center Wise Transaction Reports" action="/reports/collectionCenterReports/collection_center_wise_transaction_reports_1?faces-redirect=true"></p:commandButton>
+                                        <p:commandButton   class="w-100"  ajax="false" value="6. Collection Center Statement" action="/reports/collectionCenterReports/collection_center_statement_report?faces-redirect=true"></p:commandButton>
+                                        <p:commandButton   class="w-100"  ajax="false" value="7. Collection Center Wise Summary" action="/reports/collectionCenterReports/collection_center_wise_summary_report?faces-redirect=true"></p:commandButton>
+                                        <p:commandButton   class="w-100"  ajax="false" value="8. Collection Center Test Wise Count" action="/reports/collectionCenterReports/collection_center_test_wise_count_report?faces-redirect=true"></p:commandButton>
+                                        <p:commandButton   class="w-100"  ajax="false" value="9. Route Analysis" action="/reports/collectionCenterReports/route_analysis_report?faces-redirect=true"></p:commandButton>
                                         <p:commandButton   class="w-100"  ajax="false" value="10. Collction Centre Book" ></p:commandButton>
                                         <p:commandButton   class="w-100"  ajax="false" value="11. Collction Centre Book Wise Detail" ></p:commandButton>
 
@@ -85,7 +89,9 @@
                                 </p:tab>
                                 <p:tab title="Financial Reports">
                                     <div class="d-grid gap-2">
-                                        <p:commandButton   class="w-100"  ajax="false" value="1. Daily return" action="/reports/financialReports/daily_return"/>
+                                        <p:commandButton   class="w-100"  ajax="false" value="Daily return" action="/reports/financialReports/daily_return"/>
+                                        <p:commandButton   class="w-100"  ajax="false" value="(Daily return - Checking)" action="/reportInstitution/report_cash_category_with_pro_month"/>
+
                                         <p:commandButton   class="w-100"  ajax="false" value="2. Income Category Wise Summary (Daily Return Summary)"  action="/reports/financialReports/income_category_wise_report"/>
                                         <p:commandButton   class="w-100"  ajax="false" value="3. IP Income Category Wise Report" />
                                         <p:commandButton   class="w-100"  ajax="false" value="4. Service Category Wise Bill Details" action="/reports/financialReports/service_category_wise_bill_detail"/>
@@ -100,7 +106,7 @@
                                         <p:commandButton   class="w-100"  ajax="false" value="13. OPD and Inward Due " />
                                         <p:commandButton   class="w-100"  ajax="false" value="14. Debtor Age Anlysis" />
                                         <p:commandButton   class="w-100"  ajax="false" value="15. Credit Invoice Dispatch" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="16. Petty Cash Payment" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="16. Petty Cash Payment" action="/reports/financialReports/petty_cash_payment?faces-redirect=true" />
                                         <p:commandButton   class="w-100"  ajax="false" value="17. WHT" />
                                         <p:commandButton   class="w-100"  ajax="false" value="18. Bill Wise Item Movement" />
                                         <p:commandButton   class="w-100"  ajax="false" value="19. Debtor Settlement" />
@@ -332,7 +338,7 @@
                         </p:panel>
                     </h:form>
                 </div>
-                <div class="col-md-9" >
+                <div class="col-md-10" >
                     <ui:insert name="subcontent" class="w-100">
 
                     </ui:insert>

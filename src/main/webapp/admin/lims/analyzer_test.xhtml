@@ -26,8 +26,6 @@
                                 <f:selectItems value="#{machineController.items}" ></f:selectItems>
                             </p:selectOneMenu>
                             <p:commandButton ajax="false" action="#{itemController.fillMachineTests()}" value="List Analyzer Tests" ></p:commandButton>
-                            <p:spacer height="1" width="300" ></p:spacer>
-                            <p:commandButton ajax="false" action="/lab/administration" value="List Analyzer Tests" ></p:commandButton>
                         </h:panelGrid>
                         <p:dialog id="dlg" modal="true" widgetVar="dlg" >
                             <p:panel id="test" header="Test" >
@@ -37,6 +35,9 @@
                                 <h:panelGrid columns="2" >
                                     <p:outputLabel value="Code" ></p:outputLabel>
                                     <p:inputText value="#{itemController.current.code}" ></p:inputText>
+                                    
+                                    <p:outputLabel value="Code System" ></p:outputLabel>
+                                    <p:inputText value="#{itemController.current.codeSystem}" ></p:inputText>
                                     
                                     <p:outputLabel value="Name" ></p:outputLabel>
                                     <p:inputText value="#{itemController.current.name}" ></p:inputText>

@@ -40,7 +40,10 @@ import com.divudi.facade.PatientReportItemValueFacade;
 import com.divudi.facade.SmsFacade;
 import com.divudi.facade.TestFlagFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import static com.divudi.data.InvestigationItemValueType.Memo;
+import static com.divudi.data.InvestigationItemValueType.Varchar;
 import com.divudi.entity.clinical.ClinicalFindingValue;
+import com.divudi.entity.lab.ReportFormat;
 import com.divudi.facade.ClinicalFindingValueFacade;
 import com.lowagie.text.DocumentException;
 import java.io.File;
@@ -844,7 +847,7 @@ public class PatientReportController implements Serializable {
         }
 
         String sex = pr.getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getSex() == Sex.Male ? "male" : "female";
-        int ageInYears = pr.getPatientInvestigation().getBillItem().getBill().getPatient().getAgeYearsonBilledDate();
+        int ageInYears = pr.getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getAgeYearsComponent();
 
         System.out.println("Debug: Sex is " + sex + ", Age is " + ageInYears);
 
@@ -1066,10 +1069,154 @@ public class PatientReportController implements Serializable {
         currentPatientReport.setDataEntryInstitution(getSessionController().getLoggedUser().getInstitution());
         currentPatientReport.setDataEntryUser(getSessionController().getLoggedUser());
 
+        updateTemplate();
+
+        getFacade().edit(currentPatientReport);
+        getPiFacade().edit(currentPtIx);
+
         getFacade().edit(currentPatientReport);
         getPiFacade().edit(currentPtIx);
 
         //JsfUtil.addSuccessMessage("Saved");
+    }
+
+    public void updateTemplate() {
+        Investigation currentInvestigation = (Investigation) currentPatientReport.getItem();
+        if (currentInvestigation == null || currentPatientReport == null) {
+            System.out.println("currentInvestigation or currentPatientReport is null.");
+            return; // Handle the case where the investigation or report is null
+        }
+
+        // Identify the InvestigationItem with placeholders
+        InvestigationItem templateItem = null;
+        if (currentInvestigation.getReportType() == InvestigationReportType.HtmlTemplate) {
+            for (InvestigationItem ixi : currentInvestigation.getReportItems()) {
+                if (ixi != null && ixi.getIxItemType() == InvestigationItemType.Html) {
+                    templateItem = ixi;
+                    System.out.println("Selected InvestigationItem with Html content: " + ixi.getHtmltext());
+                    break; // Assume there is only one template; exit loop after finding it
+                }
+            }
+        }
+
+        if (templateItem == null) {
+            System.out.println("No HtmlTemplate found in the current investigation.");
+            return;
+        }
+
+        // Extract placeholders from the identified template
+        List<String> placeholders = extractPlaceholders(templateItem.getHtmltext());
+        System.out.println("Placeholders found: " + placeholders);
+
+        // Store replacements in a map
+        Map<String, String> replacementMap = new HashMap<>();
+
+        // Iterate through patient values and match with placeholders
+        for (PatientReportItemValue priv : currentPatientReport.getPatientReportItemValues()) {
+            if (priv == null || priv.getInvestigationItem() == null) {
+                System.out.println("Skipping null PatientReportItemValue or InvestigationItem.");
+                continue; // Skip null values to avoid null pointer exceptions
+            }
+
+            String itemName = priv.getInvestigationItem().getName();
+            if (placeholders.contains(itemName)) {
+                String valueToReplacePlaceholder = null;
+
+                switch (priv.getInvestigationItem().getIxItemValueType()) {
+                    case Varchar:
+                        valueToReplacePlaceholder = priv.getStrValue();
+                        break;
+                    case Double:
+                        Double dbl = priv.getDoubleValue();
+                        if (dbl != null) {
+                            String formatString = priv.getInvestigationItem().getFormatString();
+                            if (formatString == null || formatString.isEmpty()) {
+                                formatString = "%.2f"; // Default format if none provided
+                            }
+                            String suffix = priv.getInvestigationItem().getFormatSuffix() != null ? priv.getInvestigationItem().getFormatSuffix() : "";
+                            String prefix = priv.getInvestigationItem().getFormatPrefix() != null ? priv.getInvestigationItem().getFormatPrefix() : "";
+                            valueToReplacePlaceholder = prefix + String.format(formatString, dbl) + suffix;
+                            System.out.println("dbl = " + dbl + ", formatted value = " + valueToReplacePlaceholder);
+                        } else {
+                            System.out.println("Double value is null for: " + itemName);
+                        }
+                        break;
+                    case Memo:
+                        valueToReplacePlaceholder = priv.getLobValue();
+                        break;
+                    default:
+                        valueToReplacePlaceholder = ""; // Handle other types if necessary
+                        System.out.println("No matching value for: " + itemName);
+                        break;
+                }
+
+                if (valueToReplacePlaceholder != null && !valueToReplacePlaceholder.isEmpty()) {
+                    replacementMap.put(itemName, valueToReplacePlaceholder);
+                    System.out.println("Mapping placeholder: " + itemName + " to value: " + valueToReplacePlaceholder);
+                } else {
+                    System.out.println("Value for placeholder " + itemName + " is null or empty.");
+                }
+            }
+        }
+
+        // Replace placeholders in the template with values from the map, or make them blank if no value is found
+        String updatedHtmlText = templateItem.getHtmltext();
+        for (String placeholder : placeholders) {
+            String replacementValue = replacementMap.get(placeholder);
+            if (replacementValue != null && !replacementValue.isEmpty()) {
+                updatedHtmlText = updatedHtmlText.replace("{" + placeholder + "}", replacementValue);
+                System.out.println("Replaced {" + placeholder + "} with " + replacementValue);
+            } else {
+                // Replace with an empty string if no replacement value is found
+                updatedHtmlText = updatedHtmlText.replace("{" + placeholder + "}", "");
+                System.out.println("Replaced {" + placeholder + "} with an empty string.");
+            }
+        }
+
+// Save the updated HTML text back to the patient-specific report item
+        for (PatientReportItemValue privHtml : currentPatientReport.getPatientReportItemValues()) {
+            System.out.println("privHtml = " + privHtml);
+
+            if (privHtml == null) {
+                System.out.println("Skipping null privHtml.");
+                continue; // Skip null PatientReportItemValue
+            }
+
+            if (privHtml.getInvestigationItem() == null) {
+                System.out.println("Skipping privHtml with null InvestigationItem.");
+                continue; // Skip if InvestigationItem is null
+            }
+
+            System.out.println("privHtml.getInvestigationItem() = " + privHtml.getInvestigationItem());
+            System.out.println("templateItem = " + templateItem);
+
+            if (privHtml.getInvestigationItem().equals(templateItem)) {
+                System.out.println("InvestigationItem matches the templateItem.");
+
+                // Set the updated HTML content
+                privHtml.setLobValue(updatedHtmlText);
+
+                System.out.println("Set updated HTML content for PatientReportItemValue: "
+                        + "ID: " + privHtml.getId() + ", Name: "
+                        + privHtml.getInvestigationItem().getName());
+            } else {
+                System.out.println("InvestigationItem does not match the templateItem.");
+            }
+        }
+
+    }
+
+// Utility method to extract placeholders from HTML content
+    private List<String> extractPlaceholders(String htmlContent) {
+        List<String> placeholders = new ArrayList<>();
+        if (htmlContent != null) {
+            Pattern pattern = Pattern.compile("\\{(.*?)\\}");
+            Matcher matcher = pattern.matcher(htmlContent);
+            while (matcher.find()) {
+                placeholders.add(matcher.group(1));
+            }
+        }
+        return placeholders;
     }
 
     public String emailMessageBody(PatientReport r) {
@@ -1822,7 +1969,7 @@ public class PatientReportController implements Serializable {
         getFacade().edit(currentPatientReport);
 
     }
-    
+
     public void printPatientLabReport() {
         if (currentPatientReport == null) {
             JsfUtil.addErrorMessage("Nothing to approve");
@@ -1841,7 +1988,7 @@ public class PatientReportController implements Serializable {
         currentPatientReport.setPrintingInstitution(getSessionController().getLoggedUser().getInstitution());
         currentPatientReport.setPrintingUser(getSessionController().getLoggedUser());
         currentPatientReport.setPrinted(true);
-        
+
         getFacade().edit(currentPatientReport);
     }
 
@@ -2004,6 +2151,9 @@ public class PatientReportController implements Serializable {
     }
 
     public PatientReport createNewPatientReport(PatientInvestigation pi, Investigation ix) {
+        System.out.println("createNewPatientReport");
+        System.out.println("pi = " + pi);
+        System.out.println("ix = " + ix);
         //System.err.println("creating a new patient report");
         PatientReport r = null;
         if (pi != null && pi.getId() != null && ix != null) {
@@ -2014,7 +2164,12 @@ public class PatientReportController implements Serializable {
             r.setDataEntryDepartment(sessionController.getLoggedUser().getDepartment());
             r.setDataEntryInstitution(sessionController.getLoggedUser().getInstitution());
             if (r.getTransInvestigation() != null) {
-                r.setReportFormat(r.getTransInvestigation().getReportFormat());
+                if (r.getTransInvestigation().getReportFormat() != null) {
+                    r.setReportFormat(r.getTransInvestigation().getReportFormat());
+                } else {
+                    ReportFormat nrf = reportFormatController.getValidReportFormat();
+                    r.setReportFormat(nrf);
+                }
             }
             getFacade().create(r);
             r.setPatientInvestigation(pi);
@@ -2106,21 +2261,75 @@ public class PatientReportController implements Serializable {
         pr = getFacade().findFirstByJpql(j, m);
         return pr;
     }
+    
+    
+    
+    public String navigateToNewlyCreatedPatientReport(PatientInvestigation pi) {
+        System.out.println("navigateToNewlyCreatedPatientReport");
+        System.out.println("pi = " + pi);
+        if (pi == null) {
+            JsfUtil.addErrorMessage("No Patient Report");
+            return null;
+        }
+        Investigation ix = null;
+        System.out.println("pi.getInvestigation() = " + pi.getInvestigation());
+        if (pi.getInvestigation() == null) {
+            JsfUtil.addErrorMessage("No Investigation for Patient Report");
+            return null;
+        } else {
+            ix = (Investigation) pi.getInvestigation();
+            System.out.println("ix = " + ix);
+        }
+        System.out.println("ix.getReportedAs() = " + ix.getReportedAs());
+        if (ix.getReportedAs() != null) {
+            ix = (Investigation) pi.getInvestigation().getReportedAs();
+            System.out.println("ix = " + ix);
+        }
+
+        currentReportInvestigation = ix;
+        currentPtIx = pi;
+        PatientReport newlyCreatedReport=null;
+        System.out.println("InvestigationReportType.Microbiology = " + InvestigationReportType.Microbiology);
+        if (ix.getReportType() == InvestigationReportType.Microbiology) {
+            createNewMicrobiologyReport(pi, ix);
+        } else {
+           newlyCreatedReport =    createNewPatientReport(pi, ix);
+            System.out.println("newlyCreatedReport = " + newlyCreatedReport);
+        }
+        if(newlyCreatedReport==null){
+            JsfUtil.addErrorMessage("Error");
+            return null;
+        }
+        currentPatientReport = newlyCreatedReport;
+        getCommonReportItemController().setCategory(ix.getReportFormat());
+        
+        return "/lab/patient_report?faces-redirect=true";
+    }
+    
+    
 
     public void createNewReport(PatientInvestigation pi) {
+        System.out.println("createNewReport");
+        System.out.println("pi = " + pi);
         if (pi == null) {
             JsfUtil.addErrorMessage("No Patient Report");
             return;
         }
+        Investigation ix = null;
+        System.out.println("pi.getInvestigation() = " + pi.getInvestigation());
         if (pi.getInvestigation() == null) {
             JsfUtil.addErrorMessage("No Investigation for Patient Report");
             return;
+        } else {
+            ix = (Investigation) pi.getInvestigation();
+            System.out.println("ix = " + ix);
         }
-        if (pi.getInvestigation().getReportedAs() == null) {
-            JsfUtil.addErrorMessage("No Reported as for Investigation for Patient Report");
-            return;
+        System.out.println("ix.getReportedAs() = " + ix.getReportedAs());
+        if (ix.getReportedAs() != null) {
+            ix = (Investigation) pi.getInvestigation().getReportedAs();
+            System.out.println("ix = " + ix);
         }
-        Investigation ix = (Investigation) pi.getInvestigation().getReportedAs();
+
         currentReportInvestigation = ix;
         currentPtIx = pi;
         if (ix.getReportType() == InvestigationReportType.Microbiology) {
@@ -2149,12 +2358,15 @@ public class PatientReportController implements Serializable {
     }
 
     public void setCurrentPatientReport(PatientReport currentPatientReport) {
-
+        System.out.println("Setting current patient report: " + currentPatientReport);
         this.currentPatientReport = currentPatientReport;
-
         if (currentPatientReport != null) {
+            System.out.println("Report format: " + currentPatientReport.getItem().getReportFormat());
             getCommonReportItemController().setCategory(currentPatientReport.getItem().getReportFormat());
             currentPtIx = currentPatientReport.getPatientInvestigation();
+            System.out.println("Current patient investigation index: " + currentPtIx);
+        } else {
+            System.out.println("No current patient report provided, skipping setting category and index.");
         }
     }
 

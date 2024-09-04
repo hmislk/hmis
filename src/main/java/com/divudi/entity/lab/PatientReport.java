@@ -6,6 +6,7 @@ package com.divudi.entity.lab;
 
 //import ch.lambdaj.Lambda;
 import com.divudi.data.InvestigationItemType;
+import com.divudi.data.lab.PatientInvestigationStatus;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
@@ -19,6 +20,8 @@ import java.util.Date;
 import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -39,17 +42,6 @@ public class PatientReport implements Serializable {
     @OneToMany(mappedBy = "patientReport", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<PatientReportItemValue> patientReportItemValues;
 
-//    @Transient
-//    private List<PatientReportItemValue> patientReportItemOfValueType;
-//
-//    @Transient
-//    private List<PatientReportItemValue> patientReportItemOfFlagType;
-//
-//    @Transient
-//    private List<PatientReportItemValue> patientReportItemOfCalculationType;
-//
-//    @Transient
-//    private List<PatientReportItemValue> patientReportItemOfDynamicLabelType;
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -162,6 +154,20 @@ public class PatientReport implements Serializable {
     private String qrCodeContentsDetailed;
     @Lob
     private String qrCodeContentsLink;
+    
+    @Enumerated(EnumType.ORDINAL)
+    PatientInvestigationStatus status;
+    
+
+    public PatientReport() {
+         if (status == null) {
+            status = PatientInvestigationStatus.ORDERED;
+        }
+         printed=false;
+         approved=false;
+    }
+    
+    
     
 
     public PatientReportItemValue getTemplateItem() {
@@ -322,10 +328,6 @@ public class PatientReport implements Serializable {
                 Collections.sort(patientReportItemValues, new PatientReportItemValueComparator());
             } catch (Exception e) {
             }
-//            patientReportItemOfCalculationType = null;
-//            patientReportItemOfDynamicLabelType = null;
-//            patientReportItemOfFlagType = null;
-//            patientReportItemOfValueType = null;
             filteredAndSorted = true;
         }
     }
@@ -337,16 +339,11 @@ public class PatientReport implements Serializable {
                     Collections.sort(patientReportItemValues, new PatientReportItemValueComparator());
                 } catch (Exception e) {
                 }
-//                patientReportItemOfCalculationType = null;
-//                patientReportItemOfDynamicLabelType = null;
-//                patientReportItemOfFlagType = null;
-//                patientReportItemOfValueType = null;
                 filteredAndSorted = true;
             }
         } else {
             patientReportItemValues = new ArrayList<>();
         }
-//        //System.out.println("patientReportItemValues = " + patientReportItemValues.size());
         return patientReportItemValues;
     }
 

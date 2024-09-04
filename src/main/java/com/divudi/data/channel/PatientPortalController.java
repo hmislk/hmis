@@ -36,13 +36,7 @@ import com.divudi.facade.SessionInstanceFacade;
 import com.divudi.facade.SmsFacade;
 import com.divudi.facade.StaffFacade;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import javax.ejb.EJB;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
@@ -142,7 +136,7 @@ public class PatientPortalController implements Serializable {
     private ChannelBean channelBean;
 
     public String navigateBookingMenue() {
-        bookingControllerViewScope.fillBillSessions(selectedSessionInstance);
+        bookingControllerViewScope.fillBillSessions(Collections.singletonList(selectedSessionInstance));
         sessionInstances = null;
         selectedConsultant = null;
         selectedSpeciality = null;
@@ -281,11 +275,8 @@ public class PatientPortalController implements Serializable {
         m.put("nextTwoDays", calendar.getTime());
 
         sessionInstances = sessionInstanceFacade.findByJpql(jpql.toString(), m, TemporalType.DATE);
-        
-        for(SessionInstance s : sessionInstances){
-            bookingControllerViewScope.fillBillSessions(s);
-        }
-        
+
+        bookingControllerViewScope.fillBillSessions(sessionInstances);
     }
 
     public void otpCodeConverter() {
@@ -317,7 +308,6 @@ public class PatientPortalController implements Serializable {
         e.setPending(false);
         e.setOtp(otp);
         getSmsFacade().create(e);
-        System.out.println("otp = " + otp);
         Boolean sent = smsManager.sendSms(e);
         if (sent) {
             JsfUtil.addSuccessMessage("SMS Sent");

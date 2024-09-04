@@ -139,7 +139,6 @@ public class StoreGrnController implements Serializable {
         currentExpense = null;
         billExpenses = null;
         billItems = null;
-          System.out.println("clear");
 
     }
 

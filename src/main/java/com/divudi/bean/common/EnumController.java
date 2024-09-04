@@ -20,6 +20,7 @@ import com.divudi.data.DiscountType;
 import com.divudi.data.FeeType;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.InvestigationItemValueType;
+import com.divudi.data.InvestigationReportType;
 import com.divudi.data.ItemBarcodeGenerationStrategy;
 import com.divudi.data.ItemListingStrategy;
 import com.divudi.data.ItemType;
@@ -147,6 +148,10 @@ public class EnumController implements Serializable {
         return paymentMethodsForChanneling;
     }
 
+    public List<InvestigationReportType> getInvestigationReportTypes() {
+        return Arrays.asList(InvestigationReportType.values());
+    }
+
     public List<PaymentMethod> getPaymentMethodsForChannelSettling() {
         if (paymentMethodsForChannelSettling == null) {
             fillPaymentMethodsForChannelSettling();
@@ -221,8 +226,7 @@ public class EnumController implements Serializable {
         return null; // Return null if no match is found
     }
 
-    
-     public List<Priority> getPriorities() {
+    public List<Priority> getPriorities() {
         return Arrays.asList(Priority.values());
     }
 
@@ -255,6 +259,7 @@ public class EnumController implements Serializable {
     public ItemListingStrategy[] getOpdItemListingStrategys() {
         ItemListingStrategy[] sts
                 = {ItemListingStrategy.ALL_ITEMS,
+                    ItemListingStrategy.SITE_FEE_ITEMS,
                     ItemListingStrategy.ITEMS_OF_LOGGED_DEPARTMENT,
                     ItemListingStrategy.ITEMS_OF_LOGGED_INSTITUTION,
                     ItemListingStrategy.ITEMS_MAPPED_TO_LOGGED_DEPARTMENT,

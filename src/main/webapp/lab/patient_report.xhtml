@@ -14,7 +14,6 @@
 
             <ui:define name="content" rendered="#{webUserController.hasPrivilege('LabAutherizing') eq true or webUserController.hasPrivilege('LabDataentry') eq true or webUserController.hasPrivilege('LabPrinting') eq true   }" >
                 <h:form>
-
                     <h:outputStylesheet library="css" name="lab.css" ></h:outputStylesheet>
                     <p:panel>
                         <f:facet  name="header" >
@@ -113,11 +112,13 @@
                                                             class="mx-1 ui-button-success"
                                                             action="#{searchController.listReportsAwaitingApproval()}" ajax="false"   >
                                         </p:commandButton>
-                                        <p:commandButton  ajax="false" value="Back to Visit"
-                                                          action="/clinical/clinical_new_opd_visit.xhtml" 
-                                                          icon="fa-solid fa-arrow-left"
-                                                          class=""
-                                                          style="float: right;"  ></p:commandButton>
+                                        <p:commandButton  
+                                            ajax="false" value="Back"
+                                            action="/lab/generate_barcode_p?faces-redirect=true"
+                                            icon="fa-solid fa-arrow-left"
+                                            class=""
+                                            style="float: right;"  >
+                                        </p:commandButton>
                                     </div>
                                 </div>
                             </div>
@@ -534,7 +535,21 @@
 
                                 <h:panelGroup  id="divPrint" >
 
-                                    <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType ne 'Microbiology'}"  >
+
+
+                                    <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType eq 'HtmlTemplate'}"  >
+                                        <div id="divReport"  class="labReport" >
+                                            <ez:common_report commonReportFormat="#{patientReportController.currentPatientReport.reportFormat}"
+                                                              patientReport="#{patientReportController.currentPatientReport}"/>
+                                            <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
+                                                <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
+                                                    <h:outputLabel value="#{prv.lobValue}" rendered="#{prv.investigationItem.ixItemType eq 'Html' and prv.investigationItem.retired eq false}"  escape="false" />
+                                                </div>
+                                            </ui:repeat>
+                                        </div>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType eq 'General'}"  >
                                         <div id="divReport"  class="labReport"  >
                                             <ez:common_report 
                                                 showBackground="#{patientReportController.showBackground}"
@@ -579,6 +594,18 @@
                                                     </h:outputLabel>
                                                 </div>
                                             </ui:repeat>
+                                            <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
+                                                <h:panelGroup layout="block" style="#{prv.investigationItem.cssStyle}; position:absolute;" rendered="#{prv.investigationItem.ixItemType eq 'Image'}" >
+                                                    <img style="height: 350px; width: 350px; z-index: 100;" src="#{prv.investigationItem.htmltext}" ></img>
+                                                    <p:graphicImage
+                                                        value="#{prv.lobValue}"
+                                                                    style="width: #{prv.investigationItem.wtPix};overflow: visible; display: block;" 
+                                                                    height="#{prv.investigationItem.htPix}"
+                                                                  
+                                                                    width="#{prv.investigationItem.wtPix}">
+                                                    </p:graphicImage>
+                                                </h:panelGroup>
+                                            </ui:repeat>
                                             <ui:repeat value="#{patientReportController.currentPatientReport.item.reportItems}" var="myIi" >
                                                 <div style="#{myIi.cssStyle}; position:absolute;">
                                                     <h:outputText rendered="#{myIi.retired ne true and myIi.ixItemType eq 'Label' }" value="#{myIi.htmltext}" style="color: #{myIi.cssColor}" escape="false" ></h:outputText>
@@ -590,7 +617,7 @@
                                     <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType eq 'Microbiology'}"  >
                                         <div id="divReportM"  class="labReport"   >
                                             <ez:common_report showBackground="#{patientReportController.showBackground}" commonReportFormat="#{patientReportController.currentPatientReport.reportFormat}"
-                                                                  patientReport="#{patientReportController.currentPatientReport}"/>
+                                                              patientReport="#{patientReportController.currentPatientReport}"/>
                                             <div style="position: absolute; top: #{configOptionApplicationController.getShortTextValueByKey('Microbiology Lab Report Height')}%; width: 97%; left: 1%; text-align: center; font-family:Cambria, Georgia, serif; font-size: 14px; height: 70%; vertical-align: top;" >
                                                 <div id="ixName" >
                                                     <h:outputLabel value="#{patientReportController.currentPatientReport.patientInvestigation.investigation.printName}" 
@@ -645,12 +672,24 @@
                                                             </div>
                                                         </h:panelGroup>
                                                     </ui:repeat>
+                                                    
+                                                     <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
+                                                <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
+                                                    <p:graphicImage value="https://upload.wikimedia.org/wikipedia/en/e/e2/IMG_Academy_Logo.svg"
+                                                                    style="width: #{prv.investigationItem.wtPix};overflow: visible; display: block;" 
+                                                                    height="#{prv.investigationItem.htPix}"
+                                                                    
+                                                                    width="#{prv.investigationItem.wtPix}">
+                                                    </p:graphicImage>
+                                                </div>
+                                            </ui:repeat>
+                                                    
                                                 </div>
                                                 <div style="clear: left;padding-top: 1%;">
                                                     <h:outputLabel value="--- End of Report ---" style="font-size: 14px; font-weight: bold; "></h:outputLabel>
                                                 </div>
-                                                </div>
-                                       </div>
+                                            </div>
+                                        </div>
                                     </h:panelGroup>
 
                                 </h:panelGroup>

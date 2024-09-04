@@ -5,7 +5,9 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.cashTransaction.CashBookEntryController;
 import com.divudi.bean.channel.ChannelSearchController;
+import com.divudi.bean.channel.analytics.ReportTemplateController;
 import com.divudi.bean.pharmacy.PharmacyPreSettleController;
 import com.divudi.bean.pharmacy.PharmacySaleBhtController;
 import com.divudi.data.BillNumberSuffix;
@@ -54,13 +56,23 @@ import com.divudi.bean.opd.OpdBillController;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
 import com.divudi.data.BillCategory;
 import com.divudi.data.BillClassType;
+import static com.divudi.data.BillClassType.Bill;
+import static com.divudi.data.BillClassType.BilledBill;
+import static com.divudi.data.BillClassType.CancelledBill;
+import static com.divudi.data.BillClassType.RefundBill;
 import com.divudi.data.BillFinanceType;
 import com.divudi.data.BillTypeAtomic;
+import com.divudi.data.PaymentCategory;
+import com.divudi.data.PaymentContext;
+import com.divudi.data.PaymentType;
+import com.divudi.data.ReportTemplateRow;
+import com.divudi.data.ReportTemplateRowBundle;
 import com.divudi.data.ServiceType;
 import com.divudi.data.analytics.ReportTemplateType;
 import com.divudi.entity.Category;
 import com.divudi.entity.Payment;
 import com.divudi.entity.WebUser;
+import com.divudi.entity.cashTransaction.CashBookEntry;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
@@ -68,14 +80,20 @@ import com.divudi.facade.TokenFacade;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import com.divudi.light.common.BillSummaryRow;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
@@ -84,6 +102,12 @@ import javax.inject.Named;
 import javax.persistence.TemporalType;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.primefaces.model.DefaultStreamedContent;
+import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
 
 /**
@@ -158,6 +182,10 @@ public class SearchController implements Serializable {
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     ChannelSearchController channelSearchController;
+    @Inject
+    ReportTemplateController reportTemplateController;
+    @Inject
+    CashBookEntryController cashBookEntryController;
 
     /**
      * Properties
@@ -263,8 +291,13 @@ public class SearchController implements Serializable {
     private int managePaymentIndex = -1;
 
     private boolean duplicateBillView;
-    
-    public String navigateToPettyCashBillApprove(){
+
+    private ReportTemplateRowBundle bundle;
+
+    private List<CashBookEntry> cashBookEntries;
+    private Institution site;
+
+    public String navigateToPettyCashBillApprove() {
         createPettyApproveTable();
         return "/petty_cash_bill_to_approve?faces-redirect=true";
     }
@@ -305,7 +338,7 @@ public class SearchController implements Serializable {
                 billSearch.setBill(bill);
                 navigateTo = "/payment_bill_reprint.xhtml?faces-redirect=true;";
                 break;
-            
+
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES:
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES_RETURN:
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN:
@@ -369,8 +402,6 @@ public class SearchController implements Serializable {
         return "/analytics/financial_transaction_summary_Department?faces-redirect=true";
     }
 
-    
-    
     public void clearBillList() {
         if (bills == null) {
             return;
@@ -582,7 +613,25 @@ public class SearchController implements Serializable {
 
     public String navigateToOpdBillList() {
         bills = null;
+
         return "/analytics/opd_bill_list?faces-redirect=true";
+    }
+
+    public String navigateToOpdSummaryByItem() {
+        bills = null;
+        fromDate = null;
+        toDate = null;
+        institution = null;
+        department = null;
+        fromInstitution = null;
+        fromDepartment = null;
+        toInstitution = null;
+        toDepartment = null;
+        webUser = null;
+        creditCompany = null;
+        startBillId = null;
+        endBillId = null;
+        return "/analytics/opd_summary_by_item?faces-redirect=true";
     }
 
     public String navigateToChannellingPaymentBillList() {
@@ -785,6 +834,14 @@ public class SearchController implements Serializable {
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/opd_search_professional_payment_due_1.xhtml?faces-redirect=true";
+    }
+
+    public String navigatToAllCashierSummary() {
+        return "/reports/cashier_reports/all_cashier_summary?faces-redirect=true";
+    }
+
+    public String navigatToCashierSummary() {
+        return "/reports/cashier_reports/cashier_summary?faces-redirect=true";
     }
 
     public String navigatToReportDoctorPaymentOpd() {
@@ -1695,6 +1752,30 @@ public class SearchController implements Serializable {
 
     public void setCategory(Category category) {
         this.category = category;
+    }
+
+    public List<CashBookEntry> getCashBookEntries() {
+        return cashBookEntries;
+    }
+
+    public void setCashBookEntries(List<CashBookEntry> cashBookEntries) {
+        this.cashBookEntries = cashBookEntries;
+    }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
+    }
+
+    public ReportTemplateRowBundle getBundle() {
+        return bundle;
+    }
+
+    public void setBundle(ReportTemplateRowBundle bundle) {
+        this.bundle = bundle;
     }
 
     public class billsWithbill {
@@ -4170,8 +4251,8 @@ public class SearchController implements Serializable {
 
     private String createKeySql(HashMap tmp) {
         String sql = "";
-        
-        if (getSearchKeyword().getRequestNo()!= null && !getSearchKeyword().getRequestNo().trim().equals("")) {
+
+        if (getSearchKeyword().getRequestNo() != null && !getSearchKeyword().getRequestNo().trim().equals("")) {
             sql += " and  ((b.qutationNumber) like :qutNo )";
             tmp.put("qutNo", "%" + getSearchKeyword().getRequestNo().trim().toUpperCase() + "%");
         }
@@ -5469,6 +5550,200 @@ public class SearchController implements Serializable {
         calTotalBillItem();
     }
 
+    private StreamedContent fileForDownload;
+
+    public void listBillsAndItemsWithFees() {
+        String sql;
+        Map<String, Object> paramMap = new HashMap<>();
+
+        paramMap.put("toDate", toDate);
+        paramMap.put("fromDate", fromDate);
+
+        // Assuming BillItem has a fee attribute or a method to get the fee
+        sql = "select bi "
+                + "from BillItem bi "
+                + "where bi.createdAt between :fromDate and :toDate "
+                + "order by bi.id desc";
+
+        // Execute the query
+        List<BillItem> results = getBillItemFacade().findByJpql(sql, paramMap, TemporalType.TIMESTAMP);
+
+        // Bills Have Bill Items and Bill Fees
+        // BillFee also has a referance to Bill Item and Bill
+        //BillItem has a referance to Item and Bill
+        // I want to list bills > under that Bill Items > Under that Bill Fees with the folloing attributed
+        // Have to create an excel table and download it
+        // Excel is partially created
+        billItems = results;
+
+        // Extract fees and bills if needed
+        Map<BillItem, Double> itemFees = new HashMap<>();
+        bills = new ArrayList<>();
+
+        for (BillItem bi : results) {
+
+            Bill b = bi.getBill();
+            List<BillFee> billFees = billBean.findSavedBillFeefromBillItem(bi);
+            for (BillFee bf : billFees) {
+                bf.getBill();
+                bf.getBillItem();
+                bf.getFee().getName();
+                bf.getFee().getFeeType().toString();
+                bf.getFeeValue();
+                bf.getInstitution().getName();
+                bf.getDepartment().getName();
+                bf.getStaff().getPerson().getNameWithTitle();
+
+            }
+
+            b.getId();
+            b.getInsId();
+            b.getDeptId();
+            b.getPatient().getPerson().getName();
+            b.getStaff().getPerson().getNameWithTitle();
+            b.getBillType().getLabel();
+            b.getBillTypeAtomic().getLabel();
+            b.getGrantTotal();
+            b.getDiscount();
+            b.getNetTotal();
+            b.getCreditCompany().getName();
+            b.getToStaff();
+            b.getCreatedAt();
+            b.getPaidAmount();
+            b.isCancelled();
+            b.isRefunded();
+            b.getCreater().getWebUserPerson().getName();
+            b.getPaymentMethod();
+            b.getInstitution().getName();
+            b.getDepartment().getName();
+            b.getReferenceInstitution().getName();
+            b.getReferredBy().getName();
+
+            bi.getItem().getName();
+            bi.getItem().getCode();
+            bi.getItem().getItemType().toString();
+            bi.getQty();
+            bi.getNetRate();
+            bi.getGrossValue();
+            bi.getDiscount();
+            bi.getNetValue();
+
+            Double feeValue = bi.getFeeValue();  // Assuming getFeeValue() returns the fee
+            itemFees.put(bi, feeValue);
+            bills.add(bi.getBill());
+        }
+
+    }
+
+    public StreamedContent getFileForDownload() {
+        prepareDataForExcelExport();  // Prepare data and create the Excel file
+        return fileForDownload;       // This should now contain the generated Excel file
+    }
+
+    public void createBillsBillItemsAndBillFeesTable(Set<Bill> bills, List<BillItem> billItems, Map<BillItem, List<BillFee>> billItemToBillFees) throws IOException {
+        XSSFWorkbook workbook = new XSSFWorkbook();
+        XSSFSheet sheet = workbook.createSheet("Bills Details");
+
+        int rowIdx = 0;
+        Row headerRow = sheet.createRow(rowIdx++);
+        // Expanding the headers to include all necessary fields
+        String[] headers = {
+            "Bill ID", "Insitution Name", "Department Name", "Patient Name", "Staff Name", "Bill Type", "Total", "Discount", "Net Total", "Payment Method",
+            "Bill Item Name", "Bill Item Code", "Item Type", "Quantity", "Rate", "Gross Value", "Bill Item Discount", "Net Value",
+            "Fee Name", "Fee Type", "Fee Value", "Institution Name", "Department Name", "Staff Name"
+        };
+        for (int i = 0; i < headers.length; i++) {
+            headerRow.createCell(i).setCellValue(headers[i]);
+        }
+
+        // Fill the sheet with data
+        for (Bill bill : bills) {
+            for (BillItem bi : billItems) {
+                if (!bi.getBill().equals(bill)) {
+                    continue;
+                }
+                List<BillFee> fees = billItemToBillFees.get(bi);
+                for (BillFee fee : fees) {
+                    Row row = sheet.createRow(rowIdx++);
+                    int colIdx = 0;
+                    row.createCell(colIdx++).setCellValue(bill.getId());
+                    row.createCell(colIdx++).setCellValue(bill.getInstitution() != null ? bill.getInstitution().getName() : "");
+                    row.createCell(colIdx++).setCellValue(bill.getDepartment() != null ? bill.getDepartment().getName() : "");
+                    row.createCell(colIdx++).setCellValue(bill.getPatient() != null && bill.getPatient().getPerson() != null ? bill.getPatient().getPerson().getName() : "");
+                    row.createCell(colIdx++).setCellValue(bill.getStaff() != null && bill.getStaff().getPerson() != null ? bill.getStaff().getPerson().getNameWithTitle() : "");
+                    row.createCell(colIdx++).setCellValue(bill.getBillType() != null ? bill.getBillType().getLabel() : "");
+                    row.createCell(colIdx++).setCellValue(bill.getGrantTotal());
+                    row.createCell(colIdx++).setCellValue(bill.getDiscount());
+                    row.createCell(colIdx++).setCellValue(bill.getNetTotal());
+                    row.createCell(colIdx++).setCellValue(bill.getPaymentMethod() != null ? bill.getPaymentMethod().getLabel() : "");
+
+                    row.createCell(colIdx++).setCellValue(bi.getItem() != null ? bi.getItem().getName() : "");
+                    row.createCell(colIdx++).setCellValue(bi.getItem() != null ? bi.getItem().getCode() : "");
+                    row.createCell(colIdx++).setCellValue(bi.getItem() != null ? bi.getItem().getItemType().toString() : "");
+                    row.createCell(colIdx++).setCellValue(bi.getQty());
+                    row.createCell(colIdx++).setCellValue(bi.getNetRate());
+                    row.createCell(colIdx++).setCellValue(bi.getGrossValue());
+                    row.createCell(colIdx++).setCellValue(bi.getDiscount());
+                    row.createCell(colIdx++).setCellValue(bi.getNetValue());
+
+                    row.createCell(colIdx++).setCellValue(fee.getFee() != null ? fee.getFee().getName() : "");
+                    row.createCell(colIdx++).setCellValue(fee.getFee() != null ? fee.getFee().getFeeType().toString() : "");
+                    row.createCell(colIdx++).setCellValue(fee.getFeeValue());
+                    row.createCell(colIdx++).setCellValue(fee.getInstitution() != null ? fee.getInstitution().getName() : "");
+                    row.createCell(colIdx++).setCellValue(fee.getDepartment() != null ? fee.getDepartment().getName() : "");
+                    row.createCell(colIdx++).setCellValue(fee.getStaff() != null && fee.getStaff().getPerson() != null ? fee.getStaff().getPerson().getNameWithTitle() : "");
+                }
+
+            }
+        }
+
+        // Autosize columns to fit content
+        for (int i = 0; i < headers.length; i++) {
+            sheet.autoSizeColumn(i);
+        }
+
+        // Write to output stream and create download content
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+        // Set the StreamedContent object for download
+        fileForDownload = DefaultStreamedContent.builder()
+                .name("bills_details.xlsx")
+                .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .stream(() -> new ByteArrayInputStream(outputStream.toByteArray()))
+                .build();
+    }
+
+    public void prepareDataForExcelExport() {
+        // Fetch all bills and their associated bill items and fees
+        String jpql = "SELECT b FROM Bill b JOIN FETCH b.billItems bi JOIN FETCH bi.billFees WHERE b.createdAt BETWEEN :fromDate AND :toDate";
+        Map<String, Object> params = new HashMap<>();
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        List<Bill> bills = billFacade.findByJpql(jpql, params); // Assuming you have a facade to execute JPQL queries
+
+        Set<Bill> uniqueBills = new HashSet<>(bills);
+        List<BillItem> allBillItems = new ArrayList<>();
+        Map<BillItem, List<BillFee>> billItemToFeesMap = new HashMap<>();
+
+        // Extract bill items and fees
+        for (Bill bill : uniqueBills) {
+            for (BillItem billItem : bill.getBillItems()) {
+                allBillItems.add(billItem);
+                List<BillFee> fees = billItem.getBillFees();
+                billItemToFeesMap.put(billItem, fees);
+            }
+        }
+
+        try {
+            createBillsBillItemsAndBillFeesTable(uniqueBills, allBillItems, billItemToFeesMap);
+        } catch (IOException e) {
+            e.printStackTrace(); // Handle exceptions properly
+        }
+    }
+
     public void createBillItemTableByKeyword() {
         Date startTime = new Date();
         String sql;
@@ -5625,6 +5900,69 @@ public class SearchController implements Serializable {
         if (patientEncounter != null) {
             sql += "and pi.encounter=:en";
             temMap.put("en", patientEncounter);
+        }
+
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and b.toDepartment=:dep ";
+            temMap.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getDepartmentFrom() != null) {
+            sql += " and b.fromDepartment=:depFrom ";
+            temMap.put("depFrom", getReportKeyWord().getDepartmentFrom());
+        }
+
+        sql += " order by pi.id desc  ";
+//    
+
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+
+        //System.err.println("Sql " + sql);
+        patientInvestigations = getPatientInvestigationFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
+        checkRefundBillItems(patientInvestigations);
+
+    }
+
+    public void getPatientInvestigationsReportsTable() {
+        Date startTime = new Date();
+
+        String sql = "select pi "
+                + " from PatientInvestigation pi "
+                + " join pi.investigation  i "
+                + " join pi.billItem.bill b "
+                + " join b.patient.person p "
+                + " where "
+                + " b.createdAt between :fromDate and :toDate  ";
+
+        Map temMap = new HashMap();
+
+        if (institution == null) {
+            sql += " and b.collectingCentre in :ccs ";
+            temMap.put("ccs", sessionController.getLoggableCollectingCentres());
+        } else {
+            sql += " and b.collectingCentre=:cc ";
+            temMap.put("cc", institution);
+        }
+
+        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
+            sql += " and  (p.name like :patientName )";
+            temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and  (b.insId like :billNo or b.deptId like :billNo)";
+            temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
+            sql += " and  (p.phone like :patientPhone )";
+            temMap.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
+            sql += " and  (i.name like :itm )";
+            temMap.put("itm", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
         }
 
         if (getReportKeyWord().getDepartment() != null) {
@@ -7027,6 +7365,31 @@ public class SearchController implements Serializable {
 
     }
 
+    public void fillOpdSummaryByItem() {
+        Date startTime = new Date();
+        List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
+        ReportTemplateType type = ReportTemplateType.ITEM_SUMMARY_BY_BILL;
+        billTypesAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+        billTypesAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+        billTypesAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        bundle = reportTemplateController.generateReport(type,
+                billTypesAtomics,
+                null,
+                fromDate,
+                toDate,
+                institution,
+                department,
+                fromInstitution,
+                fromDepartment,
+                toInstitution,
+                toDepartment,
+                webUser,
+                creditCompany,
+                startBillId,
+                endBillId);
+
+    }
+
     public void searchChannelProfessionalPaymentBills() {
         List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
         billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE);
@@ -7177,6 +7540,17 @@ public class SearchController implements Serializable {
         billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN);
         createTableByKeywordForBillFees(billTypesAtomics, institution, department, null, null, null, null, category);
 
+    }
+
+    public String searchOpdProfessionalPayments() {
+        List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
+        billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL);
+        billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL_RETURN);
+        billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES);
+        billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN);
+        createTableByKeywordForBillFee(billTypesAtomics, institution, department, null, null, null, null, staff);
+        createTableByKeywords(billTypesAtomics, institution, department, null, null, null, null, staff);
+        return "/opd/opd_doctor_payments_done";
     }
 
     public void listOpdBatcuBills() {
@@ -7582,9 +7956,7 @@ public class SearchController implements Serializable {
 
     @Deprecated
     public void createTableByKeyword(BillType billType, Institution ins, Department dep) {
-
         createTableByKeyword(billType, ins, dep, null, null, null, null);
-
     }
 
     public void createTableByKeyword(List<BillTypeAtomic> billTypesAtomics,
@@ -7667,13 +8039,75 @@ public class SearchController implements Serializable {
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
-    
+
+    public void createTableByKeywords(List<BillTypeAtomic> billTypesAtomics,
+            Institution ins, Department dep,
+            Institution fromIns,
+            Department fromDep,
+            Institution toIns,
+            Department toDep,
+            Staff stf) {
+        bills = null;
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select b "
+                + " from Bill b "
+                + " where b.billTypeAtomic in :billTypesAtomics "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false ";
+
+        if (ins != null) {
+            sql += " and b.institution=:ins ";
+            temMap.put("ins", ins);
+        }
+
+        if (dep != null) {
+            sql += " and b.department=:dep ";
+            temMap.put("dep", dep);
+        }
+
+        if (toDep != null) {
+            sql += " and b.toDepartment=:todep ";
+            temMap.put("todep", toDep);
+        }
+
+        if (fromDep != null) {
+            sql += " and b.fromDepartment=:fromdep ";
+            temMap.put("fromdep", fromDep);
+        }
+
+        if (fromIns != null) {
+            sql += " and b.fromInstitution=:fromins ";
+            temMap.put("fromins", fromIns);
+        }
+
+        if (toIns != null) {
+            sql += " and b.toInstitution=:toins ";
+            temMap.put("toins", toIns);
+        }
+
+        if (stf != null) {
+            sql += " and b.toStaff=:staff ";
+            temMap.put("staff", stf);
+        }
+
+        sql += " order by b.createdAt desc  ";
+//    
+        temMap.put("billTypesAtomics", billTypesAtomics);
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+
+        bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+
     public void createTableByKeywordForBillFees(List<BillTypeAtomic> billTypesAtomics,
             Institution ins, Department dep,
             Institution fromIns,
             Department fromDep,
             Institution toIns,
-            Department toDep){
+            Department toDep) {
         createTableByKeywordForBillFees(billTypesAtomics, ins, dep, fromIns, fromDep, toIns, toDep, null);
     }
 
@@ -7724,11 +8158,11 @@ public class SearchController implements Serializable {
             temMap.put("toins", toIns);
         }
 
-        if(cat!=null){
-            sql +=" and bf.referenceBillFee.billItem.bill.category=:rbfcc ";
+        if (cat != null) {
+            sql += " and bf.referenceBillFee.billItem.bill.category=:rbfcc ";
             temMap.put("rbfcc", cat);
         }
-        
+
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
             sql += " and  ((bf.bill.patient.person.name) like :patientName )";
             temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
@@ -7752,6 +8186,78 @@ public class SearchController implements Serializable {
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
             sql += " and  ((bf.bill.total) like :total )";
             temMap.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+        }
+
+        sql += " order by bf.bill.createdAt desc  ";
+
+        temMap.put("billTypesAtomics", billTypesAtomics);
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+
+        billFees = getBillFeeFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
+        System.out.println("Bill fees retrieved: " + billFees.size());
+    }
+
+    public void createTableByKeywordForBillFee(List<BillTypeAtomic> billTypesAtomics,
+            Institution ins, Department dep,
+            Institution fromIns,
+            Department fromDep,
+            Institution toIns,
+            Department toDep,
+            Staff stf) {
+        createTableByKeywordBillFee(billTypesAtomics, ins, dep, fromIns, fromDep, toIns, toDep, stf);
+    }
+
+    public void createTableByKeywordBillFee(List<BillTypeAtomic> billTypesAtomics,
+            Institution ins, Department dep,
+            Institution fromIns,
+            Department fromDep,
+            Institution toIns,
+            Department toDep,
+            Staff stf) {
+
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select bf "
+                + " from BillFee bf "
+                + " where bf.bill.billTypeAtomic in :billTypesAtomics "
+                + " and bf.bill.createdAt between :fromDate and :toDate "
+                + " and bf.bill.retired=false ";
+
+        if (ins != null) {
+            sql += " and bf.bill.institution=:ins ";
+            temMap.put("ins", ins);
+        }
+
+        if (dep != null) {
+            sql += " and bf.bill.department=:dep ";
+            temMap.put("dep", dep);
+        }
+
+        if (toDep != null) {
+            sql += " and bf.bill.toDepartment=:todep ";
+            temMap.put("todep", toDep);
+        }
+
+        if (fromDep != null) {
+            sql += " and bf.bill.fromDepartment=:fromdep ";
+            temMap.put("fromdep", fromDep);
+        }
+
+        if (fromIns != null) {
+            sql += " and bf.bill.fromInstitution=:fromins ";
+            temMap.put("fromins", fromIns);
+        }
+
+        if (toIns != null) {
+            sql += " and bf.bill.toInstitution=:toins ";
+            temMap.put("toins", toIns);
+        }
+
+        if (stf != null) {
+            sql += " and bf.bill.toStaff=:staff ";
+            temMap.put("staff", stf);
         }
 
         sql += " order by bf.bill.createdAt desc  ";
@@ -8717,6 +9223,171 @@ public class SearchController implements Serializable {
         }
 
     }
+
+    public void listBills() {
+        bills = null;
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("select b from Bill b where 1=1 ");
+        if (toDate != null && fromDate != null) {
+            jpql.append(" and b.createdAt between :fromDate and :toDate ");
+            params.put("toDate", toDate);
+            params.put("fromDate", fromDate);
+        }
+
+        if (institution != null) {
+            params.put("ins", institution);
+            jpql.append(" and b.department.institution = :ins ");
+        }
+
+        if (department != null) {
+            params.put("dep", department);
+            jpql.append(" and b.department = :dept ");
+        }
+
+        if (site != null) {
+            params.put("site", site);
+            jpql.append(" and b.department = :site ");
+        }
+
+        if (webUser != null) {
+            jpql.append(" and b.creater=:wu ");
+            params.put("wu", webUser);
+        }
+
+        // Order by bill ID
+        jpql.append(" order by b.id ");
+
+        System.out.println("jpql.toString() = " + jpql.toString());
+        System.out.println("params = " + params);
+
+        // Execute the query
+        bills = getBillFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+    }
+
+    public void listBillItems() {
+        billItems = null;
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("select b from BillItem bi join bi.bill b where 1=1 ");
+        if (toDate != null && fromDate != null) {
+            jpql.append(" and b.createdAt between :fromDate and :toDate ");
+            params.put("toDate", toDate);
+            params.put("fromDate", fromDate);
+        }
+
+        if (institution != null) {
+            params.put("ins", institution);
+            jpql.append(" and b.department.institution = :ins ");
+        }
+
+        if (department != null) {
+            params.put("dep", department);
+            jpql.append(" and b.department = :dept ");
+        }
+
+        if (site != null) {
+            params.put("site", site);
+            jpql.append(" and b.department.site = :site ");
+        }
+
+        if (webUser != null) {
+            jpql.append(" and b.creater=:wu ");
+            params.put("wu", webUser);
+        }
+
+        // Order by bill ID
+        jpql.append(" order by b.id ");
+
+        System.out.println("jpql.toString() = " + jpql.toString());
+        System.out.println("params = " + params);
+
+        // Execute the query
+        billItems = getBillItemFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+    }
+
+    public void listBillFees() {
+        billFees = null;
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("select b from BillFee bf join bf.bill b where 1=1 ");
+        if (toDate != null && fromDate != null) {
+            jpql.append(" and b.createdAt between :fromDate and :toDate ");
+            params.put("toDate", toDate);
+            params.put("fromDate", fromDate);
+        }
+
+        if (institution != null) {
+            params.put("ins", institution);
+            jpql.append(" and b.department.institution = :ins ");
+        }
+
+        if (department != null) {
+            params.put("dep", department);
+            jpql.append(" and b.department = :dept ");
+        }
+
+        if (site != null) {
+            params.put("site", site);
+            jpql.append(" and b.department.site = :site ");
+        }
+
+        if (webUser != null) {
+            jpql.append(" and b.creater=:wu ");
+            params.put("wu", webUser);
+        }
+
+        // Order by bill ID
+        jpql.append(" order by b.id ");
+
+        System.out.println("jpql.toString() = " + jpql.toString());
+        System.out.println("params = " + params);
+
+        // Execute the query
+        billFees = getBillFeeFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+    }
+    
+    public void listPayments() {
+        payments = null;
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("select b from Payment p");
+        if (toDate != null && fromDate != null) {
+            jpql.append(" and p.createdAt between :fromDate and :toDate ");
+            params.put("toDate", toDate);
+            params.put("fromDate", fromDate);
+        }
+
+        if (institution != null) {
+            params.put("ins", institution);
+            jpql.append(" and p.department.institution = :ins ");
+        }
+
+        if (department != null) {
+            params.put("dep", department);
+            jpql.append(" and p.department = :dept ");
+        }
+
+        if (site != null) {
+            params.put("site", site);
+            jpql.append(" and p.department.site = :site ");
+        }
+
+        if (webUser != null) {
+            jpql.append(" and b.creater=:wu ");
+            params.put("wu", webUser);
+        }
+
+        // Order by bill ID
+        jpql.append(" order by p.id ");
+
+        System.out.println("jpql.toString() = " + jpql.toString());
+        System.out.println("params = " + params);
+
+        // Execute the query
+        payments = paymentFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+    }
+    
 
     public String fillAllBills(Date fromDate, Date toDate, Institution institution, Department department, PaymentMethod paymentMethod, BillTypeAtomic billtypeAtomic) {
         bills = null;
@@ -10637,7 +11308,7 @@ public class SearchController implements Serializable {
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
 
     }
-    
+
     public void createPettyApproveTable() {
         List<BillType> billTypes = new ArrayList<>();
         billTypes.add(BillType.PettyCashCancelApprove);
@@ -11010,6 +11681,793 @@ public class SearchController implements Serializable {
     public String navigateToListSingleUserBills() {
         processAllFinancialTransactionalBillListBySingleUserByIds();
         return "/cashier/shift_end_summary_bill_list";
+    }
+
+    public String navigateToListCashBookEntry() {
+        cashBookEntries = new ArrayList<>();
+        return "/cashier/cash_book_entry";
+    }
+
+    public void genarateCashBookEntries() {
+        cashBookEntries = cashBookEntryController.genarateCashBookEntries(fromDate, toDate, site, institution, department);
+    }
+
+    public void generateDailyReturn() {
+        bundle = new ReportTemplateRowBundle();
+
+        double collectionForTheDay = 0.0;
+        double netCashCollection = 0.0;
+
+        // Generate OPD service collection and add to the main bundle
+        ReportTemplateRowBundle opdServiceCollection = generateOpdServiceCollection();
+        bundle.getBundles().add(opdServiceCollection);
+        collectionForTheDay += getSafeTotal(opdServiceCollection);
+
+        // Generate pharmacy collection and add to the main bundle
+        ReportTemplateRowBundle pharmacyCollection = generatePharmacyCollection();
+        bundle.getBundles().add(pharmacyCollection);
+        collectionForTheDay += getSafeTotal(pharmacyCollection);
+
+        // Generate collecting centre collection and add to the main bundle
+        ReportTemplateRowBundle ccCollection = generateCcCollection();
+        bundle.getBundles().add(ccCollection);
+        collectionForTheDay += getSafeTotal(ccCollection);
+
+        // Generate OPD Credit Company Payment Collection and add to the main bundle
+        ReportTemplateRowBundle opdCreditCompanyCollection = generateCreditCompanyCollectionForOpd();
+        bundle.getBundles().add(opdCreditCompanyCollection);
+        collectionForTheDay += getSafeTotal(opdCreditCompanyCollection);
+
+        // Generate Inward Credit Company Payment Collection and add to the main bundle
+        ReportTemplateRowBundle inwardCreditCompanyCollection = generateCreditCompanyCollectionForInward();
+        bundle.getBundles().add(inwardCreditCompanyCollection);
+        collectionForTheDay += getSafeTotal(inwardCreditCompanyCollection);
+
+        // Generate Pharmacy Credit Company Payment Collection and add to the main bundle
+        ReportTemplateRowBundle pharmacyCreditCompanyCollection = generateCreditCompanyCollectionForPharmacy();
+        bundle.getBundles().add(pharmacyCreditCompanyCollection);
+        collectionForTheDay += getSafeTotal(pharmacyCreditCompanyCollection);
+
+        // Generate Channelling Credit Company Payment Collection and add to the main bundle
+        ReportTemplateRowBundle channellingCreditCompanyCollection = generateCreditCompanyCollectionForChannelling();
+        bundle.getBundles().add(channellingCreditCompanyCollection);
+        collectionForTheDay += getSafeTotal(channellingCreditCompanyCollection);
+
+        // Final collection for the day
+        ReportTemplateRowBundle collectionForTheDayBundle = new ReportTemplateRowBundle();
+        collectionForTheDayBundle.setName("Collection for the day");
+        collectionForTheDayBundle.setBundleType("collectionForTheDay");
+        collectionForTheDayBundle.setTotal(collectionForTheDay);
+        bundle.getBundles().add(channellingCreditCompanyCollection);
+        netCashCollection = collectionForTheDay;
+
+        // Deduct various payments from net cash collection
+        ReportTemplateRowBundle pettyCashPayments = generatePettyCashPayments();
+        bundle.getBundles().add(pettyCashPayments);
+        netCashCollection -= getSafeTotal(pettyCashPayments);
+
+        // Generate inward professional payments and add to the main bundle
+        ReportTemplateRowBundle inwardProfessionalPayments = generateInwardProfessionalPayments();
+        bundle.getBundles().add(inwardProfessionalPayments);
+        netCashCollection -= getSafeTotal(inwardProfessionalPayments);
+
+        // Generate channelling professional payments and add to the main bundle
+        ReportTemplateRowBundle channellingProfessionalPayments = generateChannellingProfessionalPayments();
+        bundle.getBundles().add(channellingProfessionalPayments);
+        netCashCollection -= getSafeTotal(channellingProfessionalPayments);
+
+        // Generate OPD professional payments and add to the main bundle
+        ReportTemplateRowBundle opdProfessionalPayments = generateOpdProfessionalPayments();
+        bundle.getBundles().add(opdProfessionalPayments);
+        netCashCollection -= getSafeTotal(opdProfessionalPayments);
+
+        ReportTemplateRowBundle cardPayments = generateCreditCardPayments();
+        bundle.getBundles().add(cardPayments);
+        netCashCollection -= getSafeTotal(cardPayments);
+
+        ReportTemplateRowBundle staffPayments = generateStaffPayments();
+        bundle.getBundles().add(staffPayments);
+        netCashCollection -= getSafeTotal(staffPayments);
+
+        ReportTemplateRowBundle voucherPayments = generateVoucherPayments();
+        bundle.getBundles().add(voucherPayments);
+        netCashCollection -= getSafeTotal(voucherPayments);
+
+        ReportTemplateRowBundle chequePayments = generateChequePayments();
+        bundle.getBundles().add(chequePayments);
+        netCashCollection -= getSafeTotal(chequePayments);
+
+        ReportTemplateRowBundle ewalletPayments = generateEwalletPayments();
+        bundle.getBundles().add(ewalletPayments);
+        netCashCollection -= getSafeTotal(ewalletPayments);
+
+        ReportTemplateRowBundle patientDepositPayments = generatePatientDepositPayments();
+        bundle.getBundles().add(patientDepositPayments);
+        netCashCollection -= getSafeTotal(patientDepositPayments);
+
+        ReportTemplateRowBundle slipPayments = generateSlipPayments();
+        bundle.getBundles().add(slipPayments);
+        netCashCollection -= getSafeTotal(slipPayments);
+
+        // Final net cash for the day
+        ReportTemplateRowBundle netCashForTheDayBundle = new ReportTemplateRowBundle();
+        netCashForTheDayBundle.setName("Net Cash");
+        netCashForTheDayBundle.setBundleType("netCash");
+        netCashForTheDayBundle.setTotal(netCashCollection);
+        bundle.getBundles().add(netCashForTheDayBundle);
+    }
+
+    private double getSafeTotal(ReportTemplateRowBundle bundle) {
+        return bundle != null && bundle.getTotal() != null ? bundle.getTotal() : 0.0;
+    }
+
+    public ReportTemplateRowBundle generateOpdServiceCollection() {
+        ReportTemplateRowBundle opdServiceCollection = new ReportTemplateRowBundle();
+        String jpql = "select bi "
+                + " from BillItem bi "
+                + " where bi.bill.retired=:br "
+                + " and bi.bill.createdAt between :fd and :td ";
+        Map m = new HashMap();
+        m.put("br", false);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        List<BillTypeAtomic> btas = BillTypeAtomic.findByServiceType(ServiceType.OPD);
+        if (!btas.isEmpty()) {
+            jpql += " and bi.bill.billTypeAtomic in :bts ";
+            m.put("bts", btas);
+        }
+
+        if (department != null) {
+            jpql += " and bi.bill.department=:dep ";
+            m.put("dep", department);
+        }
+        if (institution != null) {
+            jpql += " and bi.bill.department.institution=:ins ";
+            m.put("ins", institution);
+        }
+        if (site != null) {
+            jpql += " and bi.bill.department.site=:site ";
+            m.put("site", site);
+        }
+//        System.out.println("btas = " + btas);
+//        System.out.println("m = " + m);
+//        System.out.println("jpql = " + jpql);
+        List<BillItem> bis = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+//        System.out.println("bis = " + bis);
+        billItemsToBundleForOpd(opdServiceCollection, bis);
+//        bundle.getBundles().add(opdServiceCollection);
+
+        opdServiceCollection.setName("OPD Service Collection");
+        opdServiceCollection.setBundleType("opdServiceCollection");
+        return opdServiceCollection;
+    }
+
+    public ReportTemplateRowBundle generatePharmacyCollection() {
+        ReportTemplateRowBundle pb;
+        List<BillTypeAtomic> pharmacyBillTypesAtomics = BillTypeAtomic.findByServiceTypeAndPaymentCategory(ServiceType.PHARMACY,
+                PaymentCategory.NON_CREDIT_COLLECTION);
+        List<PaymentMethod> ppms = PaymentMethod.getMethodsByType(PaymentType.NON_CREDIT);
+
+        pb = reportTemplateController.generateValueByDepartmentReport(
+                pharmacyBillTypesAtomics,
+                ppms,
+                fromDate,
+                toDate,
+                institution,
+                department,
+                site);
+        pb.setName("Pharmacy Sale");
+        pb.setBundleType("pharmacyCollection");
+        double pharmacyCollectionTotal = 0.0;
+        for (ReportTemplateRow row : pb.getReportTemplateRows()) {
+            pharmacyCollectionTotal += row.getRowValue();
+        }
+        pb.setTotal(pharmacyCollectionTotal);
+        return pb;
+    }
+
+    public ReportTemplateRowBundle generateCcCollection() {
+        ReportTemplateRowBundle pb;
+        List<BillTypeAtomic> ccCollection = new ArrayList<>();
+        ccCollection.add(BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL);
+        ccCollection.add(BillTypeAtomic.CC_PAYMENT_RECEIVED_BILL);
+        pb = reportTemplateController.generateBillReport(
+                ccCollection,
+                fromDate,
+                toDate,
+                institution,
+                department,
+                site);
+        pb.setName("Collecting Centre Collection");
+        pb.setBundleType("ccCollection");
+        double ccCollectionTotal = 0.0;
+        for (ReportTemplateRow row : pb.getReportTemplateRows()) {
+            ccCollectionTotal += row.getBill().getNetTotal();
+        }
+        pb.setTotal(ccCollectionTotal);
+        return pb;
+    }
+
+    public ReportTemplateRowBundle generateAgencyCollection() {
+        ReportTemplateRowBundle ap;
+        List<BillTypeAtomic> ccCollection = new ArrayList<>();
+        ccCollection.add(BillTypeAtomic.AGENCY_PAYMENT_RECEIVED);
+        ccCollection.add(BillTypeAtomic.AGENCY_PAYMENT_CANCELLATION);
+        ap = reportTemplateController.generateBillReport(
+                ccCollection,
+                fromDate,
+                toDate,
+                institution,
+                department,
+                site);
+        ap.setName("Agency Payment Collection");
+        ap.setBundleType("PayentBillReport");
+        return ap;
+    }
+
+    public ReportTemplateRowBundle generateAgencyCollectionForOpd() {
+        ReportTemplateRowBundle ap;
+        List<BillTypeAtomic> ccCollection = new ArrayList<>();
+        ccCollection.add(BillTypeAtomic.AGENCY_PAYMENT_RECEIVED);
+        ccCollection.add(BillTypeAtomic.AGENCY_PAYMENT_CANCELLATION);
+        ap = reportTemplateController.generateBillReport(
+                ccCollection,
+                fromDate,
+                toDate,
+                institution,
+                department,
+                site);
+        ap.setName("Agency Payment Collection");
+        ap.setBundleType("PayentBillReport");
+        return ap;
+    }
+
+    public ReportTemplateRowBundle generateCreditCompanyCollectionForOpd() {
+        ReportTemplateRowBundle ap;
+        List<BillTypeAtomic> ccCollection = new ArrayList<>();
+        ccCollection.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
+        ccCollection.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+        ccCollection.add(BillTypeAtomic.OPD_CREDIT_COMPANY_CREDIT_NOTE);
+        ccCollection.add(BillTypeAtomic.OPD_CREDIT_COMPANY_DEBIT_NOTE);
+
+        ap = reportTemplateController.generateBillReport(
+                ccCollection,
+                fromDate,
+                toDate,
+                institution,
+                department,
+                site);
+        ap.setName("OPD Credit Company Payment Collection");
+        ap.setBundleType("companyPaymentBillOpd");
+        return ap;
+    }
+
+    public ReportTemplateRowBundle generateCreditCompanyCollectionForInward() {
+        ReportTemplateRowBundle ap;
+        List<BillTypeAtomic> ccCollection = new ArrayList<>();
+        ccCollection.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED);
+        ccCollection.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+        ccCollection.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_CREDIT_NOTE);
+        ccCollection.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_DEBIT_NOTE);
+        ap = reportTemplateController.generateBillReport(
+                ccCollection,
+                fromDate,
+                toDate,
+                institution,
+                department,
+                site);
+        ap.setName("Inpatient Credit Company Payment Collection");
+        ap.setBundleType("companyPaymentBillInward");
+        return ap;
+    }
+
+    public ReportTemplateRowBundle generateCreditCompanyCollectionForPharmacy() {
+        ReportTemplateRowBundle ap;
+        List<BillTypeAtomic> ccCollection = new ArrayList<>();
+        ccCollection.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_RECEIVED);
+        ccCollection.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+        ccCollection.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_CREDIT_NOTE);
+        ccCollection.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_DEBIT_NOTE);
+        ap = reportTemplateController.generateBillReport(
+                ccCollection,
+                fromDate,
+                toDate,
+                institution,
+                department,
+                site);
+        ap.setName("Pharmacy Credit Company Payment Collection");
+        ap.setBundleType("companyPaymentBillPharmacy");
+        return ap;
+    }
+
+    public ReportTemplateRowBundle generateCreditCompanyCollectionForChannelling() {
+        ReportTemplateRowBundle ap;
+        List<BillTypeAtomic> ccCollection = new ArrayList<>();
+        ccCollection.add(BillTypeAtomic.CHANNELLING_CREDIT_COMPANY_PAYMENT_RECEIVED);
+        ccCollection.add(BillTypeAtomic.CHANNELLING_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+        ccCollection.add(BillTypeAtomic.CHANNELLING_CREDIT_COMPANY_CREDIT_NOTE);
+        ccCollection.add(BillTypeAtomic.CHANNELLING_CREDIT_COMPANY_DEBIT_NOTE);
+        ap = reportTemplateController.generateBillReport(
+                ccCollection,
+                fromDate,
+                toDate,
+                institution,
+                department,
+                site);
+        ap.setName("Channelling Credit Company Payment Collection");
+        ap.setBundleType("companyPaymentBillChannelling");
+        return ap;
+    }
+
+    public ReportTemplateRowBundle generateInwardProfessionalPayments() {
+        ReportTemplateRowBundle ap;
+        List<BillTypeAtomic> ccCollection = new ArrayList<>();
+        ccCollection.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE);
+        ccCollection.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN);
+        ap = reportTemplateController.generateBillReport(
+                ccCollection,
+                fromDate,
+                toDate,
+                institution,
+                department,
+                site);
+        ap.setName("Inward Professional Payments");
+        ap.setBundleType("ProfessionalPaymentBillReport");
+        return ap;
+    }
+
+    public ReportTemplateRowBundle generateChannellingProfessionalPayments() {
+        ReportTemplateRowBundle ap;
+        List<BillTypeAtomic> ccCollection = new ArrayList<>();
+        ccCollection.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE);
+        ccCollection.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN);
+        ccCollection.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES);
+        ccCollection.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES_RETURN);
+        ccCollection.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION);
+
+        ap = reportTemplateController.generateBillReport(
+                ccCollection,
+                fromDate,
+                toDate,
+                institution,
+                department,
+                site);
+        ap.setName("Channelling Payment Collection");
+        ap.setBundleType("ProfessionalPaymentBillReport");
+        return ap;
+    }
+
+    public ReportTemplateRowBundle generateOpdProfessionalPayments() {
+        ReportTemplateRowBundle ap;
+        List<BillTypeAtomic> opdCollection = new ArrayList<>();
+        opdCollection.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES);
+        opdCollection.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN);
+
+        ap = reportTemplateController.generateBillReport(
+                opdCollection,
+                fromDate,
+                toDate,
+                institution,
+                department,
+                site);
+        ap.setName("OPD Professional Payment");
+        ap.setBundleType("ProfessionalPaymentBillReport");
+        return ap;
+    }
+
+    public ReportTemplateRowBundle generateCreditCardPayments() {
+        ReportTemplateRowBundle ap;
+        ap = reportTemplateController.generatePaymentReport(
+                PaymentMethod.Card,
+                fromDate,
+                toDate,
+                institution,
+                department,
+                site);
+        ap.setName("Credit Card Payments");
+        ap.setBundleType("paymentReportCards");
+        return ap;
+    }
+
+    public ReportTemplateRowBundle generateStaffPayments() {
+        ReportTemplateRowBundle ap;
+        ap = reportTemplateController.generatePaymentReport(
+                PaymentMethod.Staff_Welfare,
+                fromDate,
+                toDate,
+                institution,
+                department,
+                site);
+        ap.setName("Staff Welfare Payments");
+        ap.setBundleType("paymentReportStaffWelfare");
+        return ap;
+    }
+
+    public ReportTemplateRowBundle generateVoucherPayments() {
+        ReportTemplateRowBundle ap;
+        ap = reportTemplateController.generatePaymentReport(
+                PaymentMethod.Voucher,
+                fromDate,
+                toDate,
+                institution,
+                department,
+                site);
+        ap.setName("Voucher Payments");
+        ap.setBundleType("paymentReportVoucher");
+        return ap;
+    }
+
+    public ReportTemplateRowBundle generateChequePayments() {
+        ReportTemplateRowBundle ap;
+        ap = reportTemplateController.generatePaymentReport(
+                PaymentMethod.Cheque,
+                fromDate,
+                toDate,
+                institution,
+                department,
+                site);
+        ap.setName("Cheque Payments");
+        ap.setBundleType("paymentReportCheque");
+        return ap;
+    }
+
+    public ReportTemplateRowBundle generateEwalletPayments() {
+        ReportTemplateRowBundle ap;
+        ap = reportTemplateController.generatePaymentReport(
+                PaymentMethod.ewallet,
+                fromDate,
+                toDate,
+                institution,
+                department,
+                site);
+        ap.setName("e-Wallet Payments");
+        ap.setBundleType("paymentReportEwallet");
+        return ap;
+    }
+
+    public ReportTemplateRowBundle generatePatientDepositPayments() {
+        ReportTemplateRowBundle ap;
+        ap = reportTemplateController.generatePaymentReport(
+                PaymentMethod.PatientDeposit,
+                fromDate,
+                toDate,
+                institution,
+                department,
+                site);
+        ap.setName("Patient Deposit Payments");
+        ap.setBundleType("paymentReportPatientDeposit");
+        return ap;
+    }
+
+    public ReportTemplateRowBundle generatePettyCashPayments() {
+        ReportTemplateRowBundle ap;
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.PETTY_CASH_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.PETTY_CASH_ISSUE);
+        btas.add(BillTypeAtomic.PETTY_CASH_RETURN);
+
+        ap = reportTemplateController.generateBillReport(
+                btas,
+                fromDate,
+                toDate,
+                institution,
+                department,
+                site);
+        ap.setName("Petty Cash Payments");
+        ap.setBundleType("pettyCashPayments");
+        return ap;
+    }
+
+    public ReportTemplateRowBundle generateSlipPayments() {
+        ReportTemplateRowBundle ap;
+        ap = reportTemplateController.generatePaymentReport(
+                PaymentMethod.Slip,
+                fromDate,
+                toDate,
+                institution,
+                department,
+                site);
+        ap.setName("Slip Payments");
+        ap.setBundleType("PaymentReport");
+        return ap;
+    }
+
+    public void updateBillItenValues() {
+        bundle = new ReportTemplateRowBundle();
+        String jpql = "select bi "
+                + " from BillItem bi "
+                + " where bi.bill.retired=:br "
+                + " and bi.bill.createdAt between :fd and :td ";
+        Map m = new HashMap();
+        m.put("br", false);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        List<BillTypeAtomic> btas = BillTypeAtomic.findByServiceType(ServiceType.OPD);
+        if (!btas.isEmpty()) {
+            jpql += " and bi.bill.billTypeAtomic in :bts ";
+            m.put("bts", btas);
+        } else {
+            // Handle the case where no bill types are found, perhaps by logging or throwing an exception
+        }
+
+        if (department != null) {
+            jpql += " and bi.bill.department=:dep ";
+            m.put("dep", department);
+        }
+        if (institution != null) {
+            jpql += " and bi.bill.department.institution=:ins ";
+            m.put("ins", institution);
+        }
+        if (site != null) {
+            jpql += " and bi.bill.department.site=:site ";
+            m.put("site", site);
+        }
+        List<BillItem> bis = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        for (BillItem bi : bis) {
+            double staffFeesCalculatedByBillFees = 0.0;
+            double collectingCentreFeesCalculateByBillFees = 0.0;
+            double hospitalFeeCalculatedByBillFess = 0.0;
+            List<BillFee> bfs = billBean.findSavedBillFeefromBillItem(bi);
+            for (BillFee bf : bfs) {
+                if (bf.getInstitution() != null && bf.getInstitution().getInstitutionType() == InstitutionType.CollectingCentre) {
+                    collectingCentreFeesCalculateByBillFees += bf.getFeeGrossValue();
+                } else if (bf.getStaff() != null || bf.getSpeciality() != null) {
+                    staffFeesCalculatedByBillFees += bf.getFeeGrossValue();
+                } else {
+                    hospitalFeeCalculatedByBillFess = bf.getFeeGrossValue();
+                }
+            }
+            bi.setCollectingCentreFee(collectingCentreFeesCalculateByBillFees);
+            bi.setStaffFee(staffFeesCalculatedByBillFees);
+            bi.setHospitalFee(hospitalFeeCalculatedByBillFess);
+            billItemFacade.edit(bi);
+        }
+
+    }
+
+    public void billItemsToBundleForOpd(ReportTemplateRowBundle rtrb, List<BillItem> billItems) {
+        Map<String, ReportTemplateRow> categoryMap = new HashMap<>();
+        Map<String, ReportTemplateRow> itemMap = new HashMap<>();
+        List<ReportTemplateRow> rowsToAdd = new ArrayList<>();
+        double totalOpdServiceCollection = 0.0;
+        for (BillItem bi : billItems) {
+            System.out.println("Processing BillItem: " + bi);
+
+            if (bi.getBill() == null) {
+                continue;
+            } else if (bi.getBill().getPaymentMethod() == null) {
+                continue;
+            } else if (bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.NONE) {
+                continue;
+            } else if (bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.CREDIT) {
+                continue;
+            }
+
+            String categoryName = bi.getItem() != null && bi.getItem().getCategory() != null ? bi.getItem().getCategory().getName() : "No Category";
+            String itemName = bi.getItem() != null ? bi.getItem().getName() : "No Item";
+            String itemKey = categoryName + "->" + itemName;
+
+            System.out.println("Item Key: " + itemKey);
+            System.out.println("Category: " + categoryName + ", Item: " + itemName);
+
+            categoryMap.putIfAbsent(categoryName, new ReportTemplateRow());
+            itemMap.putIfAbsent(itemKey, new ReportTemplateRow());
+
+            ReportTemplateRow categoryRow = categoryMap.get(categoryName);
+            ReportTemplateRow itemRow = itemMap.get(itemKey);
+
+            if (bi.getItem() != null) {
+                categoryRow.setCategory(bi.getItem().getCategory());
+                itemRow.setItem(bi.getItem());
+            }
+
+            long countModifier = 1;
+            double grossValue = bi.getGrossValue();
+            double hospitalFee = bi.getHospitalFee();
+            double discount = bi.getDiscount();
+            double staffFee = bi.getStaffFee();
+            double netValue = bi.getNetValue();
+
+            switch (bi.getBill().getBillClassType()) {
+                case CancelledBill:
+                case RefundBill:
+                    countModifier = -1;
+                    // Apply abs to ensure all values are positive before negating
+                    grossValue = -Math.abs(grossValue);
+                    hospitalFee = -Math.abs(hospitalFee);
+                    discount = -Math.abs(discount);
+                    staffFee = -Math.abs(staffFee);
+                    netValue = -Math.abs(netValue);
+                    break;
+                case BilledBill:
+                case Bill:
+                    // Positive adjustments, no need to change the sign or apply abs
+                    break;
+                default:
+                    // Do nothing for other types of bills
+                    continue;  // Skip processing for unrecognized or unhandled bill types
+            }
+            totalOpdServiceCollection += netValue;
+            System.out.println("hospitalFee = " + hospitalFee);
+            updateRow(categoryRow, countModifier, grossValue, hospitalFee, discount, staffFee, netValue);
+            updateRow(itemRow, countModifier, grossValue, hospitalFee, discount, staffFee, netValue);
+        }
+
+        // Only add rows that are properly initialized and grouped
+        categoryMap.forEach((categoryName, catRow) -> {
+            System.out.println("Adding category row to bundle: " + categoryName);
+            rowsToAdd.add(catRow);
+            itemMap.values().stream()
+                    .filter(iRow -> iRow.getItem() != null && iRow.getItem().getCategory() != null && iRow.getItem().getCategory().getName().equals(categoryName))
+                    .forEach(iRow -> {
+                        System.out.println("Adding item row to bundle under category " + categoryName + ": " + iRow.getItem().getName());
+                        rowsToAdd.add(iRow);
+                    });
+        });
+
+        System.out.println("rowsToAdd = " + rowsToAdd);
+        System.out.println("rtrb.getReportTemplateRows() = " + rtrb.getReportTemplateRows());
+        rtrb.getReportTemplateRows().addAll(rowsToAdd);
+        rtrb.setTotal(totalOpdServiceCollection);
+    }
+
+    private void updateRow(ReportTemplateRow row, long count, double total, double hospitalFee, double discount, double professionalFee, double netTotal) {
+        if (row.getItemCount() == null) {
+            row.setItemCount(0L);
+        }
+        if (row.getItemTotal() == null) {
+            row.setItemTotal(0.0);
+        }
+        if (row.getItemHospitalFee() == null) {
+            row.setItemHospitalFee(0.0);
+        }
+        if (row.getItemDiscountAmount() == null) {
+            row.setItemDiscountAmount(0.0);
+        }
+        if (row.getItemProfessionalFee() == null) {
+            row.setItemProfessionalFee(0.0);
+        }
+        if (row.getItemNetTotal() == null) {
+            row.setItemNetTotal(0.0);
+        }
+
+        row.setItemCount(row.getItemCount() + count);
+        row.setItemTotal(row.getItemTotal() + total);
+        row.setItemHospitalFee(row.getItemHospitalFee() + hospitalFee);
+        row.setItemDiscountAmount(row.getItemDiscountAmount() + discount);
+        row.setItemProfessionalFee(row.getItemProfessionalFee() + professionalFee);
+        row.setItemNetTotal(row.getItemNetTotal() + netTotal);
+
+        // Now check if 'row.getItem()' is null
+        if (row.getItem() != null) {
+            System.out.println("Updated row: " + row.getItem().getName()
+                    + ", Count: " + row.getItemCount()
+                    + ", Net Total: " + row.getItemNetTotal());
+        } else {
+            // Handle the case where 'row.getItem()' is null
+            System.out.println("Error: Item in the row is null.");
+        }
+
+    }
+
+    public void generateCashierSummary() {
+        Map<String, Object> parameters = new HashMap<>();
+        String jpql = "SELECT new com.divudi.data.ReportTemplateRow("
+                + "bill.department, FUNCTION('date', p.createdAt), p.creater, "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Cash THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Card THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.MultiplePaymentMethods THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Staff THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Credit THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Staff_Welfare THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Voucher THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.IOU THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Agent THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Cheque THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Slip THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.ewallet THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.PatientDeposit THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.PatientPoints THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.OnlineSettlement THEN p.paidValue ELSE 0 END)) "
+                + "FROM Payment p "
+                + "JOIN p.bill bill "
+                + "WHERE p.retired <> :bfr AND bill.retired <> :br ";
+
+        parameters.put("bfr", true);
+        parameters.put("br", true);
+
+        if (institution != null) {
+            jpql += "AND bill.department.institution = :ins ";
+            parameters.put("ins", institution);
+        }
+        if (department != null) {
+            jpql += "AND bill.department = :dep ";
+            parameters.put("dep", department);
+        }
+        if (site != null) {
+            jpql += "AND bill.department.site = :site ";
+            parameters.put("site", site);
+        }
+        if (webUser != null) {
+            jpql += "AND p.creater = :wu ";
+            parameters.put("wu", webUser);
+        }
+        if (paymentMethod != null) {
+            jpql += "AND p.paymentMethod = :pm ";
+            parameters.put("pm", paymentMethod);
+        }
+
+        jpql += "AND p.createdAt BETWEEN :fd AND :td ";
+        parameters.put("fd", fromDate);
+        parameters.put("td", toDate);
+
+        jpql += "GROUP BY bill.department, FUNCTION('date', p.createdAt), p.creater";
+
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+        bundle = new ReportTemplateRowBundle();
+        bundle.setReportTemplateRows(rs);
+        bundle.calculatePaymentMethodTotals();
+    }
+
+    public void generateAllCashierSummary() {
+        Map<String, Object> parameters = new HashMap<>();
+        String jpql = "SELECT new com.divudi.data.ReportTemplateRow("
+                + "bill.department, FUNCTION('date', p.createdAt), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Cash THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Card THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.MultiplePaymentMethods THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Staff THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Credit THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Staff_Welfare THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Voucher THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.IOU THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Agent THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Cheque THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Slip THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.ewallet THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.PatientDeposit THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.PatientPoints THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.OnlineSettlement THEN p.paidValue ELSE 0 END)) "
+                + "FROM Payment p "
+                + "JOIN p.bill bill "
+                + "WHERE p.retired <> :bfr AND bill.retired <> :br ";
+
+        parameters.put("bfr", true);
+        parameters.put("br", true);
+
+        if (institution != null) {
+            jpql += "AND bill.department.institution = :ins ";
+            parameters.put("ins", institution);
+        }
+        if (department != null) {
+            jpql += "AND bill.department = :dep ";
+            parameters.put("dep", department);
+        }
+        if (site != null) {
+            jpql += "AND bill.department.site = :site ";
+            parameters.put("site", site);
+        }
+        if (webUser != null) {
+            jpql += "AND p.creater = :wu ";
+            parameters.put("wu", webUser);
+        }
+        if (paymentMethod != null) {
+            jpql += "AND p.paymentMethod = :pm ";
+            parameters.put("pm", paymentMethod);
+        }
+
+        jpql += "AND p.createdAt BETWEEN :fd AND :td ";
+        parameters.put("fd", fromDate);
+        parameters.put("td", toDate);
+
+        jpql += "GROUP BY bill.department, FUNCTION('date', p.createdAt)";
+
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+        bundle = new ReportTemplateRowBundle();
+        bundle.setReportTemplateRows(rs);
+        bundle.calculatePaymentMethodTotals();
     }
 
     public SearchController() {
@@ -11598,6 +13056,173 @@ public class SearchController implements Serializable {
 
     public void setPharmacyAdjustmentRows(List<PharmacyAdjustmentRow> pharmacyAdjustmentRows) {
         this.pharmacyAdjustmentRows = pharmacyAdjustmentRows;
+    }
+
+    private StreamedContent fileBillsAndBillItemsForDownload;
+
+    public StreamedContent getFileBillsAndBillItemsForDownload() {
+        prepareDataBillsAndBillItemsDownload();  // Prepare data and create the Excel file
+        return fileBillsAndBillItemsForDownload;
+    }
+
+    public List<BillTypeAtomic> prepareDistinctBillTypeAtomic() {
+        String jpql = "SELECT DISTINCT b.billTypeAtomic FROM Bill b JOIN b.payments p";
+        List<?> results = billFacade.findLightsByJpql(jpql);
+        List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+
+        for (Object result : results) {
+            if (result instanceof BillTypeAtomic) {
+                billTypeAtomics.add((BillTypeAtomic) result);
+            }
+        }
+
+        return billTypeAtomics;
+    }
+
+    public StreamedContent getFileForBillsAndBillItemsForDownload() {
+        prepareDataBillsAndBillItemsDownload();  // Prepare data and create the Excel file
+        return fileBillsAndBillItemsForDownload;       // This should now contain the generated Excel file
+    }
+
+    public void createBillsBillItemsList(Set<Bill> bills, List<BillItem> billItems) throws IOException {
+        System.out.println("createBillsBillItemsList");
+        System.out.println("billItems = " + billItems);
+        XSSFWorkbook workbook = new XSSFWorkbook();
+        XSSFSheet sheet = workbook.createSheet("Bills Details");
+
+        int rowIdx = 0;
+        Row headerRow = sheet.createRow(rowIdx++);
+        // Headers for both bills and bill items
+        String[] headers = {
+            "Bill ID", "Institution Name", "Department Name", "Patient Name", "Staff Name", "User", "Bill Type", "Total", "Discount", "Net Total", "Payment Method",
+            "Bill Item Name", "Bill Item Code", "Item Type", "Quantity", "Rate", "Gross Value", "Bill Item Discount", "Net Value"
+        };
+        for (int i = 0; i < headers.length; i++) {
+            headerRow.createCell(i).setCellValue(headers[i]);
+        }
+
+        // Fill the sheet with bill data first, then bill item data in subsequent rows
+        for (Bill bill : bills) {
+            Row billRow = sheet.createRow(rowIdx++);
+            int colIdx = 0;
+            billRow.createCell(colIdx++).setCellValue(bill.getId() != null ? bill.getId().toString() : "");
+            billRow.createCell(colIdx++).setCellValue(bill.getInstitution() != null ? bill.getInstitution().getName() : "");
+            billRow.createCell(colIdx++).setCellValue(bill.getDepartment() != null ? bill.getDepartment().getName() : "");
+            billRow.createCell(colIdx++).setCellValue(bill.getPatient() != null && bill.getPatient().getPerson() != null ? bill.getPatient().getPerson().getName() : "");
+            billRow.createCell(colIdx++).setCellValue(bill.getStaff() != null && bill.getStaff().getPerson() != null ? bill.getStaff().getPerson().getNameWithTitle() : "");
+            billRow.createCell(colIdx++).setCellValue(bill.getCreater() != null && bill.getCreater().getWebUserPerson() != null ? bill.getCreater().getWebUserPerson().getName() : "");
+            billRow.createCell(colIdx++).setCellValue(bill.getBillTypeAtomic() != null ? bill.getBillTypeAtomic().getLabel() : "");
+            billRow.createCell(colIdx++).setCellValue(bill.getGrantTotal());
+            billRow.createCell(colIdx++).setCellValue(bill.getDiscount());
+            billRow.createCell(colIdx++).setCellValue(bill.getNetTotal());
+            billRow.createCell(colIdx++).setCellValue(bill.getPaymentMethod() != null ? bill.getPaymentMethod().getLabel() : "");
+
+            // Leave the bill item columns empty in the bill row
+            for (int j = 10; j < headers.length; j++) {
+                billRow.createCell(j);
+            }
+
+            // Fill in bill item data in subsequent rows
+            for (BillItem bi : billItems) {
+                if (bi.getBill().equals(bill)) {
+                    Row itemRow = sheet.createRow(rowIdx++);
+                    // Leave bill details columns empty
+                    for (int j = 0; j < 10; j++) {
+                        itemRow.createCell(j);
+                    }
+
+                    int itemColIdx = 10;
+                    try {
+                        itemRow.createCell(itemColIdx++).setCellValue(bi.getItem() != null ? bi.getItem().getName() : "");
+                        itemRow.createCell(itemColIdx++).setCellValue(bi.getItem() != null ? bi.getItem().getCode() : "");
+                        itemRow.createCell(itemColIdx++).setCellValue(bi.getItem() != null ? bi.getItem().getItemType() != null ? bi.getItem().getItemType().toString() : "" : "");
+                        itemRow.createCell(itemColIdx++).setCellValue(bi.getQty() != null ? bi.getQty().toString() : "");
+                        itemRow.createCell(itemColIdx++).setCellValue(bi.getRate());
+                        itemRow.createCell(itemColIdx++).setCellValue(bi.getGrossValue());
+                        itemRow.createCell(itemColIdx++).setCellValue(bi.getDiscount());
+                        itemRow.createCell(itemColIdx++).setCellValue(bi.getNetValue());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+
+        // Autosize columns to fit content
+        for (int i = 0; i < headers.length; i++) {
+            sheet.autoSizeColumn(i);
+        }
+
+        // Write to output stream and create download content
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+        fileBillsAndBillItemsForDownload = DefaultStreamedContent.builder()
+                .name("bills_and_bill_items.xlsx")
+                .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .stream(() -> new ByteArrayInputStream(outputStream.toByteArray()))
+                .build();
+    }
+
+    public void prepareDataBillsAndBillItemsDownload(boolean old) {
+        // Fetch all bills and their associated bill items, excluding fees
+        List<BillTypeAtomic> billTypeAtomics = prepareDistinctBillTypeAtomic();
+        String jpql = "SELECT b FROM Bill b JOIN FETCH b.billItems WHERE b.createdAt and b.retired=:ret and b.billTypeAtomic in :btas BETWEEN :fromDate AND :toDate";
+        Map<String, Object> params = new HashMap<>();
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+        params.put("ret", false);
+        params.put("btas", billTypeAtomics);
+
+        List<Bill> bills = billFacade.findByJpql(jpql, params); // Assuming you have a facade to execute JPQL queries
+
+        Set<Bill> uniqueBills = new HashSet<>(bills);
+        List<BillItem> allBillItems = new ArrayList<>();
+
+        bills = new ArrayList<>();
+        // Only extract bill items, no fees
+        for (Bill bill : uniqueBills) {
+            allBillItems.addAll(bill.getBillItems());
+            bills.add(bill);
+        }
+
+        try {
+            createBillsBillItemsList(uniqueBills, allBillItems);
+        } catch (IOException e) {
+            e.printStackTrace(); // Handle exceptions properly
+        }
+    }
+
+    public void prepareDataBillsAndBillItemsDownload() {
+        // JPQL to fetch Bills and their BillItems through Payments
+        String jpql = "SELECT DISTINCT b "
+                + " FROM Payment p "
+                + " JOIN p.bill b "
+                + " JOIN FETCH b.billItems bi "
+                + " WHERE p.createdAt BETWEEN :fromDate AND :toDate AND b.retired = :ret";
+        Map<String, Object> params = new HashMap<>();
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+        params.put("ret", false);
+
+//        jpql = "SELECT b FROM Bill b JOIN FETCH b.billItems WHERE  b.retired=:ret and b.createdAt BETWEEN :fromDate AND :toDate";
+        System.out.println("params = " + params);
+        System.out.println("jpql = " + jpql);
+
+        // Execute the query to get filtered bills
+        List<Bill> bills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP); // Assuming you have a facade to execute JPQL queries
+        System.out.println("bills = " + bills);
+
+        // Since bills are fetched with their items, simply collect all items if needed
+        List<BillItem> allBillItems = new ArrayList<>();
+        bills.forEach(bill -> allBillItems.addAll(bill.getBillItems()));
+
+        try {
+            createBillsBillItemsList(new HashSet<>(bills), allBillItems);
+        } catch (IOException e) {
+            e.printStackTrace(); // Handle exceptions properly
+        }
     }
 
 }

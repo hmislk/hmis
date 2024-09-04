@@ -19,6 +19,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
+import javax.persistence.Transient;
 
 /**
  *
@@ -67,7 +68,7 @@ public class PatientSampleComponant implements Serializable {
     private Machine machine;
     @ManyToOne
     private Sample sample;
-            //Cancellation
+    //Cancellation
     private Boolean cancelled = false;
     @ManyToOne
     private WebUser cancelledUser;
@@ -78,7 +79,7 @@ public class PatientSampleComponant implements Serializable {
     private Department cancellDepartment;
     @ManyToOne
     private Institution cancellInstitution;
-    
+
     //Retairing properties
     private boolean retired;
     @ManyToOne
@@ -86,6 +87,9 @@ public class PatientSampleComponant implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date retiredAt;
     private String retireComments;
+
+    @Transient
+    private String nameTranscient;
 
     public Long getId() {
         return id;
@@ -99,9 +103,7 @@ public class PatientSampleComponant implements Serializable {
         String formatted = String.format("%09d", id);
         return formatted;
     }
-    
-    
-    
+
     @Override
     public int hashCode() {
         int hash = 0;
@@ -351,7 +353,33 @@ public class PatientSampleComponant implements Serializable {
         this.retireComments = retireComments;
     }
 
+    public String getNameTranscient() {
+        System.out.println("Entering getNameTranscient method.");
 
-    
-    
+        if (investigationComponant != null) {
+
+            if (investigationComponant.getName() != null) {
+
+                if (!investigationComponant.getName().trim().equals("")) {
+                    nameTranscient = investigationComponant.getName();
+                } else {
+                }
+            } else {
+
+                if (patientInvestigation != null && patientInvestigation.getInvestigation() != null) {
+                    System.out.println("patientInvestigation and its investigation are not null");
+                    nameTranscient = patientInvestigation.getInvestigation().getName();
+                } else {
+                }
+            }
+        } else {
+        }
+
+        return nameTranscient;
+    }
+
+    public void setNameTranscient(String nameTranscient) {
+        this.nameTranscient = nameTranscient;
+    }
+
 }

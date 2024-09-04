@@ -39,8 +39,8 @@
                                     itemValue="#{vt}" ></f:selectItems>
                                 <p:ajax event="itemSelect" 
                                         process="@this" 
-                                        update="gpFees gpTotals gpTotalsF" 
-                                        listener="#{itemFeeManager.fillForInstitutionFees()}"></p:ajax>
+                                        listener="#{itemFeeManager.updateItemAndFeeListees}"
+                                        update="gpFees gpTotals gpTotalsF" ></p:ajax>
                             </p:selectOneMenu>
                             <p:outputLabel value="Select Item" />
                             <p:autoComplete 
@@ -58,8 +58,11 @@
                                 inputStyleClass="w-100">
                                 <p:ajax event="itemSelect" 
                                         process="@this" 
-                                        update="gpFees gpTotals gpTotalsF" 
-                                        listener="#{itemFeeManager.fillForForCategoryFees()}"></p:ajax>
+                                        listener="#{itemFeeManager.updateItemAndFeeListees}"
+                                        update="gpFees gpTotals gpTotalsF" ></p:ajax>
+                                <p:column headerText="Type" style="padding: 6px;" >
+                                    <p:outputLabel value="#{ix.code}" ></p:outputLabel>
+                                </p:column>
                                 <p:column headerText="Type" style="padding: 6px;" >
                                     <p:outputLabel value="#{ix.class.simpleName}" ></p:outputLabel>
                                 </p:column>
@@ -129,7 +132,7 @@
                             <f:facet name="header" >
                                 <p:outputLabel value="Adding a new Fee" class="mr-5"></p:outputLabel>
                                 <p:commandButton value="Save" 
-                                                 action="#{itemFeeManager.addNewFeeForFaeeListType()}" 
+                                                 action="#{itemFeeManager.addNewFeeForFeeListType()}" 
                                                  style="margin-left: 30px;" 
                                                  update="gpFees dlg msg tblFees gpTotals gpTotalsF"
                                                  process="gpDetail @this"

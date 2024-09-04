@@ -359,9 +359,7 @@ public class TransferRequestController implements Serializable {
         if (getTranserRequestBillPre().getBillItems().size() != 0) {
             getTranserRequestBillPre().setBillItems(new ArrayList<>());
         }
-        System.out.println("billItems Size = " + billItems.size());
         for (BillItem b : getBillItems()) {
-            System.out.println("b = " + b.getItem().getName());
             b.setBill(getTranserRequestBillPre());
             b.setCreatedAt(new Date());
             b.setCreater(getSessionController().getLoggedUser());
@@ -429,7 +427,6 @@ public class TransferRequestController implements Serializable {
             getTranserRequestBillPre().setBillItems(new ArrayList<>());
         }
         for (BillItem b : getBillItems()) {
-            System.out.println("b = " + b.getItem().getName());
             b.setBill(getTranserRequestBillPre());
             b.setCreatedAt(new Date());
             b.setCreater(getSessionController().getLoggedUser());

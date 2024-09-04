@@ -740,7 +740,6 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
             getBillFacade().edit(newPreBill);
 
             getBillBean().calculateBillItems(newPreBill, tmp);
-            System.out.println("newPreBill = " + newPreBill);
             bills.add(newPreBill);
         }
 
@@ -941,7 +940,6 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         double tmpBatchBillTotalOfNetTotals = 0.0;
 
         for (Bill b : bills) {
-            System.out.println("b backward save= " + b);
             double preGrossTotal = tmpBatchBillTotalOfGrossTotals;
             double preDiscountTotal = tmpBatchBillTotalOfDiscounts;
             double preNetTotal = tmpBatchBillTotalOfNetTotals;
@@ -1284,11 +1282,21 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
 //        New Session
         //   getCurrentBillItem().setBillSession(getServiceSessionBean().createBillSession(getCurrentBillItem()));
         lastBillItem = getCurrentBillItem();
+        boolean addAllBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are the same for all departments, institutions and sites.", true);
+        boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the site", false);
         BillEntry addingEntry = new BillEntry();
         addingEntry.setBillItem(getCurrentBillItem());
         addingEntry.setLstBillComponents(getBillBean().billComponentsFromBillItem(getCurrentBillItem()));
-        addingEntry.setLstBillFees(getBillBean().billFeefromBillItem(getCurrentBillItem()));
-
+        
+        if (addAllBillFees) {
+            addingEntry.setLstBillFees(getBillBean().baseBillFeefromBillItem(getCurrentBillItem()));
+        } else if (siteBasedBillFees) {
+            addingEntry.setLstBillFees(getBillBean().forInstitutionBillFeefromBillItem(lastBillItem, sessionController.getDepartment().getSite()));
+        } else {
+            addingEntry.setLstBillFees(getBillBean().baseBillFeefromBillItem(getCurrentBillItem()));
+        }
+        
+        
         addStaffToBillFees(addingEntry.getLstBillFees());
 
         addingEntry.setLstBillSessions(getBillBean().billSessionsfromBillItem(getCurrentBillItem()));

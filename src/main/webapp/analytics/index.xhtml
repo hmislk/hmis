@@ -24,6 +24,7 @@
                                                 action="#{financialTransactionController.navigateToListShiftEndSummaries()}"
                                                 class="w-100">
                                             </p:commandButton>
+                                            
                                             <p:commandButton 
                                                 ajax="false" 
                                                 value="Day End Summery" 
@@ -31,10 +32,61 @@
                                                 action="#{financialTransactionController.navigateToDayEndReport()}"
                                                 class="w-100">
                                             </p:commandButton>
+                                            
+                                            
                                         </div>
                                     </p:tab>
                                     <p:tab title="Lists">
                                         <div class="d-grid gap-2">
+                                            
+                                            
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Bill List" 
+                                                action="bills"
+                                                class="w-100">
+                                            </p:commandButton>
+                                            
+                                            
+                                             <p:commandButton 
+                                                ajax="false" 
+                                                value="Bill Item List" 
+                                                action="bill_items"
+                                                class="w-100">
+                                            </p:commandButton>
+                                            
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Bill Fee List" 
+                                                action="bill_fees"
+                                                class="w-100">
+                                            </p:commandButton>
+                                            
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="bill_payments" 
+                                                actionListener="#{searchController.makeNull()}"
+                                                action="#{searchController.navigateToUserFinancialTransactionSummaryByBill()}"
+                                                class="w-100">
+                                            </p:commandButton>
+                                            
+                                            
+                                            
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Download Bills " 
+                                                action="#{billSearch.navigateToDownloadBillsAndBillItems()}"
+                                                class="w-100">
+                                            </p:commandButton>
+                                            
+                                            
+                                             <p:commandButton 
+                                                ajax="false" 
+                                                value="Download Bills and Bill Items" 
+                                                action="#{billSearch.navigateToDownloadBillsAndBillItems1()}"
+                                                class="w-100">
+                                            </p:commandButton>
+                                            
                                             <p:commandButton 
                                                 ajax="false" 
                                                 value="Day End Summary" 
@@ -109,6 +161,10 @@
                                         <div class="d-grid gap-2">
                                             <p:commandButton ajax="false" value="OPD Bill List" action="#{searchController.navigateToOpdBillList()}" 
                                                              ></p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false" value="OPD Summary by Item"
+                                                action="#{searchController.navigateToOpdSummaryByItem()}" 
+                                                ></p:commandButton>
                                             <p:commandButton ajax="false" value="Cancelled Bill List" action="#" ></p:commandButton>
                                             <p:commandButton ajax="false" value="Returned Bill List" action="#" ></p:commandButton>
 

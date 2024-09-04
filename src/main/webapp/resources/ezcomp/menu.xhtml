@@ -62,6 +62,7 @@
                             icon="fa fa-fw fa-notes-medical" 
                             rendered="#{webUserController.hasPrivilege('OpdBilling')}" ></p:menuitem>
 
+
                         <p:menuitem 
                             ajax="false" 
                             action="#{opdPreBillController.navigateToBillingForCashierFromMenu()}"  
@@ -266,7 +267,6 @@
                     <p:menuitem ajax="false" action="#{patientController.navigateToAddNewFamilyMembership()}" value="Add Family Membership" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="#{patientController.navigateToSearchFamilyMembership()}" value="Search Family Membership" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="/membership/reports?faces-redirect=true" value="Family Membership Reports" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>
-                    <p:menuitem ajax="false" action="/membership/administration?faces-redirect=true" value="Administration" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>
                 </p:submenu>
 
                 <p:submenu id="smInpatient"  icon="fa fa-fw fa-bed"  rendered="#{webUserController.hasPrivilege('Inward')}">
@@ -387,24 +387,71 @@
 
                 </p:submenu>
 
+                <p:submenu id="smCC" icon="fas fa-city" rendered="#{webUserController.hasPrivilege('OpdCollectingCentreBilling')}">
+                    <p:menuitem 
+                        ajax="false" 
+                        action="#{collectingCentreBillController.navigateToCollectingCenterBillingromMenu()}"    
+                        value="Collecting Centre Billing"
+                        icon="fa fa-fw fa-hospital-alt" 
+                        rendered="#{webUserController.hasPrivilege('OpdCollectingCentreBilling')}" >
+                    </p:menuitem>
+
+                    <p:menuitem 
+                        ajax="false" 
+                        action="/collecting_centre/collecting_centre_search_bill_own?faces-redirect=true"
+                        actionListener="#{searchController.makeListNull}"
+                        value="Collecting Centre Bill Search" 
+                        icon="fa fa-search"
+                        rendered="#{webUserController.hasPrivilege('OpdCollectingCentreBilling')}" >
+                    </p:menuitem>
+
+                    <p:submenu label="Payments" icon="fas fa-money-check-dollar"  rendered="#{webUserController.hasPrivilege('Payment')}">
+                        <p:menuitem icon="fas fa-money-bill-wave"  ajax="false"  action="/lab/collecting_centre_bill?faces-redirect=true" value="Collecting Centre Payment" actionListener="#{agentPaymentRecieveBillController.prepareNewBill()}" ></p:menuitem>
+                        <p:menuitem  ajax="false" icon="fa fa-search" action="/lab/collecting_centre_bill_search_own?faces-redirect=true"
+                                     actionListener="#{searchController.makeListNull}"  value="Collecting Centre Bill Search"  ></p:menuitem>
+                    </p:submenu>
+
+                    <p:menuitem  ajax="false" icon="fas fa-book" action="/lab/agent_referece_book?faces-redirect=true" value="Add Lab Book to Collecting Centre"  ></p:menuitem>
+
+                    <p:submenu label="Credit/Debit Note" rendered="#{webUserController.hasPrivilege('ChannelCrdeitNote') or webUserController.hasPrivilege('ChannelDebitNote')}" >
+                        <p:menuitem  ajax="false"  value="Credit Note"  action="/collecting_centre/collecting_center_credit_note_bill?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannelCrdeitNote')}" actionListener="#{agentPaymentRecieveBillController.prepareNewBill()}" ></p:menuitem>
+                        <p:menuitem  ajax="false"  value="Credit Note Search"  action="/collecting_centre/collecting_center_credit_note_bill_search_own?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannelCrdeitNoteSearch')}" actionListener="#{searchController.makeListNull}" ></p:menuitem>
+                        <p:menuitem  ajax="false"  value="Debit Note"  action="/collecting_centre/collecting_center_debit_note_bill?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannelDebitNote')}" actionListener="#{agentPaymentRecieveBillController.prepareNewBill()}" ></p:menuitem>
+                        <p:menuitem  ajax="false"  value="Debit Note Search"  action="/collecting_centre/collecting_center_note_bill_search_own?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannelDebitNoteSearch')}" actionListener="#{searchController.makeListNull}" ></p:menuitem>
+                    </p:submenu>
+
+                    <p:submenu label="Collecting Centre Reports">
+
+                        <p:menuitem  ajax="false"  action="/lab/report_collecting_center_referece_book?faces-redirect=true" value="Collecting Centre Book Report"  ></p:menuitem>
+                        <p:menuitem  ajax="false"  action="/lab/institutions_udate_credit_limit?faces-redirect=true" value="Collecting Centre Credit Limit Update" actionListener="#{institutionController.makeNull()}" rendered="#{webUserController.hasPrivilege('ChangeCreditLimitInCC')}"></p:menuitem>
+                        <p:menuitem  ajax="false"  action="/reportLab/collecting_centre_report_agent_history?faces-redirect=true" value="Collecting Centre History"  ></p:menuitem>
+                        <p:menuitem  ajax="false"  action="/reportLab/collecting_center_report_history_1?faces-redirect=true" value="Collecting Centre Statement"  ></p:menuitem>
+                        <p:menuitem  ajax="false"  action="/reportLab/report_collecting_center_payment_bill?faces-redirect=true" value="Collecting Centre Diposits"  ></p:menuitem>
+                        <p:menuitem  ajax="false"  action="/reportLab/report_collecting_center_balance?faces-redirect=true" value="Collecting Center Current Balance"  ></p:menuitem>
+
+                    </p:submenu>
+
+                </p:submenu>
+
                 <p:submenu id="smLab" icon="fa fa-fw fa-flask"  rendered="#{webUserController.hasPrivilege('Lab')}">
-                    <p:submenu label="Billing" rendered="#{webUserController.hasPrivilege('LabBilling')}">
+<!--                    <p:submenu label="Billing" rendered="#{webUserController.hasPrivilege('LabBilling')}">
                         <p:menuitem ajax="false" action="/opd/opd_bill?faces-redirect=true" actionListener="#{billController.prepareNewBill}" value="OPD Billing" rendered="#{webUserController.hasPrivilege('LabBilling')}" ></p:menuitem>
                         <p:menuitem ajax="false" action="#{searchController.navigateToSearchOpdBillsOfLoggedDepartment()}" actionListener="#{searchController.makeListNull}"  value="Search OPD Bills" rendered="#{webUserController.hasPrivilege('LabBillSearch')}" ></p:menuitem>
                         <p:menuitem ajax="false" action="/opd_search_billitem_own?faces-redirect=true" value="Search OPD Bill Items" actionListener="#{searchController.makeListNull}" rendered="#{webUserController.hasPrivilege('LabBillItemSearch')}" ></p:menuitem>
                         <p:separator/>
                         <p:menuitem ajax="false" action="/inward/inward_bill_service?faces-redirect=true" value="In-patient Billing" actionListener="#{billBhtController.resetBillData}" rendered="#{webUserController.hasPrivilege('LabInwardBilling')}" ></p:menuitem>                                            
                         <p:menuitem ajax="false" action="/lab/inward_search_service?faces-redirect=true" value="Search In-patient Bills" actionListener="#{searchController.makeListNull}"  rendered="#{webUserController.hasPrivilege('LabInwardSearchServiceBill')}" ></p:menuitem>  
-                    </p:submenu>
+                    </p:submenu>-->
 
 
                     <p:menuitem 
                         ajax="false"
                         action="#{patientInvestigationController.navigateToGenerateBarcodes()}"
-                        value="Sample Management - Phlebotomy Room" 
+                        value="Sample Management" 
                         rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}" ></p:menuitem>
                     <p:menuitem
                         ajax="false"  
+                        rendered="false"
                         action="/lab/sample_at_lab_index?faces-redirect=true" 
                         value="Sample Management - Lab"></p:menuitem>
 
@@ -897,6 +944,12 @@
                     </p:menuitem>
                     <p:menuitem 
                         ajax="false"  
+                        value="Schedule Calendar "  
+                        action="#{bookingControllerViewScope.navigateToScheduleCalendarFromMenu()}" 
+                        rendered="#{webUserController.hasPrivilege('Channelling')}" >
+                    </p:menuitem>
+                    <p:menuitem 
+                        ajax="false"  
                         value="Channel Queue"  
                         action="#{bookingController.navigateToChannelQueueFromMenu}" 
                         rendered="#{webUserController.hasPrivilege('ChannellingChannelBooking')}" >
@@ -970,14 +1023,26 @@
                         ajax="false"  
                         action="#{financialTransactionController.navigateToFinancialTransactionIndex()}"
                         value="Financial Transaction Manager" 
+                        icon="pi pi-wallet"
                         rendered="#{webUserController.hasPrivilege('PaymentBilling')}" >
                     </p:menuitem>
+
                     <p:menuitem  
                         ajax="false"  
                         action="/payments/pay_index?faces-redirect=true"
                         value="Cash To Pay" 
+                        icon="pi pi-money-bill"
                         rendered="#{webUserController.hasPrivilege('PaymentBilling')}" >
                     </p:menuitem>
+
+                    <p:menuitem  
+                        ajax="false"  
+                        action="/collecting_centre/index?faces-redirect=true"
+                        value="Collecting Centre Management" 
+                        icon="pi pi-briefcase"
+                        rendered="#{webUserController.hasPrivilege('PaymentBilling')}" >
+                    </p:menuitem>
+
                     <p:submenu label="Cash">
 
                         <p:menuitem  
@@ -1329,17 +1394,18 @@
                     </div>
 
                     <p:tooltip for="btnLogout" value="df"  >
-                        <h:panelGrid columns="3" >
-                            <h:outputText value="Institution" ></h:outputText>
-                            <p:spacer width="10" height="1" ></p:spacer>
-                            <h:outputText value="#{sessionController.loggedUser.institution.name}" ></h:outputText>
-                            <h:outputText value="Department" ></h:outputText>
-                            <p:spacer width="10" height="1" ></p:spacer>
-                            <h:outputText value="#{sessionController.loggedUser.department.name} " ></h:outputText>
-                            <h:outputText value="User" ></h:outputText>
-                            <p:spacer width="10" height="1" ></p:spacer>
-                            <h:outputText value="#{sessionController.loggedUser.webUserPerson.name}" ></h:outputText>
-                        </h:panelGrid>
+                        <p:panel header="Logging Details" style="height: 10em; width: 30em;">
+                            <p:panelGrid columns="2" class="w-100" >
+                                <h:outputText value="Institution" ></h:outputText>
+                                <h:outputText value="#{sessionController.institution.name}" ></h:outputText>
+                                <h:outputText value="Site" ></h:outputText>
+                                <h:outputText value="#{sessionController.loggedSite.name}" ></h:outputText>
+                                <h:outputText value="Department" ></h:outputText>
+                                <h:outputText value="#{sessionController.loggedUser.department.name} " ></h:outputText>
+                                <h:outputText value="User" ></h:outputText>
+                                <h:outputText value="#{sessionController.loggedUser.webUserPerson.name}" ></h:outputText>
+                            </p:panelGrid>
+                        </p:panel>
                     </p:tooltip>
                 </f:facet>
 

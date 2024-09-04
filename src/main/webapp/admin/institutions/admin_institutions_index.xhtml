@@ -58,6 +58,13 @@
                                             value="Manage Departments" 
                                             action="#{navigationController.navigateToManageDepartment()}" 
                                             actionListener="#{departmentController.fillSearchItems()}" icon="fas fa-building"/>
+                                        
+                                        <p:commandButton  
+                                            styleClass="linkButton" 
+                                            ajax="false" 
+                                            value="Manage Sites" 
+                                            action="#{navigationController.navigateToManageSite()}" 
+                                            actionListener="#{departmentController.fillSearchItems()}" icon="fas fa-building"/>
                                         <p:commandButton styleClass="linkButton"  
                                                          action="#{institutionController.toListInstitutions()}" 
                                                          icon="bi bi-list" value="List Institutions">
@@ -97,6 +104,7 @@
                                         <p:commandButton  styleClass="linkButton" ajax="false" value="Upload Collecting Centres" icon="fas fa-upload" action="#{dataUploadController.navigateToCollectingCenterUpload()}" />
                                         <p:commandButton  styleClass="linkButton" ajax="false" value="Upload Departments" icon="fas fa-upload" action="#{dataUploadController.navigateToDepartmentUpload()}" />
                                         <p:commandButton  styleClass="linkButton" ajax="false" value="Upload Supplier" icon="fas fa-upload" action="#{dataUploadController.navigateToSupplierUpload()}" />
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Upload Routes" icon="fas fa-upload" action="#{dataUploadController.navigateToRouteUpload}" />
 
                                     </div>
                                 </p:tab>

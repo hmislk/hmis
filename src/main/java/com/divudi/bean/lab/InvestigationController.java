@@ -42,6 +42,9 @@ import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.SpecialityFacade;
 import com.divudi.facade.WorksheetItemFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.entity.lab.InvestigationTube;
+import com.divudi.entity.lab.Machine;
+import com.divudi.entity.lab.Sample;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
@@ -132,6 +135,10 @@ public class InvestigationController implements Serializable {
     boolean reportedAs;
     Boolean listMasterItemsOnly = false;//if boolean is true list only institution null
     InvestigationCategory category;
+    private Sample sample;
+    private Machine machine;
+    private InvestigationTube investigationTube;
+    private Item itemForReported;
     List<Investigation> catIxs;
     List<Investigation> allIxs;
     List<Investigation> itemsToRemove;
@@ -143,6 +150,7 @@ public class InvestigationController implements Serializable {
     List<Investigation> ixWithoutSamples;
     List<InvestigationWithInvestigationItems> investigationWithInvestigationItemses;
     List<ItemWithFee> itemWithFees;
+
     private List<Investigation> investigationWithSelectedFormat;
     private Category categoryForFormat;
     private UploadedFile file;
@@ -186,6 +194,34 @@ public class InvestigationController implements Serializable {
             return "";
         }
         return "/lab/manage_investigation?faces-redirect=true";
+    }
+
+    public void updateSelectedInvestigations() {
+        if (selectedInvestigations.isEmpty()) {
+            JsfUtil.addErrorMessage("Pleace select Investigations !");
+            return;
+        }
+
+        for (Investigation selectedInvestigation : selectedInvestigations) {
+            if (category != null) {
+                selectedInvestigation.setCategory(category);
+            }
+            if (sample != null) {
+                selectedInvestigation.setSample(sample);
+            }
+            if (machine != null) {
+                selectedInvestigation.setMachine(machine);
+            }
+            if (investigationTube != null) {
+                selectedInvestigation.setInvestigationTube(investigationTube);
+            }
+            if (itemForReported != null) {
+                selectedInvestigation.setReportedAs(itemForReported);
+            }
+
+            getFacade().edit(selectedInvestigation);
+
+        }
     }
 
     // Method to generate the Excel file and initiate the download
@@ -612,9 +648,28 @@ public class InvestigationController implements Serializable {
 
     public void listAllIxs() {
         String sql;
-        sql = "Select i from Investigation i where i.retired=false ";
+        sql = "Select i "
+                + " from Investigation i "
+                + " where i.retired=:ret "
+                + " and i.hasReportFormat<>:rf";
         sql += " order by i.name";
-        allIxs = getFacade().findByJpql(sql);
+        Map m = new HashMap<>();
+        m.put("ret", false);
+        m.put("rf", true);
+        allIxs = getFacade().findByJpql(sql, m);
+    }
+
+    public void listAllReports() {
+        String sql;
+        sql = "Select i "
+                + " from Investigation i "
+                + " where i.retired=:ret "
+                + " and i.hasReportFormat=:rf";
+        sql += " order by i.name";
+        Map m = new HashMap<>();
+        m.put("ret", false);
+        m.put("rf", true);
+        allIxs = getFacade().findByJpql(sql, m);
     }
 
     public String listFilteredIxs() {
@@ -660,7 +715,6 @@ public class InvestigationController implements Serializable {
             }
         }
 
-        
     }
 
     public List<PatientReport> getSelectedPatientReports() {
@@ -857,30 +911,40 @@ public class InvestigationController implements Serializable {
         List<Investigation> suggestions;
         String sql;
         Map m = new HashMap();
-
-        //m.put(m, m);
         sql = "select c from Investigation c "
                 + " where c.retired=false "
                 + " and ((c.name) like :n or "
                 + " (c.fullName) like :n or "
                 + " (c.code) like :n or (c.printName) like :n ) ";
-        //////// // System.out.println(sql);
-
         m.put("n", "%" + query.toUpperCase() + "%");
-
         if (listMasterItemsOnly == true) {
             sql += " and c.institution is null ";
         }
-
-//        if (sessionController.getApplicationPreference().isInstitutionSpecificItems()) {
-//            sql += " and (c.institution is null "
-//                    + " or c.institution=:ins) ";
-//            m.put("ins", sessionController.getInstitution());
-//        }
         sql += " order by c.name";
-
         suggestions = getFacade().findByJpql(sql, m);
+        return suggestions;
+    }
 
+    public List<Investigation> completeInvestigationsWIthoutReportFormats(String query) {
+        if (query == null || query.trim().equals("")) {
+            return new ArrayList<>();
+        }
+        List<Investigation> suggestions;
+        String sql;
+        Map m = new HashMap();
+        sql = "select c from Investigation c "
+                + " where c.retired=false "
+                + " and c.hasReportFormat<>:rf"
+                + " and ((c.name) like :n or "
+                + " (c.fullName) like :n or "
+                + " (c.code) like :n or (c.printName) like :n ) ";
+        m.put("n", "%" + query.toUpperCase() + "%");
+        m.put("rf", true);
+        if (listMasterItemsOnly == true) {
+            sql += " and c.institution is null ";
+        }
+        sql += " order by c.name";
+        suggestions = getFacade().findByJpql(sql, m);
         return suggestions;
     }
 
@@ -1079,7 +1143,6 @@ public class InvestigationController implements Serializable {
         JsfUtil.addSuccessMessage("Successfully Deleted");
         selectedInvestigations = null;
 
-        
     }
 
     public void unDeleteSelectedItems() {
@@ -1101,7 +1164,6 @@ public class InvestigationController implements Serializable {
         JsfUtil.addSuccessMessage("Successfully Deleted");
         selectedInvestigations = null;
 
-        
     }
 
     public void markSelectedActive() {
@@ -1121,8 +1183,6 @@ public class InvestigationController implements Serializable {
 
         JsfUtil.addSuccessMessage("Successfully Actived");
         selectedInvestigations = null;
-
-        
 
     }
 
@@ -1144,7 +1204,6 @@ public class InvestigationController implements Serializable {
         JsfUtil.addSuccessMessage("Successfully Inactived");
         selectedInvestigations = null;
 
-        
     }
 
     public Institution getInstitution() {
@@ -1166,6 +1225,21 @@ public class InvestigationController implements Serializable {
 
     public List<Investigation> completeItem(String qry) {
         List<Investigation> completeItems = getFacade().findByJpql("select c from Item c where ( type(c) = Investigation or type(c) = Packege ) and c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+        return completeItems;
+    }
+
+    public List<Investigation> completeReports(String qry) {
+        String jpql = "select c "
+                + " from Investigation c "
+                + " where c.retired=:ret"
+                + " and c.name like :qry"
+                + "  and c.hasReportFormat=:rf "
+                + " order by c.name";
+        Map params = new HashMap<>();
+        params.put("ret", false);
+        params.put("rf", true);
+        params.put("qry", "%" + qry.toUpperCase() + "%");
+        List<Investigation> completeItems = getFacade().findByJpql(jpql, params);
         return completeItems;
     }
 
@@ -1219,6 +1293,17 @@ public class InvestigationController implements Serializable {
     public String navigateToListInvestigation() {
         listAllIxs();
         return "/admin/lims/investigation_list?faces-redirect=true";
+    }
+
+    public String navigateToListReportFormats() {
+        listAllReports();
+        return "/admin/lims/report_list?faces-redirect=true";
+    }
+
+    public String navigateToMultipleInvestigationUpdate() {
+        selectedInvestigations = new ArrayList<>();
+        listAllIxs();
+        return "/admin/lims/multiple_investigation_update?faces-redirect=true";
     }
 
     public String navigateToManageReportTemplateNames() {
@@ -1335,7 +1420,6 @@ public class InvestigationController implements Serializable {
         if (getCurrent() == null) {
             return;
         }
-        
 
         getCurrent().setSymanticType(SymanticType.Laboratory_Procedure);
         if (getCurrent().getInwardChargeType() == null) {
@@ -1436,7 +1520,6 @@ public class InvestigationController implements Serializable {
             investigationWithInvestigationItemses.add(items);
         }
 
-        
     }
 
     public List<InvestigationItemWithInvestigationItemValueFlags> fetchFlags(Investigation i) {
@@ -1547,6 +1630,38 @@ public class InvestigationController implements Serializable {
 
     public void setAdminTabIndex(int adminTabIndex) {
         this.adminTabIndex = adminTabIndex;
+    }
+
+    public Sample getSample() {
+        return sample;
+    }
+
+    public void setSample(Sample sample) {
+        this.sample = sample;
+    }
+
+    public Machine getMachine() {
+        return machine;
+    }
+
+    public void setMachine(Machine machine) {
+        this.machine = machine;
+    }
+
+    public InvestigationTube getInvestigationTube() {
+        return investigationTube;
+    }
+
+    public void setInvestigationTube(InvestigationTube investigationTube) {
+        this.investigationTube = investigationTube;
+    }
+
+    public Item getItemForReported() {
+        return itemForReported;
+    }
+
+    public void setItemForReported(Item itemForReported) {
+        this.itemForReported = itemForReported;
     }
 
     public class InvestigationWithInvestigationItems {
@@ -1717,7 +1832,6 @@ public class InvestigationController implements Serializable {
             itemWithFees.add(iwf);
         }
 
-        
     }
 
     public class ItemWithFee {

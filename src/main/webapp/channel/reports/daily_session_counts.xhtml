@@ -43,10 +43,17 @@
                         </h:panelGrid>
                         <h:panelGrid columns="6" class="my-2">
                             <p:commandButton 
-                                class="ui-button-warning mt-2 mb-2" 
+                                class="ui-button-success m-2" 
                                 icon="fas fa-cogs" 
-                                value="Process" 
+                                value="Fill Bill Sessions" 
                                 action="#{channelReportTemplateController.fillDailySessionCounts()}" ajax="false" ></p:commandButton>
+
+                            <p:commandButton 
+                                class="ui-button-warning m-2" 
+                                icon="fas fa-cogs" 
+                                value="Process &amp; Fill Bill Sessions"
+                                action="#{channelReportTemplateController.processAndfillDailySessionCounts()}" ajax="false" ></p:commandButton>
+
                             <p:commandButton 
                                 class="ui-button-success mx-2"
                                 icon ="fas fa-file-excel"
@@ -60,122 +67,149 @@
 
 
 
-                        <p:dataTable 
+                        <p:dataTable  
                             value="#{channelReportTemplateController.bundle.reportTemplateRows}" 
                             var="a" 
                             id="tbl1" 
                             rowIndexVar="i"
-                            rowKey="#{a.id}"
+                            rowKey="#{a.uuid}"
                             paginator="true"
-                            rows="10">
+                            rows="10"
+                            sortBy="#{a.sessionInstance.sessionDate}">
+
                             <f:facet name="header">
                                 <p:outputLabel value="Channel Session Counts" />
-                                <p:outputLabel value="#{channelReportTemplateController.institution.name}" />
+                                <p:outputLabel class="mx-2" value="#{channelReportTemplateController.institution.name}" />
                                 <br></br>
                                 <p:outputLabel value="From :" />
-                                <p:outputLabel class="ml-2" value="#{channelReportTemplateController.fromDate}" >
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"  />
+                                <p:outputLabel class="mx-2" value="#{channelReportTemplateController.fromDate}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                 </p:outputLabel>
-                                <p:outputLabel class="ml-5" value="To :" />
-                                <p:outputLabel class="ml-2" value="#{channelReportTemplateController.toDate}" >
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"  />
+                                <p:outputLabel class="ml-4" value="To :" />
+                                <p:outputLabel class="mx-2" value="#{channelReportTemplateController.toDate}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                 </p:outputLabel>
                             </f:facet>
-                            <p:column width="2em">
-                                <f:facet name="header">
-                                    <p:outputLabel value="No" />
-                                </f:facet>
-                                <p:outputLabel value="#{i+1}" />
-                            </p:column>
 
-                            <p:column width="8em">
+                            <p:column width="5em" sortBy="#{a.sessionInstance.sessionDate}" filterBy="#{a.sessionInstance.sessionDate}" filterMatchMode="contains">
                                 <f:facet name="header">
                                     <p:outputLabel value="Date" />
                                 </f:facet>
-                                <p:outputLabel value="#{a.sessionInstance.sessionDate}" >
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"  />
+                                <p:outputLabel value="#{a.sessionInstance.sessionDate}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                 </p:outputLabel>
                             </p:column>
-                            <p:column>
+
+                            <p:column width="15em" sortBy="#{a.sessionInstance.originatingSession.staff.person.nameWithTitle}" filterBy="#{a.sessionInstance.originatingSession.staff.person.nameWithTitle}" filterMatchMode="contains">
                                 <f:facet name="header">
                                     <p:outputLabel value="Consultant" />
                                 </f:facet>
                                 <p:outputLabel value="#{a.sessionInstance.originatingSession.staff.person.nameWithTitle}" />
                             </p:column>
-                            <p:column width="8em">
+
+                            <p:column width="8em" sortBy="#{a.sessionInstance.originatingSession.staff.speciality.name}" filterBy="#{a.sessionInstance.originatingSession.staff.speciality.name}" filterMatchMode="contains">
                                 <f:facet name="header">
                                     <p:outputLabel value="Speciality" />
                                 </f:facet>
                                 <p:outputLabel value="#{a.sessionInstance.originatingSession.staff.speciality.name}" />
-                                r
                             </p:column>
-                            <p:column width="8em">
+
+                            <p:column width="8em" sortBy="#{a.sessionInstance.originatingSession.name}" filterBy="#{a.sessionInstance.originatingSession.name}" filterMatchMode="contains">
                                 <f:facet name="header">
                                     <p:outputLabel value="Session" />
                                 </f:facet>
                                 <p:outputLabel value="#{a.sessionInstance.originatingSession.name}" />
                             </p:column>
-                            <p:column width="8em">
+
+                            <p:column width="8em" sortBy="#{a.sessionInstance.originatingSession.category.name}" filterBy="#{a.sessionInstance.originatingSession.category.name}" filterMatchMode="contains">
                                 <f:facet name="header">
                                     <p:outputLabel value="Category" />
                                 </f:facet>
                                 <p:outputLabel value="#{a.sessionInstance.originatingSession.category.name}" />
                             </p:column>
-                            <p:column width="4em">
+
+                            <p:column width="4em" style="text-align: center;" sortBy="#{a.sessionInstance.bookedPatientCount}" filterBy="#{a.sessionInstance.bookedPatientCount}" filterMatchMode="exact">
                                 <f:facet name="header">
                                     <p:outputLabel value="Booked" />
                                 </f:facet>
-                                <p:outputLabel value="#{a.sessionInstance.bookedPatientCount}" />
-                                <f:facet name="footer" >
-                                    <h:outputText value="#{channelReportTemplateController.bundle.long1}"></h:outputText>
-                                </f:facet>
-                            </p:column>
-                            <p:column>
-                                <f:facet name="header">
-                                    <p:outputLabel value="Paid" />
-                                </f:facet>
-                                <p:outputLabel value="#{a.long2}" />
                                 <f:facet name="footer">
-                                    <h:outputText value="#{channelReportTemplateController.bundle.long2}" />
+                                    <p:outputLabel value="#{channelReportTemplateController.bundle.long1}" />
                                 </f:facet>
+                                <p:outputLabel value="#{a.sessionInstance.bookedPatientCount}" />
                             </p:column>
-                            <p:column width="4em">
+
+                            <p:column width="4em" style="text-align: center;" sortBy="#{a.sessionInstance.paidPatientCount}" filterBy="#{a.sessionInstance.paidPatientCount}" filterMatchMode="exact">
                                 <f:facet name="header">
-                                    <p:outputLabel value="Completed" />
+                                    <p:outputLabel value="Payments Made" />
                                 </f:facet>
-                                <p:outputLabel value="#{a.long3}" />
-                                <f:facet name="footer" >
-                                    <h:outputText value="#{channelReportTemplateController.bundle.long3}" ></h:outputText>
+                                <f:facet name="footer">
+                                    <p:outputLabel value="#{channelReportTemplateController.bundle.long2}" />
                                 </f:facet>
+                                <p:outputLabel value="#{a.sessionInstance.paidPatientCount}" />
                             </p:column>
-                            <p:column width="4em">
+
+                            <p:column width="4em" style="text-align: center;" sortBy="#{a.sessionInstance.completedPatientCount}" filterBy="#{a.sessionInstance.completedPatientCount}" filterMatchMode="exact">
                                 <f:facet name="header">
-                                    <p:outputLabel value="Cancelled" />
+                                    <p:outputLabel value="Marked as Completed" />
                                 </f:facet>
-                                <p:outputLabel value="#{a.sessionInstance.cancelPatientCount}" />
-                                <f:facet name="footer" >
-                                    <h:outputText value="#{channelReportTemplateController.bundle.long4}" ></h:outputText>
+                                <f:facet name="footer">
+                                    <p:outputLabel value="#{channelReportTemplateController.bundle.long3}" />
                                 </f:facet>
+                                <p:outputLabel value="#{a.sessionInstance.completedPatientCount}" />
                             </p:column>
-                            <p:column width="4em">
+
+                            <p:column width="4em" style="text-align: center;" sortBy="#{a.sessionInstance.cancelPatientCount}" filterBy="#{a.sessionInstance.cancelPatientCount}" filterMatchMode="exact">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Cancelled On Call" />
+                                </f:facet>
+                                <f:facet name="footer">
+                                    <p:outputLabel value="#{channelReportTemplateController.bundle.long4}" />
+                                </f:facet>
+                                <p:outputLabel value="#{a.sessionInstance.cancelOnCallPatientCount}" />
+                            </p:column>
+                            
+                            <p:column width="4em" style="text-align: center;" sortBy="#{a.sessionInstance.cancelPatientCount}" filterBy="#{a.sessionInstance.cancelPatientCount}" filterMatchMode="exact">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Cancelled After Paid" />
+                                </f:facet>
+                                <f:facet name="footer">
+                                    <p:outputLabel value="#{channelReportTemplateController.bundle.long8}" />
+                                </f:facet>
+                                <p:outputLabel value="#{a.sessionInstance.cancelPaidPatientCount}" />
+                            </p:column>
+
+                            <p:column width="4em" style="text-align: center;" sortBy="#{a.sessionInstance.refundedPatientCount}" filterBy="#{a.sessionInstance.refundedPatientCount}" filterMatchMode="exact">
                                 <f:facet name="header">
                                     <p:outputLabel value="Refunded" />
                                 </f:facet>
-                                <p:outputLabel value="#{a.sessionInstance.refundedPatientCount}" />
-                                <f:facet name="footer" >
-                                    <h:outputText value="#{channelReportTemplateController.bundle.long5}"></h:outputText>
+                                <f:facet name="footer">
+                                    <p:outputLabel value="#{channelReportTemplateController.bundle.long5}" />
                                 </f:facet>
+                                <p:outputLabel value="#{a.sessionInstance.refundedPatientCount}" />
                             </p:column>
-                            <p:column width="4em">
+
+                            <p:column width="4em" style="text-align: center;" sortBy="#{a.sessionInstance.paidToDoctorPatientCount}" filterBy="#{a.sessionInstance.paidToDoctorPatientCount}" filterMatchMode="exact">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Paid to Doctor" />
+                                </f:facet>
+                                <f:facet name="footer">
+                                    <p:outputLabel value="#{channelReportTemplateController.bundle.long7}" />
+                                </f:facet>
+                                <p:outputLabel value="#{a.sessionInstance.paidToDoctorPatientCount}" />
+                            </p:column>
+
+                            <p:column width="4em" style="text-align: center;" sortBy="#{a.sessionInstance.remainingPatientCount}" filterBy="#{a.sessionInstance.remainingPatientCount}" filterMatchMode="exact">
                                 <f:facet name="header">
                                     <p:outputLabel value="Remaining" />
                                 </f:facet>
-                                <p:outputLabel value="#{a.sessionInstance.remainingPatientCount}" />
-                                <f:facet name="footer" >
-                                    <h:outputText value="#{channelReportTemplateController.bundle.long6}"></h:outputText>
+                                <f:facet name="footer">
+                                    <p:outputLabel value="#{channelReportTemplateController.bundle.long6}" />
                                 </f:facet>
+                                <p:outputLabel value="#{a.sessionInstance.bookedPatientCount - a.sessionInstance.paidPatientCount}" />
                             </p:column>
+
                         </p:dataTable>
+
 
 
                     </p:panel>

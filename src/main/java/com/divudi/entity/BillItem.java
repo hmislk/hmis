@@ -73,13 +73,14 @@ public class BillItem implements Serializable {
     double netValue;
     @Transient
     private double absoluteNetValue;
-    double vatPlusNetValue;
+    private double vatPlusNetValue;
 
-    double marginValue;
+    private double marginValue;
     private double adjustedValue;
-    double hospitalFee;
+    private double hospitalFee;
     private double collectingCentreFee;
-    double staffFee;
+    private double staffFee;
+    private double otherFee;
 //    private double dblValue;
     @ManyToOne
     Item item;
@@ -133,6 +134,7 @@ public class BillItem implements Serializable {
     private Priority priority;
     @Enumerated(EnumType.ORDINAL)
     private BillItemStatus billItemStatus;
+    private double feeValue;
 
 //    @Transient
     int searialNo;
@@ -958,6 +960,20 @@ public class BillItem implements Serializable {
         return totalProcedureFeeValueTransient;
     }
 
-   
+    public double getOtherFee() {
+        return otherFee;
+    }
+
+    public void setOtherFee(double otherFee) {
+        this.otherFee = otherFee;
+    }
+
+    public double getFeeValue() {
+        return feeValue;
+    }
+
+    public void setFeeValue(double feeValue) {
+        this.feeValue = feeValue;
+    }
 
 }

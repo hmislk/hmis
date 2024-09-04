@@ -15,8 +15,12 @@ import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.InstitutionType;
+import com.divudi.data.ItemLight;
 import com.divudi.entity.Category;
 import com.divudi.entity.Institution;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -26,8 +30,20 @@ import java.util.Map;
 import java.util.Objects;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.servlet.http.HttpServletResponse;
+import org.apache.poi.ss.SpreadsheetVersion;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.util.AreaReference;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFTable;
+import org.apache.poi.xssf.usermodel.XSSFTableStyleInfo;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
  *
@@ -47,10 +63,13 @@ public class ItemFeeManager implements Serializable {
     ItemFee itemFee;
     ItemFee removingFee;
     private Institution collectingCentre;
+    private Institution forSite;
     private Category feeListType;
 
     List<ItemFee> itemFees;
 
+    @Inject
+    FeeValueController feeValueController;
     @EJB
     ItemFeeFacade itemFeeFacade;
     @EJB
@@ -72,6 +91,10 @@ public class ItemFeeManager implements Serializable {
     private Double totalItemFee;
     private Double totalItemFeeForForeigners;
 
+    public String navigateToInstitutionItemFeeUpload() {
+        return "/admin/pricing/institution_item_fee_upload?faces-redirect=true";
+    }
+
     public String navigateItemFeeList() {
         return "/admin/pricing/item_fee_list?faces-redirect=true";
     }
@@ -87,7 +110,45 @@ public class ItemFeeManager implements Serializable {
     public String navigateToUploadItemFees() {
         return "/admin/pricing/item_fee_upload?faces-redirect=true";
     }
-    
+
+    public String navigateToDownloadBaseItemFees() {
+        itemFees = new ArrayList<>();
+        return "/admin/pricing/download_base_item_fees?faces-redirect=true";
+    }
+
+    public String navigateToDownloadItemFeesForSites() {
+        itemFees = new ArrayList<>();
+        return "/admin/pricing/download_item_fees_for_sites?faces-redirect=true";
+    }
+
+    public String navigateToDownloadItemFeesForCollectingCentres() {
+        itemFees = new ArrayList<>();
+        return "/admin/pricing/download_item_fees_for_collecting_centres?faces-redirect=true";
+    }
+
+    public String navigateToUploadFeeListItemFees() {
+        return "";
+    }
+
+    public String navigateToDownloadItemFeesForLists() {
+        itemFees = new ArrayList<>();
+        return "/admin/pricing/download_item_fees_for_lists?faces-redirect=true";
+    }
+
+    public String navigateToUploadChangedItemFees() {
+        itemFees = new ArrayList<>();
+        return "/admin/pricing/upload_changed_item_fees?faces-redirect=true";
+    }
+
+    public String navigateToUploadFeeListType() {
+        return "/admin/pricing/feelist_type_upload?faces-redirect=true";
+    }
+
+    public String navigateToUploadInstitutionItemFees() {
+
+        return "/admin/pricing/feelist_item_fees_upload?faces-redirect=true";
+    }
+
     public String navigateToUploadCollectingCentreFeeList() {
         return "/admin/pricing/collecting_centre_price_list_upload?faces-redirect=true";
     }
@@ -98,6 +159,182 @@ public class ItemFeeManager implements Serializable {
 
     public String navigateItemViseFeeList() {
         return "/admin/pricing/manage_item_fees_bulk?faces-redirect=true";
+    }
+
+    public void fillBaseItemFees() {
+        itemFees = fillFees(null, null, null);
+    }
+
+    public void fillFeeListItemFees() {
+        itemFees = fillFees(null, null, feeListType);
+    }
+
+    public void fillSiteItemFees() {
+        itemFees = fillFees(null, forSite, null);
+    }
+
+    public void downloadBaseItemFeesAsExcel() throws IOException {
+    // Check if itemFees is null or empty
+    if (itemFees == null || itemFees.isEmpty()) {
+        JsfUtil.addErrorMessage("Please fill item fees first to download them.");
+        return;
+    }
+
+    // Create a workbook and a sheet
+    XSSFWorkbook workbook = new XSSFWorkbook();
+    XSSFSheet sheet = workbook.createSheet("Base Item Fees");
+
+    // Create the header row
+    Row headerRow = sheet.createRow(0);
+    String[] headers = {"ID", "Collecting Centre Name", "Collecting Centre Code", "Item Code", 
+                        "Item Name", "Fee Name", "Fee Type", "Discount Allowed", "Retired", 
+                        "Institution", "Department", "Staff", "Value for Locals", "Value for Foreigners"};
+
+    // Apply header formatting
+    CellStyle headerStyle = workbook.createCellStyle();
+    Font headerFont = workbook.createFont();
+    headerFont.setBold(true);
+    headerStyle.setFont(headerFont);
+
+    for (int i = 0; i < headers.length; i++) {
+        Cell headerCell = headerRow.createCell(i);
+        headerCell.setCellValue(headers[i]);
+        headerCell.setCellStyle(headerStyle);
+    }
+
+    // Fill the data into the sheet
+    int rowNum = 1;
+    for (ItemFee fee : itemFees) {
+        if (fee == null) {
+            continue; // Skip null entries
+        }
+
+        Row row = sheet.createRow(rowNum++);
+
+        boolean unlock = (rowNum - 1) > 0; // Avoid unlocking headers
+
+        // Populate the ID
+        createLockedCell(row, 0, fee.getId(), unlock, workbook);
+
+        // Get and populate Collecting Centre Name and Code
+        Institution collectingCentre = fee.getForInstitution();
+        String ccName = (collectingCentre != null) ? collectingCentre.getName() : "";
+        String ccCode = (collectingCentre != null) ? collectingCentre.getCode() : "";
+        createLockedCell(row, 1, ccName, unlock, workbook); // Collecting Centre Name
+        createLockedCell(row, 2, ccCode, unlock, workbook); // Collecting Centre Code
+
+        // Populate the rest of the fields
+        if (fee.getItem() != null) {
+            createLockedCell(row, 3, fee.getItem().getCode(), unlock, workbook);
+            createLockedCell(row, 4, fee.getItem().getName(), unlock, workbook);
+        } else {
+            createLockedCell(row, 3, "", unlock, workbook); // Fallback for null item code
+            createLockedCell(row, 4, "", unlock, workbook); // Fallback for null item name
+        }
+
+        createUnlockedCell(row, 5, fee.getName(), workbook); // Fee Name - Unlocked
+
+        if (fee.getFeeType() != null) {
+            createLockedCell(row, 6, fee.getFeeType().getLabel(), unlock, workbook);
+        } else {
+            createLockedCell(row, 6, "", unlock, workbook); // Fallback for null fee type
+        }
+
+        createUnlockedCell(row, 7, fee.isDiscountAllowed() ? "Yes" : "No", workbook); // Discount Allowed - Unlocked
+        createUnlockedCell(row, 8, fee.isRetired() ? "Yes" : "No", workbook); // Retired - Unlocked
+
+        if (fee.getInstitution() != null) {
+            createLockedCell(row, 9, fee.getInstitution().getName(), unlock, workbook);
+        } else {
+            createLockedCell(row, 9, "", unlock, workbook); // Fallback for null institution
+        }
+
+        if (fee.getDepartment() != null) {
+            createLockedCell(row, 10, fee.getDepartment().getName(), unlock, workbook);
+        } else {
+            createLockedCell(row, 10, "", unlock, workbook); // Fallback for null department
+        }
+
+        if (fee.getStaff() != null && fee.getStaff().getPerson() != null) {
+            createLockedCell(row, 11, fee.getStaff().getPerson().getNameWithTitle(), unlock, workbook);
+        } else {
+            createLockedCell(row, 11, "", unlock, workbook); // Fallback for null staff
+        }
+
+        createUnlockedCell(row, 12, fee.getFee(), workbook); // Value for Locals - Unlocked
+        createUnlockedCell(row, 13, fee.getFfee(), workbook); // Value for Foreigners - Unlocked
+    }
+
+    // Apply a table format, ensuring there are enough rows and columns for the table
+    if (rowNum > 1) { // Ensure there are rows beyond the header
+        AreaReference area = new AreaReference("A1:N" + rowNum, SpreadsheetVersion.EXCEL2007);
+        XSSFTable table = sheet.createTable(area);
+        table.setName("BaseItemFeesTable");
+        table.setDisplayName("BaseItemFeesTable");
+    }
+
+    // Write the output to the response
+    FacesContext facesContext = FacesContext.getCurrentInstance();
+    HttpServletResponse response = (HttpServletResponse) facesContext.getExternalContext().getResponse();
+    response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    response.setHeader("Content-Disposition", "attachment; filename=\"base_item_fees.xlsx\"");
+    OutputStream outputStream = response.getOutputStream();
+    workbook.write(outputStream);
+    workbook.close();
+    outputStream.flush();
+    outputStream.close();
+
+    facesContext.responseComplete();
+}
+
+
+// Method to create locked cells
+    private void createLockedCell(Row row, int column, Object value, boolean unlock, XSSFWorkbook workbook) {
+        Cell cell = row.createCell(column);
+        if (value instanceof String) {
+            cell.setCellValue((String) value);
+        } else if (value instanceof Number) {
+            cell.setCellValue(((Number) value).doubleValue());
+        }
+        CellStyle style = workbook.createCellStyle();
+        style.setLocked(!unlock); // Lock unless specified to unlock
+        cell.setCellStyle(style);
+    }
+
+// Method to create unlocked cells
+    private void createUnlockedCell(Row row, int column, Object value, XSSFWorkbook workbook) {
+        createLockedCell(row, column, value, true, workbook); // Call with unlock true
+    }
+
+    public void uploadToReplaceItemFees() {
+
+        itemFees = fillFees(null, null, null);
+    }
+
+    public void fillForCollectingCentreItemFees() {
+        itemFees = fillCollectingCentreSpecificFees(collectingCentre);
+    }
+
+    public void fillForSiteItemFees() {
+        itemFees = fillFees(null, forSite, null);
+    }
+
+    public void updateFeesForSiteItemFees() {
+        for (ItemFee tif : itemFees) {
+            updateSiteFeeValues(tif.getItem(), forSite);
+        }
+    }
+
+    public void updateFeesForListFees() {
+        for (ItemFee tif : itemFees) {
+            updateListFeeValues(tif.getItem(), feeListType);
+        }
+    }
+
+    public void updateFeesForCcFees() {
+        for (ItemFee tif : itemFees) {
+            updateSiteFeeValues(tif.getItem(), collectingCentre);
+        }
     }
 
     public void createItemFessForSelectedItems() {
@@ -170,9 +407,8 @@ public class ItemFeeManager implements Serializable {
         removingFee.setRetirer(sessionController.getLoggedUser());
         itemFeeFacade.edit(removingFee);
         itemFees = null;
-        fillFees();
         updateTotal();
-        JsfUtil.addSuccessMessage("Removed");
+        JsfUtil.addSuccessMessage("Removed. Reload Items");
     }
 
     public void fillDepartments() {
@@ -217,17 +453,25 @@ public class ItemFeeManager implements Serializable {
 
     public String navigateToCollectingCentreItemFees() {
         collectingCentre = null;
-        item=null;
-        feeListType=null;
-        fillForInstitutionFees();
+        item = null;
+        feeListType = null;
+        fillForCollectingCentreFees();
         return "/admin/pricing/manage_collecting_centre_item_fees?faces-redirect=true";
     }
-    
+
+    public String navigateToForSiteItemFees() {
+        collectingCentre = null;
+        item = null;
+        feeListType = null;
+        fillForCollectingCentreFees();
+        return "/admin/pricing/manage_for_site_item_fees?faces-redirect=true";
+    }
+
     public String navigateToFeeListFees() {
         collectingCentre = null;
-        item=null;
-        feeListType=null;
-        fillForInstitutionFees();
+        item = null;
+        feeListType = null;
+        fillForCollectingCentreFees();
         return "/admin/pricing/manage_fee_list_item_fees?faces-redirect=true";
     }
 
@@ -277,11 +521,12 @@ public class ItemFeeManager implements Serializable {
         itemFees = fillFees(item);
     }
 
-    public void fillForInstitutionFees() {
+    public void updateItemAndCollectingCentreFees() {
+        itemFees = new ArrayList<>();
+        if (item == null) {
+            return;
+        }
         if (collectingCentre == null) {
-            itemFees = null;
-            totalItemFee = 0.0;
-            totalItemFeeForForeigners = 0.0;
             return;
         }
         itemFees = fillFees(item, collectingCentre);
@@ -293,13 +538,74 @@ public class ItemFeeManager implements Serializable {
                 .filter(Objects::nonNull)
                 .mapToDouble(ItemFee::getFfee)
                 .sum();
+        feeValueController.updateFeeValue(item, collectingCentre, totalItemFee, totalItemFeeForForeigners);
     }
-    
-    public void fillForForCategoryFees() {
+
+    public void updateSiteFeeValues(Item ti, Institution si) {
+        List<ItemFee> tfs = fillFees(ti, si);
+        double tlf = tfs.stream()
+                .filter(Objects::nonNull)
+                .mapToDouble(ItemFee::getFee)
+                .sum();
+        double tfff = tfs.stream()
+                .filter(Objects::nonNull)
+                .mapToDouble(ItemFee::getFfee)
+                .sum();
+        feeValueController.updateFeeValue(ti, si, tlf, tfff);
+    }
+
+    public void updateCcFeeValues(Item ti, Institution cc) {
+        List<ItemFee> tfs = fillFees(ti, cc);
+        double tlf = tfs.stream()
+                .filter(Objects::nonNull)
+                .mapToDouble(ItemFee::getFee)
+                .sum();
+        double tfff = tfs.stream()
+                .filter(Objects::nonNull)
+                .mapToDouble(ItemFee::getFfee)
+                .sum();
+        feeValueController.updateFeeValue(ti, cc, tlf, tfff);
+    }
+
+    public void updateListFeeValues(Item ti, Category fl) {
+        List<ItemFee> tfs = fillFees(ti, fl);
+        double tlf = tfs.stream()
+                .filter(Objects::nonNull)
+                .mapToDouble(ItemFee::getFee)
+                .sum();
+        double tfff = tfs.stream()
+                .filter(Objects::nonNull)
+                .mapToDouble(ItemFee::getFfee)
+                .sum();
+        feeValueController.updateFeeValue(ti, fl, tlf, tfff);
+    }
+
+    public void updateItemAndSiteFees() {
+        itemFees = new ArrayList<>();
+        if (item == null) {
+            return;
+        }
+        if (forSite == null) {
+            return;
+        }
+        itemFees = fillFees(item, forSite);
+        totalItemFee = itemFees.stream()
+                .filter(Objects::nonNull)
+                .mapToDouble(ItemFee::getFee)
+                .sum();
+        totalItemFeeForForeigners = itemFees.stream()
+                .filter(Objects::nonNull)
+                .mapToDouble(ItemFee::getFfee)
+                .sum();
+        feeValueController.updateFeeValue(item, forSite, totalItemFee, totalItemFeeForForeigners);
+    }
+
+    public void updateItemAndFeeListees() {
+        itemFees = new ArrayList<>();
+        if (item == null) {
+            return;
+        }
         if (feeListType == null) {
-            itemFees = null;
-            totalItemFee = 0.0;
-            totalItemFeeForForeigners = 0.0;
             return;
         }
         itemFees = fillFees(item, feeListType);
@@ -311,6 +617,66 @@ public class ItemFeeManager implements Serializable {
                 .filter(Objects::nonNull)
                 .mapToDouble(ItemFee::getFfee)
                 .sum();
+        feeValueController.updateFeeValue(item, feeListType, totalItemFee, totalItemFeeForForeigners);
+    }
+
+    public void fillForCollectingCentreFees() {
+        if (collectingCentre == null) {
+            itemFees = null;
+            totalItemFee = 0.0;
+            totalItemFeeForForeigners = 0.0;
+            return;
+        }
+        itemFees = fillFees(item, collectingCentre);
+//        totalItemFee = itemFees.stream()
+//                .filter(Objects::nonNull)
+//                .mapToDouble(ItemFee::getFee)
+//                .sum();
+//        totalItemFeeForForeigners = itemFees.stream()
+//                .filter(Objects::nonNull)
+//                .mapToDouble(ItemFee::getFfee)
+//                .sum();
+//
+//        feeValueController.updateFeeValue(item, collectingCentre, totalItemFee, totalItemFeeForForeigners);
+
+    }
+
+    public void fillForSiteFees() {
+        if (forSite == null) {
+            itemFees = null;
+            totalItemFee = 0.0;
+            totalItemFeeForForeigners = 0.0;
+            return;
+        }
+        itemFees = fillFees(item, forSite);
+//        totalItemFee = itemFees.stream()
+//                .filter(Objects::nonNull)
+//                .mapToDouble(ItemFee::getFee)
+//                .sum();
+//        totalItemFeeForForeigners = itemFees.stream()
+//                .filter(Objects::nonNull)
+//                .mapToDouble(ItemFee::getFfee)
+//                .sum();
+//        feeValueController.updateFeeValue(item, forSite, totalItemFee, totalItemFeeForForeigners);
+
+    }
+
+    public void fillForForCategoryFees() {
+        if (feeListType == null) {
+            itemFees = null;
+            totalItemFee = 0.0;
+            totalItemFeeForForeigners = 0.0;
+            return;
+        }
+        itemFees = fillFees(item, feeListType);
+//        totalItemFee = itemFees.stream()
+//                .filter(Objects::nonNull)
+//                .mapToDouble(ItemFee::getFee)
+//                .sum();
+//        totalItemFeeForForeigners = itemFees.stream()
+//                .filter(Objects::nonNull)
+//                .mapToDouble(ItemFee::getFfee)
+//                .sum();
     }
 
     public String toManageItemFees() {
@@ -334,10 +700,21 @@ public class ItemFeeManager implements Serializable {
         return fillFees(i, null, cat);
     }
 
-    public List<ItemFee> fillFees(Item i, Institution forInstitution, Category cat) {
-        String jpql = "select f from ItemFee f where f.retired=false and f.item=:i";
+    public List<ItemFee> fillFees(Item i, Institution forInstitution, Category forCategory) {
+        System.out.println("fillFees");
+        System.out.println("i = " + i);
+        System.out.println("forInstitution = " + forInstitution);
+        System.out.println("forCategory = " + forCategory);
+        String jpql = "select f "
+                + " from ItemFee f "
+                + " where f.retired=:ret ";
         Map<String, Object> m = new HashMap<>();
-        m.put("i", i);
+        m.put("ret", false);
+
+        if (i != null) {
+            jpql += " and f.item=:i";
+            m.put("i", i);
+        }
 
         if (forInstitution != null) {
             jpql += " and f.forInstitution=:ins";
@@ -346,13 +723,73 @@ public class ItemFeeManager implements Serializable {
             jpql += " and f.forInstitution is null";
         }
 
-        if (cat != null) {
+        if (forCategory != null) {
             jpql += " and f.forCategory=:cat";
-            m.put("cat", cat);
+            m.put("cat", forCategory);
         } else {
             jpql += " and f.forCategory is null";
         }
-        return itemFeeFacade.findByJpql(jpql, m);
+        System.out.println("m = " + m);
+        System.out.println("jpql = " + jpql);
+        List<ItemFee> fs = itemFeeFacade.findByJpql(jpql, m);
+        return fs;
+    }
+
+    public List<ItemFee> fillCollectingCentreSpecificFees(Institution cc) {
+        System.out.println("fillFees");
+        System.out.println("forInstitution = " + cc);
+        String jpql = "select f "
+                + " from ItemFee f "
+                + " where f.retired=:ret ";
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+
+        if (cc != null) {
+            jpql += " and f.forInstitution=:ins";
+            m.put("ins", cc);
+        } else {
+            jpql += " and (f.forInstitution is not null and f.forInstitution.institutionType=:ccType) ";
+             m.put("ccType", InstitutionType.CollectingCentre);
+        }
+        jpql += " and f.forCategory is null";
+
+        System.out.println("m = " + m);
+        System.out.println("jpql = " + jpql);
+        List<ItemFee> fs = itemFeeFacade.findByJpql(jpql, m);
+        return fs;
+    }
+
+    public List<ItemLight> fillItemLightsForSite(Institution forInstitution) {
+        System.out.println("fillFees");
+        System.out.println("forInstitution = " + forInstitution);
+        String jpql = "SELECT new com.divudi.data.ItemLight("
+                + "f.item.id, "
+                + "f.item.department.name, "
+                + "f.item.name, "
+                + "f.item.code, "
+                + "f.item.total, "
+                + "f.item.department.id) "
+                + " from ItemFee f "
+                + " where f.retired=:ret ";
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+
+        if (forInstitution != null) {
+            jpql += " and f.forInstitution=:ins";
+            m.put("ins", forInstitution);
+        } else {
+            jpql += " and f.forInstitution is null";
+        }
+
+        jpql += " and f.forCategory is null";
+
+        jpql += " GROUP BY f.item "
+                + " ORDER BY f.item.name";
+
+        System.out.println("m = " + m);
+        System.out.println("jpql = " + jpql);
+        List<ItemLight> fs = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, m);
+        return fs;
     }
 
     public void addNewFee() {
@@ -452,16 +889,65 @@ public class ItemFeeManager implements Serializable {
         getItemFee().setCreater(sessionController.getLoggedUser());
         getItemFee().setForInstitution(collectingCentre);
         itemFeeFacade.create(itemFee);
-
         getItemFee().setItem(item);
         itemFeeFacade.edit(itemFee);
-
         itemFee = new ItemFee();
         itemFees = null;
-        fillForInstitutionFees();
+        updateItemAndCollectingCentreFees();;
         JsfUtil.addSuccessMessage("New Fee Added for Collecting Centre");
     }
-    
+
+    public void addNewForSiteFee() {
+        if (forSite == null) {
+            JsfUtil.addErrorMessage("Select a Site ?");
+            return;
+        }
+        if (item == null) {
+            JsfUtil.addErrorMessage("Select an Item ?");
+            return;
+        }
+        if (itemFee == null) {
+            JsfUtil.addErrorMessage("Select Item Fee");
+            return;
+        }
+        if (itemFee.getName() == null || itemFee.getName().trim().equals("")) {
+            JsfUtil.addErrorMessage("Please Fill Fee Name");
+            return;
+        }
+
+        if (itemFee.getFeeType() == null) {
+            JsfUtil.addErrorMessage("Please Fill Fee Type");
+            return;
+        }
+
+        if (itemFee.getFeeType() == FeeType.OtherInstitution || itemFee.getFeeType() == FeeType.OwnInstitution || itemFee.getFeeType() == FeeType.Referral) {
+            if (itemFee.getDepartment() == null) {
+                JsfUtil.addErrorMessage("Please Select Department");
+                return;
+            }
+        }
+        if (itemFee.getFee() == 0.00) {
+            JsfUtil.addErrorMessage("Please Enter Local Fee Value");
+            return;
+        }
+
+        if (itemFee.getFfee() == 0.00) {
+            JsfUtil.addErrorMessage("Please Enter Foreign Fee Value");
+            return;
+        }
+        getItemFee().setCreatedAt(new Date());
+        getItemFee().setCreater(sessionController.getLoggedUser());
+        getItemFee().setForInstitution(forSite);
+        itemFeeFacade.create(itemFee);
+        getItemFee().setItem(item);
+        itemFeeFacade.edit(itemFee);
+        itemFee = new ItemFee();
+        itemFees = null;
+
+        updateItemAndSiteFees();
+        JsfUtil.addSuccessMessage("New Fee Added for Collecting Centre");
+    }
+
     public void addNewFeeForFeeListType() {
         if (feeListType == null) {
             JsfUtil.addErrorMessage("Select Collecting Centre ?");
@@ -511,7 +997,7 @@ public class ItemFeeManager implements Serializable {
 
         itemFee = new ItemFee();
         itemFees = null;
-        fillForForCategoryFees();
+        updateItemAndFeeListees();
         JsfUtil.addSuccessMessage("New Fee Added for Fee List");
     }
 
@@ -644,7 +1130,13 @@ public class ItemFeeManager implements Serializable {
     public void setFeeListType(Category feeListType) {
         this.feeListType = feeListType;
     }
-    
-    
+
+    public Institution getForSite() {
+        return forSite;
+    }
+
+    public void setForSite(Institution forSite) {
+        this.forSite = forSite;
+    }
 
 }

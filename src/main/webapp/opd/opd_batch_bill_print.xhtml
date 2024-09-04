@@ -78,7 +78,7 @@
 
                         <div class="row" >
 
-                            <div class="col-4" >
+                            <div class="col-3" >
                                 <div class="d-flex justify-content-center">
                                     <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
                                     <p:selectOneMenu value="#{sessionController.departmentPreference.opdBillPaperType}" class="m-1" style="width: 13em;">
@@ -151,8 +151,9 @@
                                 </h:panelGroup>
                             </div>
 
-                            <div class="col-4" >
-                                <p:commandButton value="Print" 
+                            <div class="col-3" >
+                                <p:commandButton 
+                                    value="Print" 
                                                  class="ui-button-info m-1"
                                                  icon="fa fa-print"
                                                  ajax="false">
@@ -176,7 +177,7 @@
                                 </h:panelGroup>
                             </div>
 
-                            <div class="col-4" >
+                            <div class="col-6" >
                                 <p:dataTable 
                                     value="#{opdBillController.bills}" 
                                     var="b" 

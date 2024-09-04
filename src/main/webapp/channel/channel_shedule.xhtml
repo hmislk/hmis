@@ -203,17 +203,18 @@
                                                                    var="dep" itemLabel="#{dep.name}" itemValue="#{dep}" />
                                                 </p:selectOneMenu>
                                                 <p:outputLabel value="Start Time"/>                        
-                                                <p:datePicker class="w-100" inputStyleClass="w-100"  value="#{channelScheduleController.current.startingTime}" 
-                                                              pattern="#{sessionController.applicationPreference.shortTimeFormat}" timeOnly="true"
-                                                              timeZone="Asia/Colombo">                            
+                                                <p:datePicker 
+                                                    pattern="HH:mm"
+                                                    value="#{channelScheduleController.current.startingTime}" 
+                                                    timeOnly="true">                            
                                                 </p:datePicker>
 
 
                                                 <p:outputLabel value="End Time"/>                        
-                                                <p:datePicker class="w-100" inputStyleClass="w-100"  value="#{channelScheduleController.current.endingTime}"
-                                                              pattern="#{sessionController.applicationPreference.shortTimeFormat}" 
-                                                              timeOnly="true"
-                                                              timeZone="Asia/Colombo">                            
+                                                <p:datePicker
+                                                    value="#{channelScheduleController.current.endingTime}"
+                                                    pattern="HH:mm"
+                                                    timeOnly="true">                            
                                                 </p:datePicker>
 
                                                 <p:outputLabel value="Max Number"/>
@@ -244,7 +245,7 @@
 
                                                 <p:outputLabel value="Paid Appointment Only"/>
                                                 <p:selectBooleanCheckbox value="#{channelScheduleController.current.paidAppointmentsOnly}" />
-                                                
+
                                                 <p:outputLabel value="Exclude From Patient Portal"/>
                                                 <p:selectBooleanCheckbox value="#{channelScheduleController.current.excludeFromPatientPortal}" />
 
@@ -333,6 +334,8 @@
                                                 <p:inputText class="w-100 mx-2" autocomplete="off" value="#{channelScheduleController.current.agencyNumbers}"/>
                                                 <p:outputLabel value="Reserved Name"/>
                                                 <p:inputText class="w-100 mx-2" autocomplete="off" value="#{channelScheduleController.current.reserveName}"/>
+                                                <p:outputLabel value="Setup Session Starting Number"/>
+                                                <p:inputText class="w-100 mx-2" autocomplete="off" value="#{channelScheduleController.current.sessionStartingNumber}"/>
 
 
                                             </h:panelGrid>
@@ -543,7 +546,7 @@
                                                                         itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  
                                                                         class="w-100"
                                                                         inputStyleClass="w-100">
-                                                            
+
                                                             <p:column headerText="Name" >
                                                                 <p:outputLabel value="#{ix.name}" ></p:outputLabel>
                                                             </p:column>

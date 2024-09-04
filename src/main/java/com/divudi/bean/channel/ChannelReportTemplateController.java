@@ -56,6 +56,7 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.BillSessionFacade;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.ServiceSessionFacade;
+import com.divudi.facade.SessionInstanceFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.WebUserFacade;
 import com.divudi.java.CommonFunctions;
@@ -87,6 +88,7 @@ public class ChannelReportTemplateController implements Serializable {
     private double repayTotalFee;
     private double taxTotal;
     private double total;
+    private List<SessionInstance> sessionInstances;
     ///////
     private List<BillSession> billSessions;
     private List<BillSession> billSessionsBilled;
@@ -194,6 +196,9 @@ public class ChannelReportTemplateController implements Serializable {
     ServiceSessionFacade serviceSessionFacade;
     @EJB
     ArrivalRecordFacade arrivalRecordFacade;
+
+    @EJB
+    SessionInstanceFacade sessionInstanceFacade;
 
     public void clearAll() {
         billedBills = new ArrayList<>();
@@ -605,6 +610,223 @@ public class ChannelReportTemplateController implements Serializable {
 
     }
 
+    public void fillBillSessions(SessionInstance sessionInstance) {
+        BillType[] billTypes = {
+            BillType.ChannelAgent,
+            BillType.ChannelCash,
+            BillType.ChannelOnCall,
+            BillType.ChannelStaff,
+            BillType.ChannelCredit,
+            BillType.ChannelResheduleWithPayment,
+            BillType.ChannelResheduleWithOutPayment
+        };
+        List<BillType> bts = Arrays.asList(billTypes);
+        String sql = "Select bs "
+                + " From BillSession bs "
+                + " where bs.retired=false"
+                + " and bs.bill.billType in :bts"
+                + " and type(bs.bill)=:class "
+                + " and bs.sessionInstance=:ss "
+                + " order by bs.serialNo ";
+        HashMap<String, Object> hh = new HashMap<>();
+        hh.put("bts", bts);
+        hh.put("class", BilledBill.class);
+        hh.put("ss", sessionInstance);
+        billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
+
+        // Initialize counts
+        long bookedPatientCount = 0;
+        long paidPatientCount = 0;
+        long completedPatientCount = 0;
+        long cancelPatientCount = 0;
+        long refundedPatientCount = 0;
+        long onCallPatientCount = 0;
+        long reservedBookingCount = 0;
+        long paidToDoctorCount = 0;
+
+        if (billSessions == null || billSessions.isEmpty()) {
+            sessionInstance.setBookedPatientCount(0L);
+            sessionInstance.setPaidPatientCount(0L);
+            sessionInstance.setCompletedPatientCount(0L);
+            sessionInstance.setRemainingPatientCount(0L);
+            sessionInstanceFacade.edit(sessionInstance);
+            return;
+        }
+
+        // Loop through billSessions to calculate counts
+        for (BillSession bs : billSessions) {
+            if (bs == null) {
+                continue;
+            }
+
+            bookedPatientCount++; // Always increment if bs is not null
+
+            if (Boolean.TRUE.equals(bs.isReservedBooking())) {
+                reservedBookingCount++;
+            }
+
+            if (Boolean.TRUE.equals(bs.isCompleted())) {
+                completedPatientCount++;
+            }
+
+            if (bs.getPaidBillSession() != null) {
+                paidPatientCount++;
+            }
+
+            if (bs.getBill() != null) {
+                if (Boolean.TRUE.equals(bs.getBill().isCancelled())) {
+                    cancelPatientCount++;
+                }
+
+                if (Boolean.TRUE.equals(bs.getBill().isRefunded())) {
+                    refundedPatientCount++;
+                }
+
+                if (bs.getPaidBillSession() == null && !Boolean.TRUE.equals(bs.getBill().isCancelled())) {
+                    onCallPatientCount++;
+                }
+            }
+
+        }
+
+        // Set calculated counts to sessionInstance
+        sessionInstance.setBookedPatientCount(bookedPatientCount);
+        sessionInstance.setPaidPatientCount(paidPatientCount);
+        sessionInstance.setCompletedPatientCount(completedPatientCount);
+        sessionInstance.setCancelOnCallPatientCount(onCallPatientCount);
+        sessionInstance.setCancelPaidPatientCount(cancelPatientCount);
+        sessionInstance.setRefundedPatientCount(refundedPatientCount);
+        sessionInstance.setOnCallPatientCount(onCallPatientCount);
+        sessionInstance.setReservedBookingCount(reservedBookingCount);
+        sessionInstance.setPaidToDoctorPatientCount(calculateSessionDoneFees(sessionInstance));
+        sessionInstance.setRemainingPatientCount(bookedPatientCount - completedPatientCount);
+        sessionInstanceFacade.edit(sessionInstance);
+    }
+
+    public Long calculateSessionDoneFees(SessionInstance si) {
+        if (si == null) {
+            JsfUtil.addErrorMessage("Select Specility");
+            return 0l;
+        }
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelPaid};
+        List<BillType> bts = Arrays.asList(billTypes);
+        HashMap hm = new HashMap();
+        String sql = " SELECT count(DISTINCT b.bill.paidBill) "
+                + " FROM BillFee b "
+                + " WHERE b.bill.retired = false "
+                + " AND b.fee.feeType = :ftp "
+                + " AND b.bill.refunded = false "
+                + " AND b.bill.cancelled = false "
+                + " AND ABS(ABS(b.feeValue) - ABS(b.paidValue)) < 1 "
+                //                + " AND b.bill.billType IN :bt "
+                + " AND b.bill.singleBillSession.sessionInstance = :si";
+
+        hm.put("si", si);
+//        hm.put("bt", bts);
+        hm.put("ftp", FeeType.Staff);
+//        hm.put("class", BilledBill.class);
+//        hm.put("class", BilledBill.class);
+        System.out.println("sql = " + sql);
+        System.out.println("hm = " + hm);
+        Long count = billFeeFacade.findLongByJpql(sql, hm, TemporalType.TIMESTAMP);
+        return count;
+    }
+
+    public void processAndfillDailySessionCounts() {
+        System.out.println("Starting processAndfillDailySessionCounts...");
+
+        String j;
+        Map<String, Object> m = new HashMap<>();
+        rows = new ArrayList<>();
+
+        System.out.println("Preparing JPQL query...");
+        j = "select new com.divudi.data.ReportTemplateRow(si) "
+                + " from SessionInstance si "
+                + " where si.retired=false "
+                + " and si.sessionDate between :fd and :td ";
+
+        if (institution != null) {
+            m.put("ins", institution);
+            j += " and si.institution=:ins ";
+        } else {
+        }
+
+        if (fromDate == null || toDate == null) {
+            return;  // or throw an appropriate exception
+        }
+
+        System.out.println("Setting date parameters: fromDate = " + fromDate + ", toDate = " + toDate);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        System.out.println("Executing query...");
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) billFacade.findLightsByJpql(j, m, TemporalType.DATE);
+
+        if (rs == null || rs.isEmpty()) {
+            return;
+        } else {
+        }
+
+        Long long1 = 0L;
+        Long long2 = 0L;
+        Long long3 = 0L;
+        Long long4 = 0L;
+        Long long5 = 0L;
+        Long long6 = 0L;
+        Long long7 = 0L;
+        Long long8 = 0L;
+
+        System.out.println("Processing result rows...");
+        for (ReportTemplateRow r : rs) {
+            if (r == null) {
+                continue;
+            }
+
+            SessionInstance si = r.getSessionInstance();
+            if (si == null) {
+                continue;
+            }
+
+            System.out.println("Processing SessionInstance: " + si);
+            fillBillSessions(si);  // Make sure fillBillSessions() can handle null fields inside `si`
+
+            long bookedCount = si.getBookedPatientCount() != null ? si.getBookedPatientCount() : 0;
+            long paidCount = si.getPaidPatientCount() != null ? si.getPaidPatientCount() : 0;
+            long completedCount = si.getCompletedPatientCount() != null ? si.getCompletedPatientCount() : 0;
+            long cancelOnCallCount = si.getCancelOnCallPatientCount() != null ? si.getCancelOnCallPatientCount() : 0;
+            long refundedCount = si.getRefundedPatientCount() != null ? si.getRefundedPatientCount() : 0;
+            long remainingCount = si.getRemainingPatientCount() != null ? si.getRemainingPatientCount() : 0;
+            long paidToDoctorCount = si.getPaidToDoctorPatientCount() != null ? si.getPaidToDoctorPatientCount() : 0;
+            long cancelPaidCount = si.getCancelPaidPatientCount() != null ? si.getCancelPaidPatientCount() : 0;
+
+            long1 += bookedCount;
+            long2 += paidCount;
+            long3 += completedCount;
+            long4 += cancelOnCallCount;
+            long5 += refundedCount;
+            long6 += remainingCount;
+            long7 += paidToDoctorCount;
+            long8 += cancelPaidCount;
+        }
+
+        System.out.println("Final counts: long1=" + long1 + ", long2=" + long2 + ", long3=" + long3
+                + ", long4=" + long4 + ", long5=" + long5 + ", long6=" + long6 + ", long7=" + long7 + ", long8=" + long8);
+
+        if (bundle != null) {
+            bundle.setReportTemplateRows(rs);
+            bundle.setLong1(long1);
+            bundle.setLong2(long2);
+            bundle.setLong3(long3);
+            bundle.setLong4(long4);
+            bundle.setLong5(long5);
+            bundle.setLong6(long6);
+            bundle.setLong7(long7);
+            bundle.setLong7(long8);
+        } else {
+        }
+
+    }
+
     public void fillCategorySessionCounts() {
         bundle = new ReportTemplateRowBundle();
         String j;
@@ -734,6 +956,7 @@ public class ChannelReportTemplateController implements Serializable {
                 + "sum(si.completedPatientCount),"
                 + "sum(si.cancelPatientCount),"
                 + "sum(si.refundedPatientCount),"
+                + "sum(si.paidToDoctorPatientCount),"
                 + "sum(si.remainingPatientCount)"
                 + ") "
                 + " from SessionInstance si "
@@ -760,27 +983,28 @@ public class ChannelReportTemplateController implements Serializable {
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) billFacade.findLightsByJpql(j, m, TemporalType.DATE);
 
         bundle.setReportTemplateRows(rs);
-        bundle.setLong1(0l);
-        bundle.setLong2(0l);
-        bundle.setLong3(0l);
-        bundle.setLong4(0l);
-        bundle.setLong5(0l);
-        bundle.setLong6(0l);
+        bundle.setLong1(0L);
+        bundle.setLong2(0L);
+        bundle.setLong3(0L);
+        bundle.setLong4(0L);
+        bundle.setLong5(0L);
+        bundle.setLong6(0L);
+        bundle.setLong7(0L);
 
         long idCounter = 1;
 
         for (ReportTemplateRow row : rs) {
             if (row != null) {
                 row.setId(idCounter++);
-                SessionInstance sessionInstance = row.getSessionInstance();
-                if (sessionInstance != null) {
-                    bundle.setLong1(bundle.getLong1() + (row.getLong1() != null ? row.getLong1() : 0));
-                    bundle.setLong2(bundle.getLong2() + (sessionInstance.getPaidPatientCount() != null ? sessionInstance.getPaidPatientCount() : 0));
-                    bundle.setLong3(bundle.getLong3() + (sessionInstance.getCompletedPatientCount() != null ? sessionInstance.getCompletedPatientCount() : 0));
-                    bundle.setLong4(bundle.getLong4() + (sessionInstance.getCancelPatientCount() != null ? sessionInstance.getCancelPatientCount() : 0));
-                    bundle.setLong5(bundle.getLong5() + (sessionInstance.getRefundedPatientCount() != null ? sessionInstance.getRefundedPatientCount() : 0));
-                    bundle.setLong6(bundle.getLong6() + (sessionInstance.getRemainingPatientCount() != null ? sessionInstance.getRemainingPatientCount() : 0));
-                }
+
+                // Directly sum the values from the aggregated query results
+                bundle.setLong1(bundle.getLong1() + (row.getLong1() != null ? row.getLong1() : 0)); // Booked Patient Count
+                bundle.setLong2(bundle.getLong2() + (row.getLong2() != null ? row.getLong2() : 0)); // Paid Patient Count
+                bundle.setLong3(bundle.getLong3() + (row.getLong3() != null ? row.getLong3() : 0)); // Completed Patient Count
+                bundle.setLong4(bundle.getLong4() + (row.getLong4() != null ? row.getLong4() : 0)); // Cancel Patient Count
+                bundle.setLong5(bundle.getLong5() + (row.getLong5() != null ? row.getLong5() : 0)); // Refunded Patient Count
+                bundle.setLong6(bundle.getLong6() + (row.getLong6() != null ? row.getLong6() : 0)); // Paid to Doctor Patient Count
+                bundle.setLong7(bundle.getLong7() + (row.getLong7() != null ? row.getLong7() : 0)); // Remaining Patient Count
             }
         }
 
@@ -4235,7 +4459,6 @@ public class ChannelReportTemplateController implements Serializable {
                 Area a = (Area) ob[0];
                 BillClassType classType = (BillClassType) ob[1];
                 long count = (long) ob[2];
-                System.err.println("****************");
                 //System.out.println("a.getName() = " + a.getName());
                 if (classType == BillClassType.BilledBill) {
                     total += count;
@@ -4283,7 +4506,6 @@ public class ChannelReportTemplateController implements Serializable {
                 Area a = (Area) ob[1];
                 BillClassType classType = (BillClassType) ob[2];
                 long count = (long) ob[3];
-                System.err.println("****************");
                 //System.out.println("s.getPerson().getName() = " + s.getPerson().getName());
                 if (classType == BillClassType.BilledBill) {
                     total += count;
@@ -5955,18 +6177,18 @@ public class ChannelReportTemplateController implements Serializable {
         Institution i = null;
         for (AgentHistory a : agentHistorys) {
             if (start) {
-                a.setTransCumilativeTotal(a.getBeforeBallance() + a.getTransactionValue());
+                a.setTransCumilativeTotal(a.getBalanceBeforeTransaction() + a.getTransactionValue());
                 start = false;
-                d = a.getBeforeBallance() + a.getTransactionValue();
+                d = a.getBalanceBeforeTransaction() + a.getTransactionValue();
                 i = a.getBill().getFromInstitution();
                 continue;
             }
             if (i.equals(a.getBill().getFromInstitution())) {
                 a.setTransCumilativeTotal(d + a.getTransactionValue());
-                d = a.getBeforeBallance() + a.getTransactionValue();
+                d = a.getBalanceBeforeTransaction() + a.getTransactionValue();
             } else {
-                a.setTransCumilativeTotal(a.getBeforeBallance() + a.getTransactionValue());
-                d = a.getBeforeBallance() + a.getTransactionValue();
+                a.setTransCumilativeTotal(a.getBalanceBeforeTransaction() + a.getTransactionValue());
+                d = a.getBalanceBeforeTransaction() + a.getTransactionValue();
                 i = a.getBill().getFromInstitution();
             }
 
@@ -6005,6 +6227,14 @@ public class ChannelReportTemplateController implements Serializable {
 
     public void setCategories(List<Category> categories) {
         this.categories = categories;
+    }
+
+    public List<SessionInstance> getSessionInstances() {
+        return sessionInstances;
+    }
+
+    public void setSessionInstances(List<SessionInstance> sessionInstances) {
+        this.sessionInstances = sessionInstances;
     }
 
     public class DocPage {
@@ -7523,6 +7753,4 @@ public class ChannelReportTemplateController implements Serializable {
         this.doctorDayChannelCounts = doctorDayChannelCounts;
     }
 
-    
-    
 }

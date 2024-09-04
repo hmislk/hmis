@@ -45,6 +45,7 @@ public enum ReportItemType {
     DataEntered,
     DateTime,
     Fax,
+    @Deprecated
     Institution,
     InvestigationName,
     Item,
@@ -75,6 +76,18 @@ public enum ReportItemType {
     Speciman,
     Surname,
     Ward,
+    
+    MRN,
+    SampledID,    
+    BillingDepartment,
+    PerformDepartment,
+    BillingInstitution,
+    PerformInstitution,
+    VisitType,
+    
+    CollectedOn,
+    ReceivedOn,
+    
     ;
 
     public String getLabel() {
@@ -199,7 +212,24 @@ public enum ReportItemType {
                 return "Printed Time";
             case ReceivedAt:
                 return "Sample Received Time";
-
+            case MRN:
+                return "Patient MRN No";
+            case SampledID:
+                return "Sample ID";
+            case BillingDepartment:
+                return "Billing Department";
+            case PerformDepartment:
+                return "Perform Department";
+            case BillingInstitution:
+                return "Billing Institution";
+            case PerformInstitution:
+                return "Perform Institution";
+            case VisitType:
+                return "Visit Type";  
+            case CollectedOn:
+                return "Sample Collected Time";
+            case ReceivedOn:
+                return "Sample Received Time (Lab)";
             default:
                 return this.toString();
         }

@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.entity.channel.SessionInstance;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
@@ -56,6 +57,18 @@ public class CommonController implements Serializable {
         }
         DecimalFormat decimalFormat = new DecimalFormat(format);
         return decimalFormat.format(number);
+    }
+    
+    public String formatToLongDate(Date date) {
+        if (date == null) {
+            return "";
+        }
+        
+        // Load the date format from session preferences
+        String dateFormat = sessionController.getApplicationPreference().getLongDateFormat();
+        SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
+        
+        return sdf.format(date);
     }
 
     /**
@@ -122,6 +135,20 @@ public class CommonController implements Serializable {
         LocalDate firstDate = first.toLocalDate();
         LocalDate secondDate = second.toLocalDate();
         return firstDate.equals(secondDate);
+    }
+    
+    public SessionInstance convertToSessionInstance(Object ob){
+        if(ob instanceof SessionInstance){
+            return (SessionInstance) ob;
+        }
+        return null;
+    }
+    
+    public SessionInstance getSessionInstance(Object ob){
+        if(ob instanceof SessionInstance){
+            return (SessionInstance) ob;
+        }
+        return null;
     }
 
     public Date retiermentDate(Date dob) {
