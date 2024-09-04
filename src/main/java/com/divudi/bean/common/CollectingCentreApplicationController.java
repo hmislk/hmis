@@ -58,22 +58,30 @@ public class CollectingCentreApplicationController {
                 agentHistory.setReferenceNumber(refNo);
                 agentHistory.setHistoryType(historyType);
 
-                
-                double balanceAfterTx = collectingCentre.getBallance() - valueWithoutccFee;
-                double hospitalBalanceAfterTx = collectingCentre.getAgentBalance() - valueWithoutccFee;
-                double agentBalanceAfterTx = collectingCentre.getCompanyBalance() - valueWithoutccFee;
-                
-                
+                double balanceAfterTx = 0;
+                double balanceAfterTransaction = 0;
+                double agentBalanceAfterTx = 0;
+
+                switch (historyType) {
+                    case CollectingCentreBilling:
+
+                        break;
+                    default:
+                        balanceAfterTx = collectingCentre.getBallance() - valueWithoutccFee;
+                        balanceAfterTransaction = collectingCentre.getAgentBalance() - valueWithoutccFee;
+                        agentBalanceAfterTx = collectingCentre.getCompanyBalance() - valueWithoutccFee;
+                }
+
                 agentHistory.setBalanceBeforeTransaction(collectingCentre.getBallance());
                 agentHistory.setBalanceAfterTransaction(balanceAfterTx);
                 agentHistory.setTransactionValue(valueWithoutccFee);
 
                 agentHistory.setCompanyBalanceBefore(collectingCentre.getCompanyBalance());
                 agentHistory.setCompanyBalanceAfter(collectingCentre.getCompanyBalance());
-                
+
                 agentHistory.setCompanyTransactionValue(valueWithoutccFee);
                 agentHistory.setTransactionValue(valueWithoutccFee);
-                
+
                 agentHistory.setCollectingCentertransactionValue(collectingCenterFeeValue);
                 agentHistoryFacade.create(agentHistory);
 
