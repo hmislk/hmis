@@ -391,7 +391,7 @@ public class SmsManagerEjb {
         // Create an instance of eSmsManager
         eSmsManager smsManager = new eSmsManager();
 
-        boolean send = smsManager.sendSms(smsUsername,smsPassword,smsUserAlias,sms.getReceipientNumber(),sms.getSendingMessage());
+        boolean send = false; // smsManager.sendSms(smsUsername,smsPassword,smsUserAlias,sms.getReceipientNumber(),sms.getSendingMessage());
         
         if(send){
             sms.setSentSuccessfully(true);
