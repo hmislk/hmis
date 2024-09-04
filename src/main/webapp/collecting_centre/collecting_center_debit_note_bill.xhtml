@@ -20,32 +20,39 @@
                             </div>
                             <div>
                                 <h:panelGrid columns="4">
-                                    <p:commandButton value="New Bill" ajax="false" action="#{agentPaymentRecieveBillController.prepareNewBill()}" icon="fas fa-plus" > </p:commandButton> 
-                            <p:defaultCommand target="btnSettle"/>
-                                <p:commandButton id="btnSettle" value="Settle" 
-                                                      action="#{agentPaymentRecieveBillController.collectingCenterDebitNoteSettleBill}" 
-                                                      ajax="false"
-                                                      icon="fas fa-check"
-                                                      class="ui-button-success mx-1" >
-                            </p:commandButton>                     
+
                                 </h:panelGrid>
                             </div>
                         </div>
                     </f:facet>
-                    <p:panelGrid columns="6" style="min-width: 100%;">
+                    <p:panelGrid columns="2" style="w-50">
                         <p:outputLabel value="Collecting Center" />
-                        <p:outputLabel value=":" />
-                        <p:autoComplete id="creditCom" forceSelection="true" value="#{agentPaymentRecieveBillController.current.fromInstitution}"  completeMethod="#{institutionController.completeCollectingCenter}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
+                        <p:autoComplete
+                            id="creditCom" 
+                            forceSelection="true" 
+                            inputStyleClass="w-100"
+                            class="w-100"
+                            value="#{agentPaymentRecieveBillController.current.fromInstitution}"  completeMethod="#{institutionController.completeCollectingCenter}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
                             <f:ajax  event="itemSelect" execute="creditCom"  />
                             <p:column>#{ix.institutionCode}</p:column>
                             <p:column>#{ix.name}</p:column>
                         </p:autoComplete>
                         <p:outputLabel value="Payment" />
-                        <p:outputLabel value=":" />
                         <p:inputText autocomplete="off" value="#{agentPaymentRecieveBillController.amount}"/>                               
                         <p:outputLabel value="Description"/>
-                        <p:outputLabel value=":" />
-                        <p:inputTextarea style="width: 400px" value="#{agentPaymentRecieveBillController.comment}"/>                                                         
+                        <p:inputTextarea class="w-100" value="#{agentPaymentRecieveBillController.comment}"/>  
+
+
+                        <p:commandButton value="New Bill" ajax="false" action="#{agentPaymentRecieveBillController.prepareNewBill()}" icon="fas fa-plus" > </p:commandButton> 
+                        <p:defaultCommand target="btnSettle"/>
+                        <p:commandButton id="btnSettle" value="Settle Debit Note" 
+                                         action="#{agentPaymentRecieveBillController.collectingCenterDebitNoteSettleBill}" 
+                                         ajax="false"
+                                         icon="fas fa-check"
+                                         class="ui-button-success mx-1" >
+                        </p:commandButton>  
+
+
                     </p:panelGrid>
                 </p:panel>
             </h:panelGroup>
@@ -60,18 +67,18 @@
                             </div>
                             <div>
                                 <h:panelGrid columns="4">
-                                     <p:commandButton value="New Bill" ajax="false" action="#{agentPaymentRecieveBillController.prepareNewBill()}"  >
+                                    <p:commandButton value="New Bill" ajax="false" action="#{agentPaymentRecieveBillController.prepareNewBill()}"  >
                                     </p:commandButton>
-                                      <p:commandButton value="Print" class="ui-button-info" icon="fas fa-print">
-                                          <p:printer target="print" />
-                                      </p:commandButton>
+                                    <p:commandButton value="Print" class="ui-button-info" icon="fas fa-print">
+                                        <p:printer target="print" />
+                                    </p:commandButton>
                                 </h:panelGrid>
                             </div>
                         </div>
 
                     </f:facet>
                     <h:panelGroup id="print">
-                        <bi:agent billController="#{agentPaymentRecieveBillController}"  bill="#{agentPaymentRecieveBillController.current}" dup="false"/>     
+                        <bi:cc_credit_note billController="#{agentPaymentRecieveBillController}"  bill="#{agentPaymentRecieveBillController.current}" dup="false"/>     
                     </h:panelGroup>
                 </p:panel>
             </h:panelGroup>        

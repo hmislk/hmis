@@ -416,7 +416,7 @@ public class AgentPaymentRecieveBillController implements Serializable {
     }
 
     public void settleBill(BillType billType, HistoryType historyType, HistoryType updatHistoryType, BillNumberSuffix billNumberSuffix) {
-        addPaymentMethordValueToTotal(current, getCurrent().getPaymentMethod());
+//        addPaymentMethordValueToTotal(current, getCurrent().getPaymentMethod());
         createAndAddBillItemToCcPaymentReceiptBill();
         if (!billType.equals(BillType.AgentDebitNoteBill) && !billType.equals(BillType.AgentCreditNoteBill)
                 && !billType.equals(BillType.CollectingCentreCreditNoteBill) && !billType.equals(BillType.CollectingCentreDebitNoteBill)) {
@@ -430,7 +430,7 @@ public class AgentPaymentRecieveBillController implements Serializable {
 
         saveBill(billType, billNumberSuffix);
         saveBillItem();
-        createPayment(current, getCurrent().getPaymentMethod());
+//        createPayment(current, getCurrent().getPaymentMethod());
         //for channel agencyHistory Update
 //        createAgentHistory(getCurrent().getFromInstitution(), getCurrent().getNetTotal(), historyType, getCurrent());
         //for channel agencyHistory Update
