@@ -136,13 +136,12 @@
                                 height="#{myCli.htPix}" width="#{myCli.wtPix}">
                 </p:graphicImage>
 
-
                 <h:panelGroup rendered="#{myCli.ixItemType eq 'Barcode' and myCli.retired ne true }"  
                               >
-
-                    <p:barcode value="#{cc.attrs.patientReport.patientInvestigation.patient.phn}" 
-                               cache="false"
-                               type="code128" height="#{myCli.htPix}" width="#{myCli.wtPix}" />
+                    <p:barcode 
+                        value="#{cc.attrs.patientReport.patientInvestigation.patient.phn}" 
+                        cache="false"
+                        type="code128" height="#{myCli.htPix}" width="#{myCli.wtPix}" />
 
                 </h:panelGroup>
                 <h:panelGroup rendered="#{myCli.ixItemType eq 'BarcodeVertical' and myCli.retired ne true }"  
