@@ -105,6 +105,9 @@ public class AgentPaymentRecieveBillController implements Serializable {
     String comment;
     double amount;
 
+    
+    
+    
     public void createAndAddBillItemToCcPaymentReceiptBill() {
         getCurrentBillItem().setNetValue(getCurrent().getNetTotal());
         getCurrentBillItem().setGrossValue(getCurrent().getNetTotal());
@@ -321,7 +324,29 @@ public class AgentPaymentRecieveBillController implements Serializable {
         }
         getCurrent().setPaymentMethod(PaymentMethod.Slip);
         getCurrent().setNetTotal(getAmount());
-        creditDebitNote(BillType.CollectingCentreCreditNoteBill, HistoryType.CollectingCentreCreditNote, HistoryType.CollectingCentreBalanceUpdateBill, BillNumberSuffix.CCCN);
+        getCurrent().setBillTypeAtomic(BillTypeAtomic.CC_CREDIT_NOTE);
+
+        creditDebitNote(BillType.CollectingCentreCreditNoteBill,
+                HistoryType.CollectingCentreCreditNote, HistoryType.CollectingCentreBalanceUpdateBill, BillNumberSuffix.CCCN);
+
+        billFacade.edit(getCurrent());
+
+        //        Institution collectingCentre,
+//            double hospitalFee,
+//            double collectingCentreFee,
+//            double staffFee,
+//            double transactionValue,
+//            HistoryType historyType,
+//            Bill bill
+//        
+        collectingCentreApplicationController.updateBalance(
+                getCurrent().getCollectingCentre(),
+                0,
+                0,
+                0,
+                getCurrent().getNetTotal(),
+                HistoryType.CollectingCentreCreditNote,
+                getCurrent());
 
     }
 
@@ -331,7 +356,28 @@ public class AgentPaymentRecieveBillController implements Serializable {
         }
         getCurrent().setPaymentMethod(PaymentMethod.Slip);
         getCurrent().setNetTotal(0 - getAmount());
+        getCurrent().setBillTypeAtomic(BillTypeAtomic.CC_DEBIT_NOTE);
+
         creditDebitNote(BillType.CollectingCentreDebitNoteBill, HistoryType.CollectingCentreDebitNote, HistoryType.CollectingCentreBalanceUpdateBill, BillNumberSuffix.CCDN);
+
+        billFacade.edit(getCurrent());
+
+        //        Institution collectingCentre,
+//            double hospitalFee,
+//            double collectingCentreFee,
+//            double staffFee,
+//            double transactionValue,
+//            HistoryType historyType,
+//            Bill bill
+//        
+        collectingCentreApplicationController.updateBalance(
+                getCurrent().getCollectingCentre(),
+                0,
+                0,
+                0,
+                getCurrent().getNetTotal(),
+                HistoryType.CollectingCentreDebitNote,
+                getCurrent());
 
     }
 
@@ -373,7 +419,7 @@ public class AgentPaymentRecieveBillController implements Serializable {
     }
 
     public void settleBill(BillType billType, HistoryType historyType, HistoryType updatHistoryType, BillNumberSuffix billNumberSuffix) {
-        addPaymentMethordValueToTotal(current, getCurrent().getPaymentMethod());
+//        addPaymentMethordValueToTotal(current, getCurrent().getPaymentMethod());
         createAndAddBillItemToCcPaymentReceiptBill();
         if (!billType.equals(BillType.AgentDebitNoteBill) && !billType.equals(BillType.AgentCreditNoteBill)
                 && !billType.equals(BillType.CollectingCentreCreditNoteBill) && !billType.equals(BillType.CollectingCentreDebitNoteBill)) {
@@ -382,19 +428,28 @@ public class AgentPaymentRecieveBillController implements Serializable {
             }
             getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
         }
-
+        getCurrent().setCollectingCentre(getCurrent().getFromInstitution());
         getCurrent().setTotal(getCurrent().getNetTotal());
 
         saveBill(billType, billNumberSuffix);
         saveBillItem();
-        createPayment(current, getCurrent().getPaymentMethod());
+//        createPayment(current, getCurrent().getPaymentMethod());
         //for channel agencyHistory Update
-        createAgentHistory(getCurrent().getFromInstitution(), getCurrent().getNetTotal(), historyType, getCurrent());
+//        createAgentHistory(getCurrent().getFromInstitution(), getCurrent().getNetTotal(), historyType, getCurrent());
         //for channel agencyHistory Update
 
         //Update Agent Max Credit Limit
         if ((getCurrent().getNetTotal() > (getCurrent().getFromInstitution().getMaxCreditLimit() - getCurrent().getFromInstitution().getStandardCreditLimit())) && (getCurrent().getFromInstitution().getMaxCreditLimit() != getCurrent().getFromInstitution().getStandardCreditLimit())) {
-            institutionController.createAgentCreditLimitUpdateHistory(getCurrent().getFromInstitution(), getCurrent().getFromInstitution().getAllowedCredit(), getCurrent().getFromInstitution().getStandardCreditLimit(), updatHistoryType, "Agent Payment Allowed Credit Limit Update");
+            collectingCentreApplicationController.updateBalance(
+                    current.getFromInstitution(),
+                    0,
+                    0,
+                    0,
+                    0,
+                    HistoryType.CollectingCentreBalanceUpdateBill,
+                    getCurrent(),
+                    "Agent Payment Allowed Credit Limit Reset");
+
             getCurrent().getFromInstitution().setAllowedCredit(getCurrent().getFromInstitution().getStandardCreditLimit());
             getInstitutionFacade().edit(getCurrent().getFromInstitution());
         }
@@ -479,6 +534,8 @@ public class AgentPaymentRecieveBillController implements Serializable {
         recreateModel();
         return "";
     }
+    
+    
 
     public List<Payment> createPayment(Bill bill, PaymentMethod pm) {
         List<Payment> ps = new ArrayList<>();

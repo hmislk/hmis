@@ -1773,7 +1773,7 @@ public class BillSearch implements Serializable {
         RefundBill rb = new RefundBill();
         rb.copy(getBill());
         rb.invertValue(getBill());
-
+        rb.setBillTypeAtomic(BillTypeAtomic.CC_BILL_REFUND);
         rb.setBilledBill(getBill());
         Date bd = Calendar.getInstance().getTime();
         rb.setBillDate(bd);
