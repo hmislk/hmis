@@ -496,7 +496,8 @@ public class CollectingCentreApplicationController {
             agentHistory.setCompanyTransactionValue(hospitalFee);
             agentHistory.setAgentTransactionValue(collectingCentreFee);
             agentHistory.setStaffTrasnactionValue(staffFee);
-            agentHistory.setTransactionValue(transactionValue);
+            //agentHistory.setTransactionValue(transactionValue);
+            agentHistory.setTransactionValue(hospitalFee);
 
             double balanceBeforeTx = collectingCentre.getBallance();
 
