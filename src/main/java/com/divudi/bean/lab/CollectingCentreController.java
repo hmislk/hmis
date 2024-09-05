@@ -4,12 +4,22 @@
  */
 package com.divudi.bean.lab;
 
+import com.divudi.bean.common.CollectingCentreApplicationController;
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.CollectingCentrePaymentMethod;
+import com.divudi.data.HistoryType;
 import com.divudi.data.InstitutionType;
+import com.divudi.entity.AgentHistory;
+import com.divudi.entity.Bill;
+import com.divudi.entity.BilledBill;
 import com.divudi.entity.Institution;
+import com.divudi.entity.Payment;
+import com.divudi.facade.AgentHistoryFacade;
+import com.divudi.facade.BillFacade;
 import com.divudi.facade.InstitutionFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -21,6 +31,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -29,6 +40,8 @@ import javax.inject.Named;
 @Named
 @SessionScoped
 public class CollectingCentreController implements Serializable {
+
+    private boolean printPreview;
 
     /**
      * Creates a new instance of CollectingCentreController
@@ -43,10 +56,97 @@ public class CollectingCentreController implements Serializable {
     InstitutionController institutionController;
     @EJB
     private InstitutionFacade ejbFacade;
+    @Inject
+    CollectingCentreApplicationController collectingCentreApplicationController;
+
+    @EJB
+    AgentHistoryFacade agentHistoryFacade;
+    @EJB
+    BillFacade billFacade;
+
     List<Institution> selectedItems;
     private Institution current;
     private List<Institution> items = null;
     String selectText = "";
+    private List<AgentHistory> agentHistories;
+    private Date fromDate;
+    private Date toDate;
+    private Institution collectingCentre;
+    private Institution institution;
+    private Bill bill;
+    private Payment payment;
+
+    public String navigateToPayToCollectingCentre() {
+        bill = new Bill();
+        collectingCentre = null;
+        return "/collecting_centre/pay_collecting_centre?faces-redirect=true";
+    }
+
+    public void prepairColectingCentrePaymentDetails() {
+        if (collectingCentre == null) {
+            JsfUtil.addErrorMessage("Please select a Collecting Centre");
+            return;
+        }
+        bill = new BilledBill();
+        bill.setCollectingCentre(collectingCentre);
+        bill.setFromInstitution(sessionController.getInstitution());
+        bill.setToInstitution(collectingCentre);
+        bill.setDepartment(sessionController.getDepartment());
+        bill.setBillType(BillType.CollectingCentrePaymentMadeBill);
+        bill.setBillTypeAtomic(BillTypeAtomic.CC_PAYMENT_RECEIVED_BILL);
+        System.out.println("bill.getCollectingCenter() = " + bill.getCollectingCentre().getName());
+
+    }
+
+    public void settlePaymentBillToCollectingCentrePaymenMade() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Error");
+            return;
+        }
+        if (bill.getCollectingCentre() == null) {
+            JsfUtil.addErrorMessage("Select a Collecting Center");
+            return;
+        }
+        if (bill.getNetTotal() == 0.0) {
+            JsfUtil.addErrorMessage("No value");
+            return;
+        }
+
+        if (bill.getBillType() != BillType.CollectingCentrePaymentMadeBill) {
+            JsfUtil.addErrorMessage("Wrong Bill Type");
+            return;
+        }
+
+        bill.setGrantTotal(bill.getNetTotal());
+
+        if (bill.getId() == null) {
+            bill.setCreatedAt(new Date());
+            bill.setCreater(sessionController.getLoggedUser());
+            billFacade.create(bill);
+        } else {
+            billFacade.edit(bill);
+        }
+
+        //        Institution collectingCentre,
+//            double hospitalFee,
+//            double collectingCentreFee,
+//            double staffFee,
+//            double transactionValue,
+//            HistoryType historyType,
+//            Bill bill
+//        
+        collectingCentreApplicationController.updateBalance(
+                collectingCentre,
+                0,
+                0,
+                0,
+                bill.getNetTotal(),
+                HistoryType.CollectingentrePaymentMadeBill,
+                bill);
+
+        printPreview = true;
+
+    }
 
     public List<Institution> completeCollecting(String query) {
         List<Institution> suggestions;
@@ -89,6 +189,34 @@ public class CollectingCentreController implements Serializable {
 
     public void setSelectedItems(List<Institution> selectedItems) {
         this.selectedItems = selectedItems;
+    }
+
+    public void processCollectingCentreStatementReportNew() {
+
+        String jpql = "select ah "
+                + " from AgentHistory ah "
+                + " where ah.retired=:ret"
+                + " and ah.createdAt between :fd and :td ";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        if (collectingCentre != null) {
+            jpql += " and ah.agency = :cc ";
+            m.put("cc", collectingCentre);
+        }
+
+        if (institution != null) {
+            jpql += " and ah.bill.institution = :ins ";
+            m.put("ins", institution);
+        }
+
+        System.out.println("m = " + m);
+        System.out.println("jpql = " + jpql);
+        agentHistories = agentHistoryFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        System.out.println("agentHistories = " + agentHistories);
     }
 
     public String getSelectText() {
@@ -283,6 +411,70 @@ public class CollectingCentreController implements Serializable {
 
     public CollectingCentrePaymentMethod[] getCollectingCentrePaymentMethod() {
         return CollectingCentrePaymentMethod.values();
+    }
+
+    public List<AgentHistory> getAgentHistories() {
+        return agentHistories;
+    }
+
+    public void setAgentHistories(List<AgentHistory> agentHistories) {
+        this.agentHistories = agentHistories;
+    }
+
+    public Date getFromDate() {
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
+    public Institution getCollectingCentre() {
+        return collectingCentre;
+    }
+
+    public void setCollectingCentre(Institution collectingCentre) {
+        this.collectingCentre = collectingCentre;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public Bill getBill() {
+        return bill;
+    }
+
+    public void setBill(Bill bill) {
+        this.bill = bill;
+    }
+
+    public Payment getPayment() {
+        return payment;
+    }
+
+    public void setPayment(Payment payment) {
+        this.payment = payment;
+    }
+
+    public boolean isPrintPreview() {
+        return printPreview;
+    }
+
+    public void setPrintPreview(boolean printPreview) {
+        this.printPreview = printPreview;
     }
 
 }

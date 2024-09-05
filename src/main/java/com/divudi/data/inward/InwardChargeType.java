@@ -44,7 +44,7 @@ public enum InwardChargeType {
     OperationTheatreNursingCharges("Operation Theatre Nursing Charges"),
     OperationTheatreMachineryCharges("Operation Theatre Machinery Charges"),
     TheaterConsumbale("Theater Consumables & Drugs"),
-    VAT("VAT (15%)"),
+    VAT("VAT (18%)"),
     AccessoryCharges("Endoscopy Charges"),
     EyeLence("Opthalmic Technician & Lense Fee"),
     HospitalSupportService("Hospital Support Service"),
