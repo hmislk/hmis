@@ -406,7 +406,7 @@
                     </p:menuitem>
 
                     <p:submenu label="Payments" icon="fas fa-money-check-dollar"  rendered="#{webUserController.hasPrivilege('Payment')}">
-                        <p:menuitem icon="fas fa-money-bill-wave"  ajax="false"  action="/lab/collecting_centre_bill?faces-redirect=true" value="Collecting Centre Payment" actionListener="#{agentPaymentRecieveBillController.prepareNewBill()}" ></p:menuitem>
+                        <p:menuitem icon="fas fa-money-bill-wave"  ajax="false"  action="/collecting_centre/collecting_centre_bill?faces-redirect=true" value="Collecting Centre Payment" actionListener="#{agentPaymentRecieveBillController.prepareNewBill()}" ></p:menuitem>
                         <p:menuitem  ajax="false" icon="fa fa-search" action="/lab/collecting_centre_bill_search_own?faces-redirect=true"
                                      actionListener="#{searchController.makeListNull}"  value="Collecting Centre Bill Search"  ></p:menuitem>
                     </p:submenu>
@@ -1142,7 +1142,7 @@
                         </p:submenu>
 
                         <p:submenu label="Collecting Centre"  rendered="#{webUserController.hasPrivilege('Payment')}">
-                            <p:menuitem  ajax="false"  action="/lab/collecting_centre_bill?faces-redirect=true" value="Collecting Centre Payment" actionListener="#{agentPaymentRecieveBillController.prepareNewBill()}" ></p:menuitem>
+                            <p:menuitem  ajax="false"  action="/collecting_centre/collecting_centre_bill?faces-redirect=true" value="Collecting Centre Payment" actionListener="#{agentPaymentRecieveBillController.prepareNewBill()}" ></p:menuitem>
                             <p:menuitem  ajax="false"  action="/lab/collecting_centre_bill_search_own?faces-redirect=true"
                                          actionListener="#{searchController.makeListNull}"  value="Collecting Centre Bill Search"  ></p:menuitem>
                         </p:submenu>

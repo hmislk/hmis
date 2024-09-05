@@ -79,6 +79,8 @@ public class AgentPaymentReceiveSearchController implements Serializable {
     private WebUserController webUserController;
     @Inject
     AgentPaymentRecieveBillController agentPaymentRecieveBillController;
+    @Inject
+    CollectingCentreApplicationController collectingCentreApplicationController;
     @EJB
     EjbApplication ejbApplication;
     @EJB
@@ -253,30 +255,30 @@ public class AgentPaymentReceiveSearchController implements Serializable {
     }
     
     public void collectingCentreCancelBill(){
-        cancelBill(BillType.CollectingCentrePaymentReceiveBill, BillNumberSuffix.CCCAN, HistoryType.CollectingCentreDepositCancel);
+        cancelBill(BillType.CollectingCentrePaymentReceiveBill, BillNumberSuffix.CCCAN, HistoryType.CollectingCentreDepositCancel,BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL);
     }
     
     public void channellAgencyCancelBill(){
-        cancelBill(BillType.AgentPaymentReceiveBill, BillNumberSuffix.AGNCAN, HistoryType.ChannelDepositCancel);
+        cancelBill(BillType.AgentPaymentReceiveBill, BillNumberSuffix.AGNCAN, HistoryType.ChannelDepositCancel,BillTypeAtomic.AGENCY_PAYMENT_CANCELLATION);
     }
     
     public void channelCreditNoteCancelBill(){
-        cancelBill(BillType.AgentCreditNoteBill, BillNumberSuffix.AGNCNCAN, HistoryType.ChannelCreditNoteCancel);
+        cancelBill(BillType.AgentCreditNoteBill, BillNumberSuffix.AGNCNCAN, HistoryType.ChannelCreditNoteCancel,BillTypeAtomic.AGENCY_CREDIT_NOTE_CANCELLATION);
     }
     
     public void channelDebitNoteCancelBill(){
-        cancelBill(BillType.AgentDebitNoteBill, BillNumberSuffix.AGNDNCAN, HistoryType.ChannelDebitNoteCancel);
+        cancelBill(BillType.AgentDebitNoteBill, BillNumberSuffix.AGNDNCAN, HistoryType.ChannelDebitNoteCancel,BillTypeAtomic.AGENCY_DEBIT_NOTE_CANCELLATION);
     }
     
     public void collectingCenterCreditNoteCancelBill(){
-        cancelBill(BillType.CollectingCentreCreditNoteBill, BillNumberSuffix.CCCNCAN, HistoryType.CollectingCentreCreditNoteCancel);
+        cancelBill(BillType.CollectingCentreCreditNoteBill, BillNumberSuffix.CCCNCAN, HistoryType.CollectingCentreCreditNoteCancel,BillTypeAtomic.CC_CREDIT_NOTE_CANCELLATION);
     }
     
     public void collectingCenterDebitNoteCancelBill(){
-        cancelBill(BillType.CollectingCentreDebitNoteBill, BillNumberSuffix.CCDNCAN, HistoryType.CollectingCentreDebitNoteCancel);
+        cancelBill(BillType.CollectingCentreDebitNoteBill, BillNumberSuffix.CCDNCAN, HistoryType.CollectingCentreDebitNoteCancel,BillTypeAtomic.CC_DEBIT_NOTE_CANCELLATION);
     }
 
-    public void cancelBill(BillType billType, BillNumberSuffix billNumberSuffix, HistoryType historyType) {
+    public void cancelBill(BillType billType, BillNumberSuffix billNumberSuffix, HistoryType historyType, BillTypeAtomic billTypeAtomic) {
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (errorCheck()) {
                 return;
@@ -287,7 +289,7 @@ public class AgentPaymentReceiveSearchController implements Serializable {
             //Copy & paste
             //if (webUserController.hasPrivilege("LabBillCancelling")) {
             if (true) {
-                cb.setBillTypeAtomic(BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL);
+                cb.setBillTypeAtomic(billTypeAtomic);
                 getCancelledBillFacade().create(cb);
                 cancelBillItems(cb);
                 getBill().setCancelled(true);
@@ -298,7 +300,15 @@ public class AgentPaymentReceiveSearchController implements Serializable {
                 
 
                 //for channel agencyHistory Update
-                getAgentPaymentRecieveBillController().createAgentHistory(cb.getFromInstitution(), cb.getNetTotal(), historyType, cb);
+                //getAgentPaymentRecieveBillController().createAgentHistory(cb.getFromInstitution(), cb.getNetTotal(), historyType, cb);
+                collectingCentreApplicationController.updateBalance(
+                cb.getFromInstitution(),
+                0,
+                cb.getNetTotal(),
+                0,
+                cb.getNetTotal(),
+                historyType,
+                cb,comment);
                 //for channel agencyHistory Update
 
                 WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cb, getSessionController().getLoggedUser());
