@@ -2064,6 +2064,8 @@ public class BillSearch implements Serializable {
             return null;
         }
 
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getInstitution(), sessionController.getDepartment(), BillType.CollectingCentreBill, BillClassType.CancelledBill);
+
         cb.copy(originalBill);
         cb.copyValue(originalBill);
         cb.invertValue(originalBill);
@@ -2078,6 +2080,8 @@ public class BillSearch implements Serializable {
         cb.setDepartment(getSessionController().getDepartment());
         cb.setInstitution(getSessionController().getInstitution());
         cb.setComments(comment);
+        cb.setInsId(deptId);
+        cb.setDeptId(deptId);
 
         return cb;
     }
