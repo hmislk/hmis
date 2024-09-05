@@ -4,29 +4,18 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:f="http://xmlns.jcp.org/jsf/core"      
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
       xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill">
+
     <h:body>
-        <ui:composition template="/resources/template/template.xhtml">
-            <ui:define name="content">
+        <ui:composition template="/collecting_centre/index.xhtml">
+            <ui:define name="subcontent">
                 <h:form>
-                    <p:panel rendered="#{!agentPaymentReceiveSearchController.printPreview}" styleClass="alignTop" >
-                        <p:panel  header="Cancellation">
-                            <p:selectOneMenu   id="cmbPs" value="#{agentPaymentReceiveSearchController.paymentMethod}" 
-                                               required="true"  >
-                                <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
-                            </p:selectOneMenu>
-                            <p:commandButton ajax="false" value="Cancel" action="#{agentPaymentReceiveSearchController.channellAgencyCancelBill}" style="float: right;"  
-                                             rendered="#{agentPaymentReceiveSearchController.bill.billType eq 'AgentPaymentReceiveBill'}" onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
-                                                         return false;"/>
-                            
-                            <p:commandButton ajax="false" value="Cancel" action="#{agentPaymentReceiveSearchController.collectingCentreCancelBill}" style="float: right;"  
-                                             rendered="#{agentPaymentReceiveSearchController.bill.billType eq 'CollectingCentrePaymentReceiveBill'}" onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
-                                                         return false;"/>
-                            
-                        </p:panel>
-                        <p:panelGrid columns="2" style="width: 100%;">
-                            <p:panel header="Person Detail">
+
+                    <h:panelGroup rendered="#{!agentPaymentReceiveSearchController.printPreview}" style="vertical-align: top;">
+                        <p:panelGrid layout="tabular" columns="2" class="w-100" style="vertical-align: top;">
+                            <p:panel header="Bill Detail">
                                 <p:panelGrid columns="2">
                                     <h:outputLabel value="Collelcting Centre:" ></h:outputLabel>
                                     <h:outputLabel value="#{agentPaymentReceiveSearchController.bill.fromInstitution.name }" ></h:outputLabel>                                        
@@ -36,20 +25,42 @@
                                     <h:outputLabel value="#{agentPaymentReceiveSearchController.bill.netTotal}" ></h:outputLabel>
                                 </p:panelGrid>
                             </p:panel>
+                            <p:panel  >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Cancellation" ></p:outputLabel>
+                                </f:facet>
+                                <p:panelGrid columns="2" >
+                                    <p:outputLabel value="Cancellation" ></p:outputLabel>
+                                    <p:selectOneMenu   id="cmbPs" value="#{agentPaymentReceiveSearchController.paymentMethod}" 
+                                                       required="true"  >
+                                        <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
+                                    </p:selectOneMenu>
+                                    <p:outputLabel value="Comments" ></p:outputLabel>
+                                    <p:inputTextarea value="#{agentPaymentReceiveSearchController.comment}"/>  
+                                    <p:spacer ></p:spacer>
+                                    <p:commandButton
+                                        styleClass="w-100 ui-button-warning"
+                                        ajax="false" value="Cancel" action="#{agentPaymentReceiveSearchController.collectingCentreDepositCancelBill}"
+                                        onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
+                                                    return false;"/>
+                                </p:panelGrid>
+                            </p:panel>
                         </p:panelGrid>
 
-                        <p:panel header="Comments">
-                            <h:inputTextarea value="#{agentPaymentReceiveSearchController.comment}"/>                            
-                        </p:panel>
-                    </p:panel>
-
-                    <p:panel rendered="#{agentPaymentReceiveSearchController.printPreview}" >
-                        <bi:agent billController ="#{agentPaymentReceiveSearchController}"  bill="#{agentPaymentReceiveSearchController.bill}" dup="false"/>  
-                    </p:panel>
 
 
-                </h:form>                
+
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{agentPaymentReceiveSearchController.printPreview}" >
+                        <bi:agent billController ="#{agentPaymentReceiveSearchController}"  
+                                  bill="#{agentPaymentReceiveSearchController.bill}" dup="false"/>  
+                    </h:panelGroup>
+
+
+                </h:form>   
             </ui:define>
         </ui:composition>
     </h:body>
 </html>
+
+

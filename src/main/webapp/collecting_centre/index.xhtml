@@ -41,11 +41,11 @@
                                                              actionListener="#{institutionController.makeNull()}"
                                                              rendered="#{webUserController.hasPrivilege('ChangeCreditLimitInCC')}"
                                                              class="w-100 m-1"/>
-                                            
+
                                             <p:commandButton icon="fa fa-check-circle" ajax="false" value="Pay Collecting Centres"
                                                              action="#{collectingCentreController.navigateToPayToCollectingCentre()}"
                                                              class="w-100 m-1"/>
-                                            
+
                                         </h:panelGrid>
                                     </p:tab>
 
@@ -75,26 +75,27 @@
                                                              class="w-100 m-1"/>
                                         </h:panelGrid>
                                     </p:tab>
-                                    
+
                                     <!-- Collecting Centre Book Issuing Section -->
                                     <p:tab title="Collecting Centre Reports">
-                                        <p:panelGrid columns="1" >
+                                        <h:panelGrid columns="1" class="w-100" >
+                                            <p:commandButton icon="fa fa-statement" ajax="false" value="Collecting Centre Statement"
+                                                             action="/collecting_centre/cc_statement?faces-redirect=true"
+                                                             class="w-100 m-1"/>
                                             <p:commandButton icon="fa fa-archive" ajax="false" value="Collecting Centre Book Issuance Report"
                                                              action="/collecting_centre/report_collecting_center_referece_book?faces-redirect=true"
                                                              class="w-100 m-1"/>
                                             <p:commandButton icon="fa fa-history" ajax="false" value="Collecting Centre History"
                                                              action="/reportLab/collecting_centre_report_agent_history?faces-redirect=true"
                                                              class="w-100 m-1"/>
-                                            <p:commandButton icon="fa fa-statement" ajax="false" value="Collecting Centre Statement"
-                                                             action="/reportLab/collecting_center_report_history_1?faces-redirect=true"
-                                                             class="w-100 m-1"/>
+
                                             <p:commandButton icon="fa fa-dollar-sign" ajax="false" value="Collecting Centre Deposits"
                                                              action="/reportLab/report_collecting_center_payment_bill?faces-redirect=true"
                                                              class="w-100 m-1"/>
                                             <p:commandButton icon="fa fa-balance-scale" ajax="false" value="Collecting Centre Current Balance"
                                                              action="/reportLab/report_collecting_center_balance?faces-redirect=true"
                                                              class="w-100 m-1"/>
-                                        </p:panelGrid>
+                                        </h:panelGrid>
                                     </p:tab>
 
                                 </p:accordionPanel>
