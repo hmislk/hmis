@@ -364,6 +364,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private String serverTimeZone = ZoneId.systemDefault().toString();
     private List<ServiceSession> selectedServiceSessions;
     private ScheduleEvent<?> sEvent = new DefaultScheduleEvent<>();
+    
+    private List<BillFee> lstBillFees;
+   
 
     public void makeNull() {
         consultant = null;
@@ -3512,10 +3515,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     settleSucessFully  = true;
     printPreview  = true;
 
-    JsfUtil.addSuccessMessage (
-            
-
-"Channel Booking Added.");
+    JsfUtil.addSuccessMessage ("Channel Booking Added.");
     }
 
     public long totalReservedNumberCount(SessionInstance s) {
@@ -8703,6 +8703,14 @@ public void setQuickSearchPatientList(List<Patient> quickSearchPatientList) {
 
     public void setSerialnumbersBySelectedSessionInstance(List<Integer> serialnumbersBySelectedSessionInstance) {
         this.serialnumbersBySelectedSessionInstance = serialnumbersBySelectedSessionInstance;
+    }
+
+    public List<BillFee> getLstBillFees() {
+        return lstBillFees;
+    }
+
+    public void setLstBillFees(List<BillFee> lstBillFees) {
+        this.lstBillFees = lstBillFees;
     }
 
 }

@@ -104,13 +104,19 @@
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'PrintedAt' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.printingAt}" style="#{myIi.innerCssStyle};" escape="false" >
                     <f:convertDateTime pattern="dd/MM/yyyy hh:mm a"/>
                 </h:outputText>
-                
+
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'AutherizedCode' and myCli.retired eq false  and cc.attrs.patientReport.approveUser.staff.id ne null}"  value="#{cc.attrs.patientReport.approveUser.staff.code}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'AutherizedPosition' and myCli.retired eq false  and cc.attrs.patientReport.approveUser.staff.id ne null}"  value="#{cc.attrs.patientReport.approveUser.staff.speciality.name}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'AutherizedQualification' and myCli.retired eq false  and cc.attrs.patientReport.approveUser.staff.id ne null}" value="#{cc.attrs.patientReport.approveUser.staff.qualification}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
 
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'MRN' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.patient.phn}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
-                <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'SampledID' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.getId()}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
+                <h:panelGroup rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'SampledID' and myCli.retired eq false }"  >
+                    <ui:repeat value="#{patientInvestigationController.getPatientSampleComponentsByInvestigation(cc.attrs.patientReport.patientInvestigation)}" var="psc">
+                        <div class="d-flex gap-2">
+                            <h:outputText value="#{psc.patientSample.id}"  />
+                        </div>
+                    </ui:repeat>
+                </h:panelGroup>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'BillingDepartment' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.billItem.bill.department.name}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'PerformDepartment' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.billItem.bill.toDepartment.name}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'BillingInstitution' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.billItem.bill.institution.name}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
@@ -130,13 +136,12 @@
                                 height="#{myCli.htPix}" width="#{myCli.wtPix}">
                 </p:graphicImage>
 
-
                 <h:panelGroup rendered="#{myCli.ixItemType eq 'Barcode' and myCli.retired ne true }"  
                               >
-
-                    <p:barcode value="#{cc.attrs.patientReport.patientInvestigation.patient.phn}" 
-                               cache="false"
-                               type="code128" height="#{myCli.htPix}" width="#{myCli.wtPix}" />
+                    <p:barcode 
+                        value="#{cc.attrs.patientReport.patientInvestigation.patient.phn}" 
+                        cache="false"
+                        type="code128" height="#{myCli.htPix}" width="#{myCli.wtPix}" />
 
                 </h:panelGroup>
                 <h:panelGroup rendered="#{myCli.ixItemType eq 'BarcodeVertical' and myCli.retired ne true }"  
