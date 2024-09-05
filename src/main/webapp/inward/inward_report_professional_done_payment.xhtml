@@ -71,7 +71,7 @@
                                 </f:facet>
 
                                 <p:column headerText="Payment Bill No" >
-                                    <h:outputLabel value="#{billedBill.bill.insId}" ></h:outputLabel>
+                                    <h:outputLabel value="#{billedBill.bill.deptId}" ></h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Bht No" >
                                     <h:outputLabel value="#{billedBill.paidForBillFee.bill.patientEncounter.bhtNo}" ></h:outputLabel>
@@ -141,7 +141,7 @@
                                     <h:outputLabel value="CancelledBill Bill"></h:outputLabel>
                                 </f:facet>
                                 <p:column headerText="Payment Bill No" >
-                                    <h:outputLabel value="#{cancelledBill.bill.insId}" ></h:outputLabel>
+                                    <h:outputLabel value="#{cancelledBill.bill.deptId}" ></h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Bht No" >
                                     <h:outputLabel value="#{cancelledBill.paidForBillFee.bill.patientEncounter.bhtNo}" ></h:outputLabel>
@@ -194,7 +194,7 @@
                                 </f:facet>
 
                                 <p:column headerText="Payment Bill No" >
-                                    <h:outputLabel value="#{refundBill.bill.insId}" ></h:outputLabel>
+                                    <h:outputLabel value="#{refundBill.bill.deptId}" ></h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Bht No" >
                                     <h:outputLabel value="#{refundBill.paidForBillFee.bill.patientEncounter.bhtNo}" ></h:outputLabel>

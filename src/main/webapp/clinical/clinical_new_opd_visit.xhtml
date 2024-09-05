@@ -156,7 +156,7 @@
                                                 <h:outputLabel id="lblBillIx" value="#{pi.billItem.item.name}" >
                                                 </h:outputLabel>
                                                 <p:tooltip for="lblBillIx"  >
-                                                    <h:outputLabel value="Bill No : #{pi.billItem.bill.insId}" ></h:outputLabel>
+                                                    <h:outputLabel value="Bill No : #{pi.billItem.bill.deptId}" ></h:outputLabel>
                                                     <br/>
                                                     <h:outputLabel value="Billed From : #{pi.billItem.bill.institution.name}" ></h:outputLabel>
                                                     <br/>
@@ -325,7 +325,7 @@
                                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                                      >
                                             <p:column headerText="No" >
-                                                <h:outputLabel value="#{bill.insId}"></h:outputLabel>
+                                                <h:outputLabel value="#{bill.deptId}"></h:outputLabel>
                                             </p:column>
                                             <p:column headerText="Date/Time" >
                                                 <h:outputLabel  value="#{bill.singleBillSession.serviceSession.sessionDate}" >
@@ -408,7 +408,7 @@
                                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                                      >
                                             <p:column headerText="No" >
-                                                <h:outputLabel value="#{bill.insId}" id="lblBillNos"  ></h:outputLabel>
+                                                <h:outputLabel value="#{bill.deptId}" id="lblBillNos"  ></h:outputLabel>
                                             </p:column>
                                             <p:column headerText="Date/Time" >
                                                 <h:outputLabel id="lblBillDates" value="#{bill.createdAt}" >

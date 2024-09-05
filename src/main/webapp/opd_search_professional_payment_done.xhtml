@@ -39,7 +39,7 @@
                                 <h:outputLabel value="OPD Bill No"/>
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="w-100 my-1"/>
                                 <h:outputLabel value="Payment Bill No"/>
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.insId}" class="w-100 my-1"/>
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.deptId}" class="w-100 my-1"/>
                                 <h:outputLabel value="Bht No"/>
                                 <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.bhtNo}" />
                                 <h:outputLabel value="Patient Name"/>
@@ -78,8 +78,8 @@
                                              rowsPerPageTemplate="5,10,25,50"
                                              rowIndexVar="i" >
                                     
-                                    <p:column headerText="OPD Bill No" filterBy="#{bi.paidForBillFee.bill.insId}">
-                                        <h:outputLabel value="#{bi.paidForBillFee.bill.insId}" ></h:outputLabel>
+                                    <p:column headerText="OPD Bill No" filterBy="#{bi.paidForBillFee.bill.deptId}">
+                                        <h:outputLabel value="#{bi.paidForBillFee.bill.deptId}" ></h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Billed At"  >
                                         <h:outputLabel value="#{bi.paidForBillFee.bill.createdAt}" >
@@ -92,8 +92,8 @@
                                     <p:column headerText="Client"  filterBy="#{bi.paidForBillFee.bill.patient.person.name}">
                                         <h:outputLabel value="#{bi.paidForBillFee.bill.patient.person.name}" ></h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Payment Bill No" filterBy="#{bi.bill.insId}">
-                                        <h:outputLabel value="#{bi.bill.insId}" ></h:outputLabel>
+                                    <p:column headerText="Payment Bill No" filterBy="#{bi.bill.deptId}">
+                                        <h:outputLabel value="#{bi.bill.deptId}" ></h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Payment Method" rendered="#{searchController.searchKeyword.paymentMethod ne null}" >
                                         <h:outputLabel value="#{bi.paidForBillFee.bill.paymentMethod}" ></h:outputLabel>

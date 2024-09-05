@@ -26,9 +26,9 @@
             <!-- Receipt Details -->
             <div class="row">
                 <div class="col-xs-12 col-sm-6">
-                    <strong>Receipt No:</strong> #{cc.attrs.bill.insId}
+                    <strong>Receipt No:</strong> #{cc.attrs.bill.deptId}
                     <h:outputLabel value=" **Duplicate" rendered="#{cc.attrs.dup eq true }"/>
-                    <h:outputLabel value=" **Cancelled" rendered="#{cc.attrs.bill.cancelledBill.insId ne null}"/>
+                    <h:outputLabel value=" **Cancelled" rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}"/>
                 </div>
                 <div class="col-xs-12 col-sm-6">
                     <strong>Date:</strong>

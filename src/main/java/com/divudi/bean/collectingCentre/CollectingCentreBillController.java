@@ -1067,7 +1067,8 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         }
 
         //Department ID (DEPT ID)
-        String deptId = getBillNumberGenerator().departmentBillNumberGenerator(temp.getDepartment(), temp.getToDepartment(), temp.getBillType(), BillClassType.BilledBill);
+        String deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearly( sessionController.getInstitution(),
+                temp.getDepartment(),  temp.getBillType(), BillClassType.BilledBill);
         temp.setDeptId(deptId);
 
         if (temp.getId() == null) {

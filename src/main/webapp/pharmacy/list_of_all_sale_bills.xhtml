@@ -120,10 +120,10 @@
                                 </p:column>
 
                                 <p:column headerText="Bill No" 
-                                          sortBy="#{bill.insId}"
-                                          filterBy="#{bill.insId}"
+                                          sortBy="#{bill.deptId}"
+                                          filterBy="#{bill.deptId}"
                                           filterMatchMode="contains">                                
-                                    <h:outputLabel   value="#{bill.insId}"/>
+                                    <h:outputLabel   value="#{bill.deptId}"/>
                                 </p:column>  
 
                                 <p:column headerText="Institution"  rendered="#{billController.institution eq null and billController.department eq null}"

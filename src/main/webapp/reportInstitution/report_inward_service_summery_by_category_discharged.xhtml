@@ -82,7 +82,7 @@
                             <f:facet name="header">
                                 <h:outputLabel value="Bill No" />
                             </f:facet>
-                            <p:outputLabel value="#{d.billItem.bill.insId}" />
+                            <p:outputLabel value="#{d.billItem.bill.deptId}" />
                         </p:column>
 
                         <p:column headerText="BHT No">
@@ -122,7 +122,7 @@
                                 <h:outputLabel style="color: red;" rendered="#{d.billItem.bill.cancelled}" value="#{d.billItem.bill.cancelledBill.createdAt}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                 </h:outputLabel>
-                                <h:outputLabel style="color: red;" rendered="#{d.billItem.bill.cancelled}" value="&nbsp;&nbsp;&nbsp;#{d.billItem.bill.cancelledBill.insId}"/>
+                                <h:outputLabel style="color: red;" rendered="#{d.billItem.bill.cancelled}" value="&nbsp;&nbsp;&nbsp;#{d.billItem.bill.cancelledBill.deptId}"/>
                             </h:panelGroup>
                         </p:column>
 
