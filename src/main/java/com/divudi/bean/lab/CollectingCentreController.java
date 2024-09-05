@@ -68,16 +68,16 @@ public class CollectingCentreController implements Serializable {
     private Institution current;
     private List<Institution> items = null;
     String selectText = "";
-    List<AgentHistory> agentHistories;
-    Date fromDate;
-    Date toDate;
-    Institution collectingCentre;
-    Institution institution;
-    Bill bill;
-    Payment payment;
+    private List<AgentHistory> agentHistories;
+    private Date fromDate;
+    private Date toDate;
+    private Institution collectingCentre;
+    private Institution institution;
+    private Bill bill;
+    private Payment payment;
 
     public String navigateToPayToCollectingCentre() {
-        recreateModel();
+        bill = new Bill();
         collectingCentre = null;
         return "/collecting_centre/pay_collecting_centre?faces-redirect=true";
     }
@@ -122,10 +122,10 @@ public class CollectingCentreController implements Serializable {
             bill.setCreatedAt(new Date());
             bill.setCreater(sessionController.getLoggedUser());
             billFacade.create(bill);
-        }else{
-             billFacade.edit(bill);
+        } else {
+            billFacade.edit(bill);
         }
-        
+
         //        Institution collectingCentre,
 //            double hospitalFee,
 //            double collectingCentreFee,
@@ -142,8 +142,8 @@ public class CollectingCentreController implements Serializable {
                 bill.getNetTotal(),
                 HistoryType.CollectingentrePaymentMadeBill,
                 bill);
-        
-        printPreview=true;
+
+        printPreview = true;
 
     }
 
@@ -410,6 +410,70 @@ public class CollectingCentreController implements Serializable {
 
     public CollectingCentrePaymentMethod[] getCollectingCentrePaymentMethod() {
         return CollectingCentrePaymentMethod.values();
+    }
+
+    public List<AgentHistory> getAgentHistories() {
+        return agentHistories;
+    }
+
+    public void setAgentHistories(List<AgentHistory> agentHistories) {
+        this.agentHistories = agentHistories;
+    }
+
+    public Date getFromDate() {
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
+    public Institution getCollectingCentre() {
+        return collectingCentre;
+    }
+
+    public void setCollectingCentre(Institution collectingCentre) {
+        this.collectingCentre = collectingCentre;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public Bill getBill() {
+        return bill;
+    }
+
+    public void setBill(Bill bill) {
+        this.bill = bill;
+    }
+
+    public Payment getPayment() {
+        return payment;
+    }
+
+    public void setPayment(Payment payment) {
+        this.payment = payment;
+    }
+
+    public boolean isPrintPreview() {
+        return printPreview;
+    }
+
+    public void setPrintPreview(boolean printPreview) {
+        this.printPreview = printPreview;
     }
 
 }
