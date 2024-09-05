@@ -294,7 +294,7 @@ public class CollectingCentreApplicationController {
             agentHistory.setDepartment(bill.getDepartment());
             agentHistory.setAgency(collectingCentre);
             agentHistory.setReferenceNumber(bill.getAgentRefNo());
-            agentHistory.setHistoryType(HistoryType.);
+            agentHistory.setHistoryType(HistoryType.CollectingCentreCreditNoteCancel);
             agentHistory.setCompanyTransactionValue(0);
             agentHistory.setAgentTransactionValue(0);
             agentHistory.setStaffTrasnactionValue(0);
