@@ -36,16 +36,18 @@
                     </h:panelGroup>
 
                     <h:panelGroup rendered="#{configOptionApplicationController.getLongTextValueByKey('Inward Final Bill Header Template') eq ''}">
-                        <div>
-                            <div class="col-12 text-center">
-                                <h1 class=""><h:outputLabel value="#{cc.attrs.bill.institution.name}" /></h1>
-                                <h2><h:outputLabel value="#{cc.attrs.bill.institution.address}" /></h2>
-                                <h3>#{cc.attrs.bill.institution.phone}</h3>
-                                <h4>#{cc.attrs.bill.institution.fax}</h4>
-                                <h4>#{cc.attrs.bill.institution.email}</h4>
-                                <h4>#{cc.attrs.bill.institution.web}</h4>
+                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Inward Final bill header with institution details',false)}">
+                            <div>
+                                <div class="col-12 text-center">
+                                    <h1 class=""><h:outputLabel value="#{cc.attrs.bill.institution.name}" /></h1>
+                                    <h2><h:outputLabel value="#{cc.attrs.bill.institution.address}" /></h2>
+                                    <h3>#{cc.attrs.bill.institution.phone}</h3>
+                                    <h4>#{cc.attrs.bill.institution.fax}</h4>
+                                    <h4>#{cc.attrs.bill.institution.email}</h4>
+                                    <h4>#{cc.attrs.bill.institution.web}</h4>
+                                </div>
                             </div>
-                        </div>
+                        </h:panelGroup>
                     </h:panelGroup>
 
                     <table class="headingPrinting" >
@@ -388,7 +390,7 @@
                                                                                and b.refundedBill eq null
                                                                                and b.billClass eq 'class com.divudi.entity.RefundBill'))}" >                                       	 
                                                         <div class="d-flex gap-3" style="font-size: 11px;">
-                                                            <h:outputLabel  value="#{b.insId}"/>
+                                                            <h:outputLabel  value="#{b.deptId}"/>
                                                             <h:outputLabel value="#{b.netTotal}" style="width: 30px; text-align: right;">
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputLabel>

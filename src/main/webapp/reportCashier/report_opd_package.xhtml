@@ -105,9 +105,9 @@
                             <f:facet name="header">
                                 <p:outputLabel value="Bill No" />
                             </f:facet>
-                            <p:outputLabel value="#{bi.bill.insId}" />
+                            <p:outputLabel value="#{bi.bill.deptId}" />
                             <p:outputLabel value=" - " rendered="#{bi.bill.cancelledBill ne null}" />
-                            <p:outputLabel value="#{bi.bill.cancelledBill.insId}" rendered="#{bi.bill.cancelledBill ne null}" style="color: red;" />
+                            <p:outputLabel value="#{bi.bill.cancelledBill.deptId}" rendered="#{bi.bill.cancelledBill ne null}" style="color: red;" />
                         </p:column> 
                         <p:column headerText="Institution">
                             <f:facet name="header">
@@ -199,7 +199,7 @@
                             <f:facet name="header">
                                 <p:outputLabel value="Bill No" />
                             </f:facet>
-                            <p:outputLabel value="#{bi.bill.insId}" />
+                            <p:outputLabel value="#{bi.bill.deptId}" />
                         </p:column> 
                         <p:column headerText="Institution">
                             <f:facet name="header">
@@ -280,7 +280,7 @@
                             <f:facet name="header">
                                 <p:outputLabel value="Bill No" />
                             </f:facet>
-                            <p:outputLabel value="#{bi.bill.insId}" />
+                            <p:outputLabel value="#{bi.bill.deptId}" />
                         </p:column> 
                         <p:column headerText="Institution">
                             <f:facet name="header">

@@ -30,6 +30,12 @@
                                              class="ui-button-danger mx-1"
                                              rendered="#{bookingControllerViewScope.selectedSessionInstance.completed}">
                             </p:commandButton>
+                             <p:commandButton 
+                                value="Mark To Absent"
+                                ajax="false" 
+                                action="#{bookingControllerViewScope.markBillSessionForAbsent}" 
+                                class="ui-button-warning mx-2">
+                            </p:commandButton>
                             <p:commandButton 
                                 rendered="#{!bookingControllerViewScope.selectedSessionInstance.arrived}"
                                 id="btnArrival"
@@ -38,7 +44,6 @@
                                 class="ui-button-info mx-1"
                                 action="#{bookingControllerViewScope.markAsArrived()}"
                                 icon="fa-solid fa-check" />
-
                             <p:commandButton action="#{bookingControllerViewScope.navigateToNurseView()}" 
                                              value="Veiws"
                                              ajax="false"
@@ -106,12 +111,15 @@
                                                      selectionMode="single"
                                                      styleClass="w-100 fullHeightListbox">
 
+
                                             <p:column headerText="Serial No" width="2em">
                                                 <h:outputLabel value="#{bs.serialNoStr}" ></h:outputLabel>
                                             </p:column>
 
-                                            <p:column headerText="Name" width="25em">
-
+                                            <p:column headerText="Name" 
+                                                      filterMatchMode="contains"
+                                                      filterBy="#{bs.bill.patient.person.name}"
+                                                      width="25em">
                                                 <p:panel header="(#{bs.bill.patient.person.smsNumber})" collapsed="true" 
                                                          toggleOrientation="vertical" toggleable="true"  >
                                                     <f:facet name="header" >
@@ -193,6 +201,16 @@
                                                 </h:panelGroup>
                                             </p:column>
 
+                                            <p:column>
+                                                <p:commandButton 
+                                                    rendered="#{bs.absent}"
+                                                    value="Change Patient"
+                                                    ajax="false" 
+                                                    action="#{bookingControllerViewScope.navigateToManageBooking(bs)}" 
+                                                    class="ui-button-secondary ">
+                                                </p:commandButton>
+                                            </p:column>
+
 
                                         </p:dataTable>
                                     </p:tab>
@@ -256,7 +274,12 @@
                                             </p:column>
 
                                             <p:column headerText="Patient Name" style="font-size: 12px; width: 70%; padding: 1px" >
-                                                <p:outputLabel value="#{bs.bill.patient.person.nameWithTitle}" style="font-size: 12px;" />
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <p:outputLabel value="#{bs.bill.patient.person.nameWithTitle}" style="font-size: 12px;" />
+                                                    <p:badge rendered="#{bs.recheduledSession}" value="Resheduled" class="m-1" severity="warning">
+
+                                                    </p:badge>
+                                                </div>
                                             </p:column>
                                             <p:column headerText="Booked At" style="font-size: 12px; width: 33%!important; padding: 1px" >
                                                 <p:outputLabel value="#{bs.createdAt}" style="font-size: 12px;" >

@@ -24,7 +24,7 @@
 
 
                     <div  class="receiptnoPrinting">
-                        <h:outputLabel value="#{cc.attrs.bill.insId}" />             
+                        <h:outputLabel value="#{cc.attrs.bill.deptId}" />             
                     </div>
 
                     <div  class="billdatePrinting">
@@ -198,7 +198,7 @@
                                                                        and b.billClass eq 'class com.divudi.entity.RefundBill'))}" >
                                                 <tr>
                                                     <td>
-                                                        #{b.insId}
+                                                        #{b.deptId}
                                                     </td>
                                                     <td>
                                                         <h:outputLabel value="#{b.netTotal}">

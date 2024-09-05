@@ -51,13 +51,13 @@
                                             forceSelection="true" 
                                             value="#{cashRecieveBillController.currentBillItem.referenceBill}" 
                                             completeMethod="#{billController.completePharmacyCreditBill}" 
-                                            var="ix" itemLabel="#{ix.insId}"
+                                            var="ix" itemLabel="#{ix.deptId}"
                                             itemValue="#{ix}" size="30"  style="width: 400px;">
                                 <p:column>
                                     <f:facet name="header">
                                         <h:outputLabel value="Bill No"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{ix.insId}"/>
+                                    <h:outputLabel value="#{ix.deptId}"/>
                                 </p:column>                                  
                                 <p:column>
                                     <f:facet name="header">
@@ -118,7 +118,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Bill No"/>                                    
                                 </f:facet>                               
-                                <p:outputLabel value="#{b.referenceBill.insId}"/>
+                                <p:outputLabel value="#{b.referenceBill.deptId}"/>
                             </p:column>
                             <p:column >  
                                 <f:facet name="header">
