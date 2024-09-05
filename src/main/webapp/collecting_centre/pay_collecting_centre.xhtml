@@ -18,7 +18,7 @@
                     </f:facet>
 
                     <h:panelGroup rendered="#{collectingCentreController.collectingCentre eq null}" >
-                        <p:autoComplete id="creditCom" forceSelection="true" value="#{agentPaymentRecieveBillController.current.fromInstitution}" 
+                        <p:autoComplete id="creditCom1" forceSelection="true" value="#{collectingCentreController.collectingCentre}"
                                         class="w-100"
                                         inputStyleClass="w-100"
                                         completeMethod="#{institutionController.completeCollectingCenter}"
@@ -27,17 +27,17 @@
                                         itemValue="#{ix}" 
                                         size="30"
                                         >
-                            <f:ajax event="itemSelect" execute="creditCom"/>
+                            <f:ajax event="itemSelect" execute="creditCom1"/>
                             <p:column>#{ix.institutionCode}</p:column>
                             <p:column>#{ix.name}</p:column>
                         </p:autoComplete>
-                        <p:commandButton value="To Pay" action="#{collectingCentreController.prepairColectingCentrePaymentDetails()}"></p:commandButton>
+                        <p:commandButton value="To Pay" ajax="false" action="#{collectingCentreController.prepairColectingCentrePaymentDetails()}"></p:commandButton>
                     </h:panelGroup>
 
                     <h:panelGroup rendered="#{collectingCentreController.collectingCentre ne null}" >
                         <p:panelGrid columns="2" styleClass="w-100 ui-grid-info"  >
                             <p:outputLabel value="Collecting Center" styleClass="ui-outputlabel-info"/>
-                            <p:autoComplete id="creditCom" forceSelection="true" value="#{agentPaymentRecieveBillController.current.fromInstitution}" 
+                            <p:autoComplete id="creditCom" forceSelection="true" value="#{collectingCentreController.collectingCentre}"
                                             class="w-100"
                                             inputStyleClass="w-100"
                                             completeMethod="#{institutionController.completeCollectingCenter}"
@@ -54,10 +54,10 @@
                             <p:inputText onfocus="this.select();" autocomplete="off" 
                                          value="#{collectingCentreController.bill.netTotal}" 
                                          styleClass="ui-inputtext-info"/>
-                            <p:outputLabel value="Description" styleClass="ui-outputlabel-info"/>
+
                             <p:outputLabel value="Payment Method" styleClass="ui-outputlabel-info"/>
                             <p:selectOneMenu value="#{collectingCentreController.bill.paymentMethod}"  >
-                                <f:selectItem value="Select" ></f:selectItem>
+                                <f:selectItem itemLabel="Select Payment Method"></f:selectItem>
                                 <f:selectItems value="#{enumController.paymentMethods}" var="pm" 
                                                itemValue="#{pm}"
                                                itemLabel="#{pm.label}" ></f:selectItems>
