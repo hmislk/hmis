@@ -105,6 +105,9 @@ public class AgentPaymentRecieveBillController implements Serializable {
     String comment;
     double amount;
 
+    
+    
+    
     public void createAndAddBillItemToCcPaymentReceiptBill() {
         getCurrentBillItem().setNetValue(getCurrent().getNetTotal());
         getCurrentBillItem().setGrossValue(getCurrent().getNetTotal());
@@ -530,6 +533,11 @@ public class AgentPaymentRecieveBillController implements Serializable {
     public String prepareNewBill() {
         recreateModel();
         return "";
+    }
+    
+    public String navigateToPayToCollectingCentre() {
+        recreateModel();
+        return "/collecting_centre/pay_collecting_centre";
     }
 
     public List<Payment> createPayment(Bill bill, PaymentMethod pm) {
