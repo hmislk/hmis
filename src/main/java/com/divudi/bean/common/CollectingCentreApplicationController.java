@@ -412,12 +412,12 @@ public class CollectingCentreApplicationController {
             agentHistory.setAgentTransactionValue(0);
             agentHistory.setStaffTrasnactionValue(0);
             agentHistory.setTransactionValue(transactionValue);
-            agentHistory.setPaidAmountToAgency(transactionValue);
+            agentHistory.setPaidAmountToAgency(0.0);
             agentHistory.setComment(comments);
 
             double balanceBeforeTx = collectingCentre.getBallance();
 
-            double balanceAfterTx = collectingCentre.getBallance();
+            double balanceAfterTx = collectingCentre.getBallance() - Math.abs(transactionValue);
 
             agentHistory.setBalanceBeforeTransaction(balanceBeforeTx);
             agentHistory.setBalanceAfterTransaction(balanceAfterTx);
