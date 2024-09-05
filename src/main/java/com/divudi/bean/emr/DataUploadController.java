@@ -2369,14 +2369,14 @@ public class DataUploadController implements Serializable {
             }
 
             // Column 6: Retired (Yes/No)
-            Cell retiredCell = row.getCell(9);
+            Cell retiredCell = row.getCell(8);
             if (retiredCell != null && retiredCell.getCellType() == CellType.STRING) {
                 String retiredString = retiredCell.getStringCellValue();
                 retired = retiredString.equalsIgnoreCase("Yes");
             }
 
             // Column 5: Discount Allowed (Yes/No)
-            Cell discountAllowedCell = row.getCell(8);
+            Cell discountAllowedCell = row.getCell(7);
             if (discountAllowedCell != null && discountAllowedCell.getCellType() == CellType.STRING) {
                 String discountAllowedString = discountAllowedCell.getStringCellValue();
                 discountAllowed = discountAllowedString.equalsIgnoreCase("Yes");
