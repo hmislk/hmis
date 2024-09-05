@@ -7,9 +7,16 @@ package com.divudi.bean.lab;
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.CollectingCentrePaymentMethod;
 import com.divudi.data.InstitutionType;
+import com.divudi.entity.AgentHistory;
+import com.divudi.entity.Bill;
+import com.divudi.entity.BilledBill;
 import com.divudi.entity.Institution;
+import com.divudi.entity.Payment;
+import com.divudi.facade.AgentHistoryFacade;
 import com.divudi.facade.InstitutionFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -21,6 +28,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -43,10 +51,47 @@ public class CollectingCentreController implements Serializable {
     InstitutionController institutionController;
     @EJB
     private InstitutionFacade ejbFacade;
+
+    @EJB
+    AgentHistoryFacade agentHistoryFacade;
+
     List<Institution> selectedItems;
     private Institution current;
     private List<Institution> items = null;
     String selectText = "";
+    List<AgentHistory> agentHistories;
+    Date fromDate;
+    Date toDate;
+    Institution collectingCentre;
+    Institution institution;
+    Bill bill;
+    Payment payment;
+
+    public String navigateToPayToCollectingCentre() {
+        recreateModel();
+        collectingCentre=null;
+        return "/collecting_centre/pay_collecting_centre?faces-redirect=true";
+    }
+    
+    public void prepairColectingCentrePaymentDetails(){
+        if(collectingCentre==null){
+            JsfUtil.addErrorMessage("Please select a Collecting Centre");
+            return ;
+        }
+        bill = new BilledBill();
+        bill.setCollectingCentre(collectingCentre);
+        bill.setFromInstitution(sessionController.getInstitution());
+        bill.setDepartment(sessionController.getDepartment());
+        bill.setBillType(BillType.CollectingCentrePaymentMadeBill);
+        bill.setBillTypeAtomic(BillTypeAtomic.CC_PAYMENT_RECEIVED_BILL);
+        
+        
+        
+        
+    }
+    
+    
+    
 
     public List<Institution> completeCollecting(String query) {
         List<Institution> suggestions;
@@ -89,6 +134,34 @@ public class CollectingCentreController implements Serializable {
 
     public void setSelectedItems(List<Institution> selectedItems) {
         this.selectedItems = selectedItems;
+    }
+
+    public void processCollectingCentreStatementReportNew() {
+
+        String jpql = "select ah "
+                + " from AgentHistory ah "
+                + " where ah.retired=:ret"
+                + " and ah.createdAt between :fd and :td ";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        if (collectingCentre != null) {
+            jpql += " and ah.agency = :cc ";
+            m.put("cc", collectingCentre);
+        }
+
+        if (institution != null) {
+            jpql += " and ah.bill.institution = :ins ";
+            m.put("ins", institution);
+        }
+
+        System.out.println("m = " + m);
+        System.out.println("jpql = " + jpql);
+        agentHistories = agentHistoryFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        System.out.println("agentHistories = " + agentHistories);
     }
 
     public String getSelectText() {
