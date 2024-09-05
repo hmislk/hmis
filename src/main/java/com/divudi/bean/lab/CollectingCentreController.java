@@ -64,6 +64,8 @@ public class CollectingCentreController implements Serializable {
     @EJB
     BillFacade billFacade;
 
+    private int ccManagementIndex=1;
+    
     List<Institution> selectedItems;
     private Institution current;
     private List<Institution> items = null;
@@ -476,5 +478,15 @@ public class CollectingCentreController implements Serializable {
     public void setPrintPreview(boolean printPreview) {
         this.printPreview = printPreview;
     }
+
+    public int getCcManagementIndex() {
+        return ccManagementIndex;
+    }
+
+    public void setCcManagementIndex(int ccManagementIndex) {
+        this.ccManagementIndex = ccManagementIndex;
+    }
+    
+    
 
 }
