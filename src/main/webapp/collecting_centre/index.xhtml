@@ -41,8 +41,7 @@
                                                              class="w-100"/>
                                             
                                             <p:commandButton icon="fa fa-check-circle" ajax="false" value="Pay Collecting Centres"
-                                                             action="/collecting_centre/collecting_centre_bill?faces-redirect=true"
-                                                             actionListener="#{agentPaymentRecieveBillController.prepareNewBill()}"
+                                                             action="#{agentPaymentRecieveBillController.navigateToPayToCollectingCentre()}"
                                                              class="w-100"/>
                                             
                                         </p:panelGrid>
