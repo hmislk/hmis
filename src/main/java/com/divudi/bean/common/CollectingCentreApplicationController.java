@@ -409,7 +409,7 @@ public class CollectingCentreApplicationController {
             agentHistory.setReferenceNumber(bill.getAgentRefNo());
             agentHistory.setHistoryType(HistoryType.CollectingCentreDepositCancel);
             agentHistory.setCompanyTransactionValue(0);
-            agentHistory.setAgentTransactionValue(transactionValue);
+            agentHistory.setAgentTransactionValue(0);
             agentHistory.setStaffTrasnactionValue(0);
             agentHistory.setTransactionValue(transactionValue);
             agentHistory.setPaidAmountToAgency(transactionValue);
@@ -417,7 +417,7 @@ public class CollectingCentreApplicationController {
 
             double balanceBeforeTx = collectingCentre.getBallance();
 
-            double balanceAfterTx = balanceBeforeTx + collectingCentreFee;
+            double balanceAfterTx = collectingCentre.getBallance();
 
             agentHistory.setBalanceBeforeTransaction(balanceBeforeTx);
             agentHistory.setBalanceAfterTransaction(balanceAfterTx);

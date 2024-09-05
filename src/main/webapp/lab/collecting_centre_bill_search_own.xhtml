@@ -59,13 +59,13 @@
                             <div class="col-md-10">
                                 <p:dataTable id="tblBills" value="#{searchController.bills}" var="bill"  >
                                     <p:column headerText="Bill No" >
-                                        <h:commandLink action="/agent_bill_reprint" value="#{bill.insId}">
+                                        <h:commandLink action="/agent_bill_reprint?faces-redirect=true" value="#{bill.insId}">
                                             <h:outputLabel  ></h:outputLabel>
                                             <f:setPropertyActionListener value="#{bill}" target="#{agentPaymentReceiveSearchController.bill}"/>
                                         </h:commandLink>
                                     </p:column>                                            
                                     <p:column headerText="Billed at"  >
-                                        <h:commandLink action="/agent_bill_reprint" >
+                                        <h:commandLink action="/agent_bill_reprint?faces-redirect=true" >
                                             <h:outputLabel value="#{bill.createdAt}" >
                                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
@@ -81,7 +81,7 @@
 
                                     </p:column>  
                                     <p:column headerText="Billed by" >
-                                        <h:commandLink action="/agent_bill_reprint" >
+                                        <h:commandLink action="/agent_bill_reprint?faces-redirect=true" >
                                             <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
                                             </h:outputLabel>
                                             <f:setPropertyActionListener value="#{bill}" target="#{agentPaymentReceiveSearchController.bill}"/>
@@ -94,13 +94,13 @@
                                         </h:panelGroup>                               
                                     </p:column>    
                                     <p:column headerText="Collecting Centre Code" >
-                                        <h:commandLink action="/agent_bill_reprint" >
+                                        <h:commandLink action="/agent_bill_reprint?faces-redirect=true" >
                                             <h:outputLabel value="#{bill.fromInstitution.institutionCode}" ></h:outputLabel>
                                             <f:setPropertyActionListener value="#{bill}" target="#{agentPaymentReceiveSearchController.bill}"/>
                                         </h:commandLink>
                                     </p:column>  
 
-                                    <p:column headerText="Collecting Centre Name" >
+                                    <p:column headerText="Collecting Centre Name?faces-redirect=true" >
                                         <h:commandLink action="/agent_bill_reprint" >
                                             <h:outputLabel value="#{bill.fromInstitution.name}" ></h:outputLabel>
                                             <f:setPropertyActionListener value="#{bill}" target="#{agentPaymentReceiveSearchController.bill}"/>
@@ -108,7 +108,7 @@
                                     </p:column>  
 
                                     <p:column headerText="Net Value" styleClass="averageNumericColumn">
-                                        <h:commandLink action="/agent_bill_reprint" >
+                                        <h:commandLink action="/agent_bill_reprint?faces-redirect=true" >
                                             <h:outputLabel value="#{bill.netTotal}" >
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
