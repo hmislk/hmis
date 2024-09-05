@@ -4,12 +4,14 @@
  */
 package com.divudi.bean.lab;
 
+import com.divudi.bean.common.CollectingCentreApplicationController;
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.CollectingCentrePaymentMethod;
+import com.divudi.data.HistoryType;
 import com.divudi.data.InstitutionType;
 import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Bill;
@@ -17,6 +19,7 @@ import com.divudi.entity.BilledBill;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Payment;
 import com.divudi.facade.AgentHistoryFacade;
+import com.divudi.facade.BillFacade;
 import com.divudi.facade.InstitutionFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -38,6 +41,8 @@ import javax.persistence.TemporalType;
 @SessionScoped
 public class CollectingCentreController implements Serializable {
 
+    private boolean printPreview;
+
     /**
      * Creates a new instance of CollectingCentreController
      */
@@ -51,9 +56,13 @@ public class CollectingCentreController implements Serializable {
     InstitutionController institutionController;
     @EJB
     private InstitutionFacade ejbFacade;
+    @Inject
+    CollectingCentreApplicationController collectingCentreApplicationController;
 
     @EJB
     AgentHistoryFacade agentHistoryFacade;
+    @EJB
+    BillFacade billFacade;
 
     List<Institution> selectedItems;
     private Institution current;
@@ -69,29 +78,74 @@ public class CollectingCentreController implements Serializable {
 
     public String navigateToPayToCollectingCentre() {
         recreateModel();
-        collectingCentre=null;
+        collectingCentre = null;
         return "/collecting_centre/pay_collecting_centre?faces-redirect=true";
     }
-    
-    public void prepairColectingCentrePaymentDetails(){
-        if(collectingCentre==null){
+
+    public void prepairColectingCentrePaymentDetails() {
+        if (collectingCentre == null) {
             JsfUtil.addErrorMessage("Please select a Collecting Centre");
-            return ;
+            return;
         }
         bill = new BilledBill();
         bill.setCollectingCentre(collectingCentre);
         bill.setFromInstitution(sessionController.getInstitution());
+        bill.setToInstitution(collectingCentre);
         bill.setDepartment(sessionController.getDepartment());
         bill.setBillType(BillType.CollectingCentrePaymentMadeBill);
         bill.setBillTypeAtomic(BillTypeAtomic.CC_PAYMENT_RECEIVED_BILL);
-        
-        
-        
-        
+
     }
-    
-    
-    
+
+    public void settlePaymentBillToCollectingCentrePaymenMade() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No value");
+            return;
+        }
+        if (bill.getCollectingCentre() == null) {
+            JsfUtil.addErrorMessage("No value");
+            return;
+        }
+        if (bill.getNetTotal() == 0.0) {
+            JsfUtil.addErrorMessage("No value");
+            return;
+        }
+
+        if (bill.getBillType() != BillType.CollectingCentrePaymentMadeBill) {
+            JsfUtil.addErrorMessage("Wrong Bill Type");
+            return;
+        }
+
+        bill.setGrantTotal(bill.getNetTotal());
+
+        if (bill.getId() == null) {
+            bill.setCreatedAt(new Date());
+            bill.setCreater(sessionController.getLoggedUser());
+            billFacade.create(bill);
+        }else{
+             billFacade.edit(bill);
+        }
+        
+        //        Institution collectingCentre,
+//            double hospitalFee,
+//            double collectingCentreFee,
+//            double staffFee,
+//            double transactionValue,
+//            HistoryType historyType,
+//            Bill bill
+//        
+        collectingCentreApplicationController.updateBalance(
+                collectingCentre,
+                0,
+                0,
+                0,
+                bill.getNetTotal(),
+                HistoryType.CollectingentrePaymentMadeBill,
+                bill);
+        
+        printPreview=true;
+
+    }
 
     public List<Institution> completeCollecting(String query) {
         List<Institution> suggestions;

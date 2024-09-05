@@ -80,6 +80,9 @@ public class CollectingCentreApplicationController {
             case CollectingCentreBillingRefund:
                 handleBillingRefund(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill);
                 break;
+            case CollectingentrePaymentMadeBill:
+                
+                break;
             case CollectingCentreCreditNote:
                 handleCollectingCentreCreditNote(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill);
                 break;
