@@ -41,7 +41,10 @@
                                 <p:selectOneListbox  id="lstSelect"   
                                                      style="w-100"
                                                      filter="true" value="#{routeController.current}">
-                                    <f:selectItems  value="#{routeController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                    <f:selectItems value="#{routeController.items}" var="myItem" 
+                                                   itemValue="#{myItem}" 
+                                                   itemLabel="#{not empty myItem.name ? myItem.name : 'Unnamed'}" />
+
                                     <p:ajax update="gpDetail" process="lstSelect" >
                                     </p:ajax>
                                 </p:selectOneListbox>

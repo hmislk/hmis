@@ -208,7 +208,6 @@ public class GrnController implements Serializable {
         setFromInstitution(getCurrentGrnBillPre().getFromInstitution());
         setReferenceInstitution(getSessionController().getLoggedUser().getInstitution());
         for (BillItem bi : billItems) {
-            System.out.println("bi = " + bi.getItem().getName());
             bi.setTmpQty(bi.getPharmaceuticalBillItem().getQtyInUnit());
             bi.setTmpFreeQty(bi.getPharmaceuticalBillItem().getFreeQtyInUnit());
         }
@@ -434,7 +433,6 @@ public class GrnController implements Serializable {
         }
         for (BillItem bi : getCurrentGrnBillPre().getBillItems()) {
             System.out.println("bi = " + bi.getItem().getName());
-            System.out.println("** = " + bi.getPharmaceuticalBillItem().getItemBatch().getItem().getName());
         }
 
         calGrossTotal();

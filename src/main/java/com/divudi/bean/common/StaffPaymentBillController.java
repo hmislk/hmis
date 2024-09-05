@@ -803,7 +803,6 @@ public class StaffPaymentBillController implements Serializable {
     }
 
     public void settleStaffCredit() {
-        System.out.println("settleStaffCredit");
 
         if(errorCheckForCreditSettle()){
             return ;
@@ -880,7 +879,6 @@ public class StaffPaymentBillController implements Serializable {
         Payment p = new Payment();
         p.setBill(b);
         p.setPaidValue(0 - Math.abs(b.getNetTotal()));
-        System.out.println("p = " + p.getPaidValue());
         setPaymentMethodData(p, pm);
     }
 

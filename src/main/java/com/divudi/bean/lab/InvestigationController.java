@@ -204,7 +204,7 @@ public class InvestigationController implements Serializable {
 
         for (Investigation selectedInvestigation : selectedInvestigations) {
             if (category != null) {
-                selectedInvestigation.setInvestigationCategory(category);
+                selectedInvestigation.setCategory(category);
             }
             if (sample != null) {
                 selectedInvestigation.setSample(sample);
@@ -648,9 +648,28 @@ public class InvestigationController implements Serializable {
 
     public void listAllIxs() {
         String sql;
-        sql = "Select i from Investigation i where i.retired=false ";
+        sql = "Select i "
+                + " from Investigation i "
+                + " where i.retired=:ret "
+                + " and i.hasReportFormat<>:rf";
         sql += " order by i.name";
-        allIxs = getFacade().findByJpql(sql);
+        Map m = new HashMap<>();
+        m.put("ret", false);
+        m.put("rf", true);
+        allIxs = getFacade().findByJpql(sql, m);
+    }
+
+    public void listAllReports() {
+        String sql;
+        sql = "Select i "
+                + " from Investigation i "
+                + " where i.retired=:ret "
+                + " and i.hasReportFormat=:rf";
+        sql += " order by i.name";
+        Map m = new HashMap<>();
+        m.put("ret", false);
+        m.put("rf", true);
+        allIxs = getFacade().findByJpql(sql, m);
     }
 
     public String listFilteredIxs() {
@@ -892,30 +911,40 @@ public class InvestigationController implements Serializable {
         List<Investigation> suggestions;
         String sql;
         Map m = new HashMap();
-
-        //m.put(m, m);
         sql = "select c from Investigation c "
                 + " where c.retired=false "
                 + " and ((c.name) like :n or "
                 + " (c.fullName) like :n or "
                 + " (c.code) like :n or (c.printName) like :n ) ";
-        //////// // System.out.println(sql);
-
         m.put("n", "%" + query.toUpperCase() + "%");
-
         if (listMasterItemsOnly == true) {
             sql += " and c.institution is null ";
         }
-
-//        if (sessionController.getApplicationPreference().isInstitutionSpecificItems()) {
-//            sql += " and (c.institution is null "
-//                    + " or c.institution=:ins) ";
-//            m.put("ins", sessionController.getInstitution());
-//        }
         sql += " order by c.name";
-
         suggestions = getFacade().findByJpql(sql, m);
+        return suggestions;
+    }
 
+    public List<Investigation> completeInvestigationsWIthoutReportFormats(String query) {
+        if (query == null || query.trim().equals("")) {
+            return new ArrayList<>();
+        }
+        List<Investigation> suggestions;
+        String sql;
+        Map m = new HashMap();
+        sql = "select c from Investigation c "
+                + " where c.retired=false "
+                + " and c.hasReportFormat<>:rf"
+                + " and ((c.name) like :n or "
+                + " (c.fullName) like :n or "
+                + " (c.code) like :n or (c.printName) like :n ) ";
+        m.put("n", "%" + query.toUpperCase() + "%");
+        m.put("rf", true);
+        if (listMasterItemsOnly == true) {
+            sql += " and c.institution is null ";
+        }
+        sql += " order by c.name";
+        suggestions = getFacade().findByJpql(sql, m);
         return suggestions;
     }
 
@@ -1199,6 +1228,21 @@ public class InvestigationController implements Serializable {
         return completeItems;
     }
 
+    public List<Investigation> completeReports(String qry) {
+        String jpql = "select c "
+                + " from Investigation c "
+                + " where c.retired=:ret"
+                + " and c.name like :qry"
+                + "  and c.hasReportFormat=:rf "
+                + " order by c.name";
+        Map params = new HashMap<>();
+        params.put("ret", false);
+        params.put("rf", true);
+        params.put("qry", "%" + qry.toUpperCase() + "%");
+        List<Investigation> completeItems = getFacade().findByJpql(jpql, params);
+        return completeItems;
+    }
+
 //    public List<Investigation> completeDepartmentItem(String qry) {
 //        if (getSessionController().getApplicationPreference().isInstitutionSpecificItems()) {
 //            String sql;
@@ -1249,6 +1293,11 @@ public class InvestigationController implements Serializable {
     public String navigateToListInvestigation() {
         listAllIxs();
         return "/admin/lims/investigation_list?faces-redirect=true";
+    }
+
+    public String navigateToListReportFormats() {
+        listAllReports();
+        return "/admin/lims/report_list?faces-redirect=true";
     }
 
     public String navigateToMultipleInvestigationUpdate() {

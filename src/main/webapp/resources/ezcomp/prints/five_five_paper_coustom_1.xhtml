@@ -33,34 +33,45 @@
                     <h:outputLabel value="#{cc.attrs.bill.department.address}"/>
                 </div>
                 <div >
-                    <h:outputLabel value="#{cc.attrs.bill.department.telephone1} "/>
-                    <h:outputLabel value=" /" style="width: 20px; text-align: center;"/>
-                    <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>
+                    <h:outputLabel style="font-size: 9pt" value="Tel : #{cc.attrs.bill.department.telephone1} "/>
                 </div>
             </div>
             <div class="institutionContact" >
-                <h:outputLabel value="Email : #{cc.attrs.bill.department.email} "/>
+                <h:outputLabel style="font-size: 9pt" value="Email : #{cc.attrs.bill.department.email} "/>
             </div>
             <div  class="institutionContact" >
-                <h:outputLabel value="Web : #{cc.attrs.bill.institution.web}"/>
+                <h:outputLabel style="font-size: 9pt" value="Web : #{cc.attrs.bill.institution.web}"/>
             </div>
 
-            <div class="headingBillFiveFive" style="text-align: center;font-weight: bold;">
-                <h:panelGroup  rendered="#{cc.attrs.refunded}" >
-                    <h:outputLabel value="OPD Refuned Receipt" />
+            <div class="headingBillFiveFive mt-2" style="text-align: center;font-weight: bold;">
+                <div class="d-flex align-items-center justify-content-center">
+                    <h:panelGroup >
+                        <h:outputLabel value="OPD" />
+                    </h:panelGroup>
+                    <h:panelGroup  rendered="#{cc.attrs.bill.refunded}" >
+                        <h:outputLabel value="&nbsp;&nbsp;" />
+                        <h:outputLabel value="Refuned" />
+                    </h:panelGroup>
+                    
+                    <h:panelGroup  rendered="#{cc.attrs.bill.cancelled}" >
+                        <h:outputLabel value="&nbsp;&nbsp;" />
+                        <h:outputLabel value="Cancelled" />
+                    </h:panelGroup>
+                    
+                    <h:panelGroup>
+                        <h:outputLabel value="&nbsp;&nbsp;" />
+                        <h:outputLabel value=" Receipt"/>
+                    </h:panelGroup>
+                </div>
+                <h:panelGroup  rendered="#{cc.attrs.duplicate eq true}"  >
+                    <h:outputLabel value="**Duplicate**" />
                 </h:panelGroup>
-                <h:panelGroup  rendered="#{!cc.attrs.refunded}" >
-                    <h:outputLabel value="OPD Receipt" />
-                </h:panelGroup><br/>
-                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
-                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
+
             </div>
 
-            <div class="billline">
-                <p:spacer height="5px" />
-            </div>
-            
-            <div class="billDetailsFiveFive" style="margin-left: 5%">
+
+
+            <div class="billDetailsFiveFive mt-2" style="margin-left: 5%">
                 <div class="d-flex">
                     <div class="col-3"><h:outputLabel value="MRN" ></h:outputLabel></div>
                     <div class="col-1 d-flex justify-content-center"><h:outputLabel value=":" /></div>
@@ -88,7 +99,10 @@
                 <div class="d-flex">
                     <div class="col-3"><h:outputLabel value="Contact No" ></h:outputLabel></div>
                     <div class="col-1 d-flex justify-content-center"><h:outputLabel value=":" /></div>
-                    <div class="col-7"><h:outputLabel value="#{cc.attrs.bill.patient.person.mobile}"/></div>
+                    <div class="col-7"><h:outputLabel rendered="#{cc.attrs.bill.patient.person.mobile ne ''}" value="#{cc.attrs.bill.patient.person.mobile}"/>
+                    <h:outputLabel rendered="#{cc.attrs.bill.patient.person.mobile eq ''}" value="#{cc.attrs.bill.patient.person.phone}"/>
+                    </div>
+
                 </div>
                 <div class="d-flex">
                     <div class="col-3"><h:outputLabel value="Gender / Age" ></h:outputLabel></div>
@@ -121,7 +135,7 @@
                 <p:spacer height="5px" />
             </div>
 
-            <div class="d-flex justify-content-center ">
+            <div class="d-flex justify-content-center " >
                 <table width="90%" style="width: 90%; " >
                     <tr class="itemHeadingsFiveFive">
                         <td style="width:80%!important;text-align: left; ">
@@ -172,6 +186,45 @@
                             </h:outputLabel>
                         </td>
                     </tr>
+                    <tr class="totalsBlock mt-3" style="font-weight: 600" >
+                        <td style="width:80%!important;text-align: left; ">
+                            <h:outputLabel value="Discount" ></h:outputLabel>
+                        </td>
+                        <td  style="width:10%!important;">
+
+                        </td>
+                        <td  style="width:10%!important;text-align: right;">
+                            <h:outputLabel value="#{cc.attrs.bill.discount}" style="text-align: right;" class="w-100">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                    <tr class="totalsBlock mt-3" style="font-weight: 600" >
+                        <td style="width:80%!important;text-align: left; ">
+                            <h:outputLabel value="Net total" ></h:outputLabel>
+                        </td>
+                        <td  style="width:10%!important;">
+
+                        </td>
+                        <td  style="width:10%!important;text-align: right;">
+                            <h:outputLabel value="#{cc.attrs.bill.netTotal}" style="text-align: right;" class="w-100">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                    <tr class="totalsBlock mt-3" style="font-weight: 600" >
+                        <td style="width:80%!important;text-align: left; ">
+                            <h:outputLabel value="VAT" ></h:outputLabel>
+                        </td>
+                        <td  style="width:10%!important;">
+
+                        </td>
+                        <td  style="width:10%!important;text-align: right;">
+                            <h:outputLabel value="#{cc.attrs.bill.vat}" style="text-align: right;" class="w-100">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </td>
+                    </tr>
                 </table>
             </div>
 
@@ -182,8 +235,8 @@
             <div style="width: 90%; margin-top: 10px; margin-left: 5%" >
                 <div class="d-flex justify-content-between w-100" style="font-size: 9pt">
 
-                    <h:outputLabel value="Generated By : #{sessionController.loggedUser.staff.code}"/>
-                    <h:outputLabel value="Settle By : #{cc.attrs.bill.creater.code}"/>
+                    <h:outputLabel value="Generated By : #{sessionController.loggedUser.name}"/>
+                    <h:outputLabel value="Settle By : #{cc.attrs.bill.creater.name}"/>
                 </div>
             </div>
 

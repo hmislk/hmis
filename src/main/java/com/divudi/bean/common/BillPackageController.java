@@ -715,7 +715,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         }
 
         if (configOptionApplicationController.getBooleanValueByKey("Package Bill – Credit Company Policy Number required", false)) {
-            System.out.println("Chack Policy No");
             if (paymentMethod == PaymentMethod.Credit && paymentMethodData.getCredit().getReferralNo().trim().equalsIgnoreCase("")) {
                 JsfUtil.addErrorMessage("Plase Add the Policy No");
                 return true;
@@ -1546,7 +1545,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             packaes = itemController.getPackaes();
             fillPackages();
         }
-        System.out.println("packaes = " + packaes.size());
         return packaes;
     }
 

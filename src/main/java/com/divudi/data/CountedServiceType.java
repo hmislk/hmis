@@ -18,12 +18,13 @@ public enum CountedServiceType {
     INWARD("Inward"),
     INWARD_PROFESSIONAL_PAYMENT("Inward Professional Payment"),
     INWARD_PROFESSIONAL_PAYMENT_RETURN("Inward Professional Payment Cancellation or Returns"),
-    COLLECTING_CENTRE("Colelcting Centre"),
+    COLLECTING_CENTRE("Collecting Centre"),
     OTHER("Other"),
-    OTHER_PROFESSIONAL_PAYMENT("Channelling Professional Payment"),
-    OTHER_PROFESSIONAL_PAYMENT_RETURN("Channelling Professional Payment Cancellation or Returns"),
-    
-    ;
+    OTHER_PROFESSIONAL_PAYMENT("Other Professional Payment"),
+    OTHER_PROFESSIONAL_PAYMENT_RETURN("Other Professional Payment Cancellation or Returns"),
+    AGENCY("Agency"),  // New entry for agency-related collections
+    AGENCY_PROFESSIONAL_PAYMENT("Agency Professional Payment"),  // New entry for agency professional payments
+    AGENCY_PROFESSIONAL_PAYMENT_RETURN("Agency Professional Payment Cancellation or Returns");  // New entry for returns or cancellations of agency payments
 
     private final String label;
 

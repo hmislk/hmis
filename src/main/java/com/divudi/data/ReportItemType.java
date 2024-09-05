@@ -84,6 +84,10 @@ public enum ReportItemType {
     BillingInstitution,
     PerformInstitution,
     VisitType,
+    
+    CollectedOn,
+    ReceivedOn,
+    
     ;
 
     public String getLabel() {
@@ -221,7 +225,11 @@ public enum ReportItemType {
             case PerformInstitution:
                 return "Perform Institution";
             case VisitType:
-                return "Visit Type";         
+                return "Visit Type";  
+            case CollectedOn:
+                return "Sample Collected Time";
+            case ReceivedOn:
+                return "Sample Received Time (Lab)";
             default:
                 return this.toString();
         }

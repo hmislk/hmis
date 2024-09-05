@@ -56,7 +56,6 @@ public class DepartmentController implements Serializable {
     List<Department> itemsToRemove;
 
     public Department findAndSaveDepartmentByName(String name) {
-        System.out.println("name = " + name);
         if (name == null || name.trim().equals("")) {
             return null;
         }

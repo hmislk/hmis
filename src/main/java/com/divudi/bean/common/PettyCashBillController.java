@@ -84,7 +84,6 @@ public class PettyCashBillController implements Serializable {
         Bill b=current.getReferenceBill();
         b.setApproveAt(new Date());
         b.setApproveUser(sessionController.getLoggedUser());
-        System.out.println("current = " + b);
         billController.save(b);
     }
     
@@ -370,7 +369,6 @@ public class PettyCashBillController implements Serializable {
         Payment p = new Payment();
         p.setBill(b);
         p.setPaidValue(0 - Math.abs(b.getNetTotal()));
-        System.out.println("p = " + p.getPaidValue());
         setPaymentMethodData(p, pm);
         
     }

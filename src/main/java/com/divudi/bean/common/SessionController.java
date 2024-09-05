@@ -7,6 +7,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.cashTransaction.CashBookController;
 import com.divudi.bean.channel.BookingController;
 import com.divudi.bean.collectingCentre.CourierController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
@@ -39,6 +40,7 @@ import com.divudi.facade.WebUserRoleFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.Route;
 import com.divudi.entity.Staff;
+import com.divudi.entity.cashTransaction.CashBook;
 import com.divudi.facade.StaffFacade;
 import java.io.IOException;
 import java.io.Serializable;
@@ -122,6 +124,8 @@ public class SessionController implements Serializable, HttpSessionListener {
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     CourierController courierController;
+    @Inject
+    CashBookController cashBookController;
     /**
      * Properties
      */
@@ -167,6 +171,9 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     // A field to store the landing page
     private String landingPage;
+    private CashBook loggedCashbook;
+    private Institution loggedSite;
+    
 
     public String navigateToLoginPage() {
 
@@ -1078,11 +1085,9 @@ public class SessionController implements Serializable, HttpSessionListener {
         List<WebUser> allUsers = getFacede().findByJpql(jpql, m);
         for (WebUser u : allUsers) {
             System.out.println("u = " + u.getName());
-            System.out.println("u = " + u.getId());
             if ((u.getName()).equalsIgnoreCase(userName)) {
                 boolean passwordIsOk = SecurityController.matchPassword(password, u.getWebUserPassword());
                 if (passwordIsOk) {
-                    System.out.println("password ok");
 
                     departments = listLoggableDepts(u);
 
@@ -1189,7 +1194,6 @@ public class SessionController implements Serializable, HttpSessionListener {
             JsfUtil.addErrorMessage("No User logged");
             return "/login?faces-redirect=true";
         }
-        System.out.println("loggedUser.getId() = " + loggedUser.getId());
         if (loggedUser.getWebUserPerson() == null) {
             JsfUtil.addErrorMessage("No person");
             return "";
@@ -1199,10 +1203,23 @@ public class SessionController implements Serializable, HttpSessionListener {
 //            loggedUser.setWebUserPerson(p);
 //            webUserFacade.edit(loggedUser);
         }
-
+        
         loggedUser.setDepartment(department);
         loggedUser.setInstitution(department.getInstitution());
         getFacede().edit(loggedUser);
+        
+        if (department.getSite()==null) {
+            Institution site;
+            site=institutionController.findAndSaveInstitutionByName("site");
+            setLoggedSite(site);
+        }else{
+            setLoggedSite(department.getSite());
+        }
+        
+        CashBook cb=new CashBook();
+        cb=cashBookController.findAndSaveCashBookBySite(loggedSite, institution, department);
+        setLoggedCashbook(cb);
+        
 
         userIcons = userIconController.fillUserIcons(loggedUser, department);
         dashboards = webUserController.listWebUserDashboards(loggedUser);
@@ -1722,7 +1739,6 @@ public class SessionController implements Serializable, HttpSessionListener {
      * @param loggedUser
      */
     public void setLoggedUser(WebUser loggedUser) {
-        System.out.println("loggedUser = " + loggedUser);
         this.loggedUser = loggedUser;
     }
 
@@ -1755,7 +1771,6 @@ public class SessionController implements Serializable, HttpSessionListener {
         System.out.println("m = " + m);
         System.out.println("sql = " + sql);
         List<WebUserPrivilege> twups = getWebUserPrivilegeFacade().findByJpql(sql, m);
-        System.out.println("twups = " + twups);
         return twups;
     }
 
@@ -2089,7 +2104,6 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     public void setDepartmentPreference(UserPreference departmentPreference) {
-        System.out.println("setting departmentPreference = " + departmentPreference);
         this.departmentPreference = departmentPreference;
     }
 
@@ -2197,6 +2211,22 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public void setLoggableCollectingCentres(List<Institution> loggableCollectingCentres) {
         this.loggableCollectingCentres = loggableCollectingCentres;
+    }
+
+    public CashBook getLoggedCashbook() {
+        return loggedCashbook;
+    }
+
+    public void setLoggedCashbook(CashBook loggebleCashbook) {
+        this.loggedCashbook = loggebleCashbook;
+    }
+
+    public Institution getLoggedSite() {
+        return loggedSite;
+    }
+
+    public void setLoggedSite(Institution loggedSite) {
+        this.loggedSite = loggedSite;
     }
 
 }

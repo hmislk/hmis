@@ -1,13 +1,16 @@
 package com.divudi.data;
 
+import com.divudi.entity.Bill;
 import com.divudi.entity.BillSession;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
+import com.divudi.entity.Payment;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.channel.SessionInstance;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -19,6 +22,33 @@ import java.util.UUID;
 public class ReportTemplateRow {
 
     private String uuid;
+
+    private Category category;
+    private Bill bill;
+    private Payment payment;
+
+    private Item item;
+
+    private Long categoryCount;
+    private Double categoryTotal;
+    private Double categoryHospitalFee;
+    private Double categoryDiscountAmount;
+    private Double categoryCollectingCentreFee;
+    private Double categoryDiscount;
+    private Double categoryProfessionalFee;
+    private Double categoryNetTotal;
+
+    private Long itemCount;
+    private Double itemTotal;
+    private Double itemHospitalFee;
+    private Double itemDiscountAmount;
+    private Double itemCollectingCentreFee;
+    private Double itemDiscount;
+    private Double itemProfessionalFee;
+    private Double itemNetTotal;
+
+    private List<Bill> cashHnadovers;
+
     private String feeName;
     private String categoryName;
     private String toDepartmentName;
@@ -43,9 +73,6 @@ public class ReportTemplateRow {
     private Long long9;
     private Long long10;
 
-    private Category category;
-
-    private Item item;
     private ServiceType serviceType;
     private BillTypeAtomic billTypeAtomic;
     private Institution creditCompany;
@@ -71,8 +98,83 @@ public class ReportTemplateRow {
 
     private List<BillTypeAtomic> btas;
 
+    private double onCallValue;
+    private double cashValue;
+    private double cardValue;
+    private double multiplePaymentMethodsValue;
+    private double staffValue;
+    private double creditValue;
+    private double staffWelfareValue;
+    private double voucherValue;
+    private double iouValue;
+    private double agentValue;
+    private double chequeValue;
+    private double slipValue;
+    private double eWalletValue;
+    private double patientDepositValue;
+    private double patientPointsValue;
+    private double onlineSettlementValue;
+
+    private String rowType;
+
     public ReportTemplateRow(SessionInstance sessionInstance) {
         this.sessionInstance = sessionInstance;
+    }
+
+    public ReportTemplateRow(Department department, Double rowValue) {
+        this.rowValue = rowValue;
+        this.department = department;
+    }
+
+    public ReportTemplateRow(Department department, Date date,
+            double cashValue, double cardValue, double multiplePaymentMethodsValue,
+            double staffValue, double creditValue, double staffWelfareValue,
+            double voucherValue, double iouValue, double agentValue,
+            double chequeValue, double slipValue, double eWalletValue,
+            double patientDepositValue, double patientPointsValue, double onlineSettlementValue) {
+        this.department = department;
+        this.date = date;
+        this.cashValue = cashValue;
+        this.cardValue = cardValue;
+        this.multiplePaymentMethodsValue = multiplePaymentMethodsValue;
+        this.staffValue = staffValue;
+        this.creditValue = creditValue;
+        this.staffWelfareValue = staffWelfareValue;
+        this.voucherValue = voucherValue;
+        this.iouValue = iouValue;
+        this.agentValue = agentValue;
+        this.chequeValue = chequeValue;
+        this.slipValue = slipValue;
+        this.eWalletValue = eWalletValue;
+        this.patientDepositValue = patientDepositValue;
+        this.patientPointsValue = patientPointsValue;
+        this.onlineSettlementValue = onlineSettlementValue;
+    }
+
+    public ReportTemplateRow(Department department, Date date, WebUser user,
+            double cashValue, double cardValue, double multiplePaymentMethodsValue,
+            double staffValue, double creditValue, double staffWelfareValue,
+            double voucherValue, double iouValue, double agentValue,
+            double chequeValue, double slipValue, double eWalletValue,
+            double patientDepositValue, double patientPointsValue, double onlineSettlementValue) {
+        this.department = department;
+        this.date = date;
+        this.cashValue = cashValue;
+        this.user = user;
+        this.cardValue = cardValue;
+        this.multiplePaymentMethodsValue = multiplePaymentMethodsValue;
+        this.staffValue = staffValue;
+        this.creditValue = creditValue;
+        this.staffWelfareValue = staffWelfareValue;
+        this.voucherValue = voucherValue;
+        this.iouValue = iouValue;
+        this.agentValue = agentValue;
+        this.chequeValue = chequeValue;
+        this.slipValue = slipValue;
+        this.eWalletValue = eWalletValue;
+        this.patientDepositValue = patientDepositValue;
+        this.patientPointsValue = patientPointsValue;
+        this.onlineSettlementValue = onlineSettlementValue;
     }
 
     public ReportTemplateRow(Staff referringStaff, Institution referringInstitution, Long long1, Double rowValue) {
@@ -567,7 +669,7 @@ public class ReportTemplateRow {
     public void setReferringStaff(Staff referringStaff) {
         this.referringStaff = referringStaff;
     }
-  
+
     public String getUuid() {
         if (uuid == null) {
             uuid = UUID.randomUUID().toString();
@@ -579,4 +681,313 @@ public class ReportTemplateRow {
         this.uuid = uuid;
     }
 
+    public double getOnCallValue() {
+        return onCallValue;
+    }
+
+    public void setOnCallValue(double onCallValue) {
+        this.onCallValue = onCallValue;
+    }
+
+    public double getCashValue() {
+        return cashValue;
+    }
+
+    public void setCashValue(double cashValue) {
+        this.cashValue = cashValue;
+    }
+
+    public double getCardValue() {
+        return cardValue;
+    }
+
+    public void setCardValue(double cardValue) {
+        this.cardValue = cardValue;
+    }
+
+    public double getMultiplePaymentMethodsValue() {
+        return multiplePaymentMethodsValue;
+    }
+
+    public void setMultiplePaymentMethodsValue(double multiplePaymentMethodsValue) {
+        this.multiplePaymentMethodsValue = multiplePaymentMethodsValue;
+    }
+
+    public double getStaffValue() {
+        return staffValue;
+    }
+
+    public void setStaffValue(double staffValue) {
+        this.staffValue = staffValue;
+    }
+
+    public double getCreditValue() {
+        return creditValue;
+    }
+
+    public void setCreditValue(double creditValue) {
+        this.creditValue = creditValue;
+    }
+
+    public double getStaffWelfareValue() {
+        return staffWelfareValue;
+    }
+
+    public void setStaffWelfareValue(double staffWelfareValue) {
+        this.staffWelfareValue = staffWelfareValue;
+    }
+
+    public double getVoucherValue() {
+        return voucherValue;
+    }
+
+    public void setVoucherValue(double voucherValue) {
+        this.voucherValue = voucherValue;
+    }
+
+    public double getIouValue() {
+        return iouValue;
+    }
+
+    public void setIouValue(double iouValue) {
+        this.iouValue = iouValue;
+    }
+
+    public double getAgentValue() {
+        return agentValue;
+    }
+
+    public void setAgentValue(double agentValue) {
+        this.agentValue = agentValue;
+    }
+
+    public double getChequeValue() {
+        return chequeValue;
+    }
+
+    public void setChequeValue(double chequeValue) {
+        this.chequeValue = chequeValue;
+    }
+
+    public double getSlipValue() {
+        return slipValue;
+    }
+
+    public void setSlipValue(double slipValue) {
+        this.slipValue = slipValue;
+    }
+
+    public double getEwalletValue() {
+        return eWalletValue;
+    }
+
+    public void setEwalletValue(double eWalletValue) {
+        this.eWalletValue = eWalletValue;
+    }
+
+    public double getPatientDepositValue() {
+        return patientDepositValue;
+    }
+
+    public void setPatientDepositValue(double patientDepositValue) {
+        this.patientDepositValue = patientDepositValue;
+    }
+
+    public double getPatientPointsValue() {
+        return patientPointsValue;
+    }
+
+    public void setPatientPointsValue(double patientPointsValue) {
+        this.patientPointsValue = patientPointsValue;
+    }
+
+    public double getOnlineSettlementValue() {
+        return onlineSettlementValue;
+    }
+
+    public void setOnlineSettlementValue(double onlineSettlementValue) {
+        this.onlineSettlementValue = onlineSettlementValue;
+    }
+
+    public List<Bill> getCashHnadovers() {
+        if (cashHnadovers == null) {
+            cashHnadovers = new ArrayList<>();
+        }
+        return cashHnadovers;
+    }
+
+    public void setCashHnadovers(List<Bill> cashHnadovers) {
+        this.cashHnadovers = cashHnadovers;
+    }
+
+    public double geteWalletValue() {
+        return eWalletValue;
+    }
+
+    public void seteWalletValue(double eWalletValue) {
+        this.eWalletValue = eWalletValue;
+    }
+
+    public Long getCategoryCount() {
+        return categoryCount;
+    }
+
+    public void setCategoryCount(Long categoryCount) {
+        this.categoryCount = categoryCount;
+    }
+
+    public Double getCategoryTotal() {
+        return categoryTotal;
+    }
+
+    public void setCategoryTotal(Double categoryTotal) {
+        this.categoryTotal = categoryTotal;
+    }
+
+    public Double getCategoryHospitalFee() {
+        return categoryHospitalFee;
+    }
+
+    public void setCategoryHospitalFee(Double categoryHospitalFee) {
+        this.categoryHospitalFee = categoryHospitalFee;
+    }
+
+    public Double getCategoryDiscountAmount() {
+        return categoryDiscountAmount;
+    }
+
+    public void setCategoryDiscountAmount(Double categoryDiscountAmount) {
+        this.categoryDiscountAmount = categoryDiscountAmount;
+    }
+
+    public Double getCategoryCollectingCentreFee() {
+        return categoryCollectingCentreFee;
+    }
+
+    public void setCategoryCollectingCentreFee(Double categoryCollectingCentreFee) {
+        this.categoryCollectingCentreFee = categoryCollectingCentreFee;
+    }
+
+    public Double getCategoryDiscount() {
+        return categoryDiscount;
+    }
+
+    public void setCategoryDiscount(Double categoryDiscount) {
+        this.categoryDiscount = categoryDiscount;
+    }
+
+    public Double getCategoryProfessionalFee() {
+        return categoryProfessionalFee;
+    }
+
+    public void setCategoryProfessionalFee(Double categoryProfessionalFee) {
+        this.categoryProfessionalFee = categoryProfessionalFee;
+    }
+
+    public Double getCategoryNetTotal() {
+        return categoryNetTotal;
+    }
+
+    public void setCategoryNetTotal(Double categoryNetTotal) {
+        this.categoryNetTotal = categoryNetTotal;
+    }
+
+    public Long getItemCount() {
+        return itemCount;
+    }
+
+    public void setItemCount(Long itemCount) {
+        this.itemCount = itemCount;
+    }
+
+    public Double getItemTotal() {
+        return itemTotal;
+    }
+
+    public void setItemTotal(Double itemTotal) {
+        this.itemTotal = itemTotal;
+    }
+
+    public Double getItemHospitalFee() {
+        return itemHospitalFee;
+    }
+
+    public void setItemHospitalFee(Double itemHospitalFee) {
+        this.itemHospitalFee = itemHospitalFee;
+    }
+
+    public Double getItemDiscountAmount() {
+        return itemDiscountAmount;
+    }
+
+    public void setItemDiscountAmount(Double itemDiscountAmount) {
+        this.itemDiscountAmount = itemDiscountAmount;
+    }
+
+    public Double getItemCollectingCentreFee() {
+        return itemCollectingCentreFee;
+    }
+
+    public void setItemCollectingCentreFee(Double itemCollectingCentreFee) {
+        this.itemCollectingCentreFee = itemCollectingCentreFee;
+    }
+
+    public Double getItemDiscount() {
+        return itemDiscount;
+    }
+
+    public void setItemDiscount(Double itemDiscount) {
+        this.itemDiscount = itemDiscount;
+    }
+
+    public Double getItemProfessionalFee() {
+        return itemProfessionalFee;
+    }
+
+    public void setItemProfessionalFee(Double itemProfessionalFee) {
+        this.itemProfessionalFee = itemProfessionalFee;
+    }
+
+    public Double getItemNetTotal() {
+        return itemNetTotal;
+    }
+
+    public void setItemNetTotal(Double itemNetTotal) {
+        this.itemNetTotal = itemNetTotal;
+    }
+
+    public String getRowType() {
+        return rowType;
+    }
+
+    public void setRowType(String rowType) {
+        this.rowType = rowType;
+    }
+
+    public Bill getBill() {
+        return bill;
+    }
+
+    public void setBill(Bill bill) {
+        this.bill = bill;
+    }
+
+    public ReportTemplateRow(Bill bill) {
+        this.bill = bill;
+    }
+
+    public Payment getPayment() {
+        return payment;
+    }
+
+    public void setPayment(Payment payment) {
+        this.payment = payment;
+    }
+
+    public ReportTemplateRow(Payment payment) {
+        this.payment = payment;
+    }
+
+    
+    
 }

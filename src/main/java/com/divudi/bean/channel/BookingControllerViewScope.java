@@ -104,8 +104,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -354,6 +356,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     boolean billingStarted = false;
 
+    private List<Integer> serialnumbersBySelectedSessionInstance;
+    
     //----------------------------------------------
     private Staff consultant;
     private ScheduleModel channelModel;
@@ -374,7 +378,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public List<Staff> specialityStaff() {
         consultants = staffController.getSpecialityStaff(speciality);
-        System.out.println("consultants = " + consultants.size());
         return consultants;
     }
 
@@ -382,7 +385,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         System.out.println("Speciality = " + speciality);
         System.out.println("Doctor = " + consultant);
         findSessions();
-        System.out.println("Sessions Calendar OK");
     }
 
     /**
@@ -394,7 +396,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void onDateSelect(SelectEvent<LocalDateTime> selectEvent) {
-        System.out.println("onDateSelect Start");
         event = (ChannelScheduleEvent) DefaultScheduleEvent.builder()
                 .startDate(selectEvent.getObject())
                 .endDate(selectEvent.getObject().plusHours(1))
@@ -463,11 +464,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         try {
             System.out.println("try");
             sessionInstances = getChannelBean().generateSesionInstancesFromServiceSessions(selectedServiceSessions);
-            System.out.println("sessionInstances = " + sessionInstances.size());
         } catch (Exception e) {
-            System.out.println("Error = " + e);
         }
-        System.out.println("Ending Error");
         generateChaneelSessionEvents(sessionInstances);
     }
 
@@ -496,7 +494,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             edt.set(Calendar.MINUTE, et.get(Calendar.MINUTE));
 
             DefaultScheduleEvent event = new DefaultScheduleEvent<SessionInstance>().builder()
-                    .title(si.getName()+" - " + si.getStaff().getPerson().getName())
+                    .title(si.getName() + " - " + si.getStaff().getPerson().getName())
                     .borderColor("#27AE60")
                     .backgroundColor("#BDE8CA")
                     .startDate(CommonFunctions.convertDateToLocalDateTime(sdt.getTime()))
@@ -506,9 +504,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
             channelModel.addEvent(event);
             System.out.println(si.getName() + " Add");
-            System.out.println("channelModel = " + channelModel.getEventCount());
         }
-        System.out.println("channelModel = " + channelModel);
     }
 
     //----------------------------------------------
@@ -2402,7 +2398,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 //            System.out.println("Staff Credit Balance Updated");
         }
 
-        System.out.println("****");
         sendSmsOnChannelCancellationBookings();
         comment = null;
         printPreviewC = true;
@@ -3194,9 +3189,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             return true;
         }
 
-        if (p.getPerson().getDob() == null) {
-            JsfUtil.addErrorMessage("Please enter patient age");
-            return true;
+        if (!configOptionApplicationController.getBooleanValueByKey("Allow bill settlement without patient age")) {
+            if (p.getPerson().getDob() == null) {
+                JsfUtil.addErrorMessage("Please enter patient age");
+                return true;
+            }
         }
 
         if (p.getPerson().getPhone() == null || p.getPerson().getPhone().trim().equals("")) {
@@ -3209,9 +3206,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             return true;
         }
 
-        if (p.getPerson().getArea() == null) {
-            JsfUtil.addErrorMessage("Please enter a area");
-            return true;
+        if (configOptionApplicationController.getBooleanValueByKey("Allow bill settlement without patient area")) {
+            if (p.getPerson().getArea() == null) {
+                JsfUtil.addErrorMessage("Please enter a area");
+                return true;
+            }
         }
 
         return false;
@@ -3431,16 +3430,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             }
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Allow bill settlement without patient area")) {
-            if (patient.getPerson().getArea() == null || patient.getPerson().getArea().getName().isEmpty()) {
-                JsfUtil.addErrorMessage("Pleace Select Patient Area");
-                return;
-            }
-        }
-
         if (configOptionApplicationController.getBooleanValueByKey("Allow Tenderd amount for channel booking")) {
             if (paymentMethod == PaymentMethod.Cash) {
-                if (strTenderedValue == "" || strTenderedValue.isEmpty()) {
+                if (strTenderedValue == null) {
                     JsfUtil.addErrorMessage("Please Enter Tenderd Amount");
                     return;
                 }
@@ -4896,21 +4888,34 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         long refundedPatientCount = 0;
         long onCallPatientCount = 0;
         long reservedBookingCount = 0;
+        long sessionStartingNumber=0;
+        long nextAvailableAppointmentNumber = 0;
+       if (selectedSessionInstance.getOriginatingSession().getSessionStartingNumber() != null 
+    && !selectedSessionInstance.getOriginatingSession().getSessionStartingNumber().trim().equals("")) {
+    
+    
+    int ssn = Integer.parseInt(selectedSessionInstance.getOriginatingSession().getSessionStartingNumber().trim());
+    sessionStartingNumber = ssn;
+} else {
+    sessionStartingNumber = 1; // Use 1 instead of 01 since it's an integer
+}
+
 
         if (billSessions == null) {
             selectedSessionInstance.setBookedPatientCount(0l);
             selectedSessionInstance.setPaidPatientCount(0l);
             selectedSessionInstance.setCompletedPatientCount(0l);
             selectedSessionInstance.setRemainingPatientCount(0l);
+            selectedSessionInstance.setNextAvailableAppointmentNumber(sessionStartingNumber);
             sessionInstanceController.save(selectedSessionInstance);
             return;
         }
-
+        serialnumbersBySelectedSessionInstance=new ArrayList<>();
         // Loop through billSessions to calculate counts
         for (BillSession bs : billSessions) {
             if (bs != null) {
                 bookedPatientCount++; // Always increment if bs is not null
-
+                serialnumbersBySelectedSessionInstance.add(bs.getSerialNo());
                 // Additional check for reserved status
                 try {
                     if (bs.isReservedBooking()) {
@@ -4980,11 +4985,40 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         selectedSessionInstance.setRefundedPatientCount(refundedPatientCount);
         selectedSessionInstance.setOnCallPatientCount(onCallPatientCount);
         selectedSessionInstance.setReservedBookingCount(reservedBookingCount);
+        selectedSessionInstance.setNextAvailableAppointmentNumber(generateNextAvailableAppointmentNumberBySessionInstance(selectedSessionInstance,serialnumbersBySelectedSessionInstance));
 
         // Assuming remainingPatientCount is calculated as booked - completed
         selectedSessionInstance.setRemainingPatientCount(bookedPatientCount - completedPatientCount);
         sessionInstanceController.save(selectedSessionInstance);
     }
+    
+    public long generateNextAvailableAppointmentNumberBySessionInstance(SessionInstance ssi, List<Integer> serialNumberArray) {
+    long nextAvailable = 0;
+    
+    if (ssi == null || serialNumberArray == null) {
+        return nextAvailable;
+    }
+    
+    List<Integer> reservedNumbersBySessionInstance = CommonFunctions.convertStringToIntegerList(ssi.getReserveNumbers());
+
+    if (reservedNumbersBySessionInstance != null && !reservedNumbersBySessionInstance.isEmpty()) {
+        serialNumberArray.removeAll(reservedNumbersBySessionInstance);
+    }
+
+    int maxNumber = 0;
+    if (!serialNumberArray.isEmpty()) {
+        maxNumber = serialNumberArray.stream().max(Integer::compareTo).orElse(0);
+    }
+
+    nextAvailable = maxNumber + 1;
+
+    while (reservedNumbersBySessionInstance.contains((int) nextAvailable)) {
+        nextAvailable++;
+    }
+
+    return nextAvailable;
+}
+
 
     public void fillBillSessions(List<SessionInstance> sessionInstances) {
         if (sessionInstances == null || sessionInstances.isEmpty()) {
@@ -5565,7 +5599,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         agentHistory.setBill(bill);
         agentHistory.setBillItem(billItem);
         agentHistory.setBillSession(selectedBillSession);
-        agentHistory.setBeforeBallance(ins.getBallance());
+        agentHistory.setBalanceBeforeTransaction(ins.getBallance());
         agentHistory.setTransactionValue(transactionValue);
         agentHistory.setReferenceNumber(refNo);
         agentHistory.setHistoryType(historyType);
@@ -6756,7 +6790,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private boolean errorCheckForSettle() {
 
         if (settlePaymentMethod == null) {
-            JsfUtil.addErrorMessage("Settle Payment Method for Settling");
+            settlePaymentMethod=paymentMethod.Cash;
             return true;
         }
 
@@ -6810,6 +6844,15 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                     return;
                 }
             }
+            if (configOptionApplicationController.getBooleanValueByKey("Allow Tenderd amount for channel booking")) {
+            if (settlePaymentMethod == PaymentMethod.Cash) {
+                if (strTenderedValue == null) {
+                    JsfUtil.addErrorMessage("Pleace Enter Tenderd Amount !");
+                    return;
+                }
+                
+            }
+        }
             if (errorChecksettle()) {
                 return;
             }
@@ -8215,10 +8258,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void setStrTenderedValue(String strTenderedValue) {
-
         this.strTenderedValue = strTenderedValue;
         try {
+            System.out.println("strTenderedValue = " + strTenderedValue);
             cashPaid = Double.parseDouble(strTenderedValue);
+            System.out.println("cashPaid = " + cashPaid);
         } catch (NumberFormatException e) {
         }
     }
@@ -8233,13 +8277,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public double getCashBalance() {
         if (feeTotalForSelectedBill != null) {
-//            System.out.println("feeNetTotalForSelectedBill = " + feeNetTotalForSelectedBill);
-//            System.out.println("cashPaid = " + cashPaid);
             if (feeNetTotalForSelectedBill == null) {
                 feeNetTotalForSelectedBill = 0.0;
             }
+            System.out.println("feeNetTotalForSelectedBill = " + feeNetTotalForSelectedBill);
             cashBalance = feeNetTotalForSelectedBill - cashPaid;
-//            System.out.println("cashBalance = " + cashBalance);
         }
         return cashBalance;
     }
@@ -8534,6 +8576,14 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void setsEvent(ScheduleEvent<?> sEvent) {
         this.sEvent = sEvent;
+    }
+
+    public List<Integer> getSerialnumbersBySelectedSessionInstance() {
+        return serialnumbersBySelectedSessionInstance;
+    }
+
+    public void setSerialnumbersBySelectedSessionInstance(List<Integer> serialnumbersBySelectedSessionInstance) {
+        this.serialnumbersBySelectedSessionInstance = serialnumbersBySelectedSessionInstance;
     }
 
 }

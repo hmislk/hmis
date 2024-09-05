@@ -26,11 +26,11 @@
 
                     </f:facet>
 
-                    <p:panelGrid columns="3" >
+                    <p:panelGrid columns="1" >
 
                         <h:form id="fill" >
-                            <p:panelGrid columns="2" >
-                                <h:panelGroup >
+                            <p:panelGrid columns="4" >
+                                <h:panelGrid columns="2" >
                                     <p:outputLabel value="Select Site" />
                                     <p:autoComplete 
                                         value="#{itemFeeManager.forSite}" 
@@ -41,15 +41,32 @@
                                         class="w-100 mb-1"
                                         inputStyleClass="form-control">
                                     </p:autoComplete>
-                                </h:panelGroup>
+                                </h:panelGrid>
+
 
                                 <p:commandButton value="Fill" ajax="false" 
-                                                 action="#{itemFeeManager.fillFeeListItemFees()}" 
+                                                 action="#{itemFeeManager.fillForSiteItemFees()}" 
+                                                 icon="fa fa-file " 
+                                                 styleClass="ui-button-success m-2"></p:commandButton>
+
+
+                                <p:commandButton value="Update Fee Totals" ajax="false" 
+                                                 action="#{itemFeeManager.updateFeesForSiteItemFees()}" 
                                                  icon="fa fa-file" 
-                                                 styleClass="ui-button-primary m-2"></p:commandButton>
+                                                 styleClass="ui-button-danger m-2"></p:commandButton>
+
+
+
+
                             </p:panelGrid>
 
                         </h:form>
+
+
+
+
+                    </p:panelGrid>
+                    <p:panelGrid columns="2" >
 
                         <h:form id="download" >
                             <p:commandButton value="Download Base Item Fees as Excel" 
@@ -60,9 +77,11 @@
                         </h:form>
 
                         <h:form id="upload" enctype="multipart/form-data">
-                            <p:fileUpload value="#{dataUploadController.file}"
-                                          mode="simple"
-                                          label="Choose File"/>
+                            <p:fileUpload 
+                                skinSimple="true"
+                                value="#{dataUploadController.file}"
+                                mode="simple"
+                                label="Choose File"/>
                             <p:commandButton 
                                 icon="fa fa-upload"
                                 value="Upload and Replace Fee Values"
@@ -95,6 +114,9 @@
                             <!-- Item Name Column with sorting and filtering -->
                             <p:column headerText="Item Name" width="20em" sortBy="#{f.item.name}" filterBy="#{f.item.name}" filterMatchMode="contains">
                                 <h:outputText value="#{f.item.name}" ></h:outputText>
+                                <h:outputText value="#{f.item.retired?'Deleted':''}" ></h:outputText>
+                                <h:outputText value="#{f.item.retiredAt}" ></h:outputText>
+                                <h:outputText value="#{f.item.retirer.webUserPerson.nameWithTitle}" ></h:outputText>
                             </p:column>
 
 

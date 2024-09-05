@@ -3,18 +3,14 @@ package com.divudi.ws.lims;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SecurityController;
 import com.divudi.data.lab.Analyzer;
-import com.divudi.entity.Department;
+import java.util.ArrayList;
 import com.divudi.entity.WebUser;
-import com.divudi.entity.lab.DepartmentMachine;
 import com.divudi.entity.lab.PatientSample;
+import com.divudi.entity.lab.Sample;
 import com.divudi.facade.PatientSampleFacade;
 import com.divudi.facade.WebUserFacade;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -27,6 +23,7 @@ import org.carecode.lims.libraries.OrderRecord;
 import org.carecode.lims.libraries.PatientRecord;
 import org.carecode.lims.libraries.QueryRecord;
 import java.util.Arrays;
+
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -34,6 +31,7 @@ import java.util.Map;
 import javax.ejb.EJB;
 import org.carecode.lims.libraries.AnalyzerDetails;
 import org.carecode.lims.libraries.DataBundle;
+import org.carecode.lims.libraries.ResultsRecord;
 
 @Path("/middleware")
 public class MiddlewareController {
@@ -45,6 +43,8 @@ public class MiddlewareController {
 
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    LimsMiddlewareController limsMiddlewareController;
 
     private static final Gson gson = new Gson();
 
@@ -68,22 +68,61 @@ public class MiddlewareController {
     public Response processTestOrdersForSampleRequests(String jsonInput) {
         try {
             // Deserialize the incoming JSON into QueryRecord
-            QueryRecord queryRecord = gson.fromJson(jsonInput, QueryRecord.class);
+            System.out.println("Deserializing JSON input...");
+// Deserialize the incoming JSON into QueryRecord
+                        QueryRecord queryRecord = gson.fromJson(jsonInput, QueryRecord.class);
+            if (queryRecord == null) {
+                return Response.status(Response.Status.BAD_REQUEST).entity("Invalid input data").build();
+            }
 
             // Logic to create a PatientDataBundle based on the QueryRecord
             PatientDataBundle pdb = new PatientDataBundle();
-            List<String> testNames = Arrays.asList("HDL", "RF2");
+
+            System.out.println("Generating test codes for analyzer...");
+            List<String> testNames = limsMiddlewareController.generateTestCodesForAnalyzer(queryRecord.getSampleId());
+            if (testNames == null || testNames.isEmpty()) {
+                testNames = Arrays.asList("GLU");
+            }
+
+            System.out.println("Fetching patient sample for Sample ID: " + queryRecord.getSampleId());
+            PatientSample ptSample = limsMiddlewareController.patientSampleFromId(queryRecord.getSampleId());
+            if (ptSample == null) {
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Patient sample not found").build();
+            }
+
             OrderRecord or = new OrderRecord(0, queryRecord.getSampleId(), testNames, "S", new Date(), "testInformation");
             pdb.getOrderRecords().add(or);
-            PatientRecord pr = new PatientRecord(0, "1010101", "111111", "Buddhika Ariyaratne", "M H B", "Male", "Sinhalese", null, "Galle", "0715812399", "Dr Niluka");
+
+            System.out.println("Creating PatientRecord...");
+            if (ptSample.getPatient() == null) {
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Invalid patient data").build();
+            }
+            if (ptSample.getPatient().getPerson() == null) {
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Invalid person data").build();
+            }
+            if (ptSample.getBill() == null || ptSample.getBill().getReferredBy() == null || ptSample.getBill().getReferredBy().getPerson() == null) {
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Invalid referred by data").build();
+            }
+
+            PatientRecord pr = new PatientRecord(0,
+                    ptSample.getPatient().getIdStr(),
+                    ptSample.getIdStr(),
+                    ptSample.getPatient().getPerson().getNameWithTitle(),
+                    "", ptSample.getPatient().getPerson().getSex().getLabel(),
+                    "", null,
+                    ptSample.getPatient().getPerson().getAddress(),
+                    ptSample.getPatient().getPerson().getPhone(),
+                    ptSample.getBill().getReferredBy().getPerson().getNameWithTitle());
             pdb.setPatientRecord(pr);
+            // Convert the PatientDataBundle to JSON and send it in the response
 
             // Convert the PatientDataBundle to JSON and send it in the response
+            System.out.println("Converting PatientDataBundle to JSON...");
             String jsonResponse = gson.toJson(pdb);
             return Response.ok(jsonResponse).build();
         } catch (Exception e) {
             e.printStackTrace();
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("An error occurred").build();
         }
     }
 
@@ -95,20 +134,22 @@ public class MiddlewareController {
         try {
             Gson gson = new Gson();
             DataBundle dataBundle = gson.fromJson(jsonInput, DataBundle.class);
-
             if (dataBundle != null) {
 
                 WebUser requestSendingUser
                         = findRequestSendingUser(dataBundle.getMiddlewareSettings().getLimsSettings().getUsername(),
                                 dataBundle.getMiddlewareSettings().getLimsSettings().getPassword());
 
-                if (requestSendingUser != null) {
+                System.out.println("requestSendingUser = " + requestSendingUser);
+
+                if (requestSendingUser == null) {
                     return Response.status(Response.Status.UNAUTHORIZED).build();
                 }
 
-                AnalyzerDetails analyzerDetails = dataBundle.getAnalyzerDetails();
+                AnalyzerDetails analyzerDetails = dataBundle.getMiddlewareSettings().getAnalyzerDetails();
+                System.out.println("analyzerDetails = " + analyzerDetails);
+                System.out.println("analyzerDetails.getAnalyzerName() = " + analyzerDetails.getAnalyzerName());
                 Analyzer analyzer = Analyzer.valueOf(analyzerDetails.getAnalyzerName().replace(" ", "_")); // Ensuring enum compatibility
-
                 switch (analyzer) {
                     case BioRadD10:
                         return processBioRadD10(dataBundle);
@@ -122,14 +163,14 @@ public class MiddlewareController {
                         return processCelltacMEK(dataBundle);
                     case BA400:
                         return processBA400(dataBundle);
-                    case IndikoPlus:
-                        return processIndikoPlus(dataBundle);
+
                     case MaglumiX3HL7:
                         return processMaglumiX3HL7(dataBundle);
                     case MindrayBC5150:
                         return processMindrayBC5150(dataBundle);
+                    case IndikoPlus:
                     case SmartLytePlus:
-                        return processSmartLytePlus(dataBundle);
+                        return processResultsCommon(dataBundle);
                     default:
                         throw new IllegalArgumentException("Unsupported analyzer type: " + analyzerDetails.getAnalyzerName());
                 }
@@ -205,11 +246,10 @@ public class MiddlewareController {
         return Response.ok("{\"status\":\"BA400 processed successfully.\"}").build();
     }
 
-    public Response processIndikoPlus(DataBundle dataBundle) {
-        // Process data specific to Indiko Plus
-        return Response.ok("{\"status\":\"Indiko Plus processed successfully.\"}").build();
-    }
-
+//    public Response processIndikoPlus(DataBundle dataBundle) {
+//        // Process data specific to Indiko Plus
+//        return Response.ok("{\"status\":\"Indiko Plus processed successfully.\"}").build();
+//    }
     public Response processMaglumiX3HL7(DataBundle dataBundle) {
         // Process data specific to Maglumi X3 HL7
         return Response.ok("{\"status\":\"Maglumi X3 HL7 processed successfully.\"}").build();
@@ -220,9 +260,31 @@ public class MiddlewareController {
         return Response.ok("{\"status\":\"Mindray BC5150 processed successfully.\"}").build();
     }
 
-    public Response processSmartLytePlus(DataBundle dataBundle) {
+    public Response processResultsCommon(DataBundle dataBundle) {
+        List<String> observationDetails = new ArrayList<>();
 
-        return Response.ok("{\"status\":\"SmartLyte Plus processed successfully.\"}").build();
+        for (ResultsRecord rr : dataBundle.getResultsRecords()) {
+            String sampleId = rr.getSampleId();
+            System.out.println("sampleId = " + sampleId);
+            String testStr = rr.getTestCode();
+            System.out.println("testStr = " + testStr);
+            String result = rr.getResultValue() + "";
+            System.out.println("result = " + result);
+            String unit = rr.getResultUnits();
+            String error = "";
+
+            boolean thisOk = limsMiddlewareController.addResultToReport(sampleId, testStr, result, unit, error);
+
+            // Add result status to observation details
+            if (thisOk) {
+                observationDetails.add("Sample ID: " + sampleId + " Test: " + testStr + " Status: Success");
+            } else {
+                observationDetails.add("Sample ID: " + sampleId + " Test: " + testStr + " Status: Failure");
+            }
+        }
+
+        // Always return OK with details of each observation
+        return Response.ok("{\"status\":\"SmartLyte Plus processed with details.\", \"details\": " + observationDetails + "}").build();
     }
 
     public PatientSample patientSampleFromId(Long id) {

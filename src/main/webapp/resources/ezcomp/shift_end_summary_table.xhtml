@@ -21,14 +21,18 @@
                         <p:outputLabel value=" Shift Details" />
                     </div>
                     <div>
-                        <p:commandButton class="ui-button-info mx-2" 
-                                         ajax="false" 
-                                         value="Close Start Fund Bill" 
-                                         action="#{financialTransactionController.settleShiftEndFundBill()}" ></p:commandButton>
+
+                        <p:commandButton 
+                            class="ui-button-info mx-2" 
+                            ajax="false" 
+                            value="Close Start Fund Bill" 
+                            action="#{financialTransactionController.settleShiftEndFundBill()}" >
+                        </p:commandButton>
                     </div>
                 </div>
 
             </f:facet>
+            
             <div class="row mx-2" >
                 <div class="col-12" >
                     <p:panelGrid columns="2" class="w-100" >

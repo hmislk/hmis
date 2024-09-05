@@ -6,9 +6,13 @@
 package com.divudi.bean.cashTransaction;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.entity.Department;
+import com.divudi.entity.Institution;
 import com.divudi.entity.cashTransaction.CashBook;
 import com.divudi.facade.CashBookFacade;
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -27,23 +31,61 @@ import javax.inject.Named;
 public class CashBookController implements Serializable {
 
     @EJB
-    private CashBookFacade CashbookFacade;
-    @EJB
-    private CashBook cashBook;
+    private CashBookFacade cashbookFacade;
     
     @Inject
     private SessionController sessionController;
 
     
+    private CashBook cashBook;
+
+    
+    public CashBook findAndSaveCashBookBySite(Institution site, Institution ins, Department dept) {
+        if (site==null) {
+            return null;
+        }
+        
+        if (ins==null) {
+            return null;
+        }
+        
+        if (dept==null) {
+            return null;
+        }
+        
+        String sql;
+        Map m = new HashMap();
+        m.put("ins", ins);
+        m.put("dept", dept);
+        m.put("site", site);
+        m.put("ret", false);
+        sql = "select cb "
+                + " from CashBook cb "
+                + " where cb.institution=:ins"
+                + " and cb.department=:dept"
+                + " and cb.site=:site"
+                + " and cb.retired=:ret";
+        CashBook cb = cashbookFacade.findFirstByJpql(sql, m);
+
+        if (cb == null) {
+            cb = new CashBook();
+            cb.setInstitution(ins);
+            cb.setDepartment(dept);
+            cb.setSite(site);
+            cashbookFacade.create(cb);
+        } 
+        return cb;
+    }
+
     public CashBookController() {
     }
 
     public CashBookFacade getCashbookFacade() {
-        return CashbookFacade;
+        return cashbookFacade;
     }
 
     public void setCashbookFacade(CashBookFacade CashbookFacade) {
-        this.CashbookFacade = CashbookFacade;
+        this.cashbookFacade = CashbookFacade;
     }
 
     public CashBook getCashBook() {
@@ -53,8 +95,7 @@ public class CashBookController implements Serializable {
     public void setCashBook(CashBook cashBook) {
         this.cashBook = cashBook;
     }
-    
-    
+
     /**
      *
      */

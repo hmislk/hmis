@@ -83,7 +83,6 @@ public class ServiceSessionFunctions {
     public Long calBillSessions(Item i, Date d) {
         System.out.println("calBillSessions");
         System.out.println("d = " + d);
-        System.out.println("i = " + i);
         //   ////// // System.out.println("getting bill sessions");
         if (i == null || i.getSessionNumberType() == null) {
             return null;
@@ -134,9 +133,7 @@ public class ServiceSessionFunctions {
 //        }
 //    }
     public BillSession createBillSession(BillItem bi) {
-        System.out.println("Going to saving bill item sessions");
         if (bi == null || bi.getItem() == null || bi.getItem().getSessionNumberType() == null) {
-               System.out.println("Bil items sessions not save because of null values");
             return null;
         }
         Item i = bi.getItem();
@@ -251,7 +248,6 @@ public class ServiceSessionFunctions {
         System.out.println("m = " + m);
         System.out.println("s = " + s);
         countLong = getBillSessionFacade().findLongByJpql(s, m, TemporalType.DATE);
-        System.out.println("countLong = " + countLong);
         return countLong;
     }
 
