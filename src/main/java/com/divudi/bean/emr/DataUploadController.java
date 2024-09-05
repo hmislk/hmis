@@ -2337,7 +2337,7 @@ public class DataUploadController implements Serializable {
             }
 
             // Column 10: Fee Value for Locals
-            Cell feeValueCell = row.getCell(10);
+            Cell feeValueCell = row.getCell(12);
             if (feeValueCell != null) {
                 if (feeValueCell.getCellType() == CellType.NUMERIC) {
                     feeValue = feeValueCell.getNumericCellValue();
@@ -2353,7 +2353,7 @@ public class DataUploadController implements Serializable {
             }
 
             // Column 11: Fee Value for Foreigners
-            Cell foreignFeeValueCell = row.getCell(11);
+            Cell foreignFeeValueCell = row.getCell(13);
             if (foreignFeeValueCell != null) {
                 if (foreignFeeValueCell.getCellType() == CellType.NUMERIC) {
                     foreignFeeValue = foreignFeeValueCell.getNumericCellValue();
@@ -2369,14 +2369,14 @@ public class DataUploadController implements Serializable {
             }
 
             // Column 6: Retired (Yes/No)
-            Cell retiredCell = row.getCell(6);
+            Cell retiredCell = row.getCell(8);
             if (retiredCell != null && retiredCell.getCellType() == CellType.STRING) {
                 String retiredString = retiredCell.getStringCellValue();
                 retired = retiredString.equalsIgnoreCase("Yes");
             }
 
             // Column 5: Discount Allowed (Yes/No)
-            Cell discountAllowedCell = row.getCell(5);
+            Cell discountAllowedCell = row.getCell(7);
             if (discountAllowedCell != null && discountAllowedCell.getCellType() == CellType.STRING) {
                 String discountAllowedString = discountAllowedCell.getStringCellValue();
                 discountAllowed = discountAllowedString.equalsIgnoreCase("Yes");
