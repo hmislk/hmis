@@ -9224,6 +9224,171 @@ public class SearchController implements Serializable {
 
     }
 
+    public void listBills() {
+        bills = null;
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("select b from Bill b where 1=1 ");
+        if (toDate != null && fromDate != null) {
+            jpql.append(" and b.createdAt between :fromDate and :toDate ");
+            params.put("toDate", toDate);
+            params.put("fromDate", fromDate);
+        }
+
+        if (institution != null) {
+            params.put("ins", institution);
+            jpql.append(" and b.department.institution = :ins ");
+        }
+
+        if (department != null) {
+            params.put("dep", department);
+            jpql.append(" and b.department = :dept ");
+        }
+
+        if (site != null) {
+            params.put("site", site);
+            jpql.append(" and b.department = :site ");
+        }
+
+        if (webUser != null) {
+            jpql.append(" and b.creater=:wu ");
+            params.put("wu", webUser);
+        }
+
+        // Order by bill ID
+        jpql.append(" order by b.id ");
+
+        System.out.println("jpql.toString() = " + jpql.toString());
+        System.out.println("params = " + params);
+
+        // Execute the query
+        bills = getBillFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+    }
+
+    public void listBillItems() {
+        billItems = null;
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("select b from BillItem bi join bi.bill b where 1=1 ");
+        if (toDate != null && fromDate != null) {
+            jpql.append(" and b.createdAt between :fromDate and :toDate ");
+            params.put("toDate", toDate);
+            params.put("fromDate", fromDate);
+        }
+
+        if (institution != null) {
+            params.put("ins", institution);
+            jpql.append(" and b.department.institution = :ins ");
+        }
+
+        if (department != null) {
+            params.put("dep", department);
+            jpql.append(" and b.department = :dept ");
+        }
+
+        if (site != null) {
+            params.put("site", site);
+            jpql.append(" and b.department.site = :site ");
+        }
+
+        if (webUser != null) {
+            jpql.append(" and b.creater=:wu ");
+            params.put("wu", webUser);
+        }
+
+        // Order by bill ID
+        jpql.append(" order by b.id ");
+
+        System.out.println("jpql.toString() = " + jpql.toString());
+        System.out.println("params = " + params);
+
+        // Execute the query
+        billItems = getBillItemFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+    }
+
+    public void listBillFees() {
+        billFees = null;
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("select b from BillFee bf join bf.bill b where 1=1 ");
+        if (toDate != null && fromDate != null) {
+            jpql.append(" and b.createdAt between :fromDate and :toDate ");
+            params.put("toDate", toDate);
+            params.put("fromDate", fromDate);
+        }
+
+        if (institution != null) {
+            params.put("ins", institution);
+            jpql.append(" and b.department.institution = :ins ");
+        }
+
+        if (department != null) {
+            params.put("dep", department);
+            jpql.append(" and b.department = :dept ");
+        }
+
+        if (site != null) {
+            params.put("site", site);
+            jpql.append(" and b.department.site = :site ");
+        }
+
+        if (webUser != null) {
+            jpql.append(" and b.creater=:wu ");
+            params.put("wu", webUser);
+        }
+
+        // Order by bill ID
+        jpql.append(" order by b.id ");
+
+        System.out.println("jpql.toString() = " + jpql.toString());
+        System.out.println("params = " + params);
+
+        // Execute the query
+        billFees = getBillFeeFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+    }
+    
+    public void listPayments() {
+        payments = null;
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("select b from Payment p");
+        if (toDate != null && fromDate != null) {
+            jpql.append(" and p.createdAt between :fromDate and :toDate ");
+            params.put("toDate", toDate);
+            params.put("fromDate", fromDate);
+        }
+
+        if (institution != null) {
+            params.put("ins", institution);
+            jpql.append(" and p.department.institution = :ins ");
+        }
+
+        if (department != null) {
+            params.put("dep", department);
+            jpql.append(" and p.department = :dept ");
+        }
+
+        if (site != null) {
+            params.put("site", site);
+            jpql.append(" and p.department.site = :site ");
+        }
+
+        if (webUser != null) {
+            jpql.append(" and b.creater=:wu ");
+            params.put("wu", webUser);
+        }
+
+        // Order by bill ID
+        jpql.append(" order by p.id ");
+
+        System.out.println("jpql.toString() = " + jpql.toString());
+        System.out.println("params = " + params);
+
+        // Execute the query
+        payments = paymentFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+    }
+    
+
     public String fillAllBills(Date fromDate, Date toDate, Institution institution, Department department, PaymentMethod paymentMethod, BillTypeAtomic billtypeAtomic) {
         bills = null;
         Map<String, Object> params = new HashMap<>();
@@ -11531,6 +11696,7 @@ public class SearchController implements Serializable {
         bundle = new ReportTemplateRowBundle();
 
         double collectionForTheDay = 0.0;
+        double netCashCollection = 0.0;
 
         // Generate OPD service collection and add to the main bundle
         ReportTemplateRowBundle opdServiceCollection = generateOpdServiceCollection();
@@ -11544,14 +11710,8 @@ public class SearchController implements Serializable {
 
         // Generate collecting centre collection and add to the main bundle
         ReportTemplateRowBundle ccCollection = generateCcCollection();
-        bundle.setName("collectionForTheDay");
-        bundle.setBundleType("collectionForTheDay");
         bundle.getBundles().add(ccCollection);
-        
-        // Collection for the day
-        // Total Cash Payments
-        ReportTemplateRowBundle pettyCashPayments = generatePettyCashPayments();
-        bundle.getBundles().add(pettyCashPayments);
+        collectionForTheDay += getSafeTotal(ccCollection);
 
         // Generate OPD Credit Company Payment Collection and add to the main bundle
         ReportTemplateRowBundle opdCreditCompanyCollection = generateCreditCompanyCollectionForOpd();
@@ -11573,46 +11733,68 @@ public class SearchController implements Serializable {
         bundle.getBundles().add(channellingCreditCompanyCollection);
         collectionForTheDay += getSafeTotal(channellingCreditCompanyCollection);
 
-        // Generate inward professional payments and add to the main bundle
-        ReportTemplateRowBundle inwardProfessionalPayments = generateInwardProfessionalPayments();
-        bundle.getBundles().add(inwardProfessionalPayments);
-
-        // Generate channelling professional payments and add to the main bundle
-        ReportTemplateRowBundle channellingProfessionalPayments = generateChannellingProfessionalPayments();
-        bundle.getBundles().add(channellingProfessionalPayments);
-
-        // Generate OPD professional payments and add to the main bundle
-        ReportTemplateRowBundle opdProfessionalPayments = generateOpdProfessionalPayments();
-        bundle.getBundles().add(opdProfessionalPayments);
-
+        // Final collection for the day
         ReportTemplateRowBundle collectionForTheDayBundle = new ReportTemplateRowBundle();
         collectionForTheDayBundle.setName("Collection for the day");
         collectionForTheDayBundle.setBundleType("collectionForTheDay");
         collectionForTheDayBundle.setTotal(collectionForTheDay);
+        bundle.getBundles().add(channellingCreditCompanyCollection);
+        netCashCollection = collectionForTheDay;
 
-        
+        // Deduct various payments from net cash collection
+        ReportTemplateRowBundle pettyCashPayments = generatePettyCashPayments();
+        bundle.getBundles().add(pettyCashPayments);
+        netCashCollection -= getSafeTotal(pettyCashPayments);
 
-        // Payment methods
+        // Generate inward professional payments and add to the main bundle
+        ReportTemplateRowBundle inwardProfessionalPayments = generateInwardProfessionalPayments();
+        bundle.getBundles().add(inwardProfessionalPayments);
+        netCashCollection -= getSafeTotal(inwardProfessionalPayments);
+
+        // Generate channelling professional payments and add to the main bundle
+        ReportTemplateRowBundle channellingProfessionalPayments = generateChannellingProfessionalPayments();
+        bundle.getBundles().add(channellingProfessionalPayments);
+        netCashCollection -= getSafeTotal(channellingProfessionalPayments);
+
+        // Generate OPD professional payments and add to the main bundle
+        ReportTemplateRowBundle opdProfessionalPayments = generateOpdProfessionalPayments();
+        bundle.getBundles().add(opdProfessionalPayments);
+        netCashCollection -= getSafeTotal(opdProfessionalPayments);
+
         ReportTemplateRowBundle cardPayments = generateCreditCardPayments();
         bundle.getBundles().add(cardPayments);
+        netCashCollection -= getSafeTotal(cardPayments);
 
         ReportTemplateRowBundle staffPayments = generateStaffPayments();
         bundle.getBundles().add(staffPayments);
+        netCashCollection -= getSafeTotal(staffPayments);
 
         ReportTemplateRowBundle voucherPayments = generateVoucherPayments();
         bundle.getBundles().add(voucherPayments);
+        netCashCollection -= getSafeTotal(voucherPayments);
 
         ReportTemplateRowBundle chequePayments = generateChequePayments();
         bundle.getBundles().add(chequePayments);
+        netCashCollection -= getSafeTotal(chequePayments);
 
         ReportTemplateRowBundle ewalletPayments = generateEwalletPayments();
         bundle.getBundles().add(ewalletPayments);
+        netCashCollection -= getSafeTotal(ewalletPayments);
 
         ReportTemplateRowBundle patientDepositPayments = generatePatientDepositPayments();
         bundle.getBundles().add(patientDepositPayments);
+        netCashCollection -= getSafeTotal(patientDepositPayments);
 
         ReportTemplateRowBundle slipPayments = generateSlipPayments();
         bundle.getBundles().add(slipPayments);
+        netCashCollection -= getSafeTotal(slipPayments);
+
+        // Final net cash for the day
+        ReportTemplateRowBundle netCashForTheDayBundle = new ReportTemplateRowBundle();
+        netCashForTheDayBundle.setName("Net Cash");
+        netCashForTheDayBundle.setBundleType("netCash");
+        netCashForTheDayBundle.setTotal(netCashCollection);
+        bundle.getBundles().add(netCashForTheDayBundle);
     }
 
     private double getSafeTotal(ReportTemplateRowBundle bundle) {
@@ -11897,7 +12079,7 @@ public class SearchController implements Serializable {
                 department,
                 site);
         ap.setName("Staff Welfare Payments");
-        ap.setBundleType("PaymentReport");
+        ap.setBundleType("paymentReportStaffWelfare");
         return ap;
     }
 
@@ -11911,7 +12093,7 @@ public class SearchController implements Serializable {
                 department,
                 site);
         ap.setName("Voucher Payments");
-        ap.setBundleType("PaymentReport");
+        ap.setBundleType("paymentReportVoucher");
         return ap;
     }
 
@@ -11925,7 +12107,7 @@ public class SearchController implements Serializable {
                 department,
                 site);
         ap.setName("Cheque Payments");
-        ap.setBundleType("PaymentReport");
+        ap.setBundleType("paymentReportCheque");
         return ap;
     }
 
@@ -11939,7 +12121,7 @@ public class SearchController implements Serializable {
                 department,
                 site);
         ap.setName("e-Wallet Payments");
-        ap.setBundleType("PaymentReport");
+        ap.setBundleType("paymentReportEwallet");
         return ap;
     }
 
@@ -11953,7 +12135,7 @@ public class SearchController implements Serializable {
                 department,
                 site);
         ap.setName("Patient Deposit Payments");
-        ap.setBundleType("PaymentReport");
+        ap.setBundleType("paymentReportPatientDeposit");
         return ap;
     }
 
@@ -12929,7 +13111,7 @@ public class SearchController implements Serializable {
             billRow.createCell(colIdx++).setCellValue(bill.getPatient() != null && bill.getPatient().getPerson() != null ? bill.getPatient().getPerson().getName() : "");
             billRow.createCell(colIdx++).setCellValue(bill.getStaff() != null && bill.getStaff().getPerson() != null ? bill.getStaff().getPerson().getNameWithTitle() : "");
             billRow.createCell(colIdx++).setCellValue(bill.getCreater() != null && bill.getCreater().getWebUserPerson() != null ? bill.getCreater().getWebUserPerson().getName() : "");
-            billRow.createCell(colIdx++).setCellValue(bill.getBillType() != null ? bill.getBillType().getLabel() : "");
+            billRow.createCell(colIdx++).setCellValue(bill.getBillTypeAtomic() != null ? bill.getBillTypeAtomic().getLabel() : "");
             billRow.createCell(colIdx++).setCellValue(bill.getGrantTotal());
             billRow.createCell(colIdx++).setCellValue(bill.getDiscount());
             billRow.createCell(colIdx++).setCellValue(bill.getNetTotal());

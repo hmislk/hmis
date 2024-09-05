@@ -41,5 +41,8 @@ public enum HistoryType {
     CollectingCentreDebitNoteCancel,
     CollectingCentreBilling,
     CollectingCentreBillingCancel,
+    CollectingCentreBillingRefund,
+    CollectingentrePaymentMadeBill,
+    CollectingentrePaymentMadeBillCancelled,
     MonthlyRecord,
 }

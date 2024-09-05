@@ -61,7 +61,7 @@
                         </h:form>
 
                         <h:form id="download" >
-                            <p:commandButton value="Download Base Item Fees as Excel" 
+                            <p:commandButton value="Download Collecting Centre Specific Fees as Excel" 
                                              ajax="false" 
                                              icon="fa fa-download" 
                                              styleClass="ui-button-success m-2" 
@@ -99,6 +99,16 @@
                             <!-- ID Column with sorting and filtering -->
                             <p:column headerText="ID" width="5em" sortBy="#{f.id}" filterBy="#{f.id}" filterMatchMode="contains">
                                 <h:outputText value="#{f.id}" ></h:outputText>
+                            </p:column>
+
+                            <!-- Collecting Centre Name Column with sorting and filtering -->
+                            <p:column headerText="Collecting Centre Name" width="20em" sortBy="#{f.forInstitution.name}" filterBy="#{f.forInstitution.name}" filterMatchMode="contains">
+                                <h:outputText value="#{f.forInstitution.name}" rendered="#{f.forInstitution ne null}"></h:outputText>
+                            </p:column>
+
+                            <!-- Collecting Centre Code Column with sorting and filtering -->
+                            <p:column headerText="Collecting Centre Code" width="15em" sortBy="#{f.forInstitution.code}" filterBy="#{f.forInstitution.code}" filterMatchMode="contains">
+                                <h:outputText value="#{f.forInstitution.code}" rendered="#{f.forInstitution ne null}"></h:outputText>
                             </p:column>
 
                             <!-- Item Code Column with sorting and filtering -->
