@@ -198,7 +198,9 @@ public enum BillTypeAtomic {
     AGENCY_PAYMENT_RECEIVED("Agency Payment Received", BillCategory.BILL, ServiceType.AGENCY, BillFinanceType.CASH_IN, CountedServiceType.AGENCY, PaymentCategory.NON_CREDIT_SPEND),
     AGENCY_PAYMENT_CANCELLATION("Agency Payment Cancellation", BillCategory.CANCELLATION, ServiceType.AGENCY, BillFinanceType.CASH_OUT, CountedServiceType.AGENCY, PaymentCategory.NON_CREDIT_SPEND),
     AGENCY_CREDIT_NOTE("Agency Credit Note", BillCategory.BILL, ServiceType.AGENCY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.AGENCY, PaymentCategory.CREDIT_SPEND),
+    AGENCY_CREDIT_NOTE_CANCELLATION("Agency Credit Note Cancellation", BillCategory.CANCELLATION, ServiceType.AGENCY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.AGENCY, PaymentCategory.CREDIT_SPEND),
     AGENCY_DEBIT_NOTE("Agency Debit Note", BillCategory.BILL, ServiceType.AGENCY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.AGENCY, PaymentCategory.CREDIT_SPEND),
+    AGENCY_DEBIT_NOTE_CANCELLATION("Agency Debit Note Cancellation", BillCategory.CANCELLATION, ServiceType.AGENCY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.AGENCY, PaymentCategory.CREDIT_SPEND),
     // OPD Payments from Credit Companies
     OPD_CREDIT_COMPANY_PAYMENT_RECEIVED("OPD Payment Received from Credit Company", BillCategory.BILL, ServiceType.OPD, BillFinanceType.CASH_IN, CountedServiceType.AGENCY, PaymentCategory.NON_CREDIT_COLLECTION),
     OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION("OPD Payment Cancellation from Credit Company", BillCategory.CANCELLATION, ServiceType.OPD, BillFinanceType.CASH_OUT, CountedServiceType.AGENCY, PaymentCategory.NON_CREDIT_COLLECTION),
