@@ -51,6 +51,7 @@ public enum BillType {
     PatientPaymentRefundBill,
     PatientPaymentCanceldBill,
     CollectingCentrePaymentReceiveBill,
+    CollectingCentrePaymentMadeBill,
     CollectingCentreCreditNoteBill,
     CollectingCentreDebitNoteBill,
     @Deprecated
