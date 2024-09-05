@@ -102,7 +102,7 @@
         </style>
 
 
-        <h:panelGroup rendered="false" class="d-flex justify-content-center align-items-center vh-100">
+        <h:panelGroup rendered="true" class="d-flex justify-content-center align-items-center vh-100">
             <div class="card text-center w-50">
                 <div class="card-header bg-primary text-white">
                     Important Notification
@@ -110,7 +110,7 @@
                 <div class="card-body">
                     <h1>Server has been migrated to a new location</h1>
                     <h1>Use this link afterwards:</h1>
-                    <h1 class="text-primary"><a href="https://vfs.carecode.org/" target="_blank">https://vfs.carecode.org/</a></h1>
+                    <h1 class="text-primary"><a href="https://rh.carecode.org/" target="_blank">https://rh.carecode.org/</a></h1>
                     <h1>Click here to login.</h1>
                     <h1>Next time, type that URL. This page will not be accessible soon.</h1>
                     <h2>Call for details - 0715812399</h2>
@@ -119,7 +119,7 @@
         </h:panelGroup>
 
 
-        <h:panelGroup rendered="true" >
+        <h:panelGroup rendered="false" >
             <h:panelGroup rendered="#{!sessionController.firstLogin}" class="w-100">
                 <h:panelGroup rendered ="#{not sessionController.logged}"  >
                     <h:panelGroup rendered="#{!applicationController.hasAwebsiteAsFrontEnd}" >
