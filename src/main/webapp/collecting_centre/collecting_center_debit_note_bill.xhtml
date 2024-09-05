@@ -38,13 +38,12 @@
                             <p:column>#{ix.name}</p:column>
                         </p:autoComplete>
                         <p:outputLabel value="Payment" />
-                        <p:inputText autocomplete="off" value="#{agentPaymentRecieveBillController.amount}"/>                               
+                        <p:inputText onfocus="this.select();" autocomplete="off" value="#{agentPaymentRecieveBillController.amount}"/>                               
                         <p:outputLabel value="Description"/>
                         <p:inputTextarea class="w-100" value="#{agentPaymentRecieveBillController.comment}"/>  
 
 
                         <p:commandButton value="New Bill" ajax="false" action="#{agentPaymentRecieveBillController.prepareNewBill()}" icon="fas fa-plus" > </p:commandButton> 
-                        <p:defaultCommand target="btnSettle"/>
                         <p:commandButton id="btnSettle" value="Settle Debit Note" 
                                          action="#{agentPaymentRecieveBillController.collectingCenterDebitNoteSettleBill}" 
                                          ajax="false"
