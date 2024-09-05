@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.entity.channel.SessionInstance;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
@@ -122,6 +123,20 @@ public class CommonController implements Serializable {
         LocalDate firstDate = first.toLocalDate();
         LocalDate secondDate = second.toLocalDate();
         return firstDate.equals(secondDate);
+    }
+    
+    public SessionInstance convertToSessionInstance(Object ob){
+        if(ob instanceof SessionInstance){
+            return (SessionInstance) ob;
+        }
+        return null;
+    }
+    
+    public SessionInstance getSessionInstance(Object ob){
+        if(ob instanceof SessionInstance){
+            return (SessionInstance) ob;
+        }
+        return null;
     }
 
     public Date retiermentDate(Date dob) {

@@ -7,6 +7,8 @@ package com.divudi.bean.cashTransaction;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.entity.cashTransaction.CashBook;
+import com.divudi.entity.cashTransaction.CashBookEntry;
+import com.divudi.facade.CashBookEntryFacade;
 import com.divudi.facade.CashBookFacade;
 import java.io.Serializable;
 import javax.ejb.EJB;
@@ -24,10 +26,10 @@ import javax.inject.Named;
  */
 @Named
 @SessionScoped
-public class CashBookController implements Serializable {
+public class CashBookEntryController implements Serializable {
 
     @EJB
-    private CashBookFacade CashbookFacade;
+    private CashBookEntryFacade CashbookEntryFacade;
     @EJB
     private CashBook cashBook;
     
@@ -35,15 +37,15 @@ public class CashBookController implements Serializable {
     private SessionController sessionController;
 
     
-    public CashBookController() {
+    public CashBookEntryController() {
     }
 
-    public CashBookFacade getCashbookFacade() {
-        return CashbookFacade;
+    public CashBookEntryFacade getCashbookEntryFacade() {
+        return CashbookEntryFacade;
     }
 
-    public void setCashbookFacade(CashBookFacade CashbookFacade) {
-        this.CashbookFacade = CashbookFacade;
+    public void setCashbookEntryFacade(CashBookEntryFacade CashbookEntryFacade) {
+        this.CashbookEntryFacade = CashbookEntryFacade;
     }
 
     public CashBook getCashBook() {
@@ -58,17 +60,17 @@ public class CashBookController implements Serializable {
     /**
      *
      */
-    @FacesConverter(forClass = CashBook.class)
-    public static class CashBookConverter implements Converter {
+    @FacesConverter(forClass = CashBookEntry.class)
+    public static class CashBookEntryConverter implements Converter {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
             if (value == null || value.length() == 0) {
                 return null;
             }
-            CashBookController controller = (CashBookController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "CashBookController");
-            return controller.getCashbookFacade().find(getKey(value));
+            CashBookEntryController controller = (CashBookEntryController) facesContext.getApplication().getELResolver().
+                    getValue(facesContext.getELContext(), null, "CashBookEntryController");
+            return controller.getCashbookEntryFacade().find(getKey(value));
         }
 
         java.lang.Long getKey(String value) {
@@ -88,12 +90,12 @@ public class CashBookController implements Serializable {
             if (object == null) {
                 return null;
             }
-            if (object instanceof CashBook) {
-                CashBook o = (CashBook) object;
+            if (object instanceof CashBookEntry) {
+                CashBookEntry o = (CashBookEntry) object;
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + CashBook.class.getName());
+                        + object.getClass().getName() + "; expected type: " + CashBookEntry.class.getName());
             }
         }
     }
