@@ -64,6 +64,8 @@ public class CollectingCentreController implements Serializable {
     @EJB
     BillFacade billFacade;
 
+    private int ccManagementIndex=1;
+    
     List<Institution> selectedItems;
     private Institution current;
     private List<Institution> items = null;
@@ -94,16 +96,17 @@ public class CollectingCentreController implements Serializable {
         bill.setDepartment(sessionController.getDepartment());
         bill.setBillType(BillType.CollectingCentrePaymentMadeBill);
         bill.setBillTypeAtomic(BillTypeAtomic.CC_PAYMENT_RECEIVED_BILL);
+        System.out.println("bill.getCollectingCenter() = " + bill.getCollectingCentre().getName());
 
     }
 
     public void settlePaymentBillToCollectingCentrePaymenMade() {
         if (bill == null) {
-            JsfUtil.addErrorMessage("No value");
+            JsfUtil.addErrorMessage("Error");
             return;
         }
         if (bill.getCollectingCentre() == null) {
-            JsfUtil.addErrorMessage("No value");
+            JsfUtil.addErrorMessage("Select a Collecting Center");
             return;
         }
         if (bill.getNetTotal() == 0.0) {
@@ -475,5 +478,15 @@ public class CollectingCentreController implements Serializable {
     public void setPrintPreview(boolean printPreview) {
         this.printPreview = printPreview;
     }
+
+    public int getCcManagementIndex() {
+        return ccManagementIndex;
+    }
+
+    public void setCcManagementIndex(int ccManagementIndex) {
+        this.ccManagementIndex = ccManagementIndex;
+    }
+    
+    
 
 }

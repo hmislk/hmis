@@ -128,6 +128,8 @@ public class CollectingCentreBillController implements Serializable, ControllerW
      * Controllers
      */
     @Inject
+    ItemFeeManager itemFeeManager;
+    @Inject
     ItemController itemController;
     @Inject
     ItemApplicationController itemApplicationController;
@@ -238,6 +240,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             return;
         }
         fillAvailableAgentReferanceNumbers(collectingCentre);
+        opdItems = fillOpdItems();
         itemController.setCcInstitutionItems(itemController.fillItemsByInstitution(collectingCentre));
     }
 
@@ -1225,6 +1228,8 @@ public class CollectingCentreBillController implements Serializable, ControllerW
                 return itemController.fillItemsByDepartment(departmentController.getDefaultDepatrment(collectingCentre));
             case ITEMS_OF_SELECTED_INSTITUTIONS:
                 return itemController.fillItemsByInstitution(collectingCentre);
+            case SITE_FEE_ITEMS:
+                return itemFeeManager.fillItemLightsForSite(sessionController.getDepartment().getSite());
             default:
                 return itemController.getAllItems();
         }
