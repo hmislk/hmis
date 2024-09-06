@@ -119,7 +119,7 @@
                                         </p:column>
 
                                         <p:column headerText="Date" width="10em" style="text-align: left;" rendered="false">
-                                            <p:commandLink id="insNo" ajax="false" value="#{bill.insId}" action="#{searchController.viewOPD(bill)}">
+                                            <p:commandLink id="insNo" ajax="false" value="#{bill.deptId}" action="#{searchController.viewOPD(bill)}">
                                                 <f:setPropertyActionListener value="#{bill}" target="#{billSearch.billSearch}"/>
                                             </p:commandLink>
                                         </p:column>

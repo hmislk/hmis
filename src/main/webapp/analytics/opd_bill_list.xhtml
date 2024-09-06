@@ -89,7 +89,7 @@
                             </p:column>
 
                             <p:column headerText="Ins ID" width="120" style="text-align: right;">
-                                <p:commandLink id="insNo" ajax="false" value="#{bill.insId}" action="#{searchController.viewOPD(bill)}">
+                                <p:commandLink id="insNo" ajax="false" value="#{bill.deptId}" action="#{searchController.viewOPD(bill)}">
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.billSearch}"/>
                                 </p:commandLink>
                             </p:column>
@@ -229,7 +229,7 @@
                                 <h:outputLabel value="#{i+1}"/>
                             </p:column>
                             <p:column headerText="Bill No" >                                
-                                <p:commandLink id="billNo" ajax="false" value="#{bill.insId}" action="#{searchController.viewOPD(bill)}">
+                                <p:commandLink id="billNo" ajax="false" value="#{bill.deptId}" action="#{searchController.viewOPD(bill)}">
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.billSearch}"/>
                                 </p:commandLink>
                                 <p:tooltip for="billNo">
@@ -375,7 +375,7 @@
                                 <h:outputLabel value="#{i+1}"/>
                             </p:column>
                             <p:column headerText="Bill No" >   
-                                <p:outputLabel value="#{bill1.insId}" ></p:outputLabel>
+                                <p:outputLabel value="#{bill1.deptId}" ></p:outputLabel>
                             </p:column>
                             <p:column headerText="Billed From Institution"  >                                
                                 <h:outputLabel value="#{bill1.institution.name}" />

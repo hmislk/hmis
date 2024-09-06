@@ -51,11 +51,11 @@
                                 </f:facet>
                                 <p:outputLabel value="#{b.id}" />
                             </p:column>
-                            <p:column sortBy="#{b.insId}">
+                            <p:column sortBy="#{b.deptId}">
                                 <f:facet name="header">
                                     <p:outputLabel value="Bill Id" />
                                 </f:facet>
-                                <p:outputLabel value="#{b.insId}" />
+                                <p:outputLabel value="#{b.deptId}" />
                             </p:column>
                             <p:column>
                                 <f:facet name="header">
@@ -63,11 +63,11 @@
                                 </f:facet>
                                 <p:outputLabel value="#{b.deptId}" />
                             </p:column>
-                            <p:column sortBy="#{b.insId}">
+                            <p:column sortBy="#{b.deptId}">
                                 <f:facet name="header">
                                     <p:outputLabel value="Billed Id" />
                                 </f:facet>
-                                <p:outputLabel value="#{b.billedBill.insId}" />
+                                <p:outputLabel value="#{b.billedBill.deptId}" />
                             </p:column>
                             <p:column>
                                 <f:facet name="header">

@@ -68,10 +68,10 @@
                                 <p:dataTable  id="tblBills" value="#{inwardReportController.patientInvestigations}" var="pi" >
                                     <p:column  headerText="Bill" styleClass="alignTop" >
                                         <h:outputLabel id="lblBillNo" 
-                                                       value="#{pi.billItem.bill.insId}" 
+                                                       value="#{pi.billItem.bill.deptId}" 
                                                        styleClass="#{pi.billItem.bill.cancelled or pi.billItem.refunded ? 'redtext':''}"></h:outputLabel>
                                         <p:tooltip for="lblBillNo"  >
-                                            <h:outputLabel value="Bill No : #{pi.billItem.bill.insId}" ></h:outputLabel>
+                                            <h:outputLabel value="Bill No : #{pi.billItem.bill.deptId}" ></h:outputLabel>
                                             <br/>
                                             <h:outputLabel value="Billed From : #{pi.billItem.bill.institution.name}" ></h:outputLabel>
                                             <br/>

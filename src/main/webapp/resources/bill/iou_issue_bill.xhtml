@@ -49,14 +49,14 @@
                                 <td style="width: 15px;"></td>
                                 <td>
                                     <h:outputLabel 
-                                        value="#{cc.attrs.bill.cancelledBill.insId} **Cancelled"  
-                                        rendered="#{cc.attrs.bill.cancelledBill.insId ne null}"/> 
+                                        value="#{cc.attrs.bill.cancelledBill.deptId} **Cancelled"  
+                                        rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}"/> 
                                     <h:outputLabel 
-                                        value="#{cc.attrs.bill.insId}" 
-                                        rendered="#{cc.attrs.bill.cancelledBill.insId eq null}"/>  
+                                        value="#{cc.attrs.bill.deptId}" 
+                                        rendered="#{cc.attrs.bill.cancelledBill.deptId eq null}"/>  
                                     <h:outputLabel 
                                         value="  **Duplicate" 
-                                        rendered="#{cc.attrs.bill.cancelledBill.insId eq null and cc.attrs.dup eq true }" />
+                                        rendered="#{cc.attrs.bill.cancelledBill.deptId eq null and cc.attrs.dup eq true }" />
 
                                 </td>
                                 <td style="width: 50px;"></td>
@@ -70,12 +70,12 @@
                                 <td>
                                     <h:outputLabel 
                                         value="#{cc.attrs.bill.cancelledBill.billDate}"
-                                        rendered="#{cc.attrs.bill.cancelledBill.insId ne null}"  >
+                                        rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}"  >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                     </h:outputLabel>                      
                                     <h:outputLabel 
                                         value="#{cc.attrs.bill.billDate}"
-                                        rendered="#{cc.attrs.bill.cancelledBill.insId eq null }">
+                                        rendered="#{cc.attrs.bill.cancelledBill.deptId eq null }">
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                     </h:outputLabel>
                                 </td>
@@ -92,10 +92,10 @@
                                 <td>
                                     <h:outputLabel 
                                         value="#{cc.attrs.bill.cancelledBill.paymentMethod}" 
-                                        rendered="#{cc.attrs.bill.cancelledBill.insId ne null}" />                        
+                                        rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}" />                        
                                     <h:outputLabel 
                                         value="#{cc.attrs.bill.paymentMethod}" 
-                                        rendered="#{cc.attrs.bill.cancelledBill.insId eq null }"/>
+                                        rendered="#{cc.attrs.bill.cancelledBill.deptId eq null }"/>
 
                                 </td>
                                 <td style="width: 50px;"></td>
@@ -109,12 +109,12 @@
                                 <td>
                                     <h:outputLabel 
                                         value="#{cc.attrs.bill.cancelledBill.billTime}"  
-                                        rendered="#{cc.attrs.bill.cancelledBill.insId ne null}">
+                                        rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}">
                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
                                     </h:outputLabel>                        
                                     <h:outputLabel 
                                         value="#{cc.attrs.bill.billTime}" 
-                                        rendered="#{cc.attrs.bill.cancelledBill.insId eq null }">
+                                        rendered="#{cc.attrs.bill.cancelledBill.deptId eq null }">
                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
                                     </h:outputLabel>
                                 </td>
