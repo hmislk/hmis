@@ -995,6 +995,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     @Inject
     private BillSearch billSearch;
 
+    @Deprecated
     public void cancellAll() {
         Bill tmp = new CancelledBill();
         tmp.setCreatedAt(new Date());
@@ -1014,9 +1015,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         }
         tmp.copy(billedBill);
         tmp.setBilledBill(billedBill);
-
-        WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(tmp, getSessionController().getLoggedUser());
-        getSessionController().setLoggedUser(wb);
+     
     }
 
     public void dateChangeListen() {
