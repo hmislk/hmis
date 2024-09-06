@@ -41,7 +41,7 @@
                                 <p:panel header="Bill Detail">
                                     <p:panelGrid columns="2">
                                         <h:outputLabel value="Bill No :" ></h:outputLabel>
-                                        <h:outputLabel value="#{inwardSearch.bill.insId}" ></h:outputLabel>
+                                        <h:outputLabel value="#{inwardSearch.bill.deptId}" ></h:outputLabel>
                                         <h:outputLabel value="Payment Type : " ></h:outputLabel>
                                         <h:outputLabel value="#{inwardSearch.bill.paymentMethod}" ></h:outputLabel>
                                         <h:outputLabel value="Paid amount :" ></h:outputLabel>
@@ -53,7 +53,7 @@
                             <p:panel header="Bill Fee Detail">
                                 <p:dataTable value="#{inwardSearch.billItems}" var="bip21" emptyMessage="No Items" >
                                     <p:column headerText="Bill No">
-                                        <h:outputLabel value="#{bip21.bill.insId}" />
+                                        <h:outputLabel value="#{bip21.bill.deptId}" />
                                     </p:column>
                                     <p:column headerText="Test/Service">
                                         <h:outputLabel value="#{bip21.paidForBillFee.billItem.item.name}" />

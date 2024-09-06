@@ -88,8 +88,8 @@
                         <p:outputLabel value="Cancelled" rendered="#{bill.class eq 'class com.divudi.entity.CancelledBill'}"/>
                     </p:column>
 
-                    <p:column headerText="Bill No" filterBy="#{bill.insId}" filterMatchMode="contains" >                        
-                        <h:outputLabel value="#{bill.insId}"/>
+                    <p:column headerText="Bill No" filterBy="#{bill.deptId}" filterMatchMode="contains" >                        
+                        <h:outputLabel value="#{bill.deptId}"/>
                     </p:column>
 
                     <p:column headerText="Name" filterBy="#{bill.patient.person.name}" filterMatchMode="contains">

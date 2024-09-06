@@ -44,7 +44,7 @@
                             <div class="col-md-10">
                                 <p:dataTable id="tblBills" value="#{searchController.bills}" var="bill"  >
                                     <p:column headerText="Bill No" >
-                                        <h:commandLink action="collecting_center_credit_note_bill_reprint" value="#{bill.insId}">
+                                        <h:commandLink action="collecting_center_credit_note_bill_reprint" value="#{bill.deptId}">
                                             <h:outputLabel  ></h:outputLabel>
                                             <f:setPropertyActionListener value="#{bill}" target="#{agentPaymentReceiveSearchController.bill}"/>
                                         </h:commandLink>

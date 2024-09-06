@@ -22,14 +22,14 @@
                 <f:facet name="header">
                     <h:outputLabel value="Bill No"/>
                 </f:facet>
-                <h:outputLabel value="#{ch.insId}" />
+                <h:outputLabel value="#{ch.deptId}" />
                 <br/>
                 <h:panelGroup rendered="#{ch.cancelled}">
                     <h:outputLabel style="color: red;" value="Cancelled at &nbsp;"/>
                     <h:outputLabel style="color: red;" rendered="#{ch.cancelled}" value="#{ch.cancelledBill.createdAt}">
                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                     </h:outputLabel>
-                    <h:outputLabel style="color: red;" rendered="#{ch.cancelled}" value="&nbsp;&nbsp; #{ch.cancelledBill.insId}"/>
+                    <h:outputLabel style="color: red;" rendered="#{ch.cancelled}" value="&nbsp;&nbsp; #{ch.cancelledBill.deptId}"/>
                 </h:panelGroup>
             </p:column>                        
             <p:column headerText="Invoice No" style="width: 20%; "> 

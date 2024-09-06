@@ -78,9 +78,9 @@
                             <f:facet name="header">
                                 <h:outputLabel value="Bill ID"/>
                             </f:facet>
-                            <p:outputLabel value="#{b.insId}" rendered="#{b.billClass eq 'class com.divudi.entity.BilledBill'}" />
+                            <p:outputLabel value="#{b.deptId}" rendered="#{b.billClass eq 'class com.divudi.entity.BilledBill'}" />
 
-                            <p:outputLabel value="#{b.billedBill.insId}" rendered="#{b.billClass ne 'class com.divudi.entity.BilledBill'}" />
+                            <p:outputLabel value="#{b.billedBill.deptId}" rendered="#{b.billClass ne 'class com.divudi.entity.BilledBill'}" />
                         </p:column>
                         <p:column headerText="BillId" >
                             <f:facet name="header">

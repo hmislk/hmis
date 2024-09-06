@@ -36,7 +36,7 @@
                     <h:outputLabel value="Id"/>
                 </f:facet> 
 
-                <h:outputLabel value="#{b.insId}"/>
+                <h:outputLabel value="#{b.deptId}"/>
             </p:column>
 
             <p:column headerText="To Department"  >
@@ -120,7 +120,7 @@
                     <h:outputLabel value="Remark"/>
                 </f:facet> 
 
-                <h:outputLabel value="Cancelled. (#{b.cancelledBill.insId})" rendered="#{b.cancelled==true}" ></h:outputLabel>
+                <h:outputLabel value="Cancelled. (#{b.cancelledBill.deptId})" rendered="#{b.cancelled==true}" ></h:outputLabel>
             </p:column>
 
             <p:summaryRow  >

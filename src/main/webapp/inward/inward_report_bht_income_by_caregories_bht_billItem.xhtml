@@ -80,7 +80,7 @@
                                         <h:outputLabel value="BHT Type"/>
                                         <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.paymentMethod}"/>
                                         <h:outputLabel value="Final Bill Number"/>
-                                        <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.finalBill.insId}"/>
+                                        <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.finalBill.deptId}"/>
                                         <h:outputLabel value="Addmission Type"/>
                                         <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.admissionType.name}"/>
                                         <h:outputLabel value="Credit Company" />
@@ -312,7 +312,7 @@
                                     <h:outputLabel value="Payement Detail"/>
                                 </f:facet>
                                 <p:column headerText="Bill No">
-                                    <h:outputLabel value="#{pay.insId}"></h:outputLabel>                                
+                                    <h:outputLabel value="#{pay.deptId}"></h:outputLabel>                                
                                 </p:column>
                                 <p:column headerText="Bill Date">
                                     <h:outputLabel value="#{pay.createdAt}">

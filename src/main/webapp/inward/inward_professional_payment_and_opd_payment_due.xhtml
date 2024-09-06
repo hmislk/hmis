@@ -68,13 +68,13 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Bill No"/>
                                 </f:facet>
-                                <h:outputLabel value="#{bf.bill.insId}" />
+                                <h:outputLabel value="#{bf.bill.deptId}" />
                             </p:column>
                             <p:column headerText="BHT No" rendered="#{searchController.reportKeyWord.string eq '1'}">
                                 <f:facet name="header">
                                     <h:outputLabel value="BHT No"/>
                                 </f:facet>
-                                <h:outputLabel value="#{bf.bill.insId}" />
+                                <h:outputLabel value="#{bf.bill.deptId}" />
                             </p:column>
 
                             <p:column headerText="BilledAt" sortBy="#{bf.bill.createdAt}" >
