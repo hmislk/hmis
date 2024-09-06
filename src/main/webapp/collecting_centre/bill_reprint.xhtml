@@ -19,7 +19,11 @@
                             <div class="col-12 d-flex justify-content-between ">
                                 <!-- Command Buttons -->
                                 <div class="d-flex m-1 col-6">
-                                    <p:commandButton ajax="false" value="To Cancel" action="/collecting_centre/bill_cancel" disabled="#{billSearch.bill.cancelled or billSearch.bill.refundedBill ne null}" class="ui-button-danger m-1 w-25" icon="fa fa-times" >                           
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="To Cancel"
+                                        action="/collecting_centre/bill_cancel?faces-redirect=true" 
+                                        disabled="#{billSearch.bill.cancelled or billSearch.bill.refundedBill ne null}" class="ui-button-danger m-1 w-25" icon="fa fa-times" >                           
                                     </p:commandButton>
                                     <p:commandButton
                                         ajax="false" 
