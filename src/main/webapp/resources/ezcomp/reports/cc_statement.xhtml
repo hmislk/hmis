@@ -112,12 +112,12 @@
                     <p:badge value="#{agentHx.bill.cancelled ? 'Cancelled' : ''}" severity="danger" rendered="#{agentHx.bill.cancelled}" />
                     <p:badge value="#{agentHx.bill.refunded ? 'Refunded' : ''}" severity="warning" rendered="#{agentHx.bill.refunded}" />
 
-                    <p:commandLink value="Original Bill - #{agentHx.bill.deptId}" 
+<!--                    <p:commandLink value="Original Bill - #{agentHx.bill.deptId}" 
                                    ajax="false"
                                    rendered="#{agentHx.bill.billedBill}"
                                    action="#{billSearch.navigateViewBillByBillTypeAtomic()}" >
                         <f:setPropertyActionListener value="#{agentHx.bill.billedBill}" target="#{billSearch.bill}" />
-                    </p:commandLink>
+                    </p:commandLink>-->
 
                 </p:column>
 
