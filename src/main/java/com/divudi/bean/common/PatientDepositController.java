@@ -44,6 +44,7 @@ public class PatientDepositController implements Serializable {
     
     public PatientDeposit getDepositOfThePatient(Patient p , Department d){        
         Map m = new HashMap<>();
+        
         String jpql = "select pd from PatientDeposit pd"
                 + " where pd.patient=:pt "
                 + " and pd.department=:dep "
