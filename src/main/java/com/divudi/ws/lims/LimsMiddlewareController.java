@@ -1844,6 +1844,12 @@ public class LimsMiddlewareController {
 //                    System.out.println("value");
                     String sampleTypeName;
                     String samplePriority;
+                    
+                    if(tii.getItem()==null){
+                        System.out.println("tii is NULL " + tii);
+                        continue;
+                    }
+                    
                     if (tii.getSample() != null) {
                         sampleTypeName = tii.getSample().getName();
                     } else {
