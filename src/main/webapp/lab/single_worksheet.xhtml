@@ -32,17 +32,17 @@
                 </div>
                 <p:panel id="pPrintWorksheet"  style="margin: auto; border: 0px; padding: 10px!important; font-size:110%" styleClass="fiveinchbillBreakRuhunu" >
                     <div >
- <!--
-                        Referring Doc - for OPD :  #{patientInvestigationController.current.billItem.bill.referredInstituteOrDoctor}<br/>
-                        Referring Doc - for Admission :  #{patientInvestigationController.current.billItem.bill.patientEncounter.referringDoctor.person.nameWithTitle}<br/>
-                                                
-                        bht :#{patientInvestigationController.current.billItem.bill.patientEncounter.bhtNo}<br/>
-                
-                        room : #{patientInvestigationController.current.billItem.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.room.name}<br/>
-                     
-                        Collecting Center : #{patientInvestigationController.current.billItem.bill.collectingCentre.name}<br/>
- -->                       
-                    
+                        <!--
+                                               Referring Doc - for OPD :  #{patientInvestigationController.current.billItem.bill.referredInstituteOrDoctor}<br/>
+                                               Referring Doc - for Admission :  #{patientInvestigationController.current.billItem.bill.patientEncounter.referringDoctor.person.nameWithTitle}<br/>
+                                                                       
+                                               bht :#{patientInvestigationController.current.billItem.bill.patientEncounter.bhtNo}<br/>
+                                       
+                                               room : #{patientInvestigationController.current.billItem.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.room.name}<br/>
+                                            
+                                               Collecting Center : #{patientInvestigationController.current.billItem.bill.collectingCentre.name}<br/>
+                        -->                       
+
                         <h:panelGroup   id="gpBillPreview" styleClass="fiveinchbill" style="padding: 12px!important;">
                             <div >
                                 <div>
@@ -76,7 +76,7 @@
                                                 </div>
                                             </h:panelGroup>
                                         </div>
-                                        
+
                                         <div class="row">
                                             <h:panelGroup rendered="#{patientInvestigationController.current.billItem.bill.collectingCentre ne null}">
                                                 <div class="row">
@@ -105,10 +105,11 @@
                                             <div class="col-7"><h:outputLabel style="font-size: 11px!important;" value="#{patientInvestigationController.current.investigation.name}" ></h:outputLabel></div>
                                         </div >
                                         <div class="row">
-                                            <div class="col-3"><h:outputLabel style="font-size: 11px!important;" value="Id : " /></div>
+                                            <div class="col-3"><h:outputLabel style="font-size: 11px!important;" value="Bill Id : " /></div>
                                             <div class="col-7"><h:outputLabel style="font-size: 11px!important;" value="#{patientInvestigationController.current.billItem.bill.insId}" ></h:outputLabel></div>
                                         </div>
 
+                                        
 
                                         <div class="row">
                                             <div class="col-3"><h:outputLabel style="font-size: 11px!important;" value="Bill At : " /></div>
@@ -133,6 +134,17 @@
                                                 <h:outputLabel style="font-size: 11px!important;" value="#{patientInvestigationController.current.receivedAt}" >
                                                     <f:convertDateTime pattern="dd MM yyyy HH:mm:ss a "/>
                                                 </h:outputLabel>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row" style="font-weight: 600;">
+                                            <div class="col-3"><h:outputLabel style="font-size: 11px!important;" value="Sample Id : " /></div>
+                                            <div class="col-7">
+                                                <ui:repeat value="#{patientInvestigationController.getPatientSampleComponentsByInvestigation(patientInvestigationController.current)}" var="psc">
+                                                    <div class="d-flex gap-2">
+                                                        <h:outputText value="#{psc.patientSample.id}"  />
+                                                    </div>
+                                                </ui:repeat>
                                             </div>
                                         </div>
                                     </h:panelGroup>
@@ -185,7 +197,7 @@
                                             </h:panelGroup>
                                         </ui:repeat>
                                     </table>
-                                    
+
                                 </div>
                             </div>
                         </h:panelGroup>

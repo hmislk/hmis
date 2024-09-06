@@ -56,6 +56,7 @@ public class AgentHistory implements Serializable {
     
     private double staffTrasnactionValue;
     
+    @Deprecated //Use Agent Transaction Value Instead
     private double collectingCentertransactionValue;
     @Enumerated(EnumType.STRING)
     HistoryType historyType;
