@@ -1229,7 +1229,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             case ITEMS_OF_SELECTED_INSTITUTIONS:
                 return itemController.fillItemsByInstitution(collectingCentre);
             case SITE_FEE_ITEMS:
-                return itemFeeManager.fillItemLightsForSite(sessionController.getDepartment().getSite());
+                return itemFeeManager.fillItemLightsForCc(collectingCentre);
             default:
                 return itemController.getAllItems();
         }
