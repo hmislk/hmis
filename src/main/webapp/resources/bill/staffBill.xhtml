@@ -29,40 +29,40 @@
                     </div>
 
                     <div class="receiptnoPrinting" >
-                        <h:outputLabel value="#{cc.attrs.bill.cancelledBill.insId} **Cancelled"  
-                                       rendered="#{cc.attrs.bill.cancelledBill.insId ne null}"/> 
-                        <h:outputLabel value="#{cc.attrs.bill.insId}" 
-                                       rendered="#{cc.attrs.bill.cancelledBill.insId eq null}"/>  
+                        <h:outputLabel value="#{cc.attrs.bill.cancelledBill.deptId} **Cancelled"  
+                                       rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}"/> 
+                        <h:outputLabel value="#{cc.attrs.bill.deptId}" 
+                                       rendered="#{cc.attrs.bill.cancelledBill.deptId eq null}"/>  
                         <h:outputLabel value="  **Duplicate" 
-                                       rendered="#{cc.attrs.bill.cancelledBill.insId eq null and cc.attrs.dup eq true }" />
+                                       rendered="#{cc.attrs.bill.cancelledBill.deptId eq null and cc.attrs.dup eq true }" />
                     </div>
 
                     <div class="billdatePrinting">                   
                         <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billDate}"
-                                       rendered="#{cc.attrs.bill.cancelledBill.insId ne null}"  >
+                                       rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}"  >
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                         </h:outputLabel>                      
                         <h:outputLabel value="#{cc.attrs.bill.billDate}"
-                                       rendered="#{cc.attrs.bill.cancelledBill.insId eq null }">
+                                       rendered="#{cc.attrs.bill.cancelledBill.deptId eq null }">
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                         </h:outputLabel>
                     </div>
 
                     <div class="paymentPrinting">                    
                         <h:outputLabel value="#{cc.attrs.bill.cancelledBill.paymentMethod}" 
-                                       rendered="#{cc.attrs.bill.cancelledBill.insId ne null}" />                        
+                                       rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}" />                        
                         <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" 
-                                       rendered="#{cc.attrs.bill.cancelledBill.insId eq null }"/>
+                                       rendered="#{cc.attrs.bill.cancelledBill.deptId eq null }"/>
                     </div>
 
                     <div class="billtimePrinting">
 
                         <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billTime}"  
-                                       rendered="#{cc.attrs.bill.cancelledBill.insId ne null}">
+                                       rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}">
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
                         </h:outputLabel>                        
                         <h:outputLabel value="#{cc.attrs.bill.billTime}" 
-                                       rendered="#{cc.attrs.bill.cancelledBill.insId eq null }">
+                                       rendered="#{cc.attrs.bill.cancelledBill.deptId eq null }">
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
                         </h:outputLabel>
                     </div>
@@ -87,7 +87,7 @@
                         <h:dataTable value="#{cc.attrs.controller.billItems}" var="bip" style="font-size:11px!important;" >
 
                             <h:column >
-                                <h:outputLabel value="#{bip.referanceBillItem.bill.insId}"  />                                    
+                                <h:outputLabel value="#{bip.referanceBillItem.bill.deptId}"  />                                    
                             </h:column>
 
                         </h:dataTable>

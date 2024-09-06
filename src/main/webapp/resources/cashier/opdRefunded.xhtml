@@ -26,7 +26,7 @@
             </p:column>F
             <p:column headerText="Bill No">
                 <f:facet name="header">  
-                    <h:outputLabel value="#{b.insId}"/>
+                    <h:outputLabel value="#{b.deptId}"/>
                 </f:facet> 
             </p:column>
             <p:column headerText="Bill No">
@@ -47,14 +47,14 @@
                 <f:facet name="header">  
                     <h:outputLabel value="Refunded ID"/>
                 </f:facet> 
-                <h:outputLabel value="#{b.insId}" ></h:outputLabel>
+                <h:outputLabel value="#{b.deptId}" ></h:outputLabel>
             </p:column>
 
             <p:column headerText="Billed Id" >
                 <f:facet name="header">  
                     <h:outputLabel value="Billed ID"/>
                 </f:facet> 
-                <h:outputLabel value="#{b.billedBill.insId}" >
+                <h:outputLabel value="#{b.billedBill.deptId}" >
                 </h:outputLabel>
             </p:column>
 

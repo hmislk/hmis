@@ -151,8 +151,8 @@ public class CollectingCentreApplicationController {
             agentHistory.setCompanyTransactionValue(0 - Math.abs(hospitalFee));
             agentHistory.setAgentTransactionValue(0 - Math.abs(collectingCentreFee));
             agentHistory.setStaffTrasnactionValue(0 - Math.abs(staffFee));
-            agentHistory.setTransactionValue(0 - Math.abs(transactionValue));
-            agentHistory.setTransactionValue(0-(hospitalFee));
+            //agentHistory.setTransactionValue(0 - Math.abs(transactionValue));
+            agentHistory.setTransactionValue(hospitalFee);
             agentHistory.setPaidAmountByAgency(null);
 
             double balanceBeforeTx = collectingCentre.getBallance();
@@ -189,7 +189,7 @@ public class CollectingCentreApplicationController {
             agentHistory.setCompanyTransactionValue(0 - Math.abs(hospitalFee));
             agentHistory.setAgentTransactionValue(0 - Math.abs(collectingCentreFee));
             agentHistory.setStaffTrasnactionValue(0 - Math.abs(staffFee));
-            agentHistory.setTransactionValue(0 - Math.abs(hospitalFee));
+            agentHistory.setTransactionValue(hospitalFee);
             agentHistory.setPaidAmountByAgency(null);
 
             double balanceBeforeTx = collectingCentre.getBallance();
@@ -498,7 +498,7 @@ public class CollectingCentreApplicationController {
             agentHistory.setAgentTransactionValue(collectingCentreFee);
             agentHistory.setStaffTrasnactionValue(staffFee);
             //agentHistory.setTransactionValue(transactionValue);
-            agentHistory.setTransactionValue(hospitalFee);
+            agentHistory.setTransactionValue(0-Math.abs(hospitalFee));
 
             double balanceBeforeTx = collectingCentre.getBallance();
 

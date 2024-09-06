@@ -2064,6 +2064,8 @@ public class BillSearch implements Serializable {
             return null;
         }
 
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getInstitution(), sessionController.getDepartment(), BillType.CollectingCentreBill, BillClassType.CancelledBill);
+
         cb.copy(originalBill);
         cb.copyValue(originalBill);
         cb.invertValue(originalBill);
@@ -2078,6 +2080,8 @@ public class BillSearch implements Serializable {
         cb.setDepartment(getSessionController().getDepartment());
         cb.setInstitution(getSessionController().getInstitution());
         cb.setComments(comment);
+        cb.setInsId(deptId);
+        cb.setDeptId(deptId);
 
         return cb;
     }
@@ -2319,7 +2323,7 @@ public class BillSearch implements Serializable {
                 bill.getTotalStaffFee(),
                 bill.getNetTotal(),
                 HistoryType.CollectingCentreBillingCancel,
-                getBill());
+                cancellationBill);
 
         bill = billFacade.find(bill.getId());
         printPreview = true;
@@ -3043,6 +3047,38 @@ public class BillSearch implements Serializable {
 
             case CHANNEL_BOOKING_WITH_PAYMENT:
                 return "";
+            case CC_BILL:
+                return navigateToViewCcBill(bill);
+
+            case CC_BILL_CANCELLATION:
+                return navigateToViewCcBillCancellation(bill);
+
+            case CC_BILL_REFUND:
+                return navigateToViewCcBillRefund(bill);
+
+            case CC_CREDIT_NOTE:
+                return navigateToViewCcCreditNote(bill);
+
+            case CC_DEBIT_NOTE:
+                return navigateToViewCcDebitNote(bill);
+
+            case CC_CREDIT_NOTE_CANCELLATION:
+                return navigateToViewCcCreditNoteCancellation(bill);
+
+            case CC_DEBIT_NOTE_CANCELLATION:
+                return navigateToViewCcDebitNoteCancellation(bill);
+
+            case CC_PAYMENT_CANCELLATION_BILL:
+                return navigateToViewCcPaymentCancellationBill(bill);
+
+            case CC_PAYMENT_MADE_BILL:
+                return navigateToViewCcPaymentMadeBill(bill);
+
+            case CC_PAYMENT_MADE_CANCELLATION_BILL:
+                return navigateToViewCcPaymentMadeCancellationBill(bill);
+
+            case CC_PAYMENT_RECEIVED_BILL:
+                return navigateToViewCcPaymentReceivedBill(bill);
 
             case CHANNEL_REFUND:
                 return "";
@@ -3057,6 +3093,61 @@ public class BillSearch implements Serializable {
         }
 
         return "";
+    }
+
+    public String navigateToViewCcBill(Bill bill) {
+        loadBillDetails(bill); // Load the bill details
+        return "/collecting_centre/view/cc_bill_view";
+    }
+
+    public String navigateToViewCcBillCancellation(Bill bill) {
+        loadBillDetails(bill);
+        return "/collecting_centre/view/cc_bill_cancellation_view";
+    }
+
+    public String navigateToViewCcBillRefund(Bill bill) {
+        loadBillDetails(bill);
+        return "/collecting_centre/view/cc_bill_refund_view";
+    }
+
+    public String navigateToViewCcCreditNote(Bill bill) {
+        loadBillDetails(bill);
+        return "/collecting_centre/view/cc_credit_note_view";
+    }
+
+    public String navigateToViewCcDebitNote(Bill bill) {
+        loadBillDetails(bill);
+        return "/collecting_centre/view/cc_debit_note_view";
+    }
+
+    public String navigateToViewCcCreditNoteCancellation(Bill bill) {
+        loadBillDetails(bill);
+        return "/collecting_centre/view/cc_credit_note_cancellation_view";
+    }
+
+    public String navigateToViewCcDebitNoteCancellation(Bill bill) {
+        loadBillDetails(bill);
+        return "/collecting_centre/view/cc_debit_note_cancellation_view";
+    }
+
+    public String navigateToViewCcPaymentCancellationBill(Bill bill) {
+        loadBillDetails(bill);
+        return "/collecting_centre/view/cc_payment_cancellation_bill_view";
+    }
+
+    public String navigateToViewCcPaymentMadeBill(Bill bill) {
+        loadBillDetails(bill);
+        return "/collecting_centre/view/cc_payment_made_bill_view";
+    }
+
+    public String navigateToViewCcPaymentMadeCancellationBill(Bill bill) {
+        loadBillDetails(bill);
+        return "/collecting_centre/view/cc_payment_made_cancellation_bill_view";
+    }
+
+    public String navigateToViewCcPaymentReceivedBill(Bill bill) {
+        loadBillDetails(bill);
+        return "/collecting_centre/view/cc_payment_received_bill_view";
     }
 
     public String navigateViewOpdBillByBillTypeAtomic() {
@@ -4237,6 +4328,10 @@ public class BillSearch implements Serializable {
 
     public void setCollectingCenter(Institution collectingCenter) {
         this.collectingCenter = collectingCenter;
+    }
+
+    private void loadBillDetails(Bill bill) {
+
     }
 
     public class PaymentSummary {

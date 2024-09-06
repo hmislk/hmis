@@ -62,8 +62,8 @@
                                         <h:outputLabel value="#{bill.creater.webUserPerson.name}"/>
                                     </p:column>
                                     
-                                    <p:column headerText="Bill No" sortBy="#{bill.insId}" filterBy="#{bill.insId}" >                                
-                                        <p:commandLink id="billNo" ajax="false" value="#{bill.insId}" action="#{searchController.viewOPD(bill)}">
+                                    <p:column headerText="Bill No" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}" >                                
+                                        <p:commandLink id="billNo" ajax="false" value="#{bill.deptId}" action="#{searchController.viewOPD(bill)}">
                                             <f:setPropertyActionListener value="#{bill}" target="#{billSearch.billSearch}"/>
                                         </p:commandLink>
                                         <p:tooltip for="billNo">

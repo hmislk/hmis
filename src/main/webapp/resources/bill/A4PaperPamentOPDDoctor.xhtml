@@ -71,9 +71,9 @@
                             <td style="text-align: center;" >:</td>
                             <td width="">
                                 <h:outputLabel value="#{cc.attrs.bill.cancelledBill.paymentMethod}" 
-                                               rendered="#{cc.attrs.bill.cancelledBill.insId ne null}" class="billDetailsFiveFive" />                        
+                                               rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}" class="billDetailsFiveFive" />                        
                                 <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" 
-                                               rendered="#{cc.attrs.bill.cancelledBill.insId eq null }" class="billDetailsFiveFive"/>
+                                               rendered="#{cc.attrs.bill.cancelledBill.deptId eq null }" class="billDetailsFiveFive"/>
                             </td>
                         </tr>
 
@@ -82,11 +82,11 @@
                             <td  style="text-align: center;" >:</td>
                             <td>
                                 <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billDate}"
-                                               rendered="#{cc.attrs.bill.cancelledBill.insId ne null}" class="billDetailsFiveFive" >
+                                               rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}" class="billDetailsFiveFive" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                 </h:outputLabel>                      
                                 <h:outputLabel value="#{cc.attrs.bill.billDate}"
-                                               rendered="#{cc.attrs.bill.cancelledBill.insId eq null }" class="billDetailsFiveFive" >
+                                               rendered="#{cc.attrs.bill.cancelledBill.deptId eq null }" class="billDetailsFiveFive" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                 </h:outputLabel>
                             </td>
@@ -95,11 +95,11 @@
                             <td style="text-align: center;" >:</td>
                             <td width="">
                                 <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billTime}"  
-                                               rendered="#{cc.attrs.bill.cancelledBill.insId ne null}" class="billDetailsFiveFive">
+                                               rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}" class="billDetailsFiveFive">
                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                 </h:outputLabel>                        
                                 <h:outputLabel value="#{cc.attrs.bill.billTime}" 
-                                               rendered="#{cc.attrs.bill.cancelledBill.insId eq null }" class="billDetailsFiveFive">
+                                               rendered="#{cc.attrs.bill.cancelledBill.deptId eq null }" class="billDetailsFiveFive">
                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                 </h:outputLabel>
                             </td>
@@ -140,7 +140,7 @@
                             <f:facet name="header" >
                                 <h:outputLabel value="Bill No"  ></h:outputLabel>
                             </f:facet>
-                            <h:outputLabel value="#{bip.referanceBillItem.bill.insId}" 
+                            <h:outputLabel value="#{bip.referanceBillItem.bill.deptId}" 
                                            style="font-size:10pt!important;" />
                         </p:column>
                         <p:column style="text-align: center;" >

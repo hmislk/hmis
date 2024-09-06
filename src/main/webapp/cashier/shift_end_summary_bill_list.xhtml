@@ -96,8 +96,8 @@
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                 </p:commandLink>
                             </p:column>
-                            <p:column headerText="Batch Bill" rendered="false" sortBy="#{bill.backwardReferenceBill.insId}" filterBy="#{bill.backwardReferenceBill.insId}">
-                                <h:commandLink action="#{opdBillController.navigateToViewOpdBatchBill}" value="#{bill.backwardReferenceBill.insId}">
+                            <p:column headerText="Batch Bill" rendered="false" sortBy="#{bill.backwardReferenceBill.deptId}" filterBy="#{bill.backwardReferenceBill.deptId}">
+                                <h:commandLink action="#{opdBillController.navigateToViewOpdBatchBill}" value="#{bill.backwardReferenceBill.deptId}">
                                     <f:setPropertyActionListener value="#{bill}" target="#{opdBillController.bill}"/>
                                 </h:commandLink>  
                             </p:column>

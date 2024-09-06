@@ -68,9 +68,9 @@
                                         <f:facet name="header">
                                             <p:outputLabel value="Bill No" />
                                         </f:facet>
-                                        <h:outputLabel value="#{bill.insId}" />
+                                        <h:outputLabel value="#{bill.deptId}" />
                                         <h:outputLabel value=" - " rendered="#{bill.cancelled}"/>
-                                        <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.insId}" />
+                                        <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.deptId}" />
                                         <f:facet name="footer">
                                             <p:outputLabel value="Total" style="float: left;" />
                                         </f:facet>
