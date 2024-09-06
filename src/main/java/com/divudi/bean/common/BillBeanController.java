@@ -1217,6 +1217,20 @@ public class BillBeanController implements Serializable {
         temMap.put("ins", institution);
         return getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
+    
+    public List<BillItem> fetchBillItems(Bill b) {
+        String jpql;
+        HashMap params = new HashMap();
+
+        jpql = "SELECT bi "
+                + " FROM BillItem bi "
+                + " WHERE bi.retired=false "
+                + " and bi.bill=:bl "
+                + " order by bi.id";
+
+        params.put("bl", b);
+        return getBillItemFacade().findByJpql(jpql, params);
+    }
 
     public List<Category> fetchBilledOpdCategory(Date fromDate, Date toDate, Institution institution) {
         String sql;
@@ -4301,6 +4315,25 @@ public class BillBeanController implements Serializable {
         return t;
     }
 
+    
+    
+     public List<BillFee> fetchBillFees(Bill bill) {
+        List<BillFee> fetchingBillFees ;
+        String jpql;
+        Map params = new HashMap();
+        jpql = "Select bf "
+                + " from BillFee bf "
+                + "where bf.retired=:ret "
+                + "and bf.bill=:bill"
+                + "order by bf.billItem.id";
+        params.put("ret", false);
+        params.put("bill", bill);
+        fetchingBillFees = billFeeFacade.findByJpql(jpql, params);
+        return fetchingBillFees;
+    }
+
+    
+    
     public List<BillFee> forInstitutionBillFeefromBillItem(BillItem billItem, Institution forIns) {
         List<BillFee> t = new ArrayList<>();
         BillFee f;
