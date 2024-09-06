@@ -102,11 +102,25 @@
                 sortMode="multiple"
                 reflow="true">
 
-             
 
-                <p:column headerText="Bill Number" sortBy="#{agentHx.bill.insId}" filterBy="#{agentHx.bill.insId}" filterMatchMode="contains">
-                    <h:outputText value="#{agentHx.bill.insId}" />
+
+                <p:column headerText="Bill Number*" sortBy="#{agentHx.bill.deptId}" filterBy="#{agentHx.bill.deptId}" filterMatchMode="contains">
+                    <p:commandLink value="#{agentHx.bill.deptId}" ajax="false"
+                                   action="#{billSearch.navigateViewBillByBillTypeAtomic()}" >
+                        <f:setPropertyActionListener value="#{agentHx.bill}" target="#{billSearch.bill}" />
+                    </p:commandLink>
+                    <p:badge value="#{agentHx.bill.cancelled ? 'Cancelled' : ''}" severity="danger" rendered="#{agentHx.bill.cancelled}" />
+                    <p:badge value="#{agentHx.bill.refunded ? 'Refunded' : ''}" severity="warning" rendered="#{agentHx.bill.refunded}" />
+
+                    <p:commandLink value="Original Bill - #{agentHx.bill.deptId}" 
+                                   ajax="false"
+                                   rendered="#{agentHx.bill.billedBill}"
+                                   action="#{billSearch.navigateViewBillByBillTypeAtomic()}" >
+                        <f:setPropertyActionListener value="#{agentHx.bill.billedBill}" target="#{billSearch.bill}" />
+                    </p:commandLink>
+
                 </p:column>
+
 
                 <p:column headerText="Data &nbsp; Time" sortBy="#{agentHx.createdAt}" filterBy="#{agentHx.createdAt}" filterMatchMode="contains">
                     <h:outputText value="#{agentHx.createdAt}" >

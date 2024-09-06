@@ -84,9 +84,9 @@
                         <f:facet name="header">
                             <p:outputLabel value="Bill No" />
                         </f:facet>
-                        <p:outputLabel value="#{bill.insId}" />
+                        <p:outputLabel value="#{bill.deptId}" />
                         <p:outputLabel value=" - " rendered="#{bill.cancelledBill ne null}" />
-                        <p:outputLabel value="#{bill.cancelledBill.insId}" rendered="#{bill.cancelledBill ne null}" style="color: red;" />
+                        <p:outputLabel value="#{bill.cancelledBill.deptId}" rendered="#{bill.cancelledBill ne null}" style="color: red;" />
                     </p:column> 
                     <p:column headerText="Credit Company">
                         <f:facet name="header">

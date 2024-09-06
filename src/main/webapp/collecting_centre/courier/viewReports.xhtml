@@ -125,7 +125,7 @@
                                                            value="#{pi.billItem.bill.deptId}" 
                                                            styleClass="#{pi.billItem.bill.cancelled or pi.billItem.transRefund ? 'redtext':''}" />
                                             <p:tooltip for="lblBillNo">
-                                                <h:outputLabel value="Bill No : #{pi.billItem.bill.insId}" />
+                                                <h:outputLabel value="Bill No : #{pi.billItem.bill.deptId}" />
                                                 <br/>
                                                 <h:outputLabel value="Billed From : #{pi.billItem.bill.institution.name}" />
                                                 <br/>
@@ -382,7 +382,7 @@
                                                                                                value="#{pi.billItem.bill.deptId}" 
                                                                                                styleClass="#{pi.billItem.bill.cancelled or pi.billItem.transRefund ? 'redtext':''}"></h:outputLabel>
                                                                                 <p:tooltip for="lblBillNo"  >
-                                                                                    <h:outputLabel value="Bill No : #{pi.billItem.bill.insId}" ></h:outputLabel>
+                                                                                    <h:outputLabel value="Bill No : #{pi.billItem.bill.deptId}" ></h:outputLabel>
                                                                                     <br/>
                                                                                     <h:outputLabel value="Billed From : #{pi.billItem.bill.institution.name}" ></h:outputLabel>
                                                                                     <br/>

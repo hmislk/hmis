@@ -73,7 +73,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Bill No"/>
                                 </f:facet>
-                                <h:commandLink action="/opd/bill_reprint?faces-redirect=true" value="#{bill.insId}">
+                                <h:commandLink action="/opd/bill_reprint?faces-redirect=true" value="#{bill.deptId}">
                                     <h:outputLabel  ></h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                 </h:commandLink>

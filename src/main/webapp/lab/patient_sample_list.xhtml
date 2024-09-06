@@ -56,8 +56,8 @@
                                     <p:column width="90" headerText="ID" filterBy="#{ps.idStr}" sortBy="#{ps.idStr}" filterMatchMode="contains">
                                         <p:outputLabel value="#{ps.idStr}" ></p:outputLabel>
                                     </p:column>
-                                    <p:column width="120" headerText="Bill No" filterBy="#{ps.bill.insId}" sortBy="#{ps.bill.insId}" filterMatchMode="contains">
-                                        <p:commandLink id="billNo"  ajax="false" target="_blank"  value="#{ps.bill.insId}" 
+                                    <p:column width="120" headerText="Bill No" filterBy="#{ps.bill.deptId}" sortBy="#{ps.bill.deptId}" filterMatchMode="contains">
+                                        <p:commandLink id="billNo"  ajax="false" target="_blank"  value="#{ps.bill.deptId}" 
                                                        action="#{searchController.viewOPD(ps.bill)}">
                                             <f:setPropertyActionListener value="#{ps.bill}" target="#{billSearch.billSearch}"/>
                                         </p:commandLink>

@@ -96,7 +96,7 @@
                                             <p:outputLabel value="#{smpIx.id}" />
                                         </p:column>
                                         <p:column headerText="Bill No" width="100">
-                                            <p:outputLabel value="#{smpIx.billItem.bill.insId}" styleClass="#{smpIx.billItem.bill.cancelled or smpIx.billItem.transRefund ? 'redtext':''}"/>
+                                            <p:outputLabel value="#{smpIx.billItem.bill.deptId}" styleClass="#{smpIx.billItem.bill.cancelled or smpIx.billItem.transRefund ? 'redtext':''}"/>
                                         </p:column>
                                         <p:column headerText="Patient" >
                                             <h:outputLabel value="#{smpIx.billItem.bill.patient.person.nameWithTitle}" styleClass="#{smpIx.billItem.bill.cancelled or smpIx.billItem.transRefund ? 'redtext':''}"/>

@@ -101,9 +101,9 @@
                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"  ></f:convertDateTime>
                             </h:outputLabel>
                         </p:column>
-                        <p:column  headerText="Bill No" styleClass="alignTop" sortBy="#{pi.billItem.bill.insId}" filterBy="#{pi.billItem.bill.insId}" filterMatchMode="contains" >
+                        <p:column  headerText="Bill No" styleClass="alignTop" sortBy="#{pi.billItem.bill.deptId}" filterBy="#{pi.billItem.bill.deptId}" filterMatchMode="contains" >
                             <h:outputLabel 
-                                value="#{pi.billItem.bill.insId}" 
+                                value="#{pi.billItem.bill.deptId}" 
                                 styleClass="#{pi.billItem.bill.cancelled or pi.billItem.transRefund ? 'redtext':''}">
                             </h:outputLabel>
                         </p:column>

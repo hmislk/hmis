@@ -24,9 +24,9 @@
 
             <!-- Receipt Details -->
             <div style="padding-top: 7%; padding-left: 5%;">
-                <h:outputLabel value="Receipt No: #{cc.attrs.bill.insId}"/>
+                <h:outputLabel value="Receipt No: #{cc.attrs.bill.deptId}"/>
                 <h:outputLabel value=" **Duplicate" rendered="#{cc.attrs.dup eq true }"/>
-                <h:outputLabel value=" **Cancelled" rendered="#{cc.attrs.bill.cancelledBill.insId ne null}"/>
+                <h:outputLabel value=" **Cancelled" rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}"/>
                 <h:outputLabel value="Date: #{cc.attrs.bill.billDate}">
                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                 </h:outputLabel>
