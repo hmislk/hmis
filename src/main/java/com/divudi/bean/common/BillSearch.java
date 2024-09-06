@@ -3019,7 +3019,12 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage("No Bill is Selected");
             return null;
         }
+        if (bill.getBillTypeAtomic() == null) {
+            JsfUtil.addErrorMessage("No Bill type");
+            return null;
+        }
         BillTypeAtomic billTypeAtomic = bill.getBillTypeAtomic();
+        loadBillDetails(bill);
         switch (billTypeAtomic) {
             case PHARMACY_RETAIL_SALE_CANCELLED:
                 pharmacyBillSearch.setBill(bill);
@@ -4331,7 +4336,12 @@ public class BillSearch implements Serializable {
     }
 
     private void loadBillDetails(Bill bill) {
-
+        Bill loadingBill = billBean.fetchBill(bill.getId());
+        List<BillItem> loadingBillItems = billBean.fetchBillItems(bill);
+        List<BillFee> loadingBillFees = billBean.fetchBillFees(bill);
+        List<BillComponent> loadingBillComponents;
+        List<Payment> loadingBillPayments;
+        
     }
 
     public class PaymentSummary {
