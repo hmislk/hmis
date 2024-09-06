@@ -94,7 +94,11 @@
 
             <p:dataTable
                 id="tbl"
-                value="#{reportController.agentHistories}" var="agentHx" paginator="true" rows="10" 
+                value="#{reportController.agentHistories}" 
+                var="agentHx" 
+                paginator="true" 
+                rowKey="#{agentHx.id}"
+                rows="10" 
                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
                 rowsPerPageTemplate="5,10,20"
                 currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords} entries"
@@ -105,10 +109,13 @@
 
 
                 <p:column headerText="Bill Number*" sortBy="#{agentHx.bill.deptId}" filterBy="#{agentHx.bill.deptId}" filterMatchMode="contains">
-                    <p:commandLink value="#{agentHx.bill.deptId}" ajax="false"
-                                   action="#{billSearch.navigateViewBillByBillTypeAtomic()}" >
+                    <p:commandLink 
+                        value="#{agentHx.bill.deptId}" 
+                        ajax="false"
+                        action="#{billSearch.navigateViewBillByBillTypeAtomic()}" >
                         <f:setPropertyActionListener value="#{agentHx.bill}" target="#{billSearch.bill}" />
                     </p:commandLink>
+                    
                     <p:badge value="#{agentHx.bill.cancelled ? 'Cancelled' : ''}" severity="danger" rendered="#{agentHx.bill.cancelled}" />
                     <p:badge value="#{agentHx.bill.refunded ? 'Refunded' : ''}" severity="warning" rendered="#{agentHx.bill.refunded}" />
 
