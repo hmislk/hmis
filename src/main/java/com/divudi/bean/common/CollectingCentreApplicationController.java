@@ -267,7 +267,6 @@ public class CollectingCentreApplicationController {
             agentHistory.setPaidAmountByAgency(null);
 
             double balanceBeforeTx = collectingCentre.getBallance();
-            System.out.println("balanceBeforeTx = " + balanceBeforeTx);
             double balanceAfterTx = balanceBeforeTx + Math.abs(transactionValue);
 
             agentHistory.setBalanceBeforeTransaction(balanceBeforeTx);
@@ -502,7 +501,6 @@ public class CollectingCentreApplicationController {
             agentHistory.setTransactionValue(0-Math.abs(hospitalFee));
 
             double balanceBeforeTx = collectingCentre.getBallance();
-            System.out.println("balanceBeforeTx = " + balanceBeforeTx);
 
             double balanceAfterTx = balanceBeforeTx - hospitalFee;
 
