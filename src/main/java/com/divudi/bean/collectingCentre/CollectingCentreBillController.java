@@ -1456,7 +1456,6 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             System.out.println("bi = " + bi.getGrossValue());
             System.out.println("bi = " + bi.getNetValue());
             System.out.println("bi = " + bi.getHospitalFee());
-            System.out.println("bi = " + bi.getCollectingCentreFee());
 
             billGross += bi.getGrossValue();
             billNet += bi.getNetValue();

@@ -221,7 +221,6 @@ public class ReportTemplateController implements Serializable {
         jpql += " group by bill.department";
 
         System.out.println("Final JPQL Query: " + jpql);
-        System.out.println("Parameters: " + parameters);
 
         // Assuming you have an EJB or similar service to run the query
         List<ReportTemplateRow> results = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
@@ -284,7 +283,6 @@ public class ReportTemplateController implements Serializable {
         jpql += " group by bill";
 
         System.out.println("Final JPQL Query: " + jpql);
-        System.out.println("Parameters: " + parameters);
 
         // Assuming you have an EJB or similar service to run the query
         List<ReportTemplateRow> results = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
@@ -354,7 +352,6 @@ public class ReportTemplateController implements Serializable {
         jpql += " group by p";
 
         System.out.println("Final JPQL Query: " + jpql);
-        System.out.println("Parameters: " + parameters);
 
         // Assuming you have an EJB or similar service to run the query
         List<ReportTemplateRow> results = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
@@ -929,7 +926,6 @@ public class ReportTemplateController implements Serializable {
 
         jpql += " group by bill.billTypeAtomic";
 
-        System.out.println("jpql = " + jpql);
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
 
@@ -1099,7 +1095,6 @@ public class ReportTemplateController implements Serializable {
 
         jpql += " group by bill.billTypeAtomic";
 
-        System.out.println("jpql = " + jpql);
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
 
@@ -1264,7 +1259,6 @@ public class ReportTemplateController implements Serializable {
 
         jpql += " group by bill.billTypeAtomic";
 
-        System.out.println("jpql = " + jpql);
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
 
@@ -1429,7 +1423,6 @@ public class ReportTemplateController implements Serializable {
             parameters.put("wu", paramUser);
         }
 
-        System.out.println("jpql = " + jpql);
 
         Double sumResult = ejbFacade.findSingleResultByJpql(jpql, parameters, TemporalType.DATE);
 
@@ -1774,7 +1767,6 @@ public class ReportTemplateController implements Serializable {
 
         jpql += " group by bi.item.category ";
 
-        System.out.println("jpql = " + jpql);
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
 
@@ -1936,7 +1928,6 @@ public class ReportTemplateController implements Serializable {
 
         jpql += " group by bi.item.category ";
 
-        System.out.println("jpql = " + jpql);
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
 
@@ -2101,7 +2092,6 @@ public class ReportTemplateController implements Serializable {
         jpql += " group by bi.item.department ";
 
         System.out.println("jpql = " + jpql);
-        System.out.println("parameters = " + parameters);
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
 
@@ -2264,7 +2254,6 @@ public class ReportTemplateController implements Serializable {
 
         jpql += " group by bi.item ";
 
-        System.out.println("jpql = " + jpql);
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
 
@@ -2379,7 +2368,6 @@ public class ReportTemplateController implements Serializable {
             parameters.put("wu", paramUser);
         }
 
-        System.out.println("jpql = " + jpql);
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
 

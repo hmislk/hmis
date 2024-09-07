@@ -175,7 +175,6 @@ public class ReportController implements Serializable {
         m.put("fromDate", getFromDate());
         m.put("toDate", getToDate());
 
-        System.out.println(m);
 
         bills = billFacade.findByJpql(jpql, m);
     }
@@ -474,7 +473,6 @@ public class ReportController implements Serializable {
         System.out.println("m = " + m);
         System.out.println("jpql = " + jpql);
         agentHistories = agentHistoryFacade.findByJpql(jpql, m,TemporalType.TIMESTAMP);  
-        System.out.println("agentHistories = " + agentHistories);
     }
 
     public void processCollectingCentreStatementReport() {

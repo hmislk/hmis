@@ -731,7 +731,6 @@ public class ItemFeeManager implements Serializable {
             jpql += " and f.forCategory is null";
         }
         System.out.println("m = " + m);
-        System.out.println("jpql = " + jpql);
         List<ItemFee> fs = itemFeeFacade.findByJpql(jpql, m);
         return fs;
     }
@@ -755,7 +754,6 @@ public class ItemFeeManager implements Serializable {
         jpql += " and f.forCategory is null";
 
         System.out.println("m = " + m);
-        System.out.println("jpql = " + jpql);
         List<ItemFee> fs = itemFeeFacade.findByJpql(jpql, m);
         return fs;
     }
@@ -791,7 +789,6 @@ public class ItemFeeManager implements Serializable {
                 + " ORDER BY f.item.name";
 
         System.out.println("m = " + m);
-        System.out.println("jpql = " + jpql);
         List<ItemLight> fs = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, m);
         return fs;
     }
@@ -823,7 +820,6 @@ public class ItemFeeManager implements Serializable {
                 + " ORDER BY f.item.name";
 
         System.out.println("m = " + m);
-        System.out.println("jpql = " + jpql);
         List<ItemLight> fs = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, m);
         return fs;
     }
