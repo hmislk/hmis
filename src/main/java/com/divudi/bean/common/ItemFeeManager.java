@@ -811,12 +811,11 @@ public class ItemFeeManager implements Serializable {
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
 
-        jpql += " and (f.forInstitution=:ins or f.forCategory=:fl ) ";
-        m.put("ins", cc);
-        m.put("fl", cc.getFeeListType());
-
-        jpql += " and f.forCategory is null ";
-        jpql += " and f.total > :tot ";
+        jpql += " and (f.forInstitution.id=:ins or f.forCategory.id=:fl) ";
+        m.put("ins", cc.getId());
+        m.put("fl", cc.getFeeListType().getId());
+        
+        jpql += " and f.fee > :tot ";
         jpql += " and f.item.retired=:ir ";
         m.put("tot", 0.0);
         m.put("ir", false);
