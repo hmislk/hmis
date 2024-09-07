@@ -1217,6 +1217,20 @@ public class BillBeanController implements Serializable {
         temMap.put("ins", institution);
         return getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
+    
+    public List<BillItem> fetchBillItems(Bill b) {
+        String jpql;
+        HashMap params = new HashMap();
+
+        jpql = "SELECT bi "
+                + " FROM BillItem bi "
+                + " WHERE bi.retired=false "
+                + " and bi.bill=:bl "
+                + " order by bi.id";
+
+        params.put("bl", b);
+        return getBillItemFacade().findByJpql(jpql, params);
+    }
 
     public List<Category> fetchBilledOpdCategory(Date fromDate, Date toDate, Institution institution) {
         String sql;
@@ -4038,7 +4052,6 @@ public class BillBeanController implements Serializable {
 
     public List<BillFee> billFeefromBillItemForCollectingCenter(BillItem billItem, Institution collectingCenter) {
         System.out.println("billFeefromBillItemForCollectingCenter");
-        System.out.println("collectingCenter = " + collectingCenter);
         List<BillFee> t = new ArrayList<>();
         BillFee feeForCollectingCenter;
         BillFee feeForInstitution;
@@ -4112,7 +4125,6 @@ public class BillBeanController implements Serializable {
             System.out.println("jpql = " + jpql);
             System.out.println("params = " + params);
             List<ItemFee> itemFees = getItemFeeFacade().findByJpql(jpql, params);
-            System.out.println("1. CC itemFee from jpql= " + itemFees);
 
             itemFees = itemFeeManager.fillFees(billItem.getItem(), collectingCenter);
 
@@ -4130,7 +4142,6 @@ public class BillBeanController implements Serializable {
                 System.out.println("jpql = " + jpql);
                 System.out.println("params = " + params);
                 itemFees = getItemFeeFacade().findByJpql(jpql, params);
-                System.out.println("3. CC itemFee Fees= " + itemFees);
                 itemFees = itemFeeManager.fillFees(billItem.getItem(), collectingCenter.getFeeListType());
             }
 
@@ -4144,7 +4155,6 @@ public class BillBeanController implements Serializable {
                 institutionFeeValue = originalFeeValue - collectingCenterFeeValue;
 
                 System.out.println("originalFeeValue = " + originalFeeValue);
-                System.out.println("institutionFeeValue = " + institutionFeeValue);
 
                 feeForCollectingCenter = new BillFee();
                 feeForCollectingCenter.setFee(i);
@@ -4301,6 +4311,25 @@ public class BillBeanController implements Serializable {
         return t;
     }
 
+    
+    
+     public List<BillFee> fetchBillFees(Bill bill) {
+        List<BillFee> fetchingBillFees ;
+        String jpql;
+        Map params = new HashMap();
+        jpql = "Select bf "
+                + " from BillFee bf "
+                + "where bf.retired=:ret "
+                + "and bf.bill=:bill"
+                + "order by bf.billItem.id";
+        params.put("ret", false);
+        params.put("bill", bill);
+        fetchingBillFees = billFeeFacade.findByJpql(jpql, params);
+        return fetchingBillFees;
+    }
+
+    
+    
     public List<BillFee> forInstitutionBillFeefromBillItem(BillItem billItem, Institution forIns) {
         List<BillFee> t = new ArrayList<>();
         BillFee f;
@@ -4381,7 +4410,6 @@ public class BillBeanController implements Serializable {
             params.put("forIns", forIns);
 
             System.out.println("params = " + params);
-            System.out.println("jpql = " + jpql);
 
             List<ItemFee> itemFee = getItemFeeFacade().findByJpql(jpql, params);
 

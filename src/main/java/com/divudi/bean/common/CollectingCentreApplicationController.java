@@ -88,7 +88,7 @@ public class CollectingCentreApplicationController {
                 handleCollectingCentreCreditNote(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill);
                 break;
             case CollectingCentreDebitNoteCancel:
-                handleDebitNoteCancel(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill,comments);
+                handleDebitNoteCancel(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill, comments);
             default:
                 handleDefault(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill);
                 break;
@@ -101,7 +101,7 @@ public class CollectingCentreApplicationController {
         Lock lock = lockMap.computeIfAbsent(collectingCentreId, id -> new ReentrantLock());
         lock.lock();
         try {
-
+            collectingCentre = institutionFacade.find(collectingCentre.getId());
             AgentHistory agentHistory = new AgentHistory();
             agentHistory.setCreatedAt(new Date());
             agentHistory.setCreater(bill.getCreater());
@@ -116,6 +116,7 @@ public class CollectingCentreApplicationController {
             agentHistory.setStaffTrasnactionValue(0);
             agentHistory.setTransactionValue(0);
             agentHistory.setComment(comments);
+
             double balanceBeforeTx = collectingCentre.getBallance();
 
             double balanceAfterTx = balanceBeforeTx;
@@ -138,7 +139,7 @@ public class CollectingCentreApplicationController {
         Lock lock = lockMap.computeIfAbsent(collectingCentreId, id -> new ReentrantLock());
         lock.lock();
         try {
-
+            collectingCentre = institutionFacade.find(collectingCentre.getId());
             AgentHistory agentHistory = new AgentHistory();
             agentHistory.setCreatedAt(new Date());
             agentHistory.setCreater(bill.getCreater());
@@ -151,8 +152,8 @@ public class CollectingCentreApplicationController {
             agentHistory.setCompanyTransactionValue(0 - Math.abs(hospitalFee));
             agentHistory.setAgentTransactionValue(0 - Math.abs(collectingCentreFee));
             agentHistory.setStaffTrasnactionValue(0 - Math.abs(staffFee));
-            agentHistory.setTransactionValue(0 - Math.abs(transactionValue));
-            agentHistory.setTransactionValue(0-(hospitalFee));
+            //agentHistory.setTransactionValue(0 - Math.abs(transactionValue));
+            agentHistory.setTransactionValue(hospitalFee);
             agentHistory.setPaidAmountByAgency(null);
 
             double balanceBeforeTx = collectingCentre.getBallance();
@@ -176,7 +177,7 @@ public class CollectingCentreApplicationController {
         Lock lock = lockMap.computeIfAbsent(collectingCentreId, id -> new ReentrantLock());
         lock.lock();
         try {
-
+            collectingCentre = institutionFacade.find(collectingCentre.getId());
             AgentHistory agentHistory = new AgentHistory();
             agentHistory.setCreatedAt(new Date());
             agentHistory.setCreater(bill.getCreater());
@@ -189,7 +190,7 @@ public class CollectingCentreApplicationController {
             agentHistory.setCompanyTransactionValue(0 - Math.abs(hospitalFee));
             agentHistory.setAgentTransactionValue(0 - Math.abs(collectingCentreFee));
             agentHistory.setStaffTrasnactionValue(0 - Math.abs(staffFee));
-            agentHistory.setTransactionValue(0 - Math.abs(hospitalFee));
+            agentHistory.setTransactionValue(hospitalFee);
             agentHistory.setPaidAmountByAgency(null);
 
             double balanceBeforeTx = collectingCentre.getBallance();
@@ -213,7 +214,7 @@ public class CollectingCentreApplicationController {
         Lock lock = lockMap.computeIfAbsent(collectingCentreId, id -> new ReentrantLock());
         lock.lock();
         try {
-
+            collectingCentre = institutionFacade.find(collectingCentre.getId());
             AgentHistory agentHistory = new AgentHistory();
             agentHistory.setCreatedAt(new Date());
             agentHistory.setCreater(bill.getCreater());
@@ -250,7 +251,7 @@ public class CollectingCentreApplicationController {
         Lock lock = lockMap.computeIfAbsent(collectingCentreId, id -> new ReentrantLock());
         lock.lock();
         try {
-
+            collectingCentre = institutionFacade.find(collectingCentre.getId());
             AgentHistory agentHistory = new AgentHistory();
             agentHistory.setCreatedAt(new Date());
             agentHistory.setCreater(bill.getCreater());
@@ -288,7 +289,7 @@ public class CollectingCentreApplicationController {
         Lock lock = lockMap.computeIfAbsent(collectingCentreId, id -> new ReentrantLock());
         lock.lock();
         try {
-
+            collectingCentre = institutionFacade.find(collectingCentre.getId());
             AgentHistory agentHistory = new AgentHistory();
             agentHistory.setCreatedAt(new Date());
             agentHistory.setCreater(bill.getCreater());
@@ -301,7 +302,7 @@ public class CollectingCentreApplicationController {
             agentHistory.setCompanyTransactionValue(0);
             agentHistory.setAgentTransactionValue(0);
             agentHistory.setStaffTrasnactionValue(0);
-            agentHistory.setTransactionValue(0- Math.abs(transactionValue));
+            agentHistory.setTransactionValue(0 - Math.abs(transactionValue));
             agentHistory.setPaidAmountByAgency(null);
 
             double balanceBeforeTx = collectingCentre.getBallance();
@@ -319,13 +320,13 @@ public class CollectingCentreApplicationController {
             lock.unlock();
         }
     }
-    
+
     private void handleDebitNoteCancel(Institution collectingCentre, double hospitalFee, double collectingCentreFee, double staffFee, double transactionValue, Bill bill, String comment) {
         Long collectingCentreId = collectingCentre.getId(); // Assuming each Institution has a unique ID
         Lock lock = lockMap.computeIfAbsent(collectingCentreId, id -> new ReentrantLock());
         lock.lock();
         try {
-
+            collectingCentre = institutionFacade.find(collectingCentre.getId());
             AgentHistory agentHistory = new AgentHistory();
             agentHistory.setCreatedAt(new Date());
             agentHistory.setCreater(bill.getCreater());
@@ -358,13 +359,12 @@ public class CollectingCentreApplicationController {
         }
     }
 
-
     private void handleDebitNote(Institution collectingCentre, double hospitalFee, double collectingCentreFee, double staffFee, double transactionValue, Bill bill) {
         Long collectingCentreId = collectingCentre.getId(); // Assuming each Institution has a unique ID
         Lock lock = lockMap.computeIfAbsent(collectingCentreId, id -> new ReentrantLock());
         lock.lock();
         try {
-
+            collectingCentre = institutionFacade.find(collectingCentre.getId());
             AgentHistory agentHistory = new AgentHistory();
             agentHistory.setCreatedAt(new Date());
             agentHistory.setCreater(bill.getCreater());
@@ -377,7 +377,7 @@ public class CollectingCentreApplicationController {
             agentHistory.setCompanyTransactionValue(0);
             agentHistory.setAgentTransactionValue(0);
             agentHistory.setStaffTrasnactionValue(0);
-            agentHistory.setTransactionValue(0-Math.abs(transactionValue));
+            agentHistory.setTransactionValue(0 - Math.abs(transactionValue));
             agentHistory.setPaidAmountByAgency(null);
 
             double balanceBeforeTx = collectingCentre.getBallance();
@@ -401,7 +401,7 @@ public class CollectingCentreApplicationController {
         Lock lock = lockMap.computeIfAbsent(collectingCentreId, id -> new ReentrantLock());
         lock.lock();
         try {
-
+            collectingCentre = institutionFacade.find(collectingCentre.getId());
             AgentHistory agentHistory = new AgentHistory();
             agentHistory.setCreatedAt(new Date());
             agentHistory.setCreater(bill.getCreater());
@@ -434,13 +434,13 @@ public class CollectingCentreApplicationController {
         }
     }
 
-    private void handleDepositCancel(Institution collectingCentre, double hospitalFee, double collectingCentreFee, double staffFee, double transactionValue, Bill bill,String comments) {
+    private void handleDepositCancel(Institution collectingCentre, double hospitalFee, double collectingCentreFee, double staffFee, double transactionValue, Bill bill, String comments) {
         // Implementation for CollectingCentreDepositCancel
         Long collectingCentreId = collectingCentre.getId(); // Assuming each Institution has a unique ID
         Lock lock = lockMap.computeIfAbsent(collectingCentreId, id -> new ReentrantLock());
         lock.lock();
         try {
-
+            collectingCentre = institutionFacade.find(collectingCentre.getId());
             AgentHistory agentHistory = new AgentHistory();
             agentHistory.setCreatedAt(new Date());
             agentHistory.setCreater(bill.getCreater());
@@ -453,7 +453,7 @@ public class CollectingCentreApplicationController {
             agentHistory.setCompanyTransactionValue(0);
             agentHistory.setAgentTransactionValue(transactionValue);
             agentHistory.setStaffTrasnactionValue(0);
-            agentHistory.setTransactionValue(0- Math.abs(transactionValue));
+            agentHistory.setTransactionValue(0 - Math.abs(transactionValue));
             agentHistory.setPaidAmountToAgency(transactionValue);
             agentHistory.setComment(comments);
 
@@ -484,7 +484,7 @@ public class CollectingCentreApplicationController {
         Lock lock = lockMap.computeIfAbsent(collectingCentreId, id -> new ReentrantLock());
         lock.lock();
         try {
-
+            collectingCentre = institutionFacade.find(collectingCentre.getId());
             AgentHistory agentHistory = new AgentHistory();
             agentHistory.setCreatedAt(new Date());
             agentHistory.setCreater(bill.getCreater());
@@ -498,7 +498,7 @@ public class CollectingCentreApplicationController {
             agentHistory.setAgentTransactionValue(collectingCentreFee);
             agentHistory.setStaffTrasnactionValue(staffFee);
             //agentHistory.setTransactionValue(transactionValue);
-            agentHistory.setTransactionValue(hospitalFee);
+            agentHistory.setTransactionValue(0 - Math.abs(hospitalFee));
 
             double balanceBeforeTx = collectingCentre.getBallance();
 

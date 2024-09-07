@@ -386,7 +386,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void findSessionsForCalendar() {
         System.out.println("Speciality = " + speciality);
-        System.out.println("Doctor = " + consultant);
         findSessions();
     }
 
@@ -461,11 +460,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
         jpql += " order by s.sessionWeekday";
         selectedServiceSessions = getServiceSessionFacade().findByJpql(jpql, params);
-        System.out.println("selectedServiceSessions = " + selectedServiceSessions.size());
         calculateFee(selectedServiceSessions, channelBillController.getPaymentMethod());
 
         try {
-            System.out.println("try");
             sessionInstances = getChannelBean().generateSesionInstancesFromServiceSessions(selectedServiceSessions);
         } catch (Exception e) {
         }
@@ -473,7 +470,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void generateChaneelSessionEvents(List<SessionInstance> lsi) {
-        System.out.println("generateChaneelSessionEvents Start");
         channelModel = new DefaultScheduleModel();
         for (SessionInstance si : lsi) {
             System.out.println("Name = " + si.getName());
@@ -506,7 +502,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                     .build();
 
             channelModel.addEvent(event);
-            System.out.println(si.getName() + " Add");
         }
     }
 
@@ -3478,9 +3473,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
 
         if (configOptionApplicationController.getBooleanValueByKey("Allow Tenderd amount for channel booking")) {
-            System.out.println("tenderd amount ");
             if (paymentMethod == PaymentMethod.Cash) {
-                System.out.println("strTenderedValue = " + strTenderedValue);
                 if (strTenderedValue.isEmpty()) {
                     JsfUtil.addErrorMessage("Please Enter Tenderd Amount");
                     return;
@@ -6953,9 +6946,7 @@ public void setManagingBillSession(BillSession managingBillSession) {
             }
             
             if (configOptionApplicationController.getBooleanValueByKey("Allow Tenderd amount for channel booking")) {
-            System.out.println("tenderd amount ");
             if (settlePaymentMethod == PaymentMethod.Cash) {
-                System.out.println("strTenderedValue = " + strTenderedValue);
                 if (strTenderedValue.isEmpty()) {
                     JsfUtil.addErrorMessage("Please Enter Tenderd Amount");
                     return;
@@ -8382,7 +8373,6 @@ public void setQuickSearchPatientList(List<Patient> quickSearchPatientList) {
         try {
             System.out.println("strTenderedValue = " + strTenderedValue);
             cashPaid = Double.parseDouble(strTenderedValue);
-            System.out.println("cashPaid = " + cashPaid);
         } catch (NumberFormatException e) {
         }
     }
