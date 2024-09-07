@@ -4324,7 +4324,7 @@ public class BillBeanController implements Serializable {
         jpql = "Select bf "
                 + " from BillFee bf "
                 + "where bf.retired=:ret "
-                + "and bf.bill=:bill"
+                + "and bf.bill=:bill "
                 + "order by bf.billItem.id";
         params.put("ret", false);
         params.put("bill", bill);
