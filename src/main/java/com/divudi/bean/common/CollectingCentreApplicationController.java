@@ -228,6 +228,7 @@ public class CollectingCentreApplicationController {
             agentHistory.setAgentTransactionValue(0);
             agentHistory.setStaffTrasnactionValue(0);
             agentHistory.setTransactionValue(Math.abs(transactionValue));
+            agentHistory.setAdjustmentToAgencyBalance(Math.abs(transactionValue));
             agentHistory.setPaidAmountByAgency(null);
 
             double balanceBeforeTx = collectingCentre.getBallance();
@@ -303,6 +304,7 @@ public class CollectingCentreApplicationController {
             agentHistory.setAgentTransactionValue(0);
             agentHistory.setStaffTrasnactionValue(0);
             agentHistory.setTransactionValue(0 - Math.abs(transactionValue));
+            agentHistory.setAdjustmentToAgencyBalance(0 - Math.abs(transactionValue));
             agentHistory.setPaidAmountByAgency(null);
 
             double balanceBeforeTx = collectingCentre.getBallance();
@@ -340,6 +342,7 @@ public class CollectingCentreApplicationController {
             agentHistory.setAgentTransactionValue(0);
             agentHistory.setStaffTrasnactionValue(0);
             agentHistory.setTransactionValue(Math.abs(transactionValue));
+            agentHistory.setAdjustmentToAgencyBalance(Math.abs(transactionValue));
             agentHistory.setPaidAmountByAgency(null);
             agentHistory.setComment(comment);
 
@@ -378,6 +381,7 @@ public class CollectingCentreApplicationController {
             agentHistory.setAgentTransactionValue(0);
             agentHistory.setStaffTrasnactionValue(0);
             agentHistory.setTransactionValue(0 - Math.abs(transactionValue));
+            agentHistory.setAdjustmentToAgencyBalance(0 - Math.abs(transactionValue));
             agentHistory.setPaidAmountByAgency(null);
 
             double balanceBeforeTx = collectingCentre.getBallance();
@@ -454,7 +458,7 @@ public class CollectingCentreApplicationController {
             agentHistory.setAgentTransactionValue(transactionValue);
             agentHistory.setStaffTrasnactionValue(0);
             agentHistory.setTransactionValue(0 - Math.abs(transactionValue));
-            agentHistory.setPaidAmountToAgency(transactionValue);
+            agentHistory.setPaidAmountByAgency(transactionValue);
             agentHistory.setComment(comments);
 
             double balanceBeforeTx = collectingCentre.getBallance();
