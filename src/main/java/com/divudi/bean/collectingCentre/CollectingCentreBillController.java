@@ -1598,6 +1598,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     public String navigateToCollectingCenterBillingromMenu() {
         prepareNewBill();
         setPatient(getPatient());
+        opdItems= itemFeeManager.fillItemLightsForCc(collectingCentre);
         return "/collecting_centre/bill?faces-redirect=true";
     }
 

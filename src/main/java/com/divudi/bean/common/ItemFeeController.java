@@ -18,8 +18,6 @@ import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.InvestigationFacade;
 import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.StaffFacade;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -33,17 +31,6 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.servlet.http.HttpServletResponse;
-import org.apache.poi.ss.SpreadsheetVersion;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.Font;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.util.AreaReference;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFTable;
-import org.apache.poi.xssf.usermodel.XSSFTableStyleInfo;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
  *
@@ -100,6 +87,7 @@ public class ItemFeeController implements Serializable {
         return d;
     }
 
+    
     public List<ItemFee> fillDepartmentItemFees(Department department) {
         String jpql = "SELECT f"
                 + " FROM ItemFee f "
@@ -115,7 +103,8 @@ public class ItemFeeController implements Serializable {
 
         return itemFeeFacade.findByJpql(jpql, parameters);
     }
-
+    
+   
     public List<Department> getInstitutionDepatrments(ItemFee fee) {
         List<Department> d;
         //////// // System.out.println("gettin ins dep ");

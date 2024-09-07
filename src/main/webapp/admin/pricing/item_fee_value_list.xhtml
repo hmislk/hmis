@@ -1,0 +1,128 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/admin/pricing/index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+
+    <ui:define name="subcontent">
+
+        <h:panelGroup >
+            <h:form id="form"  >
+                <p:panel id="panIx"  >
+                    <f:facet name="header" >
+                        <h:outputLabel value="List of Items Fee Value"></h:outputLabel>
+                    </f:facet>
+
+                    <h:panelGrid columns="1" styleClass="alignTop" >
+                        <h:panelGrid columns="5" >
+
+                            <p:commandButton 
+                                ajax="false" value="Process" action="#{feeValueController.fillItems}" >
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                ajax="false" value="Fix Item Fee Values" >
+                            </p:commandButton>
+
+
+
+                            <p:commandButton 
+                                ajax="false" class="ui-button-success" value="Download" >
+                                <p:dataExporter 
+                                    target="tblExport" 
+                                    type="xlsx" 
+                                    fileName="item_fees_list" 
+                                    exportHeader="true"></p:dataExporter>
+                            </p:commandButton>
+
+                        </h:panelGrid>
+                        <p:panel >
+                            <p:dataTable  value="#{feeValueController.items}" 
+                                          id="tblExport"
+                                          var="i"   
+                                          rowKey="#{i.id}" 
+                                          rowIndexVar="s"
+                                          rows="20"
+                                          paginator="true"
+                                          selectionMode="multiple"
+                                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                          rowsPerPageTemplate="20,50,100,500,1000,1500"
+                                          >
+
+                                <p:column selectionBox="true"  exportable="false" style="width: 10px;"> 
+
+                                </p:column>
+
+                                <p:column   sortBy="#{i.id}" width="80"
+                                            filterMatchMode="contains" filterBy="#{i.id}" >  
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Item Id" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.id}"/>
+                                </p:column>
+
+                                <p:column   sortBy="#{i.item.name}" width="80"
+                                            filterMatchMode="contains" filterBy="#{i.item.name}" >  
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Item Name" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.item.name}"/>
+                                </p:column>
+
+                                <p:column   sortBy="#{i.item.code}" width="80"
+                                            filterMatchMode="contains" filterBy="#{i.item.code}" >  
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Item Name" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.item.code}"/>
+                                </p:column>
+
+                                <p:column sortBy="#{i.institution.name}" width="100"
+                                          filterMatchMode="contains" filterBy="#{i.institution.name}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Item Institution" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.institution.name}" ></h:outputLabel>
+                                </p:column>
+
+                                <p:column sortBy="#{i.category.name}" width="50"
+                                          filterMatchMode="contains" filterBy="#{i.category.name}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Category" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.category.name}" ></h:outputLabel>
+                                </p:column>
+
+                                <p:column sortBy="#{i.totalValueForLocals}" width="50"
+                                          filterMatchMode="contains" filterBy="#{i.totalValueForLocals}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Local Fee" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.totalValueForLocals}" ></h:outputLabel>
+                                </p:column>
+
+                                <p:column sortBy="#{i.totalValueForForeigners}" width="50"
+                                          filterMatchMode="contains" filterBy="#{i.totalValueForForeigners}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Local Fee" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.totalValueForForeigners}" ></h:outputLabel>
+                                </p:column>
+
+
+                            </p:dataTable>
+                        </p:panel>
+                    </h:panelGrid>
+
+                </p:panel>
+            </h:form>
+
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>

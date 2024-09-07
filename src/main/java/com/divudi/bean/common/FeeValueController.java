@@ -40,7 +40,18 @@ public class FeeValueController implements Serializable {
     SessionController sessionController;
     @EJB
     private FeeValueFacade ejbFacade;
+    
+    
+    private List<FeeValue> items;
+    
+    
+    public void fillItems(){
+        items = getFacade().findAll();
+    }
 
+    
+    
+    
     public void save(FeeValue feeValue) {
         if (feeValue == null) {
             return;
@@ -94,7 +105,8 @@ public class FeeValueController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         params.put("item", item);
         params.put("institution", institution);
-
+        System.out.println("params = " + params);
+        System.out.println("jpql = " + jpql);
         return getFacade().findFirstByJpql(jpql, params);
     }
 
@@ -123,14 +135,11 @@ public class FeeValueController implements Serializable {
 
         String jpql = "SELECT f "
                 + " FROM FeeValue f "
-                + " WHERE f.item.id = :iid "
-                + " AND f.totalValueForLocals > 0 "
-                + " AND f.retired=:ret "
-                + " AND f.institution = :collectingCentre";
+                + " WHERE f.item.id=:iid "
+                + " AND f.institution.id=:collectingCentre";
         Map<String, Object> params = new HashMap<>();
         params.put("iid", itemId);
-        params.put("ret", false);
-        params.put("collectingCentre", collectingCentre);
+        params.put("collectingCentre", collectingCentre.getId());
 
         System.out.println("Executing JPQL: " + jpql);
         System.out.println("Parameters: " + params);
@@ -148,11 +157,11 @@ public class FeeValueController implements Serializable {
                 + " WHERE f.item.id = :iid "
                 + " AND f.totalValueForLocals > 0 "
                 + " AND f.retired=:ret "
-                + " AND f.category = :category";
+                + " AND f.category.id=:category";
         params = new HashMap<>();
         params.put("iid", itemId);
         params.put("ret", false);
-        params.put("category", collectingCentre.getFeeListType());
+        params.put("category", collectingCentre.getFeeListType().getId());
 
         System.out.println("Executing fallback JPQL: " + jpql);
         System.out.println("Fallback Parameters: " + params);
@@ -245,6 +254,9 @@ public class FeeValueController implements Serializable {
     }
 
     public void updateFeeValue(Item item, Institution ins, Double feeValueForLocals, Double feeValueForForeigners) {
+        System.out.println("feeValueForForeigners = " + feeValueForForeigners);
+        System.out.println("item = " + item.getName());
+        System.out.println("ins = " + ins.getName());
         FeeValue feeValue = getFeeValue(item, ins);
         if (feeValue == null) {
             feeValue = new FeeValue();
@@ -312,6 +324,14 @@ public class FeeValueController implements Serializable {
 
     private FeeValueFacade getFacade() {
         return ejbFacade;
+    }
+
+    public List<FeeValue> getItems() {
+        return items;
+    }
+
+    public void setItems(List<FeeValue> items) {
+        this.items = items;
     }
 
     @FacesConverter(forClass = FeeValue.class)

@@ -98,6 +98,10 @@ public class ItemFeeManager implements Serializable {
     public String navigateItemFeeList() {
         return "/admin/pricing/item_fee_list?faces-redirect=true";
     }
+    
+    public String navigateItemFeeValueList() {
+        return "/admin/pricing/item_fee_value_list?faces-redirect=true";
+    }
 
     public String navigateToCollectingCentreItemFeeList() {
         return "/admin/pricing/item_fee_list_collecting_centre?faces-redirect=true";
@@ -330,7 +334,7 @@ public class ItemFeeManager implements Serializable {
 
     public void updateFeesForCcFees() {
         for (ItemFee tif : itemFees) {
-            updateSiteFeeValues(tif.getItem(), collectingCentre);
+            updateCcFeeValues(tif.getItem(), collectingCentre);
         }
     }
 
