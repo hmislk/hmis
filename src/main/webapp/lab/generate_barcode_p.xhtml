@@ -4,8 +4,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:p="http://primefaces.org/ui"
-      xmlns:opd="http://xmlns.jcp.org/jsf/composite/ezcomp/opd">
+      xmlns:p="http://primefaces.org/ui">
     <ui:composition template="/resources/template/template.xhtml">
         <ui:define name="content">
             <h:head>
@@ -456,11 +455,49 @@
                                         </p:column>
 
                                         <p:column headerText="Actions" width="8em">
-                                            <p:commandButton 
-                                                value="Generate Barcodes" 
-                                                ajax="false" 
-                                                action="#{patientInvestigationController.generateBarcodesForSelectedBill(b)}" >
-                                            </p:commandButton>
+                                            <div>
+                                                <div class="row">
+                                                    <p:commandButton 
+                                                        icon="fa-solid fa-barcode"
+                                                        value="Generate Barcodes" 
+                                                        ajax="false" 
+                                                        action="#{patientInvestigationController.generateBarcodesForSelectedBill(b)}" >
+                                                    </p:commandButton>
+                                                </div>
+                                                <div class="row mt-2">
+
+                                                    <p:commandButton 
+                                                        icon="fa-regular fa-rectangle-list"
+                                                        value="To Investigations" 
+                                                        class="ui-button-warning"
+                                                        ajax="false" 
+                                                        action="#{patientInvestigationController.navigateToInvestigationsFromSelectedBill(b)}" >
+                                                    </p:commandButton>
+                                                </div>
+                                                <div class="row mt-2">
+                                                    <p:commandButton 
+                                                        icon="fa-solid fa-flask-vial"
+                                                        value="To Samples" 
+                                                        class="ui-button-raised"
+                                                        ajax="false" 
+                                                        disabled="#{b.status.label eq 'Ordered'}"
+                                                        action="#{patientInvestigationController.navigateToSamplesFromSelectedBill(b)}" >
+                                                    </p:commandButton>
+                                                </div>
+                                                
+                                                <div class="row mt-2">
+                                                    <p:commandButton 
+                                                        icon="fa fa-file-text"
+                                                        value="To Reports" 
+                                                        class="ui-button-danger"
+                                                        ajax="false" 
+                                                        disabled="#{b.status eq 'ORDERED' or b.status eq 'SAMPLE_GENERATED' or b.status eq 'SAMPLE_COLLECTED'or b.status eq 'SAMPLE_SENT'}"
+                                                        action="#{patientInvestigationController.navigateToPatientReportsFromSelectedBill(b)}" >
+                                                    </p:commandButton>
+                                                </div>
+                                            </div>
+
+
                                         </p:column>
 
                                     </p:dataTable>
