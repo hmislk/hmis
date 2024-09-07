@@ -1043,6 +1043,14 @@
                         rendered="#{webUserController.hasPrivilege('PaymentBilling')}" >
                     </p:menuitem>
 
+                    <p:menuitem
+                        ajax="false"
+                        action="/patient_deposit/index?faces-redirect=true"
+                        value="Patient Deposit Management"
+                        icon="fas fa-money-bill-transfer"
+                        rendered="#{webUserController.hasPrivilege('PaymentBilling')}" >
+                    </p:menuitem>
+
                     <p:submenu label="Cash">
 
                         <p:menuitem  
