@@ -2688,7 +2688,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
         boolean addAllBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are the same for all departments, institutions and sites.", true);
         boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the site", false);
-        System.out.println("siteBasedBillFees = " + siteBasedBillFees);
 
         if (addAllBillFees) {
             allBillFees = getBillBean().billFeefromBillItem(bi);
@@ -3280,7 +3279,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         lstBillComponents = getBillBean().billComponentsFromBillEntries(lstBillEntries);
         System.out.println("lstBillEntries.size() = " + lstBillEntries.size());
         lstBillFees = getBillBean().billFeesFromBillEntries(lstBillEntries);
-        System.out.println("lstBillFees = " + lstBillFees.size());
     }
 
     public void createPaymentsForBills(Bill b, List<BillEntry> billEntrys) {
