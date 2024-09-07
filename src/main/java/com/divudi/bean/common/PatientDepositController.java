@@ -7,10 +7,14 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
+import com.divudi.entity.Department;
+import com.divudi.entity.Patient;
 import com.divudi.entity.PatientDeposit;
 import com.divudi.facade.PatientDepositFacade;
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -19,6 +23,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import sun.security.krb5.internal.PaPacOptions;
 
 /**
  *
@@ -36,6 +41,28 @@ public class PatientDepositController implements Serializable {
     private PatientDepositFacade patientDepositFacade;
     private PatientDeposit current;
     private List<PatientDeposit> items = null;
+    
+    public PatientDeposit getDepositOfThePatient(Patient p , Department d){        
+        Map m = new HashMap<>();
+        
+        String jpql = "select pd from PatientDeposit pd"
+                + " where pd.patient=:pt "
+                + " and pd.department=:dep "
+                + " and pd.retired=:ret";
+        
+        m.put("pt",p);
+        m.put("dep", d);
+        m.put("ret", false);
+        
+        PatientDeposit pd = patientDepositFacade.findFirstByJpql(jpql, m);
+        
+        if(pd == null){
+            pd = new PatientDeposit();
+            patientDepositFacade.create(pd);
+        }
+        return pd;
+    }
+    
 
     public PatientDepositFacade getPatientDepositFacade() {
         return patientDepositFacade;
