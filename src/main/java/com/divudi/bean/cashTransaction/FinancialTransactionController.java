@@ -292,7 +292,6 @@ public class FinancialTransactionController implements Serializable {
                 paramStartId,
                 paramEndId);
 
-        System.out.println("ins = " + ins.getReportTemplateRows().size());
 
         ReportTemplateRowBundle outs = reportTemplateController.generateReport(
                 type,
@@ -357,7 +356,6 @@ public class FinancialTransactionController implements Serializable {
                 paramStartId,
                 paramEndId);
 
-        System.out.println("ins = " + ins.getReportTemplateRows().size());
 
         ReportTemplateRowBundle outs = reportTemplateController.generateReport(
                 type,
@@ -420,7 +418,6 @@ public class FinancialTransactionController implements Serializable {
                 paramStartId,
                 paramEndId);
 
-        System.out.println("ins = " + ins.getReportTemplateRows().size());
 
         ReportTemplateRowBundle outs = reportTemplateController.generateReport(
                 type,
@@ -893,7 +890,6 @@ public class FinancialTransactionController implements Serializable {
         System.out.println("Total In Count: " + totalInCount);
         System.out.println("Total Out Count: " + totalOutCount);
         System.out.println("Total In Value: " + totalInValue);
-        System.out.println("Total Out Value: " + totalOutValue);
 
         return temOutBundle;
     }
@@ -974,7 +970,6 @@ public class FinancialTransactionController implements Serializable {
         System.out.println("Total In Count: " + totalInCount);
         System.out.println("Total Out Count: " + totalOutCount);
         System.out.println("Total In Value: " + totalInValue);
-        System.out.println("Total Out Value: " + totalOutValue);
 
         return temOutBundle;
     }
@@ -1994,7 +1989,6 @@ public class FinancialTransactionController implements Serializable {
         m.put("ret", false);
         m.put("cid", nonClosedShiftStartFundBill.getId());
         System.out.println("m = " + m);
-        System.out.println("jpql = " + jpql);
         paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m);
 
 //        paymentMethodValues = new PaymentMethodValues(PaymentMethod.values());
@@ -2032,7 +2026,6 @@ public class FinancialTransactionController implements Serializable {
         m.put("ret", false);
         m.put("cid", shiftStartBillId);
         System.out.println("jpql = " + jpql);
-        System.out.println("m = " + m);
         paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m);
 
         atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
@@ -2091,7 +2084,6 @@ public class FinancialTransactionController implements Serializable {
 
         m.put("ret", false);
         System.out.println("jpql = " + jpql);
-        System.out.println("m = " + m);
         paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m);
 
         atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
@@ -2167,7 +2159,6 @@ public class FinancialTransactionController implements Serializable {
         m.put("ret", false);
         m.put("cid", shiftStartBillId);
         System.out.println("jpql = " + jpql);
-        System.out.println("m = " + m);
         paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m);
 
 // Filter and collect unique cancelled bills
@@ -2258,7 +2249,6 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public void fillPaymentsForDateRange() {
-        System.out.println("fillPaymentsForDateRange");
         paymentsFromShiftSratToNow = new ArrayList<>();
         String jpql = "SELECT p "
                 + "FROM Payment p "
@@ -2330,7 +2320,6 @@ public class FinancialTransactionController implements Serializable {
         m.put("eid", toDateParam);
 
         System.out.println("m = " + m);
-        System.out.println("jpql = " + jpql);
 
         paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m);
         atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
@@ -2369,7 +2358,6 @@ public class FinancialTransactionController implements Serializable {
         m.put("eid", shiftEndBillId);
 
         System.out.println("m = " + m);
-        System.out.println("jpql = " + jpql);
 
         paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m);
         atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
@@ -2987,7 +2975,6 @@ public class FinancialTransactionController implements Serializable {
         Map<PaymentMethod, Double> paymentMethodTotals = new HashMap<>();
 
         for (Payment p : currentBillPayments) {
-            System.out.println("p = " + p);
             PaymentMethod method = p.getPaymentMethod();
             Double amount = p.getPaidValue();
             p.setCashbookEntryCompleted(true);
@@ -3166,7 +3153,6 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public void updateCashDenominations(AjaxBehaviorEvent event) {
-        System.out.println("updateCashDenominations called");
 
         if (currentPayment == null) {
             return;

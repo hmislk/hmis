@@ -726,8 +726,9 @@ public class ChannelReportTemplateController implements Serializable {
         hm.put("ftp", FeeType.Staff);
 //        hm.put("class", BilledBill.class);
 //        hm.put("class", BilledBill.class);
+//        hm.put("class", BilledBill.class);
+//        hm.put("class", BilledBill.class);
         System.out.println("sql = " + sql);
-        System.out.println("hm = " + hm);
         Long count = billFeeFacade.findLongByJpql(sql, hm, TemporalType.TIMESTAMP);
         return count;
     }
@@ -787,7 +788,6 @@ public class ChannelReportTemplateController implements Serializable {
                 continue;
             }
 
-            System.out.println("Processing SessionInstance: " + si);
             fillBillSessions(si);  // Make sure fillBillSessions() can handle null fields inside `si`
 
             long bookedCount = si.getBookedPatientCount() != null ? si.getBookedPatientCount() : 0;
@@ -809,8 +809,6 @@ public class ChannelReportTemplateController implements Serializable {
             long8 += cancelPaidCount;
         }
 
-        System.out.println("Final counts: long1=" + long1 + ", long2=" + long2 + ", long3=" + long3
-                + ", long4=" + long4 + ", long5=" + long5 + ", long6=" + long6 + ", long7=" + long7 + ", long8=" + long8);
 
         if (bundle != null) {
             bundle.setReportTemplateRows(rs);

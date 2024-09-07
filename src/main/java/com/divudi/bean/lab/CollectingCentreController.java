@@ -96,7 +96,6 @@ public class CollectingCentreController implements Serializable {
         bill.setDepartment(sessionController.getDepartment());
         bill.setBillType(BillType.CollectingCentrePaymentMadeBill);
         bill.setBillTypeAtomic(BillTypeAtomic.CC_PAYMENT_RECEIVED_BILL);
-        System.out.println("bill.getCollectingCenter() = " + bill.getCollectingCentre().getName());
 
     }
 
@@ -218,7 +217,6 @@ public class CollectingCentreController implements Serializable {
         System.out.println("m = " + m);
         System.out.println("jpql = " + jpql);
         agentHistories = agentHistoryFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
-        System.out.println("agentHistories = " + agentHistories);
     }
 
     public String getSelectText() {
