@@ -452,7 +452,6 @@ public class BookingControllerViewScopeMonth implements Serializable {
         List<BillFee> savingBillFees = new ArrayList<>();
 
         priceMatrix = priceMatrixController.fetchChannellingMemberShipDiscount(paymentMethod, paymentScheme, selectedSessionInstance.getOriginatingSession().getCategory());
-        System.out.println("priceMatrix = " + priceMatrix);
 
         List<BillFee> savingBillFeesFromSession = createBillFeeForSessions(printingBill, savingBillItem, true, priceMatrix);
         
@@ -687,7 +686,6 @@ public class BookingControllerViewScopeMonth implements Serializable {
     }
 
     public void markSettlingBillAsPrinted() {
-        System.out.println("markSettlingBillAsPrinted");
         if (selectedBillSession != null && selectedBillSession.getBillItem() != null && selectedBillSession.getBillItem().getBill() != null) {
             selectedBillSession.getBillItem().getBill().setPrinted(true);
             selectedBillSession.getBillItem().getBill().setPrintedAt(new Date());
@@ -5316,7 +5314,6 @@ public class BookingControllerViewScopeMonth implements Serializable {
 
     private void calculateBillTotalsFromBillFees(Bill billToCaclculate, List<BillFee> billfeesAvailable) {
         System.out.println("calculateBillTotalsFromBillFees");
-        System.out.println("billToCaclculate = " + billToCaclculate);
         double calculatingGrossBillTotal = 0.0;
         double calculatingNetBillTotal = 0.0;
 
@@ -5327,7 +5324,6 @@ public class BookingControllerViewScopeMonth implements Serializable {
             }
 
             calculatingGrossBillTotal += iteratingBillFee.getFeeGrossValue();
-            System.out.println("calculatingGrossBillTotal = " + calculatingGrossBillTotal);
             calculatingNetBillTotal += iteratingBillFee.getFeeValue();
 
         }
@@ -6503,7 +6499,6 @@ public class BookingControllerViewScopeMonth implements Serializable {
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
             }
-            System.out.println("multiplePaymentMethodTotalValue = " + multiplePaymentMethodTotalValue);
             double differenceOfBillTotalAndPaymentValue = getSelectedBillSession().getBillItem().getBill().getNetTotal() - multiplePaymentMethodTotalValue;
             differenceOfBillTotalAndPaymentValue = Math.abs(differenceOfBillTotalAndPaymentValue);
             if (differenceOfBillTotalAndPaymentValue > 1.0) {
@@ -7162,7 +7157,6 @@ public class BookingControllerViewScopeMonth implements Serializable {
                     }
                 } else {
                     feeTotalForSelectedBill += itmf.getFee();
-                    System.out.println("itmf = " + itmf.getFee());
                     if (itmf.isDiscountAllowed()) {
                         feeDiscountForSelectedBill += itmf.getFee() * (paymentSchemeDiscount.getDiscountPercent() / 100);
                     }
@@ -7181,7 +7175,6 @@ public class BookingControllerViewScopeMonth implements Serializable {
 
         System.out.println("feeTotalForSelectedBill = " + feeTotalForSelectedBill);
         System.out.println("feeDiscountForSelectedBill = " + feeDiscountForSelectedBill);
-        System.out.println("feeNetTotalForSelectedBill 3 = " + feeNetTotalForSelectedBill);
         feeNetTotalForSelectedBill = feeTotalForSelectedBill - feeDiscountForSelectedBill;
     }
 
@@ -7583,7 +7576,6 @@ public class BookingControllerViewScopeMonth implements Serializable {
     public double getCashBalance() {
         if (feeTotalForSelectedBill != null) {
             System.out.println("feeNetTotalForSelectedBill = " + feeNetTotalForSelectedBill);
-            System.out.println("cashPaid = " + cashPaid);
             if (feeNetTotalForSelectedBill == null) {
                 feeNetTotalForSelectedBill = 0.0;
             }

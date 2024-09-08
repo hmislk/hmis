@@ -710,7 +710,6 @@ public class UserPrivilageController implements Serializable {
 
         // Retire all current web user privileges initially
         List<WebUserPrivilege> currentPrivileges = getCurrentWebUserPrivileges();
-        System.out.println("Retiring all current web user privileges:");
         for (WebUserPrivilege wup : currentPrivileges) {
             wup.setRetired(true);
         }

@@ -3,6 +3,7 @@ package com.divudi.entity;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -21,13 +22,13 @@ public class FeeValue implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     private Item item;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     private Institution institution;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     private Department department;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     private Category category;
 
     private Double totalValueForLocals;

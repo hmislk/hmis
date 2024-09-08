@@ -4052,7 +4052,6 @@ public class BillBeanController implements Serializable {
 
     public List<BillFee> billFeefromBillItemForCollectingCenter(BillItem billItem, Institution collectingCenter) {
         System.out.println("billFeefromBillItemForCollectingCenter");
-        System.out.println("collectingCenter = " + collectingCenter);
         List<BillFee> t = new ArrayList<>();
         BillFee feeForCollectingCenter;
         BillFee feeForInstitution;
@@ -4126,7 +4125,6 @@ public class BillBeanController implements Serializable {
             System.out.println("jpql = " + jpql);
             System.out.println("params = " + params);
             List<ItemFee> itemFees = getItemFeeFacade().findByJpql(jpql, params);
-            System.out.println("1. CC itemFee from jpql= " + itemFees);
 
             itemFees = itemFeeManager.fillFees(billItem.getItem(), collectingCenter);
 
@@ -4144,7 +4142,6 @@ public class BillBeanController implements Serializable {
                 System.out.println("jpql = " + jpql);
                 System.out.println("params = " + params);
                 itemFees = getItemFeeFacade().findByJpql(jpql, params);
-                System.out.println("3. CC itemFee Fees= " + itemFees);
                 itemFees = itemFeeManager.fillFees(billItem.getItem(), collectingCenter.getFeeListType());
             }
 
@@ -4158,7 +4155,6 @@ public class BillBeanController implements Serializable {
                 institutionFeeValue = originalFeeValue - collectingCenterFeeValue;
 
                 System.out.println("originalFeeValue = " + originalFeeValue);
-                System.out.println("institutionFeeValue = " + institutionFeeValue);
 
                 feeForCollectingCenter = new BillFee();
                 feeForCollectingCenter.setFee(i);
@@ -4414,7 +4410,6 @@ public class BillBeanController implements Serializable {
             params.put("forIns", forIns);
 
             System.out.println("params = " + params);
-            System.out.println("jpql = " + jpql);
 
             List<ItemFee> itemFee = getItemFeeFacade().findByJpql(jpql, params);
 

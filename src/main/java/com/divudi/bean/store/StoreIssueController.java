@@ -751,7 +751,6 @@ public class StoreIssueController implements Serializable {
         billItem.setNetValue(billItem.getNetRate() * qty);
         System.out.println("billItem.getRate() = " + billItem.getRate());
         System.out.println("billItem.getMarginRate() = " + billItem.getMarginRate());
-        System.out.println("billItem.getReatilRate() = " + billItem.getPharmaceuticalBillItem().getRetailRate());
 
     }
 
