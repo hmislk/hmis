@@ -60,11 +60,21 @@
                         </p:panelGrid>
 
                         <p:commandButton 
-                            class="my-2" 
+                            class="m-2" 
                             ajax="false" 
                             value="Process" 
                             action="#{reportController.processCollectingCentreStatementReportNew()}" 
                             icon="pi pi-check" />
+                        
+                        
+                        <p:commandButton 
+                            class="m-2 ui-button-success" 
+                            ajax="false" 
+                            value="Download" 
+                            action="#{reportController.processCollectingCentreStatementReportNew()}" 
+                            icon="pi pi-download" >
+                            <p:dataExporter type="xlsx" target="tbl"  fileName="cc_statement.xlsx" ></p:dataExporter>
+                        </p:commandButton>
 
                         <h:panelGrid columns="2" styleClass="mt-4">
                             <h:outputLabel value="From Date :" />
@@ -79,7 +89,9 @@
                         </h:panelGrid>
                     </p:panel>
 
-                    <p:dataTable value="#{reportController.agentHistories}" var="agentHx" paginator="true" rows="10" 
+                    <p:dataTable
+                        id="tbl"
+                        value="#{reportController.agentHistories}" var="agentHx" paginator="true" rows="10" 
                                  paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
                                  rowsPerPageTemplate="5,10,20"
                                  currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords} entries"
@@ -90,7 +102,7 @@
                             <h:outputText value="#{agentHx.bill.insId}" />
                         </p:column>
                         
-                        <p:column headerText="Data &absp Time" sortBy="#{agentHx.createdAt}" filterBy="#{agentHx.createdAt}" filterMatchMode="contains">
+                        <p:column headerText="Data &nbsp; Time" sortBy="#{agentHx.createdAt}" filterBy="#{agentHx.createdAt}" filterMatchMode="contains">
                             <h:outputText value="#{agentHx.createdAt}" >
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
                             </h:outputText>
@@ -111,13 +123,13 @@
                         </p:column>
 
                         <p:column headerText="Staff Fee" sortBy="#{agentHx.bill.totalStaffFee}" filterBy="#{agentHx.bill.totalStaffFee}">
-                            <h:outputText value="#{agentHx.st }">
+                            <h:outputText value="#{agentHx.staffTrasnactionValue}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                         </p:column>
 
                         <p:column headerText="CC Fee" sortBy="#{agentHx.bill.totalCenterFee}" filterBy="#{agentHx.bill.totalCenterFee}">
-                            <h:outputText value="#{agentHx.bill.totalCenterFee}">
+                            <h:outputText value="#{agentHx.agentTransactionValue}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                         </p:column>

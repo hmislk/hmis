@@ -90,7 +90,7 @@ import javax.ws.rs.GET;
 @Path("limsmw")
 @RequestScoped
 public class LimsMiddlewareController {
-
+// to be taken as correct on 2024 09 04 08 31
     //FOR UNIT TESTING
     @EJB
     InvestigationItemFacade investigationItemFacade;
@@ -1109,7 +1109,26 @@ public class LimsMiddlewareController {
                                 temFlag = true;
                                 valueToSave = true;
                             } else {
-                                System.out.println("Else");
+                                System.out.println("3 result = " + result);
+                                priv.setStrValue(result);
+
+                                Double dbl = 0d;
+                                try {
+                                    dbl = Double.parseDouble(result);
+                                    System.out.println("3 dbl = " + dbl);
+                                } catch (Exception e) {
+                                }
+                                priv.setDoubleValue(dbl);
+                                System.out.println("3 priv.getDoubleValue() = " + priv.getDoubleValue());
+                                if (priv.getId() == null) {
+                                    System.out.println("3 new priv created = " + dbl);
+                                    patientReportItemValueFacade.create(priv);
+                                } else {
+                                    System.out.println("3 new priv Updates = " + dbl);
+                                    patientReportItemValueFacade.edit(priv);
+                                }
+                                temFlag = true;
+                                valueToSave = true;
                             }
 
                         }

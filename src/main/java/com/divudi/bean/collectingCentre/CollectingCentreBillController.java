@@ -864,16 +864,22 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 //        saveBatchBill();
         saveBillItemSessions();
 
-        
-        
-        
-        collectingCentreApplicationController.updateBalance(collectingCentre, 
+//        Institution collectingCentre,
+//            double hospitalFee,
+//            double collectingCentreFee,
+//            double staffFee,
+//            double transactionValue,
+//            HistoryType historyType,
+//            Bill bill
+//        
+        collectingCentreApplicationController.updateBalance(
+                collectingCentre,
+                totalHosFee,
                 totalCCFee,
-                (totalHosFee + totalStaffFee),
+                totalStaffFee,
                 b.getNetTotal(),
-                HistoryType.CollectingCentreBilling, 
-                b, 
-                comment);
+                HistoryType.CollectingCentreBilling,
+                b);
 
 //        updateBallance(collectingCentre, 0 - Math.abs(feeTotalExceptCcfs), HistoryType.CollectingCentreBilling, b, b.getReferenceNumber());
         JsfUtil.addSuccessMessage("Bill Saved");
@@ -995,7 +1001,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
         Bill billedBill = null;
         for (Bill b : bills) {
-            billedBill = b;           
+            billedBill = b;
             getBillSearch().setBill((BilledBill) b);
             getBillSearch().setPaymentMethod(b.getPaymentMethod());
             getBillSearch().setComment("Batch Cancell");
@@ -1005,8 +1011,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         }
         tmp.copy(billedBill);
         tmp.setBilledBill(billedBill);
-        
-        
+
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(tmp, getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
     }
@@ -1282,8 +1287,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         //   getCurrentBillItem().setBillSession(getServiceSessionBean().createBillSession(getCurrentBillItem()));
         BillItem bi = new BillItem();
         bi.copy(getCurrentBillItem());
-        
-        
+
         bi.setSessionDate(sessionDate);
         lastBillItem = bi;
         if (bi.getQty() == null || bi.getQty() < 1) {
@@ -1413,7 +1417,6 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             System.out.println("bi = " + bi);
 
             for (BillFee bf : be.getLstBillFees()) {
-
 
                 entryGross += bf.getFeeGrossValue();
                 entryNet += bf.getFeeValue();
