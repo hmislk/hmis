@@ -320,7 +320,14 @@
                                             <f:selectItems value="#{investigationItemController.userChangableItems}" var="ii" itemLabel="#{ii.name} - #{ii.ixItemType }" itemValue="#{ii}" />
                                             <p:ajax  event="change" process="dtbItem" update=":#{p:resolveFirstComponentWithId('pDetails',view).clientId} "/>
                                         </p:selectOneMenu>
-                                        <p:commandButton action="#{investigationItemController.removeItem()}" icon=" fa-solid fa-trash " class="ui-button-danger" value="Remove" ajax="false"/> 
+                                        <p:commandButton 
+                                            action="#{investigationItemController.removeItem()}" 
+                                            icon=" fa-solid fa-trash " 
+                                            onclick="if (!confirm('Are you sure you want to delete this Item?'))
+                                                        return false;"
+                                            class="ui-button-danger" 
+                                            value="Remove" 
+                                            ajax="false"/> 
                                     </diV>
 
                                     <h:panelGrid id="pDetails" class="w-100">
