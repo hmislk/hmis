@@ -4319,9 +4319,9 @@ public class BillBeanController implements Serializable {
         Map params = new HashMap();
         jpql = "Select bf "
                 + " from BillFee bf "
-                + "where bf.retired=:ret "
-                + "and bf.bill=:bill "
-                + "order by bf.billItem.id";
+                + " where bf.retired=:ret "
+                + " and bf.bill=:bill "
+                + " order by bf.billItem.id";
         params.put("ret", false);
         params.put("bill", bill);
         fetchingBillFees = billFeeFacade.findByJpql(jpql, params);
