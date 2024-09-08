@@ -361,13 +361,14 @@ public class ReportTemplateController implements Serializable {
         if (results == null || results.isEmpty()) {
             return pb; // Consider returning an empty ReportTemplateRowBundle instead
         }
+        pb.setReportTemplateRows(results);
 
         double bundleTotal = pb.getReportTemplateRows().stream()
                 .mapToDouble(r -> r.getPayment().getPaidValue())
                 .sum();
+        System.out.println("bundleTotal = " + bundleTotal);
         pb.setTotal(bundleTotal);
 
-        pb.setReportTemplateRows(results);
         return pb;
     }
 
@@ -927,7 +928,6 @@ public class ReportTemplateController implements Serializable {
 
         jpql += " group by bill.billTypeAtomic";
 
-
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
 
         if (rs == null || rs.isEmpty()) {
@@ -1096,7 +1096,6 @@ public class ReportTemplateController implements Serializable {
 
         jpql += " group by bill.billTypeAtomic";
 
-
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
 
         if (rs == null || rs.isEmpty()) {
@@ -1260,7 +1259,6 @@ public class ReportTemplateController implements Serializable {
 
         jpql += " group by bill.billTypeAtomic";
 
-
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
 
         if (rs == null || rs.isEmpty()) {
@@ -1423,7 +1421,6 @@ public class ReportTemplateController implements Serializable {
             jpql += " and bill.creater=:wu ";
             parameters.put("wu", paramUser);
         }
-
 
         Double sumResult = ejbFacade.findSingleResultByJpql(jpql, parameters, TemporalType.DATE);
 
@@ -1768,7 +1765,6 @@ public class ReportTemplateController implements Serializable {
 
         jpql += " group by bi.item.category ";
 
-
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
 
         if (rs == null || rs.isEmpty()) {
@@ -1928,7 +1924,6 @@ public class ReportTemplateController implements Serializable {
                 + " and bi.item.category is not null ";
 
         jpql += " group by bi.item.category ";
-
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
 
@@ -2255,7 +2250,6 @@ public class ReportTemplateController implements Serializable {
 
         jpql += " group by bi.item ";
 
-
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
 
         if (rs == null || rs.isEmpty()) {
@@ -2368,7 +2362,6 @@ public class ReportTemplateController implements Serializable {
             jpql += " and ss.creater=:wu";
             parameters.put("wu", paramUser);
         }
-
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
 
