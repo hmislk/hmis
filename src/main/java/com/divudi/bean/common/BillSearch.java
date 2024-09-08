@@ -3085,7 +3085,6 @@ public class BillSearch implements Serializable {
                 return navigateToViewCcPaymentMadeCancellationBill(bill);
 
             case CC_PAYMENT_RECEIVED_BILL:
-                System.out.println("CC_PAYMENT_RECEIVED_BILL");
                 return navigateToViewCcPaymentReceivedBill(bill);
 
             case CHANNEL_REFUND:
@@ -3154,9 +3153,7 @@ public class BillSearch implements Serializable {
     }
 
     public String navigateToViewCcPaymentReceivedBill(Bill bill) {
-        System.out.println("navigateToViewCcPaymentReceivedBill");
         loadBillDetails(bill);
-        System.out.println("bill = " + bill);
         return "/collecting_centre/view/cc_payment_received_bill_view";
     }
 
