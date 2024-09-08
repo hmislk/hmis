@@ -815,7 +815,6 @@ public class PatientReportController implements Serializable {
                 System.err.println("e = " + e.getMessage());
             }
         }
-
     }
 
     private String generateModifiedJavascriptFromBaseJavaScript(PatientReport pr, String baseJs) {
