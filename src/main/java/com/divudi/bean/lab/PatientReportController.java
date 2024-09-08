@@ -809,9 +809,11 @@ public class PatientReportController implements Serializable {
             } else if (priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Flag) {
                 priv.setStrValue(findFlagValue(priv));
             }
-
-            getPirivFacade().edit(priv);
-
+            try {
+                getPirivFacade().edit(priv);
+            } catch (Exception e) {
+                System.err.println("e = " + e.getMessage());
+            }
         }
 
     }
@@ -2184,6 +2186,40 @@ public class PatientReportController implements Serializable {
         return r;
     }
 
+    public PatientReport createNewPatientTemplateReport(PatientInvestigation pi, Investigation ix) {
+        System.out.println("createNewPatientTemplateReport");
+        System.out.println("pi = " + pi);
+        System.out.println("ix = " + ix);
+        //System.err.println("creating a new patient report");
+        PatientReport r = null;
+        if (pi != null && pi.getId() != null && ix != null) {
+            r = new PatientReport();
+            r.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            r.setCreater(getSessionController().getLoggedUser());
+            r.setItem(ix);
+            r.setDataEntryDepartment(sessionController.getLoggedUser().getDepartment());
+            r.setDataEntryInstitution(sessionController.getLoggedUser().getInstitution());
+            if (r.getTransInvestigation() != null) {
+                if (r.getTransInvestigation().getReportFormat() != null) {
+                    r.setReportFormat(r.getTransInvestigation().getReportFormat());
+                } else {
+                    ReportFormat nrf = reportFormatController.getValidReportFormat();
+                    r.setReportFormat(nrf);
+                }
+            }
+            getFacade().create(r);
+            r.setPatientInvestigation(pi);
+            getPrBean().addPatientReportItemValuesForTemplateReport(r);
+//            getEjbFacade().edit(r);
+            setCurrentPatientReport(r);
+            pi.getPatientReports().add(r);
+            getCommonReportItemController().setCategory(ix.getReportFormat());
+        } else {
+            JsfUtil.addErrorMessage("No ptIx or Ix selected to add");
+        }
+        return r;
+    }
+
     public PatientReport createNewMicrobiologyReport(PatientInvestigation pi, Investigation ix) {
         PatientReport r = null;
         if (pi != null && pi.getId() != null && ix != null) {
@@ -2261,9 +2297,7 @@ public class PatientReportController implements Serializable {
         pr = getFacade().findFirstByJpql(j, m);
         return pr;
     }
-    
-    
-    
+
     public String navigateToNewlyCreatedPatientReport(PatientInvestigation pi) {
         System.out.println("navigateToNewlyCreatedPatientReport");
         System.out.println("pi = " + pi);
@@ -2288,25 +2322,23 @@ public class PatientReportController implements Serializable {
 
         currentReportInvestigation = ix;
         currentPtIx = pi;
-        PatientReport newlyCreatedReport=null;
+        PatientReport newlyCreatedReport = null;
         System.out.println("InvestigationReportType.Microbiology = " + InvestigationReportType.Microbiology);
         if (ix.getReportType() == InvestigationReportType.Microbiology) {
             createNewMicrobiologyReport(pi, ix);
         } else {
-           newlyCreatedReport =    createNewPatientReport(pi, ix);
+            newlyCreatedReport = createNewPatientReport(pi, ix);
             System.out.println("newlyCreatedReport = " + newlyCreatedReport);
         }
-        if(newlyCreatedReport==null){
+        if (newlyCreatedReport == null) {
             JsfUtil.addErrorMessage("Error");
             return null;
         }
         currentPatientReport = newlyCreatedReport;
         getCommonReportItemController().setCategory(ix.getReportFormat());
-        
+
         return "/lab/patient_report?faces-redirect=true";
     }
-    
-    
 
     public void createNewReport(PatientInvestigation pi) {
         System.out.println("createNewReport");
@@ -2332,8 +2364,11 @@ public class PatientReportController implements Serializable {
 
         currentReportInvestigation = ix;
         currentPtIx = pi;
+        System.out.println("ix.getReportType()  = " + ix.getReportType());
         if (ix.getReportType() == InvestigationReportType.Microbiology) {
             createNewMicrobiologyReport(pi, ix);
+        } else if (ix.getReportType() == InvestigationReportType.HtmlTemplate) {
+            createNewPatientTemplateReport(pi, ix);
         } else {
             createNewPatientReport(pi, ix);
         }
