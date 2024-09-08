@@ -12012,7 +12012,7 @@ public class SearchController implements Serializable {
                 department,
                 site);
         ap.setName("Inward Professional Payments");
-        ap.setBundleType("ProfessionalPaymentBillReport");
+        ap.setBundleType("ProfessionalPaymentBillReportInward");
         return ap;
     }
 
@@ -12032,8 +12032,8 @@ public class SearchController implements Serializable {
                 institution,
                 department,
                 site);
-        ap.setName("Channelling Payment Collection");
-        ap.setBundleType("ProfessionalPaymentBillReport");
+        ap.setName("Channelling Professional Payments");
+        ap.setBundleType("ProfessionalPaymentBillReportChannelling");
         return ap;
     }
 
@@ -12050,8 +12050,8 @@ public class SearchController implements Serializable {
                 institution,
                 department,
                 site);
-        ap.setName("OPD Professional Payment");
-        ap.setBundleType("ProfessionalPaymentBillReport");
+        ap.setName("OPD Professional Payments");
+        ap.setBundleType("ProfessionalPaymentBillReportOpd");
         return ap;
     }
 

@@ -78,20 +78,24 @@
                                 class="ui-button-danger" icon="fas fa-cogs">
                             </p:commandButton>
 
+                            <p:commandButton value="Print" icon="fas fa-print">
+                                <p:printer target="printPanel" />
+                            </p:commandButton>
+
                         </h:panelGrid>
 
 
 
 
-                        <p:commandButton value="Print" icon="fas fa-print">
-                            <p:printer target="printPanel" />
-                        </p:commandButton>
 
+
+                        <!--Do not remove this part-->
                         <h:panelGroup style="display: none;" >
                             <ui:repeat value="#{searchController.bundle.bundles}" var="myBundle1" >
                                 #{myBundle1.name} - #{myBundle1.bundleType} <br/>
                             </ui:repeat>
                         </h:panelGroup>
+                        <!--Do not remove the above part-->
 
 
                         <h:panelGroup id="printPanel">        
@@ -99,92 +103,102 @@
 
 
                             <ui:repeat value="#{searchController.bundle.bundles}" var="myBundle">
-                                <h1>#{myBundle.bundleType}</h1>
 
-                                <h:panelGroup rendered="#{myBundle.bundleType eq 'opdServiceCollection'}">
+
+                                <p:panel collapsed="false" toggleable="true" rendered="#{myBundle.bundleType eq 'opdServiceCollection'}" >
+                                    <f:facet name="header" >
+                                        <h:outputLabel value="#{myBundle.name}" ></h:outputLabel>
+                                    </f:facet>
                                     <ez:opdServiceCollection bundle="#{myBundle}"/>
-                                </h:panelGroup>
+                                    <f:facet name="footer" >
+                                         <h:outputLabel value="Total for #{myBundle.name}" ></h:outputLabel>
+                                         <p:spacer width="50" ></p:spacer>
+                                        <h:outputLabel value="#{myBundle.total}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:panel>
 
-                                <h:panelGroup rendered="#{myBundle.bundleType eq 'pharmacyCollection'}">
+                                <p:panel collapsed="false" toggleable="true" rendered="#{myBundle.bundleType eq 'pharmacyCollection'}">
                                     <ez:pharmacyCollection bundle="#{myBundle}"/>
-                                </h:panelGroup>
+                                </p:panel>
 
-                                <h:panelGroup rendered="#{myBundle.bundleType eq 'ccCollection'}">
+                                <p:panel collapsed="false" toggleable="true" rendered="#{myBundle.bundleType eq 'ccCollection'}">
                                     <ez:ccCollection bundle="#{myBundle}"/>
-                                </h:panelGroup>
+                                </p:panel>
 
 
-                                <h:panelGroup rendered="#{myBundle.bundleType eq 'companyPaymentBillOpd'}">
+                                <p:panel collapsed="false" toggleable="true" rendered="#{myBundle.bundleType eq 'companyPaymentBillOpd'}">
                                     <ez:companyPaymentBillOpd bundle="#{myBundle}"/>
-                                </h:panelGroup>
+                                </p:panel>
 
-                                <h:panelGroup rendered="#{myBundle.bundleType eq 'companyPaymentBillInward'}">
+                                <p:panel collapsed="false" toggleable="true" rendered="#{myBundle.bundleType eq 'companyPaymentBillInward'}">
                                     <ez:companyPaymentBillInward bundle="#{myBundle}"/>
-                                </h:panelGroup>
+                                </p:panel>
 
-                                <h:panelGroup rendered="#{myBundle.bundleType eq 'companyPaymentBillPharmacy'}">
+                                <p:panel collapsed="false" toggleable="true" rendered="#{myBundle.bundleType eq 'companyPaymentBillPharmacy'}">
                                     <ez:companyPaymentBillPharmacy bundle="#{myBundle}"/>
-                                </h:panelGroup>
+                                </p:panel>
 
-                                <h:panelGroup rendered="#{myBundle.bundleType eq 'companyPaymentBillChannelling'}">
+                                <p:panel collapsed="false" toggleable="true" rendered="#{myBundle.bundleType eq 'companyPaymentBillChannelling'}">
                                     <ez:companyPaymentBillChannelling bundle="#{myBundle}"/>
-                                </h:panelGroup>
+                                </p:panel>
 
 
 
-                                <h:panelGroup rendered="#{myBundle.bundleType eq 'collectionForTheDay'}">
+                                <p:panel collapsed="false" toggleable="true" rendered="#{myBundle.bundleType eq 'collectionForTheDay'}">
                                     <ez:collectionForTheDay bundle="#{myBundle}"/>
-                                </h:panelGroup>
+                                </p:panel>
 
 
 
-                                <h:panelGroup rendered="#{myBundle.bundleType eq 'pettyCashPayments'}">
+                                <p:panel collapsed="false" toggleable="true" rendered="#{myBundle.bundleType eq 'pettyCashPayments'}">
                                     <ez:pettyCashPayments bundle="#{myBundle}"/>
-                                </h:panelGroup>
+                                </p:panel>
 
-                                <h:panelGroup rendered="#{myBundle.bundleType eq 'professionalPaymentBillOpd'}">
+                                <p:panel collapsed="false" toggleable="true" rendered="#{myBundle.bundleType eq 'professionalPaymentBillOpd'}">
                                     <ez:professionalPaymentBillOpd bundle="#{myBundle}"/>
-                                </h:panelGroup>
+                                </p:panel>
 
-                                <h:panelGroup rendered="#{myBundle.bundleType eq 'professionalPaymentBillInward'}">
+                                <p:panel collapsed="false" toggleable="true" rendered="#{myBundle.bundleType eq 'ProfessionalPaymentBillReportChannelling'}">
                                     <ez:professionalPaymentBillInward bundle="#{myBundle}"/>
-                                </h:panelGroup>
+                                </p:panel>
 
-                                <h:panelGroup rendered="#{myBundle.bundleType eq 'professionalPaymentBillPharmacy'}">
+                                <p:panel collapsed="false" toggleable="true" rendered="#{myBundle.bundleType eq 'ProfessionalPaymentBillReportOpd'}">
                                     <ez:professionalPaymentBillPharmacy bundle="#{myBundle}"/>
-                                </h:panelGroup>
+                                </p:panel>
 
-                                <h:panelGroup rendered="#{myBundle.bundleType eq 'paymentReportCards'}">
+                                <p:panel collapsed="false" toggleable="true" rendered="#{myBundle.bundleType eq 'paymentReportCards'}">
                                     <ez:paymentReportCards bundle="#{myBundle}"/>
-                                </h:panelGroup>
+                                </p:panel>
 
-                                <h:panelGroup rendered="#{myBundle.bundleType eq 'paymentReportStaffWelfare'}">
+                                <p:panel collapsed="false" toggleable="true" rendered="#{myBundle.bundleType eq 'paymentReportStaffWelfare'}">
                                     <ez:staffPayments bundle="#{myBundle}"/>
-                                </h:panelGroup>
+                                </p:panel>
 
-                                <h:panelGroup rendered="#{myBundle.bundleType eq 'paymentReportVoucher'}">
+                                <p:panel collapsed="false" toggleable="true" rendered="#{myBundle.bundleType eq 'paymentReportVoucher'}">
                                     <ez:voucherPayments bundle="#{myBundle}"/>
-                                </h:panelGroup>
+                                </p:panel>
 
-                                <h:panelGroup rendered="#{myBundle.bundleType eq 'paymentReportCheque'}">
+                                <p:panel collapsed="false" toggleable="true" rendered="#{myBundle.bundleType eq 'paymentReportCheque'}">
                                     <ez:chequePayments bundle="#{myBundle}"/>
-                                </h:panelGroup>
+                                </p:panel>
 
-                                <h:panelGroup rendered="#{myBundle.bundleType eq 'paymentReportEwallet'}">
+                                <p:panel collapsed="false" toggleable="true" rendered="#{myBundle.bundleType eq 'paymentReportEwallet'}">
                                     <ez:ewalletPayments bundle="#{myBundle}"/>
-                                </h:panelGroup>
+                                </p:panel>
 
-                                <h:panelGroup rendered="#{myBundle.bundleType eq 'paymentReportPatientDeposit'}">
+                                <p:panel collapsed="false" toggleable="true" rendered="#{myBundle.bundleType eq 'paymentReportPatientDeposit'}">
                                     <ez:patientDepositPayments bundle="#{myBundle}"/>
-                                </h:panelGroup>
+                                </p:panel>
 
-                                <h:panelGroup rendered="#{myBundle.bundleType eq 'slipPayments'}">
+                                <p:panel collapsed="false" toggleable="true" rendered="#{myBundle.bundleType eq 'slipPayments'}">
                                     <ez:slipPayments bundle="#{myBundle}"/>
-                                </h:panelGroup>
+                                </p:panel>
 
-                                <h:panelGroup rendered="#{myBundle.bundleType eq 'netCash'}">
+                                <p:panel collapsed="false" toggleable="true" rendered="#{myBundle.bundleType eq 'netCash'}">
                                     <ez:netCashForTheDay bundle="#{myBundle}"/>
-                                </h:panelGroup>
+                                </p:panel>
 
                                 <br/>
                                 <hr/>
@@ -192,22 +206,6 @@
 
 
 
-
-<!--                                <h:panelGroup rendered="#{myBundle.bundleType eq 'PayentBillReport'}" >
-        <ez:bill_for_agency_payment bundle="#{myBundle}"/>
-    </h:panelGroup>
-    <h:panelGroup rendered="#{myBundle.bundleType eq 'ProfessionalPaymentBillReport'}" >
-        <ez:bill_for_professional_payment bundle="#{myBundle}"/>
-    </h:panelGroup>
-    <h:panelGroup rendered="#{myBundle.bundleType eq 'companyPaymentBillOpd'}" >
-        <ez:payments bundle="#{myBundle}"/>
-    </h:panelGroup>
-                            -->
-
-
-                            <ui:repeat value="#{searchController.bundle.bundles}" var="myBundle1" >
-                                #{myBundle1.name} - #{myBundle1.bundleType} <br/>
-                            </ui:repeat>
 
 
                         </h:panelGroup>
