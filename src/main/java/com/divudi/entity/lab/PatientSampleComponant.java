@@ -354,7 +354,6 @@ public class PatientSampleComponant implements Serializable {
     }
 
     public String getNameTranscient() {
-        System.out.println("Entering getNameTranscient method.");
 
         if (investigationComponant != null) {
 
@@ -367,7 +366,6 @@ public class PatientSampleComponant implements Serializable {
             } else {
 
                 if (patientInvestigation != null && patientInvestigation.getInvestigation() != null) {
-                    System.out.println("patientInvestigation and its investigation are not null");
                     nameTranscient = patientInvestigation.getInvestigation().getName();
                 } else {
                 }

@@ -30,7 +30,10 @@
                 <f:facet name="header">
                     <h:outputText value="Bil No" />
                 </f:facet>
-                <h:outputText value="#{row.bill.deptId}"  />
+                <h:commandLink action="#{billSearch.navigateViewBillByBillTypeAtomic()}" value="#{row.bill.deptId}">
+                    <f:setPropertyActionListener value="#{row.bill}" target="#{agentPaymentRecieveBillController.current}" />
+                    <f:setPropertyActionListener value="true" target="#{agentPaymentRecieveBillController.printPreview}" />
+                </h:commandLink>
             </p:column>
 
             <p:column>
