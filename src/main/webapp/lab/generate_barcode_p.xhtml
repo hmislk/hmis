@@ -566,7 +566,7 @@
                                         </p:column>
 
                                         <!-- Sample ID Column with Icon -->
-                                        <p:column headerText="Sample ID" width="6em" style="vertical-align: top;">
+                                        <p:column headerText="Sample ID" width="6em" sortBy="#{ps.id}" filterBy="#{ps.id}" style="vertical-align: top;">
                                             <i class="fas fa-vial text-danger"></i> <!-- Sample Icon -->
                                             <h:outputLabel value="#{ps.id}" />
                                         </p:column>
