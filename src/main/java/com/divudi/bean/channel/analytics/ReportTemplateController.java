@@ -317,7 +317,8 @@ public class ReportTemplateController implements Serializable {
                 + " p) "
                 + " from Payment p "
                 + " join p.bill bill "
-                + " where bill.retired=false ";
+                + " where bill.retired=false "
+                + " and p.retired=false ";
 
         if (pm != null) {
             jpql += " and p.paymentMethod=:pm ";

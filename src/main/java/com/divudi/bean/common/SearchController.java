@@ -9346,7 +9346,7 @@ public class SearchController implements Serializable {
         billFees = getBillFeeFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
     }
-    
+
     public void listPayments() {
         payments = null;
         Map<String, Object> params = new HashMap<>();
@@ -9387,7 +9387,6 @@ public class SearchController implements Serializable {
         payments = paymentFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
     }
-    
 
     public String fillAllBills(Date fromDate, Date toDate, Institution institution, Department department, PaymentMethod paymentMethod, BillTypeAtomic billtypeAtomic) {
         bills = null;
@@ -12067,6 +12066,42 @@ public class SearchController implements Serializable {
                 site);
         ap.setName("Credit Card Payments");
         ap.setBundleType("paymentReportCards");
+        return ap;
+    }
+
+    public ReportTemplateRowBundle retirePaymentsReceivedForIndividualOpdBills() {
+        ReportTemplateRowBundle ap;
+        ap = reportTemplateController.generatePaymentReport(
+                null,
+                fromDate,
+                toDate,
+                institution,
+                department,
+                site);
+        ap.setName("Credit Card Payments");
+        ap.setBundleType("paymentReportCards");
+        List<ReportTemplateRow> rtrs = new ArrayList<>();
+        for (ReportTemplateRow r : ap.getReportTemplateRows()) {
+            if (r.getPayment() == null) {
+                continue;
+            }
+            if (r.getPayment().getBill() == null) {
+                continue;
+            }
+            if (r.getPayment().getBill().getBillTypeAtomic() == null) {
+                continue;
+            }
+            if (r.getPayment().getBill().getBillTypeAtomic() == BillTypeAtomic.OPD_BILL_CANCELLATION
+                    || r.getPayment().getBill().getBillTypeAtomic() == BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER
+                    || r.getPayment().getBill().getBillTypeAtomic() == BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION
+                    || r.getPayment().getBill().getBillTypeAtomic() == BillTypeAtomic.OPD_BILL_WITH_PAYMENT) {
+                r.getPayment().setRetired(true);
+                r.getPayment().setRetirer(sessionController.getLoggedUser());
+                r.getPayment().setRetireComments("Reriting OPD Individual Payment Cancellations");
+                paymentFacade.edit(r.getPayment());
+                System.out.println("retired = " + r.getPayment().getId());
+            }
+        }
         return ap;
     }
 
