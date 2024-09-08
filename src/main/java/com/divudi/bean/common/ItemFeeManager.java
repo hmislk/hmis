@@ -781,9 +781,9 @@ public class ItemFeeManager implements Serializable {
         }
 
         jpql += " and f.forCategory is null ";
-        jpql += " and f.fee > :fee ";
+        jpql += " and f.fee > :tot ";
         jpql += " and f.item.retired=:ir ";
-        m.put("fee", 0.0);
+        m.put("tot", 0.0);
         m.put("ir", false);
         jpql += " GROUP BY f.item "
                 + " ORDER BY f.item.name";
