@@ -1664,7 +1664,6 @@ public class PatientInvestigationController implements Serializable {
 
         testDetails = "";
 
-
         // Update sample rejection details and gather associated patient investigations
         for (PatientSample ps : selectedPatientSamples) {
             testDetails += limsMiddlewareController.generateTestCodesForAnalyzer(ps.getIdStr());
@@ -3636,6 +3635,71 @@ public class PatientInvestigationController implements Serializable {
         }
     }
 
+    public void navigateToInvestigationsFromSelectedBill(Bill bill) {
+        System.out.println("navigate To Investigations From Selected Bill");
+
+        listingEntity = ListingEntity.PATIENT_INVESTIGATIONS;
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+
+        jpql = "SELECT i "
+                + " FROM PatientInvestigation i "
+                + " WHERE i.retired = :ret "
+                + " and i.billItem.bill =:bill"
+                + " ORDER BY i.id DESC";
+
+        params.put("ret", false);
+        params.put("bill", bill);
+
+        System.out.println("params = " + params);
+        System.out.println("jpql = " + jpql);
+
+        items = getFacade().findByJpql(jpql, params);
+    }
+
+    public void navigateToSamplesFromSelectedBill(Bill bill) {
+        System.out.println("navigate To Samples From Selected Bill");
+
+        System.out.println("searchPatientInvestigations");
+        listingEntity = ListingEntity.PATIENT_SAMPLES;
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+
+        jpql = "SELECT ps "
+                + "FROM PatientSample ps "
+                + "JOIN ps.bill b "
+                + "WHERE ps.retired = :ret "
+                + " and ps.bill =:bill ";
+
+        jpql += " ORDER BY ps.id DESC";
+
+        params.put("ret", false);
+        params.put("bill", bill);
+
+        System.out.println("params = " + params);
+        System.out.println("jpql = " + jpql);
+
+        patientSamples = patientSampleFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+    }
+
+    public void navigateToPatientReportsFromSelectedBill(Bill bill) {
+        System.out.println("navigate To Patient Report From Selected Bill");
+        listingEntity = ListingEntity.PATIENT_REPORTS;
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+
+        jpql = "SELECT r "
+                + " FROM PatientReport r "
+                + " WHERE r.retired = :ret "
+                + " and r.patientInvestigation.billItem.bill=:bill "
+                + " ORDER BY r.id DESC";
+
+        params.put("ret", false);
+        params.put("bill", bill);
+        patientReports = patientReportFacade.findByJpql(jpql, params);
+    }
+
     public CommonController getCommonController() {
         return commonController;
     }
@@ -4036,7 +4100,6 @@ public class PatientInvestigationController implements Serializable {
 
             System.out.println("ix.getInvestigationTube() = " + ix.getInvestigationTube());
 
-
             Item ixSampleComponant = itemController.addSampleComponent(ix);
 
             if (ixis == null || ixis.isEmpty()) {
@@ -4191,7 +4254,6 @@ public class PatientInvestigationController implements Serializable {
         }
 
         List<PatientSample> rPatientSamples = new ArrayList<>(rPatientSamplesMap.values());
-
 
         for (PatientSample pts : rPatientSamples) {
             System.out.println("pts = " + pts);
