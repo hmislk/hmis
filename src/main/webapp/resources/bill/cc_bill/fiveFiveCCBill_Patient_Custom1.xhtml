@@ -19,19 +19,22 @@
         <h:outputStylesheet library="css" name="fivefiveprinting.css" ></h:outputStylesheet>
         <div class="fiveinchbill" style="page-break-after: avoid!important;">
             <div class="institutionName" >
-                <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
+                <h:outputLabel value="#{cc.attrs.bill.creater.institution.name}" />
             </div>
             <div class="institutionContact" >
                 <div>
-                    <h:outputLabel value="#{cc.attrs.bill.department.address}"/>
+                    <h:outputLabel value="#{cc.attrs.bill.creater.institution.address}"/>
                 </div>
                 <div >
-                    <h:outputLabel value="#{cc.attrs.bill.department.telephone1}"/>
-                    <h:outputLabel value="/" style="width: 10px; text-align: center;"/>
-                    <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>
+                    <h:outputLabel value="Tel : #{cc.attrs.bill.creater.institution.phone}"/>
+<!--                    <h:outputLabel value="/" style="width: 10px; text-align: center;"/>
+                    <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>-->
                 </div>
                 <div >
-                    <h:outputLabel value="#{cc.attrs.bill.department.fax}"/>                                                 
+                    <h:outputLabel value="Fax : #{cc.attrs.bill.creater.institution.fax}"/>                                                 
+                </div>
+                <div >
+                    <h:outputLabel value="Email : #{cc.attrs.bill.creater.institution.email}"/>                                                 
                 </div>
             </div>
 
