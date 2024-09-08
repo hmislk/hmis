@@ -594,15 +594,6 @@
                                     ajax="false" 
                                     action="#{collectingCentreBillController.navigateToCollectingCenterBillingfromBillPriview()}" >
                                 </p:commandButton>
-                                <p:commandButton 
-                                    ajax="false" 
-                                    value="Batch Cancel" 
-                                    icon="fa-solid fa-ban" class="ui-button-danger m-1"
-                                    action="#{collectingCentreBillController.cancellAll}" 
-                                    style="float: right;"
-                                    onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
-                                                return false;">
-                                </p:commandButton>
                             </div>
 
                             <div class="d-flex m-2">
@@ -646,6 +637,12 @@
                                                 <bi:fiveFiveCCBill_CC bill="#{pp}" duplicate="false"/>                        
                                             </ui:repeat>
                                         </h:panelGroup>
+                                        
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}" >
+                                            <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
+                                                <bi:fiveFiveCCBill_CC_Custom1 bill="#{pp}" duplicate="false"/>                        
+                                            </ui:repeat>
+                                        </h:panelGroup>
 
                                     </h:panelGroup>
 
@@ -678,6 +675,13 @@
                                         <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
                                             <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
                                                 <bi:fiveFiveCCBill_Patient bill="#{pp}" duplicate="false"/>                        
+                                            </ui:repeat>
+                                        </h:panelGroup>
+                                        
+                                        
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}" >
+                                            <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
+                                                <bi:fiveFiveCCBill_Patient_Custom1 bill="#{pp}" duplicate="false"/>                        
                                             </ui:repeat>
                                         </h:panelGroup>
 

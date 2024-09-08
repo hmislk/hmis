@@ -535,10 +535,7 @@ public class AgentPaymentRecieveBillController implements Serializable {
         return "";
     }
     
-    public String navigateToPayToCollectingCentre() {
-        recreateModel();
-        return "/collecting_centre/pay_collecting_centre?faces-redirect=true";
-    }
+    
 
     public List<Payment> createPayment(Bill bill, PaymentMethod pm) {
         List<Payment> ps = new ArrayList<>();

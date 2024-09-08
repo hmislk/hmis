@@ -17,7 +17,7 @@
                 <h:outputLabel value="Collocting Centre Payment Cancel"/>
             </f:facet> 
             <p:column headerText="Bill No" >
-                <h:outputLabel value="#{b7.insId}" >
+                <h:outputLabel value="#{b7.deptId}" >
                     
                 </h:outputLabel>
             </p:column>
@@ -39,7 +39,7 @@
                 <f:facet name="header">  
                     <h:outputLabel value="Id"/>
                 </f:facet>
-                <h:outputLabel value="#{b7.insId}"/>
+                <h:outputLabel value="#{b7.deptId}"/>
             </p:column>
             <p:column headerText="Collocting Centre"  style="width:250px"> 
                 <f:facet name="header">  
@@ -83,7 +83,7 @@
                 <f:facet name="header">  
                     <h:outputLabel value="Billed Id"/>
                 </f:facet>
-                <h:outputLabel value="#{b7.billedBill.insId}" >
+                <h:outputLabel value="#{b7.billedBill.deptId}" >
                 </h:outputLabel>
             </p:column>
             <p:column headerText="Billed Date/Time" style="" >

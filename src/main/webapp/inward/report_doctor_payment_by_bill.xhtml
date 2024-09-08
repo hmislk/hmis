@@ -122,9 +122,9 @@
                                         <f:facet name="header">
                                             <p:outputLabel value="Bill No" />
                                         </f:facet>
-                                        <p:outputLabel value="#{b.insId}" >
+                                        <p:outputLabel value="#{b.deptId}" >
                                         </p:outputLabel>
-                                        <p:outputLabel value=" - #{b.cancelledBill.insId}" rendered="#{b.cancelled}">
+                                        <p:outputLabel value=" - #{b.cancelledBill.deptId}" rendered="#{b.cancelled}">
                                         </p:outputLabel>
                                     </p:column>
 
@@ -182,9 +182,9 @@
                                         <f:facet name="header">
                                             <p:outputLabel value="Bill No" />
                                         </f:facet>
-                                        <p:outputLabel value="#{b.insId}" >
+                                        <p:outputLabel value="#{b.deptId}" >
                                         </p:outputLabel>
-                                        <p:outputLabel value=" - #{b.billedBill.insId}">
+                                        <p:outputLabel value=" - #{b.billedBill.deptId}">
                                         </p:outputLabel>
                                     </p:column>
 

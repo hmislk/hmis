@@ -142,10 +142,10 @@
                                 </f:facet>
                                 <p:column headerText="Bill No" 
                                           rendered="#{sessionController.loggedPreference.opdBillPaperType ne 'PosPaper'}"
-                                          sortBy="#{bill.insId}"
-                                          filterBy="#{bill.insId}"
+                                          sortBy="#{bill.deptId}"
+                                          filterBy="#{bill.deptId}"
                                           filterMatchMode="contains">                                
-                                    <h:outputLabel   value="#{bill.insId}"/>
+                                    <h:outputLabel   value="#{bill.deptId}"/>
                                 </p:column>    
                                 <p:column headerText="Bill No" rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'PosPaper'}"
                                           sortBy="#{bill.deptId}"

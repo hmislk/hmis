@@ -128,6 +128,8 @@ public class CollectingCentreBillController implements Serializable, ControllerW
      * Controllers
      */
     @Inject
+    ItemFeeManager itemFeeManager;
+    @Inject
     ItemController itemController;
     @Inject
     ItemApplicationController itemApplicationController;
@@ -238,6 +240,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             return;
         }
         fillAvailableAgentReferanceNumbers(collectingCentre);
+        opdItems = fillOpdItems();
         itemController.setCcInstitutionItems(itemController.fillItemsByInstitution(collectingCentre));
     }
 
@@ -992,6 +995,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     @Inject
     private BillSearch billSearch;
 
+    @Deprecated
     public void cancellAll() {
         Bill tmp = new CancelledBill();
         tmp.setCreatedAt(new Date());
@@ -1011,9 +1015,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         }
         tmp.copy(billedBill);
         tmp.setBilledBill(billedBill);
-
-        WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(tmp, getSessionController().getLoggedUser());
-        getSessionController().setLoggedUser(wb);
+     
     }
 
     public void dateChangeListen() {
@@ -1064,7 +1066,8 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         }
 
         //Department ID (DEPT ID)
-        String deptId = getBillNumberGenerator().departmentBillNumberGenerator(temp.getDepartment(), temp.getToDepartment(), temp.getBillType(), BillClassType.BilledBill);
+        String deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearly( sessionController.getInstitution(),
+                temp.getDepartment(),  temp.getBillType(), BillClassType.BilledBill);
         temp.setDeptId(deptId);
 
         if (temp.getId() == null) {
@@ -1225,6 +1228,8 @@ public class CollectingCentreBillController implements Serializable, ControllerW
                 return itemController.fillItemsByDepartment(departmentController.getDefaultDepatrment(collectingCentre));
             case ITEMS_OF_SELECTED_INSTITUTIONS:
                 return itemController.fillItemsByInstitution(collectingCentre);
+            case SITE_FEE_ITEMS:
+                return itemFeeManager.fillItemLightsForCc(collectingCentre);
             default:
                 return itemController.getAllItems();
         }

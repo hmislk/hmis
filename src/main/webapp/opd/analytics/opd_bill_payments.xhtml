@@ -121,10 +121,10 @@
                                               styleClass="alignTop" width="15">
                                         <h:outputLabel value="#{payment.id}"/>
                                     </p:column>
-                                    <p:column headerText="Ins Bill No" sortBy="#{payment.bill.insId}" filterBy="#{payment.bill.insId}" >                                
+                                    <p:column headerText="Ins Bill No" sortBy="#{payment.bill.deptId}" filterBy="#{payment.bill.deptId}" >                                
                                         <p:commandLink id="billNo" 
                                                        ajax="false" 
-                                                       value="#{payment.bill.insId}" 
+                                                       value="#{payment.bill.deptId}" 
                                                        action="#{opdBillController.navigateToViewOpdBatchBill()}">
                                             <f:setPropertyActionListener value="#{payment.bill}" target="#{opdBillController.bill}"/>
                                         </p:commandLink>
