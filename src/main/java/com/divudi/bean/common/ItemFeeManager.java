@@ -781,7 +781,7 @@ public class ItemFeeManager implements Serializable {
         }
 
         jpql += " and f.forCategory is null ";
-        jpql += " and f.total > :tot ";
+        jpql += " and f.fee > :tot ";
         jpql += " and f.item.retired=:ir ";
         m.put("tot", 0.0);
         m.put("ir", false);

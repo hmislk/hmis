@@ -1590,10 +1590,13 @@ public class BillSearch implements Serializable {
         }
 
         if (!getWebUserController().hasPrivilege("LabBillRefundSpecial")) {
-            if (sampleHasBeenCollected(refundingBill)) {
-                JsfUtil.addErrorMessage("One or more bill Item you are refunding has been already undersone process at the Lab. Can not return.");
-                return "";
+            if (configOptionApplicationController.getBooleanValueByKey("Immediate Refund Request for OPO Bills of Any Status", true)) {
+                if (sampleHasBeenCollected(refundingBill)) {
+                    JsfUtil.addErrorMessage("One or more bill Item you are refunding has been already undersone process at the Lab. Can not return.");
+                    return "";
+                }
             }
+
         }
 
         if (billFeeIsAlreadyRefunded(refundingBill)) {
@@ -3235,7 +3238,9 @@ public class BillSearch implements Serializable {
         boolean flag = billController.checkBillValues(bill);
         bill.setTransError(flag);
         printPreview = false;
-        return "/collecting_centre/bill_reprint?faces-redirect=true;";
+        collectingCentreBillController.getBills().clear();
+        collectingCentreBillController.getBills().add(bill);
+        return "/collecting_centre/view/cc_bill_view?faces-redirect=true;";
     }
 
     public String navigateToRefundOpdBill() {
@@ -4341,7 +4346,7 @@ public class BillSearch implements Serializable {
         List<BillFee> loadingBillFees = billBean.fetchBillFees(bill);
         List<BillComponent> loadingBillComponents;
         List<Payment> loadingBillPayments;
-        
+
     }
 
     public class PaymentSummary {
