@@ -736,7 +736,7 @@ public class PatientInvestigationController implements Serializable {
         ////System.out.println("pis = " + pis);
         for (PatientInvestigation pi : pis) {
             ////System.out.println("pi = " + pi);
-            if (pi.getCollected() == true || pi.getReceived() == true || pi.getDataEntered() == true) {
+            if (pi.getReceived() == true || pi.getDataEntered() == true) {
                 ////System.out.println("can not return." );
                 return true;
             }
