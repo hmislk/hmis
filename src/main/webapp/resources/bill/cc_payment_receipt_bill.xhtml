@@ -20,6 +20,7 @@
                 max-width: 21cm;
                 padding: 1.5cm;
                 margin: 0 auto;
+                border: 1px solid #000;
                 font-size: 1.1rem;
             }
 
@@ -67,7 +68,12 @@
         <div class="receipt-container">
             <!-- Receipt Header -->
             <div class="receipt-header">
-                <h:outputLabel value="Collecting Centre Payment Receipt"/>                           
+                <h:outputLabel value="#{sessionController.institution.name}" style="font-size: 1.6em" /><br/>
+                <h:outputLabel value="#{sessionController.institution.address}" style="font-size: 1.1em" /><br/>
+                <h:outputLabel value="#{sessionController.institution.phone}" style="font-size: 1.1em" /><br/>
+                <h:outputLabel value="Email : #{sessionController.institution.email} | Web : #{sessionController.institution.web}" style="font-size: 1.1em" /><br/>
+                <h:outputLabel value="  **Duplicate" rendered="#{cc.attrs.bill.cancelledBill.deptId eq null and cc.attrs.dup eq true }" /> <h:outputLabel value="#{cc.attrs.bill.cancelledBill.deptId} **Cancelled" rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}" /><br/>
+                <h:outputLabel value="Collecting Centre Payment Receipt" style="font-size: 1.2em"/>                           
             </div>
 
             <!-- Receipt Information -->
@@ -75,19 +81,17 @@
                 <div>
                     <label>Receipt No:</label>
                     <span>
-                        <h:outputLabel value="#{cc.attrs.bill.cancelledBill.deptId} **Cancelled" rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}" />
                         <h:outputLabel value="#{cc.attrs.bill.deptId}" rendered="#{cc.attrs.bill.cancelledBill.deptId eq null}" />
-                        <h:outputLabel value="  **Duplicate" rendered="#{cc.attrs.bill.cancelledBill.deptId eq null and cc.attrs.dup eq true }" />
                     </span>
                 </div>
                 <div>
                     <label>Date:</label>
                     <span>
                         <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billDate}" rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}">
-                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                         </h:outputLabel>                      
                         <h:outputLabel value="#{cc.attrs.bill.billDate}" rendered="#{cc.attrs.bill.cancelledBill.deptId eq null}">
-                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                         </h:outputLabel>
                     </span>
                 </div>
@@ -95,10 +99,10 @@
                     <label>Time:</label>
                     <span>
                         <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billTime}" rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}">
-                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
+                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                         </h:outputLabel>                        
                         <h:outputLabel value="#{cc.attrs.bill.billTime}" rendered="#{cc.attrs.bill.cancelledBill.deptId eq null}">
-                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
+                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                         </h:outputLabel>
                     </span>
                 </div>
@@ -115,13 +119,19 @@
                     </span>
                 </div>
                 <div>
+                    <label>Type:</label>
+                    <span>
+                        <h:outputLabel value="#{cc.attrs.bill.fromInstitution.institutionType.label}" />
+                    </span>
+                </div>
+                <div>
                     <label>Payment Type:</label>
                     <span>
                         <h:outputLabel value="#{cc.attrs.bill.cancelledBill.paymentMethod}" rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}" />
                         <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" rendered="#{cc.attrs.bill.cancelledBill.deptId eq null}" />
                     </span>
                 </div>
-                <div rendered="#{cc.attrs.bill.bank ne null}">
+<!--                <div rendered="#{cc.attrs.bill.bank ne null}">
                     <label>Bank:</label>
                     <span>
                         <h:outputLabel value="#{cc.attrs.bill.bank.name}" />
@@ -140,7 +150,7 @@
                     <span>
                         <h:outputLabel value="#{cc.attrs.bill.chequeRefNo}" />
                     </span>
-                </div>
+                </div>-->
             </div>
 
             <!-- Receipt Total -->
@@ -154,8 +164,17 @@
             </div>
 
             <!-- Footer -->
-            <div class="receipt-footer">
-                <p>Cashier: #{cc.attrs.bill.creater.name}</p>
+            <div class="receipt-footer my-2">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h:outputLabel value=" Generated by : #{cc.attrs.bill.creater.name}" />
+                    </div>
+                    <div>
+                        <h:outputLabel value="#{sessionController.currentDate}" >
+                            <f:convertDateTime pattern="dd/mm/yyyy hh:mm" />
+                        </h:outputLabel>
+                    </div>
+                </div>
             </div>
         </div>
 
