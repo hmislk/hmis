@@ -935,7 +935,6 @@ public class ItemController implements Serializable {
             m.put("name", name);
             m.put("code", code);
             Investigation item = investigationFacade.findFirstByJpql(jpql, m);
-            System.out.println("item = " + item);
             if (item == null) {
                 item = new Investigation();
                 item.setName(name);
@@ -961,7 +960,6 @@ public class ItemController implements Serializable {
             m.put("name", name);
             m.put("code", code);
             Service item = serviceFacade.findFirstByJpql(jpql, m);
-            System.out.println("item = " + item);
             if (item == null) {
                 item = new Service();
                 item.setName(name);

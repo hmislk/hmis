@@ -56,7 +56,6 @@ public class ConfigResource {
         if (!apiKeyController.isValidKey(apiKey)) {
             return unauthorizedResponse();
         }
-        System.out.println("setting");
         configOptionApplicationController.setBooleanValueByKey(key, value);
         return successResponse();
     }

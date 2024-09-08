@@ -84,6 +84,7 @@ import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import java.util.Comparator;
 import javax.inject.Named;
 import org.primefaces.event.SelectEvent;
 import org.primefaces.event.TabChangeEvent;
@@ -240,7 +241,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             return;
         }
         fillAvailableAgentReferanceNumbers(collectingCentre);
-        opdItems = fillOpdItems();
+        opdItems = itemFeeManager.fillItemLightsForCc(collectingCentre);
         itemController.setCcInstitutionItems(itemController.fillItemsByInstitution(collectingCentre));
     }
 
@@ -1015,7 +1016,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         }
         tmp.copy(billedBill);
         tmp.setBilledBill(billedBill);
-     
+
     }
 
     public void dateChangeListen() {
@@ -1066,8 +1067,8 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         }
 
         //Department ID (DEPT ID)
-        String deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearly( sessionController.getInstitution(),
-                temp.getDepartment(),  temp.getBillType(), BillClassType.BilledBill);
+        String deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(sessionController.getInstitution(),
+                temp.getDepartment(), temp.getBillType(), BillClassType.BilledBill);
         temp.setDeptId(deptId);
 
         if (temp.getId() == null) {
@@ -1455,7 +1456,6 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             System.out.println("bi = " + bi.getGrossValue());
             System.out.println("bi = " + bi.getNetValue());
             System.out.println("bi = " + bi.getHospitalFee());
-            System.out.println("bi = " + bi.getCollectingCentreFee());
 
             billGross += bi.getGrossValue();
             billNet += bi.getNetValue();
@@ -2170,7 +2170,6 @@ public class CollectingCentreBillController implements Serializable, ControllerW
                 if (f != null) {
                     opdItem.setTotal(f.getTotalValueForLocals());
                     opdItem.setTotalForForeigner(f.getTotalValueForForeigners());
-
                 }
                 filteredItems.add(opdItem);
             }
@@ -2180,6 +2179,10 @@ public class CollectingCentreBillController implements Serializable, ControllerW
                 break;
             }
         }
+
+        // Sort by length of the item name, shortest first
+        filteredItems.sort(Comparator.comparingInt(item -> item.getName().length()));
+
         return filteredItems;
     }
 

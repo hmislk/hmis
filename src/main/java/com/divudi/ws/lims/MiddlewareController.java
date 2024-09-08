@@ -70,6 +70,7 @@ public class MiddlewareController {
             // Deserialize the incoming JSON into QueryRecord
             System.out.println("Deserializing JSON input...");
 // Deserialize the incoming JSON into QueryRecord
+            // Deserialize the incoming JSON into QueryRecord
             DataBundle dataBundle = gson.fromJson(jsonInput, DataBundle.class);
             String analyzerName = dataBundle.getMiddlewareSettings().getAnalyzerDetails().getAnalyzerName();
             QueryRecord queryRecord = dataBundle.getQueryRecords().get(0);
@@ -98,11 +99,9 @@ public class MiddlewareController {
 
             System.out.println("Creating PatientRecord...");
             if (ptSample.getPatient() == null) {
-                System.out.println("Invalid patient data ");
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Invalid patient data").build();
             }
             if (ptSample.getPatient().getPerson() == null) {
-                System.out.println("Invalid person data");
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Invalid person data").build();
             }
             String referringDoc = "";
@@ -125,10 +124,10 @@ public class MiddlewareController {
                     referringDoc);
             pdb.setPatientRecord(pr);
             // Convert the PatientDataBundle to JSON and send it in the response
-            System.out.println("BB");
-
             // Convert the PatientDataBundle to JSON and send it in the response
-            System.out.println("Converting PatientDataBundle to JSON...");
+            System.out.println("BB");
+            // Convert the PatientDataBundle to JSON and send it in the response
+
             String jsonResponse = gson.toJson(pdb);
             return Response.ok(jsonResponse).build();
         } catch (Exception e) {
@@ -159,7 +158,6 @@ public class MiddlewareController {
 
                 AnalyzerDetails analyzerDetails = dataBundle.getMiddlewareSettings().getAnalyzerDetails();
                 System.out.println("analyzerDetails = " + analyzerDetails);
-                System.out.println("analyzerDetails.getAnalyzerName() = " + analyzerDetails.getAnalyzerName());
                 Analyzer analyzer = Analyzer.valueOf(analyzerDetails.getAnalyzerName().replace(" ", "_")); // Ensuring enum compatibility
                 switch (analyzer) {
                     case BioRadD10:
@@ -273,7 +271,6 @@ public class MiddlewareController {
         System.out.println("processResultsCommon");
         List<ResultsRecord> observationDetails = new ArrayList<>();
         System.out.println("observationDetails = " + observationDetails);
-        System.out.println("dataBundle = " + dataBundle);
 
         for (ResultsRecord rr : dataBundle.getResultsRecords()) {
             System.out.println("dataBundle = " + dataBundle);
@@ -290,7 +287,6 @@ public class MiddlewareController {
 
             System.out.println("Final result = " + result);
 
-            System.out.println("result = " + result);
             String unit = rr.getResultUnits();
             String error = "";
 
