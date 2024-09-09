@@ -150,13 +150,12 @@ public class PatientReportBean {
     public void addPatientReportItemValuesForReport(PatientReport ptReport) {
         String sql = "";
         Investigation temIx = (Investigation) ptReport.getItem();
-        
-        
-        
         for (ReportItem ii : temIx.getReportItems()) {
+            System.out.println("ii = " + ii);
             PatientReportItemValue val = null;
             if ((ii.getIxItemType() == InvestigationItemType.Value || ii.getIxItemType() == InvestigationItemType.Image || ii.getIxItemType() == InvestigationItemType.Calculation || ii.getIxItemType() == InvestigationItemType.Flag || ii.getIxItemType() == InvestigationItemType.Html || ii.getIxItemType() == InvestigationItemType.Template) && ii.isRetired() == false) {
                 if (ptReport.getId() == null || ptReport.getId() == 0) {
+                    System.out.println("val = " + val);
 
                     val = new PatientReportItemValue();
                     if (ii.getIxItemValueType() == InvestigationItemValueType.Varchar) {
@@ -164,6 +163,109 @@ public class PatientReportBean {
                     } else if (ii.getIxItemValueType() == InvestigationItemValueType.Memo) {
                         val.setLobValue(getDefaultMemoValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
                     } else if (ii.getIxItemValueType() == InvestigationItemValueType.Double) {
+                        val.setDoubleValue(getDefaultDoubleValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
+                    } else if (ii.getIxItemValueType() == InvestigationItemValueType.Image) {
+                        val.setBaImage(getDefaultImageValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
+                    } else {
+                    }
+                    val.setInvestigationItem((InvestigationItem) ii);
+                    val.setPatient(ptReport.getPatientInvestigation().getPatient());
+                    val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
+                    val.setPatientReport(ptReport);
+                    // ptReport.getPatientReportItemValues().add(val);
+                    ////// // System.out.println("New value added to pr teport" + ptReport);
+
+                } else {
+                    sql = "select i from PatientReportItemValue i where i.patientReport=:ptRp"
+                            + " and i.investigationItem=:inv ";
+                    HashMap hm = new HashMap();
+                    hm.put("ptRp", ptReport);
+                    hm.put("inv", ii);
+                    val = getPtRivFacade().findFirstByJpql(sql, hm);
+                    if (val == null) {
+                        ////// // System.out.println("val is null");
+                        val = new PatientReportItemValue();
+                        if (ii.getIxItemValueType() == InvestigationItemValueType.Varchar) {
+                            val.setStrValue(getDefaultVarcharValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
+                        } else if (ii.getIxItemValueType() == InvestigationItemValueType.Memo) {
+                            val.setLobValue(getDefaultMemoValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
+                        } else if (ii.getIxItemValueType() == InvestigationItemValueType.Double) {
+                            val.setDoubleValue(getDefaultDoubleValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
+                        } else if (ii.getIxItemValueType() == InvestigationItemValueType.Image) {
+                            val.setBaImage(getDefaultImageValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
+                        } else {
+                        }
+                        val.setInvestigationItem((InvestigationItem) ii);
+                        val.setPatient(ptReport.getPatientInvestigation().getPatient());
+                        val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
+                        val.setPatientReport(ptReport);
+                        //ptReport.getPatientReportItemValues().add(val);
+                        ////// // System.out.println("value added to pr teport" + ptReport);
+
+                    }
+
+                }
+            } else if (ii.getIxItemType() == InvestigationItemType.DynamicLabel && ii.isRetired() == false) {
+                if (ptReport.getId() == null || ptReport.getId() == 0) {
+
+                    val = new PatientReportItemValue();
+                    val.setStrValue(getPatientDynamicLabel((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
+                    val.setInvestigationItem((InvestigationItem) ii);
+                    val.setPatient(ptReport.getPatientInvestigation().getPatient());
+                    val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
+                    val.setPatientReport(ptReport);
+                    // ptReport.getPatientReportItemValues().add(val);
+                    ////// // System.out.println("New value added to pr teport" + ptReport);
+
+                } else {
+                    sql = "select i from PatientReportItemValue i where i.patientReport.id = " + ptReport.getId() + " and i.investigationItem.id = " + ii.getId() + " and i.investigationItem.ixItemType = com.divudi.data.InvestigationItemType.Value";
+                    val = getPtRivFacade().findFirstByJpql(sql);
+                    if (val == null) {
+                        val = new PatientReportItemValue();
+                        val.setStrValue(getPatientDynamicLabel((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
+                        val.setInvestigationItem((InvestigationItem) ii);
+                        val.setPatient(ptReport.getPatientInvestigation().getPatient());
+                        val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
+                        val.setPatientReport(ptReport);
+                        // ptReport.getPatientReportItemValues().add(val);
+                        ////// // System.out.println("value added to pr teport" + ptReport);
+
+                    }
+
+                }
+            }
+
+            if (val != null) {
+
+                getPtRivFacade().create(val);
+
+                ptReport.getPatientReportItemValues().add(val);
+            }
+        }
+    }
+    
+    
+    
+     public void addPatientReportItemValuesForTemplateReport(PatientReport ptReport) {
+         System.out.println("addPatientReportItemValuesForTemplateReport");
+        String sql = "";
+        Investigation temIx = (Investigation) ptReport.getItem();
+         System.out.println("temIx = " + temIx);
+        for (ReportItem ii : temIx.getReportItems()) {
+            System.out.println("ii = " + ii);
+            System.out.println("ii.getName = " + ii.getName());
+            System.out.println("ii.getIxItemType() = " + ii.getIxItemType());
+            PatientReportItemValue val = null;
+            if ((ii.getIxItemType() == InvestigationItemType.Value || ii.getIxItemType() == InvestigationItemType.Image || ii.getIxItemType() == InvestigationItemType.Calculation || ii.getIxItemType() == InvestigationItemType.Flag || ii.getIxItemType() == InvestigationItemType.Html || ii.getIxItemType() == InvestigationItemType.Template) && ii.isRetired() == false) {
+                if (ptReport.getId() == null || ptReport.getId() == 0) {
+                    System.out.println("val = " + val);
+
+                    val = new PatientReportItemValue();
+                    if (ii.getIxItemValueType() == InvestigationItemValueType.Varchar) {
+                        val.setStrValue(getDefaultVarcharValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
+                    } else if (ii.getIxItemValueType() == InvestigationItemValueType.Memo) {
+                        val.setLobValue(getDefaultMemoValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
+                    }  else if (ii.getIxItemValueType() == InvestigationItemValueType.Double) {
                         val.setDoubleValue(getDefaultDoubleValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
                     } else if (ii.getIxItemValueType() == InvestigationItemValueType.Image) {
                         val.setBaImage(getDefaultImageValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));

@@ -9346,7 +9346,7 @@ public class SearchController implements Serializable {
         billFees = getBillFeeFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
     }
-    
+
     public void listPayments() {
         payments = null;
         Map<String, Object> params = new HashMap<>();
@@ -9387,7 +9387,6 @@ public class SearchController implements Serializable {
         payments = paymentFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
     }
-    
 
     public String fillAllBills(Date fromDate, Date toDate, Institution institution, Department department, PaymentMethod paymentMethod, BillTypeAtomic billtypeAtomic) {
         bills = null;
@@ -11733,6 +11732,10 @@ public class SearchController implements Serializable {
         bundle.getBundles().add(channellingCreditCompanyCollection);
         collectionForTheDay += getSafeTotal(channellingCreditCompanyCollection);
 
+        ReportTemplateRowBundle patientDepositPayments = generatePatientDepositPayments();
+        bundle.getBundles().add(patientDepositPayments);
+        netCashCollection += getSafeTotal(patientDepositPayments);
+
         // Final collection for the day
         ReportTemplateRowBundle collectionForTheDayBundle = new ReportTemplateRowBundle();
         collectionForTheDayBundle.setName("Collection for the day");
@@ -11781,10 +11784,6 @@ public class SearchController implements Serializable {
         bundle.getBundles().add(ewalletPayments);
         netCashCollection -= getSafeTotal(ewalletPayments);
 
-        ReportTemplateRowBundle patientDepositPayments = generatePatientDepositPayments();
-        bundle.getBundles().add(patientDepositPayments);
-        netCashCollection -= getSafeTotal(patientDepositPayments);
-
         ReportTemplateRowBundle slipPayments = generateSlipPayments();
         bundle.getBundles().add(slipPayments);
         netCashCollection -= getSafeTotal(slipPayments);
@@ -11812,6 +11811,7 @@ public class SearchController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
         List<BillTypeAtomic> btas = BillTypeAtomic.findByServiceType(ServiceType.OPD);
+        opdServiceCollection.setDescription("Bill Types Listed: " + btas);
         if (!btas.isEmpty()) {
             jpql += " and bi.bill.billTypeAtomic in :bts ";
             m.put("bts", btas);
@@ -12012,7 +12012,7 @@ public class SearchController implements Serializable {
                 department,
                 site);
         ap.setName("Inward Professional Payments");
-        ap.setBundleType("ProfessionalPaymentBillReport");
+        ap.setBundleType("ProfessionalPaymentBillReportInward");
         return ap;
     }
 
@@ -12032,8 +12032,8 @@ public class SearchController implements Serializable {
                 institution,
                 department,
                 site);
-        ap.setName("Channelling Payment Collection");
-        ap.setBundleType("ProfessionalPaymentBillReport");
+        ap.setName("Channelling Professional Payments");
+        ap.setBundleType("ProfessionalPaymentBillReportChannelling");
         return ap;
     }
 
@@ -12050,8 +12050,8 @@ public class SearchController implements Serializable {
                 institution,
                 department,
                 site);
-        ap.setName("OPD Professional Payment");
-        ap.setBundleType("ProfessionalPaymentBillReport");
+        ap.setName("OPD Professional Payments");
+        ap.setBundleType("ProfessionalPaymentBillReportOpd");
         return ap;
     }
 
@@ -12066,6 +12066,42 @@ public class SearchController implements Serializable {
                 site);
         ap.setName("Credit Card Payments");
         ap.setBundleType("paymentReportCards");
+        return ap;
+    }
+
+    public ReportTemplateRowBundle retirePaymentsReceivedForIndividualOpdBills() {
+        ReportTemplateRowBundle ap;
+        ap = reportTemplateController.generatePaymentReport(
+                null,
+                fromDate,
+                toDate,
+                institution,
+                department,
+                site);
+        ap.setName("Credit Card Payments");
+        ap.setBundleType("paymentReportCards");
+        List<ReportTemplateRow> rtrs = new ArrayList<>();
+        for (ReportTemplateRow r : ap.getReportTemplateRows()) {
+            if (r.getPayment() == null) {
+                continue;
+            }
+            if (r.getPayment().getBill() == null) {
+                continue;
+            }
+            if (r.getPayment().getBill().getBillTypeAtomic() == null) {
+                continue;
+            }
+            if (r.getPayment().getBill().getBillTypeAtomic() == BillTypeAtomic.OPD_BILL_CANCELLATION
+                    || r.getPayment().getBill().getBillTypeAtomic() == BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER
+                    || r.getPayment().getBill().getBillTypeAtomic() == BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION
+                    || r.getPayment().getBill().getBillTypeAtomic() == BillTypeAtomic.OPD_BILL_WITH_PAYMENT) {
+                r.getPayment().setRetired(true);
+                r.getPayment().setRetirer(sessionController.getLoggedUser());
+                r.getPayment().setRetireComments("Reriting OPD Individual Payment Cancellations");
+                paymentFacade.edit(r.getPayment());
+                System.out.println("retired = " + r.getPayment().getId());
+            }
+        }
         return ap;
     }
 

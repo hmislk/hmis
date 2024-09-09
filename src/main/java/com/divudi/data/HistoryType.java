@@ -30,6 +30,10 @@ public enum HistoryType {
     PatientDepositCancel,
     PatientDepositReturn,
     PatientDepositUtilization,
+    PatientDepositUtilizationCancel,
+    PatientDepositUtilizationReturn,
+    PatientDepositTransfer,
+    PatientDepositTransferCancel,
 
     AgentBalanceUpdateBill,
     CollectingCentreBalanceUpdateBill,
