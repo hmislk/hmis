@@ -47,6 +47,7 @@ public class SearchKeyword {
     private String paymentmethod;
     private String insId;
     private String deptId;
+    private String serialNumber;
     String serviceName;
     PatientEncounter patientEncounter;
     PaymentMethod paymentMethod;
@@ -420,6 +421,14 @@ public class SearchKeyword {
 
     public void setBillTypes(List<BillType> billTypes) {
         this.billTypes = billTypes;
+    }
+
+    public String getSerialNumber() {
+        return serialNumber;
+    }
+
+    public void setSerialNumber(String serialNumber) {
+        this.serialNumber = serialNumber;
     }
 
 
