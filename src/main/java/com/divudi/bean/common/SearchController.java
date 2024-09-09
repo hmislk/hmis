@@ -11732,6 +11732,10 @@ public class SearchController implements Serializable {
         bundle.getBundles().add(channellingCreditCompanyCollection);
         collectionForTheDay += getSafeTotal(channellingCreditCompanyCollection);
 
+        ReportTemplateRowBundle patientDepositPayments = generatePatientDepositPayments();
+        bundle.getBundles().add(patientDepositPayments);
+        netCashCollection += getSafeTotal(patientDepositPayments);
+
         // Final collection for the day
         ReportTemplateRowBundle collectionForTheDayBundle = new ReportTemplateRowBundle();
         collectionForTheDayBundle.setName("Collection for the day");
@@ -11779,10 +11783,6 @@ public class SearchController implements Serializable {
         ReportTemplateRowBundle ewalletPayments = generateEwalletPayments();
         bundle.getBundles().add(ewalletPayments);
         netCashCollection -= getSafeTotal(ewalletPayments);
-
-        ReportTemplateRowBundle patientDepositPayments = generatePatientDepositPayments();
-        bundle.getBundles().add(patientDepositPayments);
-        netCashCollection -= getSafeTotal(patientDepositPayments);
 
         ReportTemplateRowBundle slipPayments = generateSlipPayments();
         bundle.getBundles().add(slipPayments);

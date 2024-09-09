@@ -34,7 +34,11 @@
                                     <f:setPropertyActionListener value="#{patientDepositController.patient}" target="#{patientController.current}" />
                                 </p:commandButton>
                                 <p:defaultCommand target="btnSettle"/>
-                                <p:commandButton icon="fas fa-plus" class="mx-2" value="New Bill" ajax="false" action="#{patientController.navigateToReceiveDepositsFromPatientProfile()}"  >
+                                <p:commandButton icon="fas fa-plus" 
+                                                 class="mx-2"
+                                                 value="Clear for New Deposit"
+                                                 ajax="false" 
+                                                 action="#{patientController.navigateToReceiveDepositsFromPatientProfile()}"  >
                                 </p:commandButton>
                             </div>
                         </div>

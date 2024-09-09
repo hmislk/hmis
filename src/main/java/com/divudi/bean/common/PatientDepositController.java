@@ -50,6 +50,8 @@ public class PatientDepositController implements Serializable, ControllerWithPat
     SessionController sessionController;
     @Inject
     PatientController patientController;
+    @Inject
+    BillBeanController billBeanController;
     @EJB
     private PatientDepositFacade patientDepositFacade;
     @EJB
@@ -89,6 +91,9 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         }
         patientController.settlePatientDepositReceive();
         updateBalance(patientController.getBill(), current);
+        billBeanController.createPayment(patientController.getBill(),
+                patientController.getBill().getPaymentMethod(), 
+                patientController.getPaymentMethodData() );
     }
     
     public void updateBalance(Bill b, PatientDeposit pd){
