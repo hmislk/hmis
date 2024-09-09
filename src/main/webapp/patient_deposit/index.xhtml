@@ -19,51 +19,46 @@
 
                                     <!-- Manage Section -->
                                     <p:tab title="Manage" rendered="#{webUserController.hasPrivilege('Payment')}">
-                                        <h:panelGrid columns="1" class="w-100" >
-                                            <p:commandButton icon="fa fa-check-circle" 
+                                        <h:panelGrid columns="1" class="w-100">
+                                            <p:commandButton icon="fa fa-hand-holding-usd" 
                                                              ajax="false" 
                                                              value="Accept Patient Deposits"
                                                              action="/patient_deposit/receive?faces-redirect=true"
                                                              actionListener="#{patientController.clearDataForPatientDeposite()}"
                                                              class="w-100 m-1"/>
-                                            <p:commandButton icon="fa fa-search" ajax="false" value="Search Patient Deposits"
+                                            <p:commandButton icon="fa fa-search-dollar" ajax="false" value="Search Patient Deposits"
                                                              action="/patient_deposit/patient_deposit_search?faces-redirect=true"
                                                              actionListener="#{patientController.clearDataForPatientDeposite()}"
                                                              class="w-100 m-1"/>
-                                            <p:commandButton icon="fa fa-book" ajax="false" value="Issue Collecting Centre Books"
-                                                             action="/patient_deposit/cc_referece_book?faces-redirect=true"
-                                                             class="w-100 m-1"/>
-                                            <p:commandButton icon="fa fa-list-alt" ajax="false" value="Search Collecting Centre Book Issues"
-                                                             action="/patient_deposit/report_collecting_center_referece_book?faces-redirect=true"
-                                                             class="w-100 m-1"/>
-                                            <p:commandButton icon="fa fa-credit-card" ajax="false" value="Update Collecting Centre Credit Limit"
+                                            <p:commandButton icon="fa fa-user-edit" ajax="false" value="Update Patient Credit Limit"
                                                              action="/patient_deposit/cc_update_credit_limit?faces-redirect=true"
                                                              actionListener="#{institutionController.makeNull()}"
                                                              rendered="#{webUserController.hasPrivilege('ChangeCreditLimitInCC')}"
                                                              class="w-100 m-1"/>
-
-                                            <p:commandButton icon="fa fa-check-circle" ajax="false" value="Pay Collecting Centres"
+                                            <p:commandButton icon="fa fa-undo-alt" ajax="false" value="Refund Patients"
                                                              action="#{collectingCentreController.navigateToPayToCollectingCentre()}"
                                                              class="w-100 m-1"/>
-
+                                            <p:commandButton icon="fa fa-exchange-alt" ajax="false" value="Transfer Deposits"
+                                                             action="#{collectingCentreController.navigateToPayToCollectingCentre()}"
+                                                             class="w-100 m-1"/>
                                         </h:panelGrid>
                                     </p:tab>
 
                                     <!-- Credit/Debit Note Section -->
-                                    <p:tab title="Credit/Debit Note"
+                                    <p:tab title="Patient Credit/Debit Note"
                                            rendered="#{webUserController.hasPrivilege('ChannelCrdeitNote') or webUserController.hasPrivilege('ChannelDebitNote')}">
-                                        <h:panelGrid columns="1" class="w-100" >
-                                            <p:commandButton icon="fa fa-plus-circle" ajax="false" value="Credit Note"
+                                        <h:panelGrid columns="1" class="w-100">
+                                            <p:commandButton icon="fa fa-file-invoice-dollar" ajax="false" value="Credit Note"
                                                              action="/collecting_centre/collecting_center_credit_note_bill?faces-redirect=true"
                                                              actionListener="#{agentPaymentRecieveBillController.prepareNewBill()}"
                                                              rendered="#{webUserController.hasPrivilege('ChannelCrdeitNote')}"
                                                              class="w-100 m-1"/>
-                                            <p:commandButton icon="fa fa-search-plus" ajax="false" value="Credit Note Search"
+                                            <p:commandButton icon="fa fa-search-dollar" ajax="false" value="Credit Note Search"
                                                              action="/collecting_centre/collecting_center_credit_note_bill_search_own?faces-redirect=true"
                                                              actionListener="#{searchController.makeListNull}"
                                                              rendered="#{webUserController.hasPrivilege('ChannelCrdeitNoteSearch')}"
                                                              class="w-100 m-1"/>
-                                            <p:commandButton icon="fa fa-minus-circle" ajax="false" value="Debit Note"
+                                            <p:commandButton icon="fa fa-file-invoice" ajax="false" value="Debit Note"
                                                              action="/collecting_centre/collecting_center_debit_note_bill?faces-redirect=true"
                                                              actionListener="#{agentPaymentRecieveBillController.prepareNewBill()}"
                                                              rendered="#{webUserController.hasPrivilege('ChannelDebitNote')}"
@@ -77,29 +72,27 @@
                                     </p:tab>
 
                                     <!-- Collecting Centre Book Issuing Section -->
-                                    <p:tab title="Collecting Centre Reports">
-                                        <h:panelGrid columns="1" class="w-100" >
-                                            <p:commandButton icon="fa fa-statement" ajax="false" value="Collecting Centre Statement"
+                                    <p:tab title="Patient Deposit Reports">
+                                        <h:panelGrid columns="1" class="w-100">
+                                            <p:commandButton icon="fa fa-file-alt" ajax="false" value="Patient Statement"
                                                              action="/collecting_centre/cc_statement?faces-redirect=true"
                                                              class="w-100 m-1"/>
-                                            <p:commandButton icon="fa fa-archive" ajax="false" value="Collecting Centre Book Issuance Report"
-                                                             action="/collecting_centre/report_collecting_center_referece_book?faces-redirect=true"
-                                                             class="w-100 m-1"/>
-                                            <p:commandButton icon="fa fa-history" ajax="false" value="Collecting Centre History"
+
+                                            <p:commandButton icon="fa fa-history" ajax="false" value="Patient Deposit History"
                                                              action="/reportLab/collecting_centre_report_agent_history?faces-redirect=true"
                                                              class="w-100 m-1"/>
 
-                                            <p:commandButton icon="fa fa-dollar-sign" ajax="false" value="Collecting Centre Deposits"
+                                            <p:commandButton icon="fa fa-wallet" ajax="false" value="Patient Deposits"
                                                              action="/reportLab/report_collecting_center_payment_bill?faces-redirect=true"
                                                              class="w-100 m-1"/>
-                                            <p:commandButton icon="fa fa-balance-scale" ajax="false" value="Collecting Centre Current Balance"
+                                            <p:commandButton icon="fa fa-balance-scale" ajax="false" value="Current Patient Balance"
                                                              action="/reportLab/report_collecting_center_balance?faces-redirect=true"
                                                              class="w-100 m-1"/>
                                         </h:panelGrid>
                                     </p:tab>
-
                                 </p:accordionPanel>
                             </h:form>
+
                         </div>
 
                         <div class="col-md-9">

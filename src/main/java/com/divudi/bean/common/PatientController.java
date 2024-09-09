@@ -1069,9 +1069,6 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     public void settlePatientDepositReceive() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
         if (getBill().getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Please select a Payment Method");
             return;
