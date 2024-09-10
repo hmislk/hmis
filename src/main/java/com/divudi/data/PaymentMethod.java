@@ -8,7 +8,7 @@ import java.lang.reflect.Field;
 public enum PaymentMethod {
     OnCall("On Call", PaymentType.NONE, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
     Cash("Cash", PaymentType.NON_CREDIT, PaymentContext.PURCHASES, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.CREDIT_SETTLEMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
-    Card("Credit Card", PaymentType.CREDIT, PaymentContext.PURCHASES, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
+    Card("Credit Card", PaymentType.NON_CREDIT, PaymentContext.PURCHASES, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
     MultiplePaymentMethods("Multiple Payment Methods", PaymentType.NONE, PaymentContext.ACCEPTING_PAYMENTS),
     Staff("Staff Credit", PaymentType.CREDIT, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING),
     Credit("Credit", PaymentType.CREDIT, PaymentContext.ACCEPTING_PAYMENTS, PaymentContext.ACCEPTING_PAYMENTS_FOR_CHANNELLING, PaymentContext.PURCHASES),

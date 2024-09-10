@@ -32,20 +32,10 @@
 
                                 <h:panelGroup id="centerBillPriview">
 
-                                    <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" >
-                                        <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
-                                            <bi:posCCBill_CC bill="#{pp}" duplicate="false"/>                        
-                                        </ui:repeat>
-                                    </h:panelGroup>
-
-                                    <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
-                                        <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
-                                            <bi:fiveFiveCCBill_CC bill="#{pp}" duplicate="false"/>                        
-                                        </ui:repeat>
-                                    </h:panelGroup>
+                                    
 
                                     <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}" >
-                                        <bi:fiveFiveCancelledCCBill_CC_Custom1_1 bill="#{billSearch.bill}" duplicate="false"/>                                                  
+                                        <bi:fiveFiveCancelledCCBill_CC_Custom1 bill="#{billSearch.bill}" duplicate="false"/>                                                  
                                     </h:panelGroup>
 
                                 </h:panelGroup>

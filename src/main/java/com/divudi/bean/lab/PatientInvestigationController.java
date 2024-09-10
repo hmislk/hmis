@@ -1832,6 +1832,128 @@ public class PatientInvestigationController implements Serializable {
         bills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
+    public void searchPatientReportsForCourier() {
+        listingEntity = ListingEntity.PATIENT_REPORTS;
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+
+        jpql = "SELECT r "
+                + " FROM PatientReport r "
+                + " WHERE r.retired = :ret ";
+
+        if (searchDateType == null) {
+            searchDateType = SearchDateType.ORDERED_DATE;
+        }
+
+        switch (searchDateType) {
+            case ORDERED_DATE:
+                jpql += " AND r.patientInvestigation.billItem.bill.createdAt BETWEEN :fd AND :td ";
+                params.put("fd", getFromDate());
+                params.put("td", getToDate());
+                break;
+            case REPORT_AUTHORIZED:
+                jpql += " AND r.approveAt BETWEEN :fd AND :td ";
+                params.put("fd", getFromDate());
+                params.put("td", getToDate());
+                break;
+            case REPORT_PRINTED:
+                jpql += " AND r.printingAt BETWEEN :fd AND :td ";
+                params.put("fd", getFromDate());
+                params.put("td", getToDate());
+                break;
+            // Add other date types as needed for PatientReport
+        }
+
+        if (orderedInstitution != null) {
+            jpql += " AND r.patientInvestigation.billItem.bill.institution = :orderedInstitution ";
+            params.put("orderedInstitution", getOrderedInstitution());
+        }
+
+        if (orderedDepartment != null) {
+            jpql += " AND r.patientInvestigation.billItem.bill.department = :orderedDepartment ";
+            params.put("orderedDepartment", getOrderedDepartment());
+        }
+
+        if (performingInstitution != null) {
+            jpql += " AND r.approveInstitution = :performingInstitution ";
+            params.put("performingInstitution", getPerformingInstitution());
+        }
+
+        if (performingDepartment != null) {
+            jpql += " AND r.approveDepartment = :performingDepartment ";
+            params.put("performingDepartment", getPerformingDepartment());
+        }
+
+        if (collectionCenter != null) {
+            jpql += " AND (r.patientInvestigation.billItem.bill.collectingCentre = :collectionCenter OR r.patientInvestigation.billItem.bill.fromInstitution = :collectionCenter) ";
+            params.put("collectionCenter", getCollectionCenter());
+        } else {
+            jpql += " AND (r.patientInvestigation.billItem.bill.collectingCentre IN :collectionCenters OR r.patientInvestigation.billItem.bill.fromInstitution IN :collectionCenters) ";
+            params.put("collectionCenters", sessionController.getLoggableCollectingCentres());
+        }
+
+        jpql += " AND (r.patientInvestigation.billItem.bill.collectingCentre.route = :route OR r.patientInvestigation.billItem.bill.fromInstitution.route = :route) ";
+        params.put("route", sessionController.getDepartment());
+
+        if (priority != null) {
+            jpql += " AND r.patientInvestigation.billItem.priority = :priority ";
+            params.put("priority", getPriority());
+        }
+
+        if (specimen != null) {
+            jpql += " AND r.patientInvestigation.investigation.sample = :specimen ";
+            params.put("specimen", getSpecimen());
+        }
+
+        if (patientName != null && !patientName.trim().isEmpty()) {
+            jpql += " AND r.patientInvestigation.billItem.bill.patient.person.name LIKE :patientName ";
+            params.put("patientName", "%" + getPatientName().trim() + "%");
+        }
+
+        if (externalDoctor != null && !externalDoctor.trim().isEmpty()) {
+            jpql += " AND r.patientInvestigation.billItem.bill.referredByName =:externalDoctor ";
+            params.put("externalDoctor", getExternalDoctor().trim());
+        }
+
+        if (equipment != null) {
+            jpql += " AND r.automatedAnalyzer=:equipment ";
+            params.put("equipment", getEquipment());
+        }
+
+        if (referringDoctor != null) {
+            jpql += " AND r.patientInvestigation.billItem.bill.referringDoctor=:referringDoctor ";
+            params.put("referringDoctor", getReferringDoctor());
+        }
+
+        if (investigation != null) {
+            jpql += " AND r.patientInvestigation.investigation=:investigation ";
+            params.put("investigation", getInvestigation());
+        }
+
+        if (department != null) {
+            jpql += " AND r.patientInvestigation.billItem.bill.toDepartment=:department ";
+            params.put("department", getDepartment());
+        }
+
+        if (patientInvestigationStatus != null) {
+            jpql += " AND r.status=:patientReportStatus ";
+            params.put("patientReportStatus", patientInvestigationStatus);
+        }
+        jpql += " ORDER BY r.id DESC";
+        params.put("ret", false);
+        patientReports = patientReportFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+
+    public void clearData() {
+        patientReports = null;
+        bills = null;
+        patientSamples = null;
+        patientSamples = null;
+        
+        clearFilters();
+
+    }
+
     public void searchPatientReports() {
         listingEntity = ListingEntity.PATIENT_REPORTS;
         String jpql;
@@ -2339,6 +2461,11 @@ public class PatientInvestigationController implements Serializable {
         if (patientInvestigationStatus != null) {
             jpql += " AND ps.status = :status";
             params.put("status", getPatientInvestigationStatus());
+        }
+        
+        if (sampleId != null) {
+            jpql += " AND ps.sampleId = :smpid";
+            params.put("smpid", sampleId);
         }
 
         jpql += " ORDER BY ps.id DESC";
@@ -3627,7 +3754,7 @@ public class PatientInvestigationController implements Serializable {
 
     public void navigateToInvestigationsFromSelectedBill(Bill bill) {
         System.out.println("navigate To Investigations From Selected Bill");
-
+        items = new ArrayList<>();
         listingEntity = ListingEntity.PATIENT_INVESTIGATIONS;
         String jpql;
         Map<String, Object> params = new HashMap<>();
@@ -3649,7 +3776,7 @@ public class PatientInvestigationController implements Serializable {
 
     public void navigateToSamplesFromSelectedBill(Bill bill) {
         System.out.println("navigate To Samples From Selected Bill");
-
+        patientSamples = new ArrayList<>();
         System.out.println("searchPatientInvestigations");
         listingEntity = ListingEntity.PATIENT_SAMPLES;
         String jpql;
@@ -3673,8 +3800,27 @@ public class PatientInvestigationController implements Serializable {
 
     }
 
+    public void navigateToPatientReportsFromSelectedInvestigation(PatientInvestigation patientInvestigation) {
+        patientReports = new ArrayList<>();
+        System.out.println("navigate To Patient Report From Selected Investigation");
+        listingEntity = ListingEntity.PATIENT_REPORTS;
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+
+        jpql = "SELECT r "
+                + " FROM PatientReport r "
+                + " WHERE r.retired = :ret "
+                + " and r.patientInvestigation=:pi "
+                + " ORDER BY r.id DESC";
+
+        params.put("ret", false);
+        params.put("pi", patientInvestigation);
+        patientReports = patientReportFacade.findByJpql(jpql, params);
+    }
+
     public void navigateToPatientReportsFromSelectedBill(Bill bill) {
         System.out.println("navigate To Patient Report From Selected Bill");
+        patientReports = new ArrayList<>();
         listingEntity = ListingEntity.PATIENT_REPORTS;
         String jpql;
         Map<String, Object> params = new HashMap<>();
@@ -4083,7 +4229,6 @@ public class PatientInvestigationController implements Serializable {
             }
 
             List<InvestigationItem> ixis = getIvestigationItemsForInvestigation(ix);
-
 
             Item ixSampleComponant = itemController.addSampleComponent(ix);
 
