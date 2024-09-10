@@ -2080,6 +2080,47 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         return "/channel/manage_booking_by_date?faces-redirect=true";
     }
     
+    public String navigateToViewBillSession(BillSession bs) {
+//        System.out.println("bs = " + bs);
+        selectedBillSession = bs;
+        if (selectedBillSession == null) {
+            JsfUtil.addErrorMessage("Please select a Patient");
+            return "";
+        }
+
+        // Setting the properties in the viewScopeDataTransferController
+        viewScopeDataTransferController.setSelectedBillSession(selectedBillSession);
+        viewScopeDataTransferController.setSelectedSessionInstance(selectedSessionInstance);
+        viewScopeDataTransferController.setSessionInstanceFilter(sessionInstanceFilter);
+        viewScopeDataTransferController.setFromDate(fromDate);
+        viewScopeDataTransferController.setToDate(toDate);
+
+        viewScopeDataTransferController.setNeedToFillBillSessionDetails(false);
+        viewScopeDataTransferController.setNeedToFillMembershipDetails(false);
+        viewScopeDataTransferController.setNeedToPrepareForNewBooking(false);
+        printPreviewC = false;
+        if (configOptionApplicationController.getBooleanValueByKey("Automatically Load and Display the Refund Amount Upon Page Load")) {
+            if (configOptionApplicationController.getBooleanValueByKey("Disable Hospital Fee Refunds")) {
+                for (BillFee bf : bs.getBill().getBillFeesWIthoutZeroValue()) {
+                    if (!(bf.getFee().getFeeType() == FeeType.OwnInstitution)) {
+                        copyValue(bf);
+                        calRefundTotal();
+                        checkRefundTotal();
+                    }
+                }
+            } else {
+                for (BillFee bf : bs.getBill().getBillFeesWIthoutZeroValue()) {
+                    copyValue(bf);
+                    calRefundTotal();
+                    checkRefundTotal();
+                }
+            }
+        }
+        fillFees();
+        calculateSelectedBillSessionTotal();
+        return "/channel/manage_booking_by_date?faces-redirect=true";
+    }
+    
     public void markBillSessionForAbsent(){
         if (getSelectedBillSession()==null) {
             JsfUtil.addErrorMessage("Select Patient First !");
