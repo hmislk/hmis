@@ -1876,7 +1876,7 @@ public class BillController implements Serializable {
         } else {
             getBillFacade().edit(cancellationBill);
         }
-        createPayment(cancellationBill, cancellationBatchBill.getPaymentMethod());
+        //createPayment(cancellationBill, cancellationBatchBill.getPaymentMethod());
 
         String deptId = getBillNumberGenerator().generateBillNumber(cancellationBill.getFromDepartment(), cancellationBill.getToDepartment(), cancellationBill.getBillType(), cancellationBill.getBillClassType());
         String insId = getBillNumberGenerator().generateBillNumber(cancellationBill.getInstitution(), cancellationBill.getBillType(), cancellationBill.getBillClassType());
