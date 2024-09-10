@@ -14,9 +14,18 @@
                     <p:panel >
 
                         <f:facet name="header" >
-                            <h:outputLabel value="Reprint" class="mr-5"></h:outputLabel>
-                            <p:spacer width="20" ></p:spacer>
-                            <p:commandButton 
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                     <h:outputLabel value="Reprint" class="mr-5"></h:outputLabel>
+                                </div>
+                                <div>
+                                    <p:commandButton class="ui-button-info mx-2"
+                                                     ajax="false"
+                                                     value="Print"
+                                        icon="fas fa-print">
+                                        <p:printer target="print" />
+                                    </p:commandButton>
+                                    <p:commandButton 
                                 class="my-1 ml-5" 
                                 ajax="false" 
                                 styleClass="ui-button-danger"
@@ -25,6 +34,11 @@
                                 disabled="#{agentPaymentReceiveSearchController.bill.cancelled}" 
                                 icon="fa fa-times" >
                             </p:commandButton>
+                                </div>
+                            </div>
+                           
+                            <p:spacer width="20" ></p:spacer>
+                            
                         </f:facet>
 
                         <div class="row">
@@ -47,8 +61,9 @@
                             </div>
 
                             <div class="col-md-8">
-                                <bi:cc_payment_receipt_bill billController ="#{agentPaymentReceiveSearchController}"  bill="#{agentPaymentReceiveSearchController.bill}" dup="true"/>  
-
+                                <h:panelGroup id="print">
+                                    <bi:cc_payment_receipt_bill billController ="#{agentPaymentReceiveSearchController}"  bill="#{agentPaymentReceiveSearchController.bill}" dup="true"/>  
+                                </h:panelGroup>
                             </div>
 
                         </div>
