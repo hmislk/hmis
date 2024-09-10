@@ -2462,6 +2462,11 @@ public class PatientInvestigationController implements Serializable {
             jpql += " AND ps.status = :status";
             params.put("status", getPatientInvestigationStatus());
         }
+        
+        if (sampleId != null) {
+            jpql += " AND ps.sampleId = :smpid";
+            params.put("smpid", sampleId);
+        }
 
         jpql += " ORDER BY ps.id DESC";
 
