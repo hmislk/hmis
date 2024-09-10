@@ -210,6 +210,7 @@
                                         <h:outputLabel value="#{bill.id}"/>
                                     </p:column>
                                     <p:column headerText="Bill No*" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}" filterMatchMode="contains">                                
+                                        <div>
                                         <p:commandLink 
                                             id="billNo" 
                                             ajax="false" 
@@ -217,6 +218,26 @@
                                             action="#{billSearch.navigateToViewSingleOpdBill()}">
                                             <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                         </p:commandLink>
+                                        </div>
+                                        <div>
+                                            <p:commandLink
+                                            id="CancelBillNo"
+                                            ajax="false"
+                                            value="#{bill.cancelledBill.deptId}"
+                                            action="#{billSearch.navigateToViewSingleOpdBill()}"
+                                            rendered="#{bill.cancelled}" style="color: red">
+                                                 <f:setPropertyActionListener value="#{bill.cancelledBill}" target="#{billSearch.bill}"/>
+                                        </p:commandLink>
+                                             <p:commandLink
+                                            id="RefundBillNo"
+                                            ajax="false"
+                                            value="#{bill.refundedBill.deptId}"
+                                            action="#{billSearch.navigateToViewSingleOpdBill()}"
+                                            rendered="#{bill.refunded}" style="color: orange">
+                                                 <f:setPropertyActionListener value="#{bill.refundedBill}" target="#{billSearch.bill}"/>
+                                        </p:commandLink>
+                                        </div>
+                                        
                                     </p:column>
                                     <p:column headerText="Batch Bill" sortBy="#{bill.backwardReferenceBill.deptId}" 
                                               filterMatchMode="contains"
