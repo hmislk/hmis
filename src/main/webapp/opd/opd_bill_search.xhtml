@@ -229,14 +229,18 @@
                                     <p:column headerText="Billed At" filterBy="#{bill.billDate}" sortBy="#{bill.billDate}">
                                         <h:panelGroup rendered="#{fn:substring(searchController.fromDate, 0, 10) eq fn:substring(searchController.toDate, 0, 10)}">
                                             <p:outputLabel id="billTime1" value="#{bill.createdAt}" >
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
                                             </p:outputLabel>
                                             <div>
                                                 <p:outputLabel value="#{bill.cancelledBill.createdAt}" rendered="#{bill.cancelled}" style="color: red">
-                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
+                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
+                                                </p:outputLabel>
+                                                <p:outputLabel value="#{bill.cancelledBill.paymentMethod}" rendered="#{bill.cancelled}" style="color: red">
                                                 </p:outputLabel>
                                                 <p:outputLabel value="#{bill.refundedBill.createdAt}" style="color: orange">
-                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
+                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
+                                                </p:outputLabel>
+                                                <p:outputLabel value="#{bill.refundedBill.paymentMethod}" style="color: orange">
                                                 </p:outputLabel>
                                             </div>
 
