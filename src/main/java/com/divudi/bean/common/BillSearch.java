@@ -78,6 +78,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
+import com.google.common.collect.HashBiMap;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
@@ -4523,6 +4524,20 @@ public class BillSearch implements Serializable {
 
     public String navigateToDownloadBillsAndBillItems1() {
         return "/analytics/download_bills_and_items?faces-redirect=true;";
+    }
+    
+    public String findOriginalBillFromCancelledBill(Bill cancelBill){
+        System.out.println("findOriginalBillFromCancelledBill");
+        Bill bill = null;
+        String jpql = "SELECT b FROM Bill b "
+                    + " WHERE b.cancelledBill=:bi "
+                    + " and b.retired = false";
+        Map params = new HashMap();
+        params.put("bi", cancelBill);
+        cancelBill = billFacade.findFirstByJpql(jpql,params);
+        System.out.println("cancelBill" + cancelBill.getDeptId());
+        return cancelBill.getDeptId();
+                
     }
 
 }
