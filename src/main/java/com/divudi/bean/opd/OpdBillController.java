@@ -339,6 +339,14 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     public String navigateToOpdBatchBillList() {
         return "/opd/analytics/opd_batch_bill_search?faces-redirect=true";
     }
+    
+    public String navigateToOpdBillItemList() {
+        return "/opd/analytics/opd_bill_item_list?faces-redirect=true";
+    }
+    
+    public String navigateToOpdBillList() {
+        return "/opd/analytics/opd_bill_list?faces-redirect=true";
+    }
 
     public String navigateToSearchOpdBills() {
         batchBill = null;

@@ -936,7 +936,7 @@ public class ReportTemplateController implements Serializable {
 
         long idCounter = 1;
         for (ReportTemplateRow row : rs) {
-            row.setId(idCounter++);
+            row.setCounter(idCounter++);
             if (row.getBtas() == null) {
                 row.setBtas(btas);
             }
@@ -1104,7 +1104,7 @@ public class ReportTemplateController implements Serializable {
 
         long idCounter = 1;
         for (ReportTemplateRow row : rs) {
-            row.setId(idCounter++);
+            row.setCounter(idCounter++);
             if (row.getBtas() == null) {
                 row.setBtas(btas);
             }
@@ -1267,7 +1267,7 @@ public class ReportTemplateController implements Serializable {
 
         long idCounter = 1;
         for (ReportTemplateRow row : rs) {
-            row.setId(idCounter++);
+            row.setCounter(idCounter++);
             if (row.getBtas() == null) {
                 row.setBtas(btas);
             }
@@ -1773,7 +1773,7 @@ public class ReportTemplateController implements Serializable {
 
         long idCounter = 1;
         for (ReportTemplateRow row : rs) {
-            row.setId(idCounter++);
+            row.setCounter(idCounter++);
             if (row.getBtas() == null) {
                 row.setBtas(btas);
             }
@@ -1934,7 +1934,7 @@ public class ReportTemplateController implements Serializable {
         long idCounter = 1;
         Double total = 0.0;
         for (ReportTemplateRow row : rs) {
-            row.setId(idCounter++);
+            row.setCounter(idCounter++);
             if (row.getBtas() == null) {
                 row.setBtas(btas);
             }
@@ -2098,7 +2098,7 @@ public class ReportTemplateController implements Serializable {
         long idCounter = 1;
         Double total = 0.0;
         for (ReportTemplateRow row : rs) {
-            row.setId(idCounter++);
+            row.setCounter(idCounter++);
             if (row.getBtas() == null) {
                 row.setBtas(btas);
             }
@@ -2259,7 +2259,7 @@ public class ReportTemplateController implements Serializable {
         long idCounter = 1;
         Double total = 0.0;
         for (ReportTemplateRow row : rs) {
-            row.setId(idCounter++);
+            row.setCounter(idCounter++);
             if (row.getBtas() == null) {
                 row.setBtas(btas);
             }
@@ -2373,7 +2373,7 @@ public class ReportTemplateController implements Serializable {
         long idCounter = 1;
 
         for (ReportTemplateRow row : rs) {
-            row.setId(idCounter++);
+            row.setCounter(idCounter++);
             if (row.getBtas() == null) {
                 row.setBtas(btas);
             }
