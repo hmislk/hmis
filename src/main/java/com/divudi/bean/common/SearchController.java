@@ -7399,8 +7399,8 @@ public class SearchController implements Serializable {
         checkLabReportsApproved(bills);
 
     }
-    
-     public void searchChannelBills() {
+
+    public void searchChannelBills() {
         Date startTime = new Date();
         List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
         billTypesAtomics.add(BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
@@ -7414,7 +7414,6 @@ public class SearchController implements Serializable {
         billTypesAtomics.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT);
         billTypesAtomics.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT_FOR_CREDIT_SETTLED_BOOKINGS);
         createTableByKeywordForChannelBills(billTypesAtomics, institution, department, fromInstitution, fromDepartment, toInstitution, toDepartment, staff, speciality);
-        
 
     }
 
@@ -8092,7 +8091,7 @@ public class SearchController implements Serializable {
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
-    
+
     public void createTableByKeywordForChannelBills(List<BillTypeAtomic> billTypesAtomics,
             Institution ins, Department dep,
             Institution fromIns,
@@ -8101,7 +8100,7 @@ public class SearchController implements Serializable {
             Department toDep,
             Staff consultant,
             Speciality speciality
-            ) {
+    ) {
         bills = null;
         String sql;
         Map temMap = new HashMap();
@@ -8141,17 +8140,16 @@ public class SearchController implements Serializable {
             sql += " and b.toInstitution=:toins ";
             temMap.put("toins", toIns);
         }
-        
+
         if (consultant != null) {
             sql += " and b.singleBillSession.sessionInstance.originatingSession.staff=:toStaff ";
             temMap.put("toStaff", consultant);
         }
-        
+
         if (speciality != null) {
             sql += " and b.singleBillSession.sessionInstance.originatingSession.staff.speciality=:sp ";
             temMap.put("sp", speciality);
         }
-        
 
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
             sql += " and  ((b.patient.person.name) like :patientName )";
@@ -8593,7 +8591,7 @@ public class SearchController implements Serializable {
         toDepartment = null;
 
     }
-    
+
     public void clearChannelBillSearchData() {
         getSearchKeyword().setPatientName(null);
         getSearchKeyword().setPatientPhone(null);
@@ -11856,8 +11854,6 @@ public class SearchController implements Serializable {
         bundleBillItems = generateOpdServiceByBillItems();
     }
 
-    
-    
     public void generateDailyReturn() {
         bundle = new ReportTemplateRowBundle();
 
@@ -11909,8 +11905,7 @@ public class SearchController implements Serializable {
         collectionForTheDayBundle.setBundleType("collectionForTheDay");
         collectionForTheDayBundle.setTotal(collectionForTheDay);
         bundle.getBundles().add(collectionForTheDayBundle);
-        
-        
+
         netCashCollection = collectionForTheDay;
 
         // Deduct various payments from net cash collection
@@ -11918,20 +11913,22 @@ public class SearchController implements Serializable {
         bundle.getBundles().add(pettyCashPayments);
         netCashCollection -= getSafeTotal(pettyCashPayments);
 
+        // Generate OPD professional payments and add to the main bundle
+        ReportTemplateRowBundle opdProfessionalPayments = generateOpdProfessionalPayments();
+        bundle.getBundles().add(opdProfessionalPayments);
+        netCashCollection -= getSafeTotal(opdProfessionalPayments);
+        
+         // Generate channelling professional payments and add to the main bundle
+        ReportTemplateRowBundle channellingProfessionalPayments = generateChannellingProfessionalPayments();
+        bundle.getBundles().add(channellingProfessionalPayments);
+        netCashCollection -= getSafeTotal(channellingProfessionalPayments);
+
         // Generate inward professional payments and add to the main bundle
         ReportTemplateRowBundle inwardProfessionalPayments = generateInwardProfessionalPayments();
         bundle.getBundles().add(inwardProfessionalPayments);
         netCashCollection -= getSafeTotal(inwardProfessionalPayments);
 
-        // Generate channelling professional payments and add to the main bundle
-        ReportTemplateRowBundle channellingProfessionalPayments = generateChannellingProfessionalPayments();
-        bundle.getBundles().add(channellingProfessionalPayments);
-        netCashCollection -= getSafeTotal(channellingProfessionalPayments);
-
-        // Generate OPD professional payments and add to the main bundle
-        ReportTemplateRowBundle opdProfessionalPayments = generateOpdProfessionalPayments();
-        bundle.getBundles().add(opdProfessionalPayments);
-        netCashCollection -= getSafeTotal(opdProfessionalPayments);
+       
 
         ReportTemplateRowBundle cardPayments = generateCreditCardPayments();
         bundle.getBundles().add(cardPayments);
@@ -13480,8 +13477,6 @@ public class SearchController implements Serializable {
                 .build();
     }
 
-    
-    
     public void prepareDataBillsAndBillItemsDownload(boolean old) {
         // Fetch all bills and their associated bill items, excluding fees
         List<BillTypeAtomic> billTypeAtomics = prepareDistinctBillTypeAtomic();
