@@ -96,6 +96,31 @@
 
 
                         </h:panelGrid>
+
+                        <h:outputText value="Category" ></h:outputText>
+                        <p:selectOneMenu 
+                            class="form-control" 
+                            id="cmbCat" 
+                            filter="true"
+                            filterMatchMode="contains"
+                            value="#{itemController.selectedCategory}" >
+                            <f:selectItem itemLabel="Please select a category"/>
+                            <f:selectItems 
+                                value="#{investigationCategoryController.items}" 
+                                var="cat" 
+                                itemLabel="#{cat.name}" 
+                                itemValue="#{cat}" />
+                        </p:selectOneMenu>
+
+                        <p:commandButton 
+                            ajax="false" 
+                            value="Update Selected Item Category"
+                            action="#{itemController.updateSelectedItemCategory()}"
+                            icon="pi pi-times-circle"  
+                            styleClass="ui-button-success">
+                        </p:commandButton>
+
+
                         <p:panel >
                             <p:dataTable  
                                 value="#{itemController.items}" 
@@ -138,6 +163,14 @@
                                         <h:outputLabel value="Institution" />
                                     </f:facet>
                                     <h:outputLabel value="#{i.institution.name}" ></h:outputLabel>
+                                </p:column>
+
+                                <p:column sortBy="#{i.category.name}" width="100"
+                                          filterMatchMode="contains" filterBy="#{i.category.name}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Category" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.category.name}" ></h:outputLabel>
                                 </p:column>
 
                                 <p:column sortBy="#{i.department.name}" width="50"
