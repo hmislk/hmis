@@ -20,7 +20,7 @@
                                      value="#{billSearch.opdBillsToApproveCancellation}" 
                                      var="smpIx" 
                                       selection="#{billSearch.billsApproving}" 
-                                      rowKey="#{smpIx.insId}"  
+                                      rowKey="#{smpIx.deptId}"  
                                       paginator="true"
                                       paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                       rowsPerPageTemplate="5,10,15"
@@ -33,7 +33,7 @@
                                     </p:column>
 
                             <p:column headerText="Bill Id">
-                                <p:outputLabel value="#{smpIx.insId}"/>
+                                <p:outputLabel value="#{smpIx.deptId}"/>
                             </p:column>
                             <p:column headerText="Patient Name" >
                                 <h:outputLabel value="#{smpIx.patient.person.nameWithTitle}"/>

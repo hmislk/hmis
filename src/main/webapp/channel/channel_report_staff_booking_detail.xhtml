@@ -81,13 +81,13 @@
                             <f:facet name="header" >
                                 <p:outputLabel value="Bill No" />
                             </f:facet>
-                            <p:outputLabel value="#{b.insId}" />
+                            <p:outputLabel value="#{b.deptId}" />
                         </p:column>
                         <p:column rendered="#{channelReportController.paid}">
                             <f:facet name="header" >
                                 <p:outputLabel value="Paid Bill No" />
                             </f:facet>
-                            <p:outputLabel value="#{b.paidBill.insId}" />
+                            <p:outputLabel value="#{b.paidBill.deptId}" />
                         </p:column>
                         <p:column style="text-align: right;" >
                             <f:facet name="header" >

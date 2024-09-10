@@ -78,13 +78,13 @@
                                     <p:column headerText="Bill" width="150px;" styleClass="alignTop" >
                                         <h:commandLink  
                                             id="lblBillNo" 
-                                            value="#{pi.billItem.bill.insId}" 
+                                            value="#{pi.billItem.bill.deptId}" 
                                             styleClass="#{pi.billItem.bill.cancelled or pi.billItem.transRefund ? 'redtext':''}"
                                             action="#{billSearch.navigateToViewOpdBill()}">
                                             <f:setPropertyActionListener value="#{pi.billItem.bill}" target="#{billSearch.bill}"/>
                                         </h:commandLink>
                                         <p:tooltip for="lblBillNo"  >
-                                            <h:outputLabel value="Bill No : #{pi.billItem.bill.insId}" ></h:outputLabel>
+                                            <h:outputLabel value="Bill No : #{pi.billItem.bill.deptId}" ></h:outputLabel>
                                             <br/>
                                             <h:outputLabel value="Billed From : #{pi.billItem.bill.institution.name}" ></h:outputLabel>
                                             <br/>

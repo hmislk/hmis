@@ -35,7 +35,7 @@
                                 <h:outputLabel value="Inward Bill No"/>
                                 <p:inputText autocomplete="off" class="w-100"  value="#{searchController.searchKeyword.billNo}" />
                                 <h:outputLabel value="Payment Bill No"/>
-                                <p:inputText autocomplete="off" class="w-100"  value="#{searchController.searchKeyword.insId}" />
+                                <p:inputText autocomplete="off" class="w-100"  value="#{searchController.searchKeyword.deptId}" />
                                 <h:outputLabel value="Bht No"/>
                                 <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.bhtNo}" />
                                 <h:outputLabel value="Patient Name"/> 
@@ -67,7 +67,7 @@
                                         <h:outputLabel  value="#{bi.paidForBillFee.id}"  ></h:outputLabel>
                                     </p:column>  
                                     <p:column headerText="Payment Bill No" >
-                                        <h:outputLabel value="#{bi.bill.insId}" ></h:outputLabel>
+                                        <h:outputLabel value="#{bi.bill.deptId}" ></h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Bht No" >
                                         <h:outputLabel value="#{bi.paidForBillFee.bill.patientEncounter.bhtNo}" ></h:outputLabel>

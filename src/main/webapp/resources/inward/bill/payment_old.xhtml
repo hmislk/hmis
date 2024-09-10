@@ -33,8 +33,8 @@
 
                         <div class="receiptnoPrinting" style="margin-top: 25px!important;">
                             <!--                        <h:outputLabel value="Bill No"/><h:outputLabel value=":"/>-->
-                            <h:outputLabel value="#{cc.attrs.bill.insId}" rendered="#{cc.attrs.bill.cancelled eq false}"/>
-                            <h:outputLabel value="#{cc.attrs.bill.cancelledBill.insId}" rendered="#{cc.attrs.bill.cancelled eq true}"/>
+                            <h:outputLabel value="#{cc.attrs.bill.deptId}" rendered="#{cc.attrs.bill.cancelled eq false}"/>
+                            <h:outputLabel value="#{cc.attrs.bill.cancelledBill.deptId}" rendered="#{cc.attrs.bill.cancelled eq true}"/>
                         </div>
 
                         <div Class="paymentPrinting" style="margin-top: 25px!important;">

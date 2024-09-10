@@ -635,10 +635,10 @@
                                                                         pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
                                                                 </p:outputLabel>
                                                             </p:column>
-                                                            <p:column headerText="Bill No" sortBy="#{bill.insId}"  >                                
+                                                            <p:column headerText="Bill No" sortBy="#{bill.deptId}"  >                                
                                                                 <p:commandLink id="billNo" 
                                                                                ajax="false" 
-                                                                               value="#{bill.insId}" 
+                                                                               value="#{bill.deptId}" 
                                                                                action="#{opdBillController.navigateToViewOpdBatchBill}">
                                                                     <f:setPropertyActionListener value="#{bill}" target="#{opdBillController.bill}"/>
                                                                 </p:commandLink>

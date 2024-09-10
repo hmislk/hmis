@@ -45,7 +45,7 @@
                                              rowsPerPageTemplate="5,10,{ShowAll|'All'}">
 
                                     <p:column headerText="Bill No" >
-                                        <h:commandLink action="payment_bill_reprint" value="#{billItem.bill.insId}">
+                                        <h:commandLink action="payment_bill_reprint" value="#{billItem.bill.deptId}">
                                             <h:outputLabel  ></h:outputLabel>
                                             <f:setPropertyActionListener value="#{billItem.bill}" target="#{billSearch.bill}"/>
                                         </h:commandLink>
