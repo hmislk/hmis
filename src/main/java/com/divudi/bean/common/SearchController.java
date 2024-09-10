@@ -11901,14 +11901,16 @@ public class SearchController implements Serializable {
 
         ReportTemplateRowBundle patientDepositPayments = generatePatientDepositPayments();
         bundle.getBundles().add(patientDepositPayments);
-        netCashCollection += getSafeTotal(patientDepositPayments);
+        collectionForTheDay += getSafeTotal(patientDepositPayments);
 
         // Final collection for the day
         ReportTemplateRowBundle collectionForTheDayBundle = new ReportTemplateRowBundle();
         collectionForTheDayBundle.setName("Collection for the day");
         collectionForTheDayBundle.setBundleType("collectionForTheDay");
         collectionForTheDayBundle.setTotal(collectionForTheDay);
-        bundle.getBundles().add(channellingCreditCompanyCollection);
+        bundle.getBundles().add(collectionForTheDayBundle);
+        
+        
         netCashCollection = collectionForTheDay;
 
         // Deduct various payments from net cash collection

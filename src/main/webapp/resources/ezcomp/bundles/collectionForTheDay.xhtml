@@ -13,6 +13,23 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
+
+        <table class="table w-100">
+            <thead>
+                <tr class="text-light bg-dark">
+                    <th class="text-light bg-dark" colspan="5">
+                        Collection for the Day
+                    </th>
+                    <th class="text-light bg-dark">
+                        <h:outputText value="#{cc.attrs.bundle.total}" >
+                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                        </h:outputText>
+                    </th>
+                </tr>
+            </thead>
+        </table>
+
+<!--
         <div class="row" >
             <div class="col" >
                 <h1>
@@ -28,7 +45,7 @@
                 </h1>
 
             </div>
-        </div>
+        </div>-->
 
     </cc:implementation>
 </html>
