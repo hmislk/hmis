@@ -71,6 +71,7 @@
                                              var="refBook"  
                                              style="min-width: 100%;"  
                                              rows ="10"
+                                             rowKey="#{refBook.id}"
                                              paginator="true"
                                              paginatorPosition="bottom"
                                              rowsPerPageTemplate="5,10,25,50"
@@ -80,6 +81,18 @@
                                               sortBy="#{refBook.id}"
                                               styleClass="alignTop" width="150">
                                         <h:outputLabel value="#{refBook.strbookNumber}"/>
+                                    </p:column>
+                                    
+                                    <p:column headerText="Centre Code" filterBy="#{refBook.institution.code}" filterMatchMode="contains"
+                                              sortBy="#{refBook.institution.code}"
+                                              styleClass="alignTop" width="150">
+                                        <h:outputLabel value="#{refBook.institution.code}"/>
+                                    </p:column>
+                                    
+                                    <p:column headerText="Centre Name" filterBy="#{refBook.institution.name}" filterMatchMode="contains"
+                                              sortBy="#{refBook.institution.name}"
+                                              styleClass="alignTop" width="150">
+                                        <h:outputLabel value="#{refBook.institution.name}"/>
                                     </p:column>
                                     
                                     <p:column headerText="Book Starting Reference No" filterBy="#{bill.startingReferenceNumber}" filterMatchMode="contains"

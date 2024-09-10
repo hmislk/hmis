@@ -259,10 +259,11 @@ public class AgentPaymentReceiveSearchController implements Serializable {
             JsfUtil.addErrorMessage("No Bill to Calcel");
             return;
         }
-        cancelBill(BillType.CollectingCentrePaymentReceiveBill, BillNumberSuffix.CCCAN, HistoryType.CollectingCentreDepositCancel, BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL);
         if (errorCheck()) {
             return;
         }
+        cancelBill(BillType.CollectingCentrePaymentReceiveBill, BillNumberSuffix.CCCAN, HistoryType.CollectingCentreDepositCancel, BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL);
+        
 
         CancelledBill cb = new CancelledBill();
 

@@ -28,6 +28,8 @@ public class PatientDeposit implements Serializable {
     private Patient patient;
     @ManyToOne
     private Department department;
+    @ManyToOne
+    private Institution institution;
     private Double balance;
     
     //Created Properties
@@ -148,6 +150,14 @@ public class PatientDeposit implements Serializable {
 
     public void setRetireComments(String retireComments) {
         this.retireComments = retireComments;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
     }
     
 }
