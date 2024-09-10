@@ -109,6 +109,8 @@
                                                 <p:inputText autocomplete="off" id="txtFullName"   value="#{itemController.current.fullName}" class="w-100 mx-1" ></p:inputText>
                                                 <h:outputText value="Service Category/Sub Category" ></h:outputText>
                                                 <p:autoComplete 
+                                                    required="true"
+                                                    requiredMessage="Must Enter a Category"
                                                     completeMethod="#{categoryController.completeCategory}" 
                                                     var="pta" 
                                                     itemLabel="#{pta.name}"
