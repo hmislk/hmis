@@ -107,7 +107,7 @@
                                                 icon="fa fa-times-circle" 
                                                 styleClass="ui-button-danger mx-1" 
                                                 action="#{bookingControllerViewScope.listCancelled()}" />
-                                            
+
                                             <!-- List All Session Data Button -->
                                             <p:commandButton 
                                                 ajax="false" 
@@ -165,7 +165,7 @@
                                                             <h:outputText class="mx-2" value="#{s.endingTime}">
                                                                 <f:convertDateTime pattern="hh:mm a"/>
                                                             </h:outputText>
-                                                            
+
                                                             <!-- Conditional message for delayed start time -->
                                                             <h:panelGroup rendered="#{s.startingTime gt s.originatingSession.startingTime}">
                                                                 <br/>
@@ -224,10 +224,10 @@
                                                                 <p:badge value="0" size="large" styleClass="mr-2" rendered="#{0 >= s.maxNo - ((s.bookedPatientCount + bookingControllerViewScope.totalReservedNumberCount(s)) - s.cancelPatientCount)}" severity="danger"></p:badge>
                                                             </h:panelGroup>                                  
                                                         </div>
-<!--                                                        <div class="text-center">
-                                                            <h:outputLabel style="font-weight: bolder" value="N"/><br/>
-                                                            <p:badge value="#{((s.bookedPatientCount + bookingControllerViewScope.totalReservedNumberCount(s)) - s.reservedBookingCount) + 1}" size="large" styleClass="mr-2"></p:badge>
-                                                        </div>-->
+                                                        <!--                                                        <div class="text-center">
+                                                                                                                    <h:outputLabel style="font-weight: bolder" value="N"/><br/>
+                                                                                                                    <p:badge value="#{((s.bookedPatientCount + bookingControllerViewScope.totalReservedNumberCount(s)) - s.reservedBookingCount) + 1}" size="large" styleClass="mr-2"></p:badge>
+                                                                                                                </div>-->
                                                         <div class="text-center">
                                                             <h:outputLabel style="font-weight: bolder" value="N"/><br/>
                                                             <p:badge value="#{s.nextAvailableAppointmentNumber}" rendered="#{s.nextAvailableAppointmentNumber ne null}" size="large" styleClass="mr-2"></p:badge>
@@ -299,7 +299,7 @@
                                                             icon="fas fa-plus"
                                                             class="ui-button-success"
                                                             action="#{bookingControllerViewScope.addItemToBooking}"
-                                                            update="totalsPanel paymentDetails :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId} :#{p:resolveFirstComponentWithId('lstAddedItems',view).clientId} lstItems panelBookingDetails"
+                                                            update="changeItemfees totalsPanel paymentDetails :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId} :#{p:resolveFirstComponentWithId('lstAddedItems',view).clientId} lstItems panelBookingDetails"
                                                             ></p:commandButton>
                                                     </p:column>
                                                 </p:row>
@@ -309,7 +309,6 @@
                                                         <div class="row">
                                                             <div class="d-flex justify-content-between align-items-center my-2">
                                                                 <h6>#{item.name}</h6>
-                                                                <h6>#{item.itemFee.fee}</h6>
                                                                 <p:commandButton 
                                                                     id="btnRemoveAdditem" 
                                                                     icon="fas fa-trash" 
@@ -320,7 +319,15 @@
                                                             </div>
                                                         </div>
                                                     </ui:repeat>
-
+                                                    <h:panelGroup id="changeItemfees">
+                                                        <ui:repeat  value="#{bookingControllerViewScope.addedItemFees}" var="itemFee" rendered="#{not empty bookingControllerViewScope.itemsAddedToBooking}">
+                                                            <p:outputLabel value="#{itemFee.item.name}"/>
+                                                            <div class="d-flex align-items-center ">
+                                                                <p:outputLabel value="#{itemFee.name}"/>
+                                                                <p:inputText value="#{itemFee.fee}" class="w-50" />
+                                                            </div>      
+                                                        </ui:repeat>
+                                                    </h:panelGroup>
                                                 </h:panelGroup>
                                             </p:panel>
                                         </h:panelGroup>

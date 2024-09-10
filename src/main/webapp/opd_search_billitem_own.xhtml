@@ -70,8 +70,8 @@
                                         <h:outputLabel value="#{i+1}"/>
                                     </p:column>
 
-                                    <p:column headerText="Bill No" styleClass="alignTop" sortBy="#{pi.bill.insId}" filterBy="#{pi.bill.insId}" filterMatchMode="contains">
-                                        <h:commandLink action="/opd/bill_reprint?faces-redirect=true" value="#{pi.bill.insId}">
+                                    <p:column headerText="Bill No" styleClass="alignTop" sortBy="#{pi.bill.deptId}" filterBy="#{pi.bill.deptId}" filterMatchMode="contains">
+                                        <h:commandLink action="/opd/bill_reprint?faces-redirect=true" value="#{pi.bill.deptId}">
                                             <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.billSearch}"/>
                                         </h:commandLink>   
                                     </p:column>

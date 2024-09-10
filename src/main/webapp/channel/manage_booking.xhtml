@@ -147,7 +147,7 @@
                                     <p:separator ></p:separator>
 
                                     <p:outputLabel value="Bill No"/>
-                                    <p:outputLabel value="#{bookingController.selectedBillSession.bill.insId}"/>
+                                    <p:outputLabel value="#{bookingController.selectedBillSession.bill.deptId}"/>
                                     <p:outputLabel value="Payment"/>
                                     <p:outputLabel value="#{bookingController.selectedBillSession.bill.paymentMethod}"/>
                                     <p:outputLabel value="Agent" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
@@ -259,7 +259,7 @@
                             <p:panel header="Settling" class="mx-4" style="margin-bottom: 40%" rendered="#{(bookingController.selectedBillSession.bill.paidBill ne bookingController.selectedBillSession.bill) and bookingController.selectedBillSession.bill.balance eq 0.0}">
                                 <h:panelGrid columns="2">
                                     <p:outputLabel value="Bill ID"/>
-                                    <p:outputLabel value="#{bookingController.selectedBillSession.bill.paidBill.insId}"/>
+                                    <p:outputLabel value="#{bookingController.selectedBillSession.bill.paidBill.deptId}"/>
                                     <p:outputLabel value="Payment Method"/>
                                     <p:outputLabel value="#{bookingController.selectedBillSession.bill.paidBill.paymentMethod}"/>
                                     <p:outputLabel value="Agent" rendered="#{bookingController.selectedBillSession.bill.paidBill.paymentMethod eq 'Agent'}"/>

@@ -10,7 +10,7 @@
 
     <h:body>
 
-        <ui:composition template="/analytics/opd/index.xhtml">
+        <ui:composition template="/opd/analytics/index.xhtml">
 
             <ui:define name="subcontent">
                 <h:form>
@@ -76,7 +76,7 @@
                                     <f:facet name="header">
                                         <p:outputLabel value="Bill No" />
                                     </f:facet>
-                                    <p:outputLabel value="#{bf.bill.insId}" >
+                                    <p:outputLabel value="#{bf.bill.deptId}" >
                                     </p:outputLabel>
                                 </p:column>
 
@@ -84,7 +84,7 @@
                                     <f:facet name="header">
                                         <p:outputLabel value="Paid For" />
                                     </f:facet>
-                                    <p:outputLabel value="#{bf.paidForBillFee.bill.insId}" >
+                                    <p:outputLabel value="#{bf.paidForBillFee.bill.deptId}" >
                                     </p:outputLabel>
                                 </p:column>
 

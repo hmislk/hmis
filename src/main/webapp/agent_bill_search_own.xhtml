@@ -40,7 +40,7 @@
 
                         <p:dataTable id="tblBills" value="#{searchController.bills}" var="bill"  >
                             <p:column headerText="Bill No" >
-                                <h:commandLink action="agent_bill_reprint" value="#{bill.insId}">
+                                <h:commandLink action="agent_bill_reprint" value="#{bill.deptId}">
                                     <h:outputLabel  ></h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{agentPaymentReceiveSearchController.bill}"/>
                                 </h:commandLink>

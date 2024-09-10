@@ -221,7 +221,6 @@ public class OpdMemberShipDiscountController implements Serializable {
     }
 
     public void saveSelectedChannelPaymentScheme() {
-        System.out.println("saveSelectedChannelPaymentScheme");
         if (paymentScheme == null) {
             JsfUtil.addErrorMessage("Membership Scheme or Payment Scheme");
             return;

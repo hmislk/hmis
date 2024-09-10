@@ -53,12 +53,16 @@ public class CashBookEntryController implements Serializable {
     CashBookEntry current;
     private List<CashBookEntry> cashBookEntryList;
 
+    boolean doNotWriteCashBookEntriesAtBillingForAnyPaymentMethod = true;
+
     public void writeCashBookEntryAtPaymentCreation(Payment p) {
         if (p == null) {
             JsfUtil.addErrorMessage("Cashbook Entry Error !");
             return;
         }
-
+        if (doNotWriteCashBookEntriesAtBillingForAnyPaymentMethod) {
+            return;
+        }
         if (!chackPaymentMethodForCashBookEntryAtPaymentMethodCreation(p.getPaymentMethod())) {
             return;
         }
@@ -312,7 +316,6 @@ public class CashBookEntryController implements Serializable {
         m.put("toDate", toDate);
         m.put("ret", false);
         cashBookEntryList = cashbookEntryFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
-        System.out.println("cashBookEntryList = " + cashBookEntryList.size());
         return cashBookEntryList;
     }
 

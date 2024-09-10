@@ -192,7 +192,7 @@
                                         <p:inputText value="#{b.id}" ></p:inputText>
                                     </p:column>
                                     <p:column headerText="Ins No" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
-                                        <p:inputText readonly="true" value="#{b.insId}" ></p:inputText>
+                                        <p:inputText readonly="true" value="#{b.deptId}" ></p:inputText>
                                     </p:column>
                                     <p:column headerText="Dep No" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
                                         <p:inputText value="#{b.deptId}" ></p:inputText>
@@ -289,7 +289,7 @@
                                         </tr>
                                         <tr class="ui-widget-content #{opdBillController.batchBill.refunded ? 'row-warning' : opdBillController.batchBill.cancelled ? 'row-danger' : ''}">
                                             <td>Batch Bill Ins ID</td>
-                                            <td>#{opdBillController.batchBill.insId}</td>
+                                            <td>#{opdBillController.batchBill.deptId}</td>
                                         </tr>
                                         <tr class="ui-widget-content #{opdBillController.batchBill.refunded ? 'row-warning' : opdBillController.batchBill.cancelled ? 'row-danger' : ''}">
                                             <td>Batch Bill Dept ID</td>

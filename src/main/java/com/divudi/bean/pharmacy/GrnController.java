@@ -432,7 +432,6 @@ public class GrnController implements Serializable {
             getCurrentGrnBillPre().getBillItems().add(i);
         }
         for (BillItem bi : getCurrentGrnBillPre().getBillItems()) {
-            System.out.println("bi = " + bi.getItem().getName());
         }
 
         calGrossTotal();

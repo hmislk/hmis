@@ -364,6 +364,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private String serverTimeZone = ZoneId.systemDefault().toString();
     private List<ServiceSession> selectedServiceSessions;
     private ScheduleEvent<?> sEvent = new DefaultScheduleEvent<>();
+    
+    private List<BillFee> lstBillFees;
+   
 
     public void makeNull() {
         consultant = null;
@@ -383,7 +386,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void findSessionsForCalendar() {
         System.out.println("Speciality = " + speciality);
-        System.out.println("Doctor = " + consultant);
         findSessions();
     }
 
@@ -458,11 +460,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
         jpql += " order by s.sessionWeekday";
         selectedServiceSessions = getServiceSessionFacade().findByJpql(jpql, params);
-        System.out.println("selectedServiceSessions = " + selectedServiceSessions.size());
         calculateFee(selectedServiceSessions, channelBillController.getPaymentMethod());
 
         try {
-            System.out.println("try");
             sessionInstances = getChannelBean().generateSesionInstancesFromServiceSessions(selectedServiceSessions);
         } catch (Exception e) {
         }
@@ -470,7 +470,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void generateChaneelSessionEvents(List<SessionInstance> lsi) {
-        System.out.println("generateChaneelSessionEvents Start");
         channelModel = new DefaultScheduleModel();
         for (SessionInstance si : lsi) {
             System.out.println("Name = " + si.getName());
@@ -503,7 +502,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                     .build();
 
             channelModel.addEvent(event);
-            System.out.println(si.getName() + " Add");
         }
     }
 
@@ -2082,6 +2080,47 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         return "/channel/manage_booking_by_date?faces-redirect=true";
     }
     
+    public String navigateToViewBillSession(BillSession bs) {
+//        System.out.println("bs = " + bs);
+        selectedBillSession = bs;
+        if (selectedBillSession == null) {
+            JsfUtil.addErrorMessage("Please select a Patient");
+            return "";
+        }
+
+        // Setting the properties in the viewScopeDataTransferController
+        viewScopeDataTransferController.setSelectedBillSession(selectedBillSession);
+        viewScopeDataTransferController.setSelectedSessionInstance(selectedSessionInstance);
+        viewScopeDataTransferController.setSessionInstanceFilter(sessionInstanceFilter);
+        viewScopeDataTransferController.setFromDate(fromDate);
+        viewScopeDataTransferController.setToDate(toDate);
+
+        viewScopeDataTransferController.setNeedToFillBillSessionDetails(false);
+        viewScopeDataTransferController.setNeedToFillMembershipDetails(false);
+        viewScopeDataTransferController.setNeedToPrepareForNewBooking(false);
+        printPreviewC = false;
+        if (configOptionApplicationController.getBooleanValueByKey("Automatically Load and Display the Refund Amount Upon Page Load")) {
+            if (configOptionApplicationController.getBooleanValueByKey("Disable Hospital Fee Refunds")) {
+                for (BillFee bf : bs.getBill().getBillFeesWIthoutZeroValue()) {
+                    if (!(bf.getFee().getFeeType() == FeeType.OwnInstitution)) {
+                        copyValue(bf);
+                        calRefundTotal();
+                        checkRefundTotal();
+                    }
+                }
+            } else {
+                for (BillFee bf : bs.getBill().getBillFeesWIthoutZeroValue()) {
+                    copyValue(bf);
+                    calRefundTotal();
+                    checkRefundTotal();
+                }
+            }
+        }
+        fillFees();
+        calculateSelectedBillSessionTotal();
+        return "/channel/manage_booking_by_date?faces-redirect=true";
+    }
+    
     public void markBillSessionForAbsent(){
         if (getSelectedBillSession()==null) {
             JsfUtil.addErrorMessage("Select Patient First !");
@@ -3475,9 +3514,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
 
         if (configOptionApplicationController.getBooleanValueByKey("Allow Tenderd amount for channel booking")) {
-            System.out.println("tenderd amount ");
             if (paymentMethod == PaymentMethod.Cash) {
-                System.out.println("strTenderedValue = " + strTenderedValue);
                 if (strTenderedValue.isEmpty()) {
                     JsfUtil.addErrorMessage("Please Enter Tenderd Amount");
                     return;
@@ -3512,10 +3549,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     settleSucessFully  = true;
     printPreview  = true;
 
-    JsfUtil.addSuccessMessage (
-            
-
-"Channel Booking Added.");
+    JsfUtil.addSuccessMessage ("Channel Booking Added.");
     }
 
     public long totalReservedNumberCount(SessionInstance s) {
@@ -6953,9 +6987,7 @@ public void setManagingBillSession(BillSession managingBillSession) {
             }
             
             if (configOptionApplicationController.getBooleanValueByKey("Allow Tenderd amount for channel booking")) {
-            System.out.println("tenderd amount ");
             if (settlePaymentMethod == PaymentMethod.Cash) {
-                System.out.println("strTenderedValue = " + strTenderedValue);
                 if (strTenderedValue.isEmpty()) {
                     JsfUtil.addErrorMessage("Please Enter Tenderd Amount");
                     return;
@@ -8382,7 +8414,6 @@ public void setQuickSearchPatientList(List<Patient> quickSearchPatientList) {
         try {
             System.out.println("strTenderedValue = " + strTenderedValue);
             cashPaid = Double.parseDouble(strTenderedValue);
-            System.out.println("cashPaid = " + cashPaid);
         } catch (NumberFormatException e) {
         }
     }
@@ -8703,6 +8734,14 @@ public void setQuickSearchPatientList(List<Patient> quickSearchPatientList) {
 
     public void setSerialnumbersBySelectedSessionInstance(List<Integer> serialnumbersBySelectedSessionInstance) {
         this.serialnumbersBySelectedSessionInstance = serialnumbersBySelectedSessionInstance;
+    }
+
+    public List<BillFee> getLstBillFees() {
+        return lstBillFees;
+    }
+
+    public void setLstBillFees(List<BillFee> lstBillFees) {
+        this.lstBillFees = lstBillFees;
     }
 
 }
