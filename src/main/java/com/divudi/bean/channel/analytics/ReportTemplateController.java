@@ -10,6 +10,7 @@ package com.divudi.bean.channel.analytics;
 
 import com.divudi.bean.common.*;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.ReportTemplateRow;
@@ -364,8 +365,21 @@ public class ReportTemplateController implements Serializable {
         pb.setReportTemplateRows(results);
 
         double bundleTotal = pb.getReportTemplateRows().stream()
-                .mapToDouble(r -> r.getPayment().getPaidValue())
+                .filter(r -> r.getPayment() != null && r.getBill() != null) // Skip rows with null Payment or Bill
+                .mapToDouble(r -> {
+                    double paidValue = Math.abs(r.getPayment().getPaidValue()); // take absolute value
+                    if (r.getBill().getBillClassType() == BillClassType.Bill
+                            || r.getBill().getBillClassType() == BillClassType.BilledBill) {
+                        return paidValue; // add the absolute value
+                    } else if (r.getBill().getBillClassType() == BillClassType.CancelledBill
+                            || r.getBill().getBillClassType() == BillClassType.RefundBill) {
+                        return -paidValue; // deduct the absolute value
+                    } else {
+                        return 0.0; // do nothing for other bill types
+                    }
+                })
                 .sum();
+
         System.out.println("bundleTotal = " + bundleTotal);
         pb.setTotal(bundleTotal);
 
