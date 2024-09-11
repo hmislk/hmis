@@ -2473,28 +2473,18 @@ public class PatientInvestigationController implements Serializable {
         Map<String, Object> params = new HashMap<>();
 
         // Query PatientSampleComponent to get PatientInvestigations
-        String sampleComponentJpql = "SELECT psc.patientInvestigation "
+        jpql = "SELECT i "
                 + "FROM PatientSampleComponant psc "
+                + " join psc.patientInvestigation i "
                 + "WHERE psc.retired = :ret "
-                + "AND psc.sample.id = :sampleId";
-        Map<String, Object> sampleComponentParams = new HashMap<>();
-        sampleComponentParams.put("ret", false);
-        sampleComponentParams.put("sampleId", sampleId);
+                + "AND psc.patientSample.id=:sampleId ";
+        
+        params.put("ret", false);
+        params.put("sampleId", sampleId);
 
-        // Fetch PatientInvestigations from PatientSampleComponent
-        List<PatientInvestigation> patientInvestigations = getFacade().findByJpql(sampleComponentJpql, sampleComponentParams);
-
-        // Ensure that we have PatientInvestigations
-        if (patientInvestigations == null || patientInvestigations.isEmpty()) {
-            items = Collections.emptyList();
-            return;
-        }
 
         // Build JPQL query for PatientInvestigations
-        jpql = "SELECT i "
-                + "FROM PatientInvestigation i "
-                + "WHERE i.retired = :ret "
-                + "AND i IN :investigations";
+        jpql += " and i.retired = :ret ";
 
         if (searchDateType == null) {
             searchDateType = SearchDateType.ORDERED_DATE;
@@ -2621,7 +2611,6 @@ public class PatientInvestigationController implements Serializable {
         jpql += " ORDER BY i.id DESC";
 
         params.put("ret", false);
-        params.put("investigations", patientInvestigations);
 
         System.out.println("params = " + params);
 
