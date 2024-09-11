@@ -4469,7 +4469,6 @@ public class BillBeanController implements Serializable {
                 + " from BillFee bf "
                 + "where bf.bill=:bill "
                 + "order by bf.billItem.id";
-        params.put("ret", false);
         params.put("bill", bill);
         fetchingBillFees = billFeeFacade.findByJpql(jpql, params);
         return fetchingBillFees;
@@ -4483,7 +4482,6 @@ public class BillBeanController implements Serializable {
                 + " from BillComponent bc "
                 + "where bc.bill=:bill "
                 + "order by bc.id";
-        params.put("ret", false);
         params.put("bill", bill);
         fetchingBillComponents = billComponentFacade.findByJpql(jpql, params);
         return fetchingBillComponents;
