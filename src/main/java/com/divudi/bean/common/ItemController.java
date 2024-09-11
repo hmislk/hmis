@@ -2084,10 +2084,12 @@ public class ItemController implements Serializable {
                 + " where c.retired=false "
                 + " and type(c)=:cls "
                 + " and (c.name) like :q "
+                + " and (c.code) like :q2"
                 + " and c.institution=:ins "
                 + " order by c.name";
         hm.put("cls", Investigation.class);
         hm.put("q", "%" + query.toUpperCase() + "%");
+        hm.put("q2", "%" + query + "%");
         hm.put("ins", sessionController.getLoggedUser().getInstitution());
         lst = getFacade().findByJpql(sql, hm, 20);
         return lst;
