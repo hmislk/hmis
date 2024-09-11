@@ -2066,10 +2066,11 @@ public class ItemController implements Serializable {
         HashMap hm = new HashMap();
 
         sql = "select c from Item c where c.retired=false and type(c)=:cls"
-                + " and (c.name) like :q order by c.name";
+                + " and (c.name) like :q or (c.code) like :q2 order by c.name";
 
         hm.put("cls", Investigation.class);
         hm.put("q", "%" + query.toUpperCase() + "%");
+        hm.put("q2", "%" + query + "%");
         suggestions = getFacade().findByJpql(sql, hm, 20);
 
         return suggestions;
@@ -2084,7 +2085,7 @@ public class ItemController implements Serializable {
                 + " where c.retired=false "
                 + " and type(c)=:cls "
                 + " and (c.name) like :q "
-                + " and (c.code) like :q2"
+                + " or (c.code) like :q2"
                 + " and c.institution=:ins "
                 + " order by c.name";
         hm.put("cls", Investigation.class);
