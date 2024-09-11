@@ -70,10 +70,14 @@ import com.divudi.data.ReportTemplateRowBundle;
 import com.divudi.data.ServiceType;
 import com.divudi.data.analytics.ReportTemplateType;
 import com.divudi.entity.Category;
+import com.divudi.entity.PatientDeposit;
+import com.divudi.entity.PatientDepositHistory;
 import com.divudi.entity.Payment;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.cashTransaction.CashBookEntry;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.facade.PatientDepositFacade;
+import com.divudi.facade.PatientDepositHistoryFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.TokenFacade;
@@ -144,6 +148,10 @@ public class SearchController implements Serializable {
     private PatientFacade patientFacade;
     @EJB
     TokenFacade tokenFacade;
+    @EJB
+    private PatientDepositFacade PatientDepositFacade;
+    @EJB
+    private PatientDepositHistoryFacade patientDepositHistoryFacade;
 
     /**
      * Inject
@@ -204,6 +212,8 @@ public class SearchController implements Serializable {
     private PaymentMethod paymentMethod;
     private List<PaymentMethod> paymentMethods;
     private List<Bill> bills;
+    private List<PatientDepositHistory> patientDepositHistories;
+    private List<PatientDeposit> patientDeposits;
     private List<Payment> payments;
     private List<BillLight> billLights;
     private List<BillSummaryRow> billSummaryRows;
@@ -1776,6 +1786,46 @@ public class SearchController implements Serializable {
 
     public void setBundle(ReportTemplateRowBundle bundle) {
         this.bundle = bundle;
+    }
+
+    public PatientDepositFacade getPatientDepositFacade() {
+        return PatientDepositFacade;
+    }
+
+    public void setPatientDepositFacade(PatientDepositFacade PatientDepositFacade) {
+        this.PatientDepositFacade = PatientDepositFacade;
+    }
+
+    public List<PatientDeposit> getPatientDeposits() {
+        return patientDeposits;
+    }
+
+    public void setPatientDeposits(List<PatientDeposit> patientDeposits) {
+        this.patientDeposits = patientDeposits;
+    }
+
+    public PatientDepositHistoryFacade getPatientDepositHistoryFacade() {
+        return patientDepositHistoryFacade;
+    }
+
+    public void setPatientDepositHistoryFacade(PatientDepositHistoryFacade patientDepositHistoryFacade) {
+        this.patientDepositHistoryFacade = patientDepositHistoryFacade;
+    }
+
+    public PaymentFacade getPaymentFacade() {
+        return paymentFacade;
+    }
+
+    public void setPaymentFacade(PaymentFacade paymentFacade) {
+        this.paymentFacade = paymentFacade;
+    }
+
+    public List<PatientDepositHistory> getPatientDepositHistories() {
+        return patientDepositHistories;
+    }
+
+    public void setPatientDepositHistories(List<PatientDepositHistory> patientDepositHistories) {
+        this.patientDepositHistories = patientDepositHistories;
     }
 
     public class billsWithbill {
@@ -10431,6 +10481,12 @@ public class SearchController implements Serializable {
         createAgentPaymentTable(BillType.CollectingCentrePaymentReceiveBill);
 
     }
+    
+    public void createPatientDepositTable() {
+        Date startTime = new Date();
+        createPatientDepositTable(BillType.PatientPaymentReceiveBill);
+
+    }
 
     public void createAgentPaymentTable(BillType billType) {
         bills = new ArrayList<>();
@@ -10471,6 +10527,45 @@ public class SearchController implements Serializable {
         //System.err.println("Sql " + sql);
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
 
+    }
+    
+    public void createPatientDepositTable(BillType billType) {
+        bills = new ArrayList<>();
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select b from Bill b where b.billType = :billType "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false ";
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and  ((b.insId) like :billNo )";
+            temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
+            sql += " and  ((b.netTotal) like :netTotal )";
+            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getFromInstitution() != null && !getSearchKeyword().getFromInstitution().trim().equals("")) {
+            sql += " and  ((b.fromInstitution.name) like :frmIns )";
+            temMap.put("frmIns", "%" + getSearchKeyword().getFromInstitution().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNumber() != null && !getSearchKeyword().getNumber().trim().equals("")) {
+            sql += " and  ((b.fromInstitution.institutionCode) like :num )";
+            temMap.put("num", "%" + getSearchKeyword().getNumber().trim().toUpperCase() + "%");
+        }
+
+        sql += " order by b.createdAt desc  ";
+
+        temMap.put("billType", billType);
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+
+        //System.err.println("Sql " + sql);
+        bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
     }
 
     public void createInwardServiceTable() {
