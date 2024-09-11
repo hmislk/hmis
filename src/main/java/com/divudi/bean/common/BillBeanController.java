@@ -4495,7 +4495,6 @@ public class BillBeanController implements Serializable {
                 + " from Payment p "
                 + "where p.bill=:bill "
                 + "order by p.id";
-        params.put("ret", false);
         params.put("bill", bill);
         fetchingBillComponents = paymentFacade.findByJpql(jpql, params);
         return fetchingBillComponents;
