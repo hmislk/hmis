@@ -1224,7 +1224,7 @@ public class InvestigationController implements Serializable {
     }
 
     public List<Investigation> completeItem(String qry) {
-        List<Investigation> completeItems = getFacade().findByJpql("select c from Item c where ( type(c) = Investigation or type(c) = Packege ) and c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+        List<Investigation> completeItems = getFacade().findByJpql("select c from Item c where ( type(c) = Investigation or type(c) = Packege ) and c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' and (c.code) like '%" + qry + "%' and  order by c.name");
         return completeItems;
     }
 

@@ -17,7 +17,7 @@
                         <h:panelGrid columns="6" >
                             <p:outputLabel value="Investigation" ></p:outputLabel>
                             <p:autoComplete id="acIx" value="#{itemController.current}" var="ix"
-                                            itemLabel="#{ix.name}" itemValue="#{ix}" completeMethod="#{itemController.completeLoggedInstitutionInvestigation}"
+                                            itemLabel="#{ix.name} #{ix.code}" itemValue="#{ix}" completeMethod="#{itemController.completeLoggedInstitutionInvestigation}"
                                             ></p:autoComplete>
                             <p:commandButton ajax="false" action="#{itemController.fillInvestigationSampleComponents() }" value="List Sample Components" ></p:commandButton>
                             <p:commandButton ajax="false" 
