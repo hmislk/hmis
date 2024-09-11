@@ -1867,4 +1867,12 @@ public class ReportController implements Serializable {
         this.agentHistories = agentHistories;
     }
 
+    public Doctor getReferingDoctor() {
+        return referingDoctor;
+    }
+
+    public void setReferingDoctor(Doctor referingDoctor) {
+        this.referingDoctor = referingDoctor;
+    }
+
 }
