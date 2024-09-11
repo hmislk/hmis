@@ -2134,7 +2134,7 @@ public class ItemController implements Serializable {
         StringBuilder sqlBuilder = new StringBuilder();
         sqlBuilder.append("select c from Item c ")
                 .append("where c.retired = false ")
-                .append("and c.name like :query ")
+                .append("and (c.name like :query or c.code like :query ) ")
                 .append("and type(c) != :pac ")
                 .append("and (type(c) = :ser ")
                 .append("or type(c) = :inv ")
