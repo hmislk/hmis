@@ -120,15 +120,14 @@
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column>  
-                                   
+
                                     <p:column headerText="View">
                                         <p:commandButton 
                                             ajax="false" 
                                             value="View Bill" 
-                                            action="#{billSearch.navigateToViewCollectingCentreBill()}">
-                                            <f:setPropertyActionListener target="#{billSearch.bill}" value="#{billController.findBillbyID(bill.id)}"/>
+                                            action="#{billSearch.navigateToRefundCollectingCentreBill()}">
                                         </p:commandButton>
-                                        
+                                        #{billController.findBillbyID(bill.id)}
                                     </p:column>
 
                                 </p:dataTable>
