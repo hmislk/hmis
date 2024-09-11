@@ -364,21 +364,29 @@ public class ReportTemplateController implements Serializable {
         }
         pb.setReportTemplateRows(results);
 
-        double bundleTotal = pb.getReportTemplateRows().stream()
-                .filter(r -> r.getPayment() != null && r.getBill() != null) // Skip rows with null Payment or Bill
-                .mapToDouble(r -> {
-                    double paidValue = Math.abs(r.getPayment().getPaidValue()); // take absolute value
-                    if (r.getBill().getBillClassType() == BillClassType.Bill
-                            || r.getBill().getBillClassType() == BillClassType.BilledBill) {
-                        return paidValue; // add the absolute value
-                    } else if (r.getBill().getBillClassType() == BillClassType.CancelledBill
-                            || r.getBill().getBillClassType() == BillClassType.RefundBill) {
-                        return -paidValue; // deduct the absolute value
-                    } else {
-                        return 0.0; // do nothing for other bill types
-                    }
-                })
-                .sum();
+        double bundleTotal = 0.0; // Initialize total
+
+        for (ReportTemplateRow r : pb.getReportTemplateRows()) {
+            // Check if Payment, Bill, and PaidValue are not null
+            if (r.getPayment() != null && r.getBill() != null) {
+                // Get the absolute value of the paid amount
+                double paidValue = Math.abs(r.getPayment().getPaidValue());
+
+                // Add the value for Bill or BilledBill
+                if (r.getBill().getBillClassType() == BillClassType.Bill
+                        || r.getBill().getBillClassType() == BillClassType.BilledBill) {
+                    bundleTotal += paidValue;
+                } // Subtract the value for CancelledBill or RefundBill
+                else if (r.getBill().getBillClassType() == BillClassType.CancelledBill
+                        || r.getBill().getBillClassType() == BillClassType.RefundBill) {
+                    bundleTotal -= paidValue;
+                }
+                // Do nothing for other BillClassTypes
+            }
+            // If Payment, Bill, or PaidValue is null, skip the row (this else is optional)
+        }
+
+      
 
         System.out.println("bundleTotal = " + bundleTotal);
         pb.setTotal(bundleTotal);

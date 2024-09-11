@@ -688,61 +688,61 @@ public class ReportItem implements Serializable {
     public String getCssStyle() {
         cssStyle = "";
         if (getRiTop() != 0) {
-            cssStyle += "top:" + getRiTop() + "%;";
+            cssStyle += "top:" + getRiTop() + "%!important;;";
         }
         if (getRiLeft() != 0) {
-            cssStyle += "left:" + getRiLeft() + "%;";
+            cssStyle += "left:" + getRiLeft() + "%!important;;";
         }
         if (getRiWidth() != 0) {
-            cssStyle += "width:" + getRiWidth() + "%;";
+            cssStyle += "width:" + getRiWidth() + "%!important;;";
         }
         if (getRiHeight() != 0) {
-            cssStyle += "height:" + getRiHeight() + "%;";
+            cssStyle += "height:" + getRiHeight() + "%!important;";
         }
         if (getRiFontSize() != 0) {
-            cssStyle += "font-size:" + getRiFontSize() + "pt;";
+            cssStyle += "font-size:" + getRiFontSize() + "pt!important;";
         }
 
         switch (getCssTextAlign()) {
             case Center:
-                cssStyle += "text-align:center;";
+                cssStyle += "text-align:center!important;;";
                 break;
             case Justify:
-                cssStyle += "text-align:justify;";
+                cssStyle += "text-align:justify!important;;";
                 break;
             case Left:
-                cssStyle += "text-align:left;";
+                cssStyle += "text-align:left!important;;";
                 break;
             case Right:
-                cssStyle += "text-align:right;";
+                cssStyle += "text-align:right!important;;";
                 break;
             default:
         }
 
         switch (getCssFontStyle()) {
             case Normal:
-                cssStyle += "font-style:normal;";
+                cssStyle += "font-style:normal!important;;";
                 break;
             case Italic:
-                cssStyle += "font-style:italic;";
+                cssStyle += "font-style:italic!important;;";
                 break;
             case Oblique:
-                cssStyle += "font-style:oblique;";
+                cssStyle += "font-style:oblique!important;;";
                 break;
             default:
         }
 
         if (cssFontFamily != null && !cssFontFamily.equals("")) {
-            cssStyle += "font-family:" + cssFontFamily + "; ";
+            cssStyle += "font-family:" + cssFontFamily + "!important;; ";
         }
 
         if (cssFontWeight != null && !cssFontWeight.equals("")) {
-            cssStyle += "font-weight:" + getCssFontWeight() + "; ";
+            cssStyle += "font-weight:" + getCssFontWeight() + "!important;; ";
         }
 
         cssStyle += "position:static; ";
         if (cssVerticalAlign != null) {
-            cssStyle += "vertical-align: " + cssVerticalAlign + "; ";
+            cssStyle += "vertical-align: " + cssVerticalAlign + "!important;; ";
         }
 
 //        cssStyle = "top:" + getRiTop() + "%; left:" + getRiLeft()
@@ -765,44 +765,44 @@ public class ReportItem implements Serializable {
     public String getInnerCssStyle() {
         cssStyle = "";
         if (getRiFontSize() != 0) {
-            cssStyle += "font-size:" + getRiFontSize() + "pt;";
+            cssStyle += "font-size:" + getRiFontSize() + "pt!important;;";
         }
 
         switch (getCssTextAlign()) {
             case Center:
-                cssStyle += "text-align:center;";
+                cssStyle += "text-align:center!important;;";
                 break;
             case Justify:
-                cssStyle += "text-align:justify;";
+                cssStyle += "text-align:justify!important;;";
                 break;
             case Left:
-                cssStyle += "text-align:left;";
+                cssStyle += "text-align:left;!important;";
                 break;
             case Right:
-                cssStyle += "text-align:right;";
+                cssStyle += "text-align:right;!important;";
                 break;
             default:
         }
 
         switch (getCssFontStyle()) {
             case Normal:
-                cssStyle += "font-style:normal;";
+                cssStyle += "font-style:normal!important;;";
                 break;
             case Italic:
-                cssStyle += "font-style:italic;";
+                cssStyle += "font-style:italic!important;;";
                 break;
             case Oblique:
-                cssStyle += "font-style:oblique;";
+                cssStyle += "font-style:oblique!important;;";
                 break;
             default:
         }
 
         if (cssFontFamily != null && !cssFontFamily.equals("")) {
-            cssStyle += "font-family:" + getCssFontFamily() + "; ";
+            cssStyle += "font-family:" + getCssFontFamily() + "!important;; ";
         }
 
         if (cssFontWeight != null && !cssFontWeight.equals("")) {
-            cssStyle += "font-weight:" + getCssFontWeight() + "; ";
+            cssStyle += "font-weight:" + getCssFontWeight() + "!important;; ";
         }
 
         cssStyle += "min-width:100%;max-width:100%;width:100%;min-height:100%;max-height:100%;height:100%;padding:0px;margin:0px;border:0px;";
@@ -814,60 +814,60 @@ public class ReportItem implements Serializable {
     public String getOuterCssStyle() {
         cssStyle = "";
         if (getRiTop() != 0) {
-            cssStyle += "top:" + getRiTop() + "%;";
+            cssStyle += "top:" + getRiTop() + "%!important;;";
         }
         if (getRiLeft() != 0) {
-            cssStyle += "left:" + getRiLeft() + "%;";
+            cssStyle += "left:" + getRiLeft() + "%!important;;";
         }
         if (getRiWidth() != 0) {
-            cssStyle += "width:" + getRiWidth() + "%;";
+            cssStyle += "width:" + getRiWidth() + "%!important;;";
         }
         if (getRiHeight() != 0) {
-            cssStyle += "height:" + getRiHeight() + "%;";
+            cssStyle += "height:" + getRiHeight() + "%!important;;";
         }
         if (getRiFontSize() != 0) {
-            cssStyle += "font-size:" + getRiFontSize() + "pt;";
+            cssStyle += "font-size:" + getRiFontSize() + "pt!important;;";
         }
 
         switch (getCssTextAlign()) {
             case Center:
-                cssStyle += "text-align:center;";
+                cssStyle += "text-align:center!important;;";
                 break;
             case Justify:
-                cssStyle += "text-align:justify;";
+                cssStyle += "text-align:justify!important;;";
                 break;
             case Left:
-                cssStyle += "text-align:left;";
+                cssStyle += "text-align:left!important;;";
                 break;
             case Right:
-                cssStyle += "text-align:right;";
+                cssStyle += "text-align:right!important;;";
                 break;
             default:
         }
 
         switch (getCssFontStyle()) {
             case Normal:
-                cssStyle += "font-style:normal;";
+                cssStyle += "font-style:normal!important;;";
                 break;
             case Italic:
-                cssStyle += "font-style:italic;";
+                cssStyle += "font-style:italic!important;;";
                 break;
             case Oblique:
-                cssStyle += "font-style:oblique;";
+                cssStyle += "font-style:oblique!important;;";
                 break;
             default:
         }
 
         if (cssFontFamily != null && !cssFontFamily.equals("")) {
-            cssStyle += "font-family:" + getCssFontFamily() + "; ";
+            cssStyle += "font-family:" + getCssFontFamily() + "!important;; ";
         }
 
         if (cssFontWeight != null && !cssFontWeight.equals("")) {
-            cssStyle += "font-weight:" + getCssFontWeight() + "; ";
+            cssStyle += "font-weight:" + getCssFontWeight() + "!important;; ";
         }
 
         if (cssVerticalAlign != null) {
-            cssStyle += "vertical-align: " + cssVerticalAlign + "; ";
+            cssStyle += "vertical-align: " + cssVerticalAlign + "!important;; ";
         }
 
         cssStyle += " position:absolute; overflow: hidden!important; ";

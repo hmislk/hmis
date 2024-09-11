@@ -309,7 +309,16 @@
                                         </p:commandButton>
                                     </f:facet>
 
-
+                                    <ui:repeat value="#{investigationItemController.userChangableItems}" 
+                                               var="ii">
+                                        <p:outputLabel value="#{ii.name}" rendered="#{ii.ixItemType eq 'Value'}" ></p:outputLabel>
+                                        <p:outputLabel value="#{ii.name}" rendered="#{ii.ixItemType eq 'Flag'}" ></p:outputLabel><!-- comment -->
+                                        <p:outputLabel value="#{ii.name}" rendered="#{ii.ixItemType eq 'Calculation'}" ></p:outputLabel>
+                                    </ui:repeat>
+                                    <p:inputText >
+                                        
+                                    </p:inputText>
+                                    
                                     <diV class="d-flex gap-2">
                                         <p:selectOneMenu 
                                             id="dtbItem" 
