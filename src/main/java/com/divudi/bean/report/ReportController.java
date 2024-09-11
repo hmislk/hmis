@@ -1682,7 +1682,7 @@ public class ReportController implements Serializable {
 
     public List<ItemLight> getInvestigationsAndServices() {
         if (investigationsAndServices == null) {
-            itemApplicationController.getInvestigationsAndServices();
+            investigationsAndServices=itemApplicationController.getInvestigationsAndServices();
         }
         return investigationsAndServices;
     }
@@ -1865,6 +1865,14 @@ public class ReportController implements Serializable {
 
     public void setAgentHistories(List<AgentHistory> agentHistories) {
         this.agentHistories = agentHistories;
+    }
+
+    public Doctor getReferingDoctor() {
+        return referingDoctor;
+    }
+
+    public void setReferingDoctor(Doctor referingDoctor) {
+        this.referingDoctor = referingDoctor;
     }
 
 }
