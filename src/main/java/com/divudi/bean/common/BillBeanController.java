@@ -1242,8 +1242,7 @@ public class BillBeanController implements Serializable {
 
         jpql = "SELECT bi "
                 + " FROM BillItem bi "
-                + " WHERE bi.retired=false "
-                + " and bi.bill=:bl "
+                + " WHERE bi.bill=:bl "
                 + " order by bi.id";
 
         params.put("bl", b);
@@ -2544,8 +2543,7 @@ public class BillBeanController implements Serializable {
     public List<Bill> fetchRefundBillsOfBilledBill(Bill billedBill) {
         String j = "Select b "
                 + " from Bill b "
-                + " where b.billedBill=:bb "
-                + " and b.cancelled=false";
+                + " where b.billedBill=:bb ";
         Map m = new HashMap();
         m.put("bb", billedBill);
         List<Bill> tbs = billFacade.findByJpql(j, m);
@@ -4469,8 +4467,7 @@ public class BillBeanController implements Serializable {
         Map params = new HashMap();
         jpql = "Select bf "
                 + " from BillFee bf "
-                + "where bf.retired=:ret "
-                + "and bf.bill=:bill "
+                + "where bf.bill=:bill "
                 + "order by bf.billItem.id";
         params.put("ret", false);
         params.put("bill", bill);
@@ -4484,8 +4481,7 @@ public class BillBeanController implements Serializable {
         Map params = new HashMap();
         jpql = "Select bc "
                 + " from BillComponent bc "
-                + "where bc.retired=:ret "
-                + "and bc.bill=:bill "
+                + "where bc.bill=:bill "
                 + "order by bc.id";
         params.put("ret", false);
         params.put("bill", bill);
@@ -4499,8 +4495,7 @@ public class BillBeanController implements Serializable {
         Map params = new HashMap();
         jpql = "Select p "
                 + " from Payment p "
-                + "where p.retired=:ret "
-                + "and p.bill=:bill "
+                + "where p.bill=:bill "
                 + "order by p.id";
         params.put("ret", false);
         params.put("bill", bill);

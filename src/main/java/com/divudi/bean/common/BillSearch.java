@@ -2970,6 +2970,22 @@ public class BillSearch implements Serializable {
         }
         return "/opd/view/opd_bill?faces-redirect=true;";
     }
+    
+    public String navigateToViewCancallationOpdBill() {
+        if (viewingBill == null) {
+            JsfUtil.addErrorMessage("Nothing to cancel");
+            return "";
+        }
+        return "/opd/view/cancelled_opd_bill?faces-redirect=true;";
+    }
+    
+     public String navigateToViewCancallationOpdbATCHBill() {
+        if (viewingBill == null) {
+            JsfUtil.addErrorMessage("Nothing to cancel");
+            return "";
+        }
+        return "/opd/view/cancelled_opd_batch_bill?faces-redirect=true;";
+    }
 
     public String navigateToViewOpdBatchBill() {
         if (viewingBill == null) {
@@ -3065,7 +3081,7 @@ public class BillSearch implements Serializable {
             case OPD_BILL_REFUND:
                 return navigateToManageOpdBill();
             case OPD_BILL_CANCELLATION:
-                return navigateToManageOpdBill();
+                return navigateToViewCancallationOpdBill();
             case OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER:
                 return navigateToManageOpdBill();
             case OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION:
