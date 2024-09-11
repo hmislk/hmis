@@ -264,6 +264,14 @@ public class BillSearch implements Serializable {
     //Edit Bill details
     private Doctor referredBy;
 
+    private Bill viewingBill;
+    private List<Bill> viewingIndividualBillsOfBatchBill;
+    private List<Bill> viewingRefundBills;
+    private List<BillItem> viewingBillItems;
+    private List<BillFee> viewingBillFees;
+    private List<BillComponent> viewingBillComponents;
+    private List<Payment> viewingBillPayments;
+
     public String navigateToBillPaymentOpdBill() {
         return "bill_payment_opd?faces-redirect=true";
     }
@@ -2956,6 +2964,22 @@ public class BillSearch implements Serializable {
     }
 
     public String navigateToViewOpdBill() {
+        if (viewingBill == null) {
+            JsfUtil.addErrorMessage("Nothing to cancel");
+            return "";
+        }
+        return "/opd/view/opd_bill?faces-redirect=true;";
+    }
+
+    public String navigateToViewOpdBatchBill() {
+        if (viewingBill == null) {
+            JsfUtil.addErrorMessage("Nothing to cancel");
+            return "";
+        }
+        return "/opd/view/opd_batch_bill?faces-redirect=true;";
+    }
+
+    public String navigateToManageOpdBill() {
         if (bill == null) {
             JsfUtil.addErrorMessage("Nothing to cancel");
             return "";
@@ -3039,26 +3063,19 @@ public class BillSearch implements Serializable {
                 pharmacyBillSearch.setBill(bill);
                 return pharmacyBillSearch.navigateToViewPharmacyGrn();
             case OPD_BILL_REFUND:
-                return navigateToViewOpdBill();
-
+                return navigateToManageOpdBill();
             case OPD_BILL_CANCELLATION:
-                return navigateToViewOpdBill();
-
+                return navigateToManageOpdBill();
             case OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER:
-                return navigateToViewOpdBill();
-
+                return navigateToManageOpdBill();
             case OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION:
-                return navigateToViewOpdBill();
-
+                return navigateToManageOpdBill();
             case OPD_PROFESSIONAL_PAYMENT_BILL:
-                return navigateToViewOpdBill();
-
+                return navigateToManageOpdBill();
             case OPD_BILL_WITH_PAYMENT:
                 return navigateToViewOpdBill();
-
             case OPD_BATCH_BILL_WITH_PAYMENT:
-                return navigateToViewOpdBill();
-
+                return navigateToViewOpdBatchBill();
             case CHANNEL_BOOKING_WITH_PAYMENT:
                 return "";
             case CC_BILL:
@@ -3175,25 +3192,25 @@ public class BillSearch implements Serializable {
                 pharmacyBillSearch.setBill(bill);
                 return pharmacyBillSearch.navigateToViewPharmacyGrn();
             case OPD_BILL_REFUND:
-                return navigateToViewOpdBill();
+                return navigateToManageOpdBill();
 
             case OPD_BILL_CANCELLATION:
-                return navigateToViewOpdBill();
+                return navigateToManageOpdBill();
 
             case OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER:
-                return navigateToViewOpdBill();
+                return navigateToManageOpdBill();
 
             case OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION:
-                return navigateToViewOpdBill();
+                return navigateToManageOpdBill();
 
             case OPD_PROFESSIONAL_PAYMENT_BILL:
-                return navigateToViewOpdBill();
+                return navigateToManageOpdBill();
 
             case OPD_BILL_WITH_PAYMENT:
-                return navigateToViewOpdBill();
+                return navigateToManageOpdBill();
 
             case OPD_BATCH_BILL_WITH_PAYMENT:
-                return navigateToViewOpdBill();
+                return navigateToManageOpdBill();
 
             case CHANNEL_BOOKING_WITH_PAYMENT:
                 return "";
@@ -4347,12 +4364,70 @@ public class BillSearch implements Serializable {
     }
 
     private void loadBillDetails(Bill bill) {
-        Bill loadingBill = billBean.fetchBill(bill.getId());
-        List<BillItem> loadingBillItems = billBean.fetchBillItems(bill);
-        List<BillFee> loadingBillFees = billBean.fetchBillFees(bill);
-        List<BillComponent> loadingBillComponents;
-        List<Payment> loadingBillPayments;
+        System.out.println("loadBillDetails");
+        viewingBill = billBean.fetchBill(bill.getId());
+        viewingIndividualBillsOfBatchBill = billBean.fetchIndividualBillsOfBatchBill(bill);
+        viewingRefundBills = billBean.fetchRefundBillsOfBilledBill(bill);
+        viewingBillItems = billBean.fetchBillItems(bill);
+        viewingBillFees = billBean.fetchBillFees(bill);
+        viewingBillComponents = billBean.fetchBillComponents(bill);
+        viewingBillPayments = billBean.fetchBillPayments(bill);
+    }
 
+    public Bill getViewingBill() {
+        return viewingBill;
+    }
+
+    public void setViewingBill(Bill viewingBill) {
+        this.viewingBill = viewingBill;
+    }
+
+    public List<BillItem> getViewingBillItems() {
+        return viewingBillItems;
+    }
+
+    public void setViewingBillItems(List<BillItem> viewingBillItems) {
+        this.viewingBillItems = viewingBillItems;
+    }
+
+    public List<BillFee> getViewingBillFees() {
+        return viewingBillFees;
+    }
+
+    public void setViewingBillFees(List<BillFee> viewingBillFees) {
+        this.viewingBillFees = viewingBillFees;
+    }
+
+    public List<BillComponent> getViewingBillComponents() {
+        return viewingBillComponents;
+    }
+
+    public void setViewingBillComponents(List<BillComponent> viewingBillComponents) {
+        this.viewingBillComponents = viewingBillComponents;
+    }
+
+    public List<Payment> getViewingBillPayments() {
+        return viewingBillPayments;
+    }
+
+    public void setViewingBillPayments(List<Payment> viewingBillPayments) {
+        this.viewingBillPayments = viewingBillPayments;
+    }
+
+    public List<Bill> getViewingIndividualBillsOfBatchBill() {
+        return viewingIndividualBillsOfBatchBill;
+    }
+
+    public void setViewingIndividualBillsOfBatchBill(List<Bill> viewingIndividualBillsOfBatchBill) {
+        this.viewingIndividualBillsOfBatchBill = viewingIndividualBillsOfBatchBill;
+    }
+
+    public List<Bill> getViewingRefundBills() {
+        return viewingRefundBills;
+    }
+
+    public void setViewingRefundBills(List<Bill> viewingRefundBills) {
+        this.viewingRefundBills = viewingRefundBills;
     }
 
     public class PaymentSummary {

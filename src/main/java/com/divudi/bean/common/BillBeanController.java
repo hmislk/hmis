@@ -1235,7 +1235,7 @@ public class BillBeanController implements Serializable {
         temMap.put("ins", institution);
         return getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
-    
+
     public List<BillItem> fetchBillItems(Bill b) {
         String jpql;
         HashMap params = new HashMap();
@@ -2528,6 +2528,29 @@ public class BillBeanController implements Serializable {
         List<Bill> tbs = billFacade.findByJpql(j, m);
         return tbs;
     }
+    
+    public List<Bill> fetchIndividualBillsOfBatchBill(Bill batchBill) {
+        String j = "Select b "
+                + " from Bill b "
+                + " where b.backwardReferenceBill=:bb ";
+        Map m = new HashMap();
+        m.put("bb", batchBill);
+        System.out.println("m = " + m);
+        System.out.println("j = " + j);
+        List<Bill> tbs = billFacade.findByJpql(j, m);
+        return tbs;
+    }
+    
+    public List<Bill> fetchRefundBillsOfBilledBill(Bill billedBill) {
+        String j = "Select b "
+                + " from Bill b "
+                + " where b.billedBill=:bb "
+                + " and b.cancelled=false";
+        Map m = new HashMap();
+        m.put("bb", billedBill);
+        List<Bill> tbs = billFacade.findByJpql(j, m);
+        return tbs;
+    }
 
     public List<Bill> findValidBillsForSampleCollection(Long bill) {
         Bill b = billFacade.find(bill);
@@ -2613,7 +2636,7 @@ public class BillBeanController implements Serializable {
         }
 
     }
-    
+
     public List<Payment> createPayment(Bill bill, PaymentMethod pm, PaymentMethodData paymentMethodData) {
         List<Payment> ps = new ArrayList<>();
         if (bill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
@@ -3184,7 +3207,6 @@ public class BillBeanController implements Serializable {
 
     @Inject
     BillController billController;
-    
 
     private boolean billFeeIsThereAsSelectedInBillFeeBundle(BillFee bf, List<BillFeeBundleEntry> bundleFeeEntries) {
         if (bf == null) {
@@ -4441,10 +4463,8 @@ public class BillBeanController implements Serializable {
         return t;
     }
 
-    
-    
-     public List<BillFee> fetchBillFees(Bill bill) {
-        List<BillFee> fetchingBillFees ;
+    public List<BillFee> fetchBillFees(Bill bill) {
+        List<BillFee> fetchingBillFees;
         String jpql;
         Map params = new HashMap();
         jpql = "Select bf "
@@ -4458,8 +4478,36 @@ public class BillBeanController implements Serializable {
         return fetchingBillFees;
     }
 
-    
-    
+    public List<BillComponent> fetchBillComponents(Bill bill) {
+        List<BillComponent> fetchingBillComponents;
+        String jpql;
+        Map params = new HashMap();
+        jpql = "Select bc "
+                + " from BillComponent bc "
+                + "where bc.retired=:ret "
+                + "and bc.bill=:bill "
+                + "order by bc.id";
+        params.put("ret", false);
+        params.put("bill", bill);
+        fetchingBillComponents = billComponentFacade.findByJpql(jpql, params);
+        return fetchingBillComponents;
+    }
+
+    public List<Payment> fetchBillPayments(Bill bill) {
+        List<Payment> fetchingBillComponents;
+        String jpql;
+        Map params = new HashMap();
+        jpql = "Select p "
+                + " from Payment p "
+                + "where p.retired=:ret "
+                + "and p.bill=:bill "
+                + "order by p.id";
+        params.put("ret", false);
+        params.put("bill", bill);
+        fetchingBillComponents = paymentFacade.findByJpql(jpql, params);
+        return fetchingBillComponents;
+    }
+
     public List<BillFee> forInstitutionBillFeefromBillItem(BillItem billItem, Institution forIns) {
         List<BillFee> t = new ArrayList<>();
         BillFee f;
