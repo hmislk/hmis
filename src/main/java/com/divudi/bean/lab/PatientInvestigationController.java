@@ -1210,6 +1210,7 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public String navigateToGenerateBarcodes() {
+        makeNull();
         boolean searchInvestigationsForLoggedInstitution = configOptionApplicationController.getBooleanValueByKey("For Lab Sample Barcode Generation, Search by Ordered Institution", false);
         if (searchInvestigationsForLoggedInstitution) {
             orderedInstitution = sessionController.getInstitution();
@@ -1219,6 +1220,7 @@ public class PatientInvestigationController implements Serializable {
             orderedDepartment = sessionController.getDepartment();
         }
         listBillsToGenerateBarcodes();
+        
         return "/lab/generate_barcode_p?faces-redirect=true";
     }
 
@@ -1714,6 +1716,10 @@ public class PatientInvestigationController implements Serializable {
         this.searchDateType = null;
         this.fromDate = null;
         this.toDate = null;
+        makeNull();
+    }
+    
+    public void makeNull() {
         this.patientInvestigationStatus = null;
         this.referringDoctor = null;
         this.externalDoctor = null;
@@ -1729,7 +1735,16 @@ public class PatientInvestigationController implements Serializable {
         this.orderedInstitution = null;
         this.orderedDepartment = null;
         this.performingInstitution = null;
-        this.performingDepartment = null;
+        this.performingDepartment = null;    
+        clearReportData();
+    }
+    
+    public void clearReportData(){
+        this.items = null;
+        this.bills = null;
+        this.selectedBillBarcodes = null;
+        this.patientReports = null;
+        this.patientSamples = null;
     }
 
     public void searchBills() {
