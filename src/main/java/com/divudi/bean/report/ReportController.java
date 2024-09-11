@@ -1682,7 +1682,7 @@ public class ReportController implements Serializable {
 
     public List<ItemLight> getInvestigationsAndServices() {
         if (investigationsAndServices == null) {
-            itemApplicationController.getInvestigationsAndServices();
+            investigationsAndServices=itemApplicationController.getInvestigationsAndServices();
         }
         return investigationsAndServices;
     }
