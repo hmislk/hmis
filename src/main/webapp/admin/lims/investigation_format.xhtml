@@ -308,8 +308,10 @@
                                             ajax="false" >
                                         </p:commandButton>
                                     </f:facet>
-
-
+                                    <div>
+                                        <p:inputTextarea id="allItemName"
+                                                        value="#{investigationItemController.userChangableItems}" />
+                                    </div>
                                     <diV class="d-flex gap-2">
                                         <p:selectOneMenu 
                                             id="dtbItem" 
