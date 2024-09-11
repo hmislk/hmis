@@ -1229,7 +1229,6 @@ public class StaffController implements Serializable {
 
         System.out.println(" current.getName() = " + current.getName());
         System.out.println(" current.getPerson().getName() = " + current.getPerson().getName());
-        System.out.println("current.getPerson().getFullName() = " + current.getPerson().getFullName());
 
         updateStaffEmployment();
 
@@ -1285,7 +1284,6 @@ public class StaffController implements Serializable {
 
         System.out.println(" current.getName() = " + current.getName());
         System.out.println(" current.getPerson().getName() = " + current.getPerson().getName());
-        System.out.println("current.getPerson().getFullName() = " + current.getPerson().getFullName());
 
         recreateModel();
         getItems();
@@ -1524,7 +1522,6 @@ public class StaffController implements Serializable {
         Map m = new HashMap();
         m.put("ret", true);
         m.put("name", name);
-        System.out.println("m = " + m);
         return getFacade().findFirstByJpql(jpql, m);
     }
 

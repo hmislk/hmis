@@ -1028,7 +1028,6 @@ public class ChannelScheduleController implements Serializable {
                         .filter(s -> !s.isEmpty())
                         .mapToInt(Integer::parseInt)
                         .toArray();
-                System.out.println(Arrays.toString(resnumbers));
                 if (resnumbers.length != 0) {
                     int sessStartnumber = Integer.valueOf(current.getSessionStartingNumber());
                     boolean allLower = IntStream.of(resnumbers).allMatch(n -> n < sessStartnumber);

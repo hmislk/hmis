@@ -13,11 +13,11 @@
                 </style>
             </h:head>
 
-            <h:panelGroup rendered="#{!webUserController.hasPrivilege('LabSampleCollecting')}" >
+<!--            <h:panelGroup rendered="#{!webUserController.hasPrivilege('LabSampleCollecting')}" >
                 You are NOT authorized
-            </h:panelGroup>
+            </h:panelGroup>-->
 
-            <h:panelGroup rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}" >
+            <h:panelGroup >
                 <div class="container-fluid p-3" >
                     <h:form >
                         <div class="row px-2" >
@@ -92,20 +92,12 @@
                                             </p:column>
                                         </p:autoComplete> 
                                     </h:panelGrid>
-                                    <h:panelGrid columns="1" class="w-100">
-                                        <h:outputLabel class="w-100" value="Type"/>
-                                        <p:selectOneMenu class="w-100" value="#{patientInvestigationController.type}">
-                                            <f:selectItem itemLabel="Any"/>
-                                            <f:selectItem itemValue="OP" itemLabel="Out Patients (OP)"/>
-                                            <f:selectItem itemValue="IP" itemLabel="In Patients (IP)"/>
-                                            <f:selectItem itemValue="CC" itemLabel="Collecting Centre (CC)"/>
-                                        </p:selectOneMenu>
-                                    </h:panelGrid>
+                                    
                                     <h:panelGrid columns="1" class="w-100">
                                         <h:outputLabel class="w-100" value="Sample Id"/>
                                         <p:inputText class="w-100" value="#{patientInvestigationController.sampleId}"/>
-
                                     </h:panelGrid>
+                                    
                                     <h:panelGrid columns="1" class="w-100">
                                         <h:outputLabel class="w-100" value="Patient Name"/>
                                         <p:inputText class="w-100" value="#{patientInvestigationController.patientName}"/>
@@ -160,11 +152,11 @@
                             </div>
                             <div class="col-2">
                                 <h:panelGrid columns="1" class="w-100">
-                                    <p:commandButton ajax="false" action="#{patientInvestigationController.searchBills}" value="Bills" icon="fas fa-file-invoice-dollar" styleClass="ui-button-success w-100"/>
-                                    <p:commandButton ajax="false" action="#{patientInvestigationController.searchPatientInvestigations}" value="Investigations" icon="fas fa-search" styleClass="my-1 ui-button-primary w-100"/>
-                                    <p:commandButton ajax="false" action="#{patientInvestigationController.searchPatientSamples}" value="Samples" icon="fas fa-vial" styleClass="ui-button-warning w-100"/>
-                                    <p:commandButton ajax="false" action="#{patientInvestigationController.searchPatientReports}" value="Reports" icon="fas fa-file-medical" styleClass="my-1 ui-button-danger w-100"/>
-                                    <p:commandButton ajax="false" action="#{patientInvestigationController.clearFilters}" value="Clear" icon="fas fa-eraser" styleClass="ui-button-secondary w-100"/>
+                                    <p:commandButton ajax="false" action="#{patientInvestigationController.searchBills}" value="Bills" icon="fas fa-file-invoice-dollar" actionListener="#{patientInvestigationController.clearData()}" styleClass="ui-button-success w-100"/>
+                                    <p:commandButton ajax="false" action="#{patientInvestigationController.searchPatientInvestigations}" value="Investigations" actionListener="#{patientInvestigationController.clearData()}" icon="fas fa-search" styleClass="my-1 ui-button-primary w-100"/>
+                                    <p:commandButton ajax="false" action="#{patientInvestigationController.searchPatientSamples}" value="Samples" actionListener="#{patientInvestigationController.clearData()}" icon="fas fa-vial" styleClass="ui-button-warning w-100"/>
+                                    <p:commandButton ajax="false" action="#{patientInvestigationController.searchPatientReportsForCourier}" actionListener="#{patientInvestigationController.clearData()}" value="Reports" icon="fas fa-file-medical" styleClass="my-1 ui-button-danger w-100"/>
+                                    <p:commandButton ajax="false" action="#{patientInvestigationController.clearFilters}" value="Clear" actionListener="#{patientInvestigationController.clearData()}" icon="fas fa-eraser" styleClass="ui-button-secondary w-100"/>
                                 </h:panelGrid>
                             </div>
                         </div>
@@ -175,6 +167,7 @@
                         <div class="row px-2" >
                             <div class="col-12 mt-2" >
 
+                                 <!--BILLS-->
                                 <h:panelGroup rendered="#{patientInvestigationController.listingEntity eq 'BILLS'}" >
 
                                     <p:dataTable  
@@ -267,7 +260,8 @@
                                     </p:dataTable>
 
                                 </h:panelGroup>
-
+                                
+                                <!--PATIENT_INVESTIGATIONS-->
                                 <h:panelGroup rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_INVESTIGATIONS'}" >
                                     <p:dataTable  
                                         class="w-100"
@@ -386,6 +380,7 @@
                                     </p:dataTable>
                                 </h:panelGroup>
 
+                                 <!--PATIENT_SAMPLES-->
                                 <h:panelGroup rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_SAMPLES'}">
                                     <p:dataTable  
                                         class="w-100"
@@ -469,6 +464,7 @@
                                     </p:dataTable>
                                 </h:panelGroup>
 
+                                <!--PATIENT_REPORTS-->
                                 <h:panelGroup rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_REPORTS'}" >
                                     <p:dataTable  
                                         class="w-100"
@@ -539,7 +535,7 @@
                                         </p:column>
 
                                         <!-- Status Column -->
-                                        <p:column headerText="Status" style="vertical-align: top;">
+                                        <p:column headerText="Status" style="vertical-align: top;" >
                                             <i class="fas fa-info-circle text-info"></i> <!-- Status Icon -->
                                             <h:outputLabel value="#{dpr.patientInvestigation.status}"/>
                                         </p:column>
@@ -555,7 +551,12 @@
                                             </h:panelGroup>
                                             <h:panelGroup rendered="#{dpr.patientInvestigation.billItem.bill.collectingCentre != null}">
                                                 <i class="fas fa-box text-secondary"></i> <!-- Collecting Centre Icon -->
-                                                <h:outputLabel value="#{dpr.patientInvestigation.billItem.bill.collectingCentre.name}" />
+                                                <h:outputLabel value="#{dpr.patientInvestigation.billItem.bill.collectingCentre.code}" class="mx-3"/><br/>
+                                                <i class="fas fa-box text-secondary"></i> <!-- Collecting Centre Icon -->
+                                                <h:outputLabel value="#{sessionController.department.name}" class="mx-3" /><br/>
+                                                <i class="fas fa-box text-secondary"></i> <!-- Collecting Centre Icon -->
+                                                <h:outputLabel value="#{dpr.patientInvestigation.billItem.bill.collectingCentre.name}" class="mx-3"/>
+                                                
                                             </h:panelGroup>
                                         </p:column>
 

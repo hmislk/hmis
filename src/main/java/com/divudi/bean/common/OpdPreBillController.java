@@ -715,7 +715,6 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         }
 
         for (Department d : billDepts) {
-            System.out.println("d = " + d);
             PreBill newPreBill = new PreBill();
             newPreBill = saveBill(d, newPreBill);
 

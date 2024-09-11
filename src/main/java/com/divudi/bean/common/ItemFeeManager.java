@@ -98,6 +98,10 @@ public class ItemFeeManager implements Serializable {
     public String navigateItemFeeList() {
         return "/admin/pricing/item_fee_list?faces-redirect=true";
     }
+    
+    public String navigateItemFeeValueList() {
+        return "/admin/pricing/item_fee_value_list?faces-redirect=true";
+    }
 
     public String navigateToCollectingCentreItemFeeList() {
         return "/admin/pricing/item_fee_list_collecting_centre?faces-redirect=true";
@@ -330,7 +334,7 @@ public class ItemFeeManager implements Serializable {
 
     public void updateFeesForCcFees() {
         for (ItemFee tif : itemFees) {
-            updateSiteFeeValues(tif.getItem(), collectingCentre);
+            updateCcFeeValues(tif.getItem(), collectingCentre);
         }
     }
 
@@ -727,7 +731,6 @@ public class ItemFeeManager implements Serializable {
             jpql += " and f.forCategory is null";
         }
         System.out.println("m = " + m);
-        System.out.println("jpql = " + jpql);
         List<ItemFee> fs = itemFeeFacade.findByJpql(jpql, m);
         return fs;
     }
@@ -751,7 +754,6 @@ public class ItemFeeManager implements Serializable {
         jpql += " and f.forCategory is null";
 
         System.out.println("m = " + m);
-        System.out.println("jpql = " + jpql);
         List<ItemFee> fs = itemFeeFacade.findByJpql(jpql, m);
         return fs;
     }
@@ -779,15 +781,14 @@ public class ItemFeeManager implements Serializable {
         }
 
         jpql += " and f.forCategory is null ";
-        jpql += " and f.total > :tot ";
+        jpql += " and f.fee > :fee ";
         jpql += " and f.item.retired=:ir ";
-        m.put("tot", 0.0);
+        m.put("fee", 0.0);
         m.put("ir", false);
         jpql += " GROUP BY f.item "
                 + " ORDER BY f.item.name";
 
         System.out.println("m = " + m);
-        System.out.println("jpql = " + jpql);
         List<ItemLight> fs = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, m);
         return fs;
     }
@@ -807,12 +808,11 @@ public class ItemFeeManager implements Serializable {
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
 
-        jpql += " and (f.forInstitution=:ins or f.forCategory=:fl ) ";
-        m.put("ins", cc);
-        m.put("fl", cc.getFeeListType());
-
-        jpql += " and f.forCategory is null ";
-        jpql += " and f.total > :tot ";
+        jpql += " and (f.forInstitution.id=:ins or f.forCategory.id=:fl) ";
+        m.put("ins", cc.getId());
+        m.put("fl", cc.getFeeListType().getId());
+        
+        jpql += " and f.fee > :tot ";
         jpql += " and f.item.retired=:ir ";
         m.put("tot", 0.0);
         m.put("ir", false);
@@ -820,7 +820,6 @@ public class ItemFeeManager implements Serializable {
                 + " ORDER BY f.item.name";
 
         System.out.println("m = " + m);
-        System.out.println("jpql = " + jpql);
         List<ItemLight> fs = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, m);
         return fs;
     }

@@ -1,6 +1,7 @@
 package com.divudi.data;
 
 import com.divudi.entity.Bill;
+import com.divudi.entity.BillItem;
 import com.divudi.entity.BillSession;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
@@ -10,21 +11,28 @@ import com.divudi.entity.Payment;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.channel.SessionInstance;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.logging.Logger;
 
 /**
  *
  * @author buddhika
  */
-public class ReportTemplateRow {
+public class ReportTemplateRow implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private String uuid;
+    private Long counter;
 
     private Category category;
     private Bill bill;
+    private BillItem billItem;
     private Payment payment;
 
     private Item item;
@@ -60,7 +68,6 @@ public class ReportTemplateRow {
     private Long rowCountIn;
     private Long rowCountOut;
     private Long rowCount;
-    private Long id;
 
     private Long long1;
     private Long long2;
@@ -81,6 +88,7 @@ public class ReportTemplateRow {
     private BillSession billSession;
     private Department department;
     private Institution institution;
+    private Institution site;
 
     private Date date;
     private Date fromDate;
@@ -116,6 +124,46 @@ public class ReportTemplateRow {
     private double onlineSettlementValue;
 
     private String rowType;
+
+    private UUID id;
+
+    // Constructor to generate a new UUID when an object is created
+    public ReportTemplateRow() {
+        this.id = UUID.randomUUID();
+    }
+
+    // Getter for UUID (optional, depending on use case)
+    public UUID getId() {
+        if (id == null) {
+            id = UUID.randomUUID();
+        }
+        return id;
+    }
+
+    // Override equals() using UUID field
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ReportTemplateRow that = (ReportTemplateRow) o;
+        return Objects.equals(getId(), that.id);
+    }
+
+    // Override hashCode() using UUID field
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId());
+    }
+
+    // Override toString() for better readability (optional)
+    @Override
+    public String toString() {
+        return "ReportTemplateRow{id=" + getId() + '}';
+    }
 
     public ReportTemplateRow(SessionInstance sessionInstance) {
         this.sessionInstance = sessionInstance;
@@ -334,19 +382,8 @@ public class ReportTemplateRow {
         this.rowValue = rowValue;
     }
 
-    public ReportTemplateRow() {
-    }
-
     public ReportTemplateRow(BillTypeAtomic billTypeAtomic) {
         this.billTypeAtomic = billTypeAtomic;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public Category getCategory() {
@@ -988,6 +1025,32 @@ public class ReportTemplateRow {
         this.payment = payment;
     }
 
-    
-    
+    public BillItem getBillItem() {
+        return billItem;
+    }
+
+    public void setBillItem(BillItem billItem) {
+        this.billItem = billItem;
+    }
+
+    public ReportTemplateRow(BillItem billItem) {
+        this.billItem = billItem;
+    }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
+    }
+
+    public Long getCounter() {
+        return counter;
+    }
+
+    public void setCounter(Long counter) {
+        this.counter = counter;
+    }
+
 }
