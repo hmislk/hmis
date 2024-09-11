@@ -96,13 +96,53 @@ public class PatientDepositController implements Serializable, ControllerWithPat
                 patientController.getPaymentMethodData() );
     }
     
-    public void updateBalance(Bill b, PatientDeposit pd){
-        Double beforeBalance = pd.getBalance();
+    public void settlePatientDepositReturn(){
+        if(patient == null){
+            JsfUtil.addErrorMessage("Please Select a Patient");
+            return;
+        }
+        if(current.getBalance() < patientController.getBill().getNetTotal()){
+            JsfUtil.addErrorMessage("Can't Refund a Total More that Deposit");
+            return;
+        }
+        patientController.settlePatientDepositReturn();
+        System.out.println("patientController.getBill() = " + patientController.getBill());
+        updateBalance(patientController.getBill(), current);
+        billBeanController.createPayment(patientController.getBill(),
+                patientController.getBill().getPaymentMethod(), 
+                patientController.getPaymentMethodData() );
+    }
+    
+    public void updateBalance(Bill b, PatientDeposit pd){ 
+        switch (b.getBillType()) {
+            case PatientPaymentReceiveBill:
+                handlePatientDepositBill(b,pd);
+                break;
+                
+            case PatientPaymentRefundBill:
+                handlePatientDepositBillReturn(b,pd);
+                break;
+            default:
+                throw new AssertionError();
+        }  
+    }
+    
+    public void handlePatientDepositBill(Bill b, PatientDeposit pd){
+       Double beforeBalance = pd.getBalance();
         Double afterBalance = beforeBalance + b.getNetTotal();
         pd.setBalance(afterBalance);
         patientDepositFacade.edit(pd);
         JsfUtil.addSuccessMessage("Balance Updated.");
-        createPatientDepositHitory(HistoryType.PatientDeposit,pd,b,beforeBalance,afterBalance);
+        createPatientDepositHitory(HistoryType.PatientDeposit,pd,b,beforeBalance,afterBalance); 
+    }
+    
+     public void handlePatientDepositBillReturn(Bill b, PatientDeposit pd){
+       Double beforeBalance = pd.getBalance();
+        Double afterBalance = beforeBalance - Math.abs(b.getNetTotal());
+        pd.setBalance(afterBalance);
+        patientDepositFacade.edit(pd);
+        JsfUtil.addSuccessMessage("Balance Updated.");
+        createPatientDepositHitory(HistoryType.PatientDepositReturn,pd,b,beforeBalance,afterBalance); 
     }
     
     public void createPatientDepositHitory(HistoryType ht,PatientDeposit pd, Bill b, Double beforeBalance,Double afterBalance){
