@@ -308,10 +308,17 @@
                                             ajax="false" >
                                         </p:commandButton>
                                     </f:facet>
-                                    <div>
-                                        <p:inputTextarea id="allItemName"
-                                                        value="#{investigationItemController.userChangableItems}" />
-                                    </div>
+
+                                    <ui:repeat value="#{investigationItemController.userChangableItems}" 
+                                               var="ii">
+                                        <p:outputLabel value="#{ii.name}" rendered="#{ii.ixItemType eq 'Value'}" ></p:outputLabel>
+                                        <p:outputLabel value="#{ii.name}" rendered="#{ii.ixItemType eq 'Flag'}" ></p:outputLabel><!-- comment -->
+                                        <p:outputLabel value="#{ii.name}" rendered="#{ii.ixItemType eq 'Calculation'}" ></p:outputLabel>
+                                    </ui:repeat>
+                                    <p:inputText >
+                                        
+                                    </p:inputText>
+                                    
                                     <diV class="d-flex gap-2">
                                         <p:selectOneMenu 
                                             id="dtbItem" 
