@@ -66,11 +66,13 @@
                                     style=" max-width: 100%; overflow-x: auto; "
                                     class="w-100"
                                     value="#{reportController.collectingCentre}"
-                                    filter="true">
+                                    filter="true"
+                                    filterMatchMode="contains">
                                     <f:selectItem itemLabel="Select Collecting Centre"/>
-                                    <f:selectItems var="r" itemLabel="#{r.name}" 
+                                    <f:selectItems var="r" itemLabel="#{r.code} :  #{r.name}" 
                                                    value="#{collectingCentreController.items}" 
                                                    itemValue="#{r}" />
+                                    
                                 </p:selectOneMenu>
                             </div>
                         </div>
@@ -205,14 +207,14 @@
                                                  value="Process"
                                                  class="ui-button-warning"
                                                  action="#{reportController.processCollectingCentreReciptReport()}" />
-<!--                                <p:commandButton ajax="false"
-                                                 value="Download to Excel"
-                                                 class="mx-1 ui-button-success"
-                                                 ><p:dataExporter 
-                                        type="xls" 
-                                        target="tblExport"
-                                        fileName="c_transaction_reports"
-                                        /></p:commandButton>-->
+                                <!--                                <p:commandButton ajax="false"
+                                                                                 value="Download to Excel"
+                                                                                 class="mx-1 ui-button-success"
+                                                                                 ><p:dataExporter 
+                                                                        type="xls" 
+                                                                        target="tblExport"
+                                                                        fileName="c_transaction_reports"
+                                                                        /></p:commandButton>-->
                             </div>
                         </div>
                     </div>
