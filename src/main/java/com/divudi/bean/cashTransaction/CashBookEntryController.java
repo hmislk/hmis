@@ -312,7 +312,6 @@ public class CashBookEntryController implements Serializable {
         m.put("toDate", toDate);
         m.put("ret", false);
         cashBookEntryList = cashbookEntryFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
-        System.out.println("cashBookEntryList = " + cashBookEntryList.size());
         return cashBookEntryList;
     }
 

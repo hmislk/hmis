@@ -355,7 +355,6 @@ public class ServiceSessionBean {
         if (si.getOriginatingSession().getSessionStartingNumber()!=null) {
             if (!si.getOriginatingSession().getSessionStartingNumber().trim().equals("")) {
              nextAvailableNumber=Integer.valueOf(si.getOriginatingSession().getSessionStartingNumber());   
-                System.out.println("nextAvailableNumber = " + nextAvailableNumber);
             }
         }
         

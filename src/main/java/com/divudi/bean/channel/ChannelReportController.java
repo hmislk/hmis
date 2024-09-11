@@ -362,7 +362,6 @@ public class ChannelReportController implements Serializable {
             }
         }
 
-        System.out.println("canceledSessionInstances = " + canceledSessionInstances.size());
         sessioninstances.removeAll(canceledSessionInstances);
 
     }
