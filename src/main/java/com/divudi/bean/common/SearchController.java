@@ -12831,7 +12831,6 @@ public class SearchController implements Serializable {
         Map<String, List<ReportTemplateRow>> detailedBillItemRows = new HashMap<>();
         List<ReportTemplateRow> rowsToAdd = new ArrayList<>();
         double totalOpdServiceCollection = 0.0;
-
         for (BillItem bi : billItems) {
             System.out.println("Processing BillItem: " + bi);
 
