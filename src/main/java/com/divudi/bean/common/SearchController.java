@@ -12827,7 +12827,8 @@ public class SearchController implements Serializable {
 
     public void billItemsToItamizedSaleReport(ReportTemplateRowBundle rtrb, List<BillItem> billItems) {
         Map<String, ReportTemplateRow> categoryMap = new HashMap<>();
-        Map<String, List<ReportTemplateRow>> itemMap = new HashMap<>();
+        Map<String, ReportTemplateRow> itemSummaryMap = new HashMap<>();
+        Map<String, List<ReportTemplateRow>> detailedBillItemRows = new HashMap<>();
         List<ReportTemplateRow> rowsToAdd = new ArrayList<>();
         double totalOpdServiceCollection = 0.0;
 
@@ -12847,13 +12848,18 @@ public class SearchController implements Serializable {
             System.out.println("Category: " + categoryName + ", Item: " + itemName);
 
             categoryMap.putIfAbsent(categoryName, new ReportTemplateRow());
+            itemSummaryMap.putIfAbsent(itemKey, new ReportTemplateRow());
+            detailedBillItemRows.putIfAbsent(itemKey, new ArrayList<>());
 
-            itemMap.putIfAbsent(itemKey, new ArrayList<>());
-            ReportTemplateRow itemRow = new ReportTemplateRow();
+            // Summary Row for item categories
             if (bi.getItem() != null) {
                 categoryMap.get(categoryName).setCategory(bi.getItem().getCategory());
-                itemRow.setItem(bi.getItem());
+                itemSummaryMap.get(itemKey).setItem(bi.getItem());
             }
+
+            // Create a detailed row for each BillItem without item details to avoid redundancy
+            ReportTemplateRow detailedRow = new ReportTemplateRow();
+            detailedRow.setBillItem(bi);  // Assuming a method to set other attributes from BillItem
 
             double grossValue = bi.getGrossValue();
             double hospitalFee = bi.getHospitalFee();
@@ -12872,18 +12878,22 @@ public class SearchController implements Serializable {
             }
 
             totalOpdServiceCollection += netValue;
-            updateRow(itemRow, countModifier, grossValue, hospitalFee, discount, staffFee, netValue);
-            itemMap.get(itemKey).add(itemRow);
+            updateRow(detailedRow, countModifier, grossValue, hospitalFee, discount, staffFee, netValue);
+            detailedBillItemRows.get(itemKey).add(detailedRow);
         }
 
-        // Add category rows and then each individual item row within each category
+        // Add category rows and item summary rows, then each individual detailed bill item row within each item
         categoryMap.forEach((categoryName, catRow) -> {
             System.out.println("Adding category row to bundle: " + categoryName);
             rowsToAdd.add(catRow);
-            itemMap.entrySet().stream()
+            itemSummaryMap.entrySet().stream()
                     .filter(entry -> entry.getKey().startsWith(categoryName + "->"))
-                    .flatMap(entry -> entry.getValue().stream())
-                    .forEach(rowsToAdd::add);
+                    .forEach(entry -> {
+                        System.out.println("Adding item summary row to bundle under category " + categoryName + ": " + entry.getValue().getItem().getName());
+                        rowsToAdd.add(entry.getValue());
+                        List<ReportTemplateRow> billItemRows = detailedBillItemRows.get(entry.getKey());
+                        billItemRows.forEach(rowsToAdd::add);
+                    });
         });
 
         System.out.println("Total collected: " + totalOpdServiceCollection);
