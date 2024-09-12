@@ -105,26 +105,30 @@
                                                     itemLabel="#{item.name}"
                                                     itemValue="#{item}">
                                     </p:autoComplete>
-
-
                                 </h:panelGrid>
 
-                                <p:commandButton id="btnFill" class="m-1 ui-button-info"
-                                                 icon="fas fa-list-alt" 
-                                                 ajax="false" value="List"
+                                <p:commandButton id="btnList" class="m-1 ui-button-danger"
+                                                 icon="fas fa-list"
+                                                 ajax="false" value="View List"
                                                  action="#{searchController.createItemizedSalesSummary()}" />
 
-                                <p:commandButton id="btnBack" class="m-1 ui-button-secondary"
-                                                 icon="fas fa-arrow-left"
-                                                 value="Back"
-                                                 action="#{searchController.navigateBack()}" />
-
-                                <p:commandButton value="Excel" class="m-1 ui-button-success"
-                                                 icon="fas fa-file-excel"
-                                                 ajax="false">
-                                    <p:dataExporter type="xlsx" target="tbl" fileName="itemized_sale_summary" />
+                                <p:commandButton id="btnPdf" class="m-1 ui-button-info"
+                                                 icon="fas fa-file-pdf"
+                                                 value="Export as PDF">
+                                    <p:dataExporter type="pdf" target="tbl" fileName="itemized_sale_summary" />
                                 </p:commandButton>
 
+                                <p:commandButton id="btnPrint" class="m-1 ui-button-primary"
+                                                 icon="fas fa-print"
+                                                 value="Print Table">
+                                    <p:printer target="tbl" />
+                                </p:commandButton>
+
+                                <p:commandButton id="btnExcel" class="m-1 ui-button-success"
+                                                 icon="fas fa-file-excel"
+                                                 ajax="false" value="Export to Excel">
+                                    <p:dataExporter type="xlsx" target="tbl" fileName="itemized_sale_summary" />
+                                </p:commandButton>
 
 
 
@@ -135,8 +139,7 @@
                             #{searchController.bundle.reportTemplateRows}
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-12">
+                       
                                 <p:dataTable id="tbl"
                                              value="#{searchController.bundle.reportTemplateRows}"
                                              var="row"
@@ -149,9 +152,11 @@
                                         <h:outputText value="#{searchController.bundle.name}" ></h:outputText>
                                     </f:facet>
                                     <f:facet name="footer" >
-                                        <h:outputText value="OPD Service Collection Total" ></h:outputText>
+                                        <h:outputText value="Total" ></h:outputText>
                                         <p:spacer width="50" ></p:spacer>
-                                        <h:outputText value="#{searchController.total}" ></h:outputText>
+                                        <h:outputText value="#{searchController.bundle.total}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputText>
                                     </f:facet>
                                     <p:column>
                                         <f:facet name="header">
@@ -186,7 +191,7 @@
                                             <f:convertNumber pattern="#,##0" />
                                         </h:outputText>
                                     </p:column>
-                                    <p:column>
+                                    <p:column class="text-end">
                                         <f:facet name="header">
                                             <h:outputText value="Hospital Fee" />
                                         </f:facet>
@@ -194,7 +199,7 @@
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
                                     </p:column>
-                                    <p:column>
+                                    <p:column class="text-end">
                                         <f:facet name="header">
                                             <h:outputText value="Professional Fee" />
                                         </f:facet>
@@ -202,7 +207,7 @@
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
                                     </p:column>
-                                    <p:column>
+                                    <p:column class="text-end">
                                         <f:facet name="header">
                                             <h:outputText value="Discount" />
                                         </f:facet>
@@ -210,7 +215,7 @@
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
                                     </p:column>
-                                    <p:column>
+                                    <p:column class="text-end">
                                         <f:facet name="header">
                                             <h:outputText value="Net Amount" />
                                         </f:facet>
@@ -220,9 +225,7 @@
                                     </p:column>
                                 </p:dataTable>
 
-
-                            </div>
-                        </div>                                                       
+                                                  
                     </p:panel>
                 </h:form>
             </ui:define>
