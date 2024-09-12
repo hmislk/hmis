@@ -13,7 +13,7 @@
             <ui:define name="subcontent">
                 <h:form>
                     <h1>List of Data Entry Forms</h1>
-                    <p:dataTable value="#{designComponentController.list}" 
+                    <p:dataTable value="#{designComponentController.listOfDataEntryForms}" 
                                  var="i"
                                  >
                         <p:column headerText="Name">
@@ -28,7 +28,7 @@
                                              action="#{designComponentController.navigateToEditDataEntryForm()}" >
                                 <f:setPropertyActionListener 
                                     value="#{i}" 
-                                    target="#{designComponentController.current}" >
+                                    target="#{designComponentController.currentDataEntryForm}" >
                                 </f:setPropertyActionListener>
                             </p:commandButton>
                         </p:column>
