@@ -27,8 +27,8 @@
                                              process="btnDelete"
                                              update="lstSelect gpDetail"/>
 
-                            <p:selectOneListbox  id="lstSelect" class="w-100" value="#{collectingCentreController.current}"  filter="true">
-                                <f:selectItems  value="#{collectingCentreController.selectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                            <p:selectOneListbox  id="lstSelect" class="w-100" value="#{collectingCentreController.current}"  filter="true" filterMatchMode="contains">
+                                <f:selectItems  value="#{collectingCentreController.selectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.code} - #{myItem.name}" ></f:selectItems>
                                 <p:ajax update="gpDetail" process="lstSelect" >
                                 </p:ajax>
                             </p:selectOneListbox>

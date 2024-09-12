@@ -10590,6 +10590,12 @@ public class SearchController implements Serializable {
 
     }
 
+    public void createPatientDepositTable() {
+        Date startTime = new Date();
+        createPatientDepositTable(BillType.PatientPaymentReceiveBill);
+
+    }
+
     public void createAgentPaymentTable(BillType billType) {
         bills = new ArrayList<>();
         String sql;
@@ -10625,6 +10631,41 @@ public class SearchController implements Serializable {
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("ins", getSessionController().getInstitution());
+
+        //System.err.println("Sql " + sql);
+        bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
+
+    }
+
+    public void createPatientDepositTable(BillType billType) {
+        bills = new ArrayList<>();
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select b from Bill b where b.billType = :billType "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false ";
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and  ((b.insId) like :billNo )";
+            temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
+            sql += " and  ((b.netTotal) like :netTotal )";
+            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
+            sql += " and  ((b.patient.person.name) like :pn )";
+            temMap.put("pn", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+
+        sql += " order by b.createdAt desc  ";
+
+        temMap.put("billType", billType);
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
 
         //System.err.println("Sql " + sql);
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
@@ -11917,8 +11958,8 @@ public class SearchController implements Serializable {
         ReportTemplateRowBundle opdProfessionalPayments = generateOpdProfessionalPayments();
         bundle.getBundles().add(opdProfessionalPayments);
         netCashCollection -= getSafeTotal(opdProfessionalPayments);
-        
-         // Generate channelling professional payments and add to the main bundle
+
+        // Generate channelling professional payments and add to the main bundle
         ReportTemplateRowBundle channellingProfessionalPayments = generateChannellingProfessionalPayments();
         bundle.getBundles().add(channellingProfessionalPayments);
         netCashCollection -= getSafeTotal(channellingProfessionalPayments);
@@ -11927,8 +11968,6 @@ public class SearchController implements Serializable {
         ReportTemplateRowBundle inwardProfessionalPayments = generateInwardProfessionalPayments();
         bundle.getBundles().add(inwardProfessionalPayments);
         netCashCollection -= getSafeTotal(inwardProfessionalPayments);
-
-       
 
         ReportTemplateRowBundle cardPayments = generateCreditCardPayments();
         bundle.getBundles().add(cardPayments);
