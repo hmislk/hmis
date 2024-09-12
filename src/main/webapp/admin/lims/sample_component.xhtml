@@ -17,7 +17,7 @@
                         <h:panelGrid columns="6" >
                             <p:outputLabel value="Investigation" ></p:outputLabel>
                             <p:autoComplete class="w-100" inputStyleClass="w-100" id="acIx" value="#{itemController.current}" var="ix"
-                                            itemValue="#{ix}" completeMethod="#{itemController.completeInvestigation}"
+                                            itemValue="#{ix}" completeMethod="#{itemController.completeServicesPlusInvestigationsAll}"
                                             >
                                 <p:column headerText="Name">
                                     <h:outputText value="#{ix.name}" ></h:outputText>
