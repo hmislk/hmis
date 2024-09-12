@@ -52,7 +52,11 @@
                                                 ajax="false" 
                                                 value="Itemized Sales Summary" 
                                                 action="#{searchController.navigateToItemizedSaleSummary}" />     
-                                            <p:commandButton class="w-100" ajax="false" value="Item-vice Sale Report" action="#{billPackageMedicalController.navigateToReportOpdPackageBill()}" actionListener="#{billPackageMedicalController.makeNull}"/>     
+                                            <p:commandButton 
+                                                class="w-100" 
+                                                ajax="false" 
+                                                value="Item-vice Sale Report" 
+                                                action="#{searchController.navigateToItemizedSaleReport()}" />     
                                         </div>
                                     </p:tab>
                                     
@@ -89,7 +93,6 @@
                                             <p:commandButton class="w-100" ajax="false" value="Department - wise Income" action="#{commonReport.navigateToReportCashierSummeryByDepartmentwise()}" rendered="true"/>
                                         </div>
                                     </p:tab>
-
                                     <!-- OPD Services Tab -->
                                     <p:tab title="OPD Services">
                                         <div class="d-grid gap-2">
@@ -97,7 +100,6 @@
                                             <p:commandButton class="w-100" ajax="false" value="OPD Services Count Doctor Wise" action="/reports/opd/service_count_doctor_wise.xhtml" />
                                         </div>
                                     </p:tab>
-
                                     <!-- OPD Income Tab -->
                                     <p:tab title="OPD Income">
                                         <div class="d-grid gap-2">
