@@ -56,29 +56,7 @@
 
                 </h:form>
 
-                <h:form >
-                    <p:dataTable value="#{designComponentController.list}" 
-                                 var="i"
-                                 >
-                        <p:column headerText="Name">
-                            <h:outputText value="#{i.name}" ></h:outputText>
-                        </p:column>
-                        <p:column headerText="Des">
-                            <h:outputText value="#{i.description}" ></h:outputText>
-                        </p:column>
-                        <p:column headerText="Actions">
-                            <p:commandButton ajax="false" 
-                                             value="Edit"
-                                             action="#{designComponentController.navigateToEditDataEntryForm()}" >
-                                <f:setPropertyActionListener 
-                                    value="#{i}" 
-                                    target="#{designComponentController.currentDataEntryItem}" >
-                                </f:setPropertyActionListener>
-                            </p:commandButton>
-                        </p:column>
-                    </p:dataTable>
-                </h:form>
-
+               
 
 
             </ui:define>

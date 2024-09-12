@@ -92,14 +92,15 @@ public class DesignComponentController implements Serializable {
         return "/forms/data_entry_form?faces-redirect=true";
     }
 
-    public String navigateToListDesignComponent() {
-        listItems();
-        return "/webcontent/design_components?faces-redirect=true";
-    }
-
     public String navigateToListDataEntryForms() {
         listOfDataEntryForms = listDataEntryForms();
         return "/forms/data_entry_forms?faces-redirect=true";
+    }
+
+    public String navigateToListDataEntryItems() {
+        sdfsdf;
+        listOfDataEntryItems = listDataEntryForms();
+        return "/forms/data_entry_items?faces-redirect=true";
     }
 
     public String navigateToAddComponentsToDataEntryForm() {
@@ -113,7 +114,6 @@ public class DesignComponentController implements Serializable {
             return "";
         }
 
-        
         currentDataEntryItem = new DesignComponent();
         currentDataEntryItem.setDataEntryForm(currentDataEntryForm);
         return "/forms/data_entry_item?faces-redirect=true";
@@ -180,21 +180,21 @@ public class DesignComponentController implements Serializable {
         currentDataEntryItem = new DesignComponent();
     }
 
-    public void saveDataEntryComponentOfForm() {
-        if (current == null) {
+    public String saveDataEntryComponentOfForm() {
+        if (currentDataEntryItem == null) {
             JsfUtil.addErrorMessage("Nothing selected");
-            return;
+            return null;
         }
 
-        if (current.getId() == null) {
-            facade.create(current);
+        if (currentDataEntryItem.getId() == null) {
+            facade.create(currentDataEntryItem);
+            getListOfDataEntryItems().add(currentDataEntryItem);
         } else {
-            facade.edit(current);
+            facade.edit(currentDataEntryItem);
         }
 
-        getList().add(current);
-        current = new DesignComponent();
-
+        currentDataEntryItem = new DesignComponent();
+        return navigateToListComponentsOfDataEntryForm();
     }
 
     private void listItems() {
