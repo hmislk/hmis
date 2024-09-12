@@ -6,6 +6,7 @@ import com.divudi.bean.common.ItemForItemController;
 import com.divudi.bean.common.SecurityController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.TransferController;
+import com.divudi.bean.common.WebUserController;
 
 import com.divudi.bean.hr.StaffController;
 import com.divudi.data.BooleanMessage;
@@ -158,6 +159,10 @@ public class PatientReportController implements Serializable {
     private ApplicationController applicationController;
     @Inject
     private SecurityController securityController;
+    @Inject
+    PatientInvestigationController patientInvestigationController;
+    @Inject
+    WebUserController webUserController;
     //Class Variables
     String selectText = "";
     private PatientInvestigation currentPtIx;
@@ -180,6 +185,7 @@ public class PatientReportController implements Serializable {
     private String smsMessage;
     private boolean showBackground = false;
     private ClinicalFindingValue clinicalFindingValue;
+    private String comment;
 
     public String searchRecentReportsOrderedByMyself() {
         Doctor doctor;
@@ -1079,6 +1085,29 @@ public class PatientReportController implements Serializable {
         getPiFacade().edit(currentPtIx);
 
         //JsfUtil.addSuccessMessage("Saved");
+    }
+    
+    
+
+    public void removePatientReport() {
+
+        if (currentPatientReport == null) {
+            JsfUtil.addErrorMessage("No Patient Report");
+            return;
+        }
+        if (comment == null || comment.trim() == null) {
+            JsfUtil.addErrorMessage("Add Comment");
+            return;
+        }
+
+        currentPatientReport.setRetireComments(comment);
+        currentPatientReport.setRetired(Boolean.TRUE);
+        currentPatientReport.setRetiredAt(Calendar.getInstance().getTime());
+        currentPatientReport.setRetirer(getSessionController().getLoggedUser());
+
+        getFacade().edit(currentPatientReport);
+        JsfUtil.addSuccessMessage("Successfully Removed");
+        patientInvestigationController.searchPatientReports();
     }
 
     public void updateTemplate() {
@@ -2506,6 +2535,17 @@ public class PatientReportController implements Serializable {
 
     public void setClinicalFindingValue(ClinicalFindingValue clinicalFindingValue) {
         this.clinicalFindingValue = clinicalFindingValue;
+    }
+
+    public String getComment() {
+        if (comment == null) {
+            comment = "";
+        }
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 
     @FacesConverter(forClass = PatientReport.class)

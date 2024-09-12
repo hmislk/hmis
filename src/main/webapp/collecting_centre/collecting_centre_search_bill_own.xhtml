@@ -95,7 +95,8 @@
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                     </p:column> 
-                                    <p:column headerText="Patient">                                  
+                                    <p:column headerText="Patient" class="d-flex">  
+                                        <h:outputLabel value="#{bill.patientName}" rendered="#{!webUserController.hasPrivilege('OpdBillSearchEdit')}"/>
                                         <h:commandLink value="#{bill.patientName}" action="#{patientController.navigateToOpdPatientEdit()}" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit')}">
                                             <f:setPropertyActionListener value="#{patientController.findPatientById(bill.patientId)}" target="#{patientController.current}"/>
                                         </h:commandLink>
@@ -120,7 +121,7 @@
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column>  
-                                   
+
                                     <p:column headerText="View">
                                         <p:commandButton 
                                             ajax="false" 
@@ -128,7 +129,7 @@
                                             action="#{billSearch.navigateToViewCollectingCentreBill()}">
                                             <f:setPropertyActionListener target="#{billSearch.bill}" value="#{billController.findBillbyID(bill.id)}"/>
                                         </p:commandButton>
-                                        
+                                        <!--#{billController.findBillbyID(bill.id)}-->
                                     </p:column>
 
                                 </p:dataTable>
