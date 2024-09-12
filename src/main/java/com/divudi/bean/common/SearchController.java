@@ -6505,12 +6505,16 @@ public class SearchController implements Serializable {
         return "/pharmacy/pharmacy_search_pre_bill_not_paid?faces-redirect=true";
     }
 
-    public String navigateToItemizedSaleSummary() {
+    public String navigateToItemizedSaleSummaryOpd() {
         return "/opd/analytics/itemized_sale_summary?faces-redirect=true";
     }
 
-    public String navigateToItemizedSaleReport() {
+    public String navigateToItemizedSaleReportOpd() {
         return "/opd/analytics/itemized_sale_report?faces-redirect=true";
+    }
+    
+     public String navigateToIncomeBreakdownByCategoryOpd() {
+        return "/opd/analytics/income_breakdown_by_category?faces-redirect=true";
     }
 
     public void addToStock() {
@@ -11911,8 +11915,8 @@ public class SearchController implements Serializable {
         bundle = generateItemizedSalesReport();
     }
 
-    public void createIncomeBreakdownByCategory() {
-        bundle = generateIncomeBreakdownByCategory();
+    public void createIncomeBreakdownByCategoryOpd() {
+        bundle = generateIncomeBreakdownByCategoryOpd();
     }
 
     public void generateDailyReturn() {
@@ -12215,7 +12219,7 @@ public class SearchController implements Serializable {
         rtrb.setTotal(totalOpdServiceCollection);
     }
 
-    public ReportTemplateRowBundle generateIncomeBreakdownByCategory() {
+    public ReportTemplateRowBundle generateIncomeBreakdownByCategoryOpd() {
         ReportTemplateRowBundle oiBundle = new ReportTemplateRowBundle();
         String jpql = "select bi "
                 + " from BillItem bi "
