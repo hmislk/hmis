@@ -9,80 +9,92 @@
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
                 <h:form >
-                    <div class="container">
-                        <p:panel header="Petty Cash Report" >
-                            <div class="row mb-2">
 
-                                <div class="col-md-2">
-                                    <p:outputLabel value="Branch Name"></p:outputLabel>
-                                </div>
-                                <div class="col-md-4">
-                                    <p:autoComplete 
-                                        value="#{webUserController.institution}"
+                    <p:panel>
+                            <f:facet name="header">
+                                <h:outputLabel value="Petty Cash Report" />
+                            </f:facet>
 
-                                        completeMethod="#{institutionController.completeIns}"
-                                        var="ins"
-                                        class="w-100 mt-1"
-                                        inputStyleClass="form-control"
-                                        itemLabel="#{ins.name}"
-                                        itemValue="#{ins}">
+                        <h:panelGrid columns="6" class="my-2 w-100">
+                            <p:outputLabel value="From Date" />
+                            <p:outputLabel value=" : " />
+                            <p:datePicker value="#{reportController.fromDate}"
+                                          style=" max-width: 100%; overflow-x: auto; "
+                                          class="w-100"
+                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></p:datePicker>
 
-                                    </p:autoComplete>
-                                </div>
-                            </div>
-                            <div class="row mb-2">
-                                <div class="col-md-2">
-                                    <p:outputLabel value="From Date" >
-                                    </p:outputLabel>
-                                </div>
-                                <div class="col-md-4">
-                                    <p:datePicker value="#{reportController.fromDate}" 
-                                                  style=" max-width: 100%; overflow-x: auto; "
-                                                  class="w-100"
-                                                  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></p:datePicker>
-                                </div>
-                            </div>  
-                            <div class="row mb-2">
-                                <div class="col-md-2">
-                                    <p:outputLabel value="To Date" >
-                                    </p:outputLabel>
-                                </div>
-                                <div class="col-md-4">
-                                    <p:datePicker value="#{reportController.toDate}"
-                                                  style=" max-width: 100%; overflow-x: auto; "
-                                                  class="w-100"
-                                                  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></p:datePicker>
-                                </div>
-                            </div>
+                            <p:outputLabel value="To Date" />
+                            <p:outputLabel value=" : " />
+                            <p:datePicker value="#{reportController.toDate}"
+                                          style=" max-width: 80%; overflow-x: auto; "
+                                          class="w-100"
+                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></p:datePicker>
 
-                            <div class="row mb-2">
-                                <div class="col-md-2">
-                                    <p:commandButton ajax="false" value="Process" action="#{reportController.processPettyCashPayment}" >
-                                    </p:commandButton>
-                                </div>
-                            </div>
+                            <p:outputLabel value="Paid To Department" />
+                            <p:outputLabel value=" : " />
+                            <p:datePicker value=""
+                                          style=" max-width: 80%; overflow-x: auto; "
+                                          class="w-100"
+                                          ></p:datePicker>
 
+                            <p:outputLabel value="Paid To Staff" />
+                            <p:outputLabel value=" : " />
+                            <p:datePicker value=""
+                                          style=" max-width: 80%; overflow-x: auto; "
+                                          class="w-100"
+                                          ></p:datePicker>
 
-                            <h:panelGrid columns="2">
-                                <h:outputLabel value="From Date :  "/>
-                                <h:outputLabel value="#{reportController.fromDate}"  >
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                                </h:outputLabel>
+                            <p:outputLabel value="Branch Name"></p:outputLabel>
+                            <p:outputLabel value=" : " />
+                            <p:autoComplete
+                                value="#{webUserController.institution}"
 
-                                <h:outputLabel value="To Date :  "/>
-                                <h:outputLabel value="#{reportController.toDate}"  >
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                                </h:outputLabel>
+                                completeMethod="#{institutionController.completeIns}"
+                                var="ins"
+                                class="w-75 mt-1"
+                                inputStyleClass="form-control"
+                                itemLabel="#{ins.name}"
+                                itemValue="#{ins}">
 
-                                <h:outputLabel value="Collection Center Name :  "/>
-                                <h:outputLabel value="#{reportController.collectingCentre}"  >
+                            </p:autoComplete>
+                            <p:outputLabel value="User" />
+                            <p:outputLabel value=" : " />
+                            <p:datePicker value=""
+                                          style=" max-width: 80%; overflow-x: auto; "
+                                          class="w-100"
+                                          ></p:datePicker>
+                        </h:panelGrid>
 
-                                </h:outputLabel>
-                            </h:panelGrid>
+                        <h:panelGrid columns="6" class="my-2">
+                            <p:commandButton ajax="false" value="Process" icon="fas fa-cogs" class="ui-button-warning" action="#{reportController.processPettyCashPayment}" >
+                            </p:commandButton>
+                            <p:commandButton ajax="false" value="Excel" icon="fas fa-file-excel" class="ui-button-success mx-1" >
+                                <p:dataExporter fileName="Petty Cash Payment - #{webUserController.institution} (#{reportController.fromDate} - #{reportController.fromDate})" type="xlsx" target="dtaPr" />
+                            </p:commandButton>
+                            <p:commandButton ajax="false" value="Print" icon="fas fa-print" class="ui-button-info"  >
+                                <p:printer target="dtaPr"/>
+                            </p:commandButton>
+                        </h:panelGrid>
 
-                            <p:spacer height="5"></p:spacer>
-
-                            <p:dataTable value="#{reportController.bills}" var="pc" rowIndexVar="rowIndex">
+                        <p:dataTable id="dtaPr" value="#{reportController.bills}" var="pc" rowIndexVar="rowIndex">
+                            <f:facet name="header">
+                                    <h:outputLabel value="Petty Cash Payments" /><br/>
+                                    <h:outputLabel value="From Date &emsp;"/>
+                                    <p:outputLabel value="&emsp; : &emsp;" />
+                                    <h:outputLabel value="#{reportController.fromDate}"  >
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                        </h:outputLabel>
+                                        <br/>
+                                        <h:outputLabel value="To Date &emsp;"/>
+                                        <p:outputLabel value="&emsp;&emsp;&nbsp; : &emsp;" />
+                                        <h:outputLabel value="#{reportController.toDate}"  >
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                        </h:outputLabel>
+                                        <br/>
+                                        <h:outputLabel value="Branch Name &emsp;"/>
+                                        <p:outputLabel value=" : &emsp;" />
+                                        <h:outputLabel value=""  />
+                                </f:facet>
                                 <p:column headerText="S" width="2em">
                                     <h:outputText value="#{rowIndex+1}" ></h:outputText>
                                 </p:column>
@@ -126,7 +138,6 @@
 
 
                         </p:panel>
-                    </div>
 
                 </h:form>
 
