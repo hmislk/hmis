@@ -1,6 +1,5 @@
 package com.divudi.bean.web;
 
-
 import com.divudi.data.web.ComponentDataType;
 import com.divudi.data.web.ComponentPresentationType;
 import com.divudi.entity.web.DesignComponent;
@@ -9,6 +8,7 @@ import com.divudi.facade.web.DesignComponentFacade;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.EJB;
 import java.util.Arrays;
@@ -32,18 +32,19 @@ public class DesignComponentController implements Serializable {
     private int manageEmrIndex;
     private DesignComponent current;
     private List<DesignComponent> list;
-    
-    
-    
-    public List<ComponentPresentationType> getComponentPresentationTypes(){
+    private DesignComponent currentDataEntryForm;
+    private List<DesignComponent> listOfDataEntryForms;
+    private DesignComponent currentDataEntryItem;
+    private List<DesignComponent> listOfDataEntryItems;
+
+    public List<ComponentPresentationType> getComponentPresentationTypes() {
         return Arrays.asList(ComponentPresentationType.values());
     }
-    
-    public List<ComponentDataType> getComponentDataTypes(){
+
+    public List<ComponentDataType> getComponentDataTypes() {
         return Arrays.asList(ComponentDataType.values());
     }
 
-    
     public DesignComponent getCurrent() {
         return current;
     }
@@ -53,149 +54,177 @@ public class DesignComponentController implements Serializable {
     }
 
     public List<DesignComponent> getList() {
+        if (list == null) {
+            list = new ArrayList<>();
+        }
         return list;
     }
 
     public void setList(List<DesignComponent> list) {
         this.list = list;
     }
-    
-    public String navigateToAddDesignComponent(){
-        current= new DesignComponent();
-        return "/webcontent/design_component";
-    }
-    
-    public String navigateToAddNewDataEntryForm(){
-        current= new DesignComponent();
-        current.setComponentPresentationType(ComponentPresentationType.DataEntryForm);
-        return "/forms/data_entry_form";
-    }
-    
-    public String navigateToEditDesignComponent(){
-         if (current == null) {
-            JsfUtil.addErrorMessage("Nothing selected");
-            return "";
-        }
-        return "/forms/design_component";
-    }
-    
-    public String navigateToEditDataEntryForm(){
-         if (current == null) {
-            JsfUtil.addErrorMessage("Nothing selected");
-            return "";
-        }
-        return "/forms/data_entry_form";
-    }
-    
-    public String navigateToListDesignComponent(){
-        listItems();
-        return "/webcontent/design_components";
-    }
-    
-    public String navigateToListDataEntryForms(){
-        list=listDataEntryForms();
-        return "/forms/data_entry_forms";
-    }
-    
-    public String navigateToAddComponentsToDataEntryForm(){
-        if(current==null){
-            JsfUtil.addErrorMessage("Nothing selected");
-            return "";
-        }
-        
-        if(current.getId()==null){
-            JsfUtil.addErrorMessage("Please save first");
-            return "";
-        }
-        
-        DesignComponent tempDataEntryForm = current;
+
+    @Deprecated
+    public String navigateToAddDesignComponent() {
         current = new DesignComponent();
-        current.setDataEntryForm(tempDataEntryForm);
-        return "/forms/design_component";
+        return "/webcontent/design_component?faces-redirect=true";
     }
-    
-    public String navigateToListComponentsOfDataEntryForm(){
-        if(current==null){
+
+    public String navigateToAddNewDataEntryForm() {
+        currentDataEntryForm = new DesignComponent();
+        currentDataEntryForm.setComponentPresentationType(ComponentPresentationType.DataEntryForm);
+        return "/forms/data_entry_form?faces-redirect=true";
+    }
+
+    public String navigateToEditDesignComponent() {
+        if (currentDataEntryItem == null) {
             JsfUtil.addErrorMessage("Nothing selected");
             return "";
         }
-        
-        if(current.getId()==null){
+        return "/forms/data_entry_item?faces-redirect=true";
+    }
+
+    public String navigateToEditDataEntryForm() {
+        if (currentDataEntryForm == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return "";
+        }
+        return "/forms/data_entry_form?faces-redirect=true";
+    }
+
+    public String navigateToListDataEntryForms() {
+        listOfDataEntryForms = listDataEntryForms();
+        return "/forms/data_entry_forms?faces-redirect=true";
+    }
+
+    public String navigateToListDataEntryItems() {
+        sdfsdf;
+        listOfDataEntryItems = listDataEntryForms();
+        return "/forms/data_entry_items?faces-redirect=true";
+    }
+
+    public String navigateToAddComponentsToDataEntryForm() {
+        if (currentDataEntryForm == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return "";
+        }
+
+        if (currentDataEntryForm.getId() == null) {
             JsfUtil.addErrorMessage("Please save first");
             return "";
         }
-     
-        list = listComponentsOfDataEntryForm(current);
-        return "/forms/design_components";
+
+        currentDataEntryItem = new DesignComponent();
+        currentDataEntryItem.setDataEntryForm(currentDataEntryForm);
+        return "/forms/data_entry_item?faces-redirect=true";
     }
-    
-    public void saveCurrent(){
-        if(current==null){
+
+    public String navigateToListComponentsOfDataEntryForm() {
+        if (currentDataEntryForm == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return "";
+        }
+
+        if (currentDataEntryForm.getId() == null) {
+            JsfUtil.addErrorMessage("Please save first");
+            return "";
+        }
+
+        listOfDataEntryItems = listItemsOfDataEntryForm(currentDataEntryForm);
+        return "/forms/data_entry_items?faces-redirect=true";
+    }
+
+    public void saveCurrent() {
+        if (current == null) {
             JsfUtil.addErrorMessage("Nothing selected");
             return;
         }
-        
-        if(current.getId()==null){
+
+        if (current.getId() == null) {
             facade.create(current);
-        }
-        
-        else{
+        } else {
             facade.edit(current);
+        }
+    }
+
+    public void saveCurrentDataEntryForm() {
+        if (currentDataEntryForm == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return;
+        }
+
+        if (currentDataEntryForm.getId() == null) {
+            facade.create(currentDataEntryForm);
+            getListOfDataEntryForms().add(currentDataEntryForm);
+        } else {
+            facade.edit(currentDataEntryForm);
         }
     }
 
     public DesignComponentFacade getFacade() {
         return facade;
     }
-    
-    
-    
-    public String saveDataEntryComponentOfForm(){
-        if(current==null){
+
+    public void saveDataEntryItemOfForm() {
+        if (currentDataEntryItem == null) {
             JsfUtil.addErrorMessage("Nothing selected");
-            return "";
+            return;
         }
-        
-        if(current.getId()==null){
-            facade.create(current);
+
+        if (currentDataEntryItem.getId() == null) {
+            facade.create(currentDataEntryItem);
+        } else {
+            facade.edit(currentDataEntryItem);
         }
-        
-        else{
-            facade.edit(current);
-        }
-        
-        current = current.getDataEntryForm();
-        return navigateToEditDataEntryForm();
+        getListOfDataEntryItems().add(currentDataEntryItem);
+        currentDataEntryItem = new DesignComponent();
     }
-    
-    private void listItems(){
+
+    public String saveDataEntryComponentOfForm() {
+        if (currentDataEntryItem == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return null;
+        }
+
+        if (currentDataEntryItem.getId() == null) {
+            facade.create(currentDataEntryItem);
+            getListOfDataEntryItems().add(currentDataEntryItem);
+        } else {
+            facade.edit(currentDataEntryItem);
+        }
+
+        currentDataEntryItem = new DesignComponent();
+        return navigateToListComponentsOfDataEntryForm();
+    }
+
+    private void listItems() {
         String jpql = "select d "
                 + " from DesignComponent d";
         list = facade.findByJpql(jpql);
     }
-    
-    private List<DesignComponent> listDataEntryForms(){
+
+    private List<DesignComponent> listDataEntryForms() {
         List<DesignComponent> designComponents;
         String jpql = "select d "
                 + " from DesignComponent d"
                 + " where d.componentPresentationType=:pt";
         Map m = new HashMap();
         m.put("pt", ComponentPresentationType.DataEntryForm);
-         designComponents = facade.findByJpql(jpql,m);
-         
-        return designComponents; 
+        designComponents = facade.findByJpql(jpql, m);
+
+        return designComponents;
     }
-    
-    private List<DesignComponent> listComponentsOfDataEntryForm(DesignComponent dataEntryForm){
+
+    private List<DesignComponent> listItemsOfDataEntryForm(DesignComponent dataEntryForm) {
         List<DesignComponent> designComponents;
         String jpql = "select d "
                 + " from DesignComponent d"
                 + " where d.dataEntryForm=:def";
         Map m = new HashMap();
         m.put("def", dataEntryForm);
-         designComponents = facade.findByJpql(jpql,m);
-         
-        return designComponents; 
+        designComponents = facade.findByJpql(jpql, m);
+
+        return designComponents;
     }
 
     public int getManageEmrIndex() {
@@ -205,7 +234,42 @@ public class DesignComponentController implements Serializable {
     public void setManageEmrIndex(int manageEmrIndex) {
         this.manageEmrIndex = manageEmrIndex;
     }
-    
+
+    public DesignComponent getCurrentDataEntryForm() {
+        return currentDataEntryForm;
+    }
+
+    public void setCurrentDataEntryForm(DesignComponent currentDataEntryForm) {
+        this.currentDataEntryForm = currentDataEntryForm;
+    }
+
+    public List<DesignComponent> getListOfDataEntryForms() {
+        if (listOfDataEntryForms == null) {
+            listOfDataEntryForms = new ArrayList<>();
+        }
+        return listOfDataEntryForms;
+    }
+
+    public void setListOfDataEntryForms(List<DesignComponent> listOfDataEntryForms) {
+        this.listOfDataEntryForms = listOfDataEntryForms;
+    }
+
+    public DesignComponent getCurrentDataEntryItem() {
+        return currentDataEntryItem;
+    }
+
+    public void setCurrentDataEntryItem(DesignComponent currentDataEntryItem) {
+        this.currentDataEntryItem = currentDataEntryItem;
+    }
+
+    public List<DesignComponent> getListOfDataEntryItems() {
+        return listOfDataEntryItems;
+    }
+
+    public void setListOfDataEntryItems(List<DesignComponent> listOfDataEntryItems) {
+        this.listOfDataEntryItems = listOfDataEntryItems;
+    }
+
     @FacesConverter(forClass = DesignComponent.class)
     public static class DesignComponentConverter implements Converter {
 
