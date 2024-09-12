@@ -3081,7 +3081,7 @@ public class BillSearch implements Serializable {
             case OPD_BILL_REFUND:
                 return navigateToManageOpdBill();
             case OPD_BILL_CANCELLATION:
-                return navigateToViewCancallationOpdBill();
+                return navigateToManageOpdBill();
             case OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER:
                 return navigateToManageOpdBill();
             case OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION:
@@ -3211,22 +3211,22 @@ public class BillSearch implements Serializable {
                 return navigateToManageOpdBill();
 
             case OPD_BILL_CANCELLATION:
-                return navigateToManageOpdBill();
+                return navigateToViewCancallationOpdBill();
 
             case OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER:
                 return navigateToManageOpdBill();
 
             case OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION:
-                return navigateToManageOpdBill();
+                return navigateToViewCancallationOpdbATCHBill();
 
             case OPD_PROFESSIONAL_PAYMENT_BILL:
                 return navigateToManageOpdBill();
 
             case OPD_BILL_WITH_PAYMENT:
-                return navigateToManageOpdBill();
+                return navigateToViewOpdBill();
 
             case OPD_BATCH_BILL_WITH_PAYMENT:
-                return navigateToManageOpdBill();
+                return navigateToViewOpdBatchBill();
 
             case CHANNEL_BOOKING_WITH_PAYMENT:
                 return "";
