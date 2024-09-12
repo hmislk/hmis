@@ -6504,9 +6504,13 @@ public class SearchController implements Serializable {
 
         return "/pharmacy/pharmacy_search_pre_bill_not_paid?faces-redirect=true";
     }
-    
+
     public String navigateToItemizedSaleSummary() {
-         return "/opd/analytics/itemized_sale_summary?faces-redirect=true";
+        return "/opd/analytics/itemized_sale_summary?faces-redirect=true";
+    }
+
+    public String navigateToItemizedSaleReport() {
+        return "/opd/analytics/itemized_sale_report?faces-redirect=true";
     }
 
     public void addToStock() {
@@ -11900,7 +11904,11 @@ public class SearchController implements Serializable {
     }
 
     public void createItemizedSalesSummary() {
-        bundle =  generateItemizedSalesSummary();
+        bundle = generateItemizedSalesSummary();
+    }
+
+    public void createItemizedSalesReport() {
+        bundle = generateItemizedSalesReport();
     }
 
     public void generateDailyReturn() {
@@ -12062,8 +12070,6 @@ public class SearchController implements Serializable {
         return biBundle;
     }
 
-    
-    
     public ReportTemplateRowBundle generateItemizedSalesSummary() {
         ReportTemplateRowBundle oiBundle = new ReportTemplateRowBundle();
         String jpql = "select bi "
@@ -12120,8 +12126,64 @@ public class SearchController implements Serializable {
 
         return oiBundle;
     }
-    
-    
+
+    public ReportTemplateRowBundle generateItemizedSalesReport() {
+        ReportTemplateRowBundle oiBundle = new ReportTemplateRowBundle();
+        String jpql = "select bi "
+                + " from BillItem bi "
+                + " where bi.bill.retired=:br "
+                + " and bi.bill.createdAt between :fd and :td ";
+        Map m = new HashMap();
+        m.put("br", false);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        List<BillTypeAtomic> btas = BillTypeAtomic.findByServiceType(ServiceType.OPD);
+        oiBundle.setDescription("Bill Types Listed: " + btas);
+        if (!btas.isEmpty()) {
+            jpql += " and bi.bill.billTypeAtomic in :bts ";
+            m.put("bts", btas);
+        }
+
+        if (department != null) {
+            jpql += " and bi.bill.department=:dep ";
+            m.put("dep", department);
+        }
+        if (institution != null) {
+            jpql += " and bi.bill.department.institution=:ins ";
+            m.put("ins", institution);
+        }
+        if (site != null) {
+            jpql += " and bi.bill.department.site=:site ";
+            m.put("site", site);
+        }
+        if (category != null) {
+            jpql += " and bi.item.category=:cat ";
+            m.put("cat", category);
+        }
+        if (item != null) {
+            jpql += " and bi.item=:item ";
+            m.put("item", item);
+        }
+        System.out.println("jpql = " + jpql);
+        System.out.println("m = " + m);
+        List<BillItem> bis = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        billItemsToItamizedSaleReport(oiBundle, bis);
+
+        oiBundle.setName("Itemized Sales Report");
+        oiBundle.setBundleType("itemized_sales_report");
+
+        oiBundle.getReportTemplateRows().stream()
+                .forEach(rtr -> {
+                    rtr.setInstitution(institution);
+                    rtr.setDepartment(department);
+                    rtr.setSite(site);
+                    rtr.setFromDate(fromDate);
+                    rtr.setToDate(toDate);
+                });
+
+        return oiBundle;
+    }
+
     public ReportTemplateRowBundle generateOpdServiceCollection() {
         ReportTemplateRowBundle opdServiceCollection = new ReportTemplateRowBundle();
         String jpql = "select bi "
@@ -12593,8 +12655,7 @@ public class SearchController implements Serializable {
 
     }
 
-    
-      public void billItemsToBundleForOpdUnderCategory(ReportTemplateRowBundle rtrb, List<BillItem> billItems) {
+    public void billItemsToBundleForOpdUnderCategory(ReportTemplateRowBundle rtrb, List<BillItem> billItems) {
         Map<String, ReportTemplateRow> categoryMap = new HashMap<>();
         Map<String, ReportTemplateRow> itemMap = new HashMap<>();
         List<ReportTemplateRow> rowsToAdd = new ArrayList<>();
@@ -12680,7 +12741,6 @@ public class SearchController implements Serializable {
         rtrb.setTotal(totalOpdServiceCollection);
     }
 
-    
     public void billItemsToItamizedSaleSummary(ReportTemplateRowBundle rtrb, List<BillItem> billItems) {
         Map<String, ReportTemplateRow> categoryMap = new HashMap<>();
         Map<String, ReportTemplateRow> itemMap = new HashMap<>();
@@ -12695,7 +12755,7 @@ public class SearchController implements Serializable {
                 continue;
             } else if (bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.NONE) {
                 continue;
-            } 
+            }
 
             String categoryName = bi.getItem() != null && bi.getItem().getCategory() != null ? bi.getItem().getCategory().getName() : "No Category";
             String itemName = bi.getItem() != null ? bi.getItem().getName() : "No Item";
@@ -12761,6 +12821,72 @@ public class SearchController implements Serializable {
 
         System.out.println("rowsToAdd = " + rowsToAdd);
         System.out.println("rtrb.getReportTemplateRows() = " + rtrb.getReportTemplateRows());
+        rtrb.getReportTemplateRows().addAll(rowsToAdd);
+        rtrb.setTotal(totalOpdServiceCollection);
+    }
+
+    public void billItemsToItamizedSaleReport(ReportTemplateRowBundle rtrb, List<BillItem> billItems) {
+        Map<String, ReportTemplateRow> categoryMap = new HashMap<>();
+        Map<String, List<ReportTemplateRow>> itemMap = new HashMap<>();
+        List<ReportTemplateRow> rowsToAdd = new ArrayList<>();
+        double totalOpdServiceCollection = 0.0;
+
+        for (BillItem bi : billItems) {
+            System.out.println("Processing BillItem: " + bi);
+
+            if (bi.getBill() == null || bi.getBill().getPaymentMethod() == null
+                    || bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.NONE) {
+                continue;
+            }
+
+            String categoryName = bi.getItem() != null && bi.getItem().getCategory() != null ? bi.getItem().getCategory().getName() : "No Category";
+            String itemName = bi.getItem() != null ? bi.getItem().getName() : "No Item";
+            String itemKey = categoryName + "->" + itemName;
+
+            System.out.println("Item Key: " + itemKey);
+            System.out.println("Category: " + categoryName + ", Item: " + itemName);
+
+            categoryMap.putIfAbsent(categoryName, new ReportTemplateRow());
+
+            itemMap.putIfAbsent(itemKey, new ArrayList<>());
+            ReportTemplateRow itemRow = new ReportTemplateRow();
+            if (bi.getItem() != null) {
+                categoryMap.get(categoryName).setCategory(bi.getItem().getCategory());
+                itemRow.setItem(bi.getItem());
+            }
+
+            double grossValue = bi.getGrossValue();
+            double hospitalFee = bi.getHospitalFee();
+            double discount = bi.getDiscount();
+            double staffFee = bi.getStaffFee();
+            double netValue = bi.getNetValue();
+            long countModifier = bi.getBill().getBillClassType() == BillClassType.CancelledBill
+                    || bi.getBill().getBillClassType() == BillClassType.RefundBill ? -1 : 1;
+
+            if (countModifier == -1) {
+                grossValue = -Math.abs(grossValue);
+                hospitalFee = -Math.abs(hospitalFee);
+                discount = -Math.abs(discount);
+                staffFee = -Math.abs(staffFee);
+                netValue = -Math.abs(netValue);
+            }
+
+            totalOpdServiceCollection += netValue;
+            updateRow(itemRow, countModifier, grossValue, hospitalFee, discount, staffFee, netValue);
+            itemMap.get(itemKey).add(itemRow);
+        }
+
+        // Add category rows and then each individual item row within each category
+        categoryMap.forEach((categoryName, catRow) -> {
+            System.out.println("Adding category row to bundle: " + categoryName);
+            rowsToAdd.add(catRow);
+            itemMap.entrySet().stream()
+                    .filter(entry -> entry.getKey().startsWith(categoryName + "->"))
+                    .flatMap(entry -> entry.getValue().stream())
+                    .forEach(rowsToAdd::add);
+        });
+
+        System.out.println("Total collected: " + totalOpdServiceCollection);
         rtrb.getReportTemplateRows().addAll(rowsToAdd);
         rtrb.setTotal(totalOpdServiceCollection);
     }

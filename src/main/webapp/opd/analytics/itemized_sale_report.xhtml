@@ -11,7 +11,7 @@
         <ui:composition template="/opd/analytics/index.xhtml">
             <ui:define name="subcontent">
                 <h:form>
-                    <p:panel  header="Itemized Sales Summary">
+                    <p:panel  header="Itemized Sales Report">
                         <div class="row">
                             <div class="col-md-12">
                                 <h:panelGrid columns="2" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
@@ -110,11 +110,11 @@
                                 <p:commandButton id="btnList" class="m-1 ui-button-danger"
                                                  icon="fas fa-list"
                                                  ajax="false" value="View List"
-                                                 action="#{searchController.createItemizedSalesSummary()}" />
+                                                 action="#{searchController.createItemizedSalesReport()}" />
 
                                 <p:commandButton id="btnPdf" class="m-1 ui-button-info"
-                                                 rendered="false"
                                                  ajax="false"
+                                                 rendered="false"
                                                  icon="fas fa-file-pdf"
                                                  value="Export as PDF">
                                     <p:dataExporter type="pdf" target="tbl" fileName="itemized_sale_summary" />
