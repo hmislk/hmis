@@ -62,13 +62,13 @@ public class DesignComponentController implements Serializable {
     
     public String navigateToAddDesignComponent(){
         current= new DesignComponent();
-        return "/webcontent/design_component";
+        return "/webcontent/design_component?faces-redirect=true";
     }
     
     public String navigateToAddNewDataEntryForm(){
         current= new DesignComponent();
         current.setComponentPresentationType(ComponentPresentationType.DataEntryForm);
-        return "/forms/data_entry_form";
+        return "/forms/data_entry_form?faces-redirect=true";
     }
     
     public String navigateToEditDesignComponent(){
@@ -76,7 +76,7 @@ public class DesignComponentController implements Serializable {
             JsfUtil.addErrorMessage("Nothing selected");
             return "";
         }
-        return "/forms/design_component";
+        return "/forms/design_component?faces-redirect=true";
     }
     
     public String navigateToEditDataEntryForm(){
@@ -84,17 +84,17 @@ public class DesignComponentController implements Serializable {
             JsfUtil.addErrorMessage("Nothing selected");
             return "";
         }
-        return "/forms/data_entry_form";
+        return "/forms/data_entry_form?faces-redirect=true";
     }
     
     public String navigateToListDesignComponent(){
         listItems();
-        return "/webcontent/design_components";
+        return "/webcontent/design_components?faces-redirect=true";
     }
     
     public String navigateToListDataEntryForms(){
         list=listDataEntryForms();
-        return "/forms/data_entry_forms";
+        return "/forms/data_entry_forms?faces-redirect=true";
     }
     
     public String navigateToAddComponentsToDataEntryForm(){
@@ -111,7 +111,7 @@ public class DesignComponentController implements Serializable {
         DesignComponent tempDataEntryForm = current;
         current = new DesignComponent();
         current.setDataEntryForm(tempDataEntryForm);
-        return "/forms/design_component";
+        return "/forms/design_component?faces-redirect=true";
     }
     
     public String navigateToListComponentsOfDataEntryForm(){
@@ -126,7 +126,7 @@ public class DesignComponentController implements Serializable {
         }
      
         list = listComponentsOfDataEntryForm(current);
-        return "/forms/design_components";
+        return "/forms/design_components?faces-redirect=true";
     }
     
     public void saveCurrent(){
