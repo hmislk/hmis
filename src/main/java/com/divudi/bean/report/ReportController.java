@@ -28,8 +28,6 @@ import com.divudi.entity.Person;
 import com.divudi.entity.Route;
 import com.divudi.entity.Service;
 import com.divudi.entity.Speciality;
-import com.divudi.entity.Staff;
-import com.divudi.entity.WebUser;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.Machine;
 import com.divudi.facade.AgentHistoryFacade;
@@ -90,13 +88,11 @@ public class ReportController implements Serializable {
 
     private int reportIndex;
     private Institution institution;
-   private Institution site;
     private Department department;
     private Institution fromInstitution;
     private Institution toInstitution;
     private Department fromDepartment;
     private Department toDepartment;
-    private Staff toStaff;
     private Date fromDate;
     private Date toDate;
     private Category category;
@@ -108,7 +104,6 @@ public class ReportController implements Serializable {
     private Date financialYear;
     private String phn;
     private Doctor referingDoctor;
-    private WebUser webUser;
 
     private double investigationResult;
 
@@ -171,42 +166,16 @@ public class ReportController implements Serializable {
         String jpql = "SELECT pc "
                 + "FROM Bill pc "
                 + "WHERE pc.retired = :ret "
-                + "AND pc.billType = :bt ";
-                
+                + "AND pc.billType = :bt "
+                + "AND pc.createdAt BETWEEN :fromDate AND :toDate";
 
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
         m.put("bt", BillType.PettyCash); 
-        
-        if(toDepartment != null){
-            jpql += " AND pc.toDepartment=:dpt ";
-            m.put("dpt", toDepartment);
-        }
-        
-        if(toStaff != null){
-             jpql += " AND pc.staff=:st ";
-            m.put("st", toStaff);
-        }
-        
-        if(institution != null){
-            jpql += " AND pc.institution=:ins ";
-            m.put("ins", institution);
-        }
-        
-        if(site != null){
-            jpql += " AND pc.site=:site ";
-            m.put("site", site);
-        }
-        
-        if(webUser != null){
-            jpql += " AND pc.creater=:wu ";
-            m.put("wu", webUser);
-        }
-
-        jpql += "AND pc.createdAt BETWEEN :fromDate AND :toDate";
         m.put("fromDate", getFromDate());
         m.put("toDate", getToDate());
-        
+
+
         bills = billFacade.findByJpql(jpql, m);
     }
 
@@ -1713,7 +1682,7 @@ public class ReportController implements Serializable {
 
     public List<ItemLight> getInvestigationsAndServices() {
         if (investigationsAndServices == null) {
-            itemApplicationController.getInvestigationsAndServices();
+            investigationsAndServices=itemApplicationController.getInvestigationsAndServices();
         }
         return investigationsAndServices;
     }
@@ -1898,28 +1867,12 @@ public class ReportController implements Serializable {
         this.agentHistories = agentHistories;
     }
 
-    public Staff getToStaff() {
-        return toStaff;
+    public Doctor getReferingDoctor() {
+        return referingDoctor;
     }
 
-    public void setToStaff(Staff toStaff) {
-        this.toStaff = toStaff;
-    }
-
-    public Institution getSite() {
-        return site;
-    }
-
-    public void setSite(Institution site) {
-        this.site = site;
-    }
-
-    public WebUser getWebUser() {
-        return webUser;
-    }
-
-    public void setWebUser(WebUser webUser) {
-        this.webUser = webUser;
+    public void setReferingDoctor(Doctor referingDoctor) {
+        this.referingDoctor = referingDoctor;
     }
 
 }

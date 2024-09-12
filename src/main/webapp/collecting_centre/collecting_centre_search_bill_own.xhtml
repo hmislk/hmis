@@ -95,7 +95,8 @@
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                     </p:column> 
-                                    <p:column headerText="Patient">                                  
+                                    <p:column headerText="Patient">  
+                                        <h:outputLabel value="#{bill.patientName}" rendered="#{!webUserController.hasPrivilege('OpdBillSearchEdit')}"/>
                                         <h:commandLink value="#{bill.patientName}" action="#{patientController.navigateToOpdPatientEdit()}" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit')}">
                                             <f:setPropertyActionListener value="#{patientController.findPatientById(bill.patientId)}" target="#{patientController.current}"/>
                                         </h:commandLink>
@@ -125,9 +126,10 @@
                                         <p:commandButton 
                                             ajax="false" 
                                             value="View Bill" 
-                                            action="#{billSearch.navigateToRefundCollectingCentreBill()}">
+                                            action="#{billSearch.navigateToViewCollectingCentreBill()}">
+                                            <f:setPropertyActionListener target="#{billSearch.bill}" value="#{billController.findBillbyID(bill.id)}"/>
                                         </p:commandButton>
-                                        #{billController.findBillbyID(bill.id)}
+                                        <!--#{billController.findBillbyID(bill.id)}-->
                                     </p:column>
 
                                 </p:dataTable>
