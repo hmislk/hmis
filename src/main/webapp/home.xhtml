@@ -59,8 +59,17 @@
                             ajax="false" 
                             styleClass="svg-link">
                             <p:graphicImage library="image" name="home/addPatient.svg" style="cursor: pointer;" width="80" height="80"/>
-                            <h:outputText style="display: none;" value="Add New Patient" rendered="#{webUserController.hasPrivilege('OpdPreBilling')}"/>
+                            <h:outputText style="display: #{configOptionApplicationController.getBooleanValueByKey('Show Text Below User Icons')};" value="Add New Patient" rendered="#{webUserController.hasPrivilege('OpdPreBilling')}"/>
                         </p:commandLink>
+
+<!--                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Text Below User Icons')}" >
+                            <p:commandLink 
+                                action="opd/patient_edit.xhtml" 
+                                ajax="false" >
+                                <h:outputText style="display: none;" value="Add New Patient" rendered="#{webUserController.hasPrivilege('OpdPreBilling')}"/>
+                            </p:commandLink>
+                        </h:panelGroup>-->
+
                     </h:form>
                 </h:panelGroup>
 
