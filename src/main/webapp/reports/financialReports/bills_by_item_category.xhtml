@@ -188,14 +188,6 @@
                             </p:column>
                             <p:column>
                                 <f:facet name="header">
-                                    <h:outputText value="Count" />
-                                </f:facet>
-                                <h:outputText value="#{row.itemCount}">
-                                    <f:convertNumber pattern="#,##0" />
-                                </h:outputText>
-                            </p:column>
-                            <p:column>
-                                <f:facet name="header">
                                     <h:outputText value="Bill No" />
                                 </f:facet>
                                 <h:outputText value="#{row.billItem.bill.deptId}">
