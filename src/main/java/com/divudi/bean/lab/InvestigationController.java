@@ -1224,7 +1224,22 @@ public class InvestigationController implements Serializable {
     }
 
     public List<Investigation> completeItem(String qry) {
-        List<Investigation> completeItems = getFacade().findByJpql("select c from Item c where ( type(c) = Investigation or type(c) = Packege ) and c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+
+        // Construct the JPQL query with named parameters
+        String jpql = "SELECT c FROM Item c WHERE (TYPE(c) = Investigation OR TYPE(c) = Packege) AND c.retired = :ret "
+                + "AND (UPPER(c.name) LIKE :nameQuery OR c.code LIKE :codeQuery) "
+                + "ORDER BY c.name";
+
+        // Create a map to hold query parameters
+        Map parameters = new HashMap<>();
+        parameters.put("nameQuery", "%" + qry.toUpperCase() + "%");
+        parameters.put("codeQuery", "%" + qry + "%");
+        parameters.put("ret", false);
+        
+        List<Investigation> completeItems = getFacade().findByJpql(jpql,parameters);
+        
+
+//        List<Investigation> completeItems = getFacade().findByJpql("select c from Item c where ( type(c) = Investigation or type(c) = Packege ) and c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' or (c.code) like '%" + qry + "%' and  order by c.name");
         return completeItems;
     }
 

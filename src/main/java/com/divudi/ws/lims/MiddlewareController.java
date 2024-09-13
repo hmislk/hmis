@@ -85,7 +85,7 @@ public class MiddlewareController {
             System.out.println("Generating test codes for analyzer...");
             List<String> testNames = limsMiddlewareController.generateTestCodesForAnalyzer(queryRecord.getSampleId(), analyzerName);
             if (testNames == null || testNames.isEmpty()) {
-                testNames = Arrays.asList("GLU");
+                testNames = Arrays.asList("");
             }
 
             System.out.println("Fetching patient sample for Sample ID: " + queryRecord.getSampleId());
