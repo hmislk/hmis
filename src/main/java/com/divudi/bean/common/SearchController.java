@@ -599,6 +599,10 @@ public class SearchController implements Serializable {
     public String navigateToFailedSmsList() {
         return "/analytics/sms_faild?faces-redirect=true";
     }
+    
+    public String navigateToOpdSaleReport() {
+        return "/opd/analytics/sale_report?faces-redirect=true";
+    }
 
     public String navigateToSendSms() {
         return "/analytics/sms_send?faces-redirect=true";
