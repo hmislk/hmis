@@ -212,6 +212,16 @@
                                     <h:outputText value="Bill No" />
                                 </f:facet>
                                 <h:outputText value="#{row.billFee.bill.deptId}" />
+                                <p:commandLink 
+                                    ajax="false"
+                                    rendered="#{row.billFee ne null}"
+                                    action="#{billSearch.navigateViewBillByBillTypeAtomic()}">
+                                    <h:outputText title="View Bill" styleClass="fa fa-eye" />
+                                    <f:setPropertyActionListener 
+                                        value="#{row.billFee.bill}" 
+                                        target="#{billSearch.bill}" >
+                                    </f:setPropertyActionListener>
+                                </p:commandLink>
                             </p:column>
 
                             <p:column>
