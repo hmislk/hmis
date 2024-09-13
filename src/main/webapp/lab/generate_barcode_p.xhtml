@@ -216,7 +216,7 @@
                     <h:form >
                         <div class="row" >
                             <div class="col-10 w-80" >
-
+                                <!--PATIENT_INVESTIGATIONS-->
                                 <h:panelGroup rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_INVESTIGATIONS'}" >
 
                                     <p:dataTable  
@@ -325,33 +325,54 @@
                                         <!-- Samples Column -->
                                         <p:column headerText="Samples" style="width: 5em; vertical-align: top;">
                                             <ui:repeat value="#{patientInvestigationController.getPatientSampleComponentsByInvestigation(patientInvestigation)}" var="psc">
-                                                <div class="ui-g" style="margin-bottom: 10px;">
+                                                <div class="ui-g d-grid" style="margin-bottom: 10px;">
                                                     <div class="ui-g-6">
                                                         <i class="fa fa-vial"></i>
                                                         <h:outputText value="#{psc.patientSample.id}" class="text-primary" />
-                                                    </div>
-                                                    <div class="ui-g-6">
-                                                        <i class="fa fa-flask"></i>
-                                                        <h:outputText value="#{psc.investigationComponant.name}" class="text-success" />
                                                     </div>
                                                 </div>
                                             </ui:repeat>
                                         </p:column>
 
                                         <!-- Actions Column -->
-                                        <p:column headerText="Actions" style="width: 8em; vertical-align: top;">
+                                        <p:column headerText="Actions" style="width: 6em; vertical-align: top;">
                                             <h:panelGroup rendered="#{patientInvestigation.billItem.bill.cancelled ne true}">
-                                                <p:commandLink class="m-1" ajax="false" id="btnPrintWorksheets" disabled="#{patientInvestigation.sampleAccepted ne true}" action="/lab/single_worksheet?faces-redirect=true" >
-                                                    <f:setPropertyActionListener value="#{patientInvestigation}" target="#{patientInvestigationController.current}" ></f:setPropertyActionListener>
-                                                    <p:graphicImage library="image" styleClass="standedicon" name="worksheet.gif" ></p:graphicImage>
-                                                </p:commandLink>
+                                                <div class="row">
+                                                    <p:commandButton 
+                                                        icon="fa fa-file-text"
+                                                        value="To Worksheet" 
+                                                        class="ui-button-info"
+                                                        ajax="false" 
+                                                        id="btnPrintWorksheets" 
+                                                        disabled="#{patientInvestigation.sampleAccepted ne true}" 
+                                                        action="/lab/single_worksheet?faces-redirect=true"
+                                                        >
+                                                        <f:setPropertyActionListener value="#{patientInvestigation}" target="#{patientInvestigationController.current}" ></f:setPropertyActionListener>
+                                                    </p:commandButton>
+                                                </div>
+                                                <div class="row my-2">
+                                                    <p:commandButton 
+                                                        icon="fa fa-file-text"
+                                                        value="To New Reports" 
+                                                        id="btnNewReport"
+                                                        disabled="#{!patientInvestigation.sampleAccepted}" 
+                                                        action="#{patientReportController.navigateToNewlyCreatedPatientReport(patientInvestigation)}"
+                                                        class="ui-button-danger"
+                                                        onclick="if (!confirm('Are you sure you want to New Patient Report?'))
+                                                                    return false;"
+                                                        ajax="false">
+                                                    </p:commandButton>
+                                                </div>
+                                                <div class="row">
+                                                    <p:commandButton 
+                                                        icon="fa fa-file-text"
+                                                        value="To Reports" 
+                                                        class="ui-button-success"
+                                                        ajax="false" 
+                                                        action="#{patientInvestigationController.navigateToPatientReportsFromSelectedInvestigation(patientInvestigation)}" >
+                                                    </p:commandButton>
+                                                </div>
 
-                                                <p:commandLink id="btnNewReport" 
-                                                               class="m-1"
-                                                               disabled="#{!patientInvestigation.sampleAccepted}" 
-                                                               action="#{patientReportController.navigateToNewlyCreatedPatientReport(patientInvestigation)}"   >
-                                                    <p:graphicImage library="image" styleClass="standedicon" name="data_entry.png" ></p:graphicImage>
-                                                </p:commandLink>
                                             </h:panelGroup>
                                         </p:column>
                                     </p:dataTable>
@@ -359,6 +380,7 @@
 
                                 </h:panelGroup>
 
+                                <!--BILLS-->                                
                                 <h:panelGroup rendered="#{patientInvestigationController.listingEntity eq 'BILLS'}" >
 
                                     <p:dataTable  
@@ -389,7 +411,7 @@
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
                                             </h:outputLabel>
                                             <br/>
-                                            <i class="fas fa-calendar-alt text-secondary"></i> <!-- Date Icon -->
+                                            <i class="fa-solid fa-file-invoice-dollar text-secondary"></i> <!-- Bill ID Icon -->
                                             <h:outputLabel value="#{b.id}">
                                             </h:outputLabel>
                                             <br/>
@@ -484,7 +506,7 @@
                                                         action="#{patientInvestigationController.navigateToSamplesFromSelectedBill(b)}" >
                                                     </p:commandButton>
                                                 </div>
-                                                
+
                                                 <div class="row mt-2">
                                                     <p:commandButton 
                                                         icon="fa fa-file-text"
@@ -506,6 +528,7 @@
 
                                 </h:panelGroup>
 
+                                <!--BILL_BARCODES-->
                                 <h:panelGroup rendered="#{patientInvestigationController.listingEntity eq 'BILL_BARCODES'}">
                                     <p:commandButton ajax="false" value="Print">
                                         <p:printer target="batchBarcode"></p:printer>
@@ -581,7 +604,7 @@
                                     </h:panelGroup> 
                                 </h:panelGroup>
 
-
+                                <!--PATIENT_SAMPLES-->
                                 <h:panelGroup rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_SAMPLES'}">
 
                                     <p:dataTable  
@@ -599,18 +622,26 @@
                                         style="table-layout: fixed; width: 100%;">
 
                                         <!-- Selection Box Column -->
-                                        <p:column selectionBox="true" width="2em" style="vertical-align: top;">
+                                        <p:column selectionBox="true" width="1em" style="vertical-align: top;">
                                         </p:column>
 
                                         <!-- Sample ID Column with Icon -->
-                                        <p:column headerText="Sample ID" width="6em" style="vertical-align: top;">
+                                        <p:column headerText="Sample" width="3em" style="vertical-align: top;">
+                                            <i class="fa-solid fa-vial-virus text-danger"></i> <!-- Sample Icon -->
+                                            <h:outputLabel value="#{ps.id}" class="mx-2" /><br/><br/>
                                             <i class="fas fa-vial text-danger"></i> <!-- Sample Icon -->
-                                            <h:outputLabel value="#{ps.id}" />
+                                            <h:outputLabel value="#{ps.tube.name}" class="mx-2" />
                                         </p:column>
 
-                                        <p:column headerText="Tube" width="6em" style="vertical-align: top;">
-                                            <i class="fas fa-vial text-danger"></i> <!-- Sample Icon -->
-                                            <h:outputLabel value="#{ps.tube.name}" />
+                                        <p:column headerText="Investigation List" width="8em" style="vertical-align: top;">
+                                            <ui:repeat value="#{patientInvestigationController.getPatientInvestigationsFromSample(ps)}" var="psc">
+                                                <div class="ui-g">
+                                                    <div class="ui-g-12 d-flex gap-3">
+                                                        <i class="fa fa-flask text-success mt-1"></i>
+                                                        <h:outputText value="#{psc.investigationComponant.name}" />
+                                                    </div>
+                                                </div>
+                                            </ui:repeat>
                                         </p:column>
 
                                         <!-- Bill Column with Icon -->
@@ -663,25 +694,88 @@
                                         </p:column>
 
                                         <!-- Status Column with Badge -->
-                                        <p:column headerText="Status" width="6em" style="vertical-align: top;">
+                                        <p:column headerText="Curent Status" width="6em" style="vertical-align: top;">
                                             #{ps.status}
                                         </p:column>
 
-                                        <!-- Sample Number Column (Conditionally Rendered) -->
-                                        <p:column headerText="Sample Number" rendered="false" style="vertical-align: top;">
-                                            <p:inputText id="txtSampleId" value="#{ps.sampleId}" class="mx-2" />
-                                            <p:commandButton 
-                                                id="btnUpdateSampleId"
-                                                value="Update" 
-                                                action="#{patientSampleController.savePatientSample(ps)}" 
-                                                process="btnUpdateSampleId txtSampleId" />
+                                        <!-- Status Details Column  -->
+                                        <p:column headerText="Status Details" width="10em">
+                                            <div>
+                                                <h:panelGrid>
+                                                    <h:panelGroup>
+                                                        <div class="d-flex gap-3">
+                                                            <h:outputLabel value="Created At" />
+                                                            <h:outputLabel value="#{ps.createdAt}">
+                                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                            </h:outputLabel>
+                                                        </div>
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{ps.barcodeGenerated}">
+                                                        <div class="d-flex gap-3 ">
+                                                            <h:outputLabel value="Generated At " />
+                                                            <h:outputLabel value="#{ps.barcodeGeneratedAt}" >
+                                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                            </h:outputLabel>
+                                                        </div>
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{ps.sampleCollected}">
+                                                        <div class="d-flex gap-3 ">
+                                                            <h:outputLabel value="Collected At" />
+                                                            <h:outputLabel value="#{ps.sampleCollectedAt}" >
+                                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                            </h:outputLabel>
+                                                        </div>
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{ps.sampleSent}">
+                                                        <div class="d-flex gap-3 ">
+                                                            <h:outputLabel value="Send to Lab " />
+                                                            <h:outputLabel value="#{ps.sampleSentAt}" >
+                                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                            </h:outputLabel>
+                                                        </div>
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{ps.sampleReceivedAtLab}">
+                                                        <div class="d-flex gap-3 ">
+                                                            <h:outputLabel value="Received At Lab" />
+                                                            <h:outputLabel value="#{ps.sampleReceivedAtLabAt}" >
+                                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                            </h:outputLabel>
+                                                        </div>
+                                                    </h:panelGroup>
+                                                </h:panelGrid>
+
+                                                <h:panelGroup rendered="#{ps.sampleRejected or ps.cancelled}">
+                                                    <hr/>
+                                                </h:panelGroup>
+
+                                                <h:panelGrid rendered="#{ps.sampleRejected or ps.cancelled}">
+
+                                                    <h:panelGroup rendered="#{ps.sampleRejected}">
+
+                                                        <div class="d-flex gap-3 " >
+                                                            <h:outputLabel value="Rejected At" />
+                                                            <h:outputLabel value="#{ps.sampleRejectedAt}" >
+                                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                            </h:outputLabel>
+                                                        </div>
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{ps.cancelled}">
+                                                        <div class="d-flex gap-3 " >
+                                                            <h:outputLabel value="cancelled At" />
+                                                            <h:outputLabel value="#{ps.cancelledAt}" >
+                                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                            </h:outputLabel>
+                                                        </div>
+                                                    </h:panelGroup>
+                                                </h:panelGrid>
+                                            </div>
                                         </p:column>
                                     </p:dataTable>
 
 
                                 </h:panelGroup>
 
-
+                                <!--PATIENT_REPORTS-->
                                 <h:panelGroup rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_REPORTS'}" >
                                     <p:dataTable  
                                         class="w-100"
@@ -872,19 +966,35 @@
                                                      icon="pi pi-plus-circle"
                                                      styleClass="m-1  w-100 ui-button-primary" />
                                     <hr/>
+
+                                    <style>
+                                        .custom-dropdown-panel {
+                                            position: absolute; /* Ensure the dropdown is positioned absolutely */
+                                            right: 0; /* Align the panel to the right edge */
+                                            top: 100%; /* Position the panel directly below the input box */
+                                            z-index: 1000; /* Ensure the panel is above other elements */
+                                            width: 30%; /* Make the dropdown match the width of the input box */
+                                            box-sizing: border-box; /* Include padding and border in the element's total width and height */
+                                        }
+                                    </style>
+
                                     <p:autoComplete 
                                         completeMethod="#{staffController.completeStaff}"
                                         value="#{patientInvestigationController.sampleTransportedToLabByStaff}" 
-                                        var="mys" class="w-100" inputStyleClass="w-100"
+                                        var="mys" 
+                                        class="w-100" 
+                                        maxResults="10"
+                                        inputStyleClass="w-100"
                                         itemLabel="#{mys.person.name}" 
+                                        panelStyleClass="custom-dropdown-panel"
                                         itemValue="#{mys}">
-                                        <p:column>
+                                        <p:column headerText="Name" style="padding: 6px; width: 250px;">
                                             <h:outputText value="#{mys.person.nameWithTitle}" />
                                         </p:column>
-                                        <p:column>
+                                        <p:column headerText="Code" style="padding: 6px; width: 20px;">
                                             <h:outputText value="#{mys.code}" />
                                         </p:column>
-                                        <p:column>
+                                        <p:column headerText="Name" style="padding: 6px; width: 20px;">
                                             <h:outputText value="#{mys.epfNo}" />
                                         </p:column>
                                     </p:autoComplete>
@@ -922,7 +1032,10 @@
 
                                     <hr/>
 
-                                    <p:inputText value="#{patientInvestigationController.sampleRejectionComment}" ></p:inputText>
+                                    <p:inputText 
+                                        class="w-100"
+                                        value="#{patientInvestigationController.sampleRejectionComment}" >
+                                    </p:inputText>
 
                                     <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
                                                      id="btnRejectSamples"
@@ -933,17 +1046,21 @@
                                                      icon="pi pi-times-circle"
                                                      styleClass="m-1  w-100 ui-button-danger" />
 
+                                    <hr/>
+                                    <p:commandButton 
+                                        disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
+                                        id="btnGenerateTestCodes"
+                                        value="Check Analyzer Test Codes"
+                                        ajax="false"
+                                        action="#{patientInvestigationController.generateSampleCodesSamples()}"
+                                        title="Reject Samples"
+                                        icon="pi pi-times-circle"
+                                        styleClass="m-1  w-100 ui-button-danger" />
 
-                                    <p:commandButton disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
-                                                     id="btnGenerateTestCodes"
-                                                     value="Check Analyzer Test Codes"
-                                                     ajax="false"
-                                                     action="#{patientInvestigationController.generateSampleCodesSamples()}"
-                                                     title="Reject Samples"
-                                                     icon="pi pi-times-circle"
-                                                     styleClass="m-1  w-100 ui-button-danger" />
-
-                                    <p:inputTextarea value="#{patientInvestigationController.testDetails}" ></p:inputTextarea>
+                                    <p:inputTextarea 
+                                        class="w-100"
+                                        value="#{patientInvestigationController.testDetails}" >
+                                    </p:inputTextarea>
 
                                     <hr/>
                                 </h:panelGrid>
