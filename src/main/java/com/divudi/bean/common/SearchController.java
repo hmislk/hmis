@@ -6505,12 +6505,16 @@ public class SearchController implements Serializable {
         return "/pharmacy/pharmacy_search_pre_bill_not_paid?faces-redirect=true";
     }
 
-    public String navigateToItemizedSaleSummary() {
+    public String navigateToItemizedSaleSummaryOpd() {
         return "/opd/analytics/itemized_sale_summary?faces-redirect=true";
     }
 
-    public String navigateToItemizedSaleReport() {
+    public String navigateToItemizedSaleReportOpd() {
         return "/opd/analytics/itemized_sale_report?faces-redirect=true";
+    }
+    
+     public String navigateToIncomeBreakdownByCategoryOpd() {
+        return "/opd/analytics/income_breakdown_by_category?faces-redirect=true";
     }
 
     public void addToStock() {
@@ -11911,6 +11915,10 @@ public class SearchController implements Serializable {
         bundle = generateItemizedSalesReport();
     }
 
+    public void createIncomeBreakdownByCategoryOpd() {
+        bundle = generateIncomeBreakdownByCategoryOpd();
+    }
+
     public void generateDailyReturn() {
         bundle = new ReportTemplateRowBundle();
 
@@ -12114,6 +12122,143 @@ public class SearchController implements Serializable {
 
         oiBundle.setName("Itemized Sales Summary");
         oiBundle.setBundleType("itemized_sales_summary");
+
+        oiBundle.getReportTemplateRows().stream()
+                .forEach(rtr -> {
+                    rtr.setInstitution(institution);
+                    rtr.setDepartment(department);
+                    rtr.setSite(site);
+                    rtr.setFromDate(fromDate);
+                    rtr.setToDate(toDate);
+                });
+
+        return oiBundle;
+    }
+
+    public void billItemsToItamizedSaleSummary(ReportTemplateRowBundle rtrb, List<BillItem> billItems) {
+        Map<String, ReportTemplateRow> categoryMap = new HashMap<>();
+        Map<String, ReportTemplateRow> itemMap = new HashMap<>();
+        List<ReportTemplateRow> rowsToAdd = new ArrayList<>();
+        double totalOpdServiceCollection = 0.0;
+        for (BillItem bi : billItems) {
+            System.out.println("Processing BillItem: " + bi);
+
+            if (bi.getBill() == null) {
+                continue;
+            } else if (bi.getBill().getPaymentMethod() == null) {
+                continue;
+            } else if (bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.NONE) {
+                continue;
+            }
+
+            String categoryName = bi.getItem() != null && bi.getItem().getCategory() != null ? bi.getItem().getCategory().getName() : "No Category";
+            String itemName = bi.getItem() != null ? bi.getItem().getName() : "No Item";
+            String itemKey = categoryName + "->" + itemName;
+
+            System.out.println("Item Key: " + itemKey);
+            System.out.println("Category: " + categoryName + ", Item: " + itemName);
+
+            categoryMap.putIfAbsent(categoryName, new ReportTemplateRow());
+            itemMap.putIfAbsent(itemKey, new ReportTemplateRow());
+
+            ReportTemplateRow categoryRow = categoryMap.get(categoryName);
+            ReportTemplateRow itemRow = itemMap.get(itemKey);
+
+            if (bi.getItem() != null) {
+                categoryRow.setCategory(bi.getItem().getCategory());
+                itemRow.setItem(bi.getItem());
+            }
+
+            long countModifier = 1;
+            double grossValue = bi.getGrossValue();
+            double hospitalFee = bi.getHospitalFee();
+            double discount = bi.getDiscount();
+            double staffFee = bi.getStaffFee();
+            double netValue = bi.getNetValue();
+
+            switch (bi.getBill().getBillClassType()) {
+                case CancelledBill:
+                case RefundBill:
+                    countModifier = -1;
+                    // Apply abs to ensure all values are positive before negating
+                    grossValue = -Math.abs(grossValue);
+                    hospitalFee = -Math.abs(hospitalFee);
+                    discount = -Math.abs(discount);
+                    staffFee = -Math.abs(staffFee);
+                    netValue = -Math.abs(netValue);
+                    break;
+                case BilledBill:
+                case Bill:
+                    // Positive adjustments, no need to change the sign or apply abs
+                    break;
+                default:
+                    // Do nothing for other types of bills
+                    continue;  // Skip processing for unrecognized or unhandled bill types
+            }
+            totalOpdServiceCollection += netValue;
+            System.out.println("hospitalFee = " + hospitalFee);
+            updateRow(categoryRow, countModifier, grossValue, hospitalFee, discount, staffFee, netValue);
+            updateRow(itemRow, countModifier, grossValue, hospitalFee, discount, staffFee, netValue);
+        }
+
+        // Only add rows that are properly initialized and grouped
+        categoryMap.forEach((categoryName, catRow) -> {
+            System.out.println("Adding category row to bundle: " + categoryName);
+            rowsToAdd.add(catRow);
+            itemMap.values().stream()
+                    .filter(iRow -> iRow.getItem() != null && iRow.getItem().getCategory() != null && iRow.getItem().getCategory().getName().equals(categoryName))
+                    .forEach(iRow -> {
+                        System.out.println("Adding item row to bundle under category " + categoryName + ": " + iRow.getItem().getName());
+                        rowsToAdd.add(iRow);
+                    });
+        });
+
+        System.out.println("rowsToAdd = " + rowsToAdd);
+        System.out.println("rtrb.getReportTemplateRows() = " + rtrb.getReportTemplateRows());
+        rtrb.getReportTemplateRows().addAll(rowsToAdd);
+        rtrb.setTotal(totalOpdServiceCollection);
+    }
+
+    public ReportTemplateRowBundle generateIncomeBreakdownByCategoryOpd() {
+        ReportTemplateRowBundle oiBundle = new ReportTemplateRowBundle();
+        String jpql = "select bi "
+                + " from BillItem bi "
+                + " where bi.bill.retired=:br "
+                + " and bi.bill.createdAt between :fd and :td ";
+        Map m = new HashMap();
+        m.put("br", false);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        List<BillTypeAtomic> btas = BillTypeAtomic.findByServiceType(ServiceType.OPD);
+        oiBundle.setDescription("Bill Types Listed: " + btas);
+        if (!btas.isEmpty()) {
+            jpql += " and bi.bill.billTypeAtomic in :bts ";
+            m.put("bts", btas);
+        }
+
+        if (department != null) {
+            jpql += " and bi.bill.department=:dep ";
+            m.put("dep", department);
+        }
+        if (institution != null) {
+            jpql += " and bi.bill.department.institution=:ins ";
+            m.put("ins", institution);
+        }
+        if (site != null) {
+            jpql += " and bi.bill.department.site=:site ";
+            m.put("site", site);
+        }
+        if (category != null) {
+            jpql += " and bi.item.category=:cat ";
+            m.put("cat", category);
+        }
+        System.out.println("jpql = " + jpql);
+        System.out.println("m = " + m);
+        List<BillItem> bis = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        summarizeBillItemsToIncomeByCategory(oiBundle, bis);
+
+        oiBundle.setName("Income Breakdown By Category");
+        oiBundle.setBundleType("income_breakdown_by_category");
 
         oiBundle.getReportTemplateRows().stream()
                 .forEach(rtr -> {
@@ -12741,88 +12886,90 @@ public class SearchController implements Serializable {
         rtrb.setTotal(totalOpdServiceCollection);
     }
 
-    public void billItemsToItamizedSaleSummary(ReportTemplateRowBundle rtrb, List<BillItem> billItems) {
+    public void summarizeBillItemsToIncomeByCategory(ReportTemplateRowBundle reportBundle, List<BillItem> billItems) {
         Map<String, ReportTemplateRow> categoryMap = new HashMap<>();
-        Map<String, ReportTemplateRow> itemMap = new HashMap<>();
         List<ReportTemplateRow> rowsToAdd = new ArrayList<>();
-        double totalOpdServiceCollection = 0.0;
-        for (BillItem bi : billItems) {
-            System.out.println("Processing BillItem: " + bi);
+        double totalNetIncome = 0.0;
+        double totalIncome = 0.0;
+        double totalDiscount = 0.0;
+        double totalHospitalFees = 0.0;
+        double totalStaffFees = 0.0;
 
-            if (bi.getBill() == null) {
-                continue;
-            } else if (bi.getBill().getPaymentMethod() == null) {
-                continue;
-            } else if (bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.NONE) {
+        for (BillItem billItem : billItems) {
+            if (billItem.getBill() == null || billItem.getBill().getPaymentMethod() == null || billItem.getBill().getPaymentMethod().getPaymentType() == PaymentType.NONE) {
                 continue;
             }
 
-            String categoryName = bi.getItem() != null && bi.getItem().getCategory() != null ? bi.getItem().getCategory().getName() : "No Category";
-            String itemName = bi.getItem() != null ? bi.getItem().getName() : "No Item";
-            String itemKey = categoryName + "->" + itemName;
-
-            System.out.println("Item Key: " + itemKey);
-            System.out.println("Category: " + categoryName + ", Item: " + itemName);
-
+            String categoryName = billItem.getItem() != null && billItem.getItem().getCategory() != null ? billItem.getItem().getCategory().getName() : "No Category";
             categoryMap.putIfAbsent(categoryName, new ReportTemplateRow());
-            itemMap.putIfAbsent(itemKey, new ReportTemplateRow());
 
             ReportTemplateRow categoryRow = categoryMap.get(categoryName);
-            ReportTemplateRow itemRow = itemMap.get(itemKey);
-
-            if (bi.getItem() != null) {
-                categoryRow.setCategory(bi.getItem().getCategory());
-                itemRow.setItem(bi.getItem());
+            if (billItem.getItem() != null) {
+                categoryRow.setCategory(billItem.getItem().getCategory());
             }
 
-            long countModifier = 1;
-            double grossValue = bi.getGrossValue();
-            double hospitalFee = bi.getHospitalFee();
-            double discount = bi.getDiscount();
-            double staffFee = bi.getStaffFee();
-            double netValue = bi.getNetValue();
+            long countModifier = (billItem.getBill().getBillClassType() == BillClassType.CancelledBill || billItem.getBill().getBillClassType() == BillClassType.RefundBill) ? -1 : 1;
+            double grossValue = countModifier * Math.abs(billItem.getGrossValue());
+            double hospitalFee = countModifier * Math.abs(billItem.getHospitalFee());
+            double discount = countModifier * Math.abs(billItem.getDiscount());
+            double staffFee = countModifier * Math.abs(billItem.getStaffFee());
+            double netValue = countModifier * Math.abs(billItem.getNetValue());
 
-            switch (bi.getBill().getBillClassType()) {
-                case CancelledBill:
-                case RefundBill:
-                    countModifier = -1;
-                    // Apply abs to ensure all values are positive before negating
-                    grossValue = -Math.abs(grossValue);
-                    hospitalFee = -Math.abs(hospitalFee);
-                    discount = -Math.abs(discount);
-                    staffFee = -Math.abs(staffFee);
-                    netValue = -Math.abs(netValue);
-                    break;
-                case BilledBill:
-                case Bill:
-                    // Positive adjustments, no need to change the sign or apply abs
-                    break;
-                default:
-                    // Do nothing for other types of bills
-                    continue;  // Skip processing for unrecognized or unhandled bill types
-            }
-            totalOpdServiceCollection += netValue;
-            System.out.println("hospitalFee = " + hospitalFee);
-            updateRow(categoryRow, countModifier, grossValue, hospitalFee, discount, staffFee, netValue);
-            updateRow(itemRow, countModifier, grossValue, hospitalFee, discount, staffFee, netValue);
+            totalIncome += grossValue;
+            totalNetIncome += netValue;
+            totalHospitalFees += hospitalFee;
+            totalDiscount += discount;
+            totalStaffFees += staffFee;
+            updateCategoryRow(categoryRow, countModifier, grossValue, hospitalFee, discount, staffFee, netValue);
         }
 
-        // Only add rows that are properly initialized and grouped
-        categoryMap.forEach((categoryName, catRow) -> {
-            System.out.println("Adding category row to bundle: " + categoryName);
-            rowsToAdd.add(catRow);
-            itemMap.values().stream()
-                    .filter(iRow -> iRow.getItem() != null && iRow.getItem().getCategory() != null && iRow.getItem().getCategory().getName().equals(categoryName))
-                    .forEach(iRow -> {
-                        System.out.println("Adding item row to bundle under category " + categoryName + ": " + iRow.getItem().getName());
-                        rowsToAdd.add(iRow);
-                    });
-        });
+        // Iterate over categoryMap to add each category's row to rowsToAdd
+        categoryMap.forEach((categoryName, catRow) -> rowsToAdd.add(catRow));
 
-        System.out.println("rowsToAdd = " + rowsToAdd);
-        System.out.println("rtrb.getReportTemplateRows() = " + rtrb.getReportTemplateRows());
-        rtrb.getReportTemplateRows().addAll(rowsToAdd);
-        rtrb.setTotal(totalOpdServiceCollection);
+        reportBundle.getReportTemplateRows().addAll(rowsToAdd);
+        
+        reportBundle.setTotal(totalNetIncome);  
+        reportBundle.setDiscount(totalDiscount);  
+        reportBundle.setGrossTotal(totalIncome);
+        reportBundle.setHospitalTotal(totalHospitalFees);
+        reportBundle.setStaffTotal(totalStaffFees);
+    }
+
+    private void updateCategoryRow(ReportTemplateRow row, long countModifier, double grossValue, double hospitalFee, double discount, double professionalFee, double netValue) {
+        if (row.getItemCount() == null) {
+            row.setItemCount(0L);
+        }
+        if (row.getItemTotal() == null) {
+            row.setItemTotal(0.0);
+        }
+        if (row.getItemHospitalFee() == null) {
+            row.setItemHospitalFee(0.0);
+        }
+        if (row.getItemDiscountAmount() == null) {
+            row.setItemDiscountAmount(0.0);
+        }
+        if (row.getItemProfessionalFee() == null) {
+            row.setItemProfessionalFee(0.0);
+        }
+        if (row.getItemNetTotal() == null) {
+            row.setItemNetTotal(0.0);
+        }
+
+        row.setItemCount(row.getItemCount() + countModifier);
+        row.setItemTotal(row.getItemTotal() + grossValue);
+        row.setItemHospitalFee(row.getItemHospitalFee() + hospitalFee);
+        row.setItemDiscountAmount(row.getItemDiscountAmount() + discount);
+        row.setItemProfessionalFee(row.getItemProfessionalFee() + professionalFee);
+        row.setItemNetTotal(row.getItemNetTotal() + netValue);
+
+        // Since no item data is involved, only log category-specific updates
+        if (row.getCategory() != null) {
+            System.out.println("Updated category: " + row.getCategory().getName()
+                    + ", Count: " + row.getItemCount()
+                    + ", Net Total: " + row.getItemNetTotal());
+        } else {
+            System.out.println("Error: Category in the row is null.");
+        }
     }
 
     public void billItemsToItamizedSaleReport(ReportTemplateRowBundle rtrb, List<BillItem> billItems) {
