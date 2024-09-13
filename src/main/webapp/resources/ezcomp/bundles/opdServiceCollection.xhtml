@@ -18,26 +18,45 @@
         <!--<p:dataTable value="#{cc.attrs.bundle.reportTemplateRows}" var="row" >-->
 
 
-        <p:dataTable value="#{cc.attrs.bundle.reportTemplateRows}" var="row" >
-            <f:facet name="header" >
-                <h:outputText value="#{cc.attrs.bundle.name}" ></h:outputText>
-            </f:facet>
-            <f:facet name="footer" >
-                <h:outputText value="OPD Service Collection Total" ></h:outputText>
-                <p:spacer width="50" ></p:spacer>
-                <h:outputText value="#{cc.attrs.bundle.total}" ></h:outputText>
-            </f:facet>
+        <p:dataTable value="#{cc.attrs.bundle.reportTemplateRows}" var="row"  >
+            <!--            <f:facet name="header" >
+                            <h:outputText value="#{cc.attrs.bundle.name}" ></h:outputText>
+                        </f:facet>
+                        <f:facet name="footer" >
+                            <h:outputText value="OPD Service Collection Total" ></h:outputText>
+                            <p:spacer width="50" ></p:spacer>
+                            <h:outputText value="#{cc.attrs.bundle.total}" ></h:outputText>
+                        </f:facet>-->
+
+<!--                        <f:facet name="footer" >
+                            <h:outputText value="OPD Service Collection Total" ></h:outputText>
+                            <p:spacer width="50" ></p:spacer>
+                            <h:outputText value="#{cc.attrs.bundle.description}" ></h:outputText>
+                        </f:facet>-->
             <p:column>
                 <f:facet name="header">
                     <h:outputText value="Category" />
                 </f:facet>
                 <h:outputText value="#{row.category.name}"  />
+                <p:commandLink
+                    class="mx-2"
+                    rendered="#{row.category ne null}"
+                    action="#{searchController.navigateToOpdBillItemList(row)}"
+                    ajax="false">
+                    <h:outputText title="View Category Details" value="&#xf02d;" styleClass="fa mr-2" />
+                </p:commandLink>
             </p:column>
             <p:column>
                 <f:facet name="header">
                     <h:outputText value="Item / Service" />
                 </f:facet>
                 <h:outputText value="#{row.item.name}"  />
+                 <p:commandLink
+                    class="mx-2"
+                    rendered="#{row.item ne null}"
+                    action="#{searchController.navigateToOpdBillItemList(row)}">
+                    <h:outputText title="View Item Details" value="&#xf0f6;" styleClass="fa mr-2" />
+                </p:commandLink>
             </p:column>
             <p:column>
                 <f:facet name="header">

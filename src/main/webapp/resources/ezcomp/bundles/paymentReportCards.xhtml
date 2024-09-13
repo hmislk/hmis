@@ -19,9 +19,9 @@
         <!--<p:dataTable value="#{cc.attrs.bundle.reportTemplateRows}" var="row" >-->
 
         <p:dataTable value="#{cc.attrs.bundle.reportTemplateRows}" var="row" >
-            <f:facet name="header" >
+<!--            <f:facet name="header" >
                 <h:outputText value="#{cc.attrs.bundle.name}" ></h:outputText>
-            </f:facet>
+            </f:facet>-->
             <p:column>
                 <f:facet name="header">
                     <h:outputText value="Bil No" />
@@ -99,7 +99,7 @@
                 <h:outputText value="#{row.payment.bill.billedBill.deptId}"  />
             </p:column>
 
-            <p:columnGroup type="footer">  
+<!--            <p:columnGroup type="footer">  
                 <p:row>    
                     <p:column style=" text-align: left">
                         <f:facet name="footer">
@@ -116,7 +116,7 @@
                     </p:column>
 
                 </p:row>  
-            </p:columnGroup>  
+            </p:columnGroup>  -->
 
         </p:dataTable>
 
