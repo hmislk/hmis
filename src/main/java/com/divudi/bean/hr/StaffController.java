@@ -1504,20 +1504,6 @@ public class StaffController implements Serializable {
         return items;
     }
     
-    public List<Staff> getSpecialityStaff(Speciality speciality) {
-        List<Staff> specialityStaff;
-            String jpql;
-            Map params = new HashMap();
-            jpql = "SELECT i "
-                    + " FROM Staff i "
-                    + " where i.retired=false "
-                    + " and i.speciality=:spe"
-                    + " order by i.person.name";
-            specialityStaff = getFacade().findByJpql(jpql, params);
-        
-        return specialityStaff;
-    }
-
     public void fillItems() {
         String temSql;
         temSql = "SELECT i FROM Staff i where i.retired=false and i.person is not null and i.person.name is not null order by i.person.name";
