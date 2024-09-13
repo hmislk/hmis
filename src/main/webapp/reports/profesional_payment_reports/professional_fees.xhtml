@@ -26,7 +26,7 @@
                                         value="#{searchController.fromDate}" 
                                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
                                         />
-                                    
+
                                     <p:spacer width="50" ></p:spacer>
 
                                     <h:panelGroup layout="block" styleClass="form-group">
@@ -42,8 +42,8 @@
                                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
                                         />
 
-                                    
-                                    
+
+
                                     <h:panelGroup layout="block" styleClass="form-group">
                                         <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
                                         <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
@@ -57,7 +57,7 @@
                                         <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
                                         <p:ajax process="cmbIns" update="cmbDept" />
                                     </p:selectOneMenu>
-                                    
+
                                     <p:spacer ></p:spacer>
 
                                     <h:panelGroup layout="block" styleClass="form-group">
@@ -72,8 +72,8 @@
                                         <f:selectItem itemLabel="All Departments" />
                                         <f:selectItems value="#{departmentController.getInsDepartments(searchController.institution)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
                                     </p:selectOneMenu>
-                                    
-                                    
+
+
 
                                     <h:panelGroup layout="block" styleClass="form-group">
                                         <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
@@ -87,11 +87,11 @@
                                         <f:selectItem itemLabel="All Sites" />
                                         <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
                                     </p:selectOneMenu>
-                                    
+
                                     <p:spacer ></p:spacer>
                                     <p:spacer ></p:spacer>
                                     <p:spacer ></p:spacer>
-                                    
+
 
                                     <h:panelGroup layout="block" styleClass="form-group">
                                         <h:outputText title="Category" value="&#xf02d;" styleClass="fa mr-2" /> <!-- FontAwesome book icon -->
@@ -105,7 +105,7 @@
                                                     itemLabel="#{category.name}"
                                                     itemValue="#{category}">
                                     </p:autoComplete>
-                                    
+
                                     <p:spacer ></p:spacer>
 
                                     <h:panelGroup layout="block" styleClass="form-group">
@@ -121,7 +121,7 @@
                                                     itemValue="#{item}">
                                     </p:autoComplete>
 
-                                   
+
                                     <!-- New Speciality Field with Icon -->
                                     <h:panelGroup layout="block" styleClass="form-group">
                                         <h:outputText value="&#xf2b9;" styleClass="fa mr-2" /> <!-- FontAwesome user-md icon for Speciality -->
@@ -137,7 +137,7 @@
                                                     styleClass="w-100">
                                         <p:ajax event="itemSelect" update="scStaff" />
                                     </p:autoComplete>
-                                    
+
                                     <p:spacer ></p:spacer>
 
                                     <!-- New Doctor Field with Icon -->
@@ -153,19 +153,19 @@
                                                      styleClass="w-100 form-control">
                                         <f:selectItem itemLabel="Please Select" noSelectionOption="true" />
                                         <f:selectItems
-                                            
                                             value="#{staffController.getSpecialityStaff(searchController.speciality)}" 
-                                                       var="staff" 
-                                                       itemLabel="#{staff.person.nameWithTitle}" 
-                                                       itemValue="#{staff}" />
+                                            var="staff" 
+                                            itemLabel="#{staff.person.nameWithTitle}" 
+                                            itemValue="#{staff}" />
                                     </p:selectOneMenu>
 
                                 </h:panelGrid>
 
-                                <p:commandButton id="btnList" class="m-1 ui-button-danger"
-                                                 icon="fas fa-list"
-                                                 ajax="false" value="View List"
-                                                 action="#{searchController.createIncomeBreakdownByCategoryOpd()}" />
+                                <p:commandButton 
+                                    id="btnList" class="m-1 ui-button-danger"
+                                    icon="fas fa-list"
+                                    ajax="false" value="View List"
+                                    action="#{searchController.createProfessionalFees()}" />
 
                                 <p:commandButton id="btnPdf" class="m-1 ui-button-info"
                                                  ajax="false"
@@ -209,74 +209,41 @@
 
                             <p:column>
                                 <f:facet name="header">
-                                    <h:outputText value="Category" />
+                                    <h:outputText value="Bill No" />
                                 </f:facet>
-                                <h:outputText value="#{row.category.name}" />
+                                <h:outputText value="#{row.billFee.bill.deptId}" />
                             </p:column>
 
                             <p:column>
                                 <f:facet name="header">
-                                    <h:outputText value="Count" />
+                                    <h:outputText value="Speciality" />
                                 </f:facet>
-                                <h:outputText value="#{row.itemCount}">
-                                    <f:convertNumber pattern="#,##0" />
+                            </p:column>
+
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Staff member" />
+                                </f:facet>
+                                <h:outputText value="#{row.billFee.staff.person.nameWithTitle}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Fee Name" />
+                                </f:facet>
+                                <h:outputText value="#{row.billFee.fee.name}">
                                 </h:outputText>
                             </p:column>
 
                             <p:column class="text-end">
                                 <f:facet name="header">
-                                    <h:outputText value="Gross Value" />
+                                    <h:outputText value="Base Fee Value" />
                                 </f:facet>
-                                <h:outputText value="#{row.itemTotal}">
+                                <h:outputText value="#{row.billFee.fee.fee}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{searchController.bundle.grossTotal}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
-
-                            <p:column class="text-end">
-                                <f:facet name="header">
-                                    <h:outputText value="Hospital Fee" />
-                                </f:facet>
-                                <h:outputText value="#{row.itemHospitalFee}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{searchController.bundle.hospitalTotal}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
-
-                            <p:column class="text-end">
-                                <f:facet name="header">
-                                    <h:outputText value="Professional Fee" />
-                                </f:facet>
-                                <h:outputText value="#{row.itemProfessionalFee}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{searchController.bundle.staffTotal}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
-
-                            <p:column class="text-end">
-                                <f:facet name="header">
-                                    <h:outputText value="Discount" />
-                                </f:facet>
-                                <h:outputText value="#{row.itemDiscountAmount}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{searchController.bundle.discount}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </f:facet>
                             </p:column>
 
                             <p:column class="text-end">

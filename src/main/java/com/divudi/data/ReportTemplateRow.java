@@ -1,6 +1,7 @@
 package com.divudi.data;
 
 import com.divudi.entity.Bill;
+import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BillSession;
 import com.divudi.entity.Category;
@@ -8,6 +9,7 @@ import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.Payment;
+import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.channel.SessionInstance;
@@ -33,6 +35,7 @@ public class ReportTemplateRow implements Serializable {
     private Category category;
     private Bill bill;
     private BillItem billItem;
+    private BillFee billFee;
     private Payment payment;
 
     private Item item;
@@ -100,6 +103,7 @@ public class ReportTemplateRow implements Serializable {
     private Long startId;
     private Long endId;
     private SessionInstance sessionInstance;
+    private Speciality speciality;
     private Staff staff;
     private Institution referringInstitution;
     private Staff referringStaff;
@@ -1052,5 +1056,27 @@ public class ReportTemplateRow implements Serializable {
     public void setCounter(Long counter) {
         this.counter = counter;
     }
+
+    public BillFee getBillFee() {
+        return billFee;
+    }
+
+    public void setBillFee(BillFee billFee) {
+        this.billFee = billFee;
+    }
+
+    public ReportTemplateRow(BillFee billFee) {
+        this.billFee = billFee;
+    }
+
+    public Speciality getSpeciality() {
+        return speciality;
+    }
+
+    public void setSpeciality(Speciality speciality) {
+        this.speciality = speciality;
+    }
+    
+    
 
 }

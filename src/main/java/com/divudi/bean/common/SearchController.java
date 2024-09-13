@@ -11928,6 +11928,10 @@ public class SearchController implements Serializable {
         bundle = generateIncomeBreakdownByCategoryOpd();
     }
 
+    public void createProfessionalFees() {
+        bundle = generateOpdProfessionalFees();
+    }
+
     public void generateDailyReturn() {
         bundle = new ReportTemplateRowBundle();
 
@@ -12276,6 +12280,83 @@ public class SearchController implements Serializable {
                     rtr.setSite(site);
                     rtr.setFromDate(fromDate);
                     rtr.setToDate(toDate);
+                });
+
+        return oiBundle;
+    }
+
+    public ReportTemplateRowBundle generateOpdProfessionalFees() {
+        ReportTemplateRowBundle oiBundle = new ReportTemplateRowBundle();
+        String jpql = "select bf "
+                + " from BillFee bf "
+                + " join bf.billItem bi "
+                + " where bf.retired=:bfr "
+                + " and bi.bill.retired=:br "
+                + " and bf.fee.feeType=:ft "
+                + " and bi.bill.createdAt between :fd and :td ";
+        Map m = new HashMap();
+        m.put("br", false);
+        m.put("bfr", false);
+        m.put("fd", fromDate);
+        m.put("ft", FeeType.Staff);
+        m.put("td", toDate);
+        List<BillTypeAtomic> btas = BillTypeAtomic.findByServiceType(ServiceType.OPD);
+        oiBundle.setDescription("Bill Types Listed: " + btas);
+        if (!btas.isEmpty()) {
+            jpql += " and bi.bill.billTypeAtomic in :bts ";
+            m.put("bts", btas);
+        }
+
+        if (department != null) {
+            jpql += " and bi.bill.department=:dep ";
+            m.put("dep", department);
+        }
+        if (institution != null) {
+            jpql += " and bi.bill.department.institution=:ins ";
+            m.put("ins", institution);
+        }
+        if (site != null) {
+            jpql += " and bi.bill.department.site=:site ";
+            m.put("site", site);
+        }
+        if (category != null) {
+            jpql += " and bi.item.category=:cat ";
+            m.put("cat", category);
+        }
+        if (item != null) {
+            jpql += " and bi.item=:item ";
+            m.put("item", item);
+        }
+        if (speciality != null) {
+            jpql += " and bf.speciality=:speciality ";
+            m.put("speciality", speciality);
+        }
+        if (staff != null) {
+            jpql += " and bf.staff=:staff ";
+            m.put("staff", staff);
+        }
+
+        System.out.println("jpql = " + jpql);
+        System.out.println("m = " + m);
+        List<BillFee> bifs = billFeeFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        if (bifs != null) {
+            for (BillFee bf : bifs) {
+                ReportTemplateRow r =new ReportTemplateRow(bf);
+                oiBundle.getReportTemplateRows().add(r);
+            }
+        }
+        oiBundle.setName("Professional Fees");
+        oiBundle.setBundleType("professional_fees");
+
+        oiBundle.getReportTemplateRows().stream()
+                .forEach(rtr -> {
+                    rtr.setInstitution(institution);
+                    rtr.setDepartment(department);
+                    rtr.setSite(site);
+                    rtr.setFromDate(fromDate);
+                    rtr.setToDate(toDate);
+                    rtr.setStaff(staff);
+                    rtr.setSpeciality(speciality);
                 });
 
         return oiBundle;
@@ -13567,8 +13648,6 @@ public class SearchController implements Serializable {
         return selectedBills;
     }
 
-    
-    
     public void setSelectedBills(List<Bill> selectedBills) {
         this.selectedBills = selectedBills;
     }
@@ -13913,8 +13992,6 @@ public class SearchController implements Serializable {
         this.pharmacyAdjustmentRows = pharmacyAdjustmentRows;
     }
 
-    
-    
     private StreamedContent fileBillsAndBillItemsForDownload;
 
     public StreamedContent getFileBillsAndBillItemsForDownload() {
