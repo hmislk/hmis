@@ -121,6 +121,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         patientDepositHistoryFacade.create(pdh);
     }
     
+
     public PatientDeposit getDepositOfThePatient(Patient p , Department d){        
         Map m = new HashMap<>();
         String jpql = "select pd from PatientDeposit pd"
@@ -200,6 +201,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
     public void setItems(List<PatientDeposit> items) {
         this.items = items;
     }
+
 
     public int getPatientDepositManagementIndex() {
         return patientDepositManagementIndex;
