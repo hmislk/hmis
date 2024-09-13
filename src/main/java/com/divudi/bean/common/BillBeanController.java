@@ -14,15 +14,26 @@ import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.FeeType;
 import com.divudi.data.OpdBillingStrategy;
 import com.divudi.data.PaymentMethod;
+import static com.divudi.data.PaymentMethod.Agent;
 import static com.divudi.data.PaymentMethod.Card;
+import static com.divudi.data.PaymentMethod.Cash;
 import static com.divudi.data.PaymentMethod.Cheque;
 import static com.divudi.data.PaymentMethod.Credit;
+import static com.divudi.data.PaymentMethod.MultiplePaymentMethods;
+import static com.divudi.data.PaymentMethod.OnCall;
+import static com.divudi.data.PaymentMethod.OnlineSettlement;
+import static com.divudi.data.PaymentMethod.PatientDeposit;
 import static com.divudi.data.PaymentMethod.Slip;
+import static com.divudi.data.PaymentMethod.Staff;
+import static com.divudi.data.PaymentMethod.YouOweMe;
+import static com.divudi.data.PaymentMethod.ewallet;
+import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.data.inward.SurgeryBillType;
 import com.divudi.data.lab.PatientInvestigationStatus;
 import com.divudi.ejb.ServiceSessionBean;
+import com.divudi.ejb.StaffBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillEntry;
@@ -69,6 +80,7 @@ import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.PackageFeeFacade;
 import com.divudi.facade.PackegeFacade;
 import com.divudi.facade.PatientInvestigationFacade;
+import com.divudi.facade.PaymentFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -125,6 +137,8 @@ public class BillBeanController implements Serializable {
     @EJB
     CategoryFacade categoryFacade;
     @EJB
+    PaymentFacade paymentFacade;
+    @EJB
     AllowedPaymentMethodFacade allowedPaymentMethodFacade;
     @Inject
     DepartmentController departmentController;
@@ -132,6 +146,10 @@ public class BillBeanController implements Serializable {
     CollectingCentreBillController collectingCentreBillController;
     @Inject
     ItemFeeManager itemFeeManager;
+    @Inject
+    SessionController sessionController;
+    @EJB
+    StaffBean staffBean;
 
     public boolean checkAllowedPaymentMethod(PaymentScheme paymentScheme, PaymentMethod paymentMethod) {
         String sql = "Select s From AllowedPaymentMethod s"
@@ -2595,6 +2613,115 @@ public class BillBeanController implements Serializable {
         }
 
     }
+    
+    public List<Payment> createPayment(Bill bill, PaymentMethod pm, PaymentMethodData paymentMethodData) {
+        List<Payment> ps = new ArrayList<>();
+        if (bill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                Payment p = new Payment();
+                p.setBill(bill);
+                p.setInstitution(sessionController.getInstitution());
+                p.setDepartment(sessionController.getDepartment());
+                p.setCreatedAt(new Date());
+                p.setCreater(sessionController.getLoggedUser());
+                p.setPaymentMethod(cd.getPaymentMethod());
+
+                switch (cd.getPaymentMethod()) {
+                    case Card:
+                        p.setBank(cd.getPaymentMethodData().getCreditCard().getInstitution());
+                        p.setCreditCardRefNo(cd.getPaymentMethodData().getCreditCard().getNo());
+                        p.setPaidValue(cd.getPaymentMethodData().getCreditCard().getTotalValue());
+                        break;
+                    case Cheque:
+                        p.setChequeDate(cd.getPaymentMethodData().getCheque().getDate());
+                        p.setChequeRefNo(cd.getPaymentMethodData().getCheque().getNo());
+                        p.setPaidValue(cd.getPaymentMethodData().getCheque().getTotalValue());
+                        break;
+                    case Cash:
+                        p.setPaidValue(cd.getPaymentMethodData().getCash().getTotalValue());
+                        break;
+                    case ewallet:
+                        break;
+                    case Agent:
+                        break;
+                    case Credit:
+                        break;
+                    case PatientDeposit:
+                        break;
+                    case Slip:
+                        p.setPaidValue(cd.getPaymentMethodData().getSlip().getTotalValue());
+                        p.setBank(cd.getPaymentMethodData().getSlip().getInstitution());
+                        p.setRealizedAt(cd.getPaymentMethodData().getSlip().getDate());
+                        break;
+                    case OnCall:
+                        break;
+                    case OnlineSettlement:
+                        break;
+                    case Staff:
+                        p.setPaidValue(cd.getPaymentMethodData().getStaffCredit().getTotalValue());
+                        if (cd.getPaymentMethodData().getStaffCredit().getToStaff() != null) {
+                            staffBean.updateStaffCredit(cd.getPaymentMethodData().getStaffCredit().getToStaff(), cd.getPaymentMethodData().getStaffCredit().getTotalValue());
+                            JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
+                        }
+                        break;
+                    case YouOweMe:
+                        break;
+                    case MultiplePaymentMethods:
+                        break;
+                }
+
+                paymentFacade.create(p);
+                ps.add(p);
+            }
+        } else {
+            Payment p = new Payment();
+            p.setBill(bill);
+            p.setInstitution(sessionController.getInstitution());
+            p.setDepartment(sessionController.getDepartment());
+            p.setCreatedAt(new Date());
+            p.setCreater(sessionController.getLoggedUser());
+            p.setPaymentMethod(pm);
+
+            switch (pm) {
+                case Card:
+                    p.setBank(paymentMethodData.getCreditCard().getInstitution());
+                    p.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
+                    break;
+                case Cheque:
+                    p.setChequeDate(paymentMethodData.getCheque().getDate());
+                    p.setChequeRefNo(paymentMethodData.getCheque().getNo());
+                    break;
+                case Cash:
+                    break;
+                case ewallet:
+                    break;
+                case Agent:
+                    break;
+                case Credit:
+                    break;
+                case PatientDeposit:
+                    break;
+                case Slip:
+                    p.setBank(paymentMethodData.getSlip().getInstitution());
+                    p.setRealizedAt(paymentMethodData.getSlip().getDate());
+                case OnCall:
+                    break;
+                case OnlineSettlement:
+                    break;
+                case Staff:
+                    break;
+                case YouOweMe:
+                    break;
+                case MultiplePaymentMethods:
+                    break;
+            }
+
+            p.setPaidValue(p.getBill().getNetTotal());
+            paymentFacade.create(p);
+            ps.add(p);
+        }
+        return ps;
+    }
 
     public ServiceSessionBean getServiceSessionBean() {
         return serviceSessionBean;
@@ -3057,8 +3184,7 @@ public class BillBeanController implements Serializable {
 
     @Inject
     BillController billController;
-    @Inject
-    SessionController sessionController;
+    
 
     private boolean billFeeIsThereAsSelectedInBillFeeBundle(BillFee bf, List<BillFeeBundleEntry> bundleFeeEntries) {
         if (bf == null) {
@@ -4052,6 +4178,7 @@ public class BillBeanController implements Serializable {
 
     public List<BillFee> billFeefromBillItemForCollectingCenter(BillItem billItem, Institution collectingCenter) {
         System.out.println("billFeefromBillItemForCollectingCenter");
+        System.out.println("collectingCenter = " + collectingCenter);
         List<BillFee> t = new ArrayList<>();
         BillFee feeForCollectingCenter;
         BillFee feeForInstitution;
@@ -4125,6 +4252,7 @@ public class BillBeanController implements Serializable {
             System.out.println("jpql = " + jpql);
             System.out.println("params = " + params);
             List<ItemFee> itemFees = getItemFeeFacade().findByJpql(jpql, params);
+            System.out.println("1. CC itemFee from jpql= " + itemFees);
 
             itemFees = itemFeeManager.fillFees(billItem.getItem(), collectingCenter);
 
@@ -4142,6 +4270,7 @@ public class BillBeanController implements Serializable {
                 System.out.println("jpql = " + jpql);
                 System.out.println("params = " + params);
                 itemFees = getItemFeeFacade().findByJpql(jpql, params);
+                System.out.println("3. CC itemFee Fees= " + itemFees);
                 itemFees = itemFeeManager.fillFees(billItem.getItem(), collectingCenter.getFeeListType());
             }
 
@@ -4155,6 +4284,7 @@ public class BillBeanController implements Serializable {
                 institutionFeeValue = originalFeeValue - collectingCenterFeeValue;
 
                 System.out.println("originalFeeValue = " + originalFeeValue);
+                System.out.println("institutionFeeValue = " + institutionFeeValue);
 
                 feeForCollectingCenter = new BillFee();
                 feeForCollectingCenter.setFee(i);
@@ -4319,9 +4449,9 @@ public class BillBeanController implements Serializable {
         Map params = new HashMap();
         jpql = "Select bf "
                 + " from BillFee bf "
-                + " where bf.retired=:ret "
-                + " and bf.bill=:bill "
-                + " order by bf.billItem.id";
+                + "where bf.retired=:ret "
+                + "and bf.bill=:bill "
+                + "order by bf.billItem.id";
         params.put("ret", false);
         params.put("bill", bill);
         fetchingBillFees = billFeeFacade.findByJpql(jpql, params);
@@ -4410,6 +4540,7 @@ public class BillBeanController implements Serializable {
             params.put("forIns", forIns);
 
             System.out.println("params = " + params);
+            System.out.println("jpql = " + jpql);
 
             List<ItemFee> itemFee = getItemFeeFacade().findByJpql(jpql, params);
 

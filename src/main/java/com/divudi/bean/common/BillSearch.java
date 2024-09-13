@@ -2951,6 +2951,10 @@ public class BillSearch implements Serializable {
         return "/opd/bill_reprint?faces-redirect=true;";
     }
 
+    public String navigateToViewChannelBillSession() {
+        return "/channel/manage_booking_by_date?faces-redirect=true;";
+    }
+
     public String navigateToViewOpdBill() {
         if (bill == null) {
             JsfUtil.addErrorMessage("Nothing to cancel");
@@ -3088,7 +3092,6 @@ public class BillSearch implements Serializable {
                 return navigateToViewCcPaymentMadeCancellationBill(bill);
 
             case CC_PAYMENT_RECEIVED_BILL:
-                System.out.println("CC_PAYMENT_RECEIVED_BILL");
                 return navigateToViewCcPaymentReceivedBill(bill);
 
             case CHANNEL_REFUND:
@@ -3157,9 +3160,7 @@ public class BillSearch implements Serializable {
     }
 
     public String navigateToViewCcPaymentReceivedBill(Bill bill) {
-        System.out.println("navigateToViewCcPaymentReceivedBill");
         loadBillDetails(bill);
-        System.out.println("bill = " + bill);
         return "/collecting_centre/view/cc_payment_received_bill_view";
     }
 
@@ -4534,19 +4535,19 @@ public class BillSearch implements Serializable {
     public String navigateToDownloadBillsAndBillItems1() {
         return "/analytics/download_bills_and_items?faces-redirect=true;";
     }
-    
-    public String findOriginalBillFromCancelledBill(Bill cancelBill){
+
+    public String findOriginalBillFromCancelledBill(Bill cancelBill) {
         System.out.println("findOriginalBillFromCancelledBill");
         Bill bill = null;
         String jpql = "SELECT b FROM Bill b "
-                    + " WHERE b.cancelledBill=:bi "
-                    + " and b.retired = false";
+                + " WHERE b.cancelledBill=:bi "
+                + " and b.retired = false";
         Map params = new HashMap();
         params.put("bi", cancelBill);
-        cancelBill = billFacade.findFirstByJpql(jpql,params);
+        cancelBill = billFacade.findFirstByJpql(jpql, params);
         System.out.println("cancelBill" + cancelBill.getDeptId());
         return cancelBill.getDeptId();
-                
+
     }
 
 }
