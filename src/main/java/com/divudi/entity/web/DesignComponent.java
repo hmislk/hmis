@@ -26,6 +26,8 @@ public class DesignComponent implements Serializable {
     private Long id;
     
     private String name;
+    private String code;
+    private String codeSystem;
     @Lob
     private String description;
     @Enumerated(EnumType.STRING)
@@ -132,5 +134,23 @@ public class DesignComponent implements Serializable {
     public void setDataEntryForm(DesignComponent dataEntryForm) {
         this.dataEntryForm = dataEntryForm;
     }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public String getCodeSystem() {
+        return codeSystem;
+    }
+
+    public void setCodeSystem(String codeSystem) {
+        this.codeSystem = codeSystem;
+    }
+    
+    
     
 }

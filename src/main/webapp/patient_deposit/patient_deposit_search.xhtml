@@ -51,13 +51,12 @@
                                                  value="Search"
                                                  icon="fa fa-search"
                                                  class="ui-button-success mt-2"
-                                                 action="#{searchController.createCollectingCentrePaymentTable}" />
+                                                 action="#{searchController.createPatientDepositTable}" />
                                 <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
 
-                                <p:inputText autocomplete="off" placeholder="Bill No" value="#{searchController.searchKeyword.billNo}" class="my-1"/>
-                                <p:inputText autocomplete="off" placeholder="Agent" value="#{searchController.searchKeyword.fromInstitution}" class="my-1"/>
-                                <p:inputText autocomplete="off" placeholder="Agent Code" value="#{searchController.searchKeyword.number}" class="my-1"/>
-                                <p:inputText autocomplete="off" placeholder="Value" value="#{searchController.searchKeyword.netTotal}" class="my-1"/>
+<!--                                <p:inputText autocomplete="off" placeholder="Bill No" value="#{searchController.searchKeyword.billNo}" class="my-1"/>-->
+                                <p:inputText autocomplete="off" placeholder="Patient Name" value="#{searchController.searchKeyword.patientName}" class="my-1"/>
+<!--                                <p:inputText autocomplete="off" placeholder="Value" value="#{searchController.searchKeyword.netTotal}" class="my-1"/>-->
                                 <h:outputLabel/>
                             </h:panelGroup>
                         </div>
@@ -66,49 +65,42 @@
                                 <p:column headerText="Bill No" >
                                     <h:commandLink action="/patient_deposit/view/patient_deposit_bill?faces-redirect=true" value="#{bill.deptId}">
                                         <h:outputLabel  ></h:outputLabel>
-                                        <f:setPropertyActionListener value="#{bill}" target="#{agentPaymentReceiveSearchController.bill}"/>
+                                        <f:setPropertyActionListener value="#{bill}" target="#{patientController.bill}"/>
                                     </h:commandLink>
                                 </p:column>
-                                <p:column headerText="Billed at"  >
+                                <p:column headerText="Billed At"  >
                                     <h:commandLink action="/patient_deposit/view/patient_deposit_bill?faces-redirect=true" >
                                         <h:outputLabel value="#{bill.createdAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
-                                        <f:setPropertyActionListener value="#{bill}" target="#{agentPaymentReceiveSearchController.bill}"/>
+                                        <f:setPropertyActionListener value="#{bill}" target="#{patientController.bill}"/>
                                     </h:commandLink>
                                     <br/>
                                     <h:panelGroup rendered="#{bill.cancelled}" >
-                                        <h:outputLabel style="color: red;" value="Cancelled at " />
+                                        <h:outputLabel style="color: red;" value="Cancelled At " />
                                         <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.createdAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                     </h:panelGroup>
 
                                 </p:column>
-                                <p:column headerText="Billed by" >
+                                <p:column headerText="Billed By" >
                                     <h:commandLink action="/patient_deposit/view/patient_deposit_bill?faces-redirect=true" >
                                         <h:outputLabel value="#{bill.creater.webUserPerson.name}" >
                                         </h:outputLabel>
-                                        <f:setPropertyActionListener value="#{bill}" target="#{agentPaymentReceiveSearchController.bill}"/>
+                                        <f:setPropertyActionListener value="#{bill}" target="#{patientController.bill}"/>
                                     </h:commandLink>
                                     <br/>
                                     <h:panelGroup rendered="#{bill.cancelled}" >
-                                        <h:outputLabel style="color: red;" value="Cancelled at " />
+                                        <h:outputLabel style="color: red;" value="Cancelled At " />
                                         <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.name}" >
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>
-                                <p:column headerText="Collecting Centre Code" >
+                                <p:column headerText="Patient Name" >
                                     <h:commandLink action="/patient_deposit/view/patient_deposit_bill?faces-redirect=true" >
-                                        <h:outputLabel value="#{bill.fromInstitution.institutionCode}" ></h:outputLabel>
-                                        <f:setPropertyActionListener value="#{bill}" target="#{agentPaymentReceiveSearchController.bill}"/>
-                                    </h:commandLink>
-                                </p:column>
-
-                                <p:column headerText="Collecting Centre Name" >
-                                    <h:commandLink action="/patient_deposit/view/patient_deposit_bill?faces-redirect=true" >
-                                        <h:outputLabel value="#{bill.fromInstitution.name}" ></h:outputLabel>
-                                        <f:setPropertyActionListener value="#{bill}" target="#{agentPaymentReceiveSearchController.bill}"/>
+                                        <h:outputLabel value="#{bill.patient.person.name}" ></h:outputLabel>
+                                        <f:setPropertyActionListener value="#{bill}" target="#{patientController.bill}"/>
                                     </h:commandLink>
                                 </p:column>
 
@@ -117,7 +109,7 @@
                                         <h:outputLabel value="#{bill.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
-                                        <f:setPropertyActionListener value="#{bill}" target="#{agentPaymentReceiveSearchController.bill}"/>
+                                        <f:setPropertyActionListener value="#{bill}" target="#{patientController.bill}"/>
                                     </h:commandLink>
                                 </p:column>
                                 <p:column headerText="Comments" >

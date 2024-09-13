@@ -1,0 +1,188 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form >
+
+                    <p:panel>
+                            <f:facet name="header">
+                                <h:outputLabel value="Debtor Settlement" />
+                            </f:facet>
+
+                        <h:panelGrid columns="6" class="my-2 w-100">
+                            <p:outputLabel value="From Date" />
+                            <p:outputLabel value=" : " />
+                            <p:datePicker value="#{reportController.fromDate}"
+                                          style=" max-width: 100%; overflow-x: auto; "
+                                          class="w-100"
+                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></p:datePicker>
+
+                            <p:outputLabel value="To Date" />
+                            <p:outputLabel value=" : " />
+                            <p:datePicker value="#{reportController.toDate}"
+                                          style=" max-width: 80%; overflow-x: auto; "
+                                          class="w-100"
+                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></p:datePicker>
+
+                                          <p:outputLabel value="Credit Company"></p:outputLabel>
+                                          <p:outputLabel value=" : " />
+                            <p:autoComplete
+                                value="#{webUserController.institution}"
+
+                                completeMethod="#{institutionController.completeIns}"
+                                var="ins"
+                                class="w-75 mt-1"
+                                inputStyleClass="form-control"
+                                itemLabel="#{ins.name}"
+                                itemValue="#{ins}">
+
+                            </p:autoComplete>
+                            <p:outputLabel value="Settlement Status" />
+                            <p:outputLabel value=" : " />
+                            <p:selectOneMenu value="" />
+                        </h:panelGrid>
+
+                        <h:panelGrid columns="6" class="my-3">
+                            <p:commandButton ajax="false" value="Process" icon="fas fa-cogs" class="ui-button-warning" action="#{reportController.processPettyCashPayment}" >
+                            </p:commandButton>
+                            <p:commandButton ajax="false" value="Print" icon="fas fa-print" class="ui-button-info mx-1"  >
+                                <p:printer target="dtaPr"/>
+                            </p:commandButton>
+                            <p:commandButton ajax="false" value="Excel" icon="fas fa-file-excel" class="ui-button-success" >
+                                <p:dataExporter fileName="Debtor Settlement - #{webUserController.institution} (#{reportController.fromDate} - #{reportController.fromDate})" type="xlsx" target="dtaPr" />
+                            </p:commandButton>
+                            <p:commandButton ajax="false" value="PDF" icon="fas fa-file-pdf" class="ui-button-danger mx-1" >
+                                <p:dataExporter fileName="Debtor Settlement - #{webUserController.institution} (#{reportController.fromDate} - #{reportController.fromDate})" type="pdf" target="dtaPr" />
+                            </p:commandButton>
+                        </h:panelGrid>
+
+                        <p:panel id="dtaPr" >
+                            <f:facet name="header">
+                                <h:outputLabel value="Debtor Settlement" /><br/>
+                                <h:outputLabel value="From Date &emsp;"/>
+                                <p:outputLabel value="&emsp;&emsp;&emsp;&emsp;&emsp;&nbsp;&nbsp; : &emsp;" />
+                                <h:outputLabel value="#{reportController.fromDate}"  >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                </h:outputLabel>
+                                <br/>
+                                <h:outputLabel value="To Date &emsp;"/>
+                                <p:outputLabel value="&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; : &emsp;" />
+                                <h:outputLabel value="#{reportController.toDate}"  >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                </h:outputLabel>
+                                <br/>
+                                <h:outputLabel value="Credit Company Name &emsp;&nbsp;"/>
+                                <p:outputLabel value=" : &emsp;" />
+                                <h:outputLabel value=""  />
+                            </f:facet>
+
+                            <p:dataTable id="dtaPr0" value="#{reportController.bills}" var="pc" rowIndexVar="rowIndex">
+                                <p:column headerText="S" width="2em">
+                                    <h:outputText value="#{rowIndex+1}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Credit C. Name"><h:outputText value="#{pc.creater.webUserPerson.name}" ></h:outputText></p:column>
+                                <p:column headerText="Voucher No" width="">
+                                    <h:outputText value="#{pc.id}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Voucher Date" >
+                                    <h:outputText value="#{pc.billDate}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Voucher Amount" >
+                                    <h:outputText value="#{pc.billedBill.referenceNumber}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Adjusted Amount" >
+                                    <h:outputText value="#{pc.billDate}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Balance Amount" >
+                                    <h:outputText value="#{pc.billType.label}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Payment Method" >
+                                    <h:outputText value="" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Narration" >
+                                    <h:outputText value="" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Voucher Status" >
+                                    <h:outputText value="#{pc.approveUser != null ? 'Approved': 'Not Approved'}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Settlement Status" >
+                                    <h:outputText value="#{pc.total}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Created By" >
+                                    <h:outputText value="#{pc.total}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Approved By" >
+                                    <h:outputText value="#{pc.total}" ></h:outputText>
+                                </p:column>
+                            </p:dataTable>
+                            <p:dataTable id="dtaPr1" value="#{reportController.bills}" var="pc" rowIndexVar="rowIndex">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Reversed Vouchers" /><br/>
+                                </f:facet>
+                                <p:column headerText="S" width="2em">
+                                    <h:outputText value="#{rowIndex+1}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Credit C. Name"><h:outputText value="#{pc.creater.webUserPerson.name}" ></h:outputText></p:column>
+                                <p:column headerText="Voucher No" width="">
+                                    <h:outputText value="#{pc.id}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Voucher Date" >
+                                    <h:outputText value="#{pc.billDate}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Voucher Amount" >
+                                    <h:outputText value="#{pc.billedBill.referenceNumber}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Adjusted Amount" >
+                                    <h:outputText value="#{pc.billDate}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Balance Amount" >
+                                    <h:outputText value="#{pc.billType.label}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Payment Method" >
+                                    <h:outputText value="" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Narration" >
+                                    <h:outputText value="" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Voucher Status" >
+                                    <h:outputText value="#{pc.approveUser != null ? 'Approved': 'Not Approved'}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Settlement Status" >
+                                    <h:outputText value="#{pc.total}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Created By" >
+                                    <h:outputText value="#{pc.total}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Approved By" >
+                                    <h:outputText value="#{pc.total}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Original Voucher" >
+                                    <h:outputText value="#{pc.total}" ></h:outputText>
+                                </p:column>
+                            </p:dataTable>
+                        </p:panel>
+
+
+                            <p:spacer height="5"></p:spacer>
+
+
+
+                        </p:panel>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

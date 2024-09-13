@@ -58,7 +58,6 @@ public class Person implements Serializable {
     @Column(name = "SNAME")
     String nameWithInitials;
 
-    
     String initials;
     String surName;
     String lastName;
@@ -67,8 +66,6 @@ public class Person implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date dob;
 
-    
-    
     @OneToOne(mappedBy = "webUserPerson", cascade = CascadeType.ALL)
     private WebUser webUser;
 
@@ -234,13 +231,13 @@ public class Person implements Serializable {
         int days = period.getDays();
 
         if (years > 5) {
-            ageAsShortString = years + "Y";
+            ageAsShortString = years + " Y ";
         } else if (years > 0) {
-            ageAsShortString = years + "Y" + months + "M";
+            ageAsShortString = years + " Y " + " " + months + " M ";
         } else if (months > 0) {
-            ageAsShortString = months + "M" + days + "d";
+            ageAsShortString = months + " M " + " " + days + " D ";
         } else {
-            ageAsShortString = days + "d";
+            ageAsShortString = days + " D ";
         }
 
         period = new Period(ldDob, currentDate, PeriodType.days());

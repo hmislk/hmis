@@ -12,146 +12,124 @@
 
                 <h:form >
 
-                    <div class="container">
-                        <div class="row mb-2">
-                            <div class="col-12">
-                                <h2>Collection Centre Wise Summary Report</h2>
-                            </div>
-                        </div>
+                    <p:panel>
+                        <f:facet name="header">
+                            <h:outputLabel value="Collection Centre Wise Summary Report" />
+                        </f:facet>
 
-                        <div class="row mb-2">
-                            <div class="col-md-2">
-                                <p:outputLabel value="From Date" >
-                                </p:outputLabel>
-                            </div>
-                            <div class="col-md-4">
-                                <p:datePicker value="#{reportController.fromDate}" 
-                                              pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
-                            </div>
-                            <div class="col-md-2">
-                                <p:outputLabel value="To Date" >
-                                </p:outputLabel>
-                            </div>
-                            <div class="col-md-4">
-                                <p:datePicker value="#{reportController.toDate}"
-                                              pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
-                            </div>
-                        </div>
+                        <h:panelGrid columns="6" class="my-2 w-100">
+                            <p:outputLabel value="From Date" />
+                            <p:outputLabel value=" : " />
+                            <p:datePicker value="#{reportController.fromDate}"
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
 
-                        <div class="row mb-2">
-                            <div class="col-md-2">
-                                <p:outputLabel value="Institution/Branch" >
-                                </p:outputLabel>
-                            </div>
-                            <div class="col-md-4">
-                                <p:selectOneMenu 
-                                    id="cmdInstitution"
-                                    value="#{reportController.institution}"
-                                    style=" max-width: 100%; overflow-x: auto; "
-                                    class="w-100"
-                                    filter="true">
-                                    <f:selectItem itemLabel="All"></f:selectItem>
-                                    <f:selectItems value="#{institutionController.companies}"
-                                                   var="i"
-                                                   itemLabel="#{i.name}"
-                                                   itemValue="#{i}"></f:selectItems>
-                                </p:selectOneMenu>
-                            </div>
-                            <div class="col-md-2">
-                                <p:outputLabel value="Collecting Center Name"></p:outputLabel>
-                            </div>
-                            <div class="col-md-4">
-                                <p:selectOneMenu 
-                                    value="#{reportController.collectingCentre}"
-                                    style=" max-width: 100%; overflow-x: auto; "
-                                    class="w-100"
-                                    filter="true">
-                                    <f:selectItem itemLabel="Select Collecting Centre"/>
-                                    <f:selectItems value="#{collectingCentreController.items}"
-                                                   var="i"
-                                                   itemLabel="#{i.name}"
-                                                   itemValue="#{i}" ></f:selectItems>
-                                </p:selectOneMenu>
-                            </div>
-                        </div>
+                            <p:outputLabel value="To Date" />
+                            <p:outputLabel value=" : " />
+                            <p:datePicker value="#{reportController.toDate}"
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
 
-                        <div class="row mb-2">
-                            <div class="col-md-2">
-                                <p:outputLabel value="Collecting Centre Route"></p:outputLabel>
-                            </div>
-                            <div class="col-md-4">
-                                <p:selectOneMenu value="#{reportController.route}"
-                                                 style=" max-width: 100%; overflow-x: auto; "
-                                                 class="w-100"
-                                                 filter="true"
-                                                 filterMatchMode="contains">
-                                    <f:selectItem itemLabel="All" ></f:selectItem>
-                                    <f:selectItems value="#{routeController.items}"
-                                                   var="r"
-                                                   itemLabel="#{r.name}"
-                                                   itemValue="#{r}"
-                                                   />
-                                </p:selectOneMenu>
-                            </div>
-                            <div class="col-md-2">
+                                          <p:outputLabel value="Institution/Branch" />
+                                          <p:outputLabel value=" : " />
+                                          <p:selectOneMenu
+                                              id="cmdInstitution"
+                                              value="#{reportController.institution}"
+                                              style=" max-width: 100%; overflow-x: auto; "
+                                              class="w-100"
+                                              filter="true">
+                                              <f:selectItem itemLabel="All"></f:selectItem>
+                                              <f:selectItems value="#{institutionController.companies}"
+                                                             var="i"
+                                                             itemLabel="#{i.name}"
+                                                             itemValue="#{i}"></f:selectItems>
+                                          </p:selectOneMenu>
 
-                            </div>
-                            <div class="col-md-4">
+                            <p:outputLabel value="Collecting Center Name"></p:outputLabel>
+                            <p:outputLabel value=" : " />
+                            <p:selectOneMenu
+                                value="#{reportController.collectingCentre}"
+                                style=" max-width: 100%; overflow-x: auto; "
+                                class="w-100"
+                                filter="true">
+                                <f:selectItem itemLabel="Select Collecting Centre"/>
+                                <f:selectItems value="#{collectingCentreController.items}"
+                                               var="i"
+                                               itemLabel="#{i.name}"
+                                               itemValue="#{i}" ></f:selectItems>
+                            </p:selectOneMenu>
 
-                            </div>
-                        </div>
-
-                        <p:commandButton 
-                            ajax="false" 
-                            value="Process" 
-                            action="null" >
-                        </p:commandButton>
-
-                        <h:panelGrid columns="2">
-
-                            <h:outputLabel value="From Date :  "/>
-                            <h:outputLabel value="#{reportController.fromDate}"  >
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                            </h:outputLabel>
-
-                            <h:outputLabel value="To Date :  "/>
-                            <h:outputLabel value="#{reportController.toDate}"  >
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                            </h:outputLabel>
-
-                            <h:outputLabel value="CC Name :  "/>
-                            <h:outputLabel value="#{reportController.collectingCentre}"  ></h:outputLabel>
-
+                            <p:outputLabel value="Collecting Centre Route"></p:outputLabel>
+                            <p:outputLabel value=" : " />
+                            <p:selectOneMenu value="#{reportController.route}"
+                                             style=" max-width: 100%; overflow-x: auto; "
+                                             class="w-100"
+                                             filter="true"
+                                             filterMatchMode="contains">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value="#{routeController.items}"
+                                               var="r"
+                                               itemLabel="#{r.name}"
+                                               itemValue="#{r}"
+                                               />
+                            </p:selectOneMenu>
                         </h:panelGrid>
-                    </div>
 
-                    <p:dataTable value="null" var="c">
-                        <p:column headerText="S. No" >
-                            <h:outputText value="" ></h:outputText>
-                        </p:column>
-                        <p:column headerText="CC Code" >
-                            <h:outputText value="null" ></h:outputText>
-                        </p:column>
-                        <p:column headerText="CC Name" >
-                            <h:outputText value="null" ></h:outputText>
-                        </p:column>
-                        <p:column headerText="Count" >
-                            <h:outputText value="null" ></h:outputText>
-                        </p:column>
-                        <p:column headerText="Hos Fee" >
-                            <h:outputText value="null" ></h:outputText>
-                        </p:column>
-                        <p:column headerText="CC Fee" >
-                            <h:outputText value="null" ></h:outputText>
-                        </p:column>
-                        <p:column headerText="Staff" >
-                            <h:outputText value="null" ></h:outputText>
-                        </p:column>
-                        <p:column headerText="Net Total" >
-                            <h:outputText value="null" ></h:outputText>
-                        </p:column>
+                        <h:panelGrid columns="6" class="my-3">
+                            <p:commandButton ajax="false" value="Process" icon="fas fa-cogs" class="ui-button-warning" >
+                            </p:commandButton>
+                            <p:commandButton ajax="false" value="Print" icon="fas fa-print" class="ui-button-info mx-1"  >
+                                <p:printer target="dtaPr"/>
+                            </p:commandButton>
+                            <p:commandButton ajax="false" value="Excel" icon="fas fa-file-excel" class="ui-button-success" >
+                                <p:dataExporter fileName="Collection Centre Wise Summary Report - #{webUserController.institution} (#{reportController.fromDate} - #{reportController.fromDate})" type="xlsx" target="dtaPr" />
+                            </p:commandButton>
+                            <p:commandButton ajax="false" value="PDF" icon="fas fa-file-pdf" class="ui-button-danger mx-1" >
+                                <p:dataExporter fileName="Collection Centre Wise Summary Report - #{webUserController.institution} (#{reportController.fromDate} - #{reportController.fromDate})" type="pdf" target="dtaPr" />
+                            </p:commandButton>
+                        </h:panelGrid>
 
-                    </p:dataTable>
+                        <p:dataTable id="dtaPr" value="null" var="c" class="my-2">
+                            <f:facet name="header">
+                                <h:outputLabel value="Collection Centre Wise Summary Report" /><br/>
+                                <h:outputLabel value="From Date &emsp;&nbsp;&nbsp; :  &emsp;"/>
+                                <h:outputLabel value="#{reportController.fromDate}"  >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                </h:outputLabel>
+                                <br/>
+                                <h:outputLabel value="To Date  &emsp;&emsp;&nbsp;&nbsp;&nbsp;  :  &emsp;"/>
+                                <h:outputLabel value="#{reportController.toDate}"  >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                </h:outputLabel>
+                                <br/>
+                                <h:outputLabel value="CC Name &emsp;&emsp; :  &emsp;"/>
+                                <h:outputLabel value="#{reportController.collectingCentre}"  ></h:outputLabel>
+                            </f:facet>
+                            <p:column headerText="S. No" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="CC Code" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="CC Name" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Count" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Hos Fee" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="CC Fee" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Staff" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Net Total" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+
+                        </p:dataTable>
+                    </p:panel>
 
                 </h:form>
 

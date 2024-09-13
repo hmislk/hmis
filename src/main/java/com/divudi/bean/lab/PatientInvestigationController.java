@@ -1210,6 +1210,7 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public String navigateToGenerateBarcodes() {
+        makeNull();
         boolean searchInvestigationsForLoggedInstitution = configOptionApplicationController.getBooleanValueByKey("For Lab Sample Barcode Generation, Search by Ordered Institution", false);
         if (searchInvestigationsForLoggedInstitution) {
             orderedInstitution = sessionController.getInstitution();
@@ -1219,6 +1220,7 @@ public class PatientInvestigationController implements Serializable {
             orderedDepartment = sessionController.getDepartment();
         }
         listBillsToGenerateBarcodes();
+        
         return "/lab/generate_barcode_p?faces-redirect=true";
     }
 
@@ -1714,6 +1716,10 @@ public class PatientInvestigationController implements Serializable {
         this.searchDateType = null;
         this.fromDate = null;
         this.toDate = null;
+        makeNull();
+    }
+    
+    public void makeNull() {
         this.patientInvestigationStatus = null;
         this.referringDoctor = null;
         this.externalDoctor = null;
@@ -1729,7 +1735,16 @@ public class PatientInvestigationController implements Serializable {
         this.orderedInstitution = null;
         this.orderedDepartment = null;
         this.performingInstitution = null;
-        this.performingDepartment = null;
+        this.performingDepartment = null;    
+        clearReportData();
+    }
+    
+    public void clearReportData(){
+        this.items = null;
+        this.bills = null;
+        this.selectedBillBarcodes = null;
+        this.patientReports = null;
+        this.patientSamples = null;
     }
 
     public void searchBills() {
@@ -2009,15 +2024,8 @@ public class PatientInvestigationController implements Serializable {
         jpql += " AND (r.patientInvestigation.billItem.bill.collectingCentre.route = :route OR r.patientInvestigation.billItem.bill.fromInstitution.route = :route) ";
         params.put("route", sessionController.getDepartment());
 
-        if (priority != null) {
-            jpql += " AND r.patientInvestigation.billItem.priority = :priority ";
-            params.put("priority", getPriority());
-        }
-
-        if (specimen != null) {
-            jpql += " AND r.patientInvestigation.investigation.sample = :specimen ";
-            params.put("specimen", getSpecimen());
-        }
+        
+        
 
         if (patientName != null && !patientName.trim().isEmpty()) {
             jpql += " AND r.patientInvestigation.billItem.bill.patient.person.name LIKE :patientName ";
@@ -2027,11 +2035,6 @@ public class PatientInvestigationController implements Serializable {
         if (externalDoctor != null && !externalDoctor.trim().isEmpty()) {
             jpql += " AND r.patientInvestigation.billItem.bill.referredByName =:externalDoctor ";
             params.put("externalDoctor", getExternalDoctor().trim());
-        }
-
-        if (equipment != null) {
-            jpql += " AND r.automatedAnalyzer=:equipment ";
-            params.put("equipment", getEquipment());
         }
 
         if (referringDoctor != null) {
@@ -2053,7 +2056,8 @@ public class PatientInvestigationController implements Serializable {
             jpql += " AND r.status=:patientReportStatus ";
             params.put("patientReportStatus", patientInvestigationStatus);
         }
-        jpql += " ORDER BY r.id DESC";
+        
+        jpql += " ORDER BY r.patientInvestigation.billItem.bill.patient asc, r.patientInvestigation.billItem.bill.createdAt desc";
         params.put("ret", false);
         patientReports = patientReportFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
