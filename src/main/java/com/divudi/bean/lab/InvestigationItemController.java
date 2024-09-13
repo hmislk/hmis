@@ -2127,6 +2127,7 @@ public class InvestigationItemController implements Serializable {
         l.add(InvestigationItemType.Flag);
         l.add(InvestigationItemType.Calculation);
         l.add(InvestigationItemType.Css);
+        l.add(InvestigationItemType.Html);
         l.add(InvestigationItemType.DynamicLabel);
         l.add(InvestigationItemType.Investigation);
         l.add(InvestigationItemType.AntibioticList);
