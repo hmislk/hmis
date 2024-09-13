@@ -41,8 +41,10 @@ public class PatientDepositController implements Serializable {
     private PatientDeposit current;
     private List<PatientDeposit> items = null;
     
+
     private int patientDepositManagementIndex=1;
     
+
     public PatientDeposit getDepositOfThePatient(Patient p , Department d){        
         Map m = new HashMap<>();
         
@@ -89,6 +91,7 @@ public class PatientDepositController implements Serializable {
         this.items = items;
     }
 
+
     public int getPatientDepositManagementIndex() {
         return patientDepositManagementIndex;
     }
@@ -96,6 +99,7 @@ public class PatientDepositController implements Serializable {
     public void setPatientDepositManagementIndex(int patientDepositManagementIndex) {
         this.patientDepositManagementIndex = patientDepositManagementIndex;
     }
+
 
     /**
      *
