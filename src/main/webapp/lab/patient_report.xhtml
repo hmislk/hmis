@@ -112,11 +112,13 @@
                                                             class="mx-1 ui-button-success"
                                                             action="#{searchController.listReportsAwaitingApproval()}" ajax="false"   >
                                         </p:commandButton>
-                                        <p:commandButton  ajax="false" value="Back to Visit"
-                                                          action="/clinical/clinical_new_opd_visit.xhtml" 
-                                                          icon="fa-solid fa-arrow-left"
-                                                          class=""
-                                                          style="float: right;"  ></p:commandButton>
+                                        <p:commandButton  
+                                            ajax="false" value="Back"
+                                            action="/lab/generate_barcode_p?faces-redirect=true"
+                                            icon="fa-solid fa-arrow-left"
+                                            class=""
+                                            style="float: right;"  >
+                                        </p:commandButton>
                                     </div>
                                 </div>
                             </div>
@@ -533,7 +535,7 @@
 
                                 <h:panelGroup  id="divPrint" >
 
-                                 
+
 
                                     <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType eq 'HtmlTemplate'}"  >
                                         <div id="divReport"  class="labReport" >
@@ -591,6 +593,18 @@
                                                     <h:outputLabel value="#{prv.displayValue}" rendered="#{prv.investigationItem.ixItemType eq 'Calculation' }" escape="false" >
                                                     </h:outputLabel>
                                                 </div>
+                                            </ui:repeat>
+                                            <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
+                                                <h:panelGroup layout="block" style="#{prv.investigationItem.cssStyle}; position:absolute;" rendered="#{prv.investigationItem.ixItemType eq 'Image'}" >
+                                                    <img style="height: 350px; width: 350px; z-index: 100;" src="#{prv.investigationItem.htmltext}" ></img>
+                                                    <p:graphicImage
+                                                        value="#{prv.lobValue}"
+                                                                    style="width: #{prv.investigationItem.wtPix};overflow: visible; display: block;" 
+                                                                    height="#{prv.investigationItem.htPix}"
+                                                                  
+                                                                    width="#{prv.investigationItem.wtPix}">
+                                                    </p:graphicImage>
+                                                </h:panelGroup>
                                             </ui:repeat>
                                             <ui:repeat value="#{patientReportController.currentPatientReport.item.reportItems}" var="myIi" >
                                                 <div style="#{myIi.cssStyle}; position:absolute;">
@@ -658,6 +672,18 @@
                                                             </div>
                                                         </h:panelGroup>
                                                     </ui:repeat>
+                                                    
+                                                     <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
+                                                <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
+                                                    <p:graphicImage value="https://upload.wikimedia.org/wikipedia/en/e/e2/IMG_Academy_Logo.svg"
+                                                                    style="width: #{prv.investigationItem.wtPix};overflow: visible; display: block;" 
+                                                                    height="#{prv.investigationItem.htPix}"
+                                                                    
+                                                                    width="#{prv.investigationItem.wtPix}">
+                                                    </p:graphicImage>
+                                                </div>
+                                            </ui:repeat>
+                                                    
                                                 </div>
                                                 <div style="clear: left;padding-top: 1%;">
                                                     <h:outputLabel value="--- End of Report ---" style="font-size: 14px; font-weight: bold; "></h:outputLabel>

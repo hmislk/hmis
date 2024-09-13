@@ -78,7 +78,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Final Bill No"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{bb.patientEncounter.finalBill.insId}" ></h:outputLabel>
+                                    <h:outputLabel value="#{bb.patientEncounter.finalBill.deptId}" ></h:outputLabel>
                                 </p:column>
 
                                 <p:column headerText="Client" rendered="#{mdInwardReportController.reportKeyWord.string eq '0'}">
@@ -127,7 +127,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Ref Bill No"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{bb.referenceBill.insId}" />                                      
+                                    <h:outputLabel value="#{bb.referenceBill.deptId}" />                                      
                                 </p:column>
 
                                 <p:column headerText="Ref Bill No" rendered="#{mdInwardReportController.reportKeyWord.string eq '2'}">
@@ -141,7 +141,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Bill No"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{bb.bill.insId}" />                                      
+                                    <h:outputLabel value="#{bb.bill.deptId}" />                                      
                                 </p:column>
 
                                 <p:column headerText="Credit Company">

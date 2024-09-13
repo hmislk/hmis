@@ -6,6 +6,8 @@ package com.divudi.entity;
 
 import com.divudi.data.Denomination;
 import com.divudi.data.PaymentMethod;
+import com.divudi.entity.cashTransaction.CashBook;
+import com.divudi.entity.cashTransaction.CashBookEntry;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -104,6 +106,22 @@ public class Payment implements Serializable {
     private List<String> humanReadableDenominations;
 
     private String referenceNo;
+
+    private boolean cashbookEntryStated;
+    private boolean cashbookEntryCompleted;
+    @ManyToOne
+    private Bill handoverCreatedBill;
+    @ManyToOne
+    private Bill handoverAcceptBill;
+    @ManyToOne
+    private CashBookEntry cashbookEntry;
+    @ManyToOne
+    private CashBook cashbook;
+
+    public Payment() {
+        cashbookEntryStated = false;
+        cashbookEntryCompleted = false;
+    }
 
     public Long getId() {
         return id;
@@ -408,7 +426,6 @@ public class Payment implements Serializable {
                     }
                 }
             } catch (Exception e) {
-                System.out.println("Error deserializing currency denominations: " + e.getMessage());
                 this.currencyDenominations = new ArrayList<>(); // Initialize to an empty list on error
             }
         } else {
@@ -429,7 +446,7 @@ public class Payment implements Serializable {
     }
 
     public String getReferenceNo() {
-        
+
         return referenceNo;
     }
 
@@ -437,6 +454,52 @@ public class Payment implements Serializable {
         this.referenceNo = referenceNo;
     }
 
-   
+    public boolean getCashbookEntryCompleted() {
+        return cashbookEntryCompleted;
+    }
+
+    public void setCashbookEntryCompleted(boolean cashbookEntryCompleted) {
+        this.cashbookEntryCompleted = cashbookEntryCompleted;
+    }
+
+    public Bill getHandoverCreatedBill() {
+        return handoverCreatedBill;
+    }
+
+    public void setHandoverCreatedBill(Bill handoverCreatedBill) {
+        this.handoverCreatedBill = handoverCreatedBill;
+    }
+
+    public Bill getHandoverAcceptBill() {
+        return handoverAcceptBill;
+    }
+
+    public void setHandoverAcceptBill(Bill handoverAcceptBill) {
+        this.handoverAcceptBill = handoverAcceptBill;
+    }
+
+    public CashBookEntry getCashbookEntry() {
+        return cashbookEntry;
+    }
+
+    public void setCashbookEntry(CashBookEntry cashbookEntry) {
+        this.cashbookEntry = cashbookEntry;
+    }
+
+    public CashBook getCashbook() {
+        return cashbook;
+    }
+
+    public void setCashbook(CashBook cashbook) {
+        this.cashbook = cashbook;
+    }
+
+    public boolean getCashbookEntryStated() {
+        return cashbookEntryStated;
+    }
+
+    public void setCashbookEntryStated(boolean cashbookEntryStated) {
+        this.cashbookEntryStated = cashbookEntryStated;
+    }
 
 }

@@ -40,12 +40,12 @@
                             </p:commandButton>
                         </f:facet>
 
-                        <h:panelGroup id="divPrint" >
-                            <h:outputLabel value="Show Background" class="mx-1 my-1" style="font-weight: bold; font-size: 20px;"></h:outputLabel>
-                            <p:selectBooleanButton class="mt-1 mx-4 my-1" offLabel="No" onLabel="Yes"  value="#{patientReportController.showBackground}" >
-                                <p:ajax process="@this" update="divPrint" event="change"/>
-                            </p:selectBooleanButton>
+                        <h:outputLabel value="Show Background" class="mx-1 my-1" style="font-weight: bold; font-size: 20px;"></h:outputLabel>
+                        <p:selectBooleanButton class="mt-1 mx-4 my-1" offLabel="No" onLabel="Yes"  value="#{patientReportController.showBackground}" >
+                            <p:ajax process="@this" update="divPrint" event="change"/>
+                        </p:selectBooleanButton>
 
+                        <h:panelGroup id="divPrint" >
                             <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType ne 'Microbiology'}" >
                                 <div id="divReport"  class="labReport1" >
                                     <ez:common_report 
@@ -195,7 +195,7 @@
                                                                     <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'SampledDate' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.sampledAt}" style="color: #{myCli.cssColor}" escape="false" >
                                                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                                                     </h:outputText>
-                                                                    <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'BillNo' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.insId}" style="color: #{myCli.cssColor}" escape="false" ></h:outputText>
+                                                                    <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'BillNo' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.deptId}" style="color: #{myCli.cssColor}" escape="false" ></h:outputText>
                         
                                                                     <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'ReportedDate' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.createdAt}" style="color: #{myCli.cssColor}" escape="false" >
                                                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
@@ -285,7 +285,7 @@
                                                                     <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'SampledDate' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.sampledAt}" style="color: #{myCli.cssColor}" escape="false" >
                                                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                                                     </h:outputText>
-                                                                    <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'BillNo' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.insId}" style="color: #{myCli.cssColor}" escape="false" ></h:outputText>
+                                                                    <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'BillNo' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.deptId}" style="color: #{myCli.cssColor}" escape="false" ></h:outputText>
                         
                                                                     <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'ReportedDate' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.dataEntryAt}" style="color: #{myCli.cssColor}" escape="false" >
                                                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>

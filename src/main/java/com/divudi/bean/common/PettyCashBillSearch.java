@@ -113,7 +113,6 @@ public class PettyCashBillSearch implements Serializable {
     
     
     public void sendToApprovePettyCashBillCancellation() {
-        System.out.println("bill = " + bill);
         Bill b = new Bill();
         b.setCreatedAt(new Date());
         b.setCreater(webUserController.getCurrent());

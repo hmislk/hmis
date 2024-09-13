@@ -91,6 +91,7 @@ public class ServiceSession extends Item implements Serializable {
     private boolean paidAppointmentsOnly;
     private boolean excludeFromPatientPortal;
     private boolean canChangePatient;
+    private String sessionStartingNumber;
 
     @Lob
     private String activities;
@@ -506,6 +507,14 @@ public class ServiceSession extends Item implements Serializable {
 
     public void setExcludeFromPatientPortal(boolean excludeFromPatientPortal) {
         this.excludeFromPatientPortal = excludeFromPatientPortal;
+    }
+
+    public String getSessionStartingNumber() {
+        return sessionStartingNumber;
+    }
+
+    public void setSessionStartingNumber(String sessionStartingNumber) {
+        this.sessionStartingNumber = sessionStartingNumber;
     }
 
 }

@@ -39,8 +39,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -60,6 +60,7 @@ public class OpdMemberShipDiscountController implements Serializable {
     Category category;
     Item item;
     Institution institution;
+    private Institution site;
     Department department;
     double fromPrice;
     double toPrice;
@@ -97,6 +98,7 @@ public class OpdMemberShipDiscountController implements Serializable {
         items = null;
         membershipScheme = null;
         paymentMethod = null;
+        site = null;
     }
 
     public void saveSelectedDepartmentPaymentScheme() {
@@ -107,6 +109,63 @@ public class OpdMemberShipDiscountController implements Serializable {
 
     }
 
+    public void saveSelectedSitePaymentScheme() {
+        PriceMatrix a = new PaymentSchemeDiscount();
+        saveSite(a);
+        createItemsSitesPaymentScheme();
+        clearInstanceVars();
+
+    }
+
+    public void saveSite(PriceMatrix a) {
+
+        if (membershipScheme == null && paymentScheme == null) {
+            JsfUtil.addErrorMessage("Membership Scheme or Payment Scheme");
+            return;
+        }
+
+        if (site == null) {
+            JsfUtil.addErrorMessage("Please select a department");
+            return;
+        }
+
+        if (paymentMethod == null) {
+            JsfUtil.addErrorMessage("Please select Payment Method");
+            return;
+        }
+
+        //  PriceMatrix a = new OpdMemberShipDiscount();
+        a.setMembershipScheme(membershipScheme);
+        a.setPaymentScheme(paymentScheme);
+        a.setPaymentMethod(paymentMethod);
+        a.setToInstitution(site);
+        if (department != null) {
+            a.setInstitution(department.getInstitution());
+        }
+        a.setDiscountPercent(margin);
+        a.setCreatedAt(new Date());
+        a.setCreater(getSessionController().getLoggedUser());
+        getFacade().create(a);
+        JsfUtil.addSuccessMessage("Saved Successfully");
+        //    recreateModel();
+
+    }
+
+    public void createItemsSitesPaymentScheme() {
+        filterItems = null;
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "select a from PaymentSchemeDiscount a "
+                + " where a.retired=false"
+                + " and a.paymentScheme=:pm "
+                + " and a.category is null "
+                + " and a.toInstitution is not null"
+                + " order by a.paymentScheme.name,a.toInstitution.name";
+        
+        hm.put("pm", paymentScheme);
+        items = getFacade().findByJpql(sql, hm);
+    }
+
 //    public void saveSelectedDepartmentPaymentMethod() {
 //        PriceMatrix a = new PaymentSchemeDiscount();
 //        saveDepartmentForPaymentMethod(a);
@@ -114,7 +173,6 @@ public class OpdMemberShipDiscountController implements Serializable {
 //        clearInstanceVars();
 //
 //    }
-
     public void saveSelectedDepartment() {
         PriceMatrix a = new OpdMemberShipDiscount();
         saveDepartment(a);
@@ -156,14 +214,13 @@ public class OpdMemberShipDiscountController implements Serializable {
     public String toManageDiscountMatrixForChannellingByDepartment() {
         return "/membership/membership_scheme_discount_channelling_by_department";
     }
-    
+
     public String toManageDiscountMatrixForPharmacyByDepartmentAndCategory() {
         fillDiscountMetrixesForPharmacyForDepartmentAndCategory();
         return "/membership/membership_scheme_discount_pharmacy_by_department_and_category";
     }
 
     public void saveSelectedChannelPaymentScheme() {
-        System.out.println("saveSelectedChannelPaymentScheme");
         if (paymentScheme == null) {
             JsfUtil.addErrorMessage("Membership Scheme or Payment Scheme");
             return;
@@ -186,7 +243,6 @@ public class OpdMemberShipDiscountController implements Serializable {
         a.setCreatedAt(new Date());
         a.setCreater(getSessionController().getLoggedUser());
         getFacade().create(a);
-        System.out.println("a = " + a);
         JsfUtil.addSuccessMessage("Saved Successfully");
         createItemsChannelPaymentScheme();
         clearInstanceVars();
@@ -255,7 +311,6 @@ public class OpdMemberShipDiscountController implements Serializable {
 //        //    recreateModel();
 //
 //    }
-
     public void saveOpdCategory() {
         PriceMatrix p = new OpdMemberShipDiscount();
         saveSelectedCategory(p);
@@ -282,6 +337,8 @@ public class OpdMemberShipDiscountController implements Serializable {
         category = null;
         department = null;
         paymentMethod = null;
+        site = null;
+        margin = 0.0;
     }
 
     public void saveItemPaymentScheme() {
@@ -349,10 +406,7 @@ public class OpdMemberShipDiscountController implements Serializable {
                 + " order by a.membershipScheme.name,a.category.name";
         items = getFacade().findByJpql(sql);
     }
-    
-    
-    
-    
+
     public void savePharmacyCategoryPaymentScheme() {
         PriceMatrix p = new PaymentSchemeDiscount();
         saveSelectedCategory(p);
@@ -529,6 +583,12 @@ public class OpdMemberShipDiscountController implements Serializable {
         createItemsDepartmentsPaymentScheme();
     }
 
+    public void deleteSitePaymentScheme() {
+        deleteSite();
+        createItemsSitesPaymentScheme();
+        clearInstanceVars();
+    }
+
     public void deleteDepartmentPaymentMethod() {
         deleteDepartment();
         createItemsDepartmentsPaymentMethod();
@@ -550,6 +610,23 @@ public class OpdMemberShipDiscountController implements Serializable {
         getCurrent();
         filterItems = null;
         createItemsDepartments();
+    }
+
+    public void deleteSite() {
+        if (current != null) {
+            current.setRetired(true);
+            current.setRetiredAt(new Date());
+            current.setRetirer(getSessionController().getLoggedUser());
+            getFacade().edit(current);
+            JsfUtil.addSuccessMessage("Deleted Successfully");
+        } else {
+            JsfUtil.addSuccessMessage("Nothing to Delete");
+        }
+        //    recreateModel();
+
+        current = null;
+        getCurrent();
+        filterItems = null;
     }
 
     public void deleteCategoryOpd() {
@@ -826,10 +903,10 @@ public class OpdMemberShipDiscountController implements Serializable {
     }
 
     public void onEdit(PriceMatrix tmp) {
-        //Cheking Minus Value && Null
         getFacade().edit(tmp);
+        JsfUtil.addSuccessMessage("Update Successfully");
+        clearInstanceVars();
 
-        //  createItems();
     }
 
     public Category getRoomLocation() {
@@ -847,6 +924,14 @@ public class OpdMemberShipDiscountController implements Serializable {
 
     public void setFilterItems(List<PriceMatrix> filterItems) {
         this.filterItems = filterItems;
+    }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
     }
 
 }

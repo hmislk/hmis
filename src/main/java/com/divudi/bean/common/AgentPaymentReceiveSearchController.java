@@ -3,10 +3,12 @@
  * buddhika.ari@gmail.com
  */
 package com.divudi.bean.common;
+
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.HistoryType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.ejb.BillNumberGenerator;
@@ -19,6 +21,7 @@ import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
+import com.divudi.entity.Payment;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.BillFacade;
@@ -27,6 +30,7 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.BilledBillFacade;
 import com.divudi.facade.CancelledBillFacade;
 import com.divudi.facade.InstitutionFacade;
+import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.RefundBillFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -76,8 +80,13 @@ public class AgentPaymentReceiveSearchController implements Serializable {
     private WebUserController webUserController;
     @Inject
     AgentPaymentRecieveBillController agentPaymentRecieveBillController;
+    @Inject
+    CollectingCentreApplicationController collectingCentreApplicationController;
     @EJB
     EjbApplication ejbApplication;
+    @EJB
+    PaymentFacade paymentFacade;
+
     private List<BillItem> tempbillItems;
     private String comment;
     WebUser user;
@@ -173,7 +182,6 @@ public class AgentPaymentReceiveSearchController implements Serializable {
 //        }
 //
 //    }
-
     private boolean checkPaid() {
         String sql = "SELECT bf FROM BillFee bf where bf.retired=false and bf.bill.id=" + getBill().getId();
         List<BillFee> tempFe = getBillFeeFacade().findByJpql(sql);
@@ -245,60 +253,109 @@ public class AgentPaymentReceiveSearchController implements Serializable {
     public void setCashTransactionBean(CashTransactionBean cashTransactionBean) {
         this.cashTransactionBean = cashTransactionBean;
     }
-    
-    public void collectingCentreCancelBill(){
-        cancelBill(BillType.CollectingCentrePaymentReceiveBill, BillNumberSuffix.CCCAN, HistoryType.CollectingCentreDepositCancel);
-    }
-    
-    public void channellAgencyCancelBill(){
-        cancelBill(BillType.AgentPaymentReceiveBill, BillNumberSuffix.AGNCAN, HistoryType.ChannelDepositCancel);
-    }
-    
-    public void channelCreditNoteCancelBill(){
-        cancelBill(BillType.AgentCreditNoteBill, BillNumberSuffix.AGNCNCAN, HistoryType.ChannelCreditNoteCancel);
-    }
-    
-    public void channelDebitNoteCancelBill(){
-        cancelBill(BillType.AgentDebitNoteBill, BillNumberSuffix.AGNDNCAN, HistoryType.ChannelDebitNoteCancel);
-    }
-    
-    public void collectingCenterCreditNoteCancelBill(){
-        cancelBill(BillType.CollectingCentreCreditNoteBill, BillNumberSuffix.CCCNCAN, HistoryType.CollectingCentreCreditNoteCancel);
-    }
-    
-    public void collectingCenterDebitNoteCancelBill(){
-        cancelBill(BillType.CollectingCentreDebitNoteBill, BillNumberSuffix.CCDNCAN, HistoryType.CollectingCentreDebitNoteCancel);
+
+    public void collectingCentreDepositCancelBill() {
+        if (getBill() == null) {
+            JsfUtil.addErrorMessage("No Bill to Calcel");
+            return;
+        }
+        if (errorCheck()) {
+            return;
+        }
+        cancelBill(BillType.CollectingCentrePaymentReceiveBill, BillNumberSuffix.CCCAN, HistoryType.CollectingCentreDepositCancel, BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL);
+        
+
+        CancelledBill cb = new CancelledBill();
+
+        cb.copy(getBill());
+        cb.invertValue(getBill());
+
+        cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.CollectingCentrePaymentReceiveBill, BillClassType.CancelledBill, BillNumberSuffix.CCCAN));
+        cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.CollectingCentrePaymentReceiveBill, BillClassType.CancelledBill, BillNumberSuffix.CCCAN));
+
+        cb.setBilledBill(getBill());
+        cb.setPaymentMethod(paymentMethod);
+        cb.setBillDate(new Date());
+        cb.setBillTime(new Date());
+        cb.setCreatedAt(new Date());
+        cb.setCreater(getSessionController().getLoggedUser());
+        cb.setDepartment(getSessionController().getDepartment());
+        cb.setInstitution(getSessionController().getInstitution());
+        cb.setComments(comment);
+
+        cb.setBillTypeAtomic(BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL);
+        getCancelledBillFacade().create(cb);
+        cancelBillItems(cb);
+        getBill().setCancelled(true);
+        getBill().setCancelledBill(cb);
+        getBilledBillFacade().edit(getBill());
+        JsfUtil.addSuccessMessage("Cancelled");
+        createPayment(cb, paymentMethod);
+
+        collectingCentreApplicationController.updateBalance(
+                cb.getFromInstitution(),
+                0,
+                cb.getNetTotal(),
+                0,
+                cb.getNetTotal(),
+                HistoryType.CollectingCentreDepositCancel,
+                cb, comment);
+        printPreview = true;
+
     }
 
-    public void cancelBill(BillType billType, BillNumberSuffix billNumberSuffix, HistoryType historyType) {
+    public void channellAgencyCancelBill() {
+        cancelBill(BillType.AgentPaymentReceiveBill, BillNumberSuffix.AGNCAN, HistoryType.ChannelDepositCancel, BillTypeAtomic.AGENCY_PAYMENT_CANCELLATION);
+    }
+
+    public void channelCreditNoteCancelBill() {
+        cancelBill(BillType.AgentCreditNoteBill, BillNumberSuffix.AGNCNCAN, HistoryType.ChannelCreditNoteCancel, BillTypeAtomic.AGENCY_CREDIT_NOTE_CANCELLATION);
+    }
+
+    public void channelDebitNoteCancelBill() {
+        cancelBill(BillType.AgentDebitNoteBill, BillNumberSuffix.AGNDNCAN, HistoryType.ChannelDebitNoteCancel, BillTypeAtomic.AGENCY_DEBIT_NOTE_CANCELLATION);
+    }
+
+    public void collectingCenterCreditNoteCancelBill() {
+        cancelBill(BillType.CollectingCentreCreditNoteBill, BillNumberSuffix.CCCNCAN, HistoryType.CollectingCentreCreditNoteCancel, BillTypeAtomic.CC_CREDIT_NOTE_CANCELLATION);
+    }
+
+    public void collectingCenterDebitNoteCancelBill() {
+        cancelBill(BillType.CollectingCentreDebitNoteBill, BillNumberSuffix.CCDNCAN, HistoryType.CollectingCentreDebitNoteCancel, BillTypeAtomic.CC_DEBIT_NOTE_CANCELLATION);
+    }
+
+    public void cancelBill(BillType billType, BillNumberSuffix billNumberSuffix, HistoryType historyType, BillTypeAtomic billTypeAtomic) {
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (errorCheck()) {
                 return;
             }
 
-            CancelledBill cb = createCancelBill(billType,billNumberSuffix);
+            CancelledBill cb = createCancelBill(billType, billNumberSuffix);
 
-            //Copy & paste
-            //if (webUserController.hasPrivilege("LabBillCancelling")) {
-            if (true) {
-                getCancelledBillFacade().create(cb);
-                cancelBillItems(cb);
-                getBill().setCancelled(true);
-                getBill().setCancelledBill(cb);
-                getBilledBillFacade().edit(getBill());
-                JsfUtil.addSuccessMessage("Cancelled");
+            cb.setBillTypeAtomic(billTypeAtomic);
+            getCancelledBillFacade().create(cb);
+            cancelBillItems(cb);
+            getBill().setCancelled(true);
+            getBill().setCancelledBill(cb);
+            getBilledBillFacade().edit(getBill());
+            JsfUtil.addSuccessMessage("Cancelled");
+            createPayment(cb, paymentMethod);
 
-                //for channel agencyHistory Update
-                getAgentPaymentRecieveBillController().createAgentHistory(cb.getFromInstitution(), cb.getNetTotal(), historyType, cb);
-                //for channel agencyHistory Update
+            //for channel agencyHistory Update
+            //getAgentPaymentRecieveBillController().createAgentHistory(cb.getFromInstitution(), cb.getNetTotal(), historyType, cb);
+            collectingCentreApplicationController.updateBalance(
+                    cb.getFromInstitution(),
+                    0,
+                    cb.getNetTotal(),
+                    0,
+                    cb.getNetTotal(),
+                    historyType,
+                    cb, comment);
+            //for channel agencyHistory Update
 
-                WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cb, getSessionController().getLoggedUser());
-                getSessionController().setLoggedUser(wb);
-                printPreview = true;
-            } else {
-                getEjbApplication().getBillsToCancel().add(cb);
-                JsfUtil.addSuccessMessage("Awaiting Cancellation");
-            }
+            WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cb, getSessionController().getLoggedUser());
+            getSessionController().setLoggedUser(wb);
+            printPreview = true;
 
         } else {
             JsfUtil.addErrorMessage("No Bill to cancel");
@@ -335,6 +392,28 @@ public class AgentPaymentReceiveSearchController implements Serializable {
 //
 //        billForCancel = null;
 //    }
+    public Payment createPayment(Bill bill, PaymentMethod pm) {
+        Payment p = new Payment();
+        p.setBill(bill);
+        setPaymentMethodData(p, pm);
+        return p;
+    }
+
+    public void setPaymentMethodData(Payment p, PaymentMethod pm) {
+
+        p.setInstitution(getSessionController().getInstitution());
+        p.setDepartment(getSessionController().getDepartment());
+        p.setCreatedAt(new Date());
+        p.setCreater(getSessionController().getLoggedUser());
+        p.setPaymentMethod(pm);
+
+        p.setPaidValue(p.getBill().getNetTotal());
+
+        if (p.getId() == null) {
+            paymentFacade.create(p);
+        }
+
+    }
 
     public List<Bill> getBillsToApproveCancellation() {
         //////// // System.out.println("1");

@@ -7,8 +7,8 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
-        <ui:composition template="/resources/template/template.xhtml">
-            <ui:define name="content">
+        <ui:composition template="/collecting_centre/index.xhtml">
+            <ui:define name="subcontent">
                 <h:form>
                     <p:panel>
                         <f:facet name="header" >
@@ -80,6 +80,12 @@
                                               sortBy="#{refBook.id}"
                                               styleClass="alignTop" width="150">
                                         <h:outputLabel value="#{refBook.strbookNumber}"/>
+                                    </p:column>
+                                    
+                                    <p:column headerText="Centre Name" filterBy="#{refBook.institution.name}" filterMatchMode="contains"
+                                              sortBy="#{refBook.institution.name}"
+                                              styleClass="alignTop" width="150">
+                                        <h:outputLabel value="#{refBook.institution.name}"/>
                                     </p:column>
                                     
                                     <p:column headerText="Book Starting Reference No" filterBy="#{bill.startingReferenceNumber}" filterMatchMode="contains"

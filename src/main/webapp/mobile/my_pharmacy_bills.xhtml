@@ -27,7 +27,7 @@
                             <p:dataTable value="#{searchController.bills}" var="b"  >
 
                                 <p:column headerText="Item" >
-                                    <p:commandLink value="#{b.insId}" action="/mobile/my_pharmacy_bill" ajax="false">
+                                    <p:commandLink value="#{b.deptId}" action="/mobile/my_pharmacy_bill" ajax="false">
                                         <f:setPropertyActionListener value="#{b}" target="#{pharmacyBillSearch.bill}"></f:setPropertyActionListener>
                                     </p:commandLink>
                                 </p:column>

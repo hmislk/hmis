@@ -710,14 +710,11 @@ public class UserPrivilageController implements Serializable {
 
         // Retire all current web user privileges initially
         List<WebUserPrivilege> currentPrivileges = getCurrentWebUserPrivileges();
-        System.out.println("Retiring all current web user privileges:");
         for (WebUserPrivilege wup : currentPrivileges) {
             wup.setRetired(true);
-            System.out.println("Retiring privilege: " + wup.getPrivilege());
         }
 
         if (selectedPrivileges == null) {
-            System.out.println("No selected privileges to process.");
             getFacade().batchEdit(currentPrivileges);
             return;
         }
@@ -736,7 +733,6 @@ public class UserPrivilageController implements Serializable {
                     wup.setRetired(false);
                     nonRetiredPrivileges.add(wup);
                     found = true;
-                    System.out.println("Unretiring privilege: " + wup.getPrivilege());
                     break;
                 }
             }
@@ -747,7 +743,6 @@ public class UserPrivilageController implements Serializable {
                 newWup.setWebUser(currentWebUser);
                 newWup.setPrivilege(ph.getPrivilege());
                 newWups.add(newWup);
-                System.out.println("Adding new privilege: " + newWup.getPrivilege());
             }
         }
 
@@ -760,11 +755,9 @@ public class UserPrivilageController implements Serializable {
 
         // Set the combined list as current web user privileges
         setCurrentWebUserPrivileges(updatedPrivileges);
-
         // Log final state after saving
-        System.out.println("Final web user privileges:");
+
         for (WebUserPrivilege wup : updatedPrivileges) {
-            System.out.println("Final privilege: " + wup.getPrivilege() + ", retired: " + wup.isRetired());
         }
 
         fillUserPrivileges();
@@ -780,8 +773,8 @@ public class UserPrivilageController implements Serializable {
                     PrivilegeHolder ph = (PrivilegeHolder) data;
                     privileges.add(ph);
                 } else {
-                    System.out.println("Unexpected data type: " + data.getClass().getName());
                     // Handle the case where the data is not of type PrivilegeHolder
+                    
                 }
             }
         }

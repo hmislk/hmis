@@ -354,36 +354,25 @@ public class PatientSampleComponant implements Serializable {
     }
 
     public String getNameTranscient() {
-        System.out.println("Entering getNameTranscient method.");
 
         if (investigationComponant != null) {
-            System.out.println("investigationComponent is not null");
 
             if (investigationComponant.getName() != null) {
-                System.out.println("investigationComponent name is not null");
 
                 if (!investigationComponant.getName().trim().equals("")) {
-                    System.out.println("investigationComponent name is not empty: " + investigationComponant.getName().trim());
                     nameTranscient = investigationComponant.getName();
                 } else {
-                    System.out.println("investigationComponent name is empty");
                 }
             } else {
-                System.out.println("investigationComponent name is null");
 
                 if (patientInvestigation != null && patientInvestigation.getInvestigation() != null) {
-                    System.out.println("patientInvestigation and its investigation are not null");
                     nameTranscient = patientInvestigation.getInvestigation().getName();
-                    System.out.println("nameTranscient set from patientInvestigation: " + nameTranscient);
                 } else {
-                    System.out.println("Either patientInvestigation is null or its investigation is null");
                 }
             }
         } else {
-            System.out.println("investigationComponent is null");
         }
 
-        System.out.println("Exiting getNameTranscient with nameTranscient: " + nameTranscient);
         return nameTranscient;
     }
 

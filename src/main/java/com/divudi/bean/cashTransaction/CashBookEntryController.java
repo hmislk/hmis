@@ -17,7 +17,6 @@ import com.divudi.entity.Payment;
 import com.divudi.entity.cashTransaction.CashBook;
 import com.divudi.entity.cashTransaction.CashBookEntry;
 import com.divudi.facade.CashBookEntryFacade;
-import com.divudi.facade.CashBookFacade;
 import com.divudi.facade.PaymentFacade;
 import java.io.Serializable;
 import java.util.Date;
@@ -54,13 +53,13 @@ public class CashBookEntryController implements Serializable {
     CashBookEntry current;
     private List<CashBookEntry> cashBookEntryList;
 
-    public void writeCashBookEntry(Payment p) {
+    public void writeCashBookEntryAtPaymentCreation(Payment p) {
         if (p == null) {
             JsfUtil.addErrorMessage("Cashbook Entry Error !");
             return;
         }
 
-        if (!chackPaymentMethodForCashBookEntry(p.getPaymentMethod())) {
+        if (!chackPaymentMethodForCashBookEntryAtPaymentMethodCreation(p.getPaymentMethod())) {
             return;
         }
 
@@ -74,11 +73,100 @@ public class CashBookEntryController implements Serializable {
         current.setPayment(p);
         current.setCashBook(sessionController.getLoggedCashbook());
         current.setSite(sessionController.getDepartment().getSite());
+        current.setBill(p.getBill());
+        updateBalances(p.getPaymentMethod(), p.getPaidValue(), current);
         cashbookEntryFacade.create(current);
 
     }
 
-    public boolean chackPaymentMethodForCashBookEntry(PaymentMethod pm) {
+    public void writeCashBookEntryAtHandover(Payment p) {
+        if (p == null) {
+            JsfUtil.addErrorMessage("Cashbook Entry Error !");
+            return;
+        }
+
+        if (!chackPaymentMethodForCashBookEntryAtHandover(p.getPaymentMethod())) {
+            return;
+        }
+        current = new CashBookEntry();
+        current.setInstitution(p.getInstitution());
+        current.setDepartment(p.getDepartment());
+        current.setCreater(sessionController.getLoggedUser());
+        current.setCreatedAt(new Date());
+        current.setPaymentMethod(p.getPaymentMethod());
+        current.setEntryValue(p.getPaidValue());
+        current.setPayment(p);
+        current.setBill(p.getHandoverAcceptBill());
+        current.setCashBook(sessionController.getLoggedCashbook());
+        current.setSite(sessionController.getDepartment().getSite());
+        updateBalances(p.getPaymentMethod(), p.getPaidValue(), current);
+        cashbookEntryFacade.create(current);
+
+    }
+
+    public void updateBalances(PaymentMethod pm, Double Value, CashBookEntry cbe) {
+        Map m = new HashMap<>();
+        String jpql = "Select cbe from CashBookEntry cbe where "
+                + " cbe.paymentMethod=:pm";
+
+        m.put("pm", pm);
+
+        if (cbe.getDepartment() != null) {
+            jpql += " and cbe.department=:dep ";
+            m.put("dep", cbe.getDepartment());
+        }
+        if (cbe.getInstitution() != null) {
+            jpql += " and cbe.institution=:ins ";
+            m.put("ins", cbe.getInstitution());
+        }
+        if (cbe.getDepartment() != null) {
+            jpql += " and cbe.site=:si ";
+            m.put("si", cbe.getSite());
+        }
+
+        jpql += "order by cbe.id desc";
+
+        CashBookEntry lastCashBookEntry = cashbookEntryFacade.findFirstByJpql(jpql, m);
+
+        Double lastDepartmentBalance;
+        Double lastInstitutionBalance;
+        Double lastSiteBalance;
+
+        if (lastCashBookEntry == null) {
+            lastDepartmentBalance = 0.0;
+            lastInstitutionBalance = 0.0;
+            lastSiteBalance = 0.0;
+        } else {
+            if (lastCashBookEntry.getDepartmentBalance() != null) {
+                lastDepartmentBalance = lastCashBookEntry.getDepartmentBalance();
+            } else {
+                lastDepartmentBalance = 0.0;
+            }
+
+            if (lastCashBookEntry.getInstitutionBalance() != null) {
+                lastInstitutionBalance = lastCashBookEntry.getInstitutionBalance();
+            } else {
+                lastInstitutionBalance = 0.0;
+            }
+
+            if (lastCashBookEntry.getSiteBalance() != null) {
+                lastSiteBalance = lastCashBookEntry.getSiteBalance();
+            } else {
+                lastSiteBalance = 0.0;
+            }
+        }
+
+        Double newDepartmentBalance = lastDepartmentBalance + Value;
+        Double newInstitutionBalance = lastInstitutionBalance + Value;
+        Double newSiteBalance = lastSiteBalance + Value;
+
+        cbe.setDepartmentBalance(newDepartmentBalance);
+        cbe.setInstitutionBalance(newInstitutionBalance);
+        cbe.setSiteBalance(newSiteBalance);
+
+    }
+
+    public boolean chackPaymentMethodForCashBookEntryAtPaymentMethodCreation(PaymentMethod pm) {
         boolean check = false;
         if (pm == null) {
             JsfUtil.addErrorMessage("Payment method is not found !");
@@ -141,6 +229,69 @@ public class CashBookEntryController implements Serializable {
 
     }
 
+    public boolean chackPaymentMethodForCashBookEntryAtHandover(PaymentMethod pm) {
+        boolean check = false;
+        if (pm == null) {
+            JsfUtil.addErrorMessage("Payment method is not found !");
+            return false;
+        }
+        switch (pm) {
+            case Card:
+                check = false;
+                break;
+
+            case Cash:
+                check = true;
+                break;
+
+            case Cheque:
+                check = false;
+                break;
+
+            case Agent:
+                check = true;
+                break;
+
+            case Credit:
+                check = false;
+                break;
+
+            case OnCall:
+                check = true;
+                break;
+
+            case PatientDeposit:
+                check = true;
+                break;
+
+            case Slip:
+                check = false;
+                break;
+
+            case Staff:
+                check = false;
+                break;
+
+            case Staff_Welfare:
+                check = false;
+                break;
+
+            case ewallet:
+                check = false;
+                break;
+
+            case OnlineSettlement:
+                check = false;
+                break;
+
+            default:
+
+        }
+
+        return check;
+
+    }
+
     public List<CashBookEntry> genarateCashBookEntries(Date fromDate, Date toDate, Institution site, Institution ins, Department dept) {
         String jpql;
         Map m = new HashMap<>();
@@ -160,9 +311,7 @@ public class CashBookEntryController implements Serializable {
         m.put("fromDate", fromDate);
         m.put("toDate", toDate);
         m.put("ret", false);
-        cashBookEntryList = cashbookEntryFacade.findByJpql(jpql, m,TemporalType.TIMESTAMP);
-        System.out.println("cashBookEntryList = " + cashBookEntryList.size());
-        System.out.println("jpql = " + jpql);
+        cashBookEntryList = cashbookEntryFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         return cashBookEntryList;
     }
 

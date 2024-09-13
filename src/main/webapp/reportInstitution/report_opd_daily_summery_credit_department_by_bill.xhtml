@@ -82,11 +82,11 @@
                                 <p:outputLabel value="#{d.department.name}" />                                  
                             </f:facet>
                             <p:column>
-                                <h:outputLabel value="#{b.insId}" style="color: red;" rendered="#{(b.cancelled or b.refunded)}" />
-                                <h:outputLabel value="#{b.insId}" rendered="#{(!b.cancelled and !b.refunded)}" />
+                                <h:outputLabel value="#{b.deptId}" style="color: red;" rendered="#{(b.cancelled or b.refunded)}" />
+                                <h:outputLabel value="#{b.deptId}" rendered="#{(!b.cancelled and !b.refunded)}" />
                             </p:column>                      
                             <p:column>
-                                <h:outputLabel value="#{b.billedBill.insId} - " />
+                                <h:outputLabel value="#{b.billedBill.deptId} - " />
                                 <h:outputLabel value="#{b.billedBill.createdAt}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                 </h:outputLabel>

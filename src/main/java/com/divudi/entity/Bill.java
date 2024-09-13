@@ -372,6 +372,12 @@ public class Bill implements Serializable {
     private double totalHospitalFee;
     private double totalCenterFee;
     private double totalStaffFee;
+    
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date fromDate;
+    
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date toDate;
 
     @Enumerated(EnumType.ORDINAL)
     private PatientInvestigationStatus status;
@@ -2293,6 +2299,9 @@ public class Bill implements Serializable {
     }
 
     public PatientInvestigationStatus getStatus() {
+        if(status==null){
+            status=PatientInvestigationStatus.ORDERED;
+        }
         return status;
     }
 
@@ -2306,6 +2315,22 @@ public class Bill implements Serializable {
 
     public void setItem(Item item) {
         this.item = item;
+    }
+
+    public Date getFromDate() {
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
     }
 
 }

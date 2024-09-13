@@ -73,6 +73,7 @@
                                             <p:commandButton ajax="false"  value="Value" action="#{investigationItemController.addNewValue()}"/>
                                             <p:commandButton ajax="false"  value="Calculation" action="#{investigationItemController.addNewCalculation()}"/>
                                             <p:commandButton ajax="false"  value="Flag" action="#{investigationItemController.addNewFlag() }"/>
+                                            <p:commandButton ajax="false"  value="Image" action="#{investigationItemController.addNewImage() }"/>
                                         </div>
 
                                     </p:panel>
@@ -319,7 +320,14 @@
                                             <f:selectItems value="#{investigationItemController.userChangableItems}" var="ii" itemLabel="#{ii.name} - #{ii.ixItemType }" itemValue="#{ii}" />
                                             <p:ajax  event="change" process="dtbItem" update=":#{p:resolveFirstComponentWithId('pDetails',view).clientId} "/>
                                         </p:selectOneMenu>
-                                        <p:commandButton action="#{investigationItemController.removeItem()}" icon=" fa-solid fa-trash " class="ui-button-danger" value="Remove" ajax="false"/> 
+                                        <p:commandButton 
+                                            action="#{investigationItemController.removeItem()}" 
+                                            icon=" fa-solid fa-trash " 
+                                            onclick="if (!confirm('Are you sure you want to delete this Item?'))
+                                                        return false;"
+                                            class="ui-button-danger" 
+                                            value="Remove" 
+                                            ajax="false"/> 
                                     </diV>
 
                                     <h:panelGrid id="pDetails" class="w-100">
@@ -335,7 +343,8 @@
                                                     <p:selectOneMenu 
                                                         class="w-100" 
                                                         id="cmbItemType" 
-
+                                                        filter="true"
+                                                        filterMatchMode="contains"
                                                         value="#{investigationItemController.current.ixItemType}">
                                                         <f:selectItem itemLabel="Please select" />
                                                         <f:selectItems value="#{enumController.investigationItemTypes}" var="iit" itemLabel="#{iit}" itemValue="#{iit}" >
@@ -346,7 +355,8 @@
                                                     <p:selectOneMenu 
                                                         class="w-100" 
                                                         id="cmbValueType" 
-
+                                                        filter="true"
+                                                        filterMatchMode="contains"
                                                         value="#{investigationItemController.current.ixItemValueType}">
                                                         <f:selectItem itemLabel="Please select" />
                                                         <f:selectItems value="#{enumController.investigationItemValueTypes}" />
@@ -387,6 +397,14 @@
                                                     <div class="col-3 d-flex gap-1">
                                                         <h:outputText value="Height" class="mt-2"/>
                                                         <p:inputText  style="width: 60px;" maxlength="2" autocomplete="off" id="txtHeight" value="#{investigationItemController.current.riHeight}"/>
+                                                    </div>
+                                                    <div class="col-3 d-flex gap-1">
+                                                        <h:outputText value="Height PX" class="mt-2" />
+                                                        <p:inputText style="width: 60px;" maxlength="2" autocomplete="off" id="txtHtPx" value="#{investigationItemController.current.htPix}"/>
+                                                    </div>
+                                                    <div class="col-3 d-flex gap-1">
+                                                        <h:outputText value="Width Px" class="mt-2"/>
+                                                        <p:inputText  style="width: 60px;" maxlength="2" autocomplete="off" id="txtWtPx" value="#{investigationItemController.current.wtPix}"/>
                                                     </div>
                                                 </div>
 

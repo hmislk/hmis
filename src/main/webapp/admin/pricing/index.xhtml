@@ -140,6 +140,15 @@
                                                 value="Correct Item Fees"
                                                 action="/dataAdmin/bulk_update_itemsFees">
                                             </p:commandButton>
+                                            
+                                            
+                                            <p:commandButton 
+                                                class="w-100"
+                                                ajax="false"
+                                                value="Item Fees Values"
+                                                action="#{itemFeeManager.navigateItemFeeValueList}">
+                                            </p:commandButton>
+                                            
                                         </div>
                                     </p:tab>
 
@@ -250,6 +259,14 @@
                                                 value="OPD Discount by Department" 
                                                 actionListener="#{opdMemberShipDiscountController.recreateModel()}" 
                                                 ajax="false"/>
+                                            
+                                             <p:commandButton 
+                                                class="w-100" 
+                                                action="#{navigationController.navigateToPaymentSchemeDiscountOpdBySite()}" 
+                                                value="OPD Discount by Site" 
+                                                actionListener="#{opdMemberShipDiscountController.recreateModel()}" 
+                                                ajax="false"/>
+                                             
                                             <p:commandButton 
                                                 class="w-100" 
                                                 action="#{navigationController.navigateToPaymentSchemeDiscountOpdBtCategory()}" 
