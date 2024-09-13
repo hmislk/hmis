@@ -2868,8 +2868,8 @@ public class PatientInvestigationController implements Serializable {
         }
 
         if (sampleId != null) {
-            jpql += " AND (ps.sampleId=:smpid or ps.id=:smpId) ";
-            params.put("smpid", sampleId);
+            jpql += " AND (ps.sampleId=:smpId or ps.id=:smpId) ";
+            params.put("smpId", sampleId);
         }
 
         jpql += " ORDER BY ps.id DESC";
