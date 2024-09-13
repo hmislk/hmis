@@ -298,6 +298,7 @@ public class SearchController implements Serializable {
 
     private List<CashBookEntry> cashBookEntries;
     private Institution site;
+    private int opdAnalyticsIndex;
 
     public String navigateToPettyCashBillApprove() {
         createPettyApproveTable();
@@ -1811,6 +1812,14 @@ public class SearchController implements Serializable {
 
     public void setBundleBillItems(ReportTemplateRowBundle bundleBillItems) {
         this.bundleBillItems = bundleBillItems;
+    }
+
+    public int getOpdAnalyticsIndex() {
+        return opdAnalyticsIndex;
+    }
+
+    public void setOpdAnalyticsIndex(int opdAnalyticsIndex) {
+        this.opdAnalyticsIndex = opdAnalyticsIndex;
     }
 
     public class billsWithbill {
@@ -13558,6 +13567,8 @@ public class SearchController implements Serializable {
         return selectedBills;
     }
 
+    
+    
     public void setSelectedBills(List<Bill> selectedBills) {
         this.selectedBills = selectedBills;
     }
@@ -13902,6 +13913,8 @@ public class SearchController implements Serializable {
         this.pharmacyAdjustmentRows = pharmacyAdjustmentRows;
     }
 
+    
+    
     private StreamedContent fileBillsAndBillItemsForDownload;
 
     public StreamedContent getFileBillsAndBillItemsForDownload() {
