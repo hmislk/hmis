@@ -51,15 +51,21 @@
                                                 class="w-100" 
                                                 ajax="false" 
                                                 value="Itemized Sales Summary" 
-                                                action="#{searchController.navigateToItemizedSaleSummary}" />     
+                                                action="#{searchController.navigateToItemizedSaleSummaryOpd}" />     
                                             <p:commandButton 
                                                 class="w-100" 
                                                 ajax="false" 
                                                 value="Item-vice Sale Report" 
-                                                action="#{searchController.navigateToItemizedSaleReport()}" />     
+                                                action="#{searchController.navigateToItemizedSaleReportOpd()}" /> 
+                                            <p:commandButton   
+                                                class="w-100"  
+                                                ajax="false" 
+                                                value="Income Breakdown by Category"  
+                                                action="#{searchController.navigateToIncomeBreakdownByCategoryOpd()}"/>
+
                                         </div>
                                     </p:tab>
-                                    
+
                                     <!-- Package Reports Tab -->
                                     <p:tab title="Package Reports">
                                         <div class="d-grid gap-2">
