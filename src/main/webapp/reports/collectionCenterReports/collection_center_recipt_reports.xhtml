@@ -15,7 +15,7 @@
                     <div>
                         <div class="row mb-2">
                             <div class="col-12 my-4">
-                                <h2>Collection Center Receipt Reports</h2>
+                                <h2>Collection Centre Receipt Reports</h2>
                             </div>
                         </div>
 
@@ -136,6 +136,17 @@
                         </p:column>
                         <p:column headerText="Bill No" >
                             <h:outputText value="#{bi.referenceNumber}" ></h:outputText>
+                             <p:commandLink 
+                                    ajax="false"
+                                    rendered="#{bi ne null}"
+                                    action="#{billSearch.navigateViewBillByBillTypeAtomic()}">
+                                    <h:outputText title="View Bill" styleClass="fa fa-eye" />
+                                    <f:setPropertyActionListener 
+                                        value="#{bi}" 
+                                        target="#{billSearch.bill}" >
+                                    </f:setPropertyActionListener>
+                                </p:commandLink>
+                            
                         </p:column>
                         <p:column headerText="Billed at" >
                             <h:outputText value="#{bi.createdAt}" ></h:outputText>
