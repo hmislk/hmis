@@ -45,6 +45,18 @@
                                     </p:tab>
 
                                     <!-- Package Reports Tab -->
+                                    <p:tab title="Item Reports">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton 
+                                                class="w-100" 
+                                                ajax="false" 
+                                                value="Itemized Sales Summary" 
+                                                action="#{searchController.navigateToItemizedSaleSummary}" />     
+                                            <p:commandButton class="w-100" ajax="false" value="Item-vice Sale Report" action="#{billPackageMedicalController.navigateToReportOpdPackageBill()}" actionListener="#{billPackageMedicalController.makeNull}"/>     
+                                        </div>
+                                    </p:tab>
+                                    
+                                    <!-- Package Reports Tab -->
                                     <p:tab title="Package Reports">
                                         <div class="d-grid gap-2">
                                             <p:commandButton class="w-100" ajax="false" value="Package Detail Report - By Bill Items" action="#{billPackageMedicalController.navigateToReportOpdPackage()}" actionListener="#{billPackageMedicalController.makeNull}"/>     
