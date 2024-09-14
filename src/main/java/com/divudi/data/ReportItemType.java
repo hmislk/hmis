@@ -88,6 +88,8 @@ public enum ReportItemType {
     CollectedOn,
     ReceivedOn,
     
+    PatientAgeandGender,
+    
     ;
 
     public String getLabel() {
@@ -230,6 +232,8 @@ public enum ReportItemType {
                 return "Sample Collected Time";
             case ReceivedOn:
                 return "Sample Received Time (Lab)";
+            case PatientAgeandGender:
+                return "Patient Age and Gender";
             default:
                 return this.toString();
         }
