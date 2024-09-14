@@ -75,7 +75,6 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         return "/patient_deposit/receive?faces-redirect=true";
     } 
     
-<<<<<<< Issue#7135
     public void getPatientDepositOnPatientDepositAdding(){
         patientController.quickSearchPatientLongPhoneNumber(this);
         current = null;
@@ -121,10 +120,6 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         
         patientDepositHistoryFacade.create(pdh);
     }
-=======
-
-    private int patientDepositManagementIndex=1;
->>>>>>> development
     
 
     public PatientDeposit getDepositOfThePatient(Patient p , Department d){        
@@ -216,7 +211,6 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         this.patientDepositManagementIndex = patientDepositManagementIndex;
     }
 
-<<<<<<< Issue#7135
     public boolean isPrintPreview() {
         return printPreview;
     }
@@ -316,8 +310,6 @@ public class PatientDepositController implements Serializable, ControllerWithPat
     public void setLatestPatientDepositHistory(List<PatientDepositHistory> latestPatientDepositHistory) {
         this.latestPatientDepositHistory = latestPatientDepositHistory;
     }
-=======
->>>>>>> development
 
     /**
      *
