@@ -14,14 +14,12 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-
-
         <h:panelGroup rendered="#{empty cc.attrs.bundle.reportTemplateRows}">
             <table class="table w-100">
                 <thead>
                     <tr class="text-light bg-dark">
                         <th class="text-light bg-dark">
-                            No Professional Payments for OPD Services
+                            No Professional Payments for Channeling Services
                         </th>
                     </tr>
                 </thead>
@@ -33,7 +31,7 @@
                 <thead>
                     <tr class="text-light bg-dark">
                         <th class="text-light bg-dark" colspan="2">
-                            Professional Payments for OPD Services
+                            Professional Payments for Channeling Services
                         </th>
                         <th class="text-end text-light bg-dark">
                             <h:outputText value="#{cc.attrs.bundle.total}">
@@ -67,36 +65,6 @@
             </table>
         </h:panelGroup>
 
-        <!--        
-        
-                <p:dataTable value="#{cc.attrs.bundle.reportTemplateRows}" var="row" >
-                    <f:facet name="header" >
-                        <h:outputText value="#{cc.attrs.bundle.name}" ></h:outputText>
-                    </f:facet>
-                    <p:column>
-                        <f:facet name="header">
-                            <h:outputText value="Bil No" />
-                        </f:facet>
-                        <h:outputText value="#{row.bill.deptId}"  />
-                    </p:column>
-        
-                    <p:column>
-                        <f:facet name="header">
-                            <h:outputText value="Professional" />
-                        </f:facet>
-                        <h:outputText value="#{row.bill.staff.person.nameWithTitle}"  />
-                    </p:column>
-                    <p:column>
-                        <f:facet name="header">
-                            <h:outputText value="Fee" />
-                        </f:facet>
-                        <h:outputText value="#{row.bill.netTotal}"  >
-                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                        </h:outputText>
-                    </p:column>
-        
-                </p:dataTable>
-        -->
 
 
     </cc:implementation>

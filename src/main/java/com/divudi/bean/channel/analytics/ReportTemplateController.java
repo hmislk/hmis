@@ -10,6 +10,7 @@ package com.divudi.bean.channel.analytics;
 
 import com.divudi.bean.common.*;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.ReportTemplateRow;
@@ -363,9 +364,30 @@ public class ReportTemplateController implements Serializable {
         }
         pb.setReportTemplateRows(results);
 
-        double bundleTotal = pb.getReportTemplateRows().stream()
-                .mapToDouble(r -> r.getPayment().getPaidValue())
-                .sum();
+        double bundleTotal = 0.0; // Initialize total
+
+        for (ReportTemplateRow r : pb.getReportTemplateRows()) {
+            // Check if Payment, Bill, and PaidValue are not null
+            if (r.getPayment() != null && r.getBill() != null) {
+                // Get the absolute value of the paid amount
+                double paidValue = Math.abs(r.getPayment().getPaidValue());
+
+                // Add the value for Bill or BilledBill
+                if (r.getBill().getBillClassType() == BillClassType.Bill
+                        || r.getBill().getBillClassType() == BillClassType.BilledBill) {
+                    bundleTotal += paidValue;
+                } // Subtract the value for CancelledBill or RefundBill
+                else if (r.getBill().getBillClassType() == BillClassType.CancelledBill
+                        || r.getBill().getBillClassType() == BillClassType.RefundBill) {
+                    bundleTotal -= paidValue;
+                }
+                // Do nothing for other BillClassTypes
+            }
+            // If Payment, Bill, or PaidValue is null, skip the row (this else is optional)
+        }
+
+      
+
         System.out.println("bundleTotal = " + bundleTotal);
         pb.setTotal(bundleTotal);
 
