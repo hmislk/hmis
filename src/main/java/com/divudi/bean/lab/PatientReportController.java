@@ -101,6 +101,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
+import javax.persistence.TemporalType;
 import javax.servlet.http.HttpSession;
 
 /**
@@ -1086,8 +1087,6 @@ public class PatientReportController implements Serializable {
 
         //JsfUtil.addSuccessMessage("Saved");
     }
-    
-    
 
     public void removePatientReport() {
 
@@ -1703,14 +1702,48 @@ public class PatientReportController implements Serializable {
 
     }
 
+    public boolean chackAlreadyApprovedPatientReports(PatientInvestigation patientInvestigation) {
+        boolean allowNewReport = false;
+        PatientReport pr = null;
+
+        if (patientInvestigation.getBillItem().getItem().isMultipleReportsAllowed()) {
+            allowNewReport = true;
+        } else {
+            Map params = new HashMap<>();
+
+            String jpql = "SELECT r "
+                    + "FROM PatientReport r "
+                    + " WHERE r.retired=:ret"
+                    + " and r.patientInvestigation=:pi";
+
+            params.put("pi", patientInvestigation);
+            params.put("ret", false);
+            System.out.println("jpql = " + jpql);
+
+            pr = getFacade().findFirstByJpql(jpql, params);
+
+            if (pr != null) {
+                allowNewReport = false;
+            } else {
+                allowNewReport = true;
+            }
+
+        }
+        return allowNewReport;
+    }
+
     public void approvePatientReport() {
-        Date startTime = new Date();
         if (currentPatientReport == null) {
             JsfUtil.addErrorMessage("Nothing to approve");
             return;
         }
         if (currentPatientReport.getDataEntered() == false) {
             JsfUtil.addErrorMessage("First Save report");
+            return;
+        }
+
+        if (!chackAlreadyApprovedPatientReports(currentPatientReport.getPatientInvestigation())) {
+            JsfUtil.addErrorMessage("Another Report of this Investigation has been Approved");
             return;
         }
 
@@ -2333,6 +2366,12 @@ public class PatientReportController implements Serializable {
             JsfUtil.addErrorMessage("No Patient Report");
             return null;
         }
+
+        if (!chackAlreadyApprovedPatientReports(pi)) {
+            JsfUtil.addErrorMessage("Another Report of this Investigation has been Approved");
+            return null;
+        }
+
         Investigation ix = null;
         System.out.println("pi.getInvestigation() = " + pi.getInvestigation());
         if (pi.getInvestigation() == null) {

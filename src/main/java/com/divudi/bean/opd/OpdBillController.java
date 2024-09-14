@@ -70,6 +70,7 @@ import com.divudi.data.BillFeeBundleEntry;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.OptionScope;
 import com.divudi.entity.FeeValue;
+import com.divudi.entity.PatientDeposit;
 import com.divudi.entity.Token;
 import com.divudi.facade.TokenFacade;
 import com.divudi.java.CommonFunctions;
@@ -195,6 +196,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     CashBookEntryController cashBookEntryController;
     @Inject
     FeeValueController feeValueController;
+    @Inject
+    PatientDepositController patientDepositController;
     /**
      * Class Variables
      */
@@ -1819,6 +1822,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 getPatient().setRunningBalance(0.0 - netTotal);
             }
             getPatientFacade().edit(getPatient());
+            PatientDeposit pd = patientDepositController.getDepositOfThePatient(getPatient(), sessionController.getDepartment());
+            patientDepositController.updateBalance(getBatchBill(), pd);
         }
 
         if (getToken() != null) {
@@ -2466,23 +2471,25 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         }
 
         if (paymentMethod == PaymentMethod.PatientDeposit) {
-            if (!getPatient().getHasAnAccount()) {
-                JsfUtil.addErrorMessage("Patient has not account. Can't proceed with Patient Deposits");
-                return true;
-            }
+//            if (!getPatient().getHasAnAccount()) {
+//                JsfUtil.addErrorMessage("Patient has not account. Can't proceed with Patient Deposits");
+//                return true;
+//            }
             double creditLimitAbsolute = 0.0;
-            if (getPatient().getCreditLimit() == null) {
-                creditLimitAbsolute = 0.0;
-            } else {
-                creditLimitAbsolute = Math.abs(getPatient().getCreditLimit());
-            }
-
+//            if (getPatient().getCreditLimit() == null) {
+//                creditLimitAbsolute = 0.0;
+//            } else {
+//                creditLimitAbsolute = Math.abs(getPatient().getCreditLimit());
+//            }
+//
             double runningBalance;
-            if (getPatient().getRunningBalance() != null) {
-                runningBalance = getPatient().getRunningBalance();
-            } else {
-                runningBalance = 0.0;
-            }
+//            if (getPatient().getRunningBalance() != null) {
+//                runningBalance = getPatient().getRunningBalance();
+//            } else {
+//                runningBalance = 0.0;
+//            }
+            PatientDeposit pd = patientDepositController.getDepositOfThePatient(getPatient(), sessionController.getDepartment());
+            runningBalance = pd.getBalance();
             double availableForPurchase = runningBalance + creditLimitAbsolute;
 
             if (netTotal > availableForPurchase) {
@@ -4148,6 +4155,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         bills = null;
         return "/opd/analytics/opd_bill_payments";
     }
+    
+    
 
     // This is the setter for selectedItemLightId
     public void setSelectedItemLightId(Long id) {

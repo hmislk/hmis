@@ -190,9 +190,17 @@
                                 <f:facet name="header">
                                     <h:outputText value="Bill No" />
                                 </f:facet>
-                                <h:outputText value="#{row.billItem.bill.deptId}">
-                                    <f:convertNumber pattern="#,##0" />
-                                </h:outputText>
+                                <p:commandLink 
+                                    ajax="false"
+                                    rendered="#{row.billItem ne null}"
+                                    action="#{billSearch.navigateViewBillByBillTypeAtomic()}">
+                                    <h:outputText title="View Bill" styleClass="fa fa-eye" />
+                                    <f:setPropertyActionListener 
+                                        value="#{row.billItem.bill}" 
+                                        target="#{billSearch.bill}" >
+                                    </f:setPropertyActionListener>
+                                </p:commandLink>
+                                <h:outputText value="#{row.billItem.bill.deptId}" ></h:outputText>
                             </p:column>
                             <p:column>
                                 <f:facet name="header">

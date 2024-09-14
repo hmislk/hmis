@@ -212,12 +212,23 @@
                                     <h:outputText value="Bill No" />
                                 </f:facet>
                                 <h:outputText value="#{row.billFee.bill.deptId}" />
+                                <p:commandLink 
+                                    ajax="false"
+                                    rendered="#{row.billFee ne null}"
+                                    action="#{billSearch.navigateViewBillByBillTypeAtomic()}">
+                                    <h:outputText title="View Bill" styleClass="fa fa-eye" />
+                                    <f:setPropertyActionListener 
+                                        value="#{row.billFee.bill}" 
+                                        target="#{billSearch.bill}" >
+                                    </f:setPropertyActionListener>
+                                </p:commandLink>
                             </p:column>
 
                             <p:column>
                                 <f:facet name="header">
                                     <h:outputText value="Speciality" />
                                 </f:facet>
+                                <h:outputText value="#{row.billFee.speciality.name}"></h:outputText>
                             </p:column>
 
                             <p:column>
@@ -228,12 +239,28 @@
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
+                            
+                             <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Item" />
+                                </f:facet>
+                                 <h:outputText value="#{row.billFee.billItem.item.name}">
+                                </h:outputText>
+                            </p:column>
 
                             <p:column>
                                 <f:facet name="header">
                                     <h:outputText value="Fee Name" />
                                 </f:facet>
                                 <h:outputText value="#{row.billFee.fee.name}">
+                                </h:outputText>
+                            </p:column>
+                            
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Patient" />
+                                </f:facet>
+                                <h:outputText value="#{row.billFee.bill.patient.person.nameWithTitle}">
                                 </h:outputText>
                             </p:column>
 
@@ -244,13 +271,18 @@
                                 <h:outputText value="#{row.billFee.fee.fee}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{searchController.bundle.grossTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
 
                             <p:column class="text-end">
                                 <f:facet name="header">
                                     <h:outputText value="Net Amount" />
                                 </f:facet>
-                                <h:outputText value="#{row.itemNetTotal}">
+                                <h:outputText value="#{row.billFee.feeValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer">
