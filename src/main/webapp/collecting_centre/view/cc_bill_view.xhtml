@@ -12,7 +12,24 @@
         <ui:composition template="/collecting_centre/index.xhtml">
             <ui:define name="subcontent">
                 <h:form  >
-                    <div class="row ">
+                    <p:panel>
+                        <f:facet name="header">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div></div>
+                                <div>
+                                    <p:commandButton ajax="false"
+                                                     class="ui-button-warning mx-2"
+                                                     value="Refund"
+                                                     action="#{billSearch.navigateToViewCcBillRefund(billSearch.bill)}"/>
+                                    
+                                    <p:commandButton ajax="false"
+                                                     class="ui-button-danger"
+                                                     value="Cancel"
+                                                     action="/collecting_centre/bill_cancel?faces-redirect=true"/>
+                                </div>
+                            </div>
+                        </f:facet>
+                        <div class="row ">
                         <div class="col-md-6">
                             <p:panel>
                                 <f:facet name="header">
@@ -96,6 +113,7 @@
                             </p:panel>
                         </div>                            
                     </div>
+                    </p:panel>
                 </h:form>
             </ui:define>
         </ui:composition>
