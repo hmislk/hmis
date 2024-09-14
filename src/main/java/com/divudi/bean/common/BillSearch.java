@@ -272,6 +272,8 @@ public class BillSearch implements Serializable {
     private List<BillComponent> viewingBillComponents;
     private List<Payment> viewingBillPayments;
 
+    private Payment payment;
+
     public String navigateToBillPaymentOpdBill() {
         return "bill_payment_opd?faces-redirect=true";
     }
@@ -2965,12 +2967,12 @@ public class BillSearch implements Serializable {
 
     public String navigateToViewOpdBill() {
         if (viewingBill == null) {
-            JsfUtil.addErrorMessage("Nothing to cancel");
+            JsfUtil.addErrorMessage("No Bill to Dsiplay");
             return "";
         }
         return "/opd/view/opd_bill?faces-redirect=true;";
     }
-    
+
     public String navigateToViewCancallationOpdBill() {
         if (viewingBill == null) {
             JsfUtil.addErrorMessage("Nothing to cancel");
@@ -2978,8 +2980,8 @@ public class BillSearch implements Serializable {
         }
         return "/opd/view/cancelled_opd_bill?faces-redirect=true;";
     }
-    
-     public String navigateToViewCancallationOpdbATCHBill() {
+
+    public String navigateToViewCancallationOpdbATCHBill() {
         if (viewingBill == null) {
             JsfUtil.addErrorMessage("Nothing to cancel");
             return "";
@@ -3062,6 +3064,22 @@ public class BillSearch implements Serializable {
         return "/analytics/download_bills?faces-redirect=true;";
     }
 
+    public String navigateToViewPayment() {
+        if (payment == null) {
+            JsfUtil.addErrorMessage("No Payment is Selected");
+            return null;
+        }
+        return "/common/view_payment?faces-redirect=true";
+    }
+
+    public String navigateToEditPayment() {
+        if (payment == null) {
+            JsfUtil.addErrorMessage("No Payment is Selected");
+            return null;
+        }
+        return "/admin/data/edit_payment?faces-redirect=true";
+    }
+
     public String navigateViewBillByBillTypeAtomic() {
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill is Selected");
@@ -3081,7 +3099,7 @@ public class BillSearch implements Serializable {
             case OPD_BILL_REFUND:
                 return navigateToManageOpdBill();
             case OPD_BILL_CANCELLATION:
-                return navigateToViewCancallationOpdBill();
+                return navigateToManageOpdBill();
             case OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER:
                 return navigateToManageOpdBill();
             case OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION:
@@ -3202,6 +3220,8 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage("No Bill is Selected");
             return null;
         }
+        viewingBill = bill;
+        loadBillDetails(viewingBill);
         BillTypeAtomic billTypeAtomic = bill.getBillTypeAtomic();
         switch (billTypeAtomic) {
             case PHARMACY_RETAIL_SALE_CANCELLED:
@@ -3211,22 +3231,23 @@ public class BillSearch implements Serializable {
                 return navigateToManageOpdBill();
 
             case OPD_BILL_CANCELLATION:
-                return navigateToManageOpdBill();
+                return navigateToViewCancallationOpdBill();
 
             case OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER:
                 return navigateToManageOpdBill();
 
             case OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION:
-                return navigateToManageOpdBill();
+                return navigateToViewCancallationOpdbATCHBill();
 
             case OPD_PROFESSIONAL_PAYMENT_BILL:
                 return navigateToManageOpdBill();
 
             case OPD_BILL_WITH_PAYMENT:
-                return navigateToManageOpdBill();
+                return navigateToViewOpdBill();
 
             case OPD_BATCH_BILL_WITH_PAYMENT:
-                return navigateToManageOpdBill();
+                return navigateToViewOpdBatchBill();
+            case CC_BILL:
 
             case CHANNEL_BOOKING_WITH_PAYMENT:
                 return "";
@@ -3251,7 +3272,7 @@ public class BillSearch implements Serializable {
                 return navigateToViewOpdProfessionalPaymentBill();
 
         }
-        JsfUtil.addErrorMessage("Wrong Bill Type");
+        JsfUtil.addErrorMessage("No Handled Bill Type Atomic " + billTypeAtomic);
         return "";
     }
 
@@ -4446,6 +4467,14 @@ public class BillSearch implements Serializable {
         this.viewingRefundBills = viewingRefundBills;
     }
 
+    public Payment getPayment() {
+        return payment;
+    }
+
+    public void setPayment(Payment payment) {
+        this.payment = payment;
+    }
+
     public class PaymentSummary {
 
         private long idCounter = 0;
@@ -4602,6 +4631,8 @@ public class BillSearch implements Serializable {
         }
 
     }
+    
+    
 
     public class OverallSummary {
 

@@ -156,21 +156,19 @@
                                     </p:column>
 
                                     <p:column headerText="Bill No" styleClass="alignTop" sortBy="#{pi.billItem.bill.deptId}" filterBy="#{pi.billItem.bill.deptId}" filterMatchMode="contains">
-                                        <h:commandLink action="/opd/bill_reprint?faces-redirect=true" value="#{pi.billItem.bill.deptId}">
-                                            <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.billSearch}"/>
+                                        <h:commandLink action="#{billSearch.navigateViewBillByBillTypeAtomic()}" value="#{pi.billItem.bill.deptId}">
+                                            <f:setPropertyActionListener value="#{pi.billItem.bill}" target="#{billSearch.billSearch}"/>
                                         </h:commandLink>   
                                     </p:column>
 
                                     <p:column headerText="Institution Name" styleClass="alignTop" sortBy="#{pi.billItem.bill.toInstitution.name}" filterBy="#{pi.billItem.bill.toInstitution.name}" filterMatchMode="contains">
-                                        <h:commandLink action="/opd/bill_reprint?faces-redirect=true" value="#{pi.billItem.bill.toInstitution.name}">
-                                            <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.billSearch}"/>
-                                        </h:commandLink>
+                                        <h:outputLabel   value="#{pi.billItem.bill.toInstitution.name}">
+                                        </h:outputLabel>
                                     </p:column>
 
                                     <p:column headerText="Credit Company" styleClass="alignTop" rendered="#{pi.billItem.bill.creditCompany ne null}" sortBy="#{pi.billItem.bill.creditCompany.name}" filterBy="#{pi.billItem.bill.creditCompany.name}" filterMatchMode="contains">
-                                        <h:commandLink action="/opd/bill_reprint?faces-redirect=true" value="#{pi.billItem.bill.creditCompany.name}">
-                                            <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.billSearch}"/>
-                                        </h:commandLink>
+                                        <h:outputLabel value="#{pi.billItem.bill.creditCompany.name}">
+                                        </h:outputLabel>
                                     </p:column>
 
                                     <p:column headerText="Patient" styleClass="alignTop" sortBy="#{pi.billItem.bill.patient.person.nameWithTitle}" filterBy="#{pi.billItem.bill.patient.person.nameWithTitle}" filterMatchMode="contains">

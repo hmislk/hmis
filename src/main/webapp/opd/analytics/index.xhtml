@@ -13,7 +13,7 @@
                     <div class="row">
                         <div class="col-md-3">
                             <h:form>
-                                <p:accordionPanel activeIndex="#{cashierReportController.reportCashierIndex}">
+                                <p:accordionPanel activeIndex="#{searchController.opdAnalyticsIndex}">
                                     <p:ajax process="@this"></p:ajax>
 
                                     <!-- Common Cashier Reports Tab -->
@@ -40,6 +40,31 @@
                                             <p:commandButton class="w-100" ajax="false" value="Bill List" action="#{opdBillController.navigateToOpdBillList()}" />
                                             <p:commandButton class="w-100" ajax="false" value="Bill Item List" action="#{opdBillController.navigateToOpdBillItemList()}" />
                                             <p:commandButton class="w-100" ajax="false" value="Bill Payment List" action="#{opdBillController.navigateToOpdBillPayments()}" />
+                                            <p:commandButton 
+                                                class="w-100" ajax="false" value="OPD Sale Report"
+                                                action="#{searchController.navigateToOpdSaleReport()}" />
+
+                                        </div>
+                                    </p:tab>
+
+                                    <!-- Package Reports Tab -->
+                                    <p:tab title="Item Reports">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton 
+                                                class="w-100" 
+                                                ajax="false" 
+                                                value="Itemized Sales Summary" 
+                                                action="#{searchController.navigateToItemizedSaleSummaryOpd}" />     
+                                            <p:commandButton 
+                                                class="w-100" 
+                                                ajax="false" 
+                                                value="Item-vice Sale Report" 
+                                                action="#{searchController.navigateToItemizedSaleReportOpd()}" /> 
+                                            <p:commandButton   
+                                                class="w-100"  
+                                                ajax="false" 
+                                                value="Income Breakdown by Category"  
+                                                action="#{searchController.navigateToIncomeBreakdownByCategoryOpd()}"/>
 
                                         </div>
                                     </p:tab>
@@ -77,7 +102,6 @@
                                             <p:commandButton class="w-100" ajax="false" value="Department - wise Income" action="#{commonReport.navigateToReportCashierSummeryByDepartmentwise()}" rendered="true"/>
                                         </div>
                                     </p:tab>
-
                                     <!-- OPD Services Tab -->
                                     <p:tab title="OPD Services">
                                         <div class="d-grid gap-2">
@@ -85,7 +109,6 @@
                                             <p:commandButton class="w-100" ajax="false" value="OPD Services Count Doctor Wise" action="/reports/opd/service_count_doctor_wise.xhtml" />
                                         </div>
                                     </p:tab>
-
                                     <!-- OPD Income Tab -->
                                     <p:tab title="OPD Income">
                                         <div class="d-grid gap-2">
@@ -110,7 +133,7 @@
                                     <div class="row">
                                         <div class="col-md-3">
                                             <h:form>
-                                                <p:accordionPanel activeIndex="#{cashierReportController.reportCashierIndex}">
+                                                <p:accordionPanel activeIndex="#{searchController.opdAnalyticsIndex}">
                                                     <p:ajax process="@this"></p:ajax>
                                                     <p:tab title="Common Cashier Reports">
                                                         <div class="d-grid gap-2">
@@ -241,7 +264,7 @@
                                     <div class="row">
                                         <div class="col-md-3">
                                             <p:accordionPanel 
-                                                activeIndex="#{cashierReportController.reportCashierIndex}">
+                                                activeIndex="#{searchController.opdAnalyticsIndex}">
                                                 <p:ajax process="@this"></p:ajax>
                                                 <p:tab title="Lists">
                                                     <h:form>

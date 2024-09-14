@@ -1,6 +1,7 @@
 package com.divudi.data;
 
 import com.divudi.entity.Bill;
+import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BillSession;
 import com.divudi.entity.Category;
@@ -8,6 +9,7 @@ import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.Payment;
+import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.channel.SessionInstance;
@@ -33,6 +35,7 @@ public class ReportTemplateRow implements Serializable {
     private Category category;
     private Bill bill;
     private BillItem billItem;
+    private BillFee billFee;
     private Payment payment;
 
     private Item item;
@@ -100,6 +103,7 @@ public class ReportTemplateRow implements Serializable {
     private Long startId;
     private Long endId;
     private SessionInstance sessionInstance;
+    private Speciality speciality;
     private Staff staff;
     private Institution referringInstitution;
     private Staff referringStaff;
@@ -122,6 +126,14 @@ public class ReportTemplateRow implements Serializable {
     private double patientDepositValue;
     private double patientPointsValue;
     private double onlineSettlementValue;
+    
+    private Double grossTotal;
+    private Double discount;
+    private Double total;
+
+    private Double hospitalTotal;
+    private Double staffTotal;
+    private Double ccTotal;
 
     private String rowType;
 
@@ -199,6 +211,32 @@ public class ReportTemplateRow implements Serializable {
         this.onlineSettlementValue = onlineSettlementValue;
     }
 
+    
+    public ReportTemplateRow(Bill bill,
+            double cashValue, double cardValue, double multiplePaymentMethodsValue,
+            double staffValue, double creditValue, double staffWelfareValue,
+            double voucherValue, double iouValue, double agentValue,
+            double chequeValue, double slipValue, double eWalletValue,
+            double patientDepositValue, double patientPointsValue, double onlineSettlementValue) {
+        this.bill = bill;
+        this.cashValue = cashValue;
+        this.cardValue = cardValue;
+        this.multiplePaymentMethodsValue = multiplePaymentMethodsValue;
+        this.staffValue = staffValue;
+        this.creditValue = creditValue;
+        this.staffWelfareValue = staffWelfareValue;
+        this.voucherValue = voucherValue;
+        this.iouValue = iouValue;
+        this.agentValue = agentValue;
+        this.chequeValue = chequeValue;
+        this.slipValue = slipValue;
+        this.eWalletValue = eWalletValue;
+        this.patientDepositValue = patientDepositValue;
+        this.patientPointsValue = patientPointsValue;
+        this.onlineSettlementValue = onlineSettlementValue;
+    }
+
+    
     public ReportTemplateRow(Department department, Date date, WebUser user,
             double cashValue, double cardValue, double multiplePaymentMethodsValue,
             double staffValue, double creditValue, double staffWelfareValue,
@@ -367,6 +405,8 @@ public class ReportTemplateRow implements Serializable {
         this.rowValue = rowValue;
     }
 
+    
+    
     public ReportTemplateRow(BillTypeAtomic billTypeAtomic, Double rowValue) {
         this.billTypeAtomic = billTypeAtomic;
         this.rowValue = rowValue;
@@ -1052,5 +1092,75 @@ public class ReportTemplateRow implements Serializable {
     public void setCounter(Long counter) {
         this.counter = counter;
     }
+
+    public BillFee getBillFee() {
+        return billFee;
+    }
+
+    public void setBillFee(BillFee billFee) {
+        this.billFee = billFee;
+    }
+
+    public ReportTemplateRow(BillFee billFee) {
+        this.billFee = billFee;
+    }
+
+    public Speciality getSpeciality() {
+        return speciality;
+    }
+
+    public void setSpeciality(Speciality speciality) {
+        this.speciality = speciality;
+    }
+
+    public Double getGrossTotal() {
+        return grossTotal;
+    }
+
+    public void setGrossTotal(Double grossTotal) {
+        this.grossTotal = grossTotal;
+    }
+
+    public Double getDiscount() {
+        return discount;
+    }
+
+    public void setDiscount(Double discount) {
+        this.discount = discount;
+    }
+
+    public Double getTotal() {
+        return total;
+    }
+
+    public void setTotal(Double total) {
+        this.total = total;
+    }
+
+    public Double getHospitalTotal() {
+        return hospitalTotal;
+    }
+
+    public void setHospitalTotal(Double hospitalTotal) {
+        this.hospitalTotal = hospitalTotal;
+    }
+
+    public Double getStaffTotal() {
+        return staffTotal;
+    }
+
+    public void setStaffTotal(Double staffTotal) {
+        this.staffTotal = staffTotal;
+    }
+
+    public Double getCcTotal() {
+        return ccTotal;
+    }
+
+    public void setCcTotal(Double ccTotal) {
+        this.ccTotal = ccTotal;
+    }
+    
+    
 
 }
