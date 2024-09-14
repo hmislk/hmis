@@ -162,7 +162,15 @@
                                         itemLabel="Report Format" 
                                         value="#{itemController.current.hasReportFormat}" >
                                     </p:selectBooleanCheckbox>
-
+                                    
+                                    <h:outputText value="Multiple Reports Allowed" ></h:outputText>
+                                    <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
+                                    <p:selectBooleanCheckbox 
+                                        id="chkmultipleReportsAllowed" 
+                                        itemLabel="Reports Allowed" 
+                                        value="#{investigationController.current.multipleReportsAllowed}" >
+                                    </p:selectBooleanCheckbox>
+                                    
                                     <h:outputText value="Master Item Reference" ></h:outputText>
                                     <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
                                     <p:autoComplete 

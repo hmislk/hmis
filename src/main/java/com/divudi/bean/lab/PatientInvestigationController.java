@@ -1220,7 +1220,7 @@ public class PatientInvestigationController implements Serializable {
             orderedDepartment = sessionController.getDepartment();
         }
         listBillsToGenerateBarcodes();
-        
+
         return "/lab/generate_barcode_p?faces-redirect=true";
     }
 
@@ -1718,7 +1718,7 @@ public class PatientInvestigationController implements Serializable {
         this.toDate = null;
         makeNull();
     }
-    
+
     public void makeNull() {
         this.patientInvestigationStatus = null;
         this.referringDoctor = null;
@@ -1735,11 +1735,11 @@ public class PatientInvestigationController implements Serializable {
         this.orderedInstitution = null;
         this.orderedDepartment = null;
         this.performingInstitution = null;
-        this.performingDepartment = null;    
+        this.performingDepartment = null;
         clearReportData();
     }
-    
-    public void clearReportData(){
+
+    public void clearReportData() {
         this.items = null;
         this.bills = null;
         this.selectedBillBarcodes = null;
@@ -2053,7 +2053,7 @@ public class PatientInvestigationController implements Serializable {
             jpql += " AND r.status=:patientReportStatus ";
             params.put("patientReportStatus", patientInvestigationStatus);
         }
-        
+
         jpql += " ORDER BY r.patientInvestigation.billItem.bill.patient asc, r.patientInvestigation.billItem.bill.createdAt desc";
         params.put("ret", false);
         params.put("cancel", false);
@@ -2326,7 +2326,7 @@ public class PatientInvestigationController implements Serializable {
             searchPatientInvestigationsWithoutSampleId();
         }
     }
-    
+
     public void searchPatientInvestigationsForCourier() {
         listingEntity = ListingEntity.PATIENT_INVESTIGATIONS;
         String jpql;
@@ -2337,14 +2337,14 @@ public class PatientInvestigationController implements Serializable {
                 + "FROM PatientSampleComponant psc "
                 + " join psc.patientInvestigation i "
                 + " WHERE psc.retired = :ret ";
-        
+
         params.put("ret", false);
 
         // Build JPQL query for PatientInvestigations
         jpql += " and i.retired = :ret ";
         jpql += " AND i.billItem.bill.cancelled=:cancel ";
-        
-         params.put("cancel", false);
+
+        params.put("cancel", false);
 
         if (searchDateType == null) {
             searchDateType = SearchDateType.ORDERED_DATE;
@@ -2421,7 +2421,6 @@ public class PatientInvestigationController implements Serializable {
             params.put("patientName", "%" + getPatientName().trim() + "%");
         }
 
-
         if (externalDoctor != null && !externalDoctor.trim().isEmpty()) {
             jpql += " AND i.billItem.bill.referredByName = :externalDoctor ";
             params.put("externalDoctor", getExternalDoctor().trim());
@@ -2434,7 +2433,7 @@ public class PatientInvestigationController implements Serializable {
 
         if (investigation != null) {
             jpql += " AND i.investigation like :investigation ";
-            params.put("investigation", " %" + getInvestigation() +"%");
+            params.put("investigation", " %" + getInvestigation() + "%");
         }
 
         if (department != null) {
@@ -2455,7 +2454,7 @@ public class PatientInvestigationController implements Serializable {
 
         items = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
-    
+
     public void searchPatientInvestigationsWithoutSampleId() {
         System.out.println("searchPatientInvestigations");
         listingEntity = ListingEntity.PATIENT_INVESTIGATIONS;
@@ -2609,10 +2608,9 @@ public class PatientInvestigationController implements Serializable {
                 + " join psc.patientInvestigation i "
                 + "WHERE psc.retired = :ret "
                 + "AND psc.patientSample.id=:sampleId ";
-        
+
         params.put("ret", false);
         params.put("sampleId", sampleId);
-
 
         // Build JPQL query for PatientInvestigations
         jpql += " and i.retired = :ret ";
@@ -2868,8 +2866,9 @@ public class PatientInvestigationController implements Serializable {
         }
 
         if (sampleId != null) {
-            jpql += " AND (ps.sampleId=:smpid or ps.id=:smpId) ";
-            params.put("smpid", sampleId);
+            jpql += " AND (ps.sampleId like :smpid or ps.id like :smpId) ";
+            params.put("smpid", "%" + String.valueOf(sampleId) + "%"); 
+            params.put("smpId", "%" + String.valueOf(sampleId) + "%"); 
         }
 
         jpql += " ORDER BY ps.id DESC";
