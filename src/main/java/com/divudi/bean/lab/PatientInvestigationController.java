@@ -82,6 +82,7 @@ import com.divudi.ws.lims.LimsMiddlewareController;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1209,6 +1210,7 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public String navigateToGenerateBarcodes() {
+        makeNull();
         boolean searchInvestigationsForLoggedInstitution = configOptionApplicationController.getBooleanValueByKey("For Lab Sample Barcode Generation, Search by Ordered Institution", false);
         if (searchInvestigationsForLoggedInstitution) {
             orderedInstitution = sessionController.getInstitution();
@@ -1218,6 +1220,7 @@ public class PatientInvestigationController implements Serializable {
             orderedDepartment = sessionController.getDepartment();
         }
         listBillsToGenerateBarcodes();
+        
         return "/lab/generate_barcode_p?faces-redirect=true";
     }
 
@@ -1713,6 +1716,10 @@ public class PatientInvestigationController implements Serializable {
         this.searchDateType = null;
         this.fromDate = null;
         this.toDate = null;
+        makeNull();
+    }
+    
+    public void makeNull() {
         this.patientInvestigationStatus = null;
         this.referringDoctor = null;
         this.externalDoctor = null;
@@ -1728,10 +1735,27 @@ public class PatientInvestigationController implements Serializable {
         this.orderedInstitution = null;
         this.orderedDepartment = null;
         this.performingInstitution = null;
-        this.performingDepartment = null;
+        this.performingDepartment = null;    
+        clearReportData();
+    }
+    
+    public void clearReportData(){
+        this.items = null;
+        this.bills = null;
+        this.selectedBillBarcodes = null;
+        this.patientReports = null;
+        this.patientSamples = null;
     }
 
     public void searchBills() {
+        if (sampleId != null && sampleId != 0) {
+            searchBillsWithSampleId();
+        } else {
+            searchBillsWithoutSampleId();
+        }
+    }
+
+    public void searchBillsWithoutSampleId() {
         listingEntity = ListingEntity.BILLS;
         String jpql;
         Map<String, Object> params = new HashMap<>();
@@ -1832,6 +1856,111 @@ public class PatientInvestigationController implements Serializable {
         bills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
+    public void searchBillsWithSampleId() {
+        listingEntity = ListingEntity.BILLS;
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+        jpql = "SELECT ps.bill "
+                + " FROM PatientSample ps"
+                + " join ps.bill b "
+                + " WHERE b.retired = :ret "
+                + " and ps.id=:sid ";
+        params.put("sid", sampleId);
+
+        if (searchDateType == null) {
+            searchDateType = SearchDateType.ORDERED_DATE;
+        }
+        switch (searchDateType) {
+            case ORDERED_DATE:
+                jpql += " AND b.createdAt BETWEEN :fd AND :td";
+                params.put("fd", getFromDate());
+                params.put("td", getToDate());
+                break;
+        }
+
+        if (orderedInstitution != null) {
+            jpql += " AND b.institution = :orderedInstitution";
+            params.put("orderedInstitution", getOrderedInstitution());
+        }
+
+        if (orderedDepartment != null) {
+            jpql += " AND b.toDepartment = :orderedDepartment";
+            params.put("orderedDepartment", getOrderedDepartment());
+        }
+
+        if (performingInstitution != null) {
+            // Add logic if needed
+        }
+
+        if (performingDepartment != null) {
+            // Add logic if needed
+        }
+
+        if (collectionCenter != null) {
+            jpql += " AND (b.collectingCentre = :collectionCenter OR b.fromInstitution = :collectionCenter)";
+            params.put("collectionCenter", getCollectionCenter());
+        }
+
+        if (route != null) {
+            jpql += " AND (b.collectingCentre.route = :route OR b.fromInstitution.route = :route)";
+            params.put("route", getRoute());
+        }
+
+        if (priority != null) {
+        }
+
+        if (specimen != null) {
+        }
+
+        if (patientName != null && !patientName.trim().isEmpty()) {
+            jpql += " AND b.patient.person.name LIKE :patientName";
+            params.put("patientName", "%" + getPatientName().trim() + "%");
+        }
+
+        if (type != null && !type.trim().isEmpty()) {
+            jpql += " AND b.ipOpOrCc = :type";
+            params.put("type", getType().trim());
+        }
+
+        if (externalDoctor != null && !externalDoctor.trim().isEmpty()) {
+            jpql += " AND b.referredByName = :externalDoctor";
+            params.put("externalDoctor", getExternalDoctor().trim());
+        }
+
+        if (equipment != null) {
+            // Add logic if needed
+        }
+
+        if (referringDoctor != null) {
+            jpql += " AND b.referredBy = :referringDoctor";
+            params.put("referringDoctor", getReferringDoctor());
+        }
+
+        if (investigation != null) {
+            // Add logic if needed
+        }
+
+        if (department != null) {
+            jpql += " AND b.toDepartment = :department";
+            params.put("department", getDepartment());
+        }
+
+        if (patientInvestigationStatus != null) {
+            jpql += " AND b.status = :status";
+            params.put("status", patientInvestigationStatus);
+        }
+
+        jpql += " GROUP BY b ";
+
+        jpql += " ORDER BY b.id DESC";
+
+        params.put("ret", false);
+
+        System.out.println("params = " + params);
+
+        bills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+
     public void searchPatientReportsForCourier() {
         listingEntity = ListingEntity.PATIENT_REPORTS;
         String jpql;
@@ -1895,15 +2024,8 @@ public class PatientInvestigationController implements Serializable {
         jpql += " AND (r.patientInvestigation.billItem.bill.collectingCentre.route = :route OR r.patientInvestigation.billItem.bill.fromInstitution.route = :route) ";
         params.put("route", sessionController.getDepartment());
 
-        if (priority != null) {
-            jpql += " AND r.patientInvestigation.billItem.priority = :priority ";
-            params.put("priority", getPriority());
-        }
-
-        if (specimen != null) {
-            jpql += " AND r.patientInvestigation.investigation.sample = :specimen ";
-            params.put("specimen", getSpecimen());
-        }
+        
+        
 
         if (patientName != null && !patientName.trim().isEmpty()) {
             jpql += " AND r.patientInvestigation.billItem.bill.patient.person.name LIKE :patientName ";
@@ -1913,11 +2035,6 @@ public class PatientInvestigationController implements Serializable {
         if (externalDoctor != null && !externalDoctor.trim().isEmpty()) {
             jpql += " AND r.patientInvestigation.billItem.bill.referredByName =:externalDoctor ";
             params.put("externalDoctor", getExternalDoctor().trim());
-        }
-
-        if (equipment != null) {
-            jpql += " AND r.automatedAnalyzer=:equipment ";
-            params.put("equipment", getEquipment());
         }
 
         if (referringDoctor != null) {
@@ -1939,7 +2056,8 @@ public class PatientInvestigationController implements Serializable {
             jpql += " AND r.status=:patientReportStatus ";
             params.put("patientReportStatus", patientInvestigationStatus);
         }
-        jpql += " ORDER BY r.id DESC";
+        
+        jpql += " ORDER BY r.patientInvestigation.billItem.bill.patient asc, r.patientInvestigation.billItem.bill.createdAt desc";
         params.put("ret", false);
         patientReports = patientReportFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
@@ -1949,7 +2067,7 @@ public class PatientInvestigationController implements Serializable {
         bills = null;
         patientSamples = null;
         patientSamples = null;
-        
+
         clearFilters();
 
     }
@@ -2204,6 +2322,14 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public void searchPatientInvestigations() {
+        if (sampleId != null && sampleId != 0l) {
+            searchPatientInvestigationsWithSampleId();
+        } else {
+            searchPatientInvestigationsWithoutSampleId();
+        }
+    }
+
+    public void searchPatientInvestigationsWithoutSampleId() {
         System.out.println("searchPatientInvestigations");
         listingEntity = ListingEntity.PATIENT_INVESTIGATIONS;
         String jpql;
@@ -2273,6 +2399,157 @@ public class PatientInvestigationController implements Serializable {
         if (performingDepartment != null) {
             jpql += " AND i.performDepartment = :peformingDepartment ";
             params.put("peformingDepartment", getPerformingDepartment());
+        }
+
+        if (collectionCenter != null) {
+            jpql += " AND (i.billItem.bill.collectingCentre = :collectionCenter OR i.billItem.bill.fromInstitution = :collectionCenter) ";
+            params.put("collectionCenter", getCollectionCenter());
+        }
+
+        if (route != null) {
+            jpql += " AND (i.billItem.bill.collectingCentre.route = :route OR i.billItem.bill.fromInstitution.route = :route) ";
+            params.put("route", getRoute());
+        }
+
+        if (priority != null) {
+            jpql += " AND i.billItem.priority = :priority ";
+            params.put("priority", getPriority());
+        }
+
+        if (specimen != null) {
+            jpql += " AND i.investigation.sample = :specimen ";
+            params.put("specimen", getSpecimen());
+        }
+
+        if (patientName != null && !patientName.trim().isEmpty()) {
+            jpql += " AND i.billItem.bill.patient.person.name LIKE :patientName ";
+            params.put("patientName", "%" + getPatientName().trim() + "%");
+        }
+
+        if (type != null && !type.trim().isEmpty()) {
+            jpql += " AND i.billItem.bill.ipOpOrCC = :tp ";
+            params.put("tp", getType().trim());
+        }
+
+        if (externalDoctor != null && !externalDoctor.trim().isEmpty()) {
+            jpql += " AND i.billItem.bill.referredByName = :externalDoctor ";
+            params.put("externalDoctor", getExternalDoctor().trim());
+        }
+
+        if (equipment != null) {
+            jpql += " AND i.investigation.machine = :equipment ";
+            params.put("equipment", getEquipment());
+        }
+
+        if (referringDoctor != null) {
+            jpql += " AND i.billItem.bill.referringDoctor = :referringDoctor ";
+            params.put("referringDoctor", getReferringDoctor());
+        }
+
+        if (investigation != null) {
+            jpql += " AND i.investigation = :investigation ";
+            params.put("investigation", getInvestigation());
+        }
+
+        if (department != null) {
+            jpql += " AND i.billItem.bill.toDepartment = :department ";
+            params.put("department", getDepartment());
+        }
+
+        if (patientInvestigationStatus != null) {
+            jpql += " AND i.status = :patientInvestigationStatus ";
+            params.put("patientInvestigationStatus", getPatientInvestigationStatus());
+        }
+
+        jpql += " ORDER BY i.id DESC";
+
+        params.put("ret", false);
+
+        System.out.println("params = " + params);
+
+        items = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+
+    public void searchPatientInvestigationsWithSampleId() {
+        System.out.println("searchPatientInvestigations");
+        listingEntity = ListingEntity.PATIENT_INVESTIGATIONS;
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+
+        // Query PatientSampleComponent to get PatientInvestigations
+        jpql = "SELECT i "
+                + "FROM PatientSampleComponant psc "
+                + " join psc.patientInvestigation i "
+                + "WHERE psc.retired = :ret "
+                + "AND psc.patientSample.id=:sampleId ";
+        
+        params.put("ret", false);
+        params.put("sampleId", sampleId);
+
+
+        // Build JPQL query for PatientInvestigations
+        jpql += " and i.retired = :ret ";
+
+        if (searchDateType == null) {
+            searchDateType = SearchDateType.ORDERED_DATE;
+        }
+
+        switch (searchDateType) {
+            case ORDERED_DATE:
+                jpql += " AND i.billItem.bill.createdAt BETWEEN :fd AND :td ";
+                params.put("fd", getFromDate());
+                params.put("td", getToDate());
+                break;
+            case REPORT_AUTHORIZED:
+                jpql += " AND i.approveAt BETWEEN :fd AND :td ";
+                params.put("fd", getFromDate());
+                params.put("td", getToDate());
+                break;
+            case REPORT_PRINTED:
+                jpql += " AND i.printingAt BETWEEN :fd AND :td ";
+                params.put("fd", getFromDate());
+                params.put("td", getToDate());
+                break;
+            case SAMPLE_ACCEPTED_DATE:
+                jpql += " AND i.sampleAcceptedAt BETWEEN :fd AND :td ";
+                params.put("fd", getFromDate());
+                params.put("td", getToDate());
+                break;
+            case SAMPLE_COLLECTED_DATE:
+                jpql += " AND i.sampleCollectedAt BETWEEN :fd AND :td ";
+                params.put("fd", getFromDate());
+                params.put("td", getToDate());
+                break;
+            case SAMPLE_GENERATED_DATE:
+                jpql += " AND i.sampleGeneratedAt BETWEEN :fd AND :td ";
+                params.put("fd", getFromDate());
+                params.put("td", getToDate());
+                break;
+            case SAMPLE_SENT_DATE:
+                jpql += " AND i.sampleSentAt BETWEEN :fd AND :td ";
+                params.put("fd", getFromDate());
+                params.put("td", getToDate());
+                break;
+        }
+
+        if (orderedInstitution != null) {
+            jpql += " AND i.billItem.bill.institution = :orderedInstitution ";
+            params.put("orderedInstitution", getOrderedInstitution());
+        }
+
+        if (orderedDepartment != null) {
+            jpql += " AND i.billItem.bill.department = :orderedDepartment ";
+            params.put("orderedDepartment", getOrderedDepartment());
+        }
+
+        if (performingInstitution != null) {
+            jpql += " AND i.performInstitution = :performingInstitution ";
+            params.put("performingInstitution", getPerformingInstitution());
+        }
+
+        if (performingDepartment != null) {
+            jpql += " AND i.performDepartment = :performingDepartment ";
+            params.put("performingDepartment", getPerformingDepartment());
         }
 
         if (collectionCenter != null) {
@@ -2462,10 +2739,10 @@ public class PatientInvestigationController implements Serializable {
             jpql += " AND ps.status = :status";
             params.put("status", getPatientInvestigationStatus());
         }
-        
+
         if (sampleId != null) {
-            jpql += " AND ps.sampleId = :smpid";
-            params.put("smpid", sampleId);
+            jpql += " AND (ps.sampleId=:smpId or ps.id=:smpId) ";
+            params.put("smpId", sampleId);
         }
 
         jpql += " ORDER BY ps.id DESC";
@@ -2489,6 +2766,20 @@ public class PatientInvestigationController implements Serializable {
         System.out.println("params = " + params);
         List<PatientSampleComponant> pscs = patientSampleComponantFacade.findByJpql(jpql, params);
         return pscs;
+    }
+
+    public List<PatientSample> getPatientSamplesByInvestigation(PatientInvestigation patientInvestigation) {
+        System.out.println("patientInvestigation = " + patientInvestigation);
+        String jpql = "SELECT DISTINCT psc.patientSample "
+                + "FROM PatientSampleComponant psc "
+                + "WHERE psc.retired = :retired "
+                + "AND psc.patientInvestigation = :patientInvestigation";
+        Map<String, Object> params = new HashMap<>();
+        params.put("retired", false);  // Assuming you want only non-retired records
+        params.put("patientInvestigation", patientInvestigation);
+        System.out.println("params = " + params);
+        List<PatientSample> patientSamples = patientSampleFacade.findByJpql(jpql, params);
+        return patientSamples;
     }
 
     public List<PatientInvestigation> getPatientInvestigationsBySample(PatientSample patientSample) {

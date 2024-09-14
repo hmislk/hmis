@@ -36,11 +36,13 @@ public class CourierController implements Serializable {
     }
 
     public String navigateToCourierViewReports() {
+        patientInvestigationController.makeNull();
         activeIndex = 3;
         return "/collecting_centre/courier/viewReports.xhtml?faces-redirect=true";
     }
 
     public String navigateToCourierIndex() {
+        patientInvestigationController.makeNull();
         activeIndex = 0;
         return "/collecting_centre/courier/index.xhtml?faces-redirect=true";
     }

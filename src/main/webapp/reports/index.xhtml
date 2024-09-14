@@ -90,10 +90,8 @@
                                 <p:tab title="Financial Reports">
                                     <div class="d-grid gap-2">
                                         <p:commandButton   class="w-100"  ajax="false" value="Daily return" action="/reports/financialReports/daily_return"/>
-                                        <p:commandButton   class="w-100"  ajax="false" value="(Daily return - Checking)" action="/reportInstitution/report_cash_category_with_pro_month"/>
-
-                                        <p:commandButton   class="w-100"  ajax="false" value="2. Income Category Wise Summary (Daily Return Summary)"  action="/reports/financialReports/income_category_wise_report"/>
-                                        <p:commandButton   class="w-100"  ajax="false" value="3. IP Income Category Wise Report" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Income Breakdown by Category"  action="/reports/financialReports/income_breakdown_by_category"/>
+                                        <p:commandButton   class="w-100"  ajax="false" value="Bills by Category" action="/reports/financialReports/bills_by_item_category"/>
                                         <p:commandButton   class="w-100"  ajax="false" value="4. Service Category Wise Bill Details" action="/reports/financialReports/service_category_wise_bill_detail"/>
                                         <p:commandButton   class="w-100"  ajax="false" value="5. Professional Fees Payment" action="/reports/financialReports/professional_fee_payment"/>
                                         <p:commandButton   class="w-100"  ajax="false" value="6. Discount" action="#{reportController.navigateToDiscount()}" />
@@ -110,7 +108,7 @@
                                         <p:commandButton   class="w-100"  ajax="false" value="17. WHT" />
                                         <p:commandButton   class="w-100"  ajax="false" value="18. Bill Wise Item Movement" />
                                         <p:commandButton   class="w-100"  ajax="false" value="19. Debtor Settlement" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="20. Professional Payment" />
+
                                         <p:commandButton   class="w-100"  ajax="false" value="21. Staff Welfare" />
                                         <p:commandButton   class="w-100"  ajax="false" value="22. Profit Matrix" />
                                         <p:commandButton   class="w-100"  ajax="false" value="23. Package Report" />
@@ -118,6 +116,23 @@
                                         <p:commandButton   class="w-100"  ajax="false" value="24. Debtor Analysis" />
 
                                     </div>
+                                </p:tab>
+                                <p:tab title="Professional Payment Reports">
+                                    <p:commandButton   
+                                        class="w-100 my-2"  
+                                        ajax="false" 
+                                        action="/reports/profesional_payment_reports/professional_fees"
+                                        value="Professional Fees" />
+                                    <p:commandButton   
+                                        class="w-100 my-2"  
+                                         action="/reports/profesional_payment_reports/professional_fee_payments"
+                                        ajax="false" value="Professional Fee Payments" />
+                                    <p:commandButton   
+                                        class="w-100 my-2"  
+                                         action="/reports/profesional_payment_reports/professional_payments"
+                                        ajax="false" value="Professional Payments" />
+                                    
+                                    
                                 </p:tab>
 
                                 <p:tab title="HR Reports">
