@@ -1543,6 +1543,32 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             JsfUtil.addErrorMessage("Sending SMS Failed.");
         }
     }
+    
+    public void sendSmsOnOpdBillSettling(String smsMessage) {
+        Sms s = new Sms();
+        s.setPending(false);
+        s.setBill(batchBill);
+        s.setCreatedAt(new Date());
+        s.setCreater(sessionController.getLoggedUser());
+        s.setDepartment(sessionController.getLoggedUser().getDepartment());
+        s.setInstitution(sessionController.getLoggedUser().getInstitution());
+        if (getPatient().getPatientPhoneNumber() != null) {
+            s.setReceipientNumber(getPatient().getPatientPhoneNumber().toString());
+        } else {
+            s.setReceipientNumber(getPatient().getPerson().getSmsNumber());
+        }
+        String messageBody = smsMessage;
+        s.setSendingMessage(messageBody);
+        s.setSmsType(MessageType.OpdBillSettle);
+        getSmsFacade().create(s);
+
+        Boolean sent = smsManagerEjb.sendSms(s);
+        if (sent) {
+            JsfUtil.addSuccessMessage("Sms send");
+        } else {
+            JsfUtil.addErrorMessage("Sending SMS Failed.");
+        }
+    }
 
 //    public boolean createMultipleBillsFromOrderListOld() {
 //        bills = new ArrayList<>();
@@ -1683,7 +1709,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         lstBillItemsPrint = lstBillItems;
     }
 
-    public boolean validatePaymentMethodDeta() {
+    public boolean validatePaymentMethodData() {
         boolean error = false;
 
         if (getPaymentMethod() == PaymentMethod.Card) {
@@ -1720,21 +1746,21 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             return null;
         }
         billSettlingStarted = true;
-
-        if (validatePaymentMethodDeta()) {
+        if (validatePaymentMethodData()) {
             billSettlingStarted = false;
             return null;
         }
 
-        String eventUuid = auditEventController.createAuditEvent("OPD Bill Controller - Settle OPD Bill");
+        String eventUuid = auditEventController.createAuditEvent("OPD Bill Controller - Settle OPD Bill Started");
         if (!executeSettleBillActions()) {
             auditEventController.updateAuditEvent(eventUuid);
             billSettlingStarted = false;
             return "";
         }
-        UserPreference ap = sessionController.getApplicationPreference();
-        if (ap.getSmsTemplateForOpdBillSetting() != null && !ap.getSmsTemplateForOpdBillSetting().trim().equals("")) {
-            sendSmsOnOpdBillSettling(ap, ap.getSmsTemplateForOpdBillSetting());
+        boolean sendSmsAfterOpdBilling = configOptionApplicationController.getBooleanValueByKey("Send SMS after OPD Billing", false);
+        String smsTempalteForTheSmsAfterOpdBilling = configOptionApplicationController.getLongTextValueByKey("SMS Tempalte for the Sms after OPD Billing");
+        if (sendSmsAfterOpdBilling && smsTempalteForTheSmsAfterOpdBilling!=null && !smsTempalteForTheSmsAfterOpdBilling.trim().equals("")) {
+            sendSmsOnOpdBillSettling(smsTempalteForTheSmsAfterOpdBilling);
         }
 
         auditEventController.updateAuditEvent(eventUuid);
@@ -1748,8 +1774,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         }
         savePatient();
         bills = new ArrayList<>();
-//        int numberOfBillsForTheOrder = getBillBean().calculateNumberOfBillsPerOrder(getLstBillEntries());
-
         boolean oneOpdBillForAllDepartments = configOptionApplicationController.getBooleanValueByKey("One OPD Bill For All Departments and Categories", true);
         boolean oneOpdBillForEachDepartment = configOptionApplicationController.getBooleanValueByKey("One OPD Bill For Each Department", false);
         boolean oneOpdBillForEachCategory = configOptionApplicationController.getBooleanValueByKey("One OPD Bill For Each Category", false);
@@ -1758,7 +1782,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         BilledBill newBatchBill = new BilledBill();
 
         if (oneOpdBillForAllDepartments) {
-            Bill newSingleBill = null;
+            Bill newSingleBill;
             newSingleBill = saveBill(sessionController.getDepartment(), newBatchBill);
             if (newSingleBill == null) {
                 return false;
@@ -2123,25 +2147,19 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         newBill.setInstitution(getSessionController().getInstitution());
         newBill.setToDepartment(bt);
         newBill.setToInstitution(bt.getInstitution());
-
         newBill.setFromDepartment(getSessionController().getLoggedUser().getDepartment());
         newBill.setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
-
         newBill.setStaff(staff);
         newBill.setToStaff(toStaff);
         newBill.setFromStaff(selectedCurrentlyWorkingStaff);
-
         newBill.setReferredBy(referredBy);
         newBill.setReferenceNumber(referralId);
         newBill.setReferredByInstitution(referredByInstitution);
-
         newBill.setCreditCompany(creditCompany);
         newBill.setCollectingCentre(collectingCentre);
         newBill.setIpOpOrCc("OP");
         newBill.setComments(comment);
-
         getBillBean().setPaymentMethodData(newBill, paymentMethod, getPaymentMethodData());
-
         newBill.setBillDate(new Date());
         newBill.setBillTime(new Date());
         newBill.setPatient(patient);
@@ -2349,7 +2367,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     }
 
     private boolean errorCheck() {
-
         if (getLstBillEntries().isEmpty()) {
             JsfUtil.addErrorMessage("No Items are added to the bill to settle");
             return true;
