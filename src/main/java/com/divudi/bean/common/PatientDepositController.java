@@ -8,8 +8,6 @@
  */
 package com.divudi.bean.common;
 import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
 import com.divudi.data.HistoryType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.PaymentMethodData;
@@ -22,7 +20,6 @@ import com.divudi.entity.PatientDepositHistory;
 import com.divudi.facade.PatientDepositFacade;
 import com.divudi.facade.PatientDepositHistoryFacade;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -81,7 +78,6 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         current = getDepositOfThePatient(patient,sessionController.getDepartment());
         fillLatestPatientDeposits(current);
         fillLatestPatientDepositHistory(current);
-        System.out.println("current = " + current);
     }
     
     public void settlePatientDeposit(){
@@ -96,13 +92,52 @@ public class PatientDepositController implements Serializable, ControllerWithPat
                 patientController.getPaymentMethodData() );
     }
     
-    public void updateBalance(Bill b, PatientDeposit pd){
-        Double beforeBalance = pd.getBalance();
+    public void settlePatientDepositReturn(){
+        if(patient == null){
+            JsfUtil.addErrorMessage("Please Select a Patient");
+            return;
+        }
+        if(current.getBalance() < patientController.getBill().getNetTotal()){
+            JsfUtil.addErrorMessage("Can't Refund a Total More that Deposit");
+            return;
+        }
+        patientController.settlePatientDepositReturn();
+        updateBalance(patientController.getBill(), current);
+        billBeanController.createPayment(patientController.getBill(),
+                patientController.getBill().getPaymentMethod(), 
+                patientController.getPaymentMethodData() );
+    }
+    
+    public void updateBalance(Bill b, PatientDeposit pd){ 
+        switch (b.getBillType()) {
+            case PatientPaymentReceiveBill:
+                handlePatientDepositBill(b,pd);
+                break;
+                
+            case PatientPaymentRefundBill:
+                handlePatientDepositBillReturn(b,pd);
+                break;
+            default:
+                throw new AssertionError();
+        }  
+    }
+    
+    public void handlePatientDepositBill(Bill b, PatientDeposit pd){
+       Double beforeBalance = pd.getBalance();
         Double afterBalance = beforeBalance + b.getNetTotal();
         pd.setBalance(afterBalance);
         patientDepositFacade.edit(pd);
         JsfUtil.addSuccessMessage("Balance Updated.");
-        createPatientDepositHitory(HistoryType.PatientDeposit,pd,b,beforeBalance,afterBalance);
+        createPatientDepositHitory(HistoryType.PatientDeposit,pd,b,beforeBalance,afterBalance); 
+    }
+    
+     public void handlePatientDepositBillReturn(Bill b, PatientDeposit pd){
+       Double beforeBalance = pd.getBalance();
+        Double afterBalance = beforeBalance - Math.abs(b.getNetTotal());
+        pd.setBalance(afterBalance);
+        patientDepositFacade.edit(pd);
+        JsfUtil.addSuccessMessage("Balance Updated.");
+        createPatientDepositHitory(HistoryType.PatientDepositReturn,pd,b,beforeBalance,afterBalance); 
     }
     
     public void createPatientDepositHitory(HistoryType ht,PatientDeposit pd, Bill b, Double beforeBalance,Double afterBalance){
@@ -121,7 +156,6 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         patientDepositHistoryFacade.create(pdh);
     }
     
-
     public PatientDeposit getDepositOfThePatient(Patient p , Department d){        
         Map m = new HashMap<>();
         String jpql = "select pd from PatientDeposit pd"
@@ -134,7 +168,6 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         m.put("ret", false);
         
         PatientDeposit pd = patientDepositFacade.findFirstByJpql(jpql, m);
-        System.out.println("pd = " + pd);
         
         if(pd == null){
             pd = new PatientDeposit();
@@ -201,7 +234,6 @@ public class PatientDepositController implements Serializable, ControllerWithPat
     public void setItems(List<PatientDeposit> items) {
         this.items = items;
     }
-
 
     public int getPatientDepositManagementIndex() {
         return patientDepositManagementIndex;
