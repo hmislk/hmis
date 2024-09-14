@@ -52,8 +52,6 @@ import com.divudi.facade.ReportItemFacade;
 import com.divudi.facade.SmsFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.InvestigationItemValueType;
-import com.divudi.data.ReportItemType;
-import com.divudi.data.lab.Analyzer;
 import com.divudi.data.lab.BillBarcode;
 import com.divudi.data.lab.ListingEntity;
 import com.divudi.data.lab.PatientInvestigationStatus;
@@ -82,7 +80,6 @@ import com.divudi.ws.lims.LimsMiddlewareController;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1292,9 +1289,7 @@ public class PatientInvestigationController implements Serializable {
         listingEntity = ListingEntity.BILL_BARCODES;
         for (Bill b : selectedBills) {
             BillBarcode bb = new BillBarcode(b);
-            System.out.println("bb = " + b);
             List<Bill> bs = billBeanController.findValidBillsForSampleCollection(b);
-            System.out.println("bs = " + bs);
             List<PatientSampleWrapper> psws = new ArrayList<>();
             List<PatientSample> pss = prepareSampleCollectionByBillsForPhlebotomyRoom(bs, sessionController.getLoggedUser());
             if (pss != null) {
@@ -1316,7 +1311,6 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public void generateBarcodesForSelectedBill(Bill billForBarcode) {
-        System.out.println("generateBarcodesForSelectedBill");
         selectedBillBarcodes = new ArrayList<>();
         billBarcodes = new ArrayList<>();
         if (billForBarcode == null) {
@@ -1851,7 +1845,6 @@ public class PatientInvestigationController implements Serializable {
 
         params.put("ret", false);
 
-        System.out.println("params = " + params);
 
         bills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
@@ -1956,7 +1949,6 @@ public class PatientInvestigationController implements Serializable {
 
         params.put("ret", false);
 
-        System.out.println("params = " + params);
 
         bills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
@@ -2286,7 +2278,6 @@ public class PatientInvestigationController implements Serializable {
 
         params.put("ret", false);
 
-        System.out.println("params = " + params);
 
         bills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
@@ -2330,7 +2321,6 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public void searchPatientInvestigationsWithoutSampleId() {
-        System.out.println("searchPatientInvestigations");
         listingEntity = ListingEntity.PATIENT_INVESTIGATIONS;
         String jpql;
         Map<String, Object> params = new HashMap<>();
@@ -2465,13 +2455,11 @@ public class PatientInvestigationController implements Serializable {
 
         params.put("ret", false);
 
-        System.out.println("params = " + params);
 
         items = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     public void searchPatientInvestigationsWithSampleId() {
-        System.out.println("searchPatientInvestigations");
         listingEntity = ListingEntity.PATIENT_INVESTIGATIONS;
         String jpql;
         Map<String, Object> params = new HashMap<>();
@@ -2616,13 +2604,11 @@ public class PatientInvestigationController implements Serializable {
 
         params.put("ret", false);
 
-        System.out.println("params = " + params);
 
         items = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     public void searchPatientSamples() {
-        System.out.println("searchPatientInvestigations");
         listingEntity = ListingEntity.PATIENT_SAMPLES;
         String jpql;
         Map<String, Object> params = new HashMap<>();
@@ -2749,13 +2735,11 @@ public class PatientInvestigationController implements Serializable {
 
         params.put("ret", false);
 
-        System.out.println("params = " + params);
 
         patientSamples = patientSampleFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     public List<PatientSampleComponant> getPatientSampleComponentsByInvestigation(PatientInvestigation patientInvestigation) {
-        System.out.println("patientInvestigation = " + patientInvestigation);
         String jpql = "SELECT psc "
                 + " FROM PatientSampleComponant psc "
                 + " WHERE psc.retired=:retired "
@@ -2763,13 +2747,11 @@ public class PatientInvestigationController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         params.put("retired", false);  // Assuming you want only non-retired records
         params.put("patientInvestigation", patientInvestigation);
-        System.out.println("params = " + params);
         List<PatientSampleComponant> pscs = patientSampleComponantFacade.findByJpql(jpql, params);
         return pscs;
     }
 
     public List<PatientSample> getPatientSamplesByInvestigation(PatientInvestigation patientInvestigation) {
-        System.out.println("patientInvestigation = " + patientInvestigation);
         String jpql = "SELECT DISTINCT psc.patientSample "
                 + "FROM PatientSampleComponant psc "
                 + "WHERE psc.retired = :retired "
@@ -2777,13 +2759,11 @@ public class PatientInvestigationController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         params.put("retired", false);  // Assuming you want only non-retired records
         params.put("patientInvestigation", patientInvestigation);
-        System.out.println("params = " + params);
         List<PatientSample> patientSamples = patientSampleFacade.findByJpql(jpql, params);
         return patientSamples;
     }
 
     public List<PatientInvestigation> getPatientInvestigationsBySample(PatientSample patientSample) {
-        System.out.println("patientSample = " + patientSample);
         String jpql = "SELECT psc.patientInvestigation "
                 + "FROM PatientSampleComponant psc "
                 + "WHERE psc.retired = :retired "
@@ -2791,7 +2771,6 @@ public class PatientInvestigationController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         params.put("retired", false);  // Assuming you want only non-retired records
         params.put("patientSample", patientSample);
-        System.out.println("params = " + params);
         List<PatientInvestigation> patientInvestigations = getFacade().findByJpql(jpql, params);
         return patientInvestigations;
     }
@@ -3257,7 +3236,6 @@ public class PatientInvestigationController implements Serializable {
         params.put("sc", sampleCollected);
         params.put("fromDate", fromDate);
         params.put("toDate", toDate);
-        System.out.println("jpql = " + jpql);
         pss = patientSampleFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         return pss;
     }
@@ -4044,7 +4022,6 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public void navigateToInvestigationsFromSelectedBill(Bill bill) {
-        System.out.println("navigate To Investigations From Selected Bill");
         items = new ArrayList<>();
         listingEntity = ListingEntity.PATIENT_INVESTIGATIONS;
         String jpql;
@@ -4059,16 +4036,12 @@ public class PatientInvestigationController implements Serializable {
         params.put("ret", false);
         params.put("bill", bill);
 
-        System.out.println("params = " + params);
-        System.out.println("jpql = " + jpql);
 
         items = getFacade().findByJpql(jpql, params);
     }
 
     public void navigateToSamplesFromSelectedBill(Bill bill) {
-        System.out.println("navigate To Samples From Selected Bill");
         patientSamples = new ArrayList<>();
-        System.out.println("searchPatientInvestigations");
         listingEntity = ListingEntity.PATIENT_SAMPLES;
         String jpql;
         Map<String, Object> params = new HashMap<>();
@@ -4084,8 +4057,6 @@ public class PatientInvestigationController implements Serializable {
         params.put("ret", false);
         params.put("bill", bill);
 
-        System.out.println("params = " + params);
-        System.out.println("jpql = " + jpql);
 
         patientSamples = patientSampleFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
@@ -4093,7 +4064,6 @@ public class PatientInvestigationController implements Serializable {
 
     public void navigateToPatientReportsFromSelectedInvestigation(PatientInvestigation patientInvestigation) {
         patientReports = new ArrayList<>();
-        System.out.println("navigate To Patient Report From Selected Investigation");
         listingEntity = ListingEntity.PATIENT_REPORTS;
         String jpql;
         Map<String, Object> params = new HashMap<>();
@@ -4110,7 +4080,6 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public void navigateToPatientReportsFromSelectedBill(Bill bill) {
-        System.out.println("navigate To Patient Report From Selected Bill");
         patientReports = new ArrayList<>();
         listingEntity = ListingEntity.PATIENT_REPORTS;
         String jpql;
@@ -4137,7 +4106,6 @@ public class PatientInvestigationController implements Serializable {
 
     @Deprecated
     public List<PatientSample> prepareSampleCollectionByBillsForPhlebotomyRoom(List<Bill> bills, WebUser wu) {
-        System.out.println("wu = " + wu);
         String j = "";
         Map m;
         Map<Long, PatientSample> rPatientSamplesMap = new HashMap<>();
@@ -4218,6 +4186,96 @@ public class PatientInvestigationController implements Serializable {
 //                        if (ixi.getSample() == null) {
 //                            continue;
 //                        }
+//                        if (ixi.getSample() == null) {
+//                            continue;
+//                        }
+//                        if (ixi.getSample() == null) {
+//                            continue;
+//                        }
+//                        if (ixi.getSample() == null) {
+//                            continue;
+//                        }
+//                        if (ixi.getSample() == null) {
+//                            continue;
+//                        }
+//                        if (ixi.getSample() == null) {
+//                            continue;
+//                        }
+//                        if (ixi.getSample() == null) {
+//                            continue;
+//                        }
+//                        if (ixi.getSample() == null) {
+//                            continue;
+//                        }
+//                        if (ixi.getSample() == null) {
+//                            continue;
+//                        }
+//                        if (ixi.getSample() == null) {
+//                            continue;
+//                        }
+//                        if (ixi.getSample() == null) {
+//                            continue;
+//                        }
+//                        if (ixi.getSample() == null) {
+//                            continue;
+//                        }
+//                        if (ixi.getSample() == null) {
+//                            continue;
+//                        }
+//                        if (ixi.getSample() == null) {
+//                            continue;
+//                        }
+//                        if (ixi.getSample() == null) {
+//                            continue;
+//                        }
+//                        if (ixi.getSample() == null) {
+//                            continue;
+//                        }
+//                        if (ixi.getSample() == null) {
+//                            continue;
+//                        }
+//                        if (ixi.getSample() == null) {
+//                            continue;
+//                        }
+//                        if (ixi.getSample() == null) {
+//                            continue;
+//                        }
+//                        if (ixi.getSample() == null) {
+//                            continue;
+//                        }
+//                        if (ixi.getSample() == null) {
+//                            continue;
+//                        }
+//                        if (ixi.getSample() == null) {
+//                            continue;
+//                        }
+//                        if (ixi.getSample() == null) {
+//                            continue;
+//                        }
+//                        if (ixi.getSample() == null) {
+//                            continue;
+//                        }
+//                        if (ixi.getSample() == null) {
+//                            continue;
+//                        }
+//                        if (ixi.getSample() == null) {
+//                            continue;
+//                        }
+//                        if (ixi.getSample() == null) {
+//                            continue;
+//                        }
+//                        if (ixi.getSample() == null) {
+//                            continue;
+//                        }
+//                        if (ixi.getSample() == null) {
+//                            continue;
+//                        }
+//                        if (ixi.getSample() == null) {
+//                            continue;
+//                        }
+//                        if (ixi.getSample() == null) {
+//                            continue;
+//                        }
                         System.out.println("ixi.getSample() = " + ixi.getSample());
 //                        if (ixi.getSample() == null) {
 //                            continue;
@@ -4243,10 +4301,7 @@ public class PatientInvestigationController implements Serializable {
                             j += " and ps.investigationComponant=:sc ";
                             m.put("sc", ixi.getSampleComponent());
                         }
-                        System.out.println("j = " + j);
-                        System.out.println("m = " + m);
                         PatientSample pts = patientSampleFacade.findFirstByJpql(j, m);
-                        System.out.println("pts = " + pts);
                         if (pts == null) {
                             pts = new PatientSample();
 
@@ -4299,7 +4354,6 @@ public class PatientInvestigationController implements Serializable {
 
                         m.put("ixc", ixi.getSampleComponent());
 
-                        System.out.println("j = " + j);
 
                         ptsc = patientSampleComponantFacade.findFirstByJpql(j, m);
                         if (ptsc == null) {
@@ -4324,8 +4378,6 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public List<PatientSample> prepareSampleCollectionByBillsForPhlebotomyRoom(Bill barcodeBill, WebUser wu) {
-        System.out.println("prepareSampleCollectionByBillsForPhlebotomyRoom");
-        System.out.println("wu = " + wu);
         String j;
         Map m;
         Map<Long, PatientSample> rPatientSamplesMap = new HashMap<>();
@@ -4342,7 +4394,6 @@ public class PatientInvestigationController implements Serializable {
         }
 
         for (PatientInvestigation ptix : pis) {
-            System.out.println("ptix = " + ptix);
             Investigation ix = ptix.getInvestigation();
             if (ix.getReportedAs() != null) {
                 if (ix.getReportedAs() instanceof Investigation) {
@@ -4416,10 +4467,7 @@ public class PatientInvestigationController implements Serializable {
                         j += " and ps.investigationComponant=:sc ";
                         m.put("sc", ixi.getSampleComponent());
                     }
-                    System.out.println("j = " + j);
-                    System.out.println("m = " + m);
                     PatientSample pts = patientSampleFacade.findFirstByJpql(j, m);
-                    System.out.println("pts = " + pts);
                     if (pts == null) {
                         pts = new PatientSample();
                         pts.setTube(ixi.getTube());
@@ -4466,7 +4514,6 @@ public class PatientInvestigationController implements Serializable {
                     m.put("ixc", ixi.getSampleComponent());
                     m.put("pts", pts);
 
-                    System.out.println("j = " + j);
 
                     ptsc = patientSampleComponantFacade.findFirstByJpql(j, m);
                     if (ptsc == null) {
@@ -4506,7 +4553,6 @@ public class PatientInvestigationController implements Serializable {
 
         for (PatientInvestigationWrapper ptixw : b.getPatientInvestigationWrappers()) {
             PatientInvestigation ptix = ptixw.getPatientInvestigation();
-            System.out.println("ptix = " + ptix);
             if (ptix == null) {
                 continue;
             }
@@ -4588,10 +4634,7 @@ public class PatientInvestigationController implements Serializable {
                         ixi.setSampleComponent(ixSampleComponant);
                     }
 
-                    System.out.println("j = " + j);
-                    System.out.println("m = " + m);
                     PatientSample pts = patientSampleFacade.findFirstByJpql(j, m);
-                    System.out.println("pts = " + pts);
                     if (pts == null) {
                         pts = new PatientSample();
 
@@ -4639,7 +4682,6 @@ public class PatientInvestigationController implements Serializable {
                     m.put("ptix", ptix);
                     m.put("ixc", ixi.getSampleComponent());
 
-                    System.out.println("j = " + j);
 
                     ptsc = patientSampleComponantFacade.findFirstByJpql(j, m);
                     if (ptsc == null) {
@@ -4690,7 +4732,6 @@ public class PatientInvestigationController implements Serializable {
                 + " and ps.retired=false ";
         m = new HashMap();
         m.put("pts", patientSample);
-        System.out.println("j = " + j);
         ptsc = patientSampleComponantFacade.findByJpql(j, m);
         return ptsc;
     }
