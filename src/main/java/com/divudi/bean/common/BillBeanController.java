@@ -2529,6 +2529,7 @@ public class BillBeanController implements Serializable {
     }
     
     public List<Bill> fetchIndividualBillsOfBatchBill(Bill batchBill) {
+        System.out.println("batchBill = " + batchBill);
         String j = "Select b "
                 + " from Bill b "
                 + " where b.backwardReferenceBill=:bb ";
@@ -2541,6 +2542,7 @@ public class BillBeanController implements Serializable {
     }
     
     public List<Bill> fetchRefundBillsOfBilledBill(Bill billedBill) {
+        System.out.println("billedBill = " + billedBill);
         String j = "Select b "
                 + " from Bill b "
                 + " where b.billedBill=:bb ";
@@ -4475,6 +4477,7 @@ public class BillBeanController implements Serializable {
     }
 
     public List<BillComponent> fetchBillComponents(Bill bill) {
+        System.out.println("bill = " + bill);
         List<BillComponent> fetchingBillComponents;
         String jpql;
         Map params = new HashMap();
@@ -4488,6 +4491,7 @@ public class BillBeanController implements Serializable {
     }
 
     public List<Payment> fetchBillPayments(Bill bill) {
+        System.out.println("bill = " + bill);
         List<Payment> fetchingBillComponents;
         String jpql;
         Map params = new HashMap();
