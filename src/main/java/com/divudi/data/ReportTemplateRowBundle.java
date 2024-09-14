@@ -2,18 +2,31 @@ package com.divudi.data;
 
 import com.divudi.entity.ReportTemplate;
 import com.divudi.entity.channel.SessionInstance;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 
 /**
  *
  * @author buddhika
  */
-public class ReportTemplateRowBundle {
+public class ReportTemplateRowBundle implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    // UUID field to uniquely identify each object
+    private UUID id;
 
     private List<ReportTemplateRowBundle> bundles;
     private ReportTemplate reportTemplate;
     private List<ReportTemplateRow> reportTemplateRows;
+    private Double grossTotal;
+    private Double hospitalTotal;
+    private Double staffTotal;
+    private Double ccTotal;
+    private Double discount;
     private Double total;
     private Double totalIn;
     private Double totalOut;
@@ -69,6 +82,45 @@ public class ReportTemplateRowBundle {
     private boolean hasPatientDepositTransaction;
     private boolean hasPatientPointsTransaction;
     private boolean hasOnlineSettlementTransaction;
+
+    public ReportTemplateRowBundle() {
+        this.id = UUID.randomUUID();
+    }
+
+    public ReportTemplateRowBundle(List<ReportTemplateRow> reportTemplateRows) {
+        this.reportTemplateRows = reportTemplateRows;
+    }
+
+    public UUID getId() {
+        if (id == null) {
+            id = UUID.randomUUID();
+        }
+        return id;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ReportTemplateRowBundle that = (ReportTemplateRowBundle) o;
+        return Objects.equals(getId(), that.id);
+    }
+
+    // Override hashCode() using UUID field
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId());
+    }
+
+    // Override toString() for better readability (optional)
+    @Override
+    public String toString() {
+        return "ReportTemplateRowBundle{id=" + getId() + '}';
+    }
 
     public void calculatePaymentMethodTotals() {
         // Reset totals and boolean flags before starting calculation
@@ -180,9 +232,6 @@ public class ReportTemplateRowBundle {
         }
     }
 
-    
-    
-    
     private double safeDouble(Double value) {
         return value == null ? 0.0 : value;
     }
@@ -622,8 +671,6 @@ public class ReportTemplateRowBundle {
         this.hasOnlineSettlementTransaction = hasOnlineSettlementTransaction;
     }
 
-   
-
     public String getBundleType() {
         return bundleType;
     }
@@ -633,7 +680,7 @@ public class ReportTemplateRowBundle {
     }
 
     public List<ReportTemplateRowBundle> getBundles() {
-        if(bundles==null){
+        if (bundles == null) {
             bundles = new ArrayList<>();
         }
         return bundles;
@@ -642,7 +689,45 @@ public class ReportTemplateRowBundle {
     public void setBundles(List<ReportTemplateRowBundle> bundles) {
         this.bundles = bundles;
     }
-    
-    
+
+    public Double getGrossTotal() {
+        return grossTotal;
+    }
+
+    public void setGrossTotal(Double grossTotal) {
+        this.grossTotal = grossTotal;
+    }
+
+    public Double getHospitalTotal() {
+        return hospitalTotal;
+    }
+
+    public void setHospitalTotal(Double hospitalTotal) {
+        this.hospitalTotal = hospitalTotal;
+    }
+
+    public Double getStaffTotal() {
+        return staffTotal;
+    }
+
+    public void setStaffTotal(Double staffTotal) {
+        this.staffTotal = staffTotal;
+    }
+
+    public Double getCcTotal() {
+        return ccTotal;
+    }
+
+    public void setCcTotal(Double ccTotal) {
+        this.ccTotal = ccTotal;
+    }
+
+    public Double getDiscount() {
+        return discount;
+    }
+
+    public void setDiscount(Double discount) {
+        this.discount = discount;
+    }
 
 }

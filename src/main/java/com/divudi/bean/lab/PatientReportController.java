@@ -6,6 +6,7 @@ import com.divudi.bean.common.ItemForItemController;
 import com.divudi.bean.common.SecurityController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.TransferController;
+import com.divudi.bean.common.WebUserController;
 
 import com.divudi.bean.hr.StaffController;
 import com.divudi.data.BooleanMessage;
@@ -158,6 +159,10 @@ public class PatientReportController implements Serializable {
     private ApplicationController applicationController;
     @Inject
     private SecurityController securityController;
+    @Inject
+    PatientInvestigationController patientInvestigationController;
+    @Inject
+    WebUserController webUserController;
     //Class Variables
     String selectText = "";
     private PatientInvestigation currentPtIx;
@@ -180,6 +185,7 @@ public class PatientReportController implements Serializable {
     private String smsMessage;
     private boolean showBackground = false;
     private ClinicalFindingValue clinicalFindingValue;
+    private String comment;
 
     public String searchRecentReportsOrderedByMyself() {
         Doctor doctor;
@@ -809,11 +815,12 @@ public class PatientReportController implements Serializable {
             } else if (priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Flag) {
                 priv.setStrValue(findFlagValue(priv));
             }
-
-            getPirivFacade().edit(priv);
-
+            try {
+                getPirivFacade().edit(priv);
+            } catch (Exception e) {
+                System.err.println("e = " + e.getMessage());
+            }
         }
-
     }
 
     private String generateModifiedJavascriptFromBaseJavaScript(PatientReport pr, String baseJs) {
@@ -1078,6 +1085,29 @@ public class PatientReportController implements Serializable {
         getPiFacade().edit(currentPtIx);
 
         //JsfUtil.addSuccessMessage("Saved");
+    }
+    
+    
+
+    public void removePatientReport() {
+
+        if (currentPatientReport == null) {
+            JsfUtil.addErrorMessage("No Patient Report");
+            return;
+        }
+        if (comment == null || comment.trim() == null) {
+            JsfUtil.addErrorMessage("Add Comment");
+            return;
+        }
+
+        currentPatientReport.setRetireComments(comment);
+        currentPatientReport.setRetired(Boolean.TRUE);
+        currentPatientReport.setRetiredAt(Calendar.getInstance().getTime());
+        currentPatientReport.setRetirer(getSessionController().getLoggedUser());
+
+        getFacade().edit(currentPatientReport);
+        JsfUtil.addSuccessMessage("Successfully Removed");
+        patientInvestigationController.searchPatientReports();
     }
 
     public void updateTemplate() {
@@ -2184,6 +2214,40 @@ public class PatientReportController implements Serializable {
         return r;
     }
 
+    public PatientReport createNewPatientTemplateReport(PatientInvestigation pi, Investigation ix) {
+        System.out.println("createNewPatientTemplateReport");
+        System.out.println("pi = " + pi);
+        System.out.println("ix = " + ix);
+        //System.err.println("creating a new patient report");
+        PatientReport r = null;
+        if (pi != null && pi.getId() != null && ix != null) {
+            r = new PatientReport();
+            r.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            r.setCreater(getSessionController().getLoggedUser());
+            r.setItem(ix);
+            r.setDataEntryDepartment(sessionController.getLoggedUser().getDepartment());
+            r.setDataEntryInstitution(sessionController.getLoggedUser().getInstitution());
+            if (r.getTransInvestigation() != null) {
+                if (r.getTransInvestigation().getReportFormat() != null) {
+                    r.setReportFormat(r.getTransInvestigation().getReportFormat());
+                } else {
+                    ReportFormat nrf = reportFormatController.getValidReportFormat();
+                    r.setReportFormat(nrf);
+                }
+            }
+            getFacade().create(r);
+            r.setPatientInvestigation(pi);
+            getPrBean().addPatientReportItemValuesForTemplateReport(r);
+//            getEjbFacade().edit(r);
+            setCurrentPatientReport(r);
+            pi.getPatientReports().add(r);
+            getCommonReportItemController().setCategory(ix.getReportFormat());
+        } else {
+            JsfUtil.addErrorMessage("No ptIx or Ix selected to add");
+        }
+        return r;
+    }
+
     public PatientReport createNewMicrobiologyReport(PatientInvestigation pi, Investigation ix) {
         PatientReport r = null;
         if (pi != null && pi.getId() != null && ix != null) {
@@ -2261,9 +2325,7 @@ public class PatientReportController implements Serializable {
         pr = getFacade().findFirstByJpql(j, m);
         return pr;
     }
-    
-    
-    
+
     public String navigateToNewlyCreatedPatientReport(PatientInvestigation pi) {
         System.out.println("navigateToNewlyCreatedPatientReport");
         System.out.println("pi = " + pi);
@@ -2288,25 +2350,23 @@ public class PatientReportController implements Serializable {
 
         currentReportInvestigation = ix;
         currentPtIx = pi;
-        PatientReport newlyCreatedReport=null;
+        PatientReport newlyCreatedReport = null;
         System.out.println("InvestigationReportType.Microbiology = " + InvestigationReportType.Microbiology);
         if (ix.getReportType() == InvestigationReportType.Microbiology) {
             createNewMicrobiologyReport(pi, ix);
         } else {
-           newlyCreatedReport =    createNewPatientReport(pi, ix);
+            newlyCreatedReport = createNewPatientReport(pi, ix);
             System.out.println("newlyCreatedReport = " + newlyCreatedReport);
         }
-        if(newlyCreatedReport==null){
+        if (newlyCreatedReport == null) {
             JsfUtil.addErrorMessage("Error");
             return null;
         }
         currentPatientReport = newlyCreatedReport;
         getCommonReportItemController().setCategory(ix.getReportFormat());
-        
+
         return "/lab/patient_report?faces-redirect=true";
     }
-    
-    
 
     public void createNewReport(PatientInvestigation pi) {
         System.out.println("createNewReport");
@@ -2332,8 +2392,11 @@ public class PatientReportController implements Serializable {
 
         currentReportInvestigation = ix;
         currentPtIx = pi;
+        System.out.println("ix.getReportType()  = " + ix.getReportType());
         if (ix.getReportType() == InvestigationReportType.Microbiology) {
             createNewMicrobiologyReport(pi, ix);
+        } else if (ix.getReportType() == InvestigationReportType.HtmlTemplate) {
+            createNewPatientTemplateReport(pi, ix);
         } else {
             createNewPatientReport(pi, ix);
         }
@@ -2472,6 +2535,17 @@ public class PatientReportController implements Serializable {
 
     public void setClinicalFindingValue(ClinicalFindingValue clinicalFindingValue) {
         this.clinicalFindingValue = clinicalFindingValue;
+    }
+
+    public String getComment() {
+        if (comment == null) {
+            comment = "";
+        }
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 
     @FacesConverter(forClass = PatientReport.class)

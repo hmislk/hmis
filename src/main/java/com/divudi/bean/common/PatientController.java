@@ -1069,23 +1069,21 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     public void settlePatientDepositReceive() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
         if (getBill().getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Please select a Payment Method");
             return;
         }
-        if (!current.getHasAnAccount()) {
-            JsfUtil.addErrorMessage("Please Create Patient Account");
-            return;
-        }
+//        if (!current.getHasAnAccount()) {
+//            JsfUtil.addErrorMessage("Please Create Patient Account");
+//            return;
+//        }
         if (paymentSchemeController.checkPaymentMethodError(getBill().getPaymentMethod(), paymentMethodData)) {
             JsfUtil.addErrorMessage("Please enter all relavent Payment Method Details");
             return;
         }
 
         settleBill(BillType.PatientPaymentReceiveBill, HistoryType.PatientDeposit, BillNumberSuffix.PD, current);
+        
         printPreview = true;
     }
 
@@ -1142,40 +1140,47 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     public void settlePatientDepositReturn() {
+        System.out.println("started = ");
         if (getPatient().getId() == null) {
             JsfUtil.addErrorMessage("Please Create Patient Account");
+            System.out.println("error 1");
             return;
         }
         if (getBill().getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Please select a Payment Method");
+            System.out.println("`error 2 = " );
             return;
         }
 
-        if (!getPatient().getHasAnAccount() || getPatient().getHasAnAccount() == null) {
-            JsfUtil.addErrorMessage("Patient has No Account");
-            return;
-        }
+//        if (!getPatient().getHasAnAccount() || getPatient().getHasAnAccount() == null) {
+//            JsfUtil.addErrorMessage("Patient has No Account");
+//            return;
+//        }
 
         if (getBill().getNetTotal() <= 0.0) {
             JsfUtil.addErrorMessage("The Refunded Value is Missing");
+            System.out.println("error 3");
             return;
         }
 
         if (getPatient().getRunningBalance() < getBill().getNetTotal()) {
             JsfUtil.addErrorMessage("The Refunded Value is more than the Current Deposit Value of the Patient");
+            System.out.println("error 4 = ");
             return;
         }
 
         if (getBill().getComments().trim().equalsIgnoreCase("")) {
             JsfUtil.addErrorMessage("Please Add Comment");
+            System.out.println("erior 5");
             return;
         }
 
         if (paymentSchemeController.checkPaymentMethodError(getBill().getPaymentMethod(), paymentMethodData)) {
             JsfUtil.addErrorMessage("Please enter all relavent Payment Method Details");
+            System.out.println("error 6 = ");
             return;
         }
-
+        System.out.println("Runned");
         settleReturnBill(BillType.PatientPaymentRefundBill, HistoryType.PatientDepositReturn, BillNumberSuffix.PDR, current, BillTypeAtomic.PATIENT_DEPOSIT_REFUND);
         printPreview = true;
     }
@@ -1186,6 +1191,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         addToBill();
         saveBillItem();
         billFacade.edit(getBill());
+        System.out.println("getBill() = " + getBill());
         //TODO: Add Patient Balance History
         patient.setRunningBalance(Math.abs(patient.getRunningBalance()) - Math.abs(getBill().getNetTotal()));
         getFacade().edit(patient);

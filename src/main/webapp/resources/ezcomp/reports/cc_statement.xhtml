@@ -118,7 +118,7 @@
                     
                     <p:badge value="#{agentHx.bill.cancelled ? 'Cancelled' : ''}" severity="danger" rendered="#{agentHx.bill.cancelled}" />
                     <p:badge value="#{agentHx.bill.refunded ? 'Refunded' : ''}" severity="warning" rendered="#{agentHx.bill.refunded}" />
-
+                    
 <!--                    <p:commandLink value="Original Bill - #{agentHx.bill.deptId}" 
                                    ajax="false"
                                    rendered="#{agentHx.bill.billedBill}"
@@ -131,7 +131,7 @@
 
                 <p:column headerText="Data &nbsp; Time" sortBy="#{agentHx.createdAt}" filterBy="#{agentHx.createdAt}" filterMatchMode="contains">
                     <h:outputText value="#{agentHx.createdAt}" >
-                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
+                        <f:convertDateTime pattern="dd mm yyyy hh:mm:ss a" ></f:convertDateTime>
                     </h:outputText>
                 </p:column>
 

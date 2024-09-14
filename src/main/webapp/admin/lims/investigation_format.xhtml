@@ -309,7 +309,16 @@
                                         </p:commandButton>
                                     </f:facet>
 
-
+                                    <ui:repeat value="#{investigationItemController.userChangableItems}" 
+                                               var="ii">
+                                        <p:outputLabel value="#{ii.name}" rendered="#{ii.ixItemType eq 'Value'}" ></p:outputLabel>
+                                        <p:outputLabel value="#{ii.name}" rendered="#{ii.ixItemType eq 'Flag'}" ></p:outputLabel><!-- comment -->
+                                        <p:outputLabel value="#{ii.name}" rendered="#{ii.ixItemType eq 'Calculation'}" ></p:outputLabel>
+                                    </ui:repeat>
+                                    <p:inputText >
+                                        
+                                    </p:inputText>
+                                    
                                     <diV class="d-flex gap-2">
                                         <p:selectOneMenu 
                                             id="dtbItem" 
@@ -320,7 +329,14 @@
                                             <f:selectItems value="#{investigationItemController.userChangableItems}" var="ii" itemLabel="#{ii.name} - #{ii.ixItemType }" itemValue="#{ii}" />
                                             <p:ajax  event="change" process="dtbItem" update=":#{p:resolveFirstComponentWithId('pDetails',view).clientId} "/>
                                         </p:selectOneMenu>
-                                        <p:commandButton action="#{investigationItemController.removeItem()}" icon=" fa-solid fa-trash " class="ui-button-danger" value="Remove" ajax="false"/> 
+                                        <p:commandButton 
+                                            action="#{investigationItemController.removeItem()}" 
+                                            icon=" fa-solid fa-trash " 
+                                            onclick="if (!confirm('Are you sure you want to delete this Item?'))
+                                                        return false;"
+                                            class="ui-button-danger" 
+                                            value="Remove" 
+                                            ajax="false"/> 
                                     </diV>
 
                                     <h:panelGrid id="pDetails" class="w-100">
