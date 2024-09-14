@@ -256,6 +256,8 @@ public class Item implements Serializable, Comparable<Item> {
     @Transient
     private String transCodeFromName;
     
+    private boolean multipleReportsAllowed;
+    
     @Lob
     private String forGender;
 
@@ -1427,6 +1429,14 @@ public class Item implements Serializable, Comparable<Item> {
 
     public void setCodeSystem(String codeSystem) {
         this.codeSystem = codeSystem;
+    }
+
+    public boolean isMultipleReportsAllowed() {
+        return multipleReportsAllowed;
+    }
+
+    public void setMultipleReportsAllowed(boolean multipleReportsAllowed) {
+        this.multipleReportsAllowed = multipleReportsAllowed;
     }
 
     static class ReportItemComparator implements Comparator<ReportItem> {
