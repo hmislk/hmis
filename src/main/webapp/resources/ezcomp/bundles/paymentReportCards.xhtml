@@ -19,14 +19,19 @@
         <!--<p:dataTable value="#{cc.attrs.bundle.reportTemplateRows}" var="row" >-->
 
         <p:dataTable value="#{cc.attrs.bundle.reportTemplateRows}" var="row" >
-<!--            <f:facet name="header" >
-                <h:outputText value="#{cc.attrs.bundle.name}" ></h:outputText>
-            </f:facet>-->
+            <!--            <f:facet name="header" >
+                            <h:outputText value="#{cc.attrs.bundle.name}" ></h:outputText>
+                        </f:facet>-->
             <p:column>
                 <f:facet name="header">
                     <h:outputText value="Bil No" />
                 </f:facet>
-                <h:outputText value="#{row.payment.bill.deptId}"  />
+                <p:commandLink value="#{row.payment.bill.deptId}"   
+                               ajax="false"
+                               action="#{billSearch.navigateViewBillByBillTypeAtomic()}"
+                               >
+                    <f:setPropertyActionListener value="#{row.payment.bill}" target="#{billSearch.bill}" ></f:setPropertyActionListener>
+                </p:commandLink>
             </p:column>
             <p:column>
                 <f:facet name="header">
@@ -51,6 +56,14 @@
                              row.payment.bill.billClassType eq 'OtherBill' ? 'color: gray;' : ''}" />
 
 
+            </p:column>
+            <p:column>
+                <f:facet name="header">
+                    <h:outputText value="Bill Type" />
+                </f:facet>
+                <h:outputText value="#{row.payment.bill.createdAt}"   >
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                </h:outputText>
             </p:column>
             <p:column>
                 <f:facet name="header">
@@ -99,24 +112,24 @@
                 <h:outputText value="#{row.payment.bill.billedBill.deptId}"  />
             </p:column>
 
-<!--            <p:columnGroup type="footer">  
-                <p:row>    
-                    <p:column style=" text-align: left">
-                        <f:facet name="footer">
-                            <h:outputLabel value="Total"/>
-
-                        </f:facet>
-                    </p:column>
-                    <p:column colspan="4" style=" text-align: left;font">  
-                        <f:facet name="footer">
-                            <h:outputLabel value="#{cc.attrs.bundle.total}">
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputLabel>
-                        </f:facet>
-                    </p:column>
-
-                </p:row>  
-            </p:columnGroup>  -->
+            <!--            <p:columnGroup type="footer">  
+                            <p:row>    
+                                <p:column style=" text-align: left">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="Total"/>
+            
+                                    </f:facet>
+                                </p:column>
+                                <p:column colspan="4" style=" text-align: left;font">  
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{cc.attrs.bundle.total}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+            
+                            </p:row>  
+                        </p:columnGroup>  -->
 
         </p:dataTable>
 
