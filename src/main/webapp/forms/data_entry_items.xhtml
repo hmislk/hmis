@@ -10,11 +10,11 @@
         <ui:composition template="./index.xhtml">
 
 
-            <ui:define name="contents">
+            <ui:define name="subcontent">
                 <h:form>
-                    <h1>List of Components for #{designComponentController.current.name}</h1>
+                    <h1>List of Components for #{designComponentController.currentDataEntryForm.name}</h1>
                     <p:commandButton ajax="false" value="Back" action="#{designComponentController.navigateToEditDataEntryForm()}"></p:commandButton>
-                    <p:dataTable value="#{designComponentController.list}" 
+                    <p:dataTable value="#{designComponentController.listOfDataEntryItems}" 
                                  var="i"
                                  >
                         <p:column headerText="Name">
@@ -29,7 +29,7 @@
                                              action="#{designComponentController.navigateToEditDesignComponent()}" >
                                 <f:setPropertyActionListener 
                                     value="#{i}" 
-                                    target="#{designComponentController.current}" >
+                                    target="#{designComponentController.currentDataEntryItem}" >
                                 </f:setPropertyActionListener>
                             </p:commandButton>
                         </p:column>
