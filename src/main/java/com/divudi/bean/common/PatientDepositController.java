@@ -7,23 +7,11 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.HistoryType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.PaymentMethodData;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
 import com.divudi.entity.Department;
 import com.divudi.entity.Patient;
 import com.divudi.entity.PatientDeposit;
-import com.divudi.entity.PatientDepositHistory;
 import com.divudi.facade.PatientDepositFacade;
-import com.divudi.facade.PatientDepositHistoryFacade;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,21 +31,16 @@ import javax.inject.Named;
  */
 @Named
 @SessionScoped
-public class PatientDepositController implements Serializable, ControllerWithPatient {
+public class PatientDepositController implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
-    @Inject
-    PatientController patientController;
-    @Inject
-    BillBeanController billBeanController;
     @EJB
     private PatientDepositFacade patientDepositFacade;
-    @EJB
-    private PatientDepositHistoryFacade patientDepositHistoryFacade;
     private PatientDeposit current;
     private List<PatientDeposit> items = null;
+    private int patientDepositManagementIndex=1;
     private boolean printPreview;
     private PaymentMethodData paymentMethodData;
     private Bill bill;
@@ -74,8 +57,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
        patientController.clearDataForPatientDeposite();
         return "/patient_deposit/receive?faces-redirect=true";
     } 
-    
-<<<<<<< Issue#7135
+
     public void getPatientDepositOnPatientDepositAdding(){
         patientController.quickSearchPatientLongPhoneNumber(this);
         current = null;
@@ -121,65 +103,26 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         
         patientDepositHistoryFacade.create(pdh);
     }
-=======
-
-    private int patientDepositManagementIndex=1;
->>>>>>> development
-    
 
     public PatientDeposit getDepositOfThePatient(Patient p , Department d){        
         Map m = new HashMap<>();
+        
         String jpql = "select pd from PatientDeposit pd"
-                + " where pd.patient.id=:pt "
-                + " and pd.department.id=:dep "
+                + " where pd.patient=:pt "
+                + " and pd.department=:dep "
                 + " and pd.retired=:ret";
         
-        m.put("pt",p.getId());
-        m.put("dep", d.getId());
+        m.put("pt",p);
+        m.put("dep", d);
         m.put("ret", false);
         
         PatientDeposit pd = patientDepositFacade.findFirstByJpql(jpql, m);
-        System.out.println("pd = " + pd);
         
         if(pd == null){
             pd = new PatientDeposit();
-            pd.setBalance(0.0);
-            pd.setPatient(p);
-            pd.setDepartment(sessionController.getDepartment());
-            pd.setInstitution(sessionController.getInstitution());
-            pd.setCreater(sessionController.getLoggedUser());
-            pd.setCreatedAt(new Date());
             patientDepositFacade.create(pd);
         }
         return pd;
-    }
-    
-    public void fillLatestPatientDeposits(PatientDeposit pd){
-        Map m = new HashMap<>();
-        
-        String jpql = "select pdh from PatientDepositHistory pdh "
-                + " where pdh.patientDeposit.id=:pd "
-                + " and pdh.historyType=:ht"
-                + " and pdh.retired=:ret order by pdh.id";
-        
-        m.put("pd", pd.getId());
-        m.put("ht",HistoryType.PatientDeposit);
-        m.put("ret",false);
-        
-        latestPatientDeposits = patientDepositHistoryFacade.findByJpql(jpql, m, 10);
-    }
-    
-    public void fillLatestPatientDepositHistory(PatientDeposit pd){
-        Map m = new HashMap<>();
-        
-        String jpql = "select pdh from PatientDepositHistory pdh "
-                + " where pdh.patientDeposit.id=:pd "
-                + " and pdh.retired=:ret order by pdh.id";
-        
-        m.put("pd", pd.getId());
-        m.put("ret",false);
-        
-        latestPatientDepositHistory = patientDepositHistoryFacade.findByJpql(jpql, m, 10);
     }
     
 
@@ -216,7 +159,6 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         this.patientDepositManagementIndex = patientDepositManagementIndex;
     }
 
-<<<<<<< Issue#7135
     public boolean isPrintPreview() {
         return printPreview;
     }
@@ -316,8 +258,6 @@ public class PatientDepositController implements Serializable, ControllerWithPat
     public void setLatestPatientDepositHistory(List<PatientDepositHistory> latestPatientDepositHistory) {
         this.latestPatientDepositHistory = latestPatientDepositHistory;
     }
-=======
->>>>>>> development
 
     /**
      *
