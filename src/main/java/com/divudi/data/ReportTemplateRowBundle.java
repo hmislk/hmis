@@ -149,7 +149,7 @@ public class ReportTemplateRowBundle implements Serializable {
                 addValueAndUpdateFlag("patientPoints", safeDouble(row.getPatientPointsValue()));
                 addValueAndUpdateFlag("onlineSettlement", safeDouble(row.getOnlineSettlementValue()));
 
-                addValueAndUpdateFlag("grossTotal", safeDouble(row.getTotal()));
+                addValueAndUpdateFlag("grossTotal", safeDouble(row.getGrossTotal()));
                 addValueAndUpdateFlag("discount", safeDouble(row.getDiscount()));
                 addValueAndUpdateFlag("total", safeDouble(row.getTotal()));
                 addValueAndUpdateFlag("hospitalTotal", safeDouble(row.getHospitalTotal()));
@@ -165,7 +165,7 @@ public class ReportTemplateRowBundle implements Serializable {
                 if (row.getBill() == null) {
                     continue;
                 }
-                row.setGrossTotal(row.getBill().getTotal());
+                row.setGrossTotal(row.getBill().getGrantTotal());
                 row.setDiscount(row.getBill().getDiscount());
                 row.setTotal(row.getBill().getNetTotal());
                 row.setHospitalTotal(row.getHospitalTotal());
