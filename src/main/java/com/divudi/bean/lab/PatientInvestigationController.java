@@ -4235,23 +4235,23 @@ public class PatientInvestigationController implements Serializable {
         patientReports = patientReportFacade.findByJpql(jpql, params);
     }
 
-    public void navigateToPatientReportsFromSelectedInvestigation(PatientInvestigation patientInvestigation) {
-        patientReports = new ArrayList<>();
-        System.out.println("navigate To Patient Report From Selected Investigation");
-        listingEntity = ListingEntity.PATIENT_REPORTS;
-        String jpql;
-        Map<String, Object> params = new HashMap<>();
-
-        jpql = "SELECT r "
-                + " FROM PatientReport r "
-                + " WHERE r.retired = :ret "
-                + " and r.patientInvestigation=:pi "
-                + " ORDER BY r.id DESC";
-
-        params.put("ret", false);
-        params.put("pi", patientInvestigation);
-        patientReports = patientReportFacade.findByJpql(jpql, params);
-    }
+//    public void navigateToPatientReportsFromSelectedInvestigation(PatientInvestigation patientInvestigation) {
+//        patientReports = new ArrayList<>();
+//        System.out.println("navigate To Patient Report From Selected Investigation");
+//        listingEntity = ListingEntity.PATIENT_REPORTS;
+//        String jpql;
+//        Map<String, Object> params = new HashMap<>();
+//
+//        jpql = "SELECT r "
+//                + " FROM PatientReport r "
+//                + " WHERE r.retired = :ret "
+//                + " and r.patientInvestigation=:pi "
+//                + " ORDER BY r.id DESC";
+//
+//        params.put("ret", false);
+//        params.put("pi", patientInvestigation);
+//        patientReports = patientReportFacade.findByJpql(jpql, params);
+//    }
 
     public void navigateToPatientReportsFromSelectedBill(Bill bill) {
         System.out.println("navigate To Patient Report From Selected Bill");
