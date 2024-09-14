@@ -72,6 +72,7 @@ import static com.divudi.data.BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_
 import com.divudi.data.InstitutionType;
 import com.divudi.data.OptionScope;
 import com.divudi.entity.Doctor;
+import com.divudi.entity.PatientDeposit;
 import com.divudi.facade.FeeFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.StaffFacade;
@@ -186,6 +187,8 @@ public class BillSearch implements Serializable {
     CommonFunctionsController commonFunctionsController;
     @Inject
     PharmacyBillSearch pharmacyBillSearch;
+    @Inject
+    PatientDepositController patientDepositController;
 
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
@@ -1668,17 +1671,19 @@ public class BillSearch implements Serializable {
             staffFacade.edit(getBill().getToStaff());
             //System.out.println("Staff Credit Updated");
 
-        } else if (getBill().getPaymentMethod() == PaymentMethod.PatientDeposit) {
-            //System.out.println("Before Balance = " + bill.getPatient().getRunningBalance());
-            if (bill.getPatient().getRunningBalance() == null) {
-                //System.out.println("Null");
-                bill.getPatient().setRunningBalance(Math.abs(bill.getNetTotal()));
-            } else {
-                //System.out.println("Not Null - Add BillValue");
-                bill.getPatient().setRunningBalance(bill.getPatient().getRunningBalance() + Math.abs(bill.getNetTotal()));
-            }
-            patientFacade.edit(bill.getPatient());
-            //System.out.println("After Balance = " + bill.getPatient().getRunningBalance());
+        } else if (paymentMethod == PaymentMethod.PatientDeposit) {
+//            //System.out.println("Before Balance = " + bill.getPatient().getRunningBalance());
+//            if (bill.getPatient().getRunningBalance() == null) {
+//                //System.out.println("Null");
+//                bill.getPatient().setRunningBalance(Math.abs(bill.getNetTotal()));
+//            } else {
+//                //System.out.println("Not Null - Add BillValue");
+//                bill.getPatient().setRunningBalance(bill.getPatient().getRunningBalance() + Math.abs(bill.getNetTotal()));
+//            }
+//            patientFacade.edit(bill.getPatient());
+//            //System.out.println("After Balance = " + bill.getPatient().getRunningBalance());
+            PatientDeposit pd = patientDepositController.getDepositOfThePatient(getRefundingBill().getPatient(), sessionController.getDepartment());
+            patientDepositController.updateBalance(getRefundingBill(), pd);
         }
 
         printPreview = true;
@@ -2244,14 +2249,14 @@ public class BillSearch implements Serializable {
         }
 
         if (paymentMethod == PaymentMethod.PatientDeposit) {
-            if (getBill().getPatient().getHasAnAccount() == null) {
-                JsfUtil.addErrorMessage("Create Patient Account First");
-                return;
-            }
-            if (!getBill().getPatient().getHasAnAccount()) {
-                JsfUtil.addErrorMessage("Create Patient Account First");
-                return;
-            }
+//            if (getBill().getPatient().getHasAnAccount() == null) {
+//                JsfUtil.addErrorMessage("Create Patient Account First");
+//                return;
+//            }
+//            if (!getBill().getPatient().getHasAnAccount()) {
+//                JsfUtil.addErrorMessage("Create Patient Account First");
+//                return;
+//            }
         }
 
         if (paymentMethod == PaymentMethod.Staff) {
@@ -2287,6 +2292,17 @@ public class BillSearch implements Serializable {
                 cancellationBill.setFromStaff(getBill().getToStaff());
                 getBillFacade().edit(cancellationBill);
             }
+        }
+        
+        if (cancellationBill.getPaymentMethod() == PaymentMethod.PatientDeposit) {
+//            if (cancellationBatchBill.getPatient().getRunningBalance() == null) {
+//                cancellationBatchBill.getPatient().setRunningBalance(Math.abs(cancellationBatchBill.getNetTotal()));
+//            } else {
+//                cancellationBatchBill.getPatient().setRunningBalance(cancellationBatchBill.getPatient().getRunningBalance() + Math.abs(cancellationBatchBill.getNetTotal()));
+//            }
+//            patientFacade.edit(cancellationBatchBill.getPatient());
+           PatientDeposit pd = patientDepositController.getDepositOfThePatient(cancellationBill.getPatient(), sessionController.getDepartment());
+           patientDepositController.updateBalance(cancellationBill, pd);
         }
 
         notificationController.createNotification(cancellationBill);

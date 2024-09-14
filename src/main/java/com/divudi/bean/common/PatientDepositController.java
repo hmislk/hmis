@@ -109,14 +109,31 @@ public class PatientDepositController implements Serializable, ControllerWithPat
     }
     
     public void updateBalance(Bill b, PatientDeposit pd){ 
-        switch (b.getBillType()) {
-            case PatientPaymentReceiveBill:
+        switch (b.getBillTypeAtomic()) {
+            case PATIENT_DEPOSIT:
                 handlePatientDepositBill(b,pd);
                 break;
                 
-            case PatientPaymentRefundBill:
+            case PATIENT_DEPOSIT_REFUND:
                 handlePatientDepositBillReturn(b,pd);
                 break;
+                
+            case OPD_BATCH_BILL_WITH_PAYMENT:
+                handleOPDBill(b,pd);
+                break;
+                
+            case OPD_BATCH_BILL_CANCELLATION:
+                handleOPDBillCancel(b,pd);
+                break;
+                
+            case OPD_BILL_CANCELLATION:
+                handleOPDBillCancel(b,pd);
+                break;
+            
+            case OPD_BILL_REFUND:
+                handleOPDBillCancel(b,pd);
+                break;
+                
             default:
                 throw new AssertionError();
         }  
@@ -128,7 +145,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         pd.setBalance(afterBalance);
         patientDepositFacade.edit(pd);
         JsfUtil.addSuccessMessage("Balance Updated.");
-        createPatientDepositHitory(HistoryType.PatientDeposit,pd,b,beforeBalance,afterBalance); 
+        createPatientDepositHitory(HistoryType.PatientDeposit,pd,b,beforeBalance,afterBalance,Math.abs(b.getNetTotal())); 
     }
     
      public void handlePatientDepositBillReturn(Bill b, PatientDeposit pd){
@@ -137,16 +154,42 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         pd.setBalance(afterBalance);
         patientDepositFacade.edit(pd);
         JsfUtil.addSuccessMessage("Balance Updated.");
-        createPatientDepositHitory(HistoryType.PatientDepositReturn,pd,b,beforeBalance,afterBalance); 
+        createPatientDepositHitory(HistoryType.PatientDepositReturn,pd,b,beforeBalance,afterBalance,0-Math.abs(b.getNetTotal())); 
+    }
+     
+     public void handleOPDBill(Bill b, PatientDeposit pd){
+       Double beforeBalance = pd.getBalance();
+        Double afterBalance = beforeBalance - Math.abs(b.getNetTotal());
+        pd.setBalance(afterBalance);
+        patientDepositFacade.edit(pd);
+        JsfUtil.addSuccessMessage("Balance Updated.");
+        createPatientDepositHitory(HistoryType.PatientDepositUtilization,pd,b,beforeBalance,afterBalance,0-Math.abs(b.getNetTotal())); 
+    }
+     
+    public void handleOPDBillCancel(Bill b, PatientDeposit pd){
+       Double beforeBalance = pd.getBalance();
+        Double afterBalance = beforeBalance + Math.abs(b.getNetTotal());
+        pd.setBalance(afterBalance);
+        patientDepositFacade.edit(pd);
+        JsfUtil.addSuccessMessage("Balance Updated.");
+        createPatientDepositHitory(HistoryType.PatientDepositUtilizationCancel,pd,b,beforeBalance,afterBalance,Math.abs(b.getNetTotal())); 
+    }
+    public void handleOPDBillRefund(Bill b, PatientDeposit pd){
+       Double beforeBalance = pd.getBalance();
+        Double afterBalance = beforeBalance + Math.abs(b.getNetTotal());
+        pd.setBalance(afterBalance);
+        patientDepositFacade.edit(pd);
+        JsfUtil.addSuccessMessage("Balance Updated.");
+        createPatientDepositHitory(HistoryType.PatientDepositUtilizationReturn,pd,b,beforeBalance,afterBalance,Math.abs(b.getNetTotal())); 
     }
     
-    public void createPatientDepositHitory(HistoryType ht,PatientDeposit pd, Bill b, Double beforeBalance,Double afterBalance){
+    public void createPatientDepositHitory(HistoryType ht,PatientDeposit pd, Bill b, Double beforeBalance,Double afterBalance ,Double transactionValue){
         PatientDepositHistory pdh = new PatientDepositHistory();
         pdh.setPatientDeposit(pd);
         pdh.setBill(b);
         pdh.setHistoryType(ht);
         pdh.setBalanceBeforeTransaction(beforeBalance);
-        pdh.setTransactionValue(b.getNetTotal());
+        pdh.setTransactionValue(transactionValue);
         pdh.setBalanceAfterTransaction(afterBalance);
         pdh.setCreater(sessionController.getLoggedUser());
         pdh.setCreatedAt(new Date());
