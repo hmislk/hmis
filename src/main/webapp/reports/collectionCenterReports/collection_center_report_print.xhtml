@@ -189,49 +189,49 @@
                         style="table-layout: fixed; width: 100%;">
 
                         <!-- Selection Box Column -->
-                        <p:column headerText="S.NO" style="width: 1em; vertical-align: top;">
+                        <p:column headerText="S.NO" >
                             #{n+1}
                         </p:column>
-                        <p:column headerText="CC Code" style="width: 1em; vertical-align: top;">
+                        <p:column headerText="CC Code" >
                             <p:outputLabel value="#{patientInvestigation.billItem.bill.fromInstitution.code}"/>
                         </p:column>
-                        <p:column headerText="Leaf.No" style="width: 1em; vertical-align: top;">
+                        <p:column headerText="Leaf.No" >
                             <p:outputLabel value="#{patientInvestigation.billItem.bill.referenceNumber}"/>
                         </p:column>
-                        <p:column headerText="PHN" style="width: 5em; vertical-align: top;">
+                        <p:column headerText="PHN" >
                             #{patientInvestigation.billItem.bill.patient.phn}
                         </p:column>
                         <!-- Bill Number Column with Icon and Colour -->
-                        <p:column headerText="Patient" style="width: 10em; vertical-align: top;">
+                        <p:column headerText="Patient" >
                             #{patientInvestigation.billItem.bill.patient.person.nameWithTitle}
                         </p:column>
-                        <p:column headerText="Invoice Number" style="width: 5em; vertical-align: top;">
+                        <p:column headerText="Invoice Number" >
                             #{patientInvestigation.billItem.bill.deptId}
                         </p:column>
-                        <p:column headerText="Order Date" style="width: 5em; vertical-align: top;">
+                        <p:column headerText="Order Date" >
                             <p:outputLabel value="#{patientInvestigation.investigation.createdAt}">
                                 <f:convertDateTime pattern="dd/mmyyyy HH:MM a"/>
                             </p:outputLabel>
                         </p:column>
-                        <p:column headerText="CC Route" style="width: 5em; vertical-align: top;">
+                        <p:column headerText="CC Route" >
                             <p:outputLabel value="#{patientInvestigation.billItem.bill.fromInstitution.route.name}">
                             </p:outputLabel>
                         </p:column>
-                        <p:column headerText="Reffering Doctor Name" style="width: 5em; vertical-align: top;">
+                        <p:column headerText="Reffering Doctor Name" >
                             <p:outputLabel value="#{patientInvestigation.billItem.bill.referredBy.person.nameWithTitle}">
                             </p:outputLabel>
                         </p:column>
-                        <p:column headerText="Service Name" style="width: 7em; vertical-align: top;">
+                        <p:column headerText="Service Name">
                             #{patientInvestigation.investigation.name}
                         </p:column>
 
-                        <p:column headerText="Status" style="width: 7em; vertical-align: top;">
+                        <p:column headerText="Status" >
                             <h:outputLabel value="#{patientInvestigation.status}"/>
                         </p:column>
-                        <p:column headerText="Print" style="width: 7em; vertical-align: top;">
-                            <h:outputLabel value="#{patientInvestigation.printingUser.code}"/>
+                        <p:column headerText="Print" >
+                            <h:outputLabel value="#{patientInvestigation.printingUser.name}"/>
                         </p:column>
-                        <p:column headerText="Last Printing TIme" style="width: 7em; vertical-align: top;">
+                        <p:column headerText="Last Printing TIme" >
                             <p:outputLabel value="#{patientInvestigation.printingAt}">
                                 <f:convertDateTime pattern="dd/mm/yyyy HH:MM a"/>
                             </p:outputLabel>
