@@ -148,7 +148,6 @@ public class ReportTemplateRowBundle implements Serializable {
                 addValueAndUpdateFlag("patientDeposit", safeDouble(row.getPatientDepositValue()));
                 addValueAndUpdateFlag("patientPoints", safeDouble(row.getPatientPointsValue()));
                 addValueAndUpdateFlag("onlineSettlement", safeDouble(row.getOnlineSettlementValue()));
-
                 addValueAndUpdateFlag("grossTotal", safeDouble(row.getGrossTotal()));
                 addValueAndUpdateFlag("discount", safeDouble(row.getDiscount()));
                 addValueAndUpdateFlag("total", safeDouble(row.getTotal()));
