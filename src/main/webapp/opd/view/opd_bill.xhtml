@@ -220,9 +220,6 @@
                                             </p:column>
                                         </p:dataTable>
                                     </p:tab>
-                                    <p:tab title="Bill Components" >
-
-                                    </p:tab>
                                     <p:tab title="Bill Fees" >
                                         <p:dataTable rowIndexVar="rowIndex"
                                                      value="#{billSearch.viewingBill.billFees}" 
@@ -297,14 +294,36 @@
                                             value="#{billSearch.viewingBillPayments}" 
                                             var="p"
                                             rowKey="#{p.id}" >
-                                            <p:column >
+                                            <p:column headerText="ID" >
                                                 <h:outputText value="#{p.id}" ></h:outputText>
                                             </p:column>
-                                            <p:column >
+                                            <p:column headerText="Payment Method" >
                                                 <h:outputText value="#{p.paymentMethod}" ></h:outputText>
                                             </p:column>
-                                            <p:column >
+                                            <p:column headerText="Value">
                                                 <h:outputText value="#{p.paidValue}" ></h:outputText>
+                                            </p:column>
+                                            <p:column headerText="Actions">
+                                                <p:commandButton 
+                                                    value="View" 
+                                                    class="m-2"
+                                                    ajax="false"
+                                                    icon="fa fa-eye"
+                                                    action="#{billSearch.navigateToViewPayment()}">
+                                                    <f:setPropertyActionListener 
+                                                        value="#{p}" 
+                                                        target="#{billSearch.payment}" ></f:setPropertyActionListener>
+                                                </p:commandButton>
+                                                <p:commandButton 
+                                                    value="Edit" 
+                                                    ajax="false"
+                                                    class="m-2"
+                                                    icon="fa fa-pencil"
+                                                    action="#{billSearch.navigateToEditPayment()}">
+                                                    <f:setPropertyActionListener 
+                                                        value="#{p}" 
+                                                        target="#{billSearch.payment}" ></f:setPropertyActionListener>
+                                                </p:commandButton>
                                             </p:column>
                                         </p:dataTable>
                                     </p:tab>

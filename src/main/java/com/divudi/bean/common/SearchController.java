@@ -298,6 +298,7 @@ public class SearchController implements Serializable {
 
     private List<CashBookEntry> cashBookEntries;
     private Institution site;
+    private int opdAnalyticsIndex;
 
     public String navigateToPettyCashBillApprove() {
         createPettyApproveTable();
@@ -597,6 +598,10 @@ public class SearchController implements Serializable {
 
     public String navigateToFailedSmsList() {
         return "/analytics/sms_faild?faces-redirect=true";
+    }
+
+    public String navigateToOpdSaleReport() {
+        return "/opd/analytics/sale_report?faces-redirect=true";
     }
 
     public String navigateToSendSms() {
@@ -1811,6 +1816,14 @@ public class SearchController implements Serializable {
 
     public void setBundleBillItems(ReportTemplateRowBundle bundleBillItems) {
         this.bundleBillItems = bundleBillItems;
+    }
+
+    public int getOpdAnalyticsIndex() {
+        return opdAnalyticsIndex;
+    }
+
+    public void setOpdAnalyticsIndex(int opdAnalyticsIndex) {
+        this.opdAnalyticsIndex = opdAnalyticsIndex;
     }
 
     public class billsWithbill {
@@ -11919,6 +11932,10 @@ public class SearchController implements Serializable {
         bundle = generateIncomeBreakdownByCategoryOpd();
     }
 
+    public void createProfessionalFees() {
+        bundle = generateOpdProfessionalFees();
+    }
+
     public void generateDailyReturn() {
         bundle = new ReportTemplateRowBundle();
 
@@ -12267,6 +12284,83 @@ public class SearchController implements Serializable {
                     rtr.setSite(site);
                     rtr.setFromDate(fromDate);
                     rtr.setToDate(toDate);
+                });
+
+        return oiBundle;
+    }
+
+    public ReportTemplateRowBundle generateOpdProfessionalFees() {
+        ReportTemplateRowBundle oiBundle = new ReportTemplateRowBundle();
+        String jpql = "select bf "
+                + " from BillFee bf "
+                + " join bf.billItem bi "
+                + " where bf.retired=:bfr "
+                + " and bi.bill.retired=:br "
+                + " and bf.fee.feeType=:ft "
+                + " and bi.bill.createdAt between :fd and :td ";
+        Map m = new HashMap();
+        m.put("br", false);
+        m.put("bfr", false);
+        m.put("fd", fromDate);
+        m.put("ft", FeeType.Staff);
+        m.put("td", toDate);
+        List<BillTypeAtomic> btas = BillTypeAtomic.findByServiceType(ServiceType.OPD);
+        oiBundle.setDescription("Bill Types Listed: " + btas);
+        if (!btas.isEmpty()) {
+            jpql += " and bi.bill.billTypeAtomic in :bts ";
+            m.put("bts", btas);
+        }
+
+        if (department != null) {
+            jpql += " and bi.bill.department=:dep ";
+            m.put("dep", department);
+        }
+        if (institution != null) {
+            jpql += " and bi.bill.department.institution=:ins ";
+            m.put("ins", institution);
+        }
+        if (site != null) {
+            jpql += " and bi.bill.department.site=:site ";
+            m.put("site", site);
+        }
+        if (category != null) {
+            jpql += " and bi.item.category=:cat ";
+            m.put("cat", category);
+        }
+        if (item != null) {
+            jpql += " and bi.item=:item ";
+            m.put("item", item);
+        }
+        if (speciality != null) {
+            jpql += " and bf.speciality=:speciality ";
+            m.put("speciality", speciality);
+        }
+        if (staff != null) {
+            jpql += " and bf.staff=:staff ";
+            m.put("staff", staff);
+        }
+
+        System.out.println("jpql = " + jpql);
+        System.out.println("m = " + m);
+        List<BillFee> bifs = billFeeFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        if (bifs != null) {
+            for (BillFee bf : bifs) {
+                ReportTemplateRow r = new ReportTemplateRow(bf);
+                oiBundle.getReportTemplateRows().add(r);
+            }
+        }
+        oiBundle.setName("Professional Fees");
+        oiBundle.setBundleType("professional_fees");
+
+        oiBundle.getReportTemplateRows().stream()
+                .forEach(rtr -> {
+                    rtr.setInstitution(institution);
+                    rtr.setDepartment(department);
+                    rtr.setSite(site);
+                    rtr.setFromDate(fromDate);
+                    rtr.setToDate(toDate);
+                    rtr.setStaff(staff);
+                    rtr.setSpeciality(speciality);
                 });
 
         return oiBundle;
@@ -13033,6 +13127,71 @@ public class SearchController implements Serializable {
         }
     }
 
+    public void generateOpdSaleByBill() {
+        Map<String, Object> parameters = new HashMap<>();
+        String jpql = "SELECT new com.divudi.data.ReportTemplateRow("
+                + "bill, "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Cash THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Card THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.MultiplePaymentMethods THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Staff THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Credit THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Staff_Welfare THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Voucher THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.IOU THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Agent THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Cheque THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Slip THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.ewallet THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.PatientDeposit THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.PatientPoints THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.OnlineSettlement THEN p.paidValue ELSE 0 END)) "
+                + "FROM Payment p "
+                + "JOIN p.bill bill "
+                + "WHERE p.retired <> :bfr AND bill.retired <> :br ";
+
+        parameters.put("bfr", true);
+        parameters.put("br", true);
+
+        List<BillTypeAtomic> bts = BillTypeAtomic.findByServiceType(ServiceType.OPD);
+        jpql += "AND bill.billTypeAtomic in :bts ";
+        parameters.put("bts", bts);
+
+        if (institution != null) {
+            jpql += "AND bill.department.institution = :ins ";
+            parameters.put("ins", institution);
+        }
+        if (department != null) {
+            jpql += "AND bill.department = :dep ";
+            parameters.put("dep", department);
+        }
+        if (site != null) {
+            jpql += "AND bill.department.site = :site ";
+            parameters.put("site", site);
+        }
+        if (webUser != null) {
+            jpql += "AND p.creater = :wu ";
+            parameters.put("wu", webUser);
+        }
+        if (paymentMethod != null) {
+            jpql += "AND p.paymentMethod = :pm ";
+            parameters.put("pm", paymentMethod);
+        }
+
+        jpql += "AND p.createdAt BETWEEN :fd AND :td ";
+        parameters.put("fd", fromDate);
+        parameters.put("td", toDate);
+
+        jpql += "GROUP BY bill";
+
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+        bundle = new ReportTemplateRowBundle();
+        bundle.setReportTemplateRows(rs);
+        bundle.createRowValuesFromBill();
+        bundle.calculateTotals();
+    }
+
     public void billItemsToItamizedSaleReport(ReportTemplateRowBundle rtrb, List<BillItem> billItems) {
         Map<String, ReportTemplateRow> categoryMap = new HashMap<>();
         Map<String, ReportTemplateRow> itemSummaryMap = new HashMap<>();
@@ -13251,7 +13410,7 @@ public class SearchController implements Serializable {
 
         bundle = new ReportTemplateRowBundle();
         bundle.setReportTemplateRows(rs);
-        bundle.calculatePaymentMethodTotals();
+        bundle.calculateTotals();
     }
 
     public void generateAllCashierSummary() {
@@ -13311,7 +13470,7 @@ public class SearchController implements Serializable {
 
         bundle = new ReportTemplateRowBundle();
         bundle.setReportTemplateRows(rs);
-        bundle.calculatePaymentMethodTotals();
+        bundle.calculateTotals();
     }
 
     public SearchController() {
