@@ -40,10 +40,69 @@ public class PatientDepositController implements Serializable {
     private PatientDepositFacade patientDepositFacade;
     private PatientDeposit current;
     private List<PatientDeposit> items = null;
-    
-
     private int patientDepositManagementIndex=1;
+    private boolean printPreview;
+    private PaymentMethodData paymentMethodData;
+    private Bill bill;
+    private BillItem billItem;
+    private PaymentMethod paymentMethod;
+    private Patient patient;
+    private Boolean patientDetailsEditable = false;
+    private List<PatientDepositHistory> latestPatientDeposits;
+    private List<PatientDepositHistory> latestPatientDepositHistory;
     
+    private int patientDepositManagementIndex=0;
+    
+    public String navigateToAddNewPatientDeposit(){
+       patientController.clearDataForPatientDeposite();
+        return "/patient_deposit/receive?faces-redirect=true";
+    } 
+
+    public void getPatientDepositOnPatientDepositAdding(){
+        patientController.quickSearchPatientLongPhoneNumber(this);
+        current = null;
+        current = getDepositOfThePatient(patient,sessionController.getDepartment());
+        fillLatestPatientDeposits(current);
+        fillLatestPatientDepositHistory(current);
+        System.out.println("current = " + current);
+    }
+    
+    public void settlePatientDeposit(){
+        if(patient == null){
+            JsfUtil.addErrorMessage("Please Select a Patient");
+            return;
+        }
+        patientController.settlePatientDepositReceive();
+        updateBalance(patientController.getBill(), current);
+        billBeanController.createPayment(patientController.getBill(),
+                patientController.getBill().getPaymentMethod(), 
+                patientController.getPaymentMethodData() );
+    }
+    
+    public void updateBalance(Bill b, PatientDeposit pd){
+        Double beforeBalance = pd.getBalance();
+        Double afterBalance = beforeBalance + b.getNetTotal();
+        pd.setBalance(afterBalance);
+        patientDepositFacade.edit(pd);
+        JsfUtil.addSuccessMessage("Balance Updated.");
+        createPatientDepositHitory(HistoryType.PatientDeposit,pd,b,beforeBalance,afterBalance);
+    }
+    
+    public void createPatientDepositHitory(HistoryType ht,PatientDeposit pd, Bill b, Double beforeBalance,Double afterBalance){
+        PatientDepositHistory pdh = new PatientDepositHistory();
+        pdh.setPatientDeposit(pd);
+        pdh.setBill(b);
+        pdh.setHistoryType(ht);
+        pdh.setBalanceBeforeTransaction(beforeBalance);
+        pdh.setTransactionValue(b.getNetTotal());
+        pdh.setBalanceAfterTransaction(afterBalance);
+        pdh.setCreater(sessionController.getLoggedUser());
+        pdh.setCreatedAt(new Date());
+        pdh.setDepartment(sessionController.getDepartment());
+        pdh.setInstitution(sessionController.getInstitution());
+        
+        patientDepositHistoryFacade.create(pdh);
+    }
 
     public PatientDeposit getDepositOfThePatient(Patient p , Department d){        
         Map m = new HashMap<>();
@@ -100,6 +159,105 @@ public class PatientDepositController implements Serializable {
         this.patientDepositManagementIndex = patientDepositManagementIndex;
     }
 
+    public boolean isPrintPreview() {
+        return printPreview;
+    }
+
+    public void setPrintPreview(boolean printPreview) {
+        this.printPreview = printPreview;
+    }
+
+    public PaymentMethodData getPaymentMethodData() {
+        return paymentMethodData;
+    }
+
+    public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
+        this.paymentMethodData = paymentMethodData;
+    }
+
+    public Bill getBill() {
+        return bill;
+    }
+
+    public void setBill(Bill bill) {
+        this.bill = bill;
+    }
+
+    public BillItem getBillItem() {
+        return billItem;
+    }
+
+    public void setBillItem(BillItem billItem) {
+        this.billItem = billItem;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    @Override
+    public Patient getPatient() {
+        if (patient == null) {
+            patient = new Patient();
+        }
+        return patient;
+    }
+
+    @Override
+    public void setPatient(Patient patient) {
+        this.patient = patient;
+    }
+
+    @Override
+    public boolean isPatientDetailsEditable() {
+        return patientDetailsEditable;
+    }
+
+    @Override
+    public void setPatientDetailsEditable(boolean patientDetailsEditable) {
+        this.patientDetailsEditable = patientDetailsEditable;
+    }
+
+    @Override
+    public void toggalePatientEditable() {
+        patientDetailsEditable = !patientDetailsEditable;
+    }
+
+    public PatientDepositHistoryFacade getPatientDepositHistoryFacade() {
+        return patientDepositHistoryFacade;
+    }
+
+    public void setPatientDepositHistoryFacade(PatientDepositHistoryFacade patientDepositHistoryFacade) {
+        this.patientDepositHistoryFacade = patientDepositHistoryFacade;
+    }
+
+    public Boolean getPatientDetailsEditable() {
+        return patientDetailsEditable;
+    }
+
+    public void setPatientDetailsEditable(Boolean patientDetailsEditable) {
+        this.patientDetailsEditable = patientDetailsEditable;
+    }
+
+    public List<PatientDepositHistory> getLatestPatientDeposits() {
+        return latestPatientDeposits;
+    }
+
+    public void setLatestPatientDeposits(List<PatientDepositHistory> latestPatientDeposits) {
+        this.latestPatientDeposits = latestPatientDeposits;
+    }
+
+    public List<PatientDepositHistory> getLatestPatientDepositHistory() {
+        return latestPatientDepositHistory;
+    }
+
+    public void setLatestPatientDepositHistory(List<PatientDepositHistory> latestPatientDepositHistory) {
+        this.latestPatientDepositHistory = latestPatientDepositHistory;
+    }
 
     /**
      *
