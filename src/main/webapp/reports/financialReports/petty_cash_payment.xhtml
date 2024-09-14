@@ -9,124 +9,173 @@
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
                 <h:form >
-                    <div class="container">
-                        <p:panel header="Petty Cash Report" >
-                            <div class="row mb-2">
 
-                                <div class="col-md-2">
-                                    <p:outputLabel value="Branch Name"></p:outputLabel>
-                                </div>
-                                <div class="col-md-4">
-                                    <p:autoComplete 
-                                        value="#{webUserController.institution}"
+                    <p:panel>
+                        <f:facet name="header">
+                            <h:outputLabel value="Petty Cash Report" />
+                        </f:facet>
 
-                                        completeMethod="#{institutionController.completeIns}"
-                                        var="ins"
-                                        class="w-100 mt-1"
-                                        inputStyleClass="form-control"
-                                        itemLabel="#{ins.name}"
-                                        itemValue="#{ins}">
+                        <h:panelGrid columns="6" class="my-2 w-100">
+                            <p:outputLabel value="From Date" />
+                            <p:outputLabel value=" : " />
+                            <p:datePicker
+                                value="#{reportController.fromDate}"
+                                class="w-75"
+                                showTime="true"
+                                showButtonBar="true"
+                                timeInput="true"
+                                inputStyleClass="form-control"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
+                            </p:datePicker>
 
-                                    </p:autoComplete>
-                                </div>
-                            </div>
-                            <div class="row mb-2">
-                                <div class="col-md-2">
-                                    <p:outputLabel value="From Date" >
-                                    </p:outputLabel>
-                                </div>
-                                <div class="col-md-4">
-                                    <p:datePicker value="#{reportController.fromDate}" 
-                                                  style=" max-width: 100%; overflow-x: auto; "
-                                                  class="w-100"
-                                                  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></p:datePicker>
-                                </div>
-                            </div>  
-                            <div class="row mb-2">
-                                <div class="col-md-2">
-                                    <p:outputLabel value="To Date" >
-                                    </p:outputLabel>
-                                </div>
-                                <div class="col-md-4">
-                                    <p:datePicker value="#{reportController.toDate}"
-                                                  style=" max-width: 100%; overflow-x: auto; "
-                                                  class="w-100"
-                                                  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></p:datePicker>
-                                </div>
-                            </div>
+                            <p:outputLabel value="To Date" />
+                            <p:outputLabel value=" : " />
+                            <p:datePicker
+                                value="#{reportController.toDate}"
+                                class="w-75"
+                                showTime="true"
+                                showButtonBar="true"
+                                timeInput="true"
+                                inputStyleClass="form-control"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
+                            </p:datePicker>
 
-                            <div class="row mb-2">
-                                <div class="col-md-2">
-                                    <p:commandButton ajax="false" value="Process" action="#{reportController.processPettyCashPayment}" >
-                                    </p:commandButton>
-                                </div>
-                            </div>
+                            <p:outputLabel value="Paid To Department" />
+                            <p:outputLabel value=" : " />
+                            <p:autoComplete
+                                value="#{reportController.toDepartment}"
+                                completeMethod="#{departmentController.completeDept}"
+                                var="dpt"
+                                class="w-75 mt-1"
+                                inputStyleClass="form-control"
+                                itemLabel="#{dpt.name}"
+                                itemValue="#{dpt}">
+                            </p:autoComplete>
 
+                            <p:outputLabel value="Paid To Staff" />
+                            <p:outputLabel value=" : " />
+                            <p:autoComplete
+                                value="#{reportController.toStaff}"
+                                completeMethod="#{staffController.completeStaffWithoutDoctors}"
+                                var="ix"
+                                class="w-75 mt-1"
+                                inputStyleClass="form-control"
+                                itemLabel="#{ix.person.name}"
+                                itemValue="#{ix}">
+                            </p:autoComplete>
 
-                            <h:panelGrid columns="2">
-                                <h:outputLabel value="From Date :  "/>
+                            <p:outputLabel value="Branch Name"></p:outputLabel>
+                            <p:outputLabel value=" : " />
+                            <p:autoComplete
+                                value="#{reportController.institution}"
+                                completeMethod="#{institutionController.completeIns}"
+                                var="ins"
+                                class="w-75 mt-1"
+                                inputStyleClass="form-control"
+                                itemLabel="#{ins.name}"
+                                itemValue="#{ins}">
+
+                            </p:autoComplete>
+
+                            <p:outputLabel value="Site Name"></p:outputLabel>
+                            <p:outputLabel value=" : " />
+                            <p:autoComplete
+                                value="#{reportController.site}"
+                                completeMethod="#{institutionController.completeSite}"
+                                var="ins"
+                                class="w-75 mt-1"
+                                inputStyleClass="form-control"
+                                itemLabel="#{ins.name}"
+                                itemValue="#{ins}">
+
+                            </p:autoComplete>
+
+                            <p:outputLabel value="User" />
+                            <p:outputLabel value=" : " />
+                            <p:autoComplete
+                                value="#{reportController.webUser}"
+                                completeMethod="#{webUserController.completeUser}"
+                                var="w"
+                                class="w-75 mt-1"
+                                inputStyleClass="form-control"
+                                itemLabel="#{w.webUserPerson.name}"
+                                itemValue="#{w}">
+                            </p:autoComplete>
+                        </h:panelGrid>
+
+                        <h:panelGrid columns="6" class="my-2">
+                            <p:commandButton ajax="false" value="Process" icon="fas fa-cogs" class="ui-button-warning" action="#{reportController.processPettyCashPayment}" >
+                            </p:commandButton>
+                            <p:commandButton ajax="false" value="Excel" icon="fas fa-file-excel" class="ui-button-success mx-1" >
+                                <p:dataExporter fileName="Petty Cash Payment - #{webUserController.institution} (#{reportController.fromDate} - #{reportController.fromDate})" type="xlsx" target="dtaPr" />
+                            </p:commandButton>
+                            <p:commandButton ajax="false" value="Print" icon="fas fa-print" class="ui-button-info"  >
+                                <p:printer target="dtaPr"/>
+                            </p:commandButton>
+                        </h:panelGrid>
+
+                        <p:dataTable id="dtaPr" value="#{reportController.bills}" var="pc" rowIndexVar="rowIndex">
+                            <f:facet name="header">
+                                <h:outputLabel value="Petty Cash Payments" /><br/>
+                                <h:outputLabel value="From Date &emsp;"/>
+                                <p:outputLabel value="&emsp; : &emsp;" />
                                 <h:outputLabel value="#{reportController.fromDate}"  >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                 </h:outputLabel>
-
-                                <h:outputLabel value="To Date :  "/>
+                                <br/>
+                                <h:outputLabel value="To Date &emsp;"/>
+                                <p:outputLabel value="&emsp;&emsp;&nbsp; : &emsp;" />
                                 <h:outputLabel value="#{reportController.toDate}"  >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                 </h:outputLabel>
-
-                                <h:outputLabel value="Collection Center Name :  "/>
-                                <h:outputLabel value="#{reportController.collectingCentre}"  >
-
-                                </h:outputLabel>
-                            </h:panelGrid>
-
-                            <p:spacer height="5"></p:spacer>
-
-                            <p:dataTable value="#{reportController.bills}" var="pc" rowIndexVar="rowIndex">
-                                <p:column headerText="S" width="2em">
-                                    <h:outputText value="#{rowIndex+1}" ></h:outputText>
-                                </p:column>
-                                <p:column headerText="Casheir"><h:outputText value="#{pc.creater.webUserPerson.name}" ></h:outputText></p:column>
-                                <p:column headerText="Bill No" width="">
-                                    <h:outputText value="#{pc.id}" ></h:outputText>
-                                </p:column>
-                                <p:column headerText="Bill Date" >
-                                    <h:outputText value="#{pc.billDate}" ></h:outputText>
-                                </p:column>
-                                <p:column headerText="Document No" >
-                                    <h:outputText value="#{pc.billedBill.referenceNumber}" ></h:outputText>
-                                </p:column>
-                                <p:column headerText="Date" >
-                                    <h:outputText value="#{pc.billDate}" >
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                                    </h:outputText>
-                                </p:column>
-                                <p:column headerText="For Whome" >
-                                    <h:outputText value="#{pc.billType.label}" ></h:outputText>
-                                </p:column>
-                                <p:column headerText="Paid For" >
-                                    <h:outputText value="" ></h:outputText>
-                                </p:column>
-                                <p:column headerText="Purpose" >
-                                    <h:outputText value="" ></h:outputText>
-                                </p:column>
-                                <p:column headerText="Status" >
-                                    <h:outputText value="#{pc.approveUser != null ? 'Approved': 'Not Approved'}" ></h:outputText>
-                                </p:column>
-                                <p:column headerText="Amount" >
-                                    <h:outputText value="#{pc.total}" ></h:outputText>
-                                </p:column>
+                                <br/>
+                                <h:outputLabel value="Branch Name &emsp;"/>
+                                <p:outputLabel value=" : &emsp;" />
+                                <h:outputLabel value=""  />
+                            </f:facet>
+                            <p:column headerText="S" width="2em">
+                                <h:outputText value="#{rowIndex+1}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Casheir"><h:outputText value="#{pc.creater.webUserPerson.name}" ></h:outputText></p:column>
+                            <p:column headerText="Bill No" width="">
+                                <h:outputText value="#{pc.id}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Bill Date" >
+                                <h:outputText value="#{pc.billDate}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Document No" >
+                                <h:outputText value="#{pc.billedBill.referenceNumber}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Date" >
+                                <h:outputText value="#{pc.billDate}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="For Whome" >
+                                <h:outputText value="#{pc.staff.person.name}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Paid For" >
+                                <h:outputText value="#{pc.toDepartment.name}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Purpose" >
+                                <h:outputText value="#{pc.comments}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Status" >
+                                <h:outputText value="#{pc.approveUser != null ? 'Approved': 'Not Approved'}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Amount" >
+                                <h:outputText value="#{pc.total}" ></h:outputText>
+                            </p:column>
 
 
 
-                            </p:dataTable>
+                        </p:dataTable>
 
-                            <p:spacer height="5"></p:spacer>
+                        <p:spacer height="5"></p:spacer>
 
 
 
-                        </p:panel>
-                    </div>
+                    </p:panel>
 
                 </h:form>
 
