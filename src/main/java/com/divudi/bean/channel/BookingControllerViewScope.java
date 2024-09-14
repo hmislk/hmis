@@ -2083,6 +2083,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     public String navigateToViewBillSession(BillSession bs) {
 //        System.out.println("bs = " + bs);
         selectedBillSession = bs;
+        setSelectedSessionInstance(selectedBillSession.getSessionInstance());
         if (selectedBillSession == null) {
             JsfUtil.addErrorMessage("Please select a Patient");
             return "";
@@ -2090,7 +2091,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         // Setting the properties in the viewScopeDataTransferController
         viewScopeDataTransferController.setSelectedBillSession(selectedBillSession);
-        viewScopeDataTransferController.setSelectedSessionInstance(selectedSessionInstance);
+        viewScopeDataTransferController.setSelectedSessionInstance(getSelectedSessionInstance());
         viewScopeDataTransferController.setSessionInstanceFilter(sessionInstanceFilter);
         viewScopeDataTransferController.setFromDate(fromDate);
         viewScopeDataTransferController.setToDate(toDate);
