@@ -86,14 +86,18 @@
 
                                         <p:dataTable 
                                             id="tbl" 
-                                            paginator="true"
-                                            paginatorPosition="bottom"
                                             rows="5"
                                             value="#{investigationItemController.items}" 
                                             var="ixi" 
                                             selectionMode="multiple"
                                             selection="#{investigationItemController.selectedItemsToChange}"
                                             rowKey="#{ixi.id}"
+
+
+                                            paginator="true" paginatorPosition="bottom"
+                                            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                            currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                                            rowsPerPageTemplate="5,10,{ShowAll|'All'}"
 
                                             >
                                             <p:column selectionBox="true" width="2%"> </p:column>
@@ -211,7 +215,7 @@
                                                 action="#{investigationItemController.updateAllFontValues}" 
                                                 ajax="false"/>
                                         </f:facet>
-                                        
+
                                         <div class="row">
                                             <div class="col-2">
                                                 <p:outputLabel value="Font Size" class="mt-2"/>
@@ -223,19 +227,19 @@
                                                     autocomplete="off"/>
                                             </div>
                                         </div>
-                                        
+
                                         <div class="row mt-1">
                                             <div class="col-2">
                                                 <p:outputLabel value="Font Family" class="mt-2"/>
                                             </div>
                                             <div class="col-8">
                                                 <p:inputText 
-                                            class="w-100" 
-                                            value="#{investigationItemController.fontFamily}"/>
+                                                    class="w-100" 
+                                                    value="#{investigationItemController.fontFamily}"/>
                                             </div>
                                         </div>
-                                        
-                                        
+
+
                                     </p:panel>
 
 
@@ -298,7 +302,7 @@
                                                                     render="gpIi :#{p:resolveFirstComponentWithId('pDetails',view).clientId} moveFocus "/>
                                                         </h:inputText>
 
-                                                        
+
 
 
                                                         <h:inputHidden id="keyCode" binding="#{keyCode}" 
