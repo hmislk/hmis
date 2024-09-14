@@ -848,18 +848,30 @@ public class ReportController implements Serializable {
     }
 
     public void processCollectingCentreReciptReport() {
+        
+        List<BillType> billtypes=new ArrayList<>();
+        billtypes.add(BillType.CollectingCentreBill);
+        billtypes.add(BillType.CollectingCentrePaymentMadeBill);
+        billtypes.add(BillType.CollectingCentrePaymentReceiveBill);
+ 
+        
         String jpql = "select bill "
                 + " from Bill bill "
                 + " where bill.retired=:ret"
                 + " and bill.billDate between :fd and :td "
-                + " and bill.billType = :bType";
+                + " and bill.billType in :bTypes";
         
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
         m.put("fd", fromDate);
         m.put("td", toDate);
-        m.put("bType", BillType.CollectingCentreBill);
+        m.put("bTypes", billtypes);
 
+        if (site != null) {
+            jpql += " and bill.fromInstitution.route = :route ";
+            m.put("route", site);
+        }
+        
         if (route != null) {
             jpql += " and bill.fromInstitution.route = :route ";
             m.put("route", route);
