@@ -43,6 +43,7 @@ import com.divudi.facade.TestFlagFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import static com.divudi.data.InvestigationItemValueType.Memo;
 import static com.divudi.data.InvestigationItemValueType.Varchar;
+import com.divudi.data.lab.PatientInvestigationStatus;
 import com.divudi.entity.clinical.ClinicalFindingValue;
 import com.divudi.entity.lab.ReportFormat;
 import com.divudi.facade.ClinicalFindingValueFacade;
@@ -1757,7 +1758,12 @@ public class PatientReportController implements Serializable {
         currentPtIx.setApproveAt(Calendar.getInstance().getTime());
         currentPtIx.setApproveUser(getSessionController().getLoggedUser());
         currentPtIx.setApproveDepartment(getSessionController().getDepartment());
+        
+        currentPtIx.setStatus(PatientInvestigationStatus.REPORT_APPROVED);
+        
         getPiFacade().edit(currentPtIx);
+        
+        
         currentPatientReport.setApproved(Boolean.FALSE);
         currentPatientReport.setApproved(Boolean.TRUE);
         currentPatientReport.setApproveAt(Calendar.getInstance().getTime());
@@ -2240,6 +2246,13 @@ public class PatientReportController implements Serializable {
 //            getEjbFacade().edit(r);
             setCurrentPatientReport(r);
             pi.getPatientReports().add(r);
+            pi.setStatus(PatientInvestigationStatus.SAMPLE_INTERFACED);
+            pi.setPerformed(true);
+            pi.setPerformDepartment(sessionController.getDepartment());
+            pi.setPerformInstitution(sessionController.getInstitution());
+            pi.setPerformedAt(new Date());
+            pi.setPerformedUser(sessionController.getLoggedUser());
+            piFacade.edit(pi);
             getCommonReportItemController().setCategory(ix.getReportFormat());
         } else {
             JsfUtil.addErrorMessage("No ptIx or Ix selected to add");
