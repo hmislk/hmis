@@ -1057,6 +1057,17 @@
                         icon="pi pi-briefcase"
                         rendered="#{webUserController.hasPrivilege('PaymentBilling')}" >
                     </p:menuitem>
+                    
+<!--                    agency management command link-->
+                    
+                     <p:menuitem  
+                        ajax="false"  
+                        action="/agency_management/index?faces-redirect=true"
+                        value="Agency Management" 
+                        icon="fa fa-cart-arrow-down"
+                        rendered="#{webUserController.hasPrivilege('PaymentBilling')}" >
+                    </p:menuitem>
+
 
                     <p:menuitem
                         ajax="false"
