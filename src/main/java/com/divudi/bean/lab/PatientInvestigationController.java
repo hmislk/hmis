@@ -1856,6 +1856,97 @@ public class PatientInvestigationController implements Serializable {
         bills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
+    public void searchBillsForCourier() {
+        listingEntity = ListingEntity.BILLS;
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+        jpql = "SELECT pi.billItem.bill "
+                + " FROM PatientInvestigation pi"
+                + " WHERE pi.billItem.bill.retired = :ret";
+        if (searchDateType == null) {
+            searchDateType = SearchDateType.ORDERED_DATE;
+        }
+        switch (searchDateType) {
+            case ORDERED_DATE:
+                jpql += " AND pi.billItem.bill.createdAt BETWEEN :fd AND :td";
+                params.put("fd", getFromDate());
+                params.put("td", getToDate());
+                break;
+        }
+
+        if (orderedInstitution != null) {
+            jpql += " AND pi.billItem.bill.institution = :orderedInstitution";
+            params.put("orderedInstitution", getOrderedInstitution());
+        }
+
+        if (orderedDepartment != null) {
+            jpql += " AND pi.billItem.bill.toDepartment = :orderedDepartment";
+            params.put("orderedDepartment", getOrderedDepartment());
+        }
+
+        if (collectionCenter != null) {
+            jpql += " AND (pi.billItem.bill.collectingCentre = :collectionCenter OR pi.billItem.bill.fromInstitution = :collectionCenter) ";
+            params.put("collectionCenter", getCollectionCenter());
+        } else {
+            jpql += " AND (pi.billItem.bill.collectingCentre IN :collectionCenters OR pi.billItem.bill.fromInstitution IN :collectionCenters) ";
+            params.put("collectionCenters", sessionController.getLoggableCollectingCentres());
+        }
+
+        if (patientName != null && !patientName.trim().isEmpty()) {
+            jpql += " AND pi.billItem.bill.patient.person.name LIKE :patientName";
+            params.put("patientName", "%" + getPatientName().trim() + "%");
+        }
+
+        if (externalDoctor != null && !externalDoctor.trim().isEmpty()) {
+            jpql += " AND pi.billItem.bill.referredByName = :externalDoctor";
+            params.put("externalDoctor", getExternalDoctor().trim());
+        }
+
+        if (referringDoctor != null) {
+            jpql += " AND pi.billItem.bill.referredBy = :referringDoctor";
+            params.put("referringDoctor", getReferringDoctor());
+        }
+
+        if (department != null) {
+            jpql += " AND pi.billItem.bill.toDepartment = :department";
+            params.put("department", getDepartment());
+        }
+
+        if (patientInvestigationStatus != null) {
+            jpql += " AND pi.billItem.bill.status = :status";
+            params.put("status", patientInvestigationStatus);
+        }
+
+        jpql += " GROUP BY pi.billItem.bill ";
+
+        jpql += " ORDER BY pi.billItem.bill.createdAt DESC";
+
+        params.put("ret", false);
+
+        System.out.println("params = " + params);
+
+        bills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+
+    public void searchPatientReportsFormSelectedBillForCourier(Bill bill) {
+        listingEntity = ListingEntity.PATIENT_REPORTS;
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+
+        jpql = "SELECT r "
+                + " FROM PatientReport r "
+                + " WHERE r.retired = :ret "
+                + " AND r.patientInvestigation.billItem.bill.cancelled=:cancel ";
+
+        jpql += " AND r.patientInvestigation.billItem.bill.patient =:patient ";
+        params.put("patient", bill.getPatient());
+
+        jpql += " ORDER BY r.patientInvestigation.billItem.bill.patient asc";
+        params.put("ret", false);
+        params.put("cancel", false);
+        patientReports = patientReportFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+
     public void searchBillsWithSampleId() {
         listingEntity = ListingEntity.BILLS;
         String jpql;
@@ -2867,8 +2958,8 @@ public class PatientInvestigationController implements Serializable {
 
         if (sampleId != null) {
             jpql += " AND (ps.sampleId like :smpid or ps.id like :smpId) ";
-            params.put("smpid", "%" + String.valueOf(sampleId) + "%"); 
-            params.put("smpId", "%" + String.valueOf(sampleId) + "%"); 
+            params.put("smpid", "%" + String.valueOf(sampleId) + "%");
+            params.put("smpId", "%" + String.valueOf(sampleId) + "%");
         }
 
         jpql += " ORDER BY ps.id DESC";

@@ -544,6 +544,7 @@ public enum Privileges {
     OphthalmologyRepairManagement("Ophthalmology Repair Management"),
 
     // New privileges for couriers
+    Courier("Courier"),
     CourierCollectSamples("Courier Collect Samples"),
     CourierHandoverSamplesToLab("Courier Handover Samples to Lab"),
     CourierViewReports("Courier View Reports"),
