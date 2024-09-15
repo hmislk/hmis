@@ -1636,7 +1636,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             List<BillEntry> tmp = new ArrayList<>();
             for (BillEntry e : lstBillEntries) {
                 if (Objects.equals(e.getBillItem().getItem().getDepartment().getId(), d.getId())) {
-                    BillItem bi = getBillBean().saveBillItem(myBill, e, getSessionController().getLoggedUser());
+                    BillItem bi = getBillBean().saveBillItemForOpdBill(myBill, e, getSessionController().getLoggedUser());
                     myBill.getBillItems().add(bi);
                     tmp.add(e);
                 }

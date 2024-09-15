@@ -8,6 +8,8 @@
  */
 package com.divudi.bean.common;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillNumberSuffix;
+import com.divudi.data.BillType;
 import com.divudi.data.HistoryType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.PaymentMethodData;
@@ -20,6 +22,7 @@ import com.divudi.entity.PatientDepositHistory;
 import com.divudi.facade.PatientDepositFacade;
 import com.divudi.facade.PatientDepositHistoryFacade;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -78,6 +81,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         current = getDepositOfThePatient(patient,sessionController.getDepartment());
         fillLatestPatientDeposits(current);
         fillLatestPatientDepositHistory(current);
+        System.out.println("current = " + current);
     }
     
     public void settlePatientDeposit(){
@@ -102,6 +106,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
             return;
         }
         patientController.settlePatientDepositReturn();
+        System.out.println("patientController.getBill() = " + patientController.getBill());
         updateBalance(patientController.getBill(), current);
         billBeanController.createPayment(patientController.getBill(),
                 patientController.getBill().getPaymentMethod(), 
@@ -211,6 +216,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         m.put("ret", false);
         
         PatientDeposit pd = patientDepositFacade.findFirstByJpql(jpql, m);
+        System.out.println("pd = " + pd);
         
         if(pd == null){
             pd = new PatientDeposit();
