@@ -18,7 +18,6 @@ import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-
 import com.divudi.ejb.EjbApplication;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.StaffBean;
@@ -3107,7 +3106,6 @@ public class BillSearch implements Serializable {
         }
         BillTypeAtomic billTypeAtomic = bill.getBillTypeAtomic();
         loadBillDetails(bill);
-        System.out.println("billTypeAtomic = " + billTypeAtomic);
         switch (billTypeAtomic) {
             case PHARMACY_RETAIL_SALE_CANCELLED:
                 pharmacyBillSearch.setBill(bill);
@@ -4417,7 +4415,6 @@ public class BillSearch implements Serializable {
     }
 
     private void loadBillDetails(Bill bill) {
-        System.out.println("loadBillDetails");
         viewingBill = billBean.fetchBill(bill.getId());
         viewingIndividualBillsOfBatchBill = billBean.fetchIndividualBillsOfBatchBill(bill);
         viewingRefundBills = billBean.fetchRefundBillsOfBilledBill(bill);
@@ -4683,7 +4680,6 @@ public class BillSearch implements Serializable {
         Map params = new HashMap();
         params.put("bi", cancelBill);
         cancelBill = billFacade.findFirstByJpql(jpql, params);
-        System.out.println("cancelBill" + cancelBill.getDeptId());
         return cancelBill.getDeptId();
 
     }

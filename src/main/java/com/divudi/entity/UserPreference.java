@@ -89,6 +89,7 @@ public class UserPreference implements Serializable {
      */
     @Lob
     private String opdBillForCashierTemplate;
+    @Deprecated
     @Lob
     private String smsTemplateForOpdBillSetting;
 
@@ -1004,10 +1005,12 @@ public class UserPreference implements Serializable {
         this.smsAuthenticationType = smsAuthenticationType;
     }
 
+    @Deprecated
     public String getSmsTemplateForOpdBillSetting() {
         return smsTemplateForOpdBillSetting;
     }
 
+    @Deprecated
     public void setSmsTemplateForOpdBillSetting(String smsTemplateForOpdBillSetting) {
         this.smsTemplateForOpdBillSetting = smsTemplateForOpdBillSetting;
     }
