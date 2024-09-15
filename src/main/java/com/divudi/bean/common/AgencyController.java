@@ -68,7 +68,40 @@ public class AgencyController implements Serializable {
         return getFacade().findFirstByJpql(jpql, m);
     }
 
+  public Institution findAgencyByCode(String code) {
+        if (code == null) {
+            return null;
+        }
+        if (code.trim().equals("")) {
+            return null;
+        }
+        String jpql = "select c "
+                + " from Institution c "
+                + " where c.retired=:ret "
+                + " and c.institutionType=:t "
+                + " and c.code=:code";
+        Map m = new HashMap<>();
+        m.put("ret", false);
+        m.put("t", InstitutionType.Agency);
+        m.put("code", code);
+        
+        return getFacade().findFirstByJpql(jpql, m);
+    }
     
+  public void save(Institution ins) {
+        if (ins == null) {
+            return;
+        }
+        if (ins.getId() != null) {
+            getFacade().edit(ins);
+            JsfUtil.addSuccessMessage("Updated Successfully.");
+        } else {
+            ins.setCreatedAt(new Date());
+            ins.setCreater(getSessionController().getLoggedUser());
+            getFacade().create(ins);
+            JsfUtil.addSuccessMessage("Saved Successfully");
+        }
+    }
     public void randomlySetAgencyBalances() {
         List<Institution> suggestions;
         String sql;
