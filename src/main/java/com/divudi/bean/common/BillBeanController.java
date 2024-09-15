@@ -12,6 +12,7 @@ import com.divudi.data.BillFeeBundleEntry;
 import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.FeeType;
+import com.divudi.data.InstitutionType;
 import com.divudi.data.OpdBillingStrategy;
 import com.divudi.data.PaymentMethod;
 import static com.divudi.data.PaymentMethod.Agent;
@@ -3195,7 +3196,30 @@ public class BillBeanController implements Serializable {
         return e.getBillItem();
     }
 
-    public BillItem saveBillItemForOpdBill(Bill b, BillEntry e, WebUser wu) {
+    private boolean billFeeIsThereAsSelectedInBillFeeBundle(BillFee bf, List<BillFeeBundleEntry> billFeeBundleEntries) {
+        if (bf == null) {
+            return false;
+        }
+        if (bf.getFee() == null) {
+            return false;
+        }
+        if (billFeeBundleEntries == null) {
+            return false;
+        }
+        if (billFeeBundleEntries.isEmpty()) {
+            return false;
+        }
+        boolean found = false;
+        for (BillFeeBundleEntry bfbe : billFeeBundleEntries) {
+            if (bfbe.getSelectedBillFee().equals(bf)) {
+                found = true;
+            }
+        }
+        return found;
+    }
+
+    public BillItem saveBillItemForOpdBill(Bill b, BillEntry e, WebUser wu, List<BillFeeBundleEntry> billFeeBundleEntries) {
+
         e.getBillItem().setCreatedAt(new Date());
         e.getBillItem().setCreater(wu);
         e.getBillItem().setBill(b);
@@ -3205,7 +3229,7 @@ public class BillBeanController implements Serializable {
         }
 
         saveBillComponentForOpdBill(e, b, wu);
-        saveBillFeeForOpdBill(e, b, wu);
+        saveBillFeeForOpdBill(e, b, wu,billFeeBundleEntries);
 
         //System.out.println("BillItems().size() = " + b.getBillItems().size());
         for (BillItem bi : b.getBillItems()) {
@@ -3233,25 +3257,7 @@ public class BillBeanController implements Serializable {
     @Inject
     BillController billController;
 
-    private boolean billFeeIsThereAsSelectedInBillFeeBundle(BillFee bf, List<BillFeeBundleEntry> bundleFeeEntries) {
-        if (bf == null) {
-            return false;
-        }
-        if (bf.getFee() == null) {
-            return false;
-        }
-        if (bundleFeeEntries == null || bundleFeeEntries.isEmpty()) {
-            return true;
-        }
-        boolean found = false;
-        for (BillFeeBundleEntry bfbe : bundleFeeEntries) {
-            if (bfbe.getSelectedBillFee().equals(bf)) {
-                found = true;
-            }
-        }
-        return found;
-    }
-
+  
     public void calculateBillItems(Bill bill, List<BillEntry> billEntrys) {
         double staff = 0.0;
         double ins = 0.0;
@@ -3518,16 +3524,21 @@ public class BillBeanController implements Serializable {
 
     }
 
-    public List<BillFee> saveBillFeeForOpdBill(BillEntry e, Bill b, WebUser wu) {
+    public List<BillFee> saveBillFeeForOpdBill(BillEntry e, Bill b, WebUser wu, List<BillFeeBundleEntry> billFeeBundleEntries) {
         List<BillFee> list = new ArrayList<>();
         double ccfee = 0.0;
         double woccfee = 0.0;
-        double staffFee;
-        double collectingCentreFee;
-        double hospitalFee;
-        double otherFee;
+        double staffFee=0.0;
+        double collectingCentreFee=0.0;
+        double hospitalFee=0.0;
         for (BillFee bf : e.getLstBillFees()) {
-            
+
+            boolean needToAddBillFee = billFeeIsThereAsSelectedInBillFeeBundle(bf, billFeeBundleEntries);
+
+            if (!needToAddBillFee) {
+                continue;
+            }
+
 //            asdadas;
             bf.setCreatedAt(Calendar.getInstance().getTime());
             bf.setCreater(wu);
@@ -3540,17 +3551,22 @@ public class BillBeanController implements Serializable {
             if (bf.getId() == null) {
                 getBillFeeFacade().create(bf);
             }
-            if (bf.getFee().getFeeType() == FeeType.CollectingCentre) {
-                ccfee += bf.getFeeValue();
-            } else {
-                woccfee += bf.getFeeValue();
+            if(bf.getStaff()!=null){
+                staffFee +=bf.getFeeValue();
+            }else if(bf.getSpeciality()!=null){
+                staffFee +=bf.getFeeValue();
+            }else if(bf.getInstitution()!=null && bf.getInstitution().getInstitutionType()==InstitutionType.CollectingCentre){
+                collectingCentreFee+=bf.getFeeValue();
+            }else{
+                hospitalFee+=bf.getFeeValue();
             }
             list.add(bf);
-
         }
         e.getBillItem().setTransCCFee(ccfee);
         e.getBillItem().setTransWithOutCCFee(woccfee);
-
+        e.getBillItem().setHospitalFee(hospitalFee);
+        e.getBillItem().setStaffFee(staffFee);
+        e.getBillItem().setCollectingCentreFee(collectingCentreFee);
         return list;
     }
 
