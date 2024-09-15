@@ -59,6 +59,7 @@ import com.divudi.bean.opd.OpdBillController;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.entity.FamilyMember;
+import com.divudi.entity.PatientDeposit;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
 import com.divudi.java.CommonFunctions;
@@ -142,6 +143,8 @@ public class BillController implements Serializable {
     private WebUserController webUserController;
     @Inject
     private OpdBillController opdBillController;
+    @Inject
+    PatientDepositController patientDepositController;
 
     /**
      * Class Vairables
@@ -1707,14 +1710,14 @@ public class BillController implements Serializable {
         }
          
         if(paymentMethod == PaymentMethod.PatientDeposit){
-            if(getBatchBill().getPatient().getHasAnAccount() == null){
-                JsfUtil.addErrorMessage("Create Patient Account First");
-                return "";
-            }
-            if(!getBatchBill().getPatient().getHasAnAccount()){
-                JsfUtil.addErrorMessage("Create Patient Account First");
-                return "";
-            }
+//            if(getBatchBill().getPatient().getHasAnAccount() == null){
+//                JsfUtil.addErrorMessage("Create Patient Account First");
+//                return "";
+//            }
+//            if(!getBatchBill().getPatient().getHasAnAccount()){
+//                JsfUtil.addErrorMessage("Create Patient Account First");
+//                return "";
+//            }
         }
         
         Bill cancellationBatchBill = new CancelledBill();
@@ -1756,12 +1759,14 @@ public class BillController implements Serializable {
         cancellationBatchBill.setBilledBill(batchBill);
         
         if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.PatientDeposit) {
-            if (cancellationBatchBill.getPatient().getRunningBalance() == null) {
-                cancellationBatchBill.getPatient().setRunningBalance(Math.abs(cancellationBatchBill.getNetTotal()));
-            } else {
-                cancellationBatchBill.getPatient().setRunningBalance(cancellationBatchBill.getPatient().getRunningBalance() + Math.abs(cancellationBatchBill.getNetTotal()));
-            }
-            patientFacade.edit(cancellationBatchBill.getPatient());
+//            if (cancellationBatchBill.getPatient().getRunningBalance() == null) {
+//                cancellationBatchBill.getPatient().setRunningBalance(Math.abs(cancellationBatchBill.getNetTotal()));
+//            } else {
+//                cancellationBatchBill.getPatient().setRunningBalance(cancellationBatchBill.getPatient().getRunningBalance() + Math.abs(cancellationBatchBill.getNetTotal()));
+//            }
+//            patientFacade.edit(cancellationBatchBill.getPatient());
+           PatientDeposit pd = patientDepositController.getDepositOfThePatient(cancellationBatchBill.getPatient(), sessionController.getDepartment());
+           patientDepositController.updateBalance(cancellationBatchBill, pd);
         }
 
         createPaymentForOpdBatchBillCancellation(cancellationBatchBill, batchBill.getPaymentMethod());

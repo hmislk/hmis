@@ -1,0 +1,128 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+                    <p:panel  >
+                        <f:facet name="header" >
+                            <h:outputText value="View Payment Details" ></h:outputText>
+                        </f:facet>
+                        <p:panelGrid columns="2" layout="tabular">
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between">
+                                    <p:outputLabel value="View Payment" class="mt-2"></p:outputLabel>
+                                </div> 
+                            </f:facet>
+
+                            <h:outputText value="ID" ></h:outputText>
+                            <h:outputText value="#{billSearch.payment.id}" ></h:outputText>
+
+                            <h:outputText value="Payment Method" ></h:outputText>
+                            <h:outputText value="#{billSearch.payment.paymentMethod}" ></h:outputText>
+
+                            <h:outputText value="Value" ></h:outputText>
+                            <h:outputText value="#{billSearch.payment.paidValue}" ></h:outputText>
+
+                            <h:outputText value="Bill No" ></h:outputText>
+                            <p:commandButton 
+                                value="#{billSearch.payment.bill.deptId}" 
+                                ajax="false"
+                                action="#{billSearch.navigateViewBillByBillTypeAtomic()}">
+                                <f:setPropertyActionListener 
+                                    value="#{billSearch.payment.bill}" 
+                                    target="#{billSearch.bill}" ></f:setPropertyActionListener>
+                            </p:commandButton>
+
+                        </p:panelGrid>
+
+
+                        <p:panelGrid columns="2"
+                                     rendered="#{billSearch.payment.paymentMethod eq 'Cash'}"
+                                     layout="tabular">
+                            <f:facet name="header" >
+                                <h:outputText value="Cash" ></h:outputText>
+                            </f:facet>
+                            <p:outputLabel value="Tendered" ></p:outputLabel>
+                            <h:outputText value="#{billSearch.payment.bill.cashPaid}" >
+                                <f:convertNumber pattern="#,#00.00" ></f:convertNumber>
+                            </h:outputText>
+                        </p:panelGrid>
+
+
+                        <p:panelGrid columns="2"
+                                     rendered="#{billSearch.payment.paymentMethod eq 'Card'}"
+                                     layout="tabular">
+                            <f:facet name="header" >
+                                <h:outputText value="Card" ></h:outputText>
+                            </f:facet>
+                            <p:outputLabel value="Bank" ></p:outputLabel>
+                            <h:outputText value="#{billSearch.payment.bank.name}" ></h:outputText>
+
+                            <p:outputLabel value="Referance No" ></p:outputLabel>
+                            <p:outputLabel value="#{billSearch.payment.creditCardRefNo}" ></p:outputLabel>
+
+                            <p:outputLabel value="Value" ></p:outputLabel>
+                            <p:outputLabel value="#{billSearch.payment.paidValue}" >
+                                <f:convertNumber pattern="#,#00.00" ></f:convertNumber>
+                            </p:outputLabel>
+                        </p:panelGrid>
+                        
+                        <p:panelGrid columns="2"
+                                     rendered="#{billSearch.payment.paymentMethod eq 'Cheque'}"
+                                     layout="tabular">
+                            <f:facet name="header" >
+                                <h:outputText value="Cheque" ></h:outputText>
+                            </f:facet>
+                            <p:outputLabel value="Bank" ></p:outputLabel>
+                            <h:outputText value="#{billSearch.payment.bank.name}" ></h:outputText>
+
+                            <p:outputLabel value="Cheque No" ></p:outputLabel>
+                            <p:outputLabel value="#{billSearch.payment.chequeRefNo}" ></p:outputLabel>
+                            
+                            <p:outputLabel value="Cheque Date" ></p:outputLabel>
+                            <p:outputLabel value="#{billSearch.payment.chequeDate}" >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"></f:convertDateTime>
+                            </p:outputLabel>
+
+                            <p:outputLabel value="Value" ></p:outputLabel>
+                            <p:outputLabel value="#{billSearch.payment.paidValue}" >
+                                <f:convertNumber pattern="#,#00.00" ></f:convertNumber>
+                            </p:outputLabel>
+                        </p:panelGrid>
+                        
+                        <p:panelGrid columns="2"
+                                     rendered="#{billSearch.payment.paymentMethod eq 'PatientDeposit'}"
+                                     layout="tabular">
+                            <f:facet name="header" >
+                                <h:outputText value="Patient Deposit" ></h:outputText>
+                            </f:facet>
+                            <p:outputLabel value="Value" ></p:outputLabel>
+                            <p:outputLabel value="#{billSearch.payment.paidValue}" >
+                                <f:convertNumber pattern="#,#00.00" ></f:convertNumber>
+                            </p:outputLabel>
+                        </p:panelGrid>
+
+                    </p:panel>
+
+
+
+
+
+
+                </h:form>
+            </ui:define>
+
+
+
+        </ui:composition>
+
+    </h:body>
+</html>
