@@ -463,6 +463,20 @@
                     <p:menuitem ajax="false" action="/lab/search_reports?faces-redirect=true" value="Reporting" rendered="#{webUserController.hasPrivilege('LabReporting')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="/reportLab/lab_summeries_index?faces-redirect=true" value="Lab Analytics"  rendered="#{webUserController.hasPrivilege('LabSummeries')}" ></p:menuitem>
                 </p:submenu>
+                
+                <p:menuitem 
+                    id="courier"
+                    ajax="false"
+                    action="/collecting_centre/courier/index.xhtml?faces-redirect=true" 
+                    icon=""
+                    rendered="#{webUserController.hasPrivilege('Courier')}"
+                    title="Courier">
+                    <img  
+                        width="28" 
+                        height="28" 
+                        src="https://img.icons8.com/external-kmg-design-detailed-outline-kmg-design/64/external-courier-shipping-delivery-kmg-design-detailed-outline-kmg-design.png" alt="external-courier-shipping-delivery-kmg-design-detailed-outline-kmg-design"/>
+                </p:menuitem>
+                
                 <p:submenu  id="smPharmacy" icon="fa fa-fw fa-prescription-bottle-alt"  rendered="#{webUserController.hasPrivilege('Pharmacy')}">
                     <p:menuitem 
                         ajax="false" 

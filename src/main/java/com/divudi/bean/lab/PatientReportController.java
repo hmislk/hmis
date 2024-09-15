@@ -1703,28 +1703,33 @@ public class PatientReportController implements Serializable {
     }
 
     public boolean chackAlreadyApprovedPatientReports(PatientInvestigation patientInvestigation) {
-        boolean hasAlreadyReports = false;
+        boolean allowNewReport = false;
         PatientReport pr = null;
 
-        Map params = new HashMap<>();
+        if (patientInvestigation.getBillItem().getItem().isMultipleReportsAllowed()) {
+            allowNewReport = true;
+        } else {
+            Map params = new HashMap<>();
 
-        String jpql = "SELECT r "
-                + "FROM PatientReport r "
-                + " WHERE r.retired=:ret"
-                + " and r.patientInvestigation=:pi"
-                + " and r.approved=:appr";
+            String jpql = "SELECT r "
+                    + "FROM PatientReport r "
+                    + " WHERE r.retired=:ret"
+                    + " and r.patientInvestigation=:pi";
 
-        params.put("pi", patientInvestigation);
-        params.put("appr", true);
-        params.put("ret", false);
-        System.out.println("jpql = " + jpql);
+            params.put("pi", patientInvestigation);
+            params.put("ret", false);
+            System.out.println("jpql = " + jpql);
 
-        pr = getFacade().findFirstByJpql(jpql, params);
+            pr = getFacade().findFirstByJpql(jpql, params);
 
-        if (pr != null) {
-            hasAlreadyReports = true;
+            if (pr != null) {
+                allowNewReport = false;
+            } else {
+                allowNewReport = true;
+            }
+
         }
-        return hasAlreadyReports;
+        return allowNewReport;
     }
 
     public void approvePatientReport() {
@@ -1736,12 +1741,10 @@ public class PatientReportController implements Serializable {
             JsfUtil.addErrorMessage("First Save report");
             return;
         }
-        
-        if (!currentPatientReport.getPatientInvestigation().getBillItem().getItem().isMultipleReportsAllowed()) {
-            if (chackAlreadyApprovedPatientReports(currentPatientReport.getPatientInvestigation())) {
-                JsfUtil.addErrorMessage("Another Report of this Investigation has been Approved");
-                return;
-            }
+
+        if (!chackAlreadyApprovedPatientReports(currentPatientReport.getPatientInvestigation())) {
+            JsfUtil.addErrorMessage("Another Report of this Investigation has been Approved");
+            return;
         }
 
         BooleanMessage tbm = canApproveThePatientReport(currentPatientReport);
@@ -2363,14 +2366,12 @@ public class PatientReportController implements Serializable {
             JsfUtil.addErrorMessage("No Patient Report");
             return null;
         }
-        
-        if (pi.getBillItem().getItem().isMultipleReportsAllowed()) {
-            if (chackAlreadyApprovedPatientReports(pi)) {
-                JsfUtil.addErrorMessage("Another Report of this Investigation has been Approved");
-                return null;
-            }
+
+        if (!chackAlreadyApprovedPatientReports(pi)) {
+            JsfUtil.addErrorMessage("Another Report of this Investigation has been Approved");
+            return null;
         }
-        
+
         Investigation ix = null;
         System.out.println("pi.getInvestigation() = " + pi.getInvestigation());
         if (pi.getInvestigation() == null) {
