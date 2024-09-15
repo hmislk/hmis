@@ -108,8 +108,6 @@
                                                     <p:outputLabel value="Comments" ></p:outputLabel>
                                                     <p:inputTextarea value="#{investigationItemController.testComments}" ></p:inputTextarea>
 
-
-
                                                     <p:outputLabel value="Test Component" ></p:outputLabel>
                                                     <p:selectOneMenu id="cmbTestComponent"  value="#{investigationItemController.investigationComponent}" >
                                                         <f:selectItems value="#{investigationItemController.currentReportComponants}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
@@ -120,9 +118,6 @@
                                                         <f:selectItem itemLabel="Select" ></f:selectItem>
                                                         <f:selectItems value="#{machineController.items}" ></f:selectItems>
                                                     </p:selectOneMenu>
-
-
-
 
                                                     <p:outputLabel value="Test" ></p:outputLabel>
                                                     <p:autoComplete value="#{investigationItemController.test}"
@@ -177,7 +172,6 @@
 
                                                     <p:outputLabel value="Referance Header Name" ></p:outputLabel>
                                                     <p:inputText value="#{investigationItemController.refHeaderName}" ></p:inputText>
-
 
                                                 </h:panelGrid>
 
@@ -316,9 +310,9 @@
                                         <p:outputLabel value="#{ii.name}" rendered="#{ii.ixItemType eq 'Calculation'}" ></p:outputLabel>
                                     </ui:repeat>
                                     <p:inputText >
-                                        
+
                                     </p:inputText>
-                                    
+
                                     <diV class="d-flex gap-2">
                                         <p:selectOneMenu 
                                             id="dtbItem" 
@@ -382,6 +376,9 @@
                                                     <p:inputTextarea id="txtContents" scrollHeight="60" autoResize="false" class="w-100" value="#{investigationItemController.current.htmltext}">
                                                         <p:ajax event="blur" process="txtContents" update="dlgContents" />
                                                     </p:inputTextarea>
+
+
+
 
                                                 </h:panelGrid>
 
@@ -497,6 +494,39 @@
                                                     </div>
                                                 </div>
                                             </p:tab>
+
+
+                                            <p:tab title="Color and Layout">
+                                                <p:panelGrid layout="tabular" columns="2" >
+                                                    <h:outputText value="Custom CSS to Override All Others" class="mt-2 w-100"/>
+                                                    <p:inputText class="w-100" autocomplete="off" 
+                                                                 value="#{investigationItemController.current.customCss}"/>
+
+                                                    
+                                                    <h:outputText value="Background Color" class="mt-2 w-100"/>
+                                                    <p:inputText class="w-100" autocomplete="off" id="txtCssBackColor" value="#{investigationItemController.current.cssBackColor}"/>
+
+                                                    <h:outputText value="Color" class="mt-2 w-100"/>
+                                                    <p:inputText class="w-100" autocomplete="off" id="txtCssColor" value="#{investigationItemController.current.cssColor}"/>
+
+                                                    <h:outputText value="Border Radius" class="mt-2 w-100"/>
+                                                    <p:inputText class="w-100" autocomplete="off" id="txtCssBorderRadius" value="#{investigationItemController.current.cssBorderRadius}"/>
+
+                                                    <h:outputText value="Margin" class="mt-2 w-100"/>
+                                                    <p:inputText class="w-100" autocomplete="off" id="txtCssMargin" value="#{investigationItemController.current.cssMargin}"/>
+
+                                                    <h:outputText value="Padding" class="mt-2 w-100"/>
+                                                    <p:inputText class="w-100" autocomplete="off" id="txtCssPadding" value="#{investigationItemController.current.cssPadding}"/>
+                                                    <h:outputText value="Border" class="mt-2 w-100"/>
+                                                    <p:inputText class="w-100" autocomplete="off"  value="#{investigationItemController.current.cssBorder}"/>
+
+
+                                                </p:panelGrid>
+
+                                            </p:tab>
+
+
+
 
                                             <p:tab title="Automation" >
                                                 <h:panelGrid  columns="3" class="gap-2">
