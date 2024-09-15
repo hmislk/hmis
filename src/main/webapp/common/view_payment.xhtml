@@ -74,6 +74,41 @@
                                 <f:convertNumber pattern="#,#00.00" ></f:convertNumber>
                             </p:outputLabel>
                         </p:panelGrid>
+                        
+                        <p:panelGrid columns="2"
+                                     rendered="#{billSearch.payment.paymentMethod eq 'Cheque'}"
+                                     layout="tabular">
+                            <f:facet name="header" >
+                                <h:outputText value="Cheque" ></h:outputText>
+                            </f:facet>
+                            <p:outputLabel value="Bank" ></p:outputLabel>
+                            <h:outputText value="#{billSearch.payment.bank.name}" ></h:outputText>
+
+                            <p:outputLabel value="Cheque No" ></p:outputLabel>
+                            <p:outputLabel value="#{billSearch.payment.chequeRefNo}" ></p:outputLabel>
+                            
+                            <p:outputLabel value="Cheque Date" ></p:outputLabel>
+                            <p:outputLabel value="#{billSearch.payment.chequeDate}" >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"></f:convertDateTime>
+                            </p:outputLabel>
+
+                            <p:outputLabel value="Value" ></p:outputLabel>
+                            <p:outputLabel value="#{billSearch.payment.paidValue}" >
+                                <f:convertNumber pattern="#,#00.00" ></f:convertNumber>
+                            </p:outputLabel>
+                        </p:panelGrid>
+                        
+                        <p:panelGrid columns="2"
+                                     rendered="#{billSearch.payment.paymentMethod eq 'PatientDeposit'}"
+                                     layout="tabular">
+                            <f:facet name="header" >
+                                <h:outputText value="Patient Deposit" ></h:outputText>
+                            </f:facet>
+                            <p:outputLabel value="Value" ></p:outputLabel>
+                            <p:outputLabel value="#{billSearch.payment.paidValue}" >
+                                <f:convertNumber pattern="#,#00.00" ></f:convertNumber>
+                            </p:outputLabel>
+                        </p:panelGrid>
 
                     </p:panel>
 
