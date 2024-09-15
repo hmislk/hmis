@@ -249,7 +249,7 @@
                     <p:outputLabel value="Agent Collection"/>                 
                 </f:facet>
                 <p:column headerText="Bill Id">
-                    <h:outputLabel value="#{a.insId}"/>
+                    <h:outputLabel value="#{a.deptId}"/>
                 </p:column>
                 <p:column headerText="Agent Name">
                     <h:outputLabel value="#{a.fromInstitution.name}" />
@@ -291,7 +291,7 @@
                 <p:subTable value="#{c.billItems}" var="b">
 
                     <p:column headerText="#{c.bill.fromInstitution.name}" style="width: 200px;">  
-                        <p:outputLabel value="#{b.referenceBill.insId}(opd)" rendered="#{b.patientEncounter eq null}"/>
+                        <p:outputLabel value="#{b.referenceBill.deptId}(opd)" rendered="#{b.patientEncounter eq null}"/>
                         <p:outputLabel value="#{b.patientEncounter.bhtNo}(bht)" rendered="#{b.patientEncounter ne null}"/>
                     </p:column>                                    
                     <p:column headerText="Patient Name" style="width: 40%;">
@@ -431,7 +431,7 @@
                     <f:facet name="header">              
                         <p:outputLabel value="Bill No"/>    
                     </f:facet>
-                    <h:outputLabel value="#{ch.insId}"/>                            
+                    <h:outputLabel value="#{ch.deptId}"/>                            
                 </p:column>                            
                 <p:column headerText="Credit Card No" >
                     <f:facet name="header">              
@@ -485,7 +485,7 @@
                     <f:facet name="header">
                         <h:outputLabel value="Bill No"/>
                     </f:facet>
-                    <h:outputLabel value="#{ch.insId}" />                            
+                    <h:outputLabel value="#{ch.deptId}" />                            
                 </p:column>                        
                 <p:column headerText="Invoice No" style="width: 20%; "> 
                     <f:facet name="header">
@@ -547,7 +547,7 @@
                     <f:facet name="header">              
                         <p:outputLabel value="Bill No"/>    
                     </f:facet>
-                    <h:outputLabel value="#{ch.insId}" />                            
+                    <h:outputLabel value="#{ch.deptId}" />                            
                 </p:column>                        
                 <p:column headerText="Cheque No" style="width: 20%;">
                     <f:facet name="header">              

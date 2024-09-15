@@ -68,7 +68,7 @@
                                         </p:commandButton>
                                         <p:commandButton   
                                             id="btnCancelApproval"  
-                                            disabled ="#{!(webUserController.hasPrivilege('LabDeAutherizing') eq true and patientReportController.currentPatientReport.approved eq true)}"   
+                                            rendered ="#{(webUserController.hasPrivilege('LabDeAutherizing') eq true and patientReportController.currentPatientReport.approved eq true)}"   
                                             value="Cancel Approval"
                                             icon="fa-solid fa-times"
                                             class=" ui-button-danger"
@@ -124,7 +124,7 @@
                             </div>
                         </f:facet>
 
-                        <p:growl id="messages" showDetail="true"/> 
+                        <p:growl id="messages" showDetail="false"/> 
                         <div class="row">
 
                             <div class="col-4">

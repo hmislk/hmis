@@ -20,6 +20,8 @@ public enum PatientInvestigationStatus {
     SAMPLE_APPROVED("Sample Approved"),
     SAMPLE_REPEATED("Sample Repeated"),
     SAMPLE_APPROVED_AND_REPEATED("Sample Approved and Repeated"),
+    REPORT_CREATED("Report Created"),
+    REPORT_APPROVED("Report Approved"),
     REPORT_PRINTED("Report Printed"),
     REPORT_DISTRIBUTED("Report Distributed"),
     REPORT_REACHED_COLLECTING_CENTRE("Report Reached Collecting Centre"),

@@ -868,8 +868,11 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     private boolean isFirstVisit() {
+        System.out.println("this = " + this);
+        System.out.println("isFirstVisit = ");
         String j = "Select w from WebUser w order by w.id";
         WebUser ws = getFacede().findFirstByJpql(j);
+        System.out.println("ws = " + ws);
         if (ws == null) {
             JsfUtil.addSuccessMessage("First Visit");
             return true;
@@ -1081,7 +1084,6 @@ public class SessionController implements Serializable, HttpSessionListener {
         m.put("un", userName.toLowerCase());
         List<WebUser> allUsers = getFacede().findByJpql(jpql, m);
         for (WebUser u : allUsers) {
-            System.out.println("u = " + u.getName());
             if ((u.getName()).equalsIgnoreCase(userName)) {
 
                 boolean passwordIsOk;
@@ -1195,7 +1197,6 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     public String selectDepartment() {
-        System.out.println("loggedUser = " + loggedUser);
         if (loggedUser == null) {
             JsfUtil.addErrorMessage("No User logged");
             return "/login?faces-redirect=true";
@@ -1774,7 +1775,6 @@ public class SessionController implements Serializable, HttpSessionListener {
         m.put("ret", true);
         m.put("wu", twu);
         System.out.println("m = " + m);
-        System.out.println("sql = " + sql);
         List<WebUserPrivilege> twups = getWebUserPrivilegeFacade().findByJpql(sql, m);
         return twups;
     }

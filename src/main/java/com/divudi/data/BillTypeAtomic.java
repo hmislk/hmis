@@ -1,5 +1,12 @@
 package com.divudi.data;
 
+import static com.divudi.data.BillType.PharmacyAddtoStock;
+import static com.divudi.data.BillType.PharmacyAdjustment;
+import static com.divudi.data.BillType.PharmacyAdjustmentDepartmentSingleStock;
+import static com.divudi.data.BillType.PharmacyGrnBill;
+import static com.divudi.data.BillType.PharmacyPre;
+import static com.divudi.data.BillType.PharmacyPurchaseBill;
+import static com.divudi.data.BillType.PharmacyWholeSale;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -128,7 +135,7 @@ public enum BillTypeAtomic {
     CHANNEL_CANCELLATION_WITHOUT_PAYMENT("Channel Cancellation without Payment", BillCategory.CANCELLATION, ServiceType.CHANNELLING, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.CHANNELLING, PaymentCategory.CREDIT_SPEND),
     CHANNEL_REFUND("Channel Refund", BillCategory.REFUND, ServiceType.CHANNELLING, BillFinanceType.CASH_OUT, CountedServiceType.CHANNELLING, PaymentCategory.NON_CREDIT_SPEND),
     // OPD_IN
-    OPD_BATCH_BILL_TO_COLLECT_PAYMENT_AT_CASHIER("Opd Batch Bill to Collect Payment at Cashier", BillCategory.BILL, ServiceType.OPD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.NONE, PaymentCategory.CREDIT_SPEND),
+    OPD_BATCH_BILL_TO_COLLECT_PAYMENT_AT_CASHIER("Opd Batch Bill to Collect Payment at Cashier", BillCategory.BILL, ServiceType.OPD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.NONE, PaymentCategory.NO_PAYMENT),
     OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER("Opd Batch Bill Payment Collection at Cashier", BillCategory.BILL, ServiceType.OPD, BillFinanceType.CASH_IN, CountedServiceType.NONE, PaymentCategory.NON_CREDIT_SPEND),
     OPD_BATCH_BILL_WITH_PAYMENT("Opd Batch Bill with Payment Collection", BillCategory.BILL, ServiceType.OPD, BillFinanceType.CASH_IN, CountedServiceType.NONE, PaymentCategory.NON_CREDIT_SPEND),
     OPD_BATCH_BILL_CANCELLATION("Opd Batch Bill Cancellation", BillCategory.CANCELLATION, ServiceType.OPD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.NONE, PaymentCategory.CREDIT_SPEND),
@@ -136,10 +143,10 @@ public enum BillTypeAtomic {
     OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER("OPD Bill Payment Collection at Cashier", BillCategory.BILL, ServiceType.OPD, BillFinanceType.CASH_IN, CountedServiceType.OPD_IN, PaymentCategory.NON_CREDIT_SPEND),
     OPD_BILL_WITH_PAYMENT("OPD Bill with Payment", BillCategory.BILL, ServiceType.OPD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.OPD_IN, PaymentCategory.NON_CREDIT_SPEND),
     OPD_BILL_CANCELLATION("Opd Bill Cancellation", BillCategory.CANCELLATION, ServiceType.OPD, BillFinanceType.CASH_OUT, CountedServiceType.OPD_OUT, PaymentCategory.NON_CREDIT_SPEND),
-    OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION("Opd Bill Cancellation with Batch Bill", BillCategory.CANCELLATION, ServiceType.OPD, BillFinanceType.CASH_OUT, CountedServiceType.OPD_OUT, PaymentCategory.NON_CREDIT_SPEND),
+    OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION("Opd Bill Cancellation with Batch Bill", BillCategory.CANCELLATION, ServiceType.OPD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.OPD_OUT, PaymentCategory.NON_CREDIT_SPEND),
     OPD_BILL_REFUND("Opd Bill Refund", BillCategory.REFUND, ServiceType.OPD, BillFinanceType.CASH_OUT, CountedServiceType.OPD_OUT, PaymentCategory.NON_CREDIT_SPEND),
-    OPD_PROFESSIONAL_PAYMENT_BILL("OPD Professional Payment bill", BillCategory.PAYMENTS, ServiceType.OPD, BillFinanceType.CASH_OUT, CountedServiceType.OPD_PROFESSIONAL_PAYMENT, PaymentCategory.NON_CREDIT_SPEND),
-    OPD_PROFESSIONAL_PAYMENT_BILL_RETURN("OPD Professional Payment bill Return", BillCategory.PAYMENTS, ServiceType.OPD, BillFinanceType.CASH_IN, CountedServiceType.OPD_PROFESSIONAL_PAYMENT_RETURN, PaymentCategory.NON_CREDIT_SPEND),
+    OPD_PROFESSIONAL_PAYMENT_BILL("OPD Professional Payment bill", BillCategory.PAYMENTS, ServiceType.PROFESSIONAL_PAYMENT, BillFinanceType.CASH_OUT, CountedServiceType.OPD_PROFESSIONAL_PAYMENT, PaymentCategory.NON_CREDIT_SPEND),
+    OPD_PROFESSIONAL_PAYMENT_BILL_RETURN("OPD Professional Payment bill Return", BillCategory.PAYMENTS, ServiceType.PROFESSIONAL_PAYMENT, BillFinanceType.CASH_IN, CountedServiceType.OPD_PROFESSIONAL_PAYMENT_RETURN, PaymentCategory.NON_CREDIT_SPEND),
     // PACKAGES
     PACKAGE_OPD_BATCH_BILL_TO_COLLECT_PAYMENT_AT_CASHIER("Package Opd Batch Bill to Collect Payment at Cashier", BillCategory.BILL, ServiceType.OPD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.OPD_IN, PaymentCategory.CREDIT_SPEND),
     PACKAGE_OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER("Package Opd Batch Bill Payment Collection at Cashier", BillCategory.BILL, ServiceType.OPD, BillFinanceType.CASH_IN, CountedServiceType.OPD_IN, PaymentCategory.NON_CREDIT_SPEND),
@@ -179,11 +186,11 @@ public enum BillTypeAtomic {
     PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE("Channelling Payment for Staff", BillCategory.PAYMENTS, ServiceType.CHANNELLING, BillFinanceType.CASH_OUT, CountedServiceType.CHANNELLING_PROFESSIONAL_PAYMENT, PaymentCategory.NON_CREDIT_SPEND),
     PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION("Channelling session Payment for Staff", BillCategory.PAYMENTS, ServiceType.CHANNELLING, BillFinanceType.CASH_OUT, CountedServiceType.CHANNELLING_PROFESSIONAL_PAYMENT, PaymentCategory.NON_CREDIT_SPEND),
     PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES("Channelling Payment for Staff for agencies", BillCategory.PAYMENTS, ServiceType.OTHER, BillFinanceType.CASH_IN, CountedServiceType.OTHER_PROFESSIONAL_PAYMENT, PaymentCategory.NON_CREDIT_SPEND),
-    PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES("OPD Professional Payment bill", BillCategory.PAYMENTS, ServiceType.OPD, BillFinanceType.CASH_OUT, CountedServiceType.OPD_PROFESSIONAL_PAYMENT, PaymentCategory.NON_CREDIT_SPEND),
+    PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES("OPD Professional Payment bill", BillCategory.PAYMENTS, ServiceType.PROFESSIONAL_PAYMENT, BillFinanceType.CASH_OUT, CountedServiceType.OPD_PROFESSIONAL_PAYMENT, PaymentCategory.NON_CREDIT_SPEND),
     PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN("Inward Payment for Staff - Return and Cancellation", BillCategory.PAYMENTS, ServiceType.INWARD, BillFinanceType.CASH_OUT, CountedServiceType.INWARD_PROFESSIONAL_PAYMENT_RETURN, PaymentCategory.NON_CREDIT_SPEND),
     PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN("Channelling Payment for Staff - Return and Cancellation", BillCategory.PAYMENTS, ServiceType.CHANNELLING, BillFinanceType.CASH_IN, CountedServiceType.CHANNELLING_PROFESSIONAL_PAYMENT_RETURN, PaymentCategory.NON_CREDIT_SPEND),
     PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES_RETURN("Channelling Payment for Staff for agencies - Return and Cancellation", BillCategory.PAYMENTS, ServiceType.OTHER, BillFinanceType.CASH_OUT, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
-    PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN("OPD Professional Payment bill - Return and Cancellation", BillCategory.PAYMENTS, ServiceType.OPD, BillFinanceType.CASH_IN, CountedServiceType.OPD_PROFESSIONAL_PAYMENT_RETURN, PaymentCategory.NON_CREDIT_SPEND),
+    PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN("OPD Professional Payment bill - Return and Cancellation", BillCategory.PAYMENTS, ServiceType.PROFESSIONAL_PAYMENT, BillFinanceType.CASH_IN, CountedServiceType.OPD_PROFESSIONAL_PAYMENT_RETURN, PaymentCategory.NON_CREDIT_SPEND),
     // PETTY CASH AND OTHERS
     PETTY_CASH_ISSUE("Petty Cash Issue", BillCategory.PAYMENTS, ServiceType.OTHER, BillFinanceType.CASH_OUT, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
     PETTY_CASH_RETURN("Petty Cash Return", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.CASH_IN, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
@@ -233,6 +240,54 @@ public enum BillTypeAtomic {
     private final BillFinanceType billFinanceType;
     private final CountedServiceType countedServiceType;
     private final PaymentCategory paymentCategory;
+
+    public static BillTypeAtomic getBillTypeAtomic(BillType billType, BillClassType billClassType) {
+        switch (billClassType) {
+            case Bill:
+                switch (billType) {
+                    case PharmacyWholeSale:
+                        return BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL;
+                    case PharmacyPurchaseBill:
+                        return BillTypeAtomic.PHARMACY_DIRECT_PURCHASE;
+                }
+                break;
+            case BilledBill:
+                switch (billType) {
+                    case PharmacyGrnBill:
+                        return BillTypeAtomic.PHARMACY_GRN;
+                    case PharmacyWholeSale:
+                        return BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL;
+                    case PharmacyPurchaseBill:
+                        return BillTypeAtomic.PHARMACY_DIRECT_PURCHASE;
+                }
+            case CancelledBill:
+                switch (billType) {
+                    case PharmacyGrnBill:
+                        return BillTypeAtomic.PHARMACY_GRN_CANCELLED;
+                    case PharmacyWholeSale:
+                        return BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL_CANCELLED;
+                    case PharmacyPurchaseBill:
+                        return BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED;
+                }
+            case OtherBill:
+                return null;
+            case PreBill:
+                return null;
+            case RefundBill:
+                switch (billType) {
+                    case PharmacyGrnBill:
+                        return BillTypeAtomic.PHARMACY_GRN_REFUND;
+                    case PharmacyWholeSale:
+                        return BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL_REFUND;
+                    case PharmacyPurchaseBill:
+                        return BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED;
+                }
+
+            default:
+                return null;
+        }
+        return null;
+    }
 
     BillTypeAtomic(String label, BillCategory billCategory, ServiceType serviceType, BillFinanceType billFinanceType, CountedServiceType countedServiceType, PaymentCategory paymentCategory) {
         this.label = label;

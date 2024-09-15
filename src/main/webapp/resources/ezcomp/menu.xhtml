@@ -239,7 +239,7 @@
                         />
                     <p:menuitem 
                         ajax="false" 
-                        action="#{cashierReportController.navigateToOpdSummeries()}" 
+                        action="#{cashierReportController.navigateToOpdAnalytics()}" 
                         value="OPD Analytics" 
                         icon="fa fa-list-alt">
                     </p:menuitem>
@@ -463,6 +463,20 @@
                     <p:menuitem ajax="false" action="/lab/search_reports?faces-redirect=true" value="Reporting" rendered="#{webUserController.hasPrivilege('LabReporting')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="/reportLab/lab_summeries_index?faces-redirect=true" value="Lab Analytics"  rendered="#{webUserController.hasPrivilege('LabSummeries')}" ></p:menuitem>
                 </p:submenu>
+                
+                <p:menuitem 
+                    id="courier"
+                    ajax="false"
+                    action="/collecting_centre/courier/index.xhtml?faces-redirect=true" 
+                    icon=""
+                    rendered="#{webUserController.hasPrivilege('Courier')}"
+                    title="Courier">
+                    <img  
+                        width="28" 
+                        height="28" 
+                        src="https://img.icons8.com/external-kmg-design-detailed-outline-kmg-design/64/external-courier-shipping-delivery-kmg-design-detailed-outline-kmg-design.png" alt="external-courier-shipping-delivery-kmg-design-detailed-outline-kmg-design"/>
+                </p:menuitem>
+                
                 <p:submenu  id="smPharmacy" icon="fa fa-fw fa-prescription-bottle-alt"  rendered="#{webUserController.hasPrivilege('Pharmacy')}">
                     <p:menuitem 
                         ajax="false" 
@@ -961,7 +975,8 @@
                         rendered="#{webUserController.hasPrivilege('ChannellingChannelBooking')}" >
                     </p:menuitem>
                     <p:menuitem  ajax="false"  value="Past Bookings"  action="/channel/past_channel_booking?faces-redirect=true" actionListener="#{pastBookingController.navigateToPastChannelBookingFromMenu()}" rendered="#{webUserController.hasPrivilege('ChannellingPastBooking')}" ></p:menuitem>
-                    <p:menuitem  ajax="false"  value="Booked List"  action="/channel/channel_booked_list?faces-redirect=true" actionListener="#{bookingPastController.makeNull}" rendered="false" ></p:menuitem>
+                    
+                    <p:menuitem  ajax="false"  value="Channel BIll Search"  action="/channel/channel_bill_search?faces-redirect=true"></p:menuitem>
                     <p:submenu label="Doctor Leave" rendered="#{webUserController.hasPrivilege('ChannellingDoctorLeave')}" >
                         <p:menuitem  ajax="false"  value="By Date"  action="/channel/channel_doctor_leave_by_date?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannellingDoctorLeaveByDate')}" actionListener="#{bookingController.resetToStartFromSpeciality}" ></p:menuitem>
                         <p:menuitem  ajax="false"  value="By Service Session"  action="/channel/channel_doctor_leave_by_service_session?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannellingDoctorLeaveByServiceSession')}" actionListener="#{bookingController.resetToStartFromSpeciality}" ></p:menuitem>
@@ -1040,6 +1055,14 @@
                         action="/collecting_centre/index?faces-redirect=true"
                         value="Collecting Centre Management" 
                         icon="pi pi-briefcase"
+                        rendered="#{webUserController.hasPrivilege('PaymentBilling')}" >
+                    </p:menuitem>
+
+                    <p:menuitem
+                        ajax="false"
+                        action="/patient_deposit/index?faces-redirect=true"
+                        value="Patient Deposit Management"
+                        icon="fas fa-money-bill-transfer"
                         rendered="#{webUserController.hasPrivilege('PaymentBilling')}" >
                     </p:menuitem>
 
@@ -1145,11 +1168,6 @@
                             <p:menuitem  ajax="false"  action="/collecting_centre/collecting_centre_deposit_bill?faces-redirect=true" value="Collecting Centre Payment" actionListener="#{agentPaymentRecieveBillController.prepareNewBill()}" ></p:menuitem>
                             <p:menuitem  ajax="false"  action="/collecting_centre/collecting_centre_bill_search_own?faces-redirect=true"
                                          actionListener="#{searchController.makeListNull}"  value="Collecting Centre Bill Search"  ></p:menuitem>
-                        </p:submenu>
-
-                        <p:submenu label="Patient Deposit"  rendered="#{webUserController.hasPrivilege('Payment')}">
-                            <p:menuitem  value="Patient Deposit"  rendered="#{webUserController.hasPrivilege('Payment')}" action="/payments/patient/receive?faces-redirect=true" actionListener="#{patientController.clearDataForPatientDeposite()}"></p:menuitem >
-                            <p:menuitem  value="Patient Deposit Search"  rendered="#{webUserController.hasPrivilege('Payment')}" action="/payments/patient/patient_deposit_search?faces-redirect=true" actionListener="#{patientController.clearDataForPatientDeposite()}"></p:menuitem >
                         </p:submenu>
 
                     </p:submenu>

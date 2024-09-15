@@ -259,16 +259,19 @@ public class AgentPaymentReceiveSearchController implements Serializable {
             JsfUtil.addErrorMessage("No Bill to Calcel");
             return;
         }
-        cancelBill(BillType.CollectingCentrePaymentReceiveBill, BillNumberSuffix.CCCAN, HistoryType.CollectingCentreDepositCancel, BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL);
         if (errorCheck()) {
             return;
         }
+        cancelBill(BillType.CollectingCentrePaymentReceiveBill, BillNumberSuffix.CCCAN, HistoryType.CollectingCentreDepositCancel, BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL);
+        
 
         CancelledBill cb = new CancelledBill();
 
         cb.copy(getBill());
         cb.invertValue(getBill());
 
+        String deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(sessionController.getInstitution(), sessionController.getDepartment(), BillType.CollectingCentrePaymentMadeBill, BillClassType.CancelledBill);
+        
         cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.CollectingCentrePaymentReceiveBill, BillClassType.CancelledBill, BillNumberSuffix.CCCAN));
         cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.CollectingCentrePaymentReceiveBill, BillClassType.CancelledBill, BillNumberSuffix.CCCAN));
 

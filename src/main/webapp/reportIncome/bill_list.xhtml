@@ -43,8 +43,8 @@
                                 <h:outputText value="#{n + 1}"/>
                             </p:column>
 
-                            <p:column headerText="Ind Id" sortBy="#{bill.insId}" filterBy="#{bill.insId}" filterMatchMode="contains">
-                                <p:commandLink id="billNo" value="#{bill.insId}" actionListener="#{searchController.viewOPD(bill)}" ajax="false">
+                            <p:column headerText="Ind Id" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}" filterMatchMode="contains">
+                                <p:commandLink id="billNo" value="#{bill.deptId}" actionListener="#{searchController.viewOPD(bill)}" ajax="false">
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.selectedBill}"/>
                                 </p:commandLink>
                             </p:column>

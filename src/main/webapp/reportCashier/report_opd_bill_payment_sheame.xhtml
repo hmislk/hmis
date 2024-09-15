@@ -8,7 +8,7 @@
       >
 
     <h:body>
-        <ui:composition template="/analytics/opd/index.xhtml">
+        <ui:composition template="/opd/analytics/index.xhtml">
             <ui:define name="subcontent">
                 <h:form>
                     <p:panel>
@@ -126,7 +126,7 @@
                                     <h:outputLabel value="#{i+1}"/>
                                 </p:column>
                                 <p:column headerText="Bill No" rendered="#{sessionController.loggedPreference.opdBillPaperType ne 'PosPaper'}">                                
-                                    <h:outputLabel   value="#{bill.insId}"/>
+                                    <h:outputLabel   value="#{bill.deptId}"/>
                                 </p:column>
                                 <p:column headerText="Bill No" rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'PosPaper'}" >                                
                                     <h:outputLabel   value="#{bill.deptId}"/>
@@ -229,7 +229,7 @@
                                     <h:outputLabel value="#{i+1}"/>
                                 </p:column>
                                 <p:column headerText="Bill No" rendered="#{sessionController.loggedPreference.opdBillPaperType ne 'PosPaper'}">                                
-                                    <h:outputLabel   value="#{bill.insId}"/>
+                                    <h:outputLabel   value="#{bill.deptId}"/>
                                 </p:column>
                                 <p:column headerText="Bill No" rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'PosPaper'}" >                                
                                     <h:outputLabel   value="#{bill.deptId}"/>
@@ -330,7 +330,7 @@
                                     <h:outputLabel value="#{i+1}"/>
                                 </p:column>
                                 <p:column headerText="Bill No" rendered="#{sessionController.loggedPreference.opdBillPaperType ne 'PosPaper'}">                                
-                                    <h:outputLabel   value="#{bill.insId}"/>
+                                    <h:outputLabel   value="#{bill.deptId}"/>
                                 </p:column>
                                 <p:column headerText="Bill No" rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'PosPaper'}" >                                
                                     <h:outputLabel   value="#{bill.deptId}"/>

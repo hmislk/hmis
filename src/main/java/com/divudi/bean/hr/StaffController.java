@@ -1229,7 +1229,6 @@ public class StaffController implements Serializable {
 
         System.out.println(" current.getName() = " + current.getName());
         System.out.println(" current.getPerson().getName() = " + current.getPerson().getName());
-        System.out.println("current.getPerson().getFullName() = " + current.getPerson().getFullName());
 
         updateStaffEmployment();
 
@@ -1285,7 +1284,6 @@ public class StaffController implements Serializable {
 
         System.out.println(" current.getName() = " + current.getName());
         System.out.println(" current.getPerson().getName() = " + current.getPerson().getName());
-        System.out.println("current.getPerson().getFullName() = " + current.getPerson().getFullName());
 
         recreateModel();
         getItems();
@@ -1505,7 +1503,7 @@ public class StaffController implements Serializable {
         }
         return items;
     }
-
+    
     public void fillItems() {
         String temSql;
         temSql = "SELECT i FROM Staff i where i.retired=false and i.person is not null and i.person.name is not null order by i.person.name";
@@ -1524,7 +1522,6 @@ public class StaffController implements Serializable {
         Map m = new HashMap();
         m.put("ret", true);
         m.put("name", name);
-        System.out.println("m = " + m);
         return getFacade().findFirstByJpql(jpql, m);
     }
 

@@ -19,8 +19,8 @@
                       
                             <p:panelGrid columns="3" styleClass="ui-grid ui-grid-responsive" columnClasses="col-4,col-4,col-4">
                                 <!-- First Row -->
-                                <h:outputLabel for="insId" value="Bill No (Ins ID)" />
-                                <p:inputText id="insId" autocomplete="off" value="#{searchController.searchKeyword.insId}" />
+                                <h:outputLabel for="deptId" value="Bill No (Ins ID)" />
+                                <p:inputText id="deptId" autocomplete="off" value="#{searchController.searchKeyword.deptId}" />
                                 <p:commandButton id="btnSearchInsId" ajax="false" value="Search by Ins ID"
                                                  action="#{searchController.searchByInsId()}"
                                                  icon="fa fa-search" styleClass="ui-button-primary" />
@@ -108,18 +108,18 @@
                             </p:column>
 
                             <p:column headerText="Ins ID" >                              
-                                <h:outputLabel  value="#{bill.insId}" ></h:outputLabel>
+                                <h:outputLabel  value="#{bill.deptId}" ></h:outputLabel>
                                 <br/>
                                 <h:panelGroup rendered="#{bill.cancelled}" >
-                                    <h:outputLabel style="color: red;" value="#{bill.cancelledBill.insId}" >                                       
+                                    <h:outputLabel style="color: red;" value="#{bill.cancelledBill.deptId}" >                                       
                                     </h:outputLabel>
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{bill.refunded}" >
-                                    <h:outputLabel style="color: red;" value="#{bill.refundedBill.insId}" >
+                                    <h:outputLabel style="color: red;" value="#{bill.refundedBill.deptId}" >
                                     </h:outputLabel>
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{bill.paid}" >
-                                    <h:outputLabel style="color: red;" value="#{bill.paidBill.insId}" >
+                                    <h:outputLabel style="color: red;" value="#{bill.paidBill.deptId}" >
                                     </h:outputLabel>
                                 </h:panelGroup>
                             </p:column>       

@@ -90,9 +90,9 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Bill No"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.insId}" ></h:outputLabel>
+                                    <h:outputLabel value="#{i.deptId}" ></h:outputLabel>
                                     <h:outputLabel value="/" rendered="#{i.cancelledBill ne null}" ></h:outputLabel>
-                                    <h:outputLabel value="#{i.cancelledBill.insId}" style="color: red;" rendered="#{i.cancelledBill ne null}" ></h:outputLabel>
+                                    <h:outputLabel value="#{i.cancelledBill.deptId}" style="color: red;" rendered="#{i.cancelledBill ne null}" ></h:outputLabel>
                                 </p:column>
 
                                 <p:column headerText="Patient Name">
@@ -168,13 +168,13 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Bill No"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{can.insId}" ></h:outputLabel>
+                                    <h:outputLabel value="#{can.deptId}" ></h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Cancel Bill No">
                                     <f:facet name="header">
                                         <h:outputLabel value="Payment Bill No"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{can.billedBill.insId}" style="color: red;"></h:outputLabel>
+                                    <h:outputLabel value="#{can.billedBill.deptId}" style="color: red;"></h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Patient Name">
                                     <f:facet name="header">
@@ -250,7 +250,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Bill No"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{ref.insId}" ></h:outputLabel>
+                                    <h:outputLabel value="#{ref.deptId}" ></h:outputLabel>
                                 </p:column>
 
                                 <p:column headerText="Patient Name">

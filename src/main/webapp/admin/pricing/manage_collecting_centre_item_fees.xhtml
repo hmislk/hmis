@@ -65,16 +65,14 @@
                                 <p:column headerText="Name" style="padding: 6px;" >
                                     <p:outputLabel value="#{ix.name}" ></p:outputLabel>
                                 </p:column>
+                                <p:column headerText="Name" style="padding: 6px;" >
+                                    <p:outputLabel value="#{ix.code}" ></p:outputLabel>
+                                </p:column>
                                 <p:column headerText="Institution" style="padding: 6px;" >
                                     <p:outputLabel value="#{ix.institution.name}" ></p:outputLabel>
                                 </p:column>
                                 <p:column headerText="Department" style="padding: 6px;" >
                                     <p:outputLabel value="#{ix.department.name}" ></p:outputLabel>
-                                </p:column>
-                                <p:column headerText="Total" style="padding: 6px;" >
-                                    <p:outputLabel value="#{ix.total}" >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                    </p:outputLabel>
                                 </p:column>
                             </p:autoComplete>
 

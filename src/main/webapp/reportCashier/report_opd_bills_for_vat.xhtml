@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-                template="/analytics/opd/index.xhtml"
+                template="/opd/analytics/index.xhtml"
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
@@ -128,8 +128,8 @@
                             <f:facet name="header" >
                                 <p:outputLabel value="Reciept No" />
                             </f:facet>
-                            <p:outputLabel value="#{b.insId}" />                                    
-                            <p:outputLabel value="(#{b.billedBill.insId})" rendered="#{b.billedBill ne null}" />                                    
+                            <p:outputLabel value="#{b.deptId}" />                                    
+                            <p:outputLabel value="(#{b.billedBill.deptId})" rendered="#{b.billedBill ne null}" />                                    
                         </p:column>
 
                         <p:column style="text-align: left;" >

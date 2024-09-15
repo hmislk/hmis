@@ -8,8 +8,6 @@
     <!-- INTERFACE -->
     <cc:interface>
         <cc:attribute name="bill" />
-        <cc:attribute name="billController" />
-        <cc:attribute name="dup" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -19,16 +17,14 @@
             <!-- Header Section -->
             <div class="row">
                 <div class="col-xs-12 text-center" style="font-weight: bold; font-size: 16px; margin-bottom: 20px;">
-                    <h:outputLabel value="Collecting Centre Credit Note" rendered="#{cc.attrs.bill.billType eq 'AgentPaymentReceiveBill'}" />
+                    <h:outputLabel value="Collecting Centre Bill Cancellation"  />
                 </div>
             </div>
 
             <!-- Receipt Details -->
             <div class="row">
                 <div class="col-xs-12 col-sm-6">
-                    <strong>Receipt No:</strong> #{cc.attrs.bill.insId}
-                    <h:outputLabel value=" **Duplicate" rendered="#{cc.attrs.dup eq true }"/>
-                    <h:outputLabel value=" **Cancelled" rendered="#{cc.attrs.bill.cancelledBill.insId ne null}"/>
+                    <strong>Receipt No:</strong> #{cc.attrs.bill.deptId}
                 </div>
                 <div class="col-xs-12 col-sm-6">
                     <strong>Date:</strong>

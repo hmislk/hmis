@@ -35,7 +35,13 @@
 
 
                                 <h:outputLabel value="Investigation" ></h:outputLabel>
-                                <p:autoComplete forceSelection="true" id="acIx"  value="#{investigationItemController.currentInvestigation}" completeMethod="#{investigationController.completeItem}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" >
+                                <p:autoComplete forceSelection="true" id="acIx"  value="#{investigationItemController.currentInvestigation}" completeMethod="#{investigationController.completeItem}" var="ix" itemValue="#{ix}" >
+                                    <p:column headerText="Name">
+                                        <h:outputText value="#{ix.name}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Code">
+                                        <h:outputText value="#{ix.code}" ></h:outputText>
+                                    </p:column>
                                     <p:ajax event="itemSelect" process="acIx" update="lstIi acIiv" />
                                 </p:autoComplete>
                                 <h:outputLabel value="Field" ></h:outputLabel>

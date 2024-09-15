@@ -68,8 +68,8 @@
                                 <f:facet name="header" >
                                     <p:outputLabel value="Bill Number" />
                                 </f:facet>
-                                <p:outputLabel value="#{b.insId}" />
-                                <p:outputLabel value=" - #{b.paidBill.insId}" rendered="#{b.paidBill ne b}" />
+                                <p:outputLabel value="#{b.deptId}" />
+                                <p:outputLabel value=" - #{b.paidBill.deptId}" rendered="#{b.paidBill ne b}" />
                             </p:column>
                             <p:column style="text-align: right;" >
                                 <f:facet name="header" >
@@ -173,13 +173,13 @@
                                 <f:facet name="header" >
                                     <p:outputLabel value="Bill Number" />
                                 </f:facet>
-                                <p:outputLabel value="#{b.insId}" />
+                                <p:outputLabel value="#{b.deptId}" />
                             </p:column>
                             <p:column>
                                 <f:facet name="header" >
                                     <p:outputLabel value="Ref. Bill Number" />
                                 </f:facet>
-                                <p:outputLabel value="#{b.billedBill.insId}" />
+                                <p:outputLabel value="#{b.billedBill.deptId}" />
                             </p:column>
                             <p:column style="text-align: right;" >
                                 <f:facet name="header" >
@@ -279,13 +279,13 @@
                                 <f:facet name="header" >
                                     <p:outputLabel value="Bill Number" />
                                 </f:facet>
-                                <p:outputLabel value="#{b.insId}" />
+                                <p:outputLabel value="#{b.deptId}" />
                             </p:column>
                             <p:column>
                                 <f:facet name="header" >
                                     <p:outputLabel value="Ref. Bill Number" />
                                 </f:facet>
-                                <p:outputLabel value="#{b.billedBill.insId}" />
+                                <p:outputLabel value="#{b.billedBill.deptId}" />
                             </p:column>
                             <p:column style="text-align: right;" >
                                 <f:facet name="header" >

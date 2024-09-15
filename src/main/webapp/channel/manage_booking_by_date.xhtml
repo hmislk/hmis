@@ -384,11 +384,9 @@
                                                             ajax="false"
                                                             icon="fa fa-check"
                                                             action="#{bookingControllerViewScope.settleCredit()}"
-                                                            immediate="true"
                                                             disabled="#{bookingControllerViewScope.selectedBillSession.bill.billType.parent ne 'ChannelCreditFlow'
                                                                         or bookingControllerViewScope.selectedBillSession.bill.cancelled==true
                                                                         or  bookingControllerViewScope.selectedBillSession.bill.paidAmount ne 0}"
-                                                            oncomplete="PF('dlgSettleAD').show();"
                                                             class="ui-button-success mx-2 w-100"
                                                             >
                                                         </p:commandButton>
@@ -925,7 +923,7 @@
                                                     <p:panel header="Settling" class="my-4" rendered="#{(bookingControllerViewScope.selectedBillSession.bill.paidBill ne bookingControllerViewScope.selectedBillSession.bill) and bookingControllerViewScope.selectedBillSession.bill.balance eq 0.0}">
                                                         <h:panelGrid columns="2">
                                                             <p:outputLabel value="Bill ID"/>
-                                                            <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.paidBill.insId}"/>
+                                                            <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.paidBill.deptId}"/>
                                                             <p:outputLabel value="Payment Method"/>
                                                             <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.paidBill.paymentMethod}"/>
                                                             <p:outputLabel value="Agent" rendered="#{bookingControllerViewScope.selectedBillSession.bill.paidBill.paymentMethod eq 'Agent'}"/>

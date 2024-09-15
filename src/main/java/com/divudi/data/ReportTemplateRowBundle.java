@@ -2,19 +2,35 @@ package com.divudi.data;
 
 import com.divudi.entity.ReportTemplate;
 import com.divudi.entity.channel.SessionInstance;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 
 /**
  *
  * @author buddhika
  */
-public class ReportTemplateRowBundle {
+public class ReportTemplateRowBundle implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    // UUID field to uniquely identify each object
+    private UUID id;
 
     private List<ReportTemplateRowBundle> bundles;
     private ReportTemplate reportTemplate;
     private List<ReportTemplateRow> reportTemplateRows;
+
+    private Double grossTotal;
+    private Double discount;
     private Double total;
+
+    private Double hospitalTotal;
+    private Double staffTotal;
+    private Double ccTotal;
+
     private Double totalIn;
     private Double totalOut;
     private Long countIn;
@@ -70,7 +86,46 @@ public class ReportTemplateRowBundle {
     private boolean hasPatientPointsTransaction;
     private boolean hasOnlineSettlementTransaction;
 
-    public void calculatePaymentMethodTotals() {
+    public ReportTemplateRowBundle() {
+        this.id = UUID.randomUUID();
+    }
+
+    public ReportTemplateRowBundle(List<ReportTemplateRow> reportTemplateRows) {
+        this.reportTemplateRows = reportTemplateRows;
+    }
+
+    public UUID getId() {
+        if (id == null) {
+            id = UUID.randomUUID();
+        }
+        return id;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ReportTemplateRowBundle that = (ReportTemplateRowBundle) o;
+        return Objects.equals(getId(), that.id);
+    }
+
+    // Override hashCode() using UUID field
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId());
+    }
+
+    // Override toString() for better readability (optional)
+    @Override
+    public String toString() {
+        return "ReportTemplateRowBundle{id=" + getId() + '}';
+    }
+
+    public void calculateTotals() {
         // Reset totals and boolean flags before starting calculation
         resetTotalsAndFlags();
 
@@ -93,6 +148,28 @@ public class ReportTemplateRowBundle {
                 addValueAndUpdateFlag("patientDeposit", safeDouble(row.getPatientDepositValue()));
                 addValueAndUpdateFlag("patientPoints", safeDouble(row.getPatientPointsValue()));
                 addValueAndUpdateFlag("onlineSettlement", safeDouble(row.getOnlineSettlementValue()));
+                addValueAndUpdateFlag("grossTotal", safeDouble(row.getGrossTotal()));
+                addValueAndUpdateFlag("discount", safeDouble(row.getDiscount()));
+                addValueAndUpdateFlag("total", safeDouble(row.getTotal()));
+                addValueAndUpdateFlag("hospitalTotal", safeDouble(row.getHospitalTotal()));
+                addValueAndUpdateFlag("staffTotal", safeDouble(row.getStaffTotal()));
+                addValueAndUpdateFlag("ccTotal", safeDouble(row.getCcTotal()));
+            }
+        }
+    }
+
+    public void createRowValuesFromBill() {
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getBill() == null) {
+                    continue;
+                }
+                row.setGrossTotal(row.getBill().getGrantTotal());
+                row.setDiscount(row.getBill().getDiscount());
+                row.setTotal(row.getBill().getNetTotal());
+                row.setHospitalTotal(row.getHospitalTotal());
+                row.setStaffTotal(row.getBill().getTotalStaffFee());
+                row.setCcTotal(row.getBill().getTotalCenterFee());
             }
         }
     }
@@ -102,7 +179,9 @@ public class ReportTemplateRowBundle {
         this.cashValue = this.cardValue = this.multiplePaymentMethodsValue = this.staffValue
                 = this.creditValue = this.staffWelfareValue = this.voucherValue = this.iouValue
                 = this.agentValue = this.chequeValue = this.slipValue = this.eWalletValue
-                = this.patientDepositValue = this.patientPointsValue = this.onlineSettlementValue = 0;
+                = this.patientDepositValue = this.patientPointsValue = this.onlineSettlementValue
+                = this.grossTotal = this.discount = this.total
+                = this.hospitalTotal = this.staffTotal = this.ccTotal = 0.0;
 
         this.hasCashTransaction = this.hasCardTransaction = this.hasMultiplePaymentMethodsTransaction = this.hasStaffTransaction
                 = this.hasCreditTransaction = this.hasStaffWelfareTransaction = this.hasVoucherTransaction = this.hasIouTransaction
@@ -110,9 +189,13 @@ public class ReportTemplateRowBundle {
                 = this.hasPatientDepositTransaction = this.hasPatientPointsTransaction = this.hasOnlineSettlementTransaction = false;
     }
 
-    private void addValueAndUpdateFlag(String paymentMethod, double amount) {
+    private void addValueAndUpdateFlag(String calculationAttribute, double amount) {
+        System.out.println("addValueAndUpdateFlag");
+        System.out.println("amount = " + amount);
+        System.out.println("calculationAttribute = " + calculationAttribute);
+
         if (amount != 0) {
-            switch (paymentMethod) {
+            switch (calculationAttribute) {
                 case "cash":
                     this.cashValue += amount;
                     this.hasCashTransaction = true;
@@ -157,7 +240,7 @@ public class ReportTemplateRowBundle {
                     this.slipValue += amount;
                     this.hasSlipTransaction = true;
                     break;
-                case "eWallet":
+                case "Wallet":
                     this.eWalletValue += amount;
                     this.hasEWalletTransaction = true;
                     break;
@@ -173,6 +256,24 @@ public class ReportTemplateRowBundle {
                     this.onlineSettlementValue += amount;
                     this.hasOnlineSettlementTransaction = true;
                     break;
+                case "grossTotal":
+                    this.grossTotal += amount;
+                    break;
+                case "discount":
+                    this.discount += amount;
+                    break;
+                case "total":
+                    this.total += amount;
+                    break;
+                case "hospitalTotal":
+                    this.hospitalTotal += amount;
+                    break;
+                case "staffTotal":
+                    this.staffTotal += amount;
+                    break;
+                case "ccTotal":
+                    this.ccTotal += amount;
+                    break;
                 default:
                     // Log unexpected payment method or handle error
                     break;
@@ -180,9 +281,6 @@ public class ReportTemplateRowBundle {
         }
     }
 
-    
-    
-    
     private double safeDouble(Double value) {
         return value == null ? 0.0 : value;
     }
@@ -622,8 +720,6 @@ public class ReportTemplateRowBundle {
         this.hasOnlineSettlementTransaction = hasOnlineSettlementTransaction;
     }
 
-   
-
     public String getBundleType() {
         return bundleType;
     }
@@ -633,7 +729,7 @@ public class ReportTemplateRowBundle {
     }
 
     public List<ReportTemplateRowBundle> getBundles() {
-        if(bundles==null){
+        if (bundles == null) {
             bundles = new ArrayList<>();
         }
         return bundles;
@@ -642,7 +738,45 @@ public class ReportTemplateRowBundle {
     public void setBundles(List<ReportTemplateRowBundle> bundles) {
         this.bundles = bundles;
     }
-    
-    
+
+    public Double getGrossTotal() {
+        return grossTotal;
+    }
+
+    public void setGrossTotal(Double grossTotal) {
+        this.grossTotal = grossTotal;
+    }
+
+    public Double getHospitalTotal() {
+        return hospitalTotal;
+    }
+
+    public void setHospitalTotal(Double hospitalTotal) {
+        this.hospitalTotal = hospitalTotal;
+    }
+
+    public Double getStaffTotal() {
+        return staffTotal;
+    }
+
+    public void setStaffTotal(Double staffTotal) {
+        this.staffTotal = staffTotal;
+    }
+
+    public Double getCcTotal() {
+        return ccTotal;
+    }
+
+    public void setCcTotal(Double ccTotal) {
+        this.ccTotal = ccTotal;
+    }
+
+    public Double getDiscount() {
+        return discount;
+    }
+
+    public void setDiscount(Double discount) {
+        this.discount = discount;
+    }
 
 }

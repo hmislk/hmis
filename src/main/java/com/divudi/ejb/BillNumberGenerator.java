@@ -1326,7 +1326,6 @@ public class BillNumberGenerator {
         }
         
         String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Sufix for " + billType, billType.getCode());
-        System.out.println("billType = " + billType);
         
         BillNumber billNumber = fetchLastBillNumber(dep, toDept, billType, billClassType);
         Long dd = billNumber.getLastBillNumber();
@@ -1396,7 +1395,7 @@ public class BillNumberGenerator {
     
     public String departmentBillNumberGeneratorYearly(Institution ins, Department dep, BillType billType, BillClassType billClassType) {
         BillNumber billNumber = fetchLastBillNumberForYear(ins);
-        String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Suffix for " + billType, billType.getCode());
+        String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Suffix for " + billType + billClassType, billType.getCode());
         
         // Get the last bill number
         Long dd = billNumber.getLastBillNumber();
