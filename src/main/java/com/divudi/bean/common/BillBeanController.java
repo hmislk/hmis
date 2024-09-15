@@ -3507,6 +3507,7 @@ public class BillBeanController implements Serializable {
         double staffFee;
         double collectingCentreFee;
         double hospitalFee;
+        double otherFee;
         for (BillFee bf : e.getLstBillFees()) {
             bf.setCreatedAt(Calendar.getInstance().getTime());
             bf.setCreater(wu);
