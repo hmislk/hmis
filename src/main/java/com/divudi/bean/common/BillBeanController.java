@@ -27,6 +27,7 @@ import static com.divudi.data.PaymentMethod.Slip;
 import static com.divudi.data.PaymentMethod.Staff;
 import static com.divudi.data.PaymentMethod.YouOweMe;
 import static com.divudi.data.PaymentMethod.ewallet;
+import com.divudi.data.PaymentType;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.inward.InwardChargeType;
@@ -2634,6 +2635,12 @@ public class BillBeanController implements Serializable {
             b.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
             b.setBank(paymentMethodData.getCreditCard().getInstitution());
         }
+        
+        if(paymentMethod.getPaymentType()==PaymentType.CREDIT){
+            b.setCreditBill(true);
+        }
+        
+        
 
     }
 
