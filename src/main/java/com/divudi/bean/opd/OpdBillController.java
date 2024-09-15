@@ -1636,7 +1636,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             List<BillEntry> tmp = new ArrayList<>();
             for (BillEntry e : lstBillEntries) {
                 if (Objects.equals(e.getBillItem().getItem().getDepartment().getId(), d.getId())) {
-                    BillItem bi = getBillBean().saveBillItemForOpdBill(myBill, e, getSessionController().getLoggedUser());
+                    BillItem bi = getBillBean().saveBillItemForOpdBill(myBill, e, getSessionController().getLoggedUser(),getBillFeeBundleEntrys());
                     myBill.getBillItems().add(bi);
                     tmp.add(e);
                 }
@@ -2509,6 +2509,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             runningBalance = pd.getBalance();
             double availableForPurchase = runningBalance + creditLimitAbsolute;
 
+            
+            System.out.println("netTotal = " + netTotal);
+            System.out.println("availableForPurchase = " + availableForPurchase);
+            
             if (netTotal > availableForPurchase) {
                 JsfUtil.addErrorMessage("No Sufficient Patient Deposit");
                 return true;
@@ -2580,6 +2584,12 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     double availableForPurchase = runningBalance + creditLimitAbsolute;
 
                     if (cd.getPaymentMethodData().getPatient_deposit().getTotalValue() > availableForPurchase) {
+                        
+                        System.out.println("cd.getPaymentMethodData().getPatient_deposit().getTotalValue() = " + cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
+                        
+                        System.out.println("availableForPurchase = " + availableForPurchase);
+                        
+                        System.out.println("no sufficient data = " );
                         JsfUtil.addErrorMessage("No Sufficient Patient Deposit");
                         return true;
                     }
@@ -3340,6 +3350,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                         p.setPaidValue(cd.getPaymentMethodData().getCreditCard().getTotalValue());
                         break;
                     case Cheque:
+                        p.setBank(cd.getPaymentMethodData().getCheque().getInstitution());
                         p.setChequeDate(cd.getPaymentMethodData().getCheque().getDate());
                         p.setChequeRefNo(cd.getPaymentMethodData().getCheque().getNo());
                         p.setPaidValue(cd.getPaymentMethodData().getCheque().getTotalValue());
@@ -3396,6 +3407,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     p.setPaidValue(paymentMethodData.getCreditCard().getTotalValue());
                     break;
                 case Cheque:
+                    p.setBank(paymentMethodData.getCheque().getInstitution());
                     p.setChequeDate(paymentMethodData.getCheque().getDate());
                     p.setChequeRefNo(paymentMethodData.getCheque().getNo());
                     p.setPaidValue(paymentMethodData.getCheque().getTotalValue());
