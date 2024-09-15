@@ -4148,6 +4148,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         bills = null;
         return "/opd/analytics/opd_bill_payments";
     }
+    
+    
 
     // This is the setter for selectedItemLightId
     public void setSelectedItemLightId(Long id) {

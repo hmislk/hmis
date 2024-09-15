@@ -12,10 +12,10 @@
 
                 <h:form >
 
-                    <div class="container">
+                    <div>
                         <div class="row mb-2">
                             <div class="col-12 my-4">
-                                <h2>Collection Center Receipt Reports</h2>
+                                <h2>Collection Centre Receipt Reports</h2>
                             </div>
                         </div>
 
@@ -72,10 +72,29 @@
                                     <f:selectItems var="r" itemLabel="#{r.code} :  #{r.name}" 
                                                    value="#{collectingCentreController.items}" 
                                                    itemValue="#{r}" />
-                                    
                                 </p:selectOneMenu>
                             </div>
                         </div>
+
+                        <!--                        <div class="row mb-2">
+                                                    <div class="col-md-2">
+                                                        <p:outputLabel value="Collecting Centre Sites" />
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <p:selectOneMenu 
+                                                            style=" max-width: 100%; overflow-x: auto; "
+                                                            class="w-100"
+                                                            value="#{institutionController.sites}"
+                                                            filter="true"
+                                                            filterMatchMode="contains">
+                                                            <f:selectItem itemLabel="All" />
+                                                            <f:selectItems value="#{routeController.site}"
+                                                                           var="r"
+                                                                           itemLabel="#{r.name}"
+                                                                           itemValue="#{r}" />
+                                                        </p:selectOneMenu>
+                                                    </div>
+                                                </div>-->
 
                         <div class="row mb-2">
                             <div class="col-md-2">
@@ -136,6 +155,17 @@
                         </p:column>
                         <p:column headerText="Bill No" >
                             <h:outputText value="#{bi.referenceNumber}" ></h:outputText>
+                             <p:commandLink 
+                                    ajax="false"
+                                    rendered="#{bi ne null}"
+                                    action="#{billSearch.navigateViewBillByBillTypeAtomic()}">
+                                    <h:outputText title="View Bill" styleClass="fa fa-eye" />
+                                    <f:setPropertyActionListener 
+                                        value="#{bi}" 
+                                        target="#{billSearch.bill}" >
+                                    </f:setPropertyActionListener>
+                                </p:commandLink>
+                            
                         </p:column>
                         <p:column headerText="Billed at" >
                             <h:outputText value="#{bi.createdAt}" ></h:outputText>
