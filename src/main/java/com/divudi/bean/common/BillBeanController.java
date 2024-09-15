@@ -2528,7 +2528,7 @@ public class BillBeanController implements Serializable {
         List<Bill> tbs = billFacade.findByJpql(j, m);
         return tbs;
     }
-    
+
     public List<Bill> fetchIndividualBillsOfBatchBill(Bill batchBill) {
         System.out.println("batchBill = " + batchBill);
         String j = "Select b "
@@ -2541,7 +2541,7 @@ public class BillBeanController implements Serializable {
         List<Bill> tbs = billFacade.findByJpql(j, m);
         return tbs;
     }
-    
+
     public List<Bill> fetchRefundBillsOfBilledBill(Bill billedBill) {
         System.out.println("billedBill = " + billedBill);
         String j = "Select b "
@@ -2635,12 +2635,10 @@ public class BillBeanController implements Serializable {
             b.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
             b.setBank(paymentMethodData.getCreditCard().getInstitution());
         }
-        
-        if(paymentMethod.getPaymentType()==PaymentType.CREDIT){
+
+        if (paymentMethod.getPaymentType() == PaymentType.CREDIT) {
             b.setCreditBill(true);
         }
-        
-        
 
     }
 
@@ -3197,6 +3195,26 @@ public class BillBeanController implements Serializable {
         return e.getBillItem();
     }
 
+    public BillItem saveBillItemForOpdBill(Bill b, BillEntry e, WebUser wu) {
+        e.getBillItem().setCreatedAt(new Date());
+        e.getBillItem().setCreater(wu);
+        e.getBillItem().setBill(b);
+
+        if (e.getBillItem().getId() == null) {
+            getBillItemFacade().create(e.getBillItem());
+        }
+
+        saveBillComponentForOpdBill(e, b, wu);
+        saveBillFeeForOpdBill(e, b, wu);
+
+        //System.out.println("BillItems().size() = " + b.getBillItems().size());
+        for (BillItem bi : b.getBillItems()) {
+            //System.out.println("bif = " + bi.getBillFees().size());
+        }
+
+        return e.getBillItem();
+    }
+
     public BillItem saveBillItem(Bill b, BillEntry e, WebUser wu, Payment p) {
         e.getBillItem().setCreatedAt(new Date());
         e.getBillItem().setCreater(wu);
@@ -3500,6 +3518,42 @@ public class BillBeanController implements Serializable {
 
     }
 
+    public List<BillFee> saveBillFeeForOpdBill(BillEntry e, Bill b, WebUser wu) {
+        List<BillFee> list = new ArrayList<>();
+        double ccfee = 0.0;
+        double woccfee = 0.0;
+        double staffFee;
+        double collectingCentreFee;
+        double hospitalFee;
+        double otherFee;
+        for (BillFee bf : e.getLstBillFees()) {
+            
+//            asdadas;
+            bf.setCreatedAt(Calendar.getInstance().getTime());
+            bf.setCreater(wu);
+            bf.setBillItem(e.getBillItem());
+            bf.setPatienEncounter(b.getPatientEncounter());
+            bf.setPatient(b.getPatient());
+
+            bf.setBill(b);
+
+            if (bf.getId() == null) {
+                getBillFeeFacade().create(bf);
+            }
+            if (bf.getFee().getFeeType() == FeeType.CollectingCentre) {
+                ccfee += bf.getFeeValue();
+            } else {
+                woccfee += bf.getFeeValue();
+            }
+            list.add(bf);
+
+        }
+        e.getBillItem().setTransCCFee(ccfee);
+        e.getBillItem().setTransWithOutCCFee(woccfee);
+
+        return list;
+    }
+
     public List<BillFee> saveBillFee(BillEntry e, Bill b, WebUser wu) {
         List<BillFee> list = new ArrayList<>();
         double ccfee = 0.0;
@@ -3719,6 +3773,28 @@ public class BillBeanController implements Serializable {
     }
 
     public void saveBillComponent(BillEntry e, Bill b, WebUser wu) {
+        for (BillComponent bc : e.getLstBillComponents()) {
+
+            bc.setCreatedAt(Calendar.getInstance().getTime());
+            bc.setCreater(wu);
+
+            bc.setDepartment(b.getDepartment());
+            bc.setInstitution(b.getDepartment().getInstitution());
+
+            bc.setBill(b);
+
+            if (bc.getId() == null) {
+                getBillComponentFacade().create(bc);
+            }
+
+            if (bc.getItem() instanceof Investigation) {
+                savePatientInvestigation(e, bc, wu);
+            }
+
+        }
+    }
+
+    public void saveBillComponentForOpdBill(BillEntry e, Bill b, WebUser wu) {
         for (BillComponent bc : e.getLstBillComponents()) {
 
             bc.setCreatedAt(Calendar.getInstance().getTime());
