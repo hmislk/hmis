@@ -44,7 +44,7 @@
                         </f:facet>
 
                         <div class="row">
-                            <div class="col-5">
+                            <div class="col-12">
                                 <h:panelGroup>
                                     <p:panel header="Investigation">
                                         <f:facet name="header" >
@@ -206,7 +206,7 @@
                                         </div>
                                     </p:panel>
 
-                                    <p:panel class="mt-2">
+                                    <p:panelGrid layout="tabular" columns="2" class="mt-2 w-100">
                                         <f:facet name="header">
                                             <h:outputLabel value="Update All" class="mt-2"/>
                                             <p:commandButton 
@@ -216,37 +216,38 @@
                                                 ajax="false"/>
                                         </f:facet>
 
-                                        <div class="row">
-                                            <div class="col-2">
-                                                <p:outputLabel value="Font Size" class="mt-2"/>
-                                            </div>
-                                            <div class="col-8">
-                                                <p:inputText 
-                                                    value="#{investigationItemController.fontSize}" 
-                                                    class="w-100" 
-                                                    autocomplete="off"/>
-                                            </div>
-                                        </div>
+                                        <h:outputText value="Vertical Align" class="mt-2 w-100"/>
+                                        <p:selectOneMenu class="w-100" id="cmbTxtVerticalAlign" value="#{investigationItemController.cssVerticalAlign}"  >
+                                            <f:selectItem itemLabel="Select" ></f:selectItem>
+                                            <f:selectItems value="#{enumController.cssVerticalAlign}" ></f:selectItems>
+                                        </p:selectOneMenu>
 
-                                        <div class="row mt-1">
-                                            <div class="col-2">
-                                                <p:outputLabel value="Font Family" class="mt-2"/>
-                                            </div>
-                                            <div class="col-8">
-                                                <p:inputText 
-                                                    class="w-100" 
-                                                    value="#{investigationItemController.fontFamily}"/>
-                                            </div>
-                                        </div>
+                                        <h:outputText value="Custom CSS" class="mt-2 w-100"/>
+                                        <p:inputTextarea class="w-100" value="#{investigationItemController.customCss}"/>
 
 
-                                    </p:panel>
+                                        <h:outputText value="Border" class="mt-2 w-100"/>
+                                        <p:inputText class="w-100" autocomplete="off"  value="#{investigationItemController.cssBorder}"/>
+
+                                        <p:outputLabel value="Font Size" class="mt-2"/>
+                                        <p:inputText 
+                                            value="#{investigationItemController.fontSize}" 
+                                            class="w-100" 
+                                            autocomplete="off"/>
+
+                                        <p:outputLabel value="Font Family" class="mt-2"/>
+                                        <p:inputText 
+                                            class="w-100" 
+                                            value="#{investigationItemController.fontFamily}"/>
+
+
+                                    </p:panelGrid>
 
 
 
                                 </h:panelGroup>
                             </div>
-                            <div class="col-7">
+                            <div class="col-12">
                                 <p:panel id="pPreview">
                                     <f:facet name="header" >
                                         <p:outputLabel value="Preview" class="mt-2"></p:outputLabel>
