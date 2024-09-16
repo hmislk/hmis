@@ -16,6 +16,24 @@
                         <h:form>
                             <h:panelGrid columns="2" >
 
+                                <p:outputLabel value="From Date" />
+                                <p:calendar 
+                                    value="#{staffPaymentBillController.fromDate}" 
+                                    id="fDate" 
+                                    class="w-100" 
+                                    inputStyleClass="w-100"                                                  
+                                    navigator="true" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
+                                <p:outputLabel value="To Date" />
+                                <p:calendar 
+                                    value="#{staffPaymentBillController.toDate}" 
+                                    id="tDate" 
+                                    class="w-100 mx-2" 
+                                    inputStyleClass="w-100" 
+                                    navigator="true" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
+
+
                                 <h:outputLabel value="Select Speciality" ></h:outputLabel>
 
                                 <p:autoComplete forceSelection="true" value="#{staffPaymentBillController.speciality}"
@@ -42,64 +60,38 @@
                                 <p:selectOneMenu  id="cmbPay" value="#{staffPaymentBillController.paymentMethod}" class="mx-2 w-100">                                      
                                     <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"  />
                                 </p:selectOneMenu>
-                                
-                              
-                                
-                                
-                                                                    
+
+
+
+
+
                                 <!--                                    <p:commandButton ajax="false" value="Process" >
                                                                     </p:commandButton>-->  
-                                
-                            </h:panelGrid>
-                            
-                              <p:panelGrid columns="2" style="width: 50%">
-                                    <h:panelGroup>
-                                        <p:outputLabel value="From Date" />
-                                                <p:calendar 
-                                                    value="#{staffPaymentBillController.fromDate}" 
-                                                    id="fDate" 
-                                                    class="w-100" 
-                                                    inputStyleClass="w-100"                                                  
-                                                    navigator="true" 
-                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
-                                        
-                                    </h:panelGroup>
-                                    
-                                    <h:panelGroup>
-                                         <p:outputLabel value="To Date" />
-                                                <p:calendar 
-                                                    value="#{staffPaymentBillController.toDate}" 
-                                                    id="tDate" 
-                                                    class="w-100 mx-2" 
-                                                    inputStyleClass="w-100" 
-                                                    navigator="true" 
-                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
-                                        
-                                    </h:panelGroup>
-                                    
-                                    
-                                </p:panelGrid>
-                            
-                          
-                                <p:commandButton value="Process" action="#{staffPaymentBillController.calculateDueFees}" ajax="false" icon="fa-solid fa-arrows-rotate"
-                                                 class="w-25 ui-button-warning my-1" />
 
-                                <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" icon="fa-solid fa-file-excel"
-                                                 class="w-25 ui-button-success my-1 mx-2" >
-                                    <p:dataExporter type="xlsx" target=":#{p:resolveFirstComponentWithId('tblFee',view).clientId}" fileName="Staff_Payment_Due_OPD"  />
-                                </p:commandButton>
-                                        
-                                 
+                            </h:panelGrid>
+
+
+                            <p:commandButton 
+                                value="Process" 
+                                action="#{staffPaymentBillController.calculateDueFeesForOpdForSelectedPeriod}" ajax="false" icon="fa-solid fa-arrows-rotate"
+                                class="w-25 ui-button-warning my-1" />
+
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" icon="fa-solid fa-file-excel"
+                                             class="w-25 ui-button-success my-1 mx-2" >
+                                <p:dataExporter type="xlsx" target=":#{p:resolveFirstComponentWithId('tblFee',view).clientId}" fileName="Staff_Payment_Due_OPD"  />
+                            </p:commandButton>
+
+
 
                             <p:dataTable   
                                 id="tblFee" value="#{staffPaymentBillController.dueBillFees}"
-                                           selection="#{staffPaymentBillController.payingBillFees}"
-                                           class="w-100"
-                                           paginator="true" paginatorPosition="bottom"
-                                           paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                           currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
-                                           rowsPerPageTemplate="{ShowAll|'All'}"
-                                           var="bf" rowKey="#{bf.id}" >
+                                selection="#{staffPaymentBillController.payingBillFees}"
+                                class="w-100"
+                                paginator="true" paginatorPosition="bottom"
+                                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                                rowsPerPageTemplate="{ShowAll|'All'}"
+                                var="bf" rowKey="#{bf.id}" >
 
                                 <f:ajax  event="rowSelectCheckbox" execute="tblFee" listener="#{staffPaymentBillController.performCalculations()}"   
                                          render=":#{p:resolveFirstComponentWithId('scStaff',view).clientId}  :#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId} tblFee"  />  
@@ -159,14 +151,14 @@
                                     </f:facet>    
                                     <h:outputLabel value="#{bf.billItem.item.name}" />
                                 </p:column>
-                                
+
                                 <p:column headerText="Charge" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Charge Type"/>
                                     </f:facet>    
                                     <h:outputLabel value="#{bf.fee.feeType}" />
                                 </p:column>
-                                
+
                                 <p:column headerText="Charge" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Charge"/>

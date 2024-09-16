@@ -61,7 +61,8 @@ import javax.inject.Named;
  */
 @Named
 @SessionScoped
-public class AgentPaymentRecieveBillController implements Serializable {
+public class AgentAndCcPaymentController implements Serializable {
+// old Name - AgentPaymentRecieveBillController
 
     private Bill current;
     @EJB
@@ -89,9 +90,13 @@ public class AgentPaymentRecieveBillController implements Serializable {
     StaffBean staffBean;
     @EJB
     PaymentFacade paymentFacade;
+    @EJB
+    CashTransactionBean cashTransactionBean;
 
     @Inject
-    CollectingCentreApplicationController collectingCentreApplicationController;
+    private BillBeanController billBean;
+    @Inject
+    AgentAndCcApplicationController collectingCentreApplicationController;
     @Inject
     private PaymentSchemeController paymentSchemeController;
     @Inject
@@ -104,10 +109,8 @@ public class AgentPaymentRecieveBillController implements Serializable {
     private PaymentMethodData paymentMethodData;
     String comment;
     double amount;
+    boolean ccDepositSettlingStarted = false;
 
-    
-    
-    
     public void createAndAddBillItemToCcPaymentReceiptBill() {
         getCurrentBillItem().setNetValue(getCurrent().getNetTotal());
         getCurrentBillItem().setGrossValue(getCurrent().getNetTotal());
@@ -120,7 +123,7 @@ public class AgentPaymentRecieveBillController implements Serializable {
         currentBillItem = null;
     }
 
-    public AgentPaymentRecieveBillController() {
+    public AgentAndCcPaymentController() {
     }
 
     private boolean errorCheck() {
@@ -141,6 +144,23 @@ public class AgentPaymentRecieveBillController implements Serializable {
     }
 
     private boolean errorCheckForCcPaymentReceiptBill() {
+        if (getCurrent().getFromInstitution() == null) {
+            JsfUtil.addErrorMessage("Select Collecting Centre");
+            return true;
+        }
+
+        if (getCurrent().getPaymentMethod() == null) {
+            return true;
+        }
+
+        if (getPaymentSchemeController().checkPaymentMethodError(getCurrent().getPaymentMethod(), paymentMethodData)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean errorCheckForAgencyPaymentReceiptBill() {
         if (getCurrent().getFromInstitution() == null) {
             JsfUtil.addErrorMessage("Select Collecting Centre");
             return true;
@@ -195,11 +215,6 @@ public class AgentPaymentRecieveBillController implements Serializable {
         }
     }
 
-    @Inject
-    private BillBeanController billBean;
-    @EJB
-    CashTransactionBean cashTransactionBean;
-
     public CashTransactionBean getCashTransactionBean() {
         return cashTransactionBean;
     }
@@ -215,9 +230,21 @@ public class AgentPaymentRecieveBillController implements Serializable {
     public void setComment(String comment) {
         this.comment = comment;
     }
+    
+    
+    public String navigateToCcDeposit(){
+        ccDepositSettlingStarted=false;
+        return "/collecting_centre/collecting_centre_deposit_bill?faces-redirect=true";
+    }
 
     public void collectingCentrePaymentRecieveSettleBill() {
+        if(ccDepositSettlingStarted){
+            JsfUtil.addErrorMessage("Already Started");
+            return;
+        }
+        ccDepositSettlingStarted=true;
         if (errorCheckForCcPaymentReceiptBill()) {
+            ccDepositSettlingStarted=false;
             return;
         }
         addPaymentMethordValueToTotal(current, getCurrent().getPaymentMethod());
@@ -264,7 +291,7 @@ public class AgentPaymentRecieveBillController implements Serializable {
         }
 
         createPayment(current, getCurrent().getPaymentMethod());
-        collectingCentreApplicationController.updateBalance(
+        collectingCentreApplicationController.updateCcBalance(
                 current.getFromInstitution(),
                 0,
                 getCurrent().getNetTotal(),
@@ -275,7 +302,74 @@ public class AgentPaymentRecieveBillController implements Serializable {
         if ((getCurrent().getNetTotal() > (getCurrent().getFromInstitution().getMaxCreditLimit() - getCurrent().getFromInstitution().getStandardCreditLimit())) && (getCurrent().getFromInstitution().getMaxCreditLimit() != getCurrent().getFromInstitution().getStandardCreditLimit())) {
             getCurrent().getFromInstitution().setAllowedCredit(getCurrent().getFromInstitution().getStandardCreditLimit());
             getInstitutionFacade().edit(getCurrent().getFromInstitution());
-            collectingCentreApplicationController.updateBalance(
+            collectingCentreApplicationController.updateCcBalance(
+                    current.getFromInstitution(),
+                    0,
+                    0,
+                    0,
+                    0,
+                    HistoryType.CollectingCentreBalanceUpdateBill,
+                    getCurrent(),
+                    "Agent Payment Allowed Credit Limit Reset");
+        }
+        JsfUtil.addSuccessMessage("Bill Saved");
+        ccDepositSettlingStarted=false;
+        printPreview = true;
+    }
+
+    public void agencyPaymentRecieveSettleBill() {
+        if (errorCheckForAgencyPaymentReceiptBill()) {
+            return;
+        }
+        addPaymentMethordValueToTotal(current, getCurrent().getPaymentMethod());
+        createAndAddBillItemToCcPaymentReceiptBill();
+        getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
+
+        getCurrent().setTotal(getCurrent().getNetTotal());
+
+        String deptId;
+
+        deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(
+                getSessionController().getInstitution(),
+                getSessionController().getDepartment(),
+                BillType.AgentPaymentReceiveBill,
+                BillClassType.BilledBill);
+
+        getCurrent().setInsId(deptId);
+        getCurrent().setDeptId(deptId);
+        getCurrent().setBillType(BillType.AgentPaymentReceiveBill);
+        getCurrent().setBillTypeAtomic(BillTypeAtomic.AGENCY_PAYMENT_RECEIVED);
+        getCurrent().setDepartment(getSessionController().getLoggedUser().getDepartment());
+        getCurrent().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+        getCurrent().setBillDate(new Date());
+        getCurrent().setBillTime(new Date());
+        getCurrent().setCreatedAt(new Date());
+        getCurrent().setCreater(getSessionController().getLoggedUser());
+
+        getCurrent().setNetTotal(getCurrent().getNetTotal());
+
+        current.setComments(comment);
+
+        if (getCurrent().getId() == null) {
+            getBillFacade().create(getCurrent());
+        } else {
+            getBillFacade().edit(getCurrent());
+        }
+        saveBillItem();
+
+        createPayment(current, getCurrent().getPaymentMethod());
+        collectingCentreApplicationController.updateCcBalance(
+                current.getFromInstitution(),
+                0,
+                getCurrent().getNetTotal(),
+                0,
+                getCurrent().getNetTotal(),
+                HistoryType.CollectingCentreDeposit,
+                getCurrent());
+        if ((getCurrent().getNetTotal() > (getCurrent().getFromInstitution().getMaxCreditLimit() - getCurrent().getFromInstitution().getStandardCreditLimit())) && (getCurrent().getFromInstitution().getMaxCreditLimit() != getCurrent().getFromInstitution().getStandardCreditLimit())) {
+            getCurrent().getFromInstitution().setAllowedCredit(getCurrent().getFromInstitution().getStandardCreditLimit());
+            getInstitutionFacade().edit(getCurrent().getFromInstitution());
+            collectingCentreApplicationController.updateCcBalance(
                     current.getFromInstitution(),
                     0,
                     0,
@@ -339,7 +433,7 @@ public class AgentPaymentRecieveBillController implements Serializable {
 //            HistoryType historyType,
 //            Bill bill
 //        
-        collectingCentreApplicationController.updateBalance(
+        collectingCentreApplicationController.updateCcBalance(
                 getCurrent().getCollectingCentre(),
                 0,
                 0,
@@ -370,7 +464,7 @@ public class AgentPaymentRecieveBillController implements Serializable {
 //            HistoryType historyType,
 //            Bill bill
 //        
-        collectingCentreApplicationController.updateBalance(
+        collectingCentreApplicationController.updateCcBalance(
                 getCurrent().getCollectingCentre(),
                 0,
                 0,
@@ -440,7 +534,7 @@ public class AgentPaymentRecieveBillController implements Serializable {
 
         //Update Agent Max Credit Limit
         if ((getCurrent().getNetTotal() > (getCurrent().getFromInstitution().getMaxCreditLimit() - getCurrent().getFromInstitution().getStandardCreditLimit())) && (getCurrent().getFromInstitution().getMaxCreditLimit() != getCurrent().getFromInstitution().getStandardCreditLimit())) {
-            collectingCentreApplicationController.updateBalance(
+            collectingCentreApplicationController.updateCcBalance(
                     current.getFromInstitution(),
                     0,
                     0,
@@ -534,8 +628,6 @@ public class AgentPaymentRecieveBillController implements Serializable {
         recreateModel();
         return "";
     }
-    
-    
 
     public List<Payment> createPayment(Bill bill, PaymentMethod pm) {
         List<Payment> ps = new ArrayList<>();

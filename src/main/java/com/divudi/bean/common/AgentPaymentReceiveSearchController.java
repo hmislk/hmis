@@ -79,9 +79,9 @@ public class AgentPaymentReceiveSearchController implements Serializable {
     @Inject
     private WebUserController webUserController;
     @Inject
-    AgentPaymentRecieveBillController agentPaymentRecieveBillController;
+    AgentAndCcPaymentController agentAndCcPaymentController;
     @Inject
-    CollectingCentreApplicationController collectingCentreApplicationController;
+    AgentAndCcApplicationController agentAndCcApplicationController;
     @EJB
     EjbApplication ejbApplication;
     @EJB
@@ -90,6 +90,8 @@ public class AgentPaymentReceiveSearchController implements Serializable {
     private List<BillItem> tempbillItems;
     private String comment;
     WebUser user;
+
+    boolean agencyDepositCanellationStarted = false;
 
     public WebUser getUser() {
         return user;
@@ -255,23 +257,41 @@ public class AgentPaymentReceiveSearchController implements Serializable {
     }
 
     public void collectingCentreDepositCancelBill() {
+        if (agencyDepositCanellationStarted) {
+            JsfUtil.addErrorMessage("Already Started");
+            return;
+        }
+        agencyDepositCanellationStarted = true;
         if (getBill() == null) {
             JsfUtil.addErrorMessage("No Bill to Calcel");
+            agencyDepositCanellationStarted = false;
             return;
         }
         if (errorCheck()) {
+            agencyDepositCanellationStarted = false;
             return;
         }
-        cancelBill(BillType.CollectingCentrePaymentReceiveBill, BillNumberSuffix.CCCAN, HistoryType.CollectingCentreDepositCancel, BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL);
+        Bill origianlBil = billBean.fetchBill(getBill().getId());
+        if (origianlBil == null) {
+            JsfUtil.addErrorMessage("No SUch Bill");
+            agencyDepositCanellationStarted = false;
+            return;
+        }
+        if (origianlBil.isCancelled()) {
+            JsfUtil.addErrorMessage("Already Cancelled");
+            agencyDepositCanellationStarted = false;
+            return;
+        }
         
+        cancelBill(BillType.CollectingCentrePaymentReceiveBill, BillNumberSuffix.CCCAN, HistoryType.CollectingCentreDepositCancel, BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL);
 
         CancelledBill cb = new CancelledBill();
 
-        cb.copy(getBill());
-        cb.invertValue(getBill());
+        cb.copy(origianlBil);
+        cb.invertValue(origianlBil);
 
         String deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(sessionController.getInstitution(), sessionController.getDepartment(), BillType.CollectingCentrePaymentMadeBill, BillClassType.CancelledBill);
-        
+
         cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.CollectingCentrePaymentReceiveBill, BillClassType.CancelledBill, BillNumberSuffix.CCCAN));
         cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.CollectingCentrePaymentReceiveBill, BillClassType.CancelledBill, BillNumberSuffix.CCCAN));
 
@@ -294,7 +314,7 @@ public class AgentPaymentReceiveSearchController implements Serializable {
         JsfUtil.addSuccessMessage("Cancelled");
         createPayment(cb, paymentMethod);
 
-        collectingCentreApplicationController.updateBalance(
+        agentAndCcApplicationController.updateCcBalance(
                 cb.getFromInstitution(),
                 0,
                 cb.getNetTotal(),
@@ -303,7 +323,7 @@ public class AgentPaymentReceiveSearchController implements Serializable {
                 HistoryType.CollectingCentreDepositCancel,
                 cb, comment);
         printPreview = true;
-
+        agencyDepositCanellationStarted = false;
     }
 
     public void channellAgencyCancelBill() {
@@ -345,7 +365,7 @@ public class AgentPaymentReceiveSearchController implements Serializable {
 
             //for channel agencyHistory Update
             //getAgentPaymentRecieveBillController().createAgentHistory(cb.getFromInstitution(), cb.getNetTotal(), historyType, cb);
-            collectingCentreApplicationController.updateBalance(
+            agentAndCcApplicationController.updateCcBalance(
                     cb.getFromInstitution(),
                     0,
                     cb.getNetTotal(),
@@ -648,12 +668,12 @@ public class AgentPaymentReceiveSearchController implements Serializable {
         this.institutionFacade = institutionFacade;
     }
 
-    public AgentPaymentRecieveBillController getAgentPaymentRecieveBillController() {
-        return agentPaymentRecieveBillController;
+    public AgentAndCcPaymentController getAgentAndCcPaymentController() {
+        return agentAndCcPaymentController;
     }
 
-    public void setAgentPaymentRecieveBillController(AgentPaymentRecieveBillController agentPaymentRecieveBillController) {
-        this.agentPaymentRecieveBillController = agentPaymentRecieveBillController;
+    public void setAgentAndCcPaymentController(AgentAndCcPaymentController agentAndCcPaymentController) {
+        this.agentAndCcPaymentController = agentAndCcPaymentController;
     }
 
 }

@@ -103,9 +103,7 @@ public class StaffPaymentBillController implements Serializable {
     List<BillFee> payingBillFees;
     double totalDue;
     double totalPaying;
-   
-    private Date fromDate;
-    private Date toDate;
+
     private Boolean printPreview = false;
     PaymentMethod paymentMethod;
     Speciality speciality;
@@ -257,6 +255,62 @@ public class StaffPaymentBillController implements Serializable {
 
     public void setTotalPaying(double totalPaying) {
         this.totalPaying = totalPaying;
+    }
+
+    public void calculateDueFeesForOpdForSelectedPeriod() {
+        if (currentStaff == null || currentStaff.getId() == null) {
+            dueBillFees = new ArrayList<>();
+            return;
+        }
+        List<BillTypeAtomic> btcs = new ArrayList<>();
+        btcs.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+        btcs.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        btcs.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+        btcs.add(BillTypeAtomic.CC_BILL);
+        String jpql;
+        HashMap params = new HashMap();
+        jpql = "select bf "
+                + " from BillFee bf "
+                + " where bf.retired=false "
+                + " and bf.bill.billTypeAtomic in :btcs "
+                + " and bf.bill.cancelled=:bc "
+                + " and bf.bill.createdAt between :fd and :td "
+                + " and (bf.feeValue - bf.paidValue) > 0 "
+                + " and bf.staff=:staff ";
+        params.put("btcs", btcs);
+        params.put("bc", false);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+        params.put("staff", currentStaff);
+        
+        boolean testing=false;
+        if(testing){
+            BillFee bf = new BillFee();
+            bf.getBill();
+        }
+
+        dueBillFees = getBillFeeFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        if (configOptionApplicationController.getBooleanValueByKey("Remove Refunded Bill From OPD Staff Payment")) {
+            List<BillFee> removeingBillFees = new ArrayList<>();
+            for (BillFee bf : dueBillFees) {
+                params = new HashMap();
+                jpql = "SELECT bi FROM BillItem bi where "
+                        + " bi.retired=false"
+                        + " and bi.bill.cancelled=false "
+                        + " and type(bi.bill)=:class "
+                        + " and bi.referanceBillItem.id=" + bf.getBillItem().getId();
+                params.put("class", RefundBill.class);
+                BillItem rbi = getBillItemFacade().findFirstByJpql(jpql, params);
+
+                if (rbi != null) {
+                    removeingBillFees.add(bf);
+                }
+
+            }
+            dueBillFees.removeAll(removeingBillFees);
+        }
+
     }
 
     public void calculateDueFees() {
@@ -762,7 +816,7 @@ public class StaffPaymentBillController implements Serializable {
             } else if (getStaffPaymentMethodData().getCheque().getInstitution() == null) {
                 JsfUtil.addErrorMessage("Select Cheque Bank");
                 return true;
-            } else if (getStaffPaymentMethodData().getCheque().getDate() == null ) {
+            } else if (getStaffPaymentMethodData().getCheque().getDate() == null) {
                 JsfUtil.addErrorMessage("Add Cheque Date");
                 return true;
             } else if (getStaffPaymentMethodData().getCheque().getComment().trim().equalsIgnoreCase("") && configOptionApplicationController.getBooleanValueByKey("Staff Credit Settle - Cheque Comment is Mandatory", false)) {
@@ -774,7 +828,7 @@ public class StaffPaymentBillController implements Serializable {
             if (getStaffPaymentMethodData().getSlip().getInstitution() == null) {
                 JsfUtil.addErrorMessage("Select Slip Bank");
                 return true;
-            } else if (getStaffPaymentMethodData().getSlip().getDate()== null) {
+            } else if (getStaffPaymentMethodData().getSlip().getDate() == null) {
                 JsfUtil.addErrorMessage("Add Slip Date");
                 return true;
             } else if (getStaffPaymentMethodData().getSlip().getComment().trim().equalsIgnoreCase("") && configOptionApplicationController.getBooleanValueByKey("Staff Credit Settle - Slip Comment is Mandatory", false)) {
@@ -791,7 +845,7 @@ public class StaffPaymentBillController implements Serializable {
             JsfUtil.addErrorMessage("Select Staff");
             return true;
         }
-        
+
         if (getCurrent().getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Select Payment Method");
             return true;
@@ -801,18 +855,18 @@ public class StaffPaymentBillController implements Serializable {
             JsfUtil.addErrorMessage("Type Amount");
             return true;
         }
-        
+
         return false;
     }
 
     public void settleStaffCredit() {
 
-        if(errorCheckForCreditSettle()){
-            return ;
+        if (errorCheckForCreditSettle()) {
+            return;
         }
-        
-        if(paymentMethodDataErrorCheck()){
-            return ;
+
+        if (paymentMethodDataErrorCheck()) {
+            return;
         }
 
         getCurrent().setTotal(getCurrent().getNetTotal());
