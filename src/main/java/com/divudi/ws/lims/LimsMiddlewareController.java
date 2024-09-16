@@ -49,9 +49,11 @@ import com.divudi.bean.common.DepartmentMachineController;
 import com.divudi.bean.lab.MachineController;
 
 import com.divudi.data.InvestigationItemValueType;
+import com.divudi.data.lab.PatientInvestigationStatus;
 import com.divudi.data.lab.SysMex;
 import com.divudi.data.lab.SysMexTypeA;
 import com.divudi.ejb.PatientReportBean;
+import com.divudi.entity.Bill;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
@@ -92,6 +94,7 @@ import javax.ws.rs.GET;
 public class LimsMiddlewareController {
 // to be taken as correct on 2024 09 04 08 31
     //FOR UNIT TESTING
+
     @EJB
     InvestigationItemFacade investigationItemFacade;
     @EJB
@@ -992,8 +995,7 @@ public class LimsMiddlewareController {
         return ok;
     }
 
-    
-      public boolean addResultToReport(String sampleId, String testCodeFromUploadedDataBundle, String result, String unit, String error) {
+    public boolean addResultToReport(String sampleId, String testCodeFromUploadedDataBundle, String result, String unit, String error) {
         System.out.println("addResultToReport");
         System.out.println("testStr = " + testCodeFromUploadedDataBundle);
         System.out.println("result = " + result);
@@ -1033,7 +1035,7 @@ public class LimsMiddlewareController {
             }
 
             System.out.println("ix = " + ix.getName());
-            
+
             List<PatientReport> prs = new ArrayList<>();
             PatientReport tpr;
             tpr = getUnapprovedPatientReport(pi);
@@ -1142,13 +1144,29 @@ public class LimsMiddlewareController {
                     prFacade.edit(rtpr);
                 }
             }
+
+            pi.setStatus(PatientInvestigationStatus.REPORT_CREATED);
+            pi.setPerformed(true);
+//            pi.setPerformDepartment(sessionController.getDepartment());
+//            pi.setPerformInstitution(sessionController.getInstitution());
+            pi.setPerformedAt(new Date());
+//            pi.setPerformedUser(sessionController.getLoggedUser());
+            patientInvestigationFacade.edit(pi);
+
+            if (pi.getBillItem() == null) {
+                continue;
+            }
+            if (pi.getBillItem().getBill() == null) {
+                continue;
+            }
+            Bill b = pi.getBillItem().getBill();
+            b.setStatus(PatientInvestigationStatus.REPORT_CREATED);
+            billFacade.edit(b);
         }
 
         return temFlag;
     }
 
-    
-    
     public boolean addResultToReportPrevious(String sampleId, String testStr, String result, String unit, String error) {
         System.out.println("Adding Individual Result To Report");
         System.out.println("testStr = " + testStr);
@@ -1844,12 +1862,12 @@ public class LimsMiddlewareController {
 //                    System.out.println("value");
                     String sampleTypeName;
                     String samplePriority;
-                    
-                    if(tii.getItem()==null){
+
+                    if (tii.getItem() == null) {
                         System.out.println("tii is NULL " + tii);
                         continue;
                     }
-                    
+
                     if (tii.getSample() != null) {
                         sampleTypeName = tii.getSample().getName();
                     } else {
@@ -1870,6 +1888,7 @@ public class LimsMiddlewareController {
                                 System.out.println("going to check analyzer equal");
                                 if (tii.getMachine().getName().equalsIgnoreCase(sendingAnalyzerName)) {
                                     tests.add(tii.getTest().getCode());
+                                    updateStatusToPeformed(c);
                                     System.out.println("1. tii.getTest().getCode() = " + tii.getTest().getCode());
                                 }
 //                                tests.add(tii.getTest().getName());
@@ -1884,6 +1903,7 @@ public class LimsMiddlewareController {
                             System.out.println("going to check analyzer equal");
                             if (tii.getMachine().getName().equalsIgnoreCase(sendingAnalyzerName)) {
                                 tests.add(tii.getTest().getCode());
+                                updateStatusToPeformed(c);
                                 System.out.println("1. tii.getTest().getCode() = " + tii.getTest().getCode());
                             }
 
@@ -1894,6 +1914,42 @@ public class LimsMiddlewareController {
         }
         System.out.println("tests = " + tests);
         return tests;
+    }
+
+    public void updateStatusToPeformed(PatientSampleComponant psc) {
+        if (psc == null) {
+            return;
+        }
+        if (psc.getPatientInvestigation() == null) {
+            return;
+        }
+        PatientInvestigation pi = psc.getPatientInvestigation();
+        pi.setStatus(PatientInvestigationStatus.SAMPLE_INTERFACED);
+        pi.setPerformed(true);
+//            pi.setPerformDepartment(sessionController.getDepartment());
+//            pi.setPerformInstitution(sessionController.getInstitution());
+        pi.setPerformedAt(new Date());
+//            pi.setPerformedUser(sessionController.getLoggedUser());
+        patientInvestigationFacade.edit(pi);
+        if (pi.getBillItem() == null) {
+            return;
+        }
+        if (pi.getBillItem().getBill() == null) {
+            return;
+        }
+        Bill b = pi.getBillItem().getBill();
+        b.setStatus(PatientInvestigationStatus.SAMPLE_INTERFACED);
+        billFacade.edit(b);
+        if (psc.getSample() == null) {
+            return;
+        }
+        PatientSample ps = psc.getPatientSample();
+        ps.setStatus(PatientInvestigationStatus.SAMPLE_INTERFACED);
+        ps.setSentToAnalyzer(Boolean.TRUE);
+        ps.setSentToAnalyzerAt(new Date());
+        //TODO: Add other fields
+        patientSampleFacade.edit(ps);
+
     }
 
     public List<String> generateTestCodesForAnalyzer(String sampleId) {

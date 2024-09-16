@@ -749,68 +749,68 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 //                break;
 //        }
 //    }
-    @Deprecated
-    public boolean putToBills() {
-        bills = new ArrayList<>();
-        Set<Department> billDepts = new HashSet<>();
-        for (BillEntry e : lstBillEntries) {
-            billDepts.add(e.getBillItem().getItem().getDepartment());
-        }
-        Bill temBill = new Bill();
-        for (Department d : billDepts) {
-            Bill myBill = new BilledBill();
-            myBill = saveBill(d, myBill);
-
-            if (myBill == null) {
-                return false;
-            }
-
-            List<BillEntry> tmp = new ArrayList<>();
-
-            for (BillEntry e : lstBillEntries) {
-                if (Objects.equals(e.getBillItem().getItem().getDepartment().getId(), d.getId())) {
-//                    BillItem bi = getBillBean().saveBillItem(myBill, e, getSessionController().getLoggedUser());
-                    //for create Bill fee Payments
-                    BillItem bi = getBillBean().saveBillItem(myBill, e, getSessionController().getLoggedUser());
-                    //getBillBean().calculateBillItem(myBill, e);
-                    myBill.getBillItems().add(bi);
-                    tmp.add(e);
-                }
-            }
-
-            myBill.setReferenceNumber(referralId);
-
-            getBillFacade().edit(myBill);
-
-            getBillBean().calculateBillItems(myBill, tmp);
-            createPaymentsForBills(myBill, tmp);
-
-            double feeTotalExceptCcfs = 0.0;
-            for (BillEntry be : tmp) {
-                for (BillFee bf : be.getLstBillFees()) {
-                    if (bf.getFee().getFeeType() != FeeType.CollectingCentre) {
-                        feeTotalExceptCcfs += bf.getFeeValue();
-                    }
-                }
-            }
-            updateBallance(collectingCentre, 0 - Math.abs(feeTotalExceptCcfs), HistoryType.CollectingCentreBalanceUpdateBill, myBill, referralId);
-            AgentHistory ah = billSearch.fetchCCHistory(myBill);
-            billSearch.createCollectingCenterfees(myBill);
-            myBill.setTransCurrentCCBalance(ah.getBalanceBeforeTransaction() + ah.getTransactionValue());
-
-            bills.add(myBill);
-            temBill = myBill;
-        }
-
-//        double feeTotalExceptCcfs = 0.0;
-//        for (BillFee bf : lstBillFees) {
-//            if (bf.getFee().getFeeType() != FeeType.CollectingCentre) {
-//                feeTotalExceptCcfs += bf.getCollectingCentreFeeValue();
-//            }
+//    @Deprecated
+//    public boolean putToBills() {
+//        bills = new ArrayList<>();
+//        Set<Department> billDepts = new HashSet<>();
+//        for (BillEntry e : lstBillEntries) {
+//            billDepts.add(e.getBillItem().getItem().getDepartment());
 //        }
-//        updateBallance(collectingCentre, 0 - Math.abs(feeTotalExceptCcfs), HistoryType.CollectingCentreBalanceUpdateBill, temBill, referralId);
-        return true;
-    }
+//        Bill temBill = new Bill();
+//        for (Department d : billDepts) {
+//            Bill myBill = new BilledBill();
+//            myBill = saveBill(d, myBill);
+//
+//            if (myBill == null) {
+//                return false;
+//            }
+//
+//            List<BillEntry> tmp = new ArrayList<>();
+//
+//            for (BillEntry e : lstBillEntries) {
+//                if (Objects.equals(e.getBillItem().getItem().getDepartment().getId(), d.getId())) {
+////                    BillItem bi = getBillBean().saveBillItem(myBill, e, getSessionController().getLoggedUser());
+//                    //for create Bill fee Payments
+//                    BillItem bi = getBillBean().saveBillItem(myBill, e, getSessionController().getLoggedUser());
+//                    //getBillBean().calculateBillItem(myBill, e);
+//                    myBill.getBillItems().add(bi);
+//                    tmp.add(e);
+//                }
+//            }
+//
+//            myBill.setReferenceNumber(referralId);
+//
+//            getBillFacade().edit(myBill);
+//
+//            getBillBean().calculateBillItems(myBill, tmp);
+//            createPaymentsForBills(myBill, tmp);
+//
+//            double feeTotalExceptCcfs = 0.0;
+//            for (BillEntry be : tmp) {
+//                for (BillFee bf : be.getLstBillFees()) {
+//                    if (bf.getFee().getFeeType() != FeeType.CollectingCentre) {
+//                        feeTotalExceptCcfs += bf.getFeeValue();
+//                    }
+//                }
+//            }
+//            updateBallance(collectingCentre, 0 - Math.abs(feeTotalExceptCcfs), HistoryType.CollectingCentreBalanceUpdateBill, myBill, referralId);
+//            AgentHistory ah = billSearch.fetchCCHistory(myBill);
+//            billSearch.createCollectingCenterfees(myBill);
+//            myBill.setTransCurrentCCBalance(ah.getBalanceBeforeTransaction() + ah.getTransactionValue());
+//
+//            bills.add(myBill);
+//            temBill = myBill;
+//        }
+//
+////        double feeTotalExceptCcfs = 0.0;
+////        for (BillFee bf : lstBillFees) {
+////            if (bf.getFee().getFeeType() != FeeType.CollectingCentre) {
+////                feeTotalExceptCcfs += bf.getCollectingCentreFeeValue();
+////            }
+////        }
+////        updateBallance(collectingCentre, 0 - Math.abs(feeTotalExceptCcfs), HistoryType.CollectingCentreBalanceUpdateBill, temBill, referralId);
+//        return true;
+//    }
 
     public void setPrintigBill() {
         ////// // System.out.println("In Print");
