@@ -11898,7 +11898,7 @@ public class SearchController implements Serializable {
 
     public String navigateToLabReportSearch() {
         patientInvestigations = new ArrayList<>();
-        getReportKeyWord().setDepartment(getSessionController().getLoggedUser().getDepartment());
+//        getReportKeyWord().setDepartment(getSessionController().getLoggedUser().getDepartment());
         return "/lab/search_for_reporting_ondemand?faces-redirect=true";
     }
 

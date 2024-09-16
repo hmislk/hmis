@@ -140,6 +140,16 @@ public class InvestigationItemController implements Serializable {
     String fontFamily;
     double fontSize;
 
+    private String cssBackColor;
+    private String cssColor;
+    private String cssBorderRadius;
+    private String cssMargin;
+    private String cssPadding;
+    private String cssBorder;
+    private String customCss;
+    
+    private CssVerticalAlign cssVerticalAlign;
+
     Double movePercent;
     Double fixHeight;
     Double fixWidth;
@@ -670,6 +680,23 @@ public class InvestigationItemController implements Serializable {
                 ri.setRiFontSize(fontSize);
                 riFacade.edit(ri);
             }
+            
+            if(cssVerticalAlign!=null){
+                ri.setCssVerticalAlign(cssVerticalAlign);
+                riFacade.edit(ri);
+            }
+            
+            if(customCss!=null && !customCss.trim().equals("")){
+                ri.setCustomCss(customCss);
+                riFacade.edit(ri);
+            }
+            
+            
+            if(cssBorder!=null){
+                ri.setCssBorder(cssBorder);
+                riFacade.edit(ri);
+            }
+            
         }
 
         JsfUtil.addSuccessMessage("Update Success");
@@ -1659,7 +1686,7 @@ public class InvestigationItemController implements Serializable {
         listInvestigationItem();
         listInvestigationItem();
     }
-    
+
     public void addNewImage() {
         if (currentInvestigation == null) {
             JsfUtil.addErrorMessage("Please select an investigation");
@@ -2194,6 +2221,70 @@ public class InvestigationItemController implements Serializable {
         this.departmentFacade = departmentFacade;
     }
 
+    public String getCssBackColor() {
+        return cssBackColor;
+    }
+
+    public void setCssBackColor(String cssBackColor) {
+        this.cssBackColor = cssBackColor;
+    }
+
+    public String getCssColor() {
+        return cssColor;
+    }
+
+    public void setCssColor(String cssColor) {
+        this.cssColor = cssColor;
+    }
+
+    public String getCssBorderRadius() {
+        return cssBorderRadius;
+    }
+
+    public void setCssBorderRadius(String cssBorderRadius) {
+        this.cssBorderRadius = cssBorderRadius;
+    }
+
+    public String getCssMargin() {
+        return cssMargin;
+    }
+
+    public void setCssMargin(String cssMargin) {
+        this.cssMargin = cssMargin;
+    }
+
+    public String getCssPadding() {
+        return cssPadding;
+    }
+
+    public void setCssPadding(String cssPadding) {
+        this.cssPadding = cssPadding;
+    }
+
+    public String getCssBorder() {
+        return cssBorder;
+    }
+
+    public void setCssBorder(String cssBorder) {
+        this.cssBorder = cssBorder;
+    }
+
+    public CssVerticalAlign getCssVerticalAlign() {
+        return cssVerticalAlign;
+    }
+
+    public void setCssVerticalAlign(CssVerticalAlign cssVerticalAlign) {
+        this.cssVerticalAlign = cssVerticalAlign;
+    }
+
+    public String getCustomCss() {
+        return customCss;
+    }
+
+    public void setCustomCss(String customCss) {
+        this.customCss = customCss;
+    }
+
     public enum EditMode {
 
         View_Mode,
@@ -2232,6 +2323,8 @@ public class InvestigationItemController implements Serializable {
     public void setIxXml(String ixXml) {
         this.ixXml = ixXml;
     }
+    
+    
 
     private List<InvestigationItem> userChangableItems;
 
@@ -2277,6 +2370,9 @@ public class InvestigationItemController implements Serializable {
     public void setSelectedItemsToChange(List<InvestigationItem> selectedItemsToChange) {
         this.selectedItemsToChange = selectedItemsToChange;
     }
+    
+    
+    
 
     /**
      *
