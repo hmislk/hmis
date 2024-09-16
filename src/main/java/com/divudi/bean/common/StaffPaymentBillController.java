@@ -103,9 +103,6 @@ public class StaffPaymentBillController implements Serializable {
     List<BillFee> payingBillFees;
     double totalDue;
     double totalPaying;
-   
-    private Date fromDate;
-    private Date toDate;
     private Boolean printPreview = false;
     PaymentMethod paymentMethod;
     Speciality speciality;
