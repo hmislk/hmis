@@ -184,6 +184,7 @@ public class AgentPaymentReceiveSearchController implements Serializable {
 //        }
 //
 //    }
+    @Deprecated //Use the overloaded method with bill as a parameter
     private boolean checkPaid() {
         String sql = "SELECT bf FROM BillFee bf where bf.retired=false and bf.bill.id=" + getBill().getId();
         List<BillFee> tempFe = getBillFeeFacade().findByJpql(sql);
@@ -197,6 +198,20 @@ public class AgentPaymentReceiveSearchController implements Serializable {
         return false;
     }
 
+    private boolean checkPaid(Bill originalBill) {
+        String sql = "SELECT bf FROM BillFee bf where bf.retired=false and bf.bill.id=" + originalBill.getId();
+        List<BillFee> tempFe = getBillFeeFacade().findByJpql(sql);
+
+        for (BillFee f : tempFe) {
+            if (f.getPaidValue() != 0.0) {
+                return true;
+            }
+
+        }
+        return false;
+    }
+
+    @Deprecated //Use the overloaded method with bill as a param
     private CancelledBill createCancelBill(BillType billType, BillNumberSuffix billNumberSuffix) {
         CancelledBill cb = new CancelledBill();
         if (getBill() != null) {
@@ -221,6 +236,33 @@ public class AgentPaymentReceiveSearchController implements Serializable {
         return cb;
     }
 
+    private CancelledBill createCancelBill(BillType billType, BillNumberSuffix billNumberSuffix, Bill originalBill) {
+        CancelledBill cb = new CancelledBill();
+        if (originalBill != null) {
+            cb.copy(originalBill);
+            cb.invertValue(originalBill);
+
+            String deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(sessionController.getInstitution(), sessionController.getDepartment(), BillType.CollectingCentrePaymentMadeBill, BillClassType.CancelledBill);
+
+            cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), billType, BillClassType.CancelledBill, billNumberSuffix));
+            cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), billType, BillClassType.CancelledBill, billNumberSuffix));
+
+        }
+
+        cb.setBilledBill(getBill());
+        cb.setPaymentMethod(paymentMethod);
+        cb.setBillDate(new Date());
+        cb.setBillTime(new Date());
+        cb.setCreatedAt(new Date());
+        cb.setCreater(getSessionController().getLoggedUser());
+        cb.setDepartment(getSessionController().getDepartment());
+        cb.setInstitution(getSessionController().getInstitution());
+        cb.setComments(comment);
+
+        return cb;
+    }
+
+    @Deprecated //Use the overloaded method with bill as a param
     private boolean errorCheck() {
         if (getBill().isCancelled()) {
             JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
@@ -233,6 +275,30 @@ public class AgentPaymentReceiveSearchController implements Serializable {
         }
 
         if (checkPaid()) {
+            JsfUtil.addErrorMessage("Doctor Payment Already Paid So Cant Cancel Bill");
+            return true;
+        }
+
+        if (getComment() == null || getComment().trim().equals("")) {
+            JsfUtil.addErrorMessage("Please enter a comment");
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean errorCheck(Bill origianlBill) {
+        if (origianlBill.isCancelled()) {
+            JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
+            return true;
+        }
+
+        if (origianlBill.isRefunded()) {
+            JsfUtil.addErrorMessage("Already Returned. Can not cancel.");
+            return true;
+        }
+
+        if (checkPaid(origianlBill)) {
             JsfUtil.addErrorMessage("Doctor Payment Already Paid So Cant Cancel Bill");
             return true;
         }
@@ -282,7 +348,7 @@ public class AgentPaymentReceiveSearchController implements Serializable {
             agencyDepositCanellationStarted = false;
             return;
         }
-        
+
         cancelBill(BillType.CollectingCentrePaymentReceiveBill, BillNumberSuffix.CCCAN, HistoryType.CollectingCentreDepositCancel, BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL);
 
         CancelledBill cb = new CancelledBill();
@@ -292,8 +358,8 @@ public class AgentPaymentReceiveSearchController implements Serializable {
 
         String deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(sessionController.getInstitution(), sessionController.getDepartment(), BillType.CollectingCentrePaymentMadeBill, BillClassType.CancelledBill);
 
-        cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.CollectingCentrePaymentReceiveBill, BillClassType.CancelledBill, BillNumberSuffix.CCCAN));
-        cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.CollectingCentrePaymentReceiveBill, BillClassType.CancelledBill, BillNumberSuffix.CCCAN));
+        cb.setDeptId(deptId);
+        cb.setInsId(deptId);
 
         cb.setBilledBill(getBill());
         cb.setPaymentMethod(paymentMethod);
@@ -346,9 +412,9 @@ public class AgentPaymentReceiveSearchController implements Serializable {
         cancelBill(BillType.CollectingCentreDebitNoteBill, BillNumberSuffix.CCDNCAN, HistoryType.CollectingCentreDebitNoteCancel, BillTypeAtomic.CC_DEBIT_NOTE_CANCELLATION);
     }
 
-    public void cancelBill(BillType billType, BillNumberSuffix billNumberSuffix, HistoryType historyType, BillTypeAtomic billTypeAtomic) {
-        if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
-            if (errorCheck()) {
+    public void cancelBill(BillType billType, BillNumberSuffix billNumberSuffix, HistoryType historyType, BillTypeAtomic billTypeAtomic, Bill originalBill) {
+        if (originalBill != null && originalBill.getId() != null && originalBill.getId() != 0) {
+            if (errorCheck(originalBill)) {
                 return;
             }
 
