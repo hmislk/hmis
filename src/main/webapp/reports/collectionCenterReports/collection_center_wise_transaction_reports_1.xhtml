@@ -129,7 +129,9 @@
                             <h:outputText value="#{bi.bill.creater.name}" ></h:outputText>
                         </p:column>
                         <p:column headerText="Created Date" >
-                            <h:outputText value="#{bi.bill.createdAt}" ></h:outputText>
+                            <h:outputText value="#{bi.bill.createdAt}" >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                            </h:outputText>
                         </p:column>
                     </p:dataTable>
                 </h:form>

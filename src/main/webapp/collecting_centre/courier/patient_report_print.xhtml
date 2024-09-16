@@ -14,10 +14,6 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:outputStylesheet library="css" name="lab.css" ></h:outputStylesheet>
-                <h:panelGroup rendered="#{!(webUserController.hasPrivilege('LabAutherizing') eq true or webUserController.hasPrivilege('LabDataentry') eq true or webUserController.hasPrivilege('LabPrinting') eq true)}" >
-                    You are NOT authorized
-                </h:panelGroup>
-
                 <h:form id="form"> 
                     <p:panel>
                         <f:facet name="header">
@@ -58,7 +54,11 @@
 
                                         <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
                                             <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
-                                                <h:outputLabel value="#{prv.lobValue}" rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Memo' and prv.investigationItem.retired eq false}"  escape="false" />
+                                                <h:outputLabel 
+                                                    value="#{prv.lobValue}" 
+                                                    style="z-index: 1000;"
+                                                    rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Memo' and prv.investigationItem.retired eq false}"  
+                                                    escape="false" />
                                             </div>
                                         </ui:repeat>
                                         <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
@@ -68,34 +68,34 @@
                                         </ui:repeat>
                                         <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
                                             <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
-                                                <h:outputLabel value="#{prv.strValue}" rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Varchar'}" escape="false" />
+                                                <h:outputLabel style="z-index: 1000;" value="#{prv.strValue}" rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Varchar'}" escape="false" />
                                             </div>
                                         </ui:repeat>
                                         <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
                                             <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
-                                                <h:outputLabel value="#{prv.displayValue}"  rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Double' and prv.investigationItem.retired eq false}"   escape="false" />
+                                                <h:outputLabel value="#{prv.displayValue}" style="z-index: 1000;" rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Double' and prv.investigationItem.retired eq false}"   escape="false" />
                                             </div>
                                         </ui:repeat>
                                         <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
                                             <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
-                                                <h:outputLabel value="#{prv.strValue}" rendered="#{prv.investigationItem.ixItemType eq 'DynamicLabel'}" escape="false" />
+                                                <h:outputLabel value="#{prv.strValue}" style="z-index: 1000;" rendered="#{prv.investigationItem.ixItemType eq 'DynamicLabel'}" escape="false" />
                                             </div>
                                         </ui:repeat>
                                         <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
                                             <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
-                                                <h:outputLabel value="#{prv.strValue}" rendered="#{prv.investigationItem.ixItemType eq 'Flag'}" escape="false" />
+                                                <h:outputLabel value="#{prv.strValue}" style="z-index: 1000;" rendered="#{prv.investigationItem.ixItemType eq 'Flag'}" escape="false" />
                                             </div>
                                         </ui:repeat>
                                         <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
                                             <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
-                                                <h:outputLabel value="#{prv.doubleValue}" rendered="#{prv.investigationItem.ixItemType eq 'Calculation' }" escape="false" >
+                                                <h:outputLabel value="#{prv.doubleValue}" style="z-index: 1000;" rendered="#{prv.investigationItem.ixItemType eq 'Calculation' }" escape="false" >
                                                     <f:convertNumber pattern="0.0" />
                                                 </h:outputLabel>
                                             </div>
                                         </ui:repeat>
                                         <ui:repeat value="#{patientReportController.currentPatientReport.item.reportItems}" var="myIi" >
                                             <div style="#{myIi.cssStyle}; position:absolute;">
-                                                <h:outputText rendered="#{myIi.retired ne true and myIi.ixItemType eq 'Label' }" value="#{myIi.htmltext}" style="color: #{myIi.cssColor}" escape="false" ></h:outputText>
+                                                <h:outputText rendered="#{myIi.retired ne true and myIi.ixItemType eq 'Label' }" value="#{myIi.htmltext}" style="color: #{myIi.cssColor}; z-index: 800;" escape="false" ></h:outputText>
                                             </div>
                                         </ui:repeat>
                                     </div>
