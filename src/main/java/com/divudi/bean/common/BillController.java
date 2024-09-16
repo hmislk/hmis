@@ -2532,7 +2532,6 @@ public class BillController implements Serializable {
             jpql += " and b.paymentMethod=:pm ";
         }
         if (billTypes != null) {
-            bts=getBillTypesByAtomicBillTypes(billTypes);
             hm.put("bts", billTypes);
             jpql += " and b.billTypeAtomic in :bts";
         }
@@ -2559,23 +2558,6 @@ public class BillController implements Serializable {
             b.setBillTypeAtomic(BillTypeAtomic.getBillTypeAtomic(b.getBillType(), b.getBillClassType()));
             getFacade().edit(b);
         }
-    }
-    
-    public List<BillType> getBillTypesByAtomicBillTypes(List<BillTypeAtomic> ba){
-        List<BillType> bt = new ArrayList<>();
-        if (ba == null) {
-            return bt;
-        }
-        for (BillTypeAtomic billTypeAtomic : ba) {
-            if (billTypeAtomic==billTypeAtomic.PHARMACY_GRN) {
-                bt.add(billType.PharmacyGrnBill);
-            }else if(billTypeAtomic==billTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL){
-                bt.add(billType.PharmacyWholeSale);
-            } else if(billTypeAtomic==billTypeAtomic.PHARMACY_DIRECT_PURCHASE){
-                bt.add(billType.PharmacyPurchaseBill);
-            }
-        }
-        return bt;
     }
 
     public List<Bill> listBills(
