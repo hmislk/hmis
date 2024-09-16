@@ -1524,6 +1524,20 @@ public class StaffController implements Serializable {
         m.put("name", name);
         return getFacade().findFirstByJpql(jpql, m);
     }
+    
+    public Staff findStaffById(Long id) {
+        if (id == null) {
+            return null;
+        }
+        String jpql = "select c "
+                + " from Staff c "
+                + " where c.retired<>:ret "
+                + " and c.id=:id";
+        Map m = new HashMap();
+        m.put("ret", true);
+        m.put("id", id);
+        return getFacade().findFirstByJpql(jpql, m);
+    }
 
     public PersonFacade getPersonFacade() {
         return personFacade;

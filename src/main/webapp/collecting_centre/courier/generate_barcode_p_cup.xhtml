@@ -120,11 +120,11 @@
                                         rowsPerPageTemplate="50,100,200">
 
                                         <!-- Bill Number and Date Column -->
-                                        
+
                                         <p:column headerText="S.No" style="vertical-align: top; width: 4em; padding: 8px;">
                                             <h:outputLabel value="#{rowIndex + 1}" />
                                         </p:column>
-                                        
+
                                         <p:column headerText="Patient" style="vertical-align: top; padding: 8px; display: flex;" filterBy="#{b.patient.person.nameWithTitle}" filterMatchMode="contains">
                                             <i class="fas fa-user text-primary"></i>
                                             <h:outputLabel value="#{b.patient.person.nameWithTitle}" class="mx-3" />
@@ -133,15 +133,15 @@
                                         <p:column headerText="MRN" style="vertical-align: top;  width: 10em; padding: 8px;">
                                             <h:outputLabel value="#{b.patient.phn}" />
                                         </p:column>
-                                        
+
                                         <p:column headerText="Age" style="vertical-align: top;  width: 7em; padding: 8px;">
                                             <h:outputLabel value="#{b.patient.ageYears} Years" />
                                         </p:column>
-                                        
+
                                         <p:column headerText="CC Code" style="vertical-align: top; width: 5em; padding: 8px;">
                                             <h:outputLabel value="#{b.collectingCentre.code}"/><br/>
                                         </p:column>
-                                        
+
                                         <p:column headerText="CC Name" style="vertical-align: top; padding: 8px;">
                                             <i class="fas fa-hospital text-info"></i>
                                             <h:outputLabel value="#{b.collectingCentre.name}" class="mx-2"/><br/>
@@ -160,7 +160,7 @@
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
                                             </h:outputLabel>
                                         </p:column>
-                                        
+
                                         <p:column headerText="Actions" style="vertical-align: top;  width: 13em; padding: 8px;">
                                             <p:commandButton
                                                 value="To Patient Reports"
@@ -170,7 +170,7 @@
                                                 class="ui-button-warning ">
                                             </p:commandButton>
                                         </p:column>
-                                        
+
                                     </p:dataTable>
                                 </h:panelGroup>
 
@@ -235,16 +235,88 @@
                                             <f:facet name="header">
                                                 <div class="d-flex justify-content-between">
                                                     <h:outputText value="Reporting Status" style="text-align: center; display: block; width: 10em" />
+                                                </div>
+                                            </f:facet>
+
+
+                                            <!-- Ordered -->
+                                            <p:badge rendered="#{patientInvestigation.status eq 'ORDERED'}" size="large" value="Ordered" severity="info" styleClass="mr-2"></p:badge>
+
+                                            <!-- Sample Generated -->
+                                            <p:badge rendered="#{patientInvestigation.status eq 'SAMPLE_GENERATED'}" size="large" value="Sample Generated" severity="warning" styleClass="mr-2"></p:badge>
+
+                                            <!-- Sample Collected -->
+                                            <p:badge rendered="#{patientInvestigation.status eq 'SAMPLE_COLLECTED'}" size="large" value="Sample Collected" severity="info" styleClass="mr-2"></p:badge>
+
+                                            <!-- Sample Sent -->
+                                            <p:badge rendered="#{patientInvestigation.status eq 'SAMPLE_SENT'}" size="large" value="Sample Sent to Lab" severity="info" styleClass="mr-2"></p:badge>
+
+                                            <!-- Sample Accepted -->
+                                            <p:badge rendered="#{patientInvestigation.status eq 'SAMPLE_ACCEPTED'}" size="large" value="Sample Accepted at the Lab" severity="success" styleClass="mr-2"></p:badge>
+
+                                            <!-- Sample Rejected -->
+                                            <p:badge rendered="#{patientInvestigation.status eq 'SAMPLE_REJECTED'}" size="large" value="Sample Rejected" severity="danger" styleClass="mr-2"></p:badge>
+
+                                            <!-- Sample Reverted -->
+                                            <p:badge rendered="#{patientInvestigation.status eq 'SAMPLE_REVERTED'}" size="large" value="Sample Reverted" severity="warning" styleClass="mr-2"></p:badge>
+
+                                            <!-- Sample Resent -->
+                                            <p:badge rendered="#{patientInvestigation.status eq 'SAMPLE_RESENT'}" size="large" value="Sample Resent" severity="info" styleClass="mr-2"></p:badge>
+
+                                            <!-- Sample Recollected -->
+                                            <p:badge rendered="#{patientInvestigation.status eq 'SAMPLE_RECOLLECTED'}" size="large" value="Sample Recollected" severity="info" styleClass="mr-2"></p:badge>
+
+                                            <!-- Sample Interfaced -->
+                                            <p:badge rendered="#{patientInvestigation.status eq 'SAMPLE_INTERFACED'}" size="large" value="Sample Interfaced" severity="success" styleClass="mr-2"></p:badge>
+
+                                            <!-- Sample Approved -->
+                                            <p:badge rendered="#{patientInvestigation.status eq 'SAMPLE_APPROVED'}" size="large" value="Sample Approved" severity="success" styleClass="mr-2"></p:badge>
+
+                                            <!-- Sample Repeated -->
+                                            <p:badge rendered="#{patientInvestigation.status eq 'SAMPLE_REPEATED'}" size="large" value="Sample Repeated" severity="warning" styleClass="mr-2"></p:badge>
+
+                                            <!-- Sample Approved and Repeated -->
+                                            <p:badge rendered="#{patientInvestigation.status eq 'SAMPLE_APPROVED_AND_REPEATED'}" size="large" value="Sample Approved and Repeated" severity="success" styleClass="mr-2"></p:badge>
+
+                                            <!-- Report Printed -->
+                                            <p:badge rendered="#{patientInvestigation.status eq 'REPORT_PRINTED'}" size="large" value="Report Printed" severity="info" styleClass="mr-2"></p:badge>
+
+                                            <!-- Report Distributed -->
+                                            <p:badge rendered="#{patientInvestigation.status eq 'REPORT_DISTRIBUTED'}" size="large" value="Report Distributed" severity="info" styleClass="mr-2"></p:badge>
+
+                                            <!-- Report Reached Collecting Centre -->
+                                            <p:badge rendered="#{patientInvestigation.status eq 'REPORT_REACHED_COLLECTING_CENTRE'}" size="large" value="Report Reached Collecting Centre" severity="success" styleClass="mr-2"></p:badge>
+
+                                            <!-- Report Handed Over -->
+                                            <p:badge rendered="#{patientInvestigation.status eq 'REPORT_HANDED_OVER'}" size="large" value="Report Handed Over" severity="success" styleClass="mr-2"></p:badge>
+
+                                            <!-- Report Created -->
+                                            <p:badge rendered="#{patientInvestigation.status eq 'REPORT_CREATED'}" size="large" value="Report Created" severity="info" styleClass="mr-2"></p:badge>
+
+                                            <!-- Report Approved -->
+                                            <p:badge rendered="#{patientInvestigation.status eq 'REPORT_APPROVED'}" size="large" value="Report Approved" severity="success" styleClass="mr-2"></p:badge>
+
+
+
+
+                                        </p:column>
+                                        <p:column  style="vertical-align: top; width: 10em; padding: 8px;" >
+                                            <f:facet name="header">
+                                                <div class="d-flex justify-content-between">
                                                     <h:outputText value="Action" style="text-align: center; display: block; width: 10em" />
                                                 </div>
                                             </f:facet>
                                             <ui:repeat value="#{patientReportController.patientReports(patientInvestigation)}" var="dpr">
                                                 <div class="d-flex justify-content-between">
-                                                    <div style="display: flex; justify-content: center; align-items: center; flex-direction: column;  width: 10em">
-                                                        <p:badge rendered="#{dpr.patientInvestigation.status ne 'SAMPLE_ACCEPTED' and !dpr.approved}" size="large" value="Pending" severity="danger" styleClass="mr-2"></p:badge>
-                                                        <p:badge rendered="#{dpr.patientInvestigation.status eq 'SAMPLE_ACCEPTED' and !dpr.approved}" size="large" value="Processing" severity="warning" styleClass="mr-2"></p:badge>
-                                                        <p:badge rendered="#{dpr.approved}" value="Aproved" severity="success"  size="large" styleClass="mr-2"></p:badge>
-                                                    </div>
+                                                    <!--                                                    <div style="display: flex; justify-content: center; align-items: center; flex-direction: column;  width: 10em">
+                                                    
+                                                    
+                                                                                                            <p:badge rendered="#{dpr.status ne 'REPORT_CREATED' }" size="large" value="Report Created" severity="danger" styleClass="mr-2"></p:badge>
+                                                                                                            <p:badge rendered="#{dpr.patientInvestigation.status ne 'SAMPLE_ACCEPTED' and !dpr.approved}" size="large" value="Pending" severity="danger" styleClass="mr-2"></p:badge>
+                                                                                                            <p:badge rendered="#{dpr.status eq 'SAMPLE_ACCEPTED' and !dpr.approved}" size="large" value="Processing" severity="warning" styleClass="mr-2"></p:badge>
+                                                                                                            <p:badge rendered="#{dpr.approved}" value="Aproved" severity="success"  size="large" styleClass="mr-2"></p:badge>
+                                                    
+                                                                                                        </div>-->
                                                     <div style="display: flex; justify-content: center; align-items: center; flex-direction: row; width: 10em" class="gap-3">
                                                         <p:graphicImage 
                                                             id="imgApproved" 
@@ -252,6 +324,7 @@
                                                             name="approved_icon.png" 
                                                             style="height: 30px; width: 30px; #{dpr.approved ? '':'opacity: 0.1;'}" >
                                                         </p:graphicImage>
+
                                                         <p:commandLink 
                                                             id="cmdOldReportPrint1" 
                                                             ajax="false" 
@@ -272,6 +345,13 @@
                                                             <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}">
                                                             </f:setPropertyActionListener>
                                                         </p:commandLink>
+                                                        <p:graphicImage 
+                                                            rendered="#{dpr.printed}"
+                                                            id="imgPrinted" 
+                                                            library="image" 
+                                                            name="print_ok.png" 
+                                                            style="height: 30px; width: 30px; #{dpr.approved ? '':'opacity: 0.1;'}" >
+                                                        </p:graphicImage>
                                                     </div>
                                                 </div>
 

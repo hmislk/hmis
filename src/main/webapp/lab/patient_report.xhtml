@@ -80,8 +80,8 @@
                                             class="mx-1 ui-button-info"
                                             rendered="#{!sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed}"
                                             value="Print" 
-                                            disabled="#{!patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission}"
-                                            actionListener="#{patientReportController.printPatientReport()}">
+                                            onclick="#{patientReportController.printPatientReport()}"
+                                            disabled="#{!patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission}">
                                             <p:printer target="divPrint" />
                                         </p:commandButton>
                                         <p:commandButton   
@@ -91,7 +91,7 @@
                                             rendered="#{sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed}"
                                             value="Print" 
                                             disabled="#{!patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission or patientReportController.currentPtIx.billItem.bill.backwardReferenceBill.balance ne 0}"
-                                            actionListener="#{patientReportController.printPatientReport()}">
+                                            onclick="#{patientReportController.printPatientReport()}">
                                             <p:printer target="divPrint" />
                                         </p:commandButton>
                                         <p:spacer width="80" ></p:spacer>
@@ -362,6 +362,13 @@
                                         <p:outputLabel value="Approved Time" ></p:outputLabel>
                                         <p:calendar value="#{patientReportController.currentPatientReport.approveAt}"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:calendar>
 
+                                        <p:outputLabel value="Approved By" ></p:outputLabel>
+                                        <p:outputLabel value="#{patientReportController.currentPatientReport.approveUser.webUserPerson.nameWithTitle}"
+                                                       ></p:outputLabel>
+
+                                        <p:outputLabel value="Report ID" ></p:outputLabel>
+                                        <p:outputLabel value="#{patientReportController.currentPatientReport.id}" ></p:outputLabel>
+                                        
                                         <p:outputLabel value="Printed Time" ></p:outputLabel>
                                         <p:calendar value="#{patientReportController.currentPatientReport.patientInvestigation.printingAt}"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:calendar>
                                     </p:panelGrid>
@@ -569,12 +576,12 @@
                                                 </div>
                                             </ui:repeat>
                                             <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
-                                                <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
+                                                <div style="#{prv.investigationItem.cssStyle}; position:absolute; display: flex; align-items: center; justify-content: center; ">
                                                     <h:outputLabel value="#{prv.strValue}" rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Varchar'}" escape="false" />
                                                 </div>
                                             </ui:repeat>
                                             <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
-                                                <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
+                                                <div style="#{prv.investigationItem.cssStyle}; position:absolute; display: flex; align-items: center; justify-content: center; ">
                                                     <h:outputLabel value="#{prv.displayValue}"  rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Double' and prv.investigationItem.retired eq false}"   escape="false" />
                                                 </div>
                                             </ui:repeat>
@@ -599,10 +606,10 @@
                                                     <img style="height: 350px; width: 350px; z-index: 100;" src="#{prv.investigationItem.htmltext}" ></img>
                                                     <p:graphicImage
                                                         value="#{prv.lobValue}"
-                                                                    style="width: #{prv.investigationItem.wtPix};overflow: visible; display: block;" 
-                                                                    height="#{prv.investigationItem.htPix}"
-                                                                  
-                                                                    width="#{prv.investigationItem.wtPix}">
+                                                        style="width: #{prv.investigationItem.wtPix};overflow: visible; display: block;" 
+                                                        height="#{prv.investigationItem.htPix}"
+
+                                                        width="#{prv.investigationItem.wtPix}">
                                                     </p:graphicImage>
                                                 </h:panelGroup>
                                             </ui:repeat>
@@ -672,18 +679,18 @@
                                                             </div>
                                                         </h:panelGroup>
                                                     </ui:repeat>
-                                                    
-                                                     <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
-                                                <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
-                                                    <p:graphicImage value="https://upload.wikimedia.org/wikipedia/en/e/e2/IMG_Academy_Logo.svg"
-                                                                    style="width: #{prv.investigationItem.wtPix};overflow: visible; display: block;" 
-                                                                    height="#{prv.investigationItem.htPix}"
-                                                                    
-                                                                    width="#{prv.investigationItem.wtPix}">
-                                                    </p:graphicImage>
-                                                </div>
-                                            </ui:repeat>
-                                                    
+
+                                                    <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
+                                                        <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
+                                                            <p:graphicImage value="https://upload.wikimedia.org/wikipedia/en/e/e2/IMG_Academy_Logo.svg"
+                                                                            style="width: #{prv.investigationItem.wtPix};overflow: visible; display: block;" 
+                                                                            height="#{prv.investigationItem.htPix}"
+
+                                                                            width="#{prv.investigationItem.wtPix}">
+                                                            </p:graphicImage>
+                                                        </div>
+                                                    </ui:repeat>
+
                                                 </div>
                                                 <div style="clear: left;padding-top: 1%;">
                                                     <h:outputLabel value="--- End of Report ---" style="font-size: 14px; font-weight: bold; "></h:outputLabel>
@@ -701,6 +708,8 @@
                     </p:panel>
 
                 </h:form>
+
+
             </ui:define>
 
 
