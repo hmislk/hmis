@@ -227,10 +227,14 @@ public class SessionInstance implements Serializable {
     
     private boolean arrived;
     
+    
     @ManyToOne
     private ArrivalRecord arrivalRecord;
     
     private int reportPatients = 0;
+    
+    @Lob
+    private String specialNoticeSessionInstance;
 
     
     
@@ -1345,6 +1349,14 @@ public class SessionInstance implements Serializable {
 
     public void setNextAvailableAppointmentNumber(Long nextAvailableAppointmentNumber) {
         this.nextAvailableAppointmentNumber = nextAvailableAppointmentNumber;
+    }
+
+    public String getSpecialNoticeSessionInstance() {
+        return specialNoticeSessionInstance;
+    }
+
+    public void setSpecialNoticeSessionInstance(String specialNoticeSessionInstance) {
+        this.specialNoticeSessionInstance = specialNoticeSessionInstance;
     }
     
     
