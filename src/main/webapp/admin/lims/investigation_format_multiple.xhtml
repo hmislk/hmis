@@ -268,9 +268,12 @@
                                             <ui:repeat value="#{investigationItemController.items}" var="myIi" >
 
                                                 <h:panelGroup id="gpIi" >
-                                                    <div style="#{myIi.outerCssStyle};background-color: wheat;" >
-                                                        <h:outputLabel id="lblViewModeIi" rendered="#{myIi.retired ne true and investigationItemController.editMode eq 'View_Mode'}"  value="#{myIi.htmltext}" 
-                                                                       style="#{myIi.innerCssStyle}; color: black;" escape="false" ></h:outputLabel> 
+                                                    <div style="#{myIi.outerCssStyle}; position:absolute; overflow: hidden!important; " >
+                                                        <h:outputLabel 
+                                                            id="lblViewModeIi"
+                                                            rendered="#{myIi.retired ne true and investigationItemController.editMode eq 'View_Mode'}"  
+                                                            value="#{myIi.htmltext}"
+                                                            escape="false" ></h:outputLabel> 
 
                                                         <p:tooltip for="lblViewModeIi" rendered="#{myIi.investigationItemValues.size() ne 0}" >
                                                             <table>
@@ -316,6 +319,52 @@
                                             </ui:repeat>
                                         </div>
                                     </h:panelGroup>
+
+
+
+
+
+
+
+
+
+
+
+                                    <table >
+
+
+
+                                        <ui:repeat value="#{investigationItemController.items}" var="myIi" >
+                                            <tr>
+                                                <td>
+                                                    #{myIi.name}
+                                                </td>
+                                                <td>
+                                                    #{myIi.customCss}
+                                                </td>
+                                                <td>
+                                                    #{myIi.cssStyle}
+                                                </td>
+                                            </tr>
+
+
+
+
+                                        </ui:repeat>
+
+
+                                    </table>
+
+
+
+
+
+
+
+
+
+
+
 
                                 </p:panel>
                             </div>
