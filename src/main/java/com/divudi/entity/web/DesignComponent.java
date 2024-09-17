@@ -30,6 +30,10 @@ public class DesignComponent implements Serializable {
     private String codeSystem;
     @Lob
     private String description;
+    @Lob
+    private String viewHtml;
+    @Lob
+    private String editHtml;
     @Enumerated(EnumType.STRING)
     private TemplateComponentType type;
     @ManyToOne
@@ -149,6 +153,22 @@ public class DesignComponent implements Serializable {
 
     public void setCodeSystem(String codeSystem) {
         this.codeSystem = codeSystem;
+    }
+
+    public String getViewHtml() {
+        return viewHtml;
+    }
+
+    public void setViewHtml(String viewHtml) {
+        this.viewHtml = viewHtml;
+    }
+
+    public String getEditHtml() {
+        return editHtml;
+    }
+
+    public void setEditHtml(String editHtml) {
+        this.editHtml = editHtml;
     }
     
     
