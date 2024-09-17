@@ -6442,6 +6442,16 @@ public String paySelectedDoctor() {
         sessionInstances = new ArrayList<>();
         selectedBillSession = null;
     }
+    
+    public void markAsForeigner() {
+        setForiegn(true);
+        calculateSelectedBillSessionTotal();
+    }
+
+    public void markAsLocal() {
+        setForiegn(false);
+        calculateSelectedBillSessionTotal();
+    }
 
     @Deprecated
 public void listnerStaffRowSelect() {
