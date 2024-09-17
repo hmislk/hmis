@@ -201,6 +201,16 @@
                                                                 <p:badge value="Paid Appointments Only" severity="danger"></p:badge>
                                                             </h:panelGroup>
                                                         </span>
+                                                        <span class="text-center mx-1" > 
+                                                            <h:panelGroup rendered="#{s.originatingSession.specialNotice ne null}">
+                                                                <p:badge value="#{s.originatingSession.specialNotice}" severity="warning" style="font-size: 12pt"></p:badge>
+                                                            </h:panelGroup>
+                                                        </span>
+                                                        <span class="text-center mx-1" > 
+                                                            <h:panelGroup rendered="#{s.specialNoticeSessionInstance ne null}">
+                                                                <p:badge value="#{s.specialNoticeSessionInstance}" severity="warning" style="font-size: 12pt"></p:badge>
+                                                            </h:panelGroup>
+                                                        </span>
                                                     </div>
                                                 </div>
                                             </p:column>
