@@ -131,6 +131,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.UUID;
 import org.apache.poi.ss.SpreadsheetVersion;
 
 @Named
@@ -278,7 +279,7 @@ public class DataUploadController implements Serializable {
         uploadComplete = false;
         return "/admin/institutions/collecting_centre_upload?faces-redirect=true";
     }
-    
+
     public String navigateToAgencyUpload() {
         uploadComplete = false;
         return "/admin/institutions/agency_upload?faces-redirect=true";
@@ -3330,7 +3331,7 @@ public class DataUploadController implements Serializable {
         uploadComplete = true;
         JsfUtil.addSuccessMessage("Successfully Uploaded");
     }
-    
+
     public void uploadAgencies() {
         agencies = new ArrayList<>();
         if (file != null) {
@@ -3607,8 +3608,6 @@ public class DataUploadController implements Serializable {
         return collectingCentresList;
     }
 
-    
-    
     private List<Institution> readAgenciesFromExcel(InputStream inputStream) throws IOException {
         Workbook workbook = new XSSFWorkbook(inputStream);
         Sheet sheet = workbook.getSheetAt(0);
@@ -3627,7 +3626,8 @@ public class DataUploadController implements Serializable {
 
             agency = null;
             //ToDo: Delete unnecessary fields
-            
+
+            Double codeDbl = 0.0;
             String code = null;
             String agencyName = null;
             Double creditLimit = null;
@@ -3635,11 +3635,14 @@ public class DataUploadController implements Serializable {
             Cell codeCell = row.getCell(0);
             if (codeCell != null && codeCell.getCellType() == CellType.STRING) {
                 code = codeCell.getStringCellValue();
+            } else if (codeCell != null && codeCell.getCellType() == CellType.NUMERIC) {
+                codeDbl = codeCell.getNumericCellValue();
+                code = codeDbl.toString();
+            }else{
+                code = UUID.randomUUID().toString();
             }
+            System.out.println("code = " + code);
 
-            if (code == null || code.trim().equals("")) {
-                continue;
-            }
 
             //    Item masterItem = itemController.findMasterItemByName(code);
             Cell agentNameCell = row.getCell(1);
@@ -3647,21 +3650,20 @@ public class DataUploadController implements Serializable {
             if (agentNameCell != null && agentNameCell.getCellType() == CellType.STRING) {
                 agencyName = agentNameCell.getStringCellValue();
             }
+            System.out.println("agencyName = " + agencyName);
             if (agencyName == null || agencyName.trim().equals("")) {
                 continue;
             }
 
-            
             Cell standardCreditCell = row.getCell(2);
             if (standardCreditCell != null && standardCreditCell.getCellType() == CellType.NUMERIC) {
                 creditLimit = standardCreditCell.getNumericCellValue();
-
             }
+            System.out.println("creditLimit = " + creditLimit);
             if (creditLimit == null) {
                 creditLimit = 0.0;
             }
 
-            
             if (code.trim().equals("")) {
                 continue;
             }
@@ -3669,31 +3671,28 @@ public class DataUploadController implements Serializable {
             if (agencyName.trim().equals("")) {
                 continue;
             }
-            
-            //Change code to name
 
+            //Change code to name
 //            agency = agencyController.findAgencyByName(code);
-            agency = agencyController.findAgencyByCode(code);
+            agency = agencyController.findAgencyByName(agencyName);
             System.out.println("agency name " + agency);
-            
-            
-            
+
             if (agency == null) {
                 agency = new Institution();
                 agency.setInstitutionType(InstitutionType.Agency);
                 agency.setCode(code);
                 agency.setName(agencyName);
+                agency.setAllowedCreditLimit(creditLimit);
             }
 
             agencyController.save(agency);
-            
+
             agencyList.add(agency);
         }
 
         return agencyList;
     }
 
-    
     private List<Institution> readSuppliersFromExcel(InputStream inputStream) throws IOException {
         Workbook workbook = new XSSFWorkbook(inputStream);
         Sheet sheet = workbook.getSheetAt(0);
@@ -6328,6 +6327,4 @@ public class DataUploadController implements Serializable {
         this.agencies = agencies;
     }
 
-    
-    
 }

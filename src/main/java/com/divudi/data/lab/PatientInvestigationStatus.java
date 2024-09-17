@@ -2,11 +2,11 @@ package com.divudi.data.lab;
 
 /**
  * Enum representing the various statuses of a patient investigation.
- * 
+ *
  * Author: M H B Ariyaratne
  */
 public enum PatientInvestigationStatus {
-    
+
     ORDERED("Ordered"),
     SAMPLE_GENERATED("Sample Generated (Barcode generated)"),
     SAMPLE_COLLECTED("Sample Collected"),
@@ -20,12 +20,12 @@ public enum PatientInvestigationStatus {
     SAMPLE_APPROVED("Sample Approved"),
     SAMPLE_REPEATED("Sample Repeated"),
     SAMPLE_APPROVED_AND_REPEATED("Sample Approved and Repeated"),
-    REPORT_CREATED("Report Created"),
-    REPORT_APPROVED("Report Approved"),
     REPORT_PRINTED("Report Printed"),
     REPORT_DISTRIBUTED("Report Distributed"),
     REPORT_REACHED_COLLECTING_CENTRE("Report Reached Collecting Centre"),
-    REPORT_HANDED_OVER("Report Handed Over");
+    REPORT_HANDED_OVER("Report Handed Over"), 
+    REPORT_CREATED("Report Created"),
+    REPORT_APPROVED("Report Approved");
 
     private final String label;
 

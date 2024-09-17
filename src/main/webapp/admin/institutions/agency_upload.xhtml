@@ -17,9 +17,13 @@
                     </div>
                     <div class="card-body" >
                         <h:form enctype="multipart/form-data">
-                            <p:fileUpload value="#{dataUploadController.file}"
-                                          mode="simple"
-                                          label="Choose File"/>
+                            <p:fileUpload
+                                dragDropSupport="true"
+                                auto="true"
+                                multiple="false"
+                                value="#{dataUploadController.file}"
+                                mode="advanced"
+                                label="Choose File"/>
                             <p:commandButton value="Upload"
                                              icon="fas fa-upload"
                                              class="ui-button-success"
@@ -48,7 +52,7 @@
                         </h:form>
 
                         <h1>To Do - Delete Unnecessary Fields </h1>
-                        
+
                         <table class="table">
                             <thead>
                                 <tr>
@@ -90,7 +94,7 @@
 
             <p:dataTable id="tbl"
                          value="#{dataUploadController.agencies}"
-                         var="collectincentre"
+                         var="agency"
                          paginator="true"
                          rows="10"
                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
@@ -106,15 +110,15 @@
                 </f:facet>
 
                 <p:column headerText="Code">
-                    <h:outputText value="#{collectincentre.code}" />
+                    <h:outputText value="#{agency.code}" />
                 </p:column>
                 <p:column headerText="Name">
-                    <h:outputText value="#{collectincentre.name}" />
+                    <h:outputText value="#{agency.name}" />
                 </p:column>
                 <p:column headerText="Standard Credit Limit">
-                    <h:outputText value="#{collectincentre.allowedCredit}" />
+                    <h:outputText value="#{agency.allowedCreditLimit}" />
                 </p:column>
-               
+
             </p:dataTable>
 
 

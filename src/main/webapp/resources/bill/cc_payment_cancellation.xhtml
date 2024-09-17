@@ -1,0 +1,127 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bill" />
+        <cc:attribute name="billController" />
+        <cc:attribute name="dup" />
+    </cc:interface>
+
+    <cc:implementation>
+
+        <style type="text/css">
+            .fiveinchbill {
+                width: 5in;
+                padding: 0.5in;
+                border: 2px solid #000;
+                background-color: #fff;
+                font-family: 'Arial', sans-serif;
+                color: #333;
+                box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            td, th {
+                border: 1px solid #dddddd;
+                text-align: left;
+                padding: 8px;
+            }
+
+            .header {
+                text-align: center;
+                font-weight: bold;
+                font-size: 16px;
+                text-decoration: underline;
+                margin-bottom: 20px;
+            }
+
+            .details {
+                padding-top: 2%;
+                padding-left: 5%;
+                padding-right: 5%;
+                font-size: 14px;
+            }
+
+            .total-amount {
+                text-align: right;
+                font-weight: bold;
+                font-size: 16px;
+            }
+
+            .signature {
+                text-align: right;
+                font-size: 12px;
+                text-decoration: overline;
+            }
+        </style>
+
+        <div class="fiveinchbill">
+
+            <!-- Header Section -->
+            <div class="header">
+                <h:outputLabel value="Collecting Centre Credit Note" rendered="#{cc.attrs.bill.billType eq 'AgentPaymentReceiveBill'}" />
+            </div>
+
+            <!-- Receipt Details in a Table Format -->
+            <table>
+                <tr>
+                    <td colspan="2"><h:outputLabel value="Collecting Centre Payment Cancellation"/></td>
+                </tr>
+                <tr>
+                    <td>Receipt No:</td>
+                    <td><h:outputLabel value="#{cc.attrs.bill.deptId}"/></td>
+                </tr>
+                <tr>
+                    <td>Date:</td>
+                    <td><h:outputLabel value="#{cc.attrs.bill.billDate}">
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                    </h:outputLabel></td>
+                </tr>
+                <tr>
+                    <td>Time:</td>
+                    <td><h:outputLabel value="#{cc.attrs.bill.billTime}">
+                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
+                    </h:outputLabel></td>
+                </tr>
+                <tr>
+                    <td>Agency:</td>
+                    <td><h:outputLabel value="#{cc.attrs.bill.fromInstitution.name}" /></td>
+                </tr>
+                <tr>
+                    <td>Code:</td>
+                    <td><h:outputLabel value="#{cc.attrs.bill.fromInstitution.institutionCode}" /></td>
+                </tr>
+                <tr>
+                    <td>Payment Type:</td>
+                    <td><h:outputLabel value="#{cc.attrs.bill.paymentMethod}" /></td>
+                </tr>
+                <tr>
+                    <td>Bank:</td>
+                    <td><h:outputLabel value="#{cc.attrs.bill.bank.name}" rendered="#{cc.attrs.bill.bank ne null}"/></td>
+                </tr>
+                <tr>
+                    <td>Cheque No:</td>
+                    <td><h:outputLabel value="#{cc.attrs.bill.chequeRefNo}" rendered="#{cc.attrs.bill.chequeRefNo ne null}" /></td>
+                </tr>
+                <tr class="total-amount">
+                    <td>Total:</td>
+                    <td><h:outputLabel value="#{cc.attrs.bill.netTotal}">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </h:outputLabel></td>
+                </tr>
+                <tr>
+                    <td colspan="2" class="signature">Cashier: <h:outputLabel value="#{cc.attrs.bill.creater.code}" /></td>
+                </tr>
+            </table>
+        </div>
+    </cc:implementation>
+</html>
