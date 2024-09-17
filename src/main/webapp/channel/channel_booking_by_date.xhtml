@@ -378,6 +378,28 @@
                                                             icon="pi pi-bookmark"
                                                             action="#{bookingControllerViewScope.addReservedChannelBooking}" > <!-- Assuming a different action for reserved booking -->
                                                         </p:commandButton>
+                                                        <h:panelGroup id="gpLocalForeign"  class="col-md-6" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}">
+                                                            <p:commandButton 
+                                                                value="Mark Foreigner" 
+                                                                class="mx-2"
+                                                                action="#{bookingControllerViewScope.markAsForeigner}" 
+                                                                rendered="#{!bookingControllerViewScope.foriegn}" 
+                                                                process="@this" 
+                                                                update="gpLocalForeign totalsPanel panelBookingDetails" 
+                                                                >
+                                                            </p:commandButton>
+                                                            <p:commandButton 
+                                                                value="Mark Local" 
+                                                                class="mx-2"
+                                                                action="#{bookingControllerViewScope.markAsLocal}" 
+                                                                rendered="#{bookingControllerViewScope.foriegn}" 
+                                                                process="@this" 
+                                                                update="gpLocalForeign totalsPanel panelBookingDetails" 
+                                                                >
+                                                            </p:commandButton>
+
+                                                        </h:panelGroup>
+
                                                     </p:column>
                                                 </p:row>
                                             </f:facet>
@@ -391,6 +413,7 @@
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
                                                 </h:panelGroup>
+
 
                                                 <!-- Discount -->
                                                 <h:panelGroup style="display: flex; justify-content: space-between; width: 100%;">
@@ -422,10 +445,7 @@
                                                     <p:outputLabel value="#{-bookingControllerViewScope.cashBalance}"/>
                                                 </h:panelGroup>
 
-                                                <h:outputLabel value="Foriegner"/>
-                                                <p:selectBooleanCheckbox class="w-75" id="f" value="#{bookingControllerViewScope.foriegn}">
-                                                    <f:ajax event="change" execute="@this" render="totalsPanel panelBookingDetails"/>
-                                                </p:selectBooleanCheckbox>
+
 
 
                                                 <p:outputLabel value="Payment Method"/>
