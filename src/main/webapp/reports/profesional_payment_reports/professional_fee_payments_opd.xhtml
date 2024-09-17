@@ -12,7 +12,7 @@
             <ui:define name="subcontent">
                 <p:panel>
                     <f:facet name="header" >
-                        <h:outputLabel value="OPD Payment List "/>                          
+                        <h:outputLabel value="OPD Professional Payments"/>                          
                     </f:facet>
 
                     <h:form>
@@ -75,16 +75,29 @@
                             currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
                             rowsPerPageTemplate="20,50,{ShowAll|'All'}"
                             scrollable="true"
+                            frozenRows="1"
                             scrollWidth="100%">
 
-                            <p:column headerText="Professional Payment Date" width="8em" style="text-align: left;" >
+
+                            <p:column headerText="Paid Date" style="text-align: left;" >
                                 <p:outputLabel value="#{billFee.bill.billDate}" >
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                 </p:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Professional Payment Bill Receipt No" width="10em" style="text-align: left;">
+                            <p:column headerText="Payment No" style="text-align: left;">
                                 <p:outputLabel value="#{billFee.bill.deptId}" />
+                            </p:column>
+
+                            <p:column headerText="Billed Date" style="text-align: left;" >
+                                <p:outputLabel value="#{billFee.referenceBillItem.bill.createdAt}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Bill No" style="text-align: left;" >
+                                <p:outputLabel value="#{billFee.referenceBillFee.bill.deptId}" >
+                                </p:outputLabel>
                             </p:column>
 
                             <p:column 
