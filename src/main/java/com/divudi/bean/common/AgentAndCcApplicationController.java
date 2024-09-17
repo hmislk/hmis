@@ -25,7 +25,7 @@ import javax.enterprise.context.ApplicationScoped;
  */
 @Named
 @ApplicationScoped
-public class CollectingCentreApplicationController {
+public class AgentAndCcApplicationController {
 
     @EJB
     AgentHistoryFacade agentHistoryFacade;
@@ -35,20 +35,20 @@ public class CollectingCentreApplicationController {
     // A map to store locks for each collecting centre based on its ID
     private final Map<Long, Lock> lockMap = new ConcurrentHashMap<>();
 
-    public CollectingCentreApplicationController() {
+    public AgentAndCcApplicationController() {
     }
 
-    public void updateBalance(Institution collectingCentre,
+    public void updateCcBalance(Institution collectingCentre,
             double hospitalFee,
             double collectingCentreFee,
             double staffFee,
             double transactionValue,
             HistoryType historyType,
             Bill bill) {
-        updateBalance(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, historyType, bill, "");
+        updateCcBalance(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, historyType, bill, "");
     }
 
-    public void updateBalance(Institution collectingCentre,
+    public void updateCcBalance(Institution collectingCentre,
             double hospitalFee,
             double collectingCentreFee,
             double staffFee,
@@ -58,44 +58,44 @@ public class CollectingCentreApplicationController {
             String comments) {
         switch (historyType) {
             case CollectingCentreBalanceUpdateBill:
-                handleBalanceUpdateBill(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill, comments);
+                handleCcBalanceUpdateBill(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill, comments);
                 break;
             case CollectingCentreBillingCancel:
-                handleBillingCancel(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill);
+                handleCcBillingCancel(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill);
                 break;
             case CollectingCentreCreditNoteCancel:
-                handleCreditNoteCancel(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill);
+                handleCcCreditNoteCancel(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill);
                 break;
             case CollectingCentreDebitNote:
-                handleDebitNote(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill);
+                handleCcDebitNote(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill);
                 break;
             case CollectingCentreDeposit:
-                handleDeposit(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill);
+                handleCcDeposit(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill);
                 break;
             case CollectingCentreDepositCancel:
-                handleDepositCancel(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill, comments);
+                handleCcDepositCancel(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill, comments);
                 break;
             case CollectingCentreBilling:
                 handleCollectingCentreBilling(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill);
                 break;
             case CollectingCentreBillingRefund:
-                handleBillingRefund(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill);
+                handleCcBillingRefund(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill);
                 break;
             case CollectingentrePaymentMadeBill:
-                handleCollectingCentrePaymentMade(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill);
+                handleCcCollectingCentrePaymentMade(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill);
                 break;
             case CollectingCentreCreditNote:
-                handleCollectingCentreCreditNote(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill);
+                handleCcCollectingCentreCreditNote(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill);
                 break;
             case CollectingCentreDebitNoteCancel:
-                handleDebitNoteCancel(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill, comments);
+                handleCcDebitNoteCancel(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill, comments);
             default:
-                handleDefault(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill);
+//                handleDefault(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill);
                 break;
         }
     }
 
-    private void handleBalanceUpdateBill(Institution collectingCentre, double hospitalFee, double collectingCentreFee, double staffFee, double transactionValue, Bill bill, String comments) {
+    private void handleCcBalanceUpdateBill(Institution collectingCentre, double hospitalFee, double collectingCentreFee, double staffFee, double transactionValue, Bill bill, String comments) {
 
         Long collectingCentreId = collectingCentre.getId(); // Assuming each Institution has a unique ID
         Lock lock = lockMap.computeIfAbsent(collectingCentreId, id -> new ReentrantLock());
@@ -134,7 +134,7 @@ public class CollectingCentreApplicationController {
 
     }
 
-    private void handleBillingCancel(Institution collectingCentre, double hospitalFee, double collectingCentreFee, double staffFee, double transactionValue, Bill bill) {
+    private void handleCcBillingCancel(Institution collectingCentre, double hospitalFee, double collectingCentreFee, double staffFee, double transactionValue, Bill bill) {
         Long collectingCentreId = collectingCentre.getId(); // Assuming each Institution has a unique ID
         Lock lock = lockMap.computeIfAbsent(collectingCentreId, id -> new ReentrantLock());
         lock.lock();
@@ -172,7 +172,7 @@ public class CollectingCentreApplicationController {
         }
     }
 
-    private void handleBillingRefund(Institution collectingCentre, double hospitalFee, double collectingCentreFee, double staffFee, double transactionValue, Bill bill) {
+    private void handleCcBillingRefund(Institution collectingCentre, double hospitalFee, double collectingCentreFee, double staffFee, double transactionValue, Bill bill) {
         Long collectingCentreId = collectingCentre.getId(); // Assuming each Institution has a unique ID
         Lock lock = lockMap.computeIfAbsent(collectingCentreId, id -> new ReentrantLock());
         lock.lock();
@@ -209,7 +209,7 @@ public class CollectingCentreApplicationController {
         }
     }
 
-    private void handleCollectingCentreCreditNote(Institution collectingCentre, double hospitalFee, double collectingCentreFee, double staffFee, double transactionValue, Bill bill) {
+    private void handleCcCollectingCentreCreditNote(Institution collectingCentre, double hospitalFee, double collectingCentreFee, double staffFee, double transactionValue, Bill bill) {
         Long collectingCentreId = collectingCentre.getId(); // Assuming each Institution has a unique ID
         Lock lock = lockMap.computeIfAbsent(collectingCentreId, id -> new ReentrantLock());
         lock.lock();
@@ -247,7 +247,7 @@ public class CollectingCentreApplicationController {
         }
     }
 
-    private void handleCollectingCentrePaymentMade(Institution collectingCentre, double hospitalFee, double collectingCentreFee, double staffFee, double transactionValue, Bill bill) {
+    private void handleCcCollectingCentrePaymentMade(Institution collectingCentre, double hospitalFee, double collectingCentreFee, double staffFee, double transactionValue, Bill bill) {
         Long collectingCentreId = collectingCentre.getId(); // Assuming each Institution has a unique ID
         Lock lock = lockMap.computeIfAbsent(collectingCentreId, id -> new ReentrantLock());
         lock.lock();
@@ -284,7 +284,7 @@ public class CollectingCentreApplicationController {
         }
     }
 
-    private void handleCreditNoteCancel(Institution collectingCentre, double hospitalFee, double collectingCentreFee, double staffFee, double transactionValue, Bill bill) {
+    private void handleCcCreditNoteCancel(Institution collectingCentre, double hospitalFee, double collectingCentreFee, double staffFee, double transactionValue, Bill bill) {
         // Implementation for CollectingCentreCreditNoteCancel
         Long collectingCentreId = collectingCentre.getId(); // Assuming each Institution has a unique ID
         Lock lock = lockMap.computeIfAbsent(collectingCentreId, id -> new ReentrantLock());
@@ -323,7 +323,7 @@ public class CollectingCentreApplicationController {
         }
     }
 
-    private void handleDebitNoteCancel(Institution collectingCentre, double hospitalFee, double collectingCentreFee, double staffFee, double transactionValue, Bill bill, String comment) {
+    private void handleCcDebitNoteCancel(Institution collectingCentre, double hospitalFee, double collectingCentreFee, double staffFee, double transactionValue, Bill bill, String comment) {
         Long collectingCentreId = collectingCentre.getId(); // Assuming each Institution has a unique ID
         Lock lock = lockMap.computeIfAbsent(collectingCentreId, id -> new ReentrantLock());
         lock.lock();
@@ -362,7 +362,7 @@ public class CollectingCentreApplicationController {
         }
     }
 
-    private void handleDebitNote(Institution collectingCentre, double hospitalFee, double collectingCentreFee, double staffFee, double transactionValue, Bill bill) {
+    private void handleCcDebitNote(Institution collectingCentre, double hospitalFee, double collectingCentreFee, double staffFee, double transactionValue, Bill bill) {
         Long collectingCentreId = collectingCentre.getId(); // Assuming each Institution has a unique ID
         Lock lock = lockMap.computeIfAbsent(collectingCentreId, id -> new ReentrantLock());
         lock.lock();
@@ -400,7 +400,7 @@ public class CollectingCentreApplicationController {
         }
     }
 
-    private void handleDeposit(Institution collectingCentre, double hospitalFee, double collectingCentreFee, double staffFee, double transactionValue, Bill bill) {
+    private void handleCcDeposit(Institution collectingCentre, double hospitalFee, double collectingCentreFee, double staffFee, double transactionValue, Bill bill) {
         Long collectingCentreId = collectingCentre.getId(); // Assuming each Institution has a unique ID
         Lock lock = lockMap.computeIfAbsent(collectingCentreId, id -> new ReentrantLock());
         lock.lock();
@@ -438,7 +438,7 @@ public class CollectingCentreApplicationController {
         }
     }
 
-    private void handleDepositCancel(Institution collectingCentre, double hospitalFee, double collectingCentreFee, double staffFee, double transactionValue, Bill bill, String comments) {
+    private void handleCcDepositCancel(Institution collectingCentre, double hospitalFee, double collectingCentreFee, double staffFee, double transactionValue, Bill bill, String comments) {
         // Implementation for CollectingCentreDepositCancel
         Long collectingCentreId = collectingCentre.getId(); // Assuming each Institution has a unique ID
         Lock lock = lockMap.computeIfAbsent(collectingCentreId, id -> new ReentrantLock());
@@ -521,68 +521,68 @@ public class CollectingCentreApplicationController {
         }
     }
 
-    @Deprecated
-    private void handleDefault(Institution collectingCentre, double hospitalFee, double collectingCentreFee, double staffFee, double transactionValue, Bill bill) {
-        // Default case handling if necessary
-    }
-
-    @Deprecated
-    public void updateBalance(Institution collectingCentre,
-            double collectingCenterFeeValue,
-            double valueWithoutccFee,
-            double transactionValue,
-            HistoryType historyType,
-            Bill bill,
-            String refNo) {
-        Long collectingCentreId = collectingCentre.getId(); // Assuming each Institution has a unique ID
-        Lock lock = lockMap.computeIfAbsent(collectingCentreId, id -> new ReentrantLock());
-        lock.lock();
-        try {
-            if (bill.getBillTypeAtomic() == BillTypeAtomic.CC_BILL) {
-                AgentHistory agentHistory = new AgentHistory();
-                agentHistory.setCreatedAt(new Date());
-                agentHistory.setCreater(bill.getCreater());
-                agentHistory.setBill(bill);
-                agentHistory.setInstitution(bill.getInstitution());
-                agentHistory.setDepartment(bill.getDepartment());
-                agentHistory.setAgency(collectingCentre);
-                agentHistory.setReferenceNumber(refNo);
-                agentHistory.setHistoryType(historyType);
-
-                double balanceAfterTx = 0;
-                double balanceAfterTransaction = 0;
-                double agentBalanceAfterTx = 0;
-
-                switch (historyType) {
-                    case CollectingCentreBilling:
-
-                        break;
-                    default:
-                        balanceAfterTx = collectingCentre.getBallance() - valueWithoutccFee;
-                        balanceAfterTransaction = collectingCentre.getAgentBalance() - valueWithoutccFee;
-                        agentBalanceAfterTx = collectingCentre.getCompanyBalance() - valueWithoutccFee;
-                }
-
-                agentHistory.setBalanceBeforeTransaction(collectingCentre.getBallance());
-                agentHistory.setBalanceAfterTransaction(balanceAfterTx);
-                agentHistory.setTransactionValue(valueWithoutccFee);
-
-                agentHistory.setCompanyBalanceBefore(collectingCentre.getCompanyBalance());
-                agentHistory.setCompanyBalanceAfter(collectingCentre.getCompanyBalance());
-
-                agentHistory.setCompanyTransactionValue(valueWithoutccFee);
-                agentHistory.setTransactionValue(valueWithoutccFee);
-
-                agentHistory.setCollectingCentertransactionValue(collectingCenterFeeValue);
-                agentHistoryFacade.create(agentHistory);
-
-                collectingCentre.setBallance(balanceAfterTx);
-                institutionFacade.edit(collectingCentre);
-            }
-
-        } finally {
-            lock.unlock();
-        }
-    }
+//    @Deprecated
+//    private void handleDefault(Institution collectingCentre, double hospitalFee, double collectingCentreFee, double staffFee, double transactionValue, Bill bill) {
+//        // Default case handling if necessary
+//    }
+//
+//    @Deprecated
+//    public void updateBalance(Institution collectingCentre,
+//            double collectingCenterFeeValue,
+//            double valueWithoutccFee,
+//            double transactionValue,
+//            HistoryType historyType,
+//            Bill bill,
+//            String refNo) {
+//        Long collectingCentreId = collectingCentre.getId(); // Assuming each Institution has a unique ID
+//        Lock lock = lockMap.computeIfAbsent(collectingCentreId, id -> new ReentrantLock());
+//        lock.lock();
+//        try {
+//            if (bill.getBillTypeAtomic() == BillTypeAtomic.CC_BILL) {
+//                AgentHistory agentHistory = new AgentHistory();
+//                agentHistory.setCreatedAt(new Date());
+//                agentHistory.setCreater(bill.getCreater());
+//                agentHistory.setBill(bill);
+//                agentHistory.setInstitution(bill.getInstitution());
+//                agentHistory.setDepartment(bill.getDepartment());
+//                agentHistory.setAgency(collectingCentre);
+//                agentHistory.setReferenceNumber(refNo);
+//                agentHistory.setHistoryType(historyType);
+//
+//                double balanceAfterTx = 0;
+//                double balanceAfterTransaction = 0;
+//                double agentBalanceAfterTx = 0;
+//
+//                switch (historyType) {
+//                    case CollectingCentreBilling:
+//
+//                        break;
+//                    default:
+//                        balanceAfterTx = collectingCentre.getBallance() - valueWithoutccFee;
+//                        balanceAfterTransaction = collectingCentre.getAgentBalance() - valueWithoutccFee;
+//                        agentBalanceAfterTx = collectingCentre.getCompanyBalance() - valueWithoutccFee;
+//                }
+//
+//                agentHistory.setBalanceBeforeTransaction(collectingCentre.getBallance());
+//                agentHistory.setBalanceAfterTransaction(balanceAfterTx);
+//                agentHistory.setTransactionValue(valueWithoutccFee);
+//
+//                agentHistory.setCompanyBalanceBefore(collectingCentre.getCompanyBalance());
+//                agentHistory.setCompanyBalanceAfter(collectingCentre.getCompanyBalance());
+//
+//                agentHistory.setCompanyTransactionValue(valueWithoutccFee);
+//                agentHistory.setTransactionValue(valueWithoutccFee);
+//
+//                agentHistory.setCollectingCentertransactionValue(collectingCenterFeeValue);
+//                agentHistoryFacade.create(agentHistory);
+//
+//                collectingCentre.setBallance(balanceAfterTx);
+//                institutionFacade.edit(collectingCentre);
+//            }
+//
+//        } finally {
+//            lock.unlock();
+//        }
+//    }
 
 }
