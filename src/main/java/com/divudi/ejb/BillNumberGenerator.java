@@ -1393,9 +1393,15 @@ public class BillNumberGenerator {
         return result.toString();
     }
 
-    public String departmentBillNumberGeneratorYearly(Institution ins, Department dep, BillTypeAtomic billType) {
-        BillNumber billNumber = fetchLastBillNumberForYear(ins);
-        String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Suffix for " + billType, billType.getCode());
+    public String departmentBillNumberGeneratorYearly(Department dep, BillTypeAtomic billType) {
+        if (dep == null) {
+            return "";
+        }
+        if (dep.getInstitution() == null) {
+            return "";
+        }
+        BillNumber billNumber = fetchLastBillNumberForYear(dep.getInstitution());
+        String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Suffix for " + billType, "");
 
         // Get the last bill number
         Long dd = billNumber.getLastBillNumber();
@@ -1413,7 +1419,7 @@ public class BillNumberGenerator {
         StringBuilder result = new StringBuilder();
 
         // Append institution code
-        result.append(ins.getInstitutionCode());
+        result.append(dep.getInstitution().getInstitutionCode());
 
         // Append department code
         result.append(dep.getDepartmentCode());
