@@ -55,8 +55,9 @@
 
                     </h:panelGroup>
                     <h:panelGroup rendered="#{agentPaymentReceiveSearchController.printPreview}" >
-                        <bi:agent billController ="#{agentPaymentReceiveSearchController}"  
-                                  bill="#{agentPaymentReceiveSearchController.bill}" dup="false"/>  
+                        <bi:cc_payment_cancellation
+                            billController ="#{agentPaymentReceiveSearchController}"  
+                            bill="#{agentPaymentReceiveSearchController.bill}" />  
                     </h:panelGroup>
 
 
