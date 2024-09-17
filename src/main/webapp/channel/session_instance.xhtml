@@ -724,6 +724,9 @@
 
                                                 <p:outputLabel value="Exclude From Patient Portal"/>
                                                 <p:selectBooleanCheckbox value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.excludeFromPatientPortal}"/>
+                                                
+                                                <h:outputLabel value="Special Notice For Session" />
+                                                <p:inputTextarea class="mx-2 w-100"  rows="4" value="#{bookingControllerViewScope.selectedSessionInstance.specialNoticeSessionInstance}"/>
 
 
                                             </h:panelGrid>

@@ -101,6 +101,8 @@ public class ServiceSession extends Item implements Serializable {
     private String notificationRoles;
     @Lob
     private String dataEntryForms;
+    @Lob
+    private String specialNotice;
 
     public SessionNumberGenerator getSessionNumberGenerator() {
         return sessionNumberGenerator;
@@ -515,6 +517,14 @@ public class ServiceSession extends Item implements Serializable {
 
     public void setSessionStartingNumber(String sessionStartingNumber) {
         this.sessionStartingNumber = sessionStartingNumber;
+    }
+
+    public String getSpecialNotice() {
+        return specialNotice;
+    }
+
+    public void setSpecialNotice(String specialNotice) {
+        this.specialNotice = specialNotice;
     }
 
 }

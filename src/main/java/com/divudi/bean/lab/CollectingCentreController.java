@@ -4,7 +4,7 @@
  */
 package com.divudi.bean.lab;
 
-import com.divudi.bean.common.CollectingCentreApplicationController;
+import com.divudi.bean.common.AgentAndCcApplicationController;
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
@@ -57,7 +57,7 @@ public class CollectingCentreController implements Serializable {
     @EJB
     private InstitutionFacade ejbFacade;
     @Inject
-    CollectingCentreApplicationController collectingCentreApplicationController;
+    AgentAndCcApplicationController collectingCentreApplicationController;
 
     @EJB
     AgentHistoryFacade agentHistoryFacade;
@@ -136,7 +136,7 @@ public class CollectingCentreController implements Serializable {
 //            HistoryType historyType,
 //            Bill bill
 //        
-        collectingCentreApplicationController.updateBalance(
+        collectingCentreApplicationController.updateCcBalance(
                 collectingCentre,
                 0,
                 0,

@@ -11898,7 +11898,7 @@ public class SearchController implements Serializable {
 
     public String navigateToLabReportSearch() {
         patientInvestigations = new ArrayList<>();
-        getReportKeyWord().setDepartment(getSessionController().getLoggedUser().getDepartment());
+//        getReportKeyWord().setDepartment(getSessionController().getLoggedUser().getDepartment());
         return "/lab/search_for_reporting_ondemand?faces-redirect=true";
     }
 
@@ -14200,6 +14200,21 @@ public class SearchController implements Serializable {
             e.printStackTrace(); // Handle exceptions properly
         }
     }
+    public void directPurchaseOrderSearch() {
+        bills = null;
+        Map<String, Object> m = new HashMap<>();
+
+        String jpql = "SELECT b FROM Bill b WHERE b.retired = false AND b.billType = :bTp "
+                + "AND b.createdAt BETWEEN :fromDate AND :toDate";
+
+        m.put("bTp", BillType.StorePurchase);
+        m.put("fromDate", getFromDate());
+        m.put("toDate", getToDate());
+
+        bills = billFacade.findByJpql(jpql, m);
+
+    }
+
 
     public void prepareDataBillsAndBillItemsDownload() {
         // JPQL to fetch Bills and their BillItems through Payments
