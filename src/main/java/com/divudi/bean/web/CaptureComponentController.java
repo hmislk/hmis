@@ -11,6 +11,7 @@ import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.web.CaptureComponent;
 import com.divudi.entity.web.DesignComponent;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.DynamicHtmlFormComponent;
 import com.divudi.facade.web.CaptureComponentFacade;
 import com.divudi.facade.web.DesignComponentFacade;
 import javax.inject.Named;
@@ -20,6 +21,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.ejb.EJB;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
@@ -31,7 +34,7 @@ import javax.inject.Inject;
  *
  * @author ACER
  */
-@Named(value = "captureComponentController")
+@Named
 @SessionScoped
 public class CaptureComponentController implements Serializable {
 
@@ -43,6 +46,7 @@ public class CaptureComponentController implements Serializable {
     private List<CaptureComponent> items;
 
     private List<CaptureComponent> dataEntryItems;
+    private List<DynamicHtmlFormComponent> formComponents = new ArrayList<>();
 
     private List<DesignComponent> dataEntryForms;
 
@@ -91,19 +95,56 @@ public class CaptureComponentController implements Serializable {
         return "/webcontent/capture_components.xhtml";
     }
 
-    public String navgateToStartDataEntry() {
+    public String navigateToStartDataEntry() {
+        // Reset or initialize the list of dynamic form components
+        formComponents = new ArrayList<>();
+
+        // Retrieve the HTML template with placeholders
+        String htmlTemplateWithPlaceholders = selectedDataEntryForm.getEditHtml();
+
+        // Fetch design components, which define data entry items
         dataEntryItems = new ArrayList<>();
         List<DesignComponent> designComponents = listComponentsOfDataEntryForm(selectedDataEntryForm);
+        current = new CaptureComponent();
+        current.setDesignComponent(selectedDataEntryForm);
+        saveByAjax(current);
+        Map<String, CaptureComponent> componentsMap = new HashMap<>();
+
+        // Prepare components for insertion into the template
         for (DesignComponent d : designComponents) {
             CaptureComponent tempCaptureComponent = new CaptureComponent();
             tempCaptureComponent.setName(d.getName());
             tempCaptureComponent.setComponentDataType(d.getComponentDataType());
             tempCaptureComponent.setComponentPresentationType(d.getComponentPresentationType());
             tempCaptureComponent.setDesignComponent(d);
+            tempCaptureComponent.setParent(current);
             dataEntryItems.add(tempCaptureComponent);
+            saveByAjax(tempCaptureComponent);
+            componentsMap.put("{" + d.getCode() + "}", tempCaptureComponent); // Mapping placeholders to components
         }
+
+        // Split and integrate HTML content and components
+        String[] parts = htmlTemplateWithPlaceholders.split("(\\{[^}]+\\})"); // Split by placeholders
+        Pattern pattern = Pattern.compile("\\{([^}]+)\\}"); // Pattern to extract placeholders
+        Matcher matcher = pattern.matcher(htmlTemplateWithPlaceholders);
+
+        int partIndex = 0;
+        while (matcher.find()) {
+            if (partIndex < parts.length) {
+                formComponents.add(new DynamicHtmlFormComponent(parts[partIndex++]));
+            }
+            String key = matcher.group(0);
+            if (componentsMap.containsKey(key)) {
+                formComponents.add(new DynamicHtmlFormComponent(componentsMap.get(key)));
+            }
+        }
+        // Add the last part if there's any leftover HTML after the last placeholder
+        if (partIndex < parts.length) {
+            formComponents.add(new DynamicHtmlFormComponent(parts[partIndex]));
+        }
+
         current = new CaptureComponent();
-        return "/webcontent/capture_component.xhtml";
+        return "/emr/dataentry/dataentry?faces-redirect=true";
     }
 
     public String navgateToStartDataEntryForOPD() {
@@ -142,6 +183,29 @@ public class CaptureComponentController implements Serializable {
         } else {
             facade.edit(current);
         }
+    }
+
+    public void saveDataForm() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return;
+        }
+
+        if (current.getId() == null) {
+            facade.create(current);
+        } else {
+            facade.edit(current);
+        }
+
+        for (CaptureComponent cc : dataEntryItems) {
+            if (cc.getId() == null) {
+                facade.create(cc);
+            } else {
+                facade.edit(cc);
+            }
+        }
+        
+        JsfUtil.addErrorMessage("Saved");
     }
 
     private void listItems() {
@@ -193,9 +257,9 @@ public class CaptureComponentController implements Serializable {
         if (sc == null) {
             return;
         }
-        if(sc.getId()==null){
+        if (sc.getId() == null) {
             facade.create(sc);
-        }else{
+        } else {
             facade.edit(sc);
         }
     }
@@ -250,6 +314,14 @@ public class CaptureComponentController implements Serializable {
 
     public void setOpdVisit(PatientEncounter opdVisit) {
         this.opdVisit = opdVisit;
+    }
+
+    public List<DynamicHtmlFormComponent> getFormComponents() {
+        return formComponents;
+    }
+
+    public void setFormComponents(List<DynamicHtmlFormComponent> formComponents) {
+        this.formComponents = formComponents;
     }
 
     @FacesConverter(forClass = CaptureComponent.class)
