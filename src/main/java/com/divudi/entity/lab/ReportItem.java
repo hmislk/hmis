@@ -776,7 +776,7 @@ public class ReportItem implements Serializable {
             if (cssVerticalAlign != null) {
                 cssStyle += "vertical-align:" + cssVerticalAlign + "!important; ";
                 if (cssVerticalAlign == CssVerticalAlign.Middle) {
-                    cssStyle += " display: flex; align-items: center; justify-content: center; ";
+                    cssStyle += " display: flex; align-items: center; ";
                 }
             }
 
