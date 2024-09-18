@@ -73,7 +73,7 @@
                             </p:selectOneMenu>
                         </h:panelGrid>
                         
-                        <h1>#{reportController.bundle}</h1>
+                    
 
                         <h:panelGrid columns="6" class="my-3">
                             <p:commandButton 
@@ -136,6 +136,9 @@
                                 <h:outputText value="#{c.itemProfessionalFee}" ></h:outputText>
                             </p:column>
                             <p:column headerText="Net Total" >
+                                <f:facet name="footer" >
+                                    <h:outputLabel value="#{reportController.bundle.total}" ></h:outputLabel>
+                                </f:facet>
                                 <h:outputText value="#{c.itemNetTotal}" ></h:outputText>
                             </p:column>
 

@@ -162,7 +162,7 @@ public class ReportController implements Serializable {
     PatientInvestigationStatus patientInvestigationStatus;
 
     public void ccSummaryReportByItem() {
-        bundle=new ReportTemplateRowBundle();
+        bundle = new ReportTemplateRowBundle();
         bundle.setName("Collecting Centre Report By Item");
         bundle.setDescription("From : to :");
         String jpql = "select new com.divudi.data.ReportTemplateRow("
@@ -212,8 +212,35 @@ public class ReportController implements Serializable {
         System.out.println("jpql = " + jpql);
         List<ReportTemplateRow> rows = billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
         System.out.println("rows = " + rows);
-        bundle.setReportTemplateRows(rows);
-        
+
+        // Calculate the aggregate values using stream.
+        long totalCount = rows.stream()
+                .mapToLong(ReportTemplateRow::getItemCount)
+                .sum();
+
+        double totalHospitalFee = rows.stream()
+                .mapToDouble(ReportTemplateRow::getItemHospitalFee)
+                .sum();
+
+        double totalStaffFee = rows.stream()
+                .mapToDouble(ReportTemplateRow::getStaffTotal)
+                .sum();
+
+        double totalCcFee = rows.stream()
+                .mapToDouble(ReportTemplateRow::getCcTotal)
+                .sum();
+
+        double totalNetValue = rows.stream()
+                .mapToDouble(ReportTemplateRow::getTotal)
+                .sum();
+
+// Set the calculated values to the bundle.
+        bundle.setCount(totalCount);
+        bundle.setHospitalTotal(totalHospitalFee);
+        bundle.setStaffTotal(totalStaffFee);
+        bundle.setCcTotal(totalCcFee);
+        bundle.setTotal(totalNetValue);
+
     }
 
     public void processCollectionCenterBalance() {
@@ -2009,14 +2036,14 @@ public class ReportController implements Serializable {
         this.webUser = webUser;
     }
 
-   public ReportTemplateRowBundle getBundle() {
+    public ReportTemplateRowBundle getBundle() {
         return bundle;
     }
 
     public void setBundle(ReportTemplateRowBundle bundle) {
         this.bundle = bundle;
     }
-    
+
     public void setPatientInvestigations(List<PatientInvestigation> patientInvestigations) {
         this.patientInvestigations = patientInvestigations;
     }
@@ -2024,7 +2051,5 @@ public class ReportController implements Serializable {
     public List<PatientInvestigation> getPatientInvestigations() {
         return patientInvestigations;
     }
-    
-    
 
 }
