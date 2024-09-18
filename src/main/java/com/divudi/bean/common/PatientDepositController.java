@@ -9,6 +9,8 @@
  */
 package com.divudi.bean.common;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillNumberSuffix;
+import com.divudi.data.BillType;
 import com.divudi.data.HistoryType;
 
 import com.divudi.data.PaymentMethod;
@@ -72,7 +74,7 @@ import com.divudi.facade.TokenFacade;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import java.io.Serializable;
-
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -218,7 +220,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         current = getDepositOfThePatient(patient,sessionController.getDepartment());
         fillLatestPatientDeposits(current);
         fillLatestPatientDepositHistory(current);
-
+        System.out.println("current = " + current);
     }
 
     public void changeTheSelectedFeeFromFeeBundle(BillFee ibf) {
@@ -296,11 +298,103 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         }
 
         patientController.settlePatientDepositReturn();
+        System.out.println("patientController.getBill() = " + patientController.getBill());
         updateBalance(patientController.getBill(), current);
         billBeanController.createPayment(patientController.getBill(),
                 patientController.getBill().getPaymentMethod(), 
                 patientController.getPaymentMethodData() );
 
+    }
+
+    public void updateBalance(Bill b, PatientDeposit pd){ 
+        switch (b.getBillTypeAtomic()) {
+            case PATIENT_DEPOSIT:
+                handlePatientDepositBill(b,pd);
+                break;
+                
+            case PATIENT_DEPOSIT_REFUND:
+                handlePatientDepositBillReturn(b,pd);
+                break;
+                
+            case OPD_BATCH_BILL_WITH_PAYMENT:
+                handleOPDBill(b,pd);
+                break;
+                
+            case OPD_BATCH_BILL_CANCELLATION:
+                handleOPDBillCancel(b,pd);
+                break;
+                
+            case OPD_BILL_CANCELLATION:
+                handleOPDBillCancel(b,pd);
+                break;
+            
+            case OPD_BILL_REFUND:
+                handleOPDBillCancel(b,pd);
+                break;
+                
+            default:
+                throw new AssertionError();
+        }  
+    }
+    
+    public void handlePatientDepositBill(Bill b, PatientDeposit pd){
+       Double beforeBalance = pd.getBalance();
+        Double afterBalance = beforeBalance + b.getNetTotal();
+        pd.setBalance(afterBalance);
+        patientDepositFacade.edit(pd);
+        JsfUtil.addSuccessMessage("Balance Updated.");
+        createPatientDepositHitory(HistoryType.PatientDeposit,pd,b,beforeBalance,afterBalance,Math.abs(b.getNetTotal())); 
+    }
+    
+     public void handlePatientDepositBillReturn(Bill b, PatientDeposit pd){
+       Double beforeBalance = pd.getBalance();
+        Double afterBalance = beforeBalance - Math.abs(b.getNetTotal());
+        pd.setBalance(afterBalance);
+        patientDepositFacade.edit(pd);
+        JsfUtil.addSuccessMessage("Balance Updated.");
+        createPatientDepositHitory(HistoryType.PatientDepositReturn,pd,b,beforeBalance,afterBalance,0-Math.abs(b.getNetTotal())); 
+    }
+     
+     public void handleOPDBill(Bill b, PatientDeposit pd){
+       Double beforeBalance = pd.getBalance();
+        Double afterBalance = beforeBalance - Math.abs(b.getNetTotal());
+        pd.setBalance(afterBalance);
+        patientDepositFacade.edit(pd);
+        JsfUtil.addSuccessMessage("Balance Updated.");
+        createPatientDepositHitory(HistoryType.PatientDepositUtilization,pd,b,beforeBalance,afterBalance,0-Math.abs(b.getNetTotal())); 
+    }
+     
+    public void handleOPDBillCancel(Bill b, PatientDeposit pd){
+       Double beforeBalance = pd.getBalance();
+        Double afterBalance = beforeBalance + Math.abs(b.getNetTotal());
+        pd.setBalance(afterBalance);
+        patientDepositFacade.edit(pd);
+        JsfUtil.addSuccessMessage("Balance Updated.");
+        createPatientDepositHitory(HistoryType.PatientDepositUtilizationCancel,pd,b,beforeBalance,afterBalance,Math.abs(b.getNetTotal())); 
+    }
+    public void handleOPDBillRefund(Bill b, PatientDeposit pd){
+       Double beforeBalance = pd.getBalance();
+        Double afterBalance = beforeBalance + Math.abs(b.getNetTotal());
+        pd.setBalance(afterBalance);
+        patientDepositFacade.edit(pd);
+        JsfUtil.addSuccessMessage("Balance Updated.");
+        createPatientDepositHitory(HistoryType.PatientDepositUtilizationReturn,pd,b,beforeBalance,afterBalance,Math.abs(b.getNetTotal())); 
+    }
+    
+    public void createPatientDepositHitory(HistoryType ht,PatientDeposit pd, Bill b, Double beforeBalance,Double afterBalance ,Double transactionValue){
+        PatientDepositHistory pdh = new PatientDepositHistory();
+        pdh.setPatientDeposit(pd);
+        pdh.setBill(b);
+        pdh.setHistoryType(ht);
+        pdh.setBalanceBeforeTransaction(beforeBalance);
+        pdh.setTransactionValue(transactionValue);
+        pdh.setBalanceAfterTransaction(afterBalance);
+        pdh.setCreater(sessionController.getLoggedUser());
+        pdh.setCreatedAt(new Date());
+        pdh.setDepartment(sessionController.getDepartment());
+        pdh.setInstitution(sessionController.getInstitution());
+        
+        patientDepositHistoryFacade.create(pdh);
     }
 
     public List<Item> completeOpdItems(String query) {
@@ -381,6 +475,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         m.put("ret", false);
         
         PatientDeposit pd = patientDepositFacade.findFirstByJpql(jpql, m);
+        System.out.println("pd = " + pd);
         
         if(pd == null){
             pd = new PatientDeposit();
