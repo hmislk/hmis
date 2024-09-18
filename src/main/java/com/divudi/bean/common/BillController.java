@@ -2511,6 +2511,7 @@ public class BillController implements Serializable {
     public List<Bill> findUnpaidBills(Date frmDate, Date toDate, List<BillTypeAtomic> billTypes, PaymentMethod pm, Double balanceGraterThan) {
         String jpql;
         HashMap hm;
+        List<BillType> bts=null;
         jpql = "Select b "
                 + " From Bill b "
                 + " where b.retired=:ret "
@@ -2534,8 +2535,29 @@ public class BillController implements Serializable {
             hm.put("bts", billTypes);
             jpql += " and b.billTypeAtomic in :bts";
         }
+        
+        if (bts != null) {
+            hm.put("bt", bts);
+            jpql += " or b.billType in :bt";
+        }
+        
         return getBillFacade().findByJpql(jpql, hm, TemporalType.TIMESTAMP);
 
+    }
+    
+    public void addMissingBillTypeAtomics(){
+        String jpql = "select b "
+                + " from Bill b "
+                + " where b.retired=:ret "
+                + " and b.billTypeAtomic is null "
+                + " and b.billType is not null ";
+        Map m = new HashMap();
+        m.put("ret", false);
+        List<Bill> billsWithoutBillTypeAtomic = getFacade().findByJpql(jpql,m, 1000);
+        for(Bill b:billsWithoutBillTypeAtomic){
+            b.setBillTypeAtomic(BillTypeAtomic.getBillTypeAtomic(b.getBillType(), b.getBillClassType()));
+            getFacade().edit(b);
+        }
     }
 
     public List<Bill> listBills(

@@ -2425,16 +2425,13 @@ public class PatientInvestigationController implements Serializable {
 
         // Query PatientSampleComponent to get PatientInvestigations
         jpql = "SELECT i "
-                + "FROM PatientSampleComponant psc "
-                + " join psc.patientInvestigation i "
-                + " WHERE psc.retired = :ret ";
+                + "FROM PatientInvestigation i "
+                + " WHERE i.retired = :ret ";
 
         params.put("ret", false);
 
-        // Build JPQL query for PatientInvestigations
-        jpql += " and i.retired = :ret ";
+        
         jpql += " AND i.billItem.bill.cancelled=:cancel ";
-
         params.put("cancel", false);
 
         if (searchDateType == null) {

@@ -154,21 +154,17 @@ public class PatientReport implements Serializable {
     private String qrCodeContentsDetailed;
     @Lob
     private String qrCodeContentsLink;
-    
+
     @Enumerated(EnumType.ORDINAL)
     PatientInvestigationStatus status;
-    
 
     public PatientReport() {
-         if (status == null) {
+        if (status == null) {
             status = PatientInvestigationStatus.ORDERED;
         }
-         printed=false;
-         approved=false;
+        printed = false;
+        approved = false;
     }
-    
-    
-    
 
     public PatientReportItemValue getTemplateItem() {
 
@@ -198,8 +194,6 @@ public class PatientReport implements Serializable {
         return transInvestigation;
     }
 
-    
-    
     private void checkContains() {
         containValues = false;
         containCalculations = false;
@@ -442,8 +436,6 @@ public class PatientReport implements Serializable {
     public Institution getApproveInstitution() {
         return approveInstitution;
     }
-    
-    
 
     public void setApproveInstitution(Institution approveInstitution) {
         this.approveInstitution = approveInstitution;
@@ -792,8 +784,6 @@ public class PatientReport implements Serializable {
         this.automatedInstitution = automatedInstitution;
     }
 
-    
-    
     static class PatientReportItemValueComparator implements Comparator<PatientReportItemValue> {
 
         @Override

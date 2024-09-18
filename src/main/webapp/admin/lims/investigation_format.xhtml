@@ -108,8 +108,6 @@
                                                     <p:outputLabel value="Comments" ></p:outputLabel>
                                                     <p:inputTextarea value="#{investigationItemController.testComments}" ></p:inputTextarea>
 
-
-
                                                     <p:outputLabel value="Test Component" ></p:outputLabel>
                                                     <p:selectOneMenu id="cmbTestComponent"  value="#{investigationItemController.investigationComponent}" >
                                                         <f:selectItems value="#{investigationItemController.currentReportComponants}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
@@ -120,9 +118,6 @@
                                                         <f:selectItem itemLabel="Select" ></f:selectItem>
                                                         <f:selectItems value="#{machineController.items}" ></f:selectItems>
                                                     </p:selectOneMenu>
-
-
-
 
                                                     <p:outputLabel value="Test" ></p:outputLabel>
                                                     <p:autoComplete value="#{investigationItemController.test}"
@@ -178,13 +173,12 @@
                                                     <p:outputLabel value="Referance Header Name" ></p:outputLabel>
                                                     <p:inputText value="#{investigationItemController.refHeaderName}" ></p:inputText>
 
-
                                                 </h:panelGrid>
 
                                             </p:tab>
 
                                             <p:tab title="Positioning Details" >
-                                                <h:panelGrid columns="2" >
+                                                <h:panelGrid columns="2" class="w-100" >
 
                                                     <p:outputLabel value="Block Top" ></p:outputLabel>
                                                     <p:inputText value="#{investigationItemController.riBlockTop}" ></p:inputText>
@@ -216,7 +210,7 @@
                                             </p:tab>
 
                                             <p:tab title="Font Details" >
-                                                <h:panelGrid columns="2" >
+                                                <h:panelGrid columns="2" class="w-100" >
 
                                                     <p:outputLabel value="Font Family" ></p:outputLabel>
                                                     <p:inputText value="#{investigationItemController.cssFontFamily}" ></p:inputText>
@@ -309,16 +303,15 @@
                                         </p:commandButton>
                                     </f:facet>
 
-                                    <ui:repeat value="#{investigationItemController.userChangableItems}" 
+<!--                                    <ui:repeat value="#{investigationItemController.userChangableItems}" 
                                                var="ii">
                                         <p:outputLabel value="#{ii.name}" rendered="#{ii.ixItemType eq 'Value'}" ></p:outputLabel>
-                                        <p:outputLabel value="#{ii.name}" rendered="#{ii.ixItemType eq 'Flag'}" ></p:outputLabel><!-- comment -->
+                                        <p:outputLabel value="#{ii.name}" rendered="#{ii.ixItemType eq 'Flag'}" ></p:outputLabel> comment 
                                         <p:outputLabel value="#{ii.name}" rendered="#{ii.ixItemType eq 'Calculation'}" ></p:outputLabel>
                                     </ui:repeat>
-                                    <p:inputText >
-                                        
-                                    </p:inputText>
                                     
+                                 -->
+
                                     <diV class="d-flex gap-2">
                                         <p:selectOneMenu 
                                             id="dtbItem" 
@@ -341,7 +334,8 @@
 
                                     <h:panelGrid id="pDetails" class="w-100">
 
-                                        <p:accordionPanel class="mt-2">
+                                        <p:accordionPanel class="mt-2" activeIndex="#{investigationCategoryController.manageItemIndex}">
+                                            <p:ajax process="@this" ></p:ajax>
                                             <p:tab title="Item Details"   class="w-100">
                                                 <h:panelGrid columns="1"  class="w-100">
 
@@ -382,6 +376,9 @@
                                                     <p:inputTextarea id="txtContents" scrollHeight="60" autoResize="false" class="w-100" value="#{investigationItemController.current.htmltext}">
                                                         <p:ajax event="blur" process="txtContents" update="dlgContents" />
                                                     </p:inputTextarea>
+
+
+
 
                                                 </h:panelGrid>
 
@@ -497,6 +494,39 @@
                                                     </div>
                                                 </div>
                                             </p:tab>
+
+
+                                            <p:tab title="Color and Layout">
+                                                <p:panelGrid layout="tabular" columns="2" class="w-100">
+                                                    <h:outputText value="Custom CSS to Override All Others" class="mt-2 w-100"/>
+                                                    <p:inputTextarea class="w-100" rows="5"
+                                                                     value="#{investigationItemController.current.customCss}"/>
+
+
+                                                    <h:outputText value="Background Color" class="mt-2 w-100"/>
+                                                    <p:inputText class="w-100" autocomplete="off" id="txtCssBackColor" value="#{investigationItemController.current.cssBackColor}"/>
+
+                                                    <h:outputText value="Color" class="mt-2 w-100"/>
+                                                    <p:inputText class="w-100" autocomplete="off" id="txtCssColor" value="#{investigationItemController.current.cssColor}"/>
+
+                                                    <h:outputText value="Border Radius" class="mt-2 w-100"/>
+                                                    <p:inputText class="w-100" autocomplete="off" id="txtCssBorderRadius" value="#{investigationItemController.current.cssBorderRadius}"/>
+
+                                                    <h:outputText value="Margin" class="mt-2 w-100"/>
+                                                    <p:inputText class="w-100" autocomplete="off" id="txtCssMargin" value="#{investigationItemController.current.cssMargin}"/>
+
+                                                    <h:outputText value="Padding" class="mt-2 w-100"/>
+                                                    <p:inputText class="w-100" autocomplete="off" id="txtCssPadding" value="#{investigationItemController.current.cssPadding}"/>
+                                                    <h:outputText value="Border" class="mt-2 w-100"/>
+                                                    <p:inputText class="w-100" autocomplete="off"  value="#{investigationItemController.current.cssBorder}"/>
+
+
+                                                </p:panelGrid>
+
+                                            </p:tab>
+
+
+
 
                                             <p:tab title="Automation" >
                                                 <h:panelGrid  columns="3" class="gap-2">
@@ -665,61 +695,36 @@
                                             <ui:repeat value="#{investigationItemController.items}" rendered="#{investigationItemController.currentInvestigation.reportType eq 'General'}" var="myIi" >
                                                 <h:panelGroup id="gpIi" rendered="#{myIi.retired ne true and  myIi.ixItemType ne 'Investigation'}">
 
-                                                    <div style="#{myIi.outerCssStyle};background-color: #{myIi.ixItemType eq 'Value' ? 'lightgreen' : (myIi.ixItemType eq 'Calculation' ? '#EC7063' : (myIi.ixItemType eq 'Flag' ? '#3D85C6' :'lightyellow'))}; border: 1px solid lightblue; " >
-                                                        <h:outputLabel id="lblViewModeIi" 
-                                                                       rendered="#{investigationItemController.editMode eq 'View_Mode'}"  value="#{myIi.htmltext}" 
-                                                                       style="#{myIi.innerCssStyle}; color: black;" 
-                                                                       escape="false" ></h:outputLabel> 
 
-                                                        <p:tooltip for="lblViewModeIi" rendered="#{myIi.investigationItemValues.size() ne 0}" >
-                                                            <table>
-                                                                <ui:repeat value="#{myIi.investigationItemValues}" var="iiv" >
-                                                                    <tr>
-                                                                        <td>
-                                                                            <h:outputLabel value= "#{iiv.name}" escape="false" ></h:outputLabel>
-                                                                        </td>
-                                                                    </tr>
-                                                                </ui:repeat>
-                                                            </table>
+                                                    <h:panelGroup rendered="#{investigationItemController.editMode eq 'View_Mode'}" >
+                                                        <div style="#{myIi.cssStyle}; position: absolute;" >
+                                                            <h:outputLabel id="lblViewModeIi" 
+                                                                           rendered="#{investigationItemController.editMode eq 'View_Mode'}"  value="#{myIi.htmltext}" 
+                                                                           escape="false" ></h:outputLabel> 
+                                                        </div>
+                                                    </h:panelGroup>
 
-                                                        </p:tooltip>
+                                                    <h:panelGroup rendered="#{investigationItemController.editMode eq 'Edit_mode'}" >
+                                                        <div style="#{myIi.cssStyle};background-color: #{myIi.ixItemType eq 'Value' ? 'lightgreen' : (myIi.ixItemType eq 'Calculation' ? '#EC7063' : (myIi.ixItemType eq 'Flag' ? '#3D85C6' :'lightyellow'))}; border: 1px solid lightblue; position: absolute;" >
+                                                            <p:inputText id="txtEditIi" 
+                                                                         rendered="#{investigationItemController.editMode eq 'Edit_mode'}"  
+                                                                         value="#{myIi.htmltext}" 
+                                                                         style="#{myIi.innerCssStyle}; border: 1px solid brown;background-color: bisque;vertical-align: top!important; overflow: scroll!important; background-color: #{myIi.ixItemType eq 'Value' ? 'lightgreen':'lightyellow'};"  >
+                                                                <f:ajax event="focus" execute="@this" listener="#{investigationItemController.makeThisCurrent(myIi)}" render=":#{p:resolveFirstComponentWithId('dtbItem',view).clientId} :#{p:resolveFirstComponentWithId('pDetails',view).clientId} "  ></f:ajax>
+                                                                <!--<f:ajax event="blur" execute="@this" listener="#{investigationItemController.saveIiOnAjax(myIi)}" render=":#{p:resolveFirstComponentWithId('dtbItem',view).clientId} :#{p:resolveFirstComponentWithId('pDetails',view).clientId}"></f:ajax>-->
+                                                            </p:inputText>
+                                                        </div>
+                                                    </h:panelGroup>
 
-                                                        <p:inputText id="txtEditIi" 
-                                                                     rendered="#{investigationItemController.editMode eq 'Edit_mode'}"  
-                                                                     value="#{myIi.htmltext}" 
-                                                                     style="#{myIi.innerCssStyle}; border: 1px solid brown;background-color: bisque;vertical-align: top!important; overflow: scroll!important; background-color: #{myIi.ixItemType eq 'Value' ? 'lightgreen':'lightyellow'};"  >
-                                                            <f:ajax event="focus" execute="@this" listener="#{investigationItemController.makeThisCurrent(myIi)}" render=":#{p:resolveFirstComponentWithId('dtbItem',view).clientId} :#{p:resolveFirstComponentWithId('pDetails',view).clientId} "  ></f:ajax>
-                                                            <f:ajax event="blur" execute="@this" listener="#{investigationItemController.saveIiOnAjax(myIi)}" render=":#{p:resolveFirstComponentWithId('dtbItem',view).clientId} :#{p:resolveFirstComponentWithId('pDetails',view).clientId}"></f:ajax>
-                                                        </p:inputText>
-
-
-                                                        <h:inputText id="txtMove"
-                                                                     style="#{myIi.innerCssStyle}; margin: auto; border: 1px solid red;color: yellow;background-color: yellow;"
-                                                                     onkeydown="document.getElementById('#{keyCode.clientId}').value = event.keyCode" 
-                                                                     rendered="#{investigationItemController.editMode eq 'Move_Mode'}" >
-                                                            <f:ajax event="keyup" execute="@this keyCode" 
-                                                                    listener="#{investigationItemController.ajaxIiKeydownListner(myIi)}" 
-                                                                    render="gpIi :#{p:resolveFirstComponentWithId('pDetails',view).clientId} moveFocus "/>
-                                                        </h:inputText>
-
-
-
-
-                                                        <h:inputHidden id="keyCode" binding="#{keyCode}" 
-                                                                       value="#{investigationItemController.keyCode}">
-                                                        </h:inputHidden>
-                                                        <p:focus id="moveFocus" for="txtMove" ></p:focus>
-                                                    </div>
                                                 </h:panelGroup>
                                             </ui:repeat>
 
                                             <ui:repeat value="#{investigationItemController.items}" rendered="#{investigationItemController.currentInvestigation.reportType eq 'Microbiology'}" var="myIiMic" >
                                                 <h:panelGroup rendered="#{myIiMic.retired ne true and  myIiMic.ixItemType ne 'Investigation'}">
-                                                    <div style="#{myIiMic.outerCssStyle};background-color: #{myIiMic.ixItemType eq 'Value' ? 'lightgreen' : (myIiMic.ixItemType eq 'Calculation' ? '#EC7063' : (myIiMic.ixItemType eq 'Flag' ? '#3D85C6' :'lightyellow'))}; border: 1px solid lightblue; " >
+                                                    <div style="#{myIiMic.cssStyle};background-color: #{myIiMic.ixItemType eq 'Value' ? 'lightgreen' : (myIiMic.ixItemType eq 'Calculation' ? '#EC7063' : (myIiMic.ixItemType eq 'Flag' ? '#3D85C6' :'lightyellow'))}; border: 1px solid lightblue; " >
                                                         <h:outputLabel 
                                                             rendered="#{investigationItemController.editMode eq 'View_Mode'}"  
                                                             value="#{myIiMic.htmltext}" 
-                                                            style="#{myIiMic.innerCssStyle}; color: black;" 
                                                             escape="false" >
                                                         </h:outputLabel> 
                                                     </div>
@@ -729,10 +734,9 @@
 
                                             <ui:repeat value="#{investigationItemController.items}" rendered="#{investigationItemController.currentInvestigation.reportType eq 'HtmlTemplate'}" var="myIiTmp" >
                                                 <h:panelGroup id="myIiTmp" rendered="#{myIiTmp.retired ne true and  myIiTmp.ixItemType eq 'Html'}">
-                                                    <div style="#{myIiTmp.outerCssStyle};background-color: yellowgreen; border: 1px solid green; " >
+                                                    <div style="#{myIiTmp.cssStyle};background-color: yellowgreen; border: 1px solid green; " >
                                                         <h:outputLabel 
                                                             value="#{myIiTmp.htmltext}" 
-                                                            style="#{myIiTmp.innerCssStyle}; color: black;" 
                                                             escape="false" >
                                                         </h:outputLabel> 
                                                     </div>

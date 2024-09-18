@@ -1,0 +1,86 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill">
+
+    <h:body>
+        <ui:composition template="/collecting_centre/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form  >
+                    <h:panelGroup >
+                        <p:panel rendered="#{!agentAndCcPaymentController.printPreview}" styleClass="ui-panel-info" >
+                            <f:facet name="header">
+                                <h:outputLabel value="Agent Credit Note" styleClass="ui-label-info"/>
+                            </f:facet>
+                            <p:panelGrid columns="2" styleClass="w-100 ui-grid-info"  >
+                                <p:outputLabel value="Collecting Center" styleClass="ui-outputlabel-info"/>
+                                <p:autoComplete id="creditCom" forceSelection="true" value="#{agentAndCcPaymentController.current.fromInstitution}" 
+                                                class="w-100"
+                                                inputStyleClass="w-100"
+                                                completeMethod="#{institutionController.completeCollectingCenter}"
+                                                var="ix" 
+                                                itemLabel="#{ix.name}" 
+                                                itemValue="#{ix}" 
+                                                size="30"
+                                                >
+                                    <f:ajax event="itemSelect" execute="creditCom"/>
+                                    <p:column>#{ix.institutionCode}</p:column>
+                                    <p:column>#{ix.name}</p:column>
+                                </p:autoComplete>
+                                <p:outputLabel value="Amount" styleClass="ui-outputlabel-info"/>
+                                <p:inputText onfocus="this.select();" autocomplete="off" value="#{agentAndCcPaymentController.amount}" 
+                                             styleClass="ui-inputtext-info"/>
+                                <p:outputLabel value="Description" styleClass="ui-outputlabel-info"/>
+                                <p:inputTextarea
+                                    class="w-100"
+                                    value="#{agentAndCcPaymentController.comment}" styleClass="ui-inputtextarea-info"/>
+                                <p:commandButton value="New Bill" class="ui-button-info" icon="fas fa-plus" ajax="false" 
+                                                 action="#{agentAndCcPaymentController.prepareNewBill()}" styleClass="ui-button-info"/>
+                                <p:commandButton id="btnSettle" value="Settle" action="#{agentAndCcPaymentController.collectingCenterCreditNoteSettleBill}" ajax="false"
+                                                 class="ui-button-success mx-1" icon="fas fa-check">
+                                    <p:defaultCommand target="btnSettle"/>
+                                </p:commandButton>
+                            </p:panelGrid>
+                        </p:panel>
+
+                    </h:panelGroup>
+
+
+                    <h:panelGroup rendered="#{agentAndCcPaymentController.printPreview}" >
+                        <p:panel>
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h:outputLabel value="Agent Credit Note" />
+                                    </div>
+                                    <div>
+                                        <h:panelGrid columns="4">
+                                            <p:commandButton value="New Bill" class="ui-button-success mx-1" icon="fas fa-plus" ajax="false" action="#{agentAndCcPaymentController.prepareNewBill()}"  ></p:commandButton>
+                                            <p:commandButton value="Print" class="ui-button-info" icon="fas fa-print">
+                                                <p:printer target="print" />
+                                            </p:commandButton>
+                                        </h:panelGrid>
+                                    </div>
+                                </div>
+
+                            </f:facet>
+                            <h:panelGroup id="print">
+                                <bi:cc_credit_note   bill="#{agentAndCcPaymentController.current}" dup="false"/> 
+                            </h:panelGroup>
+
+                        </p:panel>
+
+                    </h:panelGroup>        
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
+
+

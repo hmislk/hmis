@@ -173,7 +173,6 @@ public class SessionController implements Serializable, HttpSessionListener {
     private String landingPage;
     private CashBook loggedCashbook;
     private Institution loggedSite;
-    
 
     public String navigateToLoginPage() {
 
@@ -725,13 +724,11 @@ public class SessionController implements Serializable, HttpSessionListener {
             return "";
         }
     }
-    
+
     public String getLogoutPageUrl() {
         String contextPath = FacesContext.getCurrentInstance().getExternalContext().getRequestContextPath();
         return contextPath + "/faces/logout.xhtml"; // Adjust the path as needed
     }
-
-    
 
     public String loginForChannelingTabView() {
         department = null;
@@ -1088,12 +1085,21 @@ public class SessionController implements Serializable, HttpSessionListener {
         List<WebUser> allUsers = getFacede().findByJpql(jpql, m);
         for (WebUser u : allUsers) {
             if ((u.getName()).equalsIgnoreCase(userName)) {
-                boolean passwordIsOk = SecurityController.matchPassword(password, u.getWebUserPassword());
+
+                boolean passwordIsOk;
+
+                if (webUserController.isGrantAllPrivilegesToAllUsersForTesting()) {
+                    passwordIsOk = true;
+                } else {
+
+                    passwordIsOk = SecurityController.matchPassword(password, u.getWebUserPassword());
+                }
+
                 if (passwordIsOk) {
 
                     departments = listLoggableDepts(u);
 
-                    if (webUserController.grantAllPrivilegesToAllUsersForTesting) {
+                    if (webUserController.isGrantAllPrivilegesToAllUsersForTesting()) {
                         departments = departmentController.fillAllItems();
                     }
 
@@ -1122,13 +1128,13 @@ public class SessionController implements Serializable, HttpSessionListener {
                     setLoggedUser(u);
                     loggableDepartments = fillLoggableDepts();
                     loggableCollectingCentres = fillLoggableCollectingCentres();
-                    if (webUserController.grantAllPrivilegesToAllUsersForTesting) {
+                    if (webUserController.isGrantAllPrivilegesToAllUsersForTesting()) {
                         loggableDepartments = departmentController.fillAllItems();
                     }
 //                    loggableSubDepartments = fillLoggableSubDepts(loggableDepartments);
                     loggableInstitutions = fillLoggableInstitutions();
 
-                    if (webUserController.grantAllPrivilegesToAllUsersForTesting) {
+                    if (webUserController.isGrantAllPrivilegesToAllUsersForTesting()) {
                         loggableInstitutions = institutionController.fillAllItems();
                     }
                     loadDashboards();
@@ -1204,23 +1210,22 @@ public class SessionController implements Serializable, HttpSessionListener {
 //            loggedUser.setWebUserPerson(p);
 //            webUserFacade.edit(loggedUser);
         }
-        
+
         loggedUser.setDepartment(department);
         loggedUser.setInstitution(department.getInstitution());
         getFacede().edit(loggedUser);
-        
-        if (department.getSite()==null) {
+
+        if (department.getSite() == null) {
             Institution site;
-            site=institutionController.findAndSaveInstitutionByName("site");
+            site = institutionController.findAndSaveInstitutionByName("site");
             setLoggedSite(site);
-        }else{
+        } else {
             setLoggedSite(department.getSite());
         }
-        
-        CashBook cb=new CashBook();
-        cb=cashBookController.findAndSaveCashBookBySite(loggedSite, institution, department);
+
+        CashBook cb = new CashBook();
+        cb = cashBookController.findAndSaveCashBookBySite(loggedSite, institution, department);
         setLoggedCashbook(cb);
-        
 
         userIcons = userIconController.fillUserIcons(loggedUser, department);
         dashboards = webUserController.listWebUserDashboards(loggedUser);
@@ -1494,7 +1499,7 @@ public class SessionController implements Serializable, HttpSessionListener {
                 + " order by wd.department.institution.name";
         return institutionFacade.findByJpql(jpql, m);
     }
-    
+
     public List<Institution> fillLoggableCollectingCentres() {
         WebUser e = getLoggedUser();
         if (e == null) {
@@ -1507,9 +1512,9 @@ public class SessionController implements Serializable, HttpSessionListener {
                 + " where i.retired<>:ret "
                 + " and i.route in :lds "
                 + " and i.institutionType=:cc ";
-         m.put("ret", true);
-         m.put("cc", InstitutionType.CollectingCentre);
-         m.put("lds", loggableDepartments);
+        m.put("ret", true);
+        m.put("cc", InstitutionType.CollectingCentre);
+        m.put("lds", loggableDepartments);
         return institutionFacade.findByJpql(jpql, m);
     }
 
@@ -1540,7 +1545,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         loggableDepartments = null;
         loggableSubDepartments = null;
         loggableInstitutions = null;
-        loggableCollectingCentres=null;
+        loggableCollectingCentres = null;
         userIcons = null;
         setLogged(false);
         setActivated(false);
@@ -1936,7 +1941,6 @@ public class SessionController implements Serializable, HttpSessionListener {
         return loggedPreference;
     }
 
-    
     public void setLoggedPreference(UserPreference loggedPreference) {
         this.loggedPreference = loggedPreference;
     }
@@ -1999,7 +2003,6 @@ public class SessionController implements Serializable, HttpSessionListener {
 //    public void setDashboardModel(DashboardModel dashboardModel) {
 //        this.dashboardModel = dashboardModel;
 //    }
-
     public DepartmentFacade getDepartmentFacade() {
         return departmentFacade;
     }
@@ -2156,7 +2159,6 @@ public class SessionController implements Serializable, HttpSessionListener {
         return loggableInstitutions;
     }
 
-    
     public List<UserIcon> getUserIcons() {
         return userIcons;
     }
@@ -2164,8 +2166,7 @@ public class SessionController implements Serializable, HttpSessionListener {
     public void setUserIcons(List<UserIcon> userIcons) {
         this.userIcons = userIcons;
     }
-    
-    
+
 //
 //    private void createUserPrivilegesForAllDepartments(WebUser tmpLoggedUser, Department loggedDept, List<Department> tmpLoggableDeps) {
 //        List<WebUserPrivilege> twups = fillUserPrivileges(tmpLoggedUser, null, true);
@@ -2196,7 +2197,6 @@ public class SessionController implements Serializable, HttpSessionListener {
 //        }
 //
 //    }
-
     public List<Department> getLoggableSubDepartments() {
         return loggableSubDepartments;
     }
