@@ -1503,7 +1503,7 @@ public class StaffController implements Serializable {
         }
         return items;
     }
-
+    
     public void fillItems() {
         String temSql;
         temSql = "SELECT i FROM Staff i where i.retired=false and i.person is not null and i.person.name is not null order by i.person.name";
