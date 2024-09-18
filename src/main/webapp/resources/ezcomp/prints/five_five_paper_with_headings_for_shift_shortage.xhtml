@@ -11,7 +11,7 @@
     <cc:interface>
         <cc:attribute name="bill" type="com.divudi.entity.Bill" />
         <cc:attribute name="duplicate" type="java.lang.Boolean"/>
-        <cc:attribute name="payments" />
+        <cc:attribute name="payments"  />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -166,9 +166,6 @@
                 </table>
             </div>
             <div class="footer" style="text-align: center;">
-                <br/>
-                <h:outputLabel value="#{sessionController.userPreference.pharmacyBillFooter}"/>
-                <br/>
             </div>
         </div>
     </cc:implementation>
