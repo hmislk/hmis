@@ -210,8 +210,8 @@ public class ReportController implements Serializable {
             jpql += " and b.collectingCentre.route=:rou ";
             m.put("rou", route);
         }
-        jpql += " group by bi.item "
-                + "order by bi.item.name";
+        jpql += " group by b.collectingCentre, bi.item "
+                + "order by b.collectingCentre.name, bi.item.name";
         
         bundle.setReportTemplateRows((List<ReportTemplateRow>)billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP));
         
