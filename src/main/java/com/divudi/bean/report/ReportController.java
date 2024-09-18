@@ -160,7 +160,7 @@ public class ReportController implements Serializable {
     public void ccSummaryReportByItem() {
         ReportTemplateRow rows;
         String jpql = "select new com.divudi.data.ReportTemplateRow("
-                + "b.collectginCentre, "
+                + "b.collectingCentre, "
                 + "count(bi), "
                 + "sum(bi.hospitalFee), "
                 + "sum(bi.collectingCentreFee), "
