@@ -181,7 +181,15 @@ public enum BillTypeAtomic {
     FUND_TRANSFER_BILL_CANCELLED("Fund Transfer Bill - Cancelled", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.FLOAT_INCREASE, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
     FUND_TRANSFER_RECEIVED_BILL("Fund Transfer Received Bill", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.FLOAT_INCREASE, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
     FUND_TRANSFER_RECEIVED_BILL_CANCELLED("Fund Transfer Received Bill - Cancelled", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.FLOAT_DECREASE, CountedServiceType.OTHER, PaymentCategory.CREDIT_SPEND),
-    // PROFESSIONAL PAYMENTS
+    // ENUM EXTENSION FOR NEW BILL TYPES
+    FUND_SHIFT_SHORTAGE_BILL("Shift Shortage Bill", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.FLOAT_DECREASE, CountedServiceType.OTHER, PaymentCategory.CREDIT_SPEND),
+    FUND_SHIFT_SHORTAGE_BILL_CANCELLED("Shift Shortage Bill - Cancelled", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.FLOAT_DECREASE, CountedServiceType.OTHER, PaymentCategory.CREDIT_SPEND),
+    FUND_SHIFT_EXCESS_BILL("Shift Excess Bill", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.FLOAT_INCREASE, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
+    FUND_SHIFT_EXCESS_BILL_CANCELLED("Shift Excess Bill - Cancelled", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.FLOAT_INCREASE, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
+    TRANSFER_PAYMENT_METHOD_BILL("Transfer Payment Method Bill", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.CASH_IN, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
+    TRANSFER_PAYMENT_METHOD_BILL_CANCELLED("Transfer Payment Method Bill - Cancelled", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.CASH_IN, CountedServiceType.OTHER, PaymentCategory.CREDIT_SPEND),
+
+// PROFESSIONAL PAYMENTS
     PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE("Inward Payment for Staff", BillCategory.PAYMENTS, ServiceType.INWARD, BillFinanceType.CASH_IN, CountedServiceType.INWARD_PROFESSIONAL_PAYMENT, PaymentCategory.NON_CREDIT_SPEND),
     PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE("Channelling Payment for Staff", BillCategory.PAYMENTS, ServiceType.CHANNELLING, BillFinanceType.CASH_OUT, CountedServiceType.CHANNELLING_PROFESSIONAL_PAYMENT, PaymentCategory.NON_CREDIT_SPEND),
     PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION("Channelling session Payment for Staff", BillCategory.PAYMENTS, ServiceType.CHANNELLING, BillFinanceType.CASH_OUT, CountedServiceType.CHANNELLING_PROFESSIONAL_PAYMENT, PaymentCategory.NON_CREDIT_SPEND),

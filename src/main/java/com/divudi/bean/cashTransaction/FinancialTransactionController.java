@@ -214,6 +214,8 @@ public class FinancialTransactionController implements Serializable {
     private Department toDepartment;
     private Date forDate;
 
+    private int tabIndex;
+
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Constructors">
     public FinancialTransactionController() {
@@ -292,7 +294,6 @@ public class FinancialTransactionController implements Serializable {
                 paramStartId,
                 paramEndId);
 
-
         ReportTemplateRowBundle outs = reportTemplateController.generateReport(
                 type,
                 outBts,
@@ -356,7 +357,6 @@ public class FinancialTransactionController implements Serializable {
                 paramStartId,
                 paramEndId);
 
-
         ReportTemplateRowBundle outs = reportTemplateController.generateReport(
                 type,
                 outBts,
@@ -417,7 +417,6 @@ public class FinancialTransactionController implements Serializable {
                 paramCreditCompany,
                 paramStartId,
                 paramEndId);
-
 
         ReportTemplateRowBundle outs = reportTemplateController.generateReport(
                 type,
@@ -1091,6 +1090,56 @@ public class FinancialTransactionController implements Serializable {
         resetClassVariables();
         prepareToAddNewFundDepositBill();
         return "/cashier/deposit_funds?faces-redirect=true";
+    }
+
+    // Method to navigate to the Record Shift Shortage page
+    public String navigateToRecordShiftShortage() {
+        resetClassVariables();
+        prepareToAddNewShiftShortageRecord();
+        return "/cashier/record_shift_shortage?faces-redirect=true";
+    }
+
+    // Method to navigate to the Record Shift Excess page
+    public String navigateToRecordShiftExcess() {
+        resetClassVariables();
+        prepareToAddNewShiftExcessRecord();
+        return "/cashier/record_shift_excess?faces-redirect=true";
+    }
+
+    // Method to navigate to the Transfer Payment Method page
+    public String navigateToTransferPaymentMethod() {
+        resetClassVariables();
+        prepareToTransferPaymentMethod();
+        return "/cashier/transfer_payment_method?faces-redirect=true";
+    }
+
+    // Method to navigate to the Payment Recording page
+    public String navigateToPaymentRecording() {
+        resetClassVariables();
+        prepareToRecordPayments();
+        return "/cashier/payment_recording?faces-redirect=true";
+    }
+
+    private void prepareToAddNewShiftShortageRecord() {
+        currentBill = new Bill();
+        currentBill.setBillType(BillType.ShiftShortage);
+        currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL);
+        currentBill.setBillClassType(BillClassType.Bill);
+    }
+
+    private void prepareToAddNewShiftExcessRecord() {
+        currentBill = new Bill();
+        currentBill.setBillType(BillType.ShiftExcess);
+        currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_END_BILL);
+        currentBill.setBillClassType(BillClassType.Bill);
+    }
+
+    private void prepareToTransferPaymentMethod() {
+        // Prepare any necessary configurations or data before transferring payment methods
+    }
+
+    private void prepareToRecordPayments() {
+        // Set up required data and context before recording payments
     }
 
     public String navigateToCashierSummary() {
@@ -3039,6 +3088,62 @@ public class FinancialTransactionController implements Serializable {
         currentPayment = null;
     }
 
+    public void addShortageRecord() {
+        if (currentPayment == null || currentPayment.getPaidValue() <= 0) {
+            JsfUtil.addErrorMessage("Please provide valid amount for the shortage.");
+            return;
+        }
+        currentPayment.setCreatedAt(new Date()); // Set payment date to now
+        currentBillPayments.add(currentPayment); // Add to the current bill's payments list
+        JsfUtil.addSuccessMessage("Shortage recorded successfully.");
+        currentPayment = new Payment(); // Reset currentPayment for the next entry
+    }
+
+    public void removeShortageRecord(Payment payment) {
+        if (payment == null || !currentBillPayments.remove(payment)) {
+            JsfUtil.addErrorMessage("Failed to remove the record or record not found.");
+        } else {
+            JsfUtil.addSuccessMessage("Record removed successfully.");
+        }
+    }
+
+    public String settleShiftShortages() {
+        if (currentBill == null || currentBillPayments.isEmpty()) {
+            JsfUtil.addErrorMessage("No shortage records to settle or no current bill set.");
+            return "";  // Stay on the same page due to lack of records or bill
+        }
+
+        // Set attributes specific to this kind of bill
+        currentBill.setBillType(BillType.ShiftShortage);
+        currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_START_BILL);
+        currentBill.setBillDate(new Date());
+        currentBill.setBillTime(new Date());
+
+        // Set the department, institution, and staff from session
+        currentBill.setDepartment(sessionController.getDepartment());
+        currentBill.setInstitution(sessionController.getInstitution());
+        currentBill.setStaff(sessionController.getLoggedUser().getStaff());
+
+        try {
+            billController.save(currentBill);  // Save the bill
+
+            // Save each payment linked to this bill
+            for (Payment p : currentBillPayments) {
+                p.setBill(currentBill);
+                p.setDepartment(sessionController.getDepartment());
+                p.setInstitution(sessionController.getInstitution());
+                paymentController.save(p);
+            }
+
+            currentBillPayments.clear();  // Clear payments after saving
+            JsfUtil.addSuccessMessage("All shift shortage records have been successfully recorded.");
+            return "/cashier/record_shift_shortage_print?faces-redirect=true";  // Redirect to a summary page
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error settling shift shortages: " + e.getMessage());
+            return "";  // Optionally, redirect to an error page
+        }
+    }
+
     private void calculateFundDepositBillTotal() {
         double total = 0.0;
         for (Payment p : getCurrentBillPayments()) {
@@ -3073,9 +3178,9 @@ public class FinancialTransactionController implements Serializable {
         }
         return "/cashier/deposit_funds_print?faces-redirect=true";
     }
+
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="WithdrawalFundBill">
-
     public String navigateToCreateNewFundWithdrawalBill() {
         prepareToAddNewWithdrawalProcessingBill();
         return "/cashier/fund_withdrawal_bill?faces-redirect=true;";
@@ -4019,6 +4124,14 @@ public class FinancialTransactionController implements Serializable {
 
     public void setCancelledBundle(ReportTemplateRowBundle cancelledBundle) {
         this.cancelledBundle = cancelledBundle;
+    }
+
+    public int getTabIndex() {
+        return tabIndex;
+    }
+
+    public void setTabIndex(int tabIndex) {
+        this.tabIndex = tabIndex;
     }
 
 }

@@ -8,11 +8,11 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
-        
-            <ui:composition template="/cashier/index.xhtml">
 
-                <ui:define name="subcontent">
-<h:form>
+        <ui:composition template="/cashier/index.xhtml">
+
+            <ui:define name="subcontent">
+                <h:form>
                     <p:panel >
                         <f:facet name="header">
                             <i class="fas fa-piggy-bank mt-2"/>
@@ -64,7 +64,7 @@
                                                 <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
                                                 <p:ajax process="@this" ></p:ajax>
                                             </p:selectOneMenu>
-                                                                                                                                                                            </h:panelGrid>
+                                        </h:panelGrid>
 
                                         <h:panelGrid
                                             class="row my-1 w-100"
@@ -89,7 +89,7 @@
                                                 <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
                                                 <p:ajax process="@this" ></p:ajax>
                                             </p:selectOneMenu>
-                                                                                                                                    
+
                                         </h:panelGrid>
 
                                         <h:panelGrid
@@ -113,7 +113,7 @@
                                                 <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
                                                 <p:ajax process="@this" ></p:ajax>
                                             </p:selectOneMenu>
-                                                                                                                                                                            </h:panelGrid>
+                                        </h:panelGrid>
                                         <h:panelGrid
                                             columns="2"
                                             class="row my-1"
@@ -218,9 +218,9 @@
 
                         </p:panel>
                     </p:panel>
-    </h:form>
-                </ui:define>
-            </ui:composition>
-        
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
     </h:body>
 </html>
