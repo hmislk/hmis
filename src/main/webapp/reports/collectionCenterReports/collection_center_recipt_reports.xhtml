@@ -72,10 +72,29 @@
                                     <f:selectItems var="r" itemLabel="#{r.code} :  #{r.name}" 
                                                    value="#{collectingCentreController.items}" 
                                                    itemValue="#{r}" />
-                                    
                                 </p:selectOneMenu>
                             </div>
                         </div>
+
+                        <!--                        <div class="row mb-2">
+                                                    <div class="col-md-2">
+                                                        <p:outputLabel value="Collecting Centre Sites" />
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <p:selectOneMenu 
+                                                            style=" max-width: 100%; overflow-x: auto; "
+                                                            class="w-100"
+                                                            value="#{institutionController.sites}"
+                                                            filter="true"
+                                                            filterMatchMode="contains">
+                                                            <f:selectItem itemLabel="All" />
+                                                            <f:selectItems value="#{routeController.site}"
+                                                                           var="r"
+                                                                           itemLabel="#{r.name}"
+                                                                           itemValue="#{r}" />
+                                                        </p:selectOneMenu>
+                                                    </div>
+                                                </div>-->
 
                         <div class="row mb-2">
                             <div class="col-md-2">
