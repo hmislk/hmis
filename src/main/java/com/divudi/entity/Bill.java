@@ -111,7 +111,7 @@ public class Bill implements Serializable {
     // Bank Detail
     private String creditCardRefNo;
     private String chequeRefNo;
-
+    private boolean creditBill;
     private int creditDuration;
     @ManyToOne(fetch = FetchType.LAZY)
     private Institution bank;
@@ -372,10 +372,10 @@ public class Bill implements Serializable {
     private double totalHospitalFee;
     private double totalCenterFee;
     private double totalStaffFee;
-    
+
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date fromDate;
-    
+
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date toDate;
 
@@ -2299,8 +2299,8 @@ public class Bill implements Serializable {
     }
 
     public PatientInvestigationStatus getStatus() {
-        if(status==null){
-            status=PatientInvestigationStatus.ORDERED;
+        if (status == null) {
+            status = PatientInvestigationStatus.ORDERED;
         }
         return status;
     }
@@ -2332,5 +2332,15 @@ public class Bill implements Serializable {
     public void setToDate(Date toDate) {
         this.toDate = toDate;
     }
+
+    public boolean isCreditBill() {
+        return creditBill;
+    }
+
+    public void setCreditBill(boolean creditBill) {
+        this.creditBill = creditBill;
+    }
+    
+    
 
 }

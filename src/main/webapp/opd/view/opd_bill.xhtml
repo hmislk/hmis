@@ -107,6 +107,34 @@
                                     </p:tab>
 
                                     <p:tab title="Bill Details" >
+
+                                        <p:panel>
+                                            <f:facet name="header">
+                                                <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
+                                                <h:outputLabel value="Batch Bill Details" class="mx-4"></h:outputLabel>
+                                            </f:facet>
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <div class="col-md-2"><h:outputLabel value="Batch Bill No" /></div>
+                                                    <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                                    <div class="col-md-8"><h:outputLabel value="#{billSearch.viewingBill.backwardReferenceBill.deptId}" ></h:outputLabel></div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <p:commandButton 
+                                                        value="View Batch Bill" 
+                                                        ajax="false"
+                                                        action="#{billSearch.navigateViewBillByBillTypeAtomic()}">
+                                                        <f:setPropertyActionListener 
+                                                            value="#{billSearch.viewingBill.backwardReferenceBill}" 
+                                                            target="#{billSearch.bill}" ></f:setPropertyActionListener>
+                                                    </p:commandButton>                                                    
+                                                </div>
+                                            </div>
+
+                                        </p:panel>
+
                                         <p:panel>
                                             <f:facet name="header">
                                                 <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
@@ -114,6 +142,10 @@
                                             </f:facet>
                                             <div class="row">
                                                 <div class="col-md-12">
+
+
+
+
                                                     <div class="row">
                                                         <div class="col-md-2"><h:outputLabel value="Bill No" /></div>
                                                         <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
