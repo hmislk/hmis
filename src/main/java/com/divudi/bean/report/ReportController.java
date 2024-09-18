@@ -162,6 +162,9 @@ public class ReportController implements Serializable {
     PatientInvestigationStatus patientInvestigationStatus;
 
     public void ccSummaryReportByItem() {
+        bundle=new ReportTemplateRowBundle();
+        bundle.setName("Collecting Centre Report By Item");
+        bundle.setDescription("From : to :");
         ReportTemplateRow rows;
         String jpql = "select new com.divudi.data.ReportTemplateRow("
                 + "b.collectingCentre, "
