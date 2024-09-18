@@ -6524,8 +6524,8 @@ public class SearchController implements Serializable {
     public String navigateToItemizedSaleReportOpd() {
         return "/opd/analytics/itemized_sale_report?faces-redirect=true";
     }
-    
-     public String navigateToIncomeBreakdownByCategoryOpd() {
+
+    public String navigateToIncomeBreakdownByCategoryOpd() {
         return "/opd/analytics/income_breakdown_by_category?faces-redirect=true";
     }
 
@@ -11923,8 +11923,8 @@ public class SearchController implements Serializable {
         bundle = generateItemizedSalesSummary();
     }
 
-    public void createItemizedSalesReport() {
-        bundle = generateItemizedSalesReport();
+    public void createItemizedSalesReportOpd() {
+        bundle = generateItemizedSalesReportOpd();
     }
 
     public void createIncomeBreakdownByCategoryOpd() {
@@ -12284,7 +12284,7 @@ public class SearchController implements Serializable {
         return oiBundle;
     }
 
-    public ReportTemplateRowBundle generateItemizedSalesReport() {
+    public ReportTemplateRowBundle generateItemizedSalesReportOpd() {
         ReportTemplateRowBundle oiBundle = new ReportTemplateRowBundle();
         String jpql = "select bi "
                 + " from BillItem bi "
@@ -12339,6 +12339,67 @@ public class SearchController implements Serializable {
                 });
 
         return oiBundle;
+    }
+
+    public ReportTemplateRowBundle generateBillsByItemCategory() {
+        ReportTemplateRowBundle oiBundle = new ReportTemplateRowBundle();
+        String jpql = "select bi "
+                + " from BillItem bi "
+                + " where bi.bill.retired=:br "
+                + " and bi.bill.createdAt between :fd and :td ";
+        Map m = new HashMap();
+        m.put("br", false);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        List<BillTypeAtomic> btas = BillTypeAtomic.findByServiceType(ServiceType.OPD);
+        oiBundle.setDescription("Bill Types Listed: " + btas);
+        if (!btas.isEmpty()) {
+            jpql += " and bi.bill.billTypeAtomic in :bts ";
+            m.put("bts", btas);
+        }
+
+        if (department != null) {
+            jpql += " and bi.bill.department=:dep ";
+            m.put("dep", department);
+        }
+        if (institution != null) {
+            jpql += " and bi.bill.department.institution=:ins ";
+            m.put("ins", institution);
+        }
+        if (site != null) {
+            jpql += " and bi.bill.department.site=:site ";
+            m.put("site", site);
+        }
+        if (category != null) {
+            jpql += " and bi.item.category=:cat ";
+            m.put("cat", category);
+        }
+        if (item != null) {
+            jpql += " and bi.item=:item ";
+            m.put("item", item);
+        }
+        System.out.println("jpql = " + jpql);
+        System.out.println("m = " + m);
+        List<BillItem> bis = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        billItemsToItamizedSaleReport(oiBundle, bis);
+
+        oiBundle.setName("Itemized Sales Report");
+        oiBundle.setBundleType("itemized_sales_report");
+
+        oiBundle.getReportTemplateRows().stream()
+                .forEach(rtr -> {
+                    rtr.setInstitution(institution);
+                    rtr.setDepartment(department);
+                    rtr.setSite(site);
+                    rtr.setFromDate(fromDate);
+                    rtr.setToDate(toDate);
+                });
+
+        return oiBundle;
+    }
+
+    public void createBillsByItemCategory() {
+        bundle = generateBillsByItemCategory();
     }
 
     public ReportTemplateRowBundle generateOpdServiceCollection() {
@@ -12940,9 +13001,9 @@ public class SearchController implements Serializable {
         categoryMap.forEach((categoryName, catRow) -> rowsToAdd.add(catRow));
 
         reportBundle.getReportTemplateRows().addAll(rowsToAdd);
-        
-        reportBundle.setTotal(totalNetIncome);  
-        reportBundle.setDiscount(totalDiscount);  
+
+        reportBundle.setTotal(totalNetIncome);
+        reportBundle.setDiscount(totalDiscount);
         reportBundle.setGrossTotal(totalIncome);
         reportBundle.setHospitalTotal(totalHospitalFees);
         reportBundle.setStaffTotal(totalStaffFees);

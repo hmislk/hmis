@@ -110,7 +110,7 @@
                                 <p:commandButton id="btnList" class="m-1 ui-button-danger"
                                                  icon="fas fa-list"
                                                  ajax="false" value="View List"
-                                                 action="#{searchController.createItemizedSalesReportOpd()}" />
+                                                 action="#{searchController.createBillsByItemCategory()}" />
 
                                 <p:commandButton id="btnPdf" class="m-1 ui-button-info"
                                                  ajax="false"
@@ -185,14 +185,6 @@
                                     action="#{searchController.navigateToOpdBillItemList(row)}">
                                     <h:outputText title="View Item Details" value="&#xf0f6;" styleClass="fa mr-2" />
                                 </p:commandLink>
-                            </p:column>
-                            <p:column>
-                                <f:facet name="header">
-                                    <h:outputText value="Count" />
-                                </f:facet>
-                                <h:outputText value="#{row.itemCount}">
-                                    <f:convertNumber pattern="#,##0" />
-                                </h:outputText>
                             </p:column>
                             <p:column>
                                 <f:facet name="header">
