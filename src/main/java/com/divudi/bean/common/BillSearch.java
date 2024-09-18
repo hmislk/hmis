@@ -3011,6 +3011,14 @@ public class BillSearch implements Serializable {
         }
         return "/opd/view/opd_batch_bill?faces-redirect=true;";
     }
+    
+    public String navigateToViewOpdProfessionalPaymentBill() {
+        if (viewingBill == null) {
+            JsfUtil.addErrorMessage("Nothing to cancel");
+            return "";
+        }
+        return "/opd/view/opd_professional_payment?faces-redirect=true;";
+    }
 
     public String navigateToManageOpdBill() {
         if (bill == null) {
@@ -3064,16 +3072,16 @@ public class BillSearch implements Serializable {
         return "/channel/channel_payment_bill_reprint.xhtml?faces-redirect=true;";
     }
 
-    //to do
-    public String navigateToViewOpdProfessionalPaymentBill() {
-        if (bill == null) {
-            JsfUtil.addErrorMessage("Nothing to cancel");
-            return "";
-        }
-        setBill(bill);
-        printPreview = true;
-        return "/payment_bill_reprint.xhtml?faces-redirect=true;";
-    }
+//    //to do
+//    public String navigateToViewOpdProfessionalPaymentBill() {
+//        if (bill == null) {
+//            JsfUtil.addErrorMessage("No Bill Selected");
+//            return "";
+//        }
+//        setBill(bill);
+//        printPreview = true;
+//        return "/payment_bill_reprint.xhtml?faces-redirect=true;";
+//    }
 
     public String navigateToDownloadBillsAndBillItems() {
         return "/analytics/download_bills?faces-redirect=true;";
@@ -3124,6 +3132,10 @@ public class BillSearch implements Serializable {
                 return navigateToViewOpdBill();
             case OPD_BATCH_BILL_WITH_PAYMENT:
                 return navigateToViewOpdBatchBill();
+                
+                
+            case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES:
+                return navigateToViewOpdProfessionalPaymentBill();
             case CHANNEL_BOOKING_WITH_PAYMENT:
                 return "";
             case CC_BILL:
