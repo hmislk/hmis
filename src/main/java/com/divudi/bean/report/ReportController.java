@@ -207,7 +207,7 @@ public class ReportController implements Serializable {
         m.put("fromDate", getFromDate());
         m.put("toDate", getToDate());
         
-        bills = billFacade.findByJpql(jpql, m);
+        bills = billFacade.findByJpql(jpql, m,TemporalType.TIMESTAMP);
     }
 
     public String navigatetoOPDLabReportByMenu() {
