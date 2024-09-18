@@ -165,30 +165,26 @@ public class ReportController implements Serializable {
         bundle=new ReportTemplateRowBundle();
         bundle.setName("Collecting Centre Report By Item");
         bundle.setDescription("From : to :");
-        ReportTemplateRow rows;
         String jpql = "select new com.divudi.data.ReportTemplateRow("
                 + "b.collectingCentre, "
-                + "count(bi), "
-                + "sum(bi.hospitalFee), "
-                + "sum(bi.collectingCentreFee), "
-                + "sum(bi.staffFee), "
-                + "sum(bi.netValue) "
+                + "count(b), "
+                + "sum(b.totalHospitalFee), "
+                + "sum(b.totalCenterFee), "
+                + "sum(b.totalStaffFee), "
+                + "sum(b.netTotal) "
                 + ") "
-                + " from BillItem bi "
-                + " join bi.bill b "
+                + " from Bill b "
                 + " where b.retired=:ret "
                 + " and b.createdAt between :fd and :td "
-                + " and b.billTypeAtomic in :bts "
-                + " and b.cancelled=:can "
-                + " and bi.refunded=:ref ";
+                + " and b.billTypeAtomic in :bts ";
         List<BillTypeAtomic> bts = new ArrayList<>();
         bts.add(BillTypeAtomic.CC_BILL);
+        bts.add(BillTypeAtomic.CC_BILL_CANCELLATION);
+        bts.add(BillTypeAtomic.CC_BILL_REFUND);
         Map m = new HashMap();
         m.put("ret", false);
         m.put("fd", fromDate);
         m.put("td", toDate);
-        m.put("ref", false);
-        m.put("can", false);
         m.put("bts", bts);
         if (institution != null) {
             jpql += " and b.institution=:ins ";
@@ -210,10 +206,13 @@ public class ReportController implements Serializable {
             jpql += " and b.collectingCentre.route=:rou ";
             m.put("rou", route);
         }
-        jpql += " group by b.collectingCentre, bi.item "
-                + "order by b.collectingCentre.name, bi.item.name";
-        
-        bundle.setReportTemplateRows((List<ReportTemplateRow>)billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP));
+        jpql += " group by b.collectingCentre "
+                + "order by b.collectingCentre.name ";
+        System.out.println("m = " + m);
+        System.out.println("jpql = " + jpql);
+        List<ReportTemplateRow> rows = billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
+        System.out.println("rows = " + rows);
+        bundle.setReportTemplateRows(rows);
         
     }
 
