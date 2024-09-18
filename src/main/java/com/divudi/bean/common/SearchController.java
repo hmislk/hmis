@@ -863,6 +863,10 @@ public class SearchController implements Serializable {
     public String navigatToAllCashierSummary() {
         return "/reports/cashier_reports/all_cashier_summary?faces-redirect=true";
     }
+    
+    public String navigatToShiftStartAndEnds() {
+        return "/reports/cashier_reports/shift_start_and_ends?faces-redirect=true";
+    }
 
     public String navigatToCashierSummary() {
         return "/reports/cashier_reports/cashier_summary?faces-redirect=true";
@@ -13573,6 +13577,44 @@ public class SearchController implements Serializable {
         bundle.calculateTotals();
     }
 
+    public void generateShiftStartEndSummary() {
+        Map<String, Object> parameters = new HashMap<>();
+        String jpql = "SELECT b"
+                + " FROM Bill b"
+                + " WHERE b.retired =:ret";
+
+        parameters.put("ret", false);
+
+        if (institution != null) {
+            jpql += " AND b.department.institution=:ins";
+            parameters.put("ins", institution);
+        }
+        if (department != null) {
+            jpql += " AND b.department=:dep";
+            parameters.put("dep", department);
+        }
+        if (site != null) {
+            jpql += " AND b.department.site=:site";
+            parameters.put("site", site);
+        }
+        if (webUser != null) {
+            jpql += " AND b.creater =:wu";
+            parameters.put("wu", webUser);
+        }
+        jpql += " AND b.billTypeAtomic=:bta ";
+        parameters.put("bta", BillTypeAtomic.FUND_SHIFT_END_BILL);
+        
+        jpql += " AND b.createdAt BETWEEN :fd AND :td";
+        parameters.put("fd", fromDate);
+        parameters.put("td", toDate);
+
+        
+
+        bills =  billFacade.findByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        System.out.println("bills = " + bills);
+    }
+    
+    
     public SearchController() {
     }
 
