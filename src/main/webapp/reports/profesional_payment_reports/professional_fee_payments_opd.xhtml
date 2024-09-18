@@ -87,17 +87,36 @@
 
                             <p:column headerText="Payment No" style="text-align: left;">
                                 <p:outputLabel value="#{billFee.bill.deptId}" />
+                                <p:outputLabel value="#{billFee.bill.billTypeAtomic}" />
+                                <p:commandLink 
+                                    ajax="false"
+                                    action="#{billSearch.navigateViewBillByBillTypeAtomic()}">
+                                    <h:outputText title="View Bill" styleClass="fa fa-eye" />
+                                    <f:setPropertyActionListener 
+                                        value="#{billFee.bill}" 
+                                        target="#{billSearch.bill}" >
+                                    </f:setPropertyActionListener>
+                                </p:commandLink>
                             </p:column>
 
                             <p:column headerText="Billed Date" style="text-align: left;" >
-                                <p:outputLabel value="#{billFee.referenceBillItem.bill.createdAt}" >
+                                <p:outputLabel value="#{billFee.billItem.referanceBillItem.bill.createdAt}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                 </p:outputLabel>
                             </p:column>
 
                             <p:column headerText="Bill No" style="text-align: left;" >
-                                <p:outputLabel value="#{billFee.referenceBillFee.bill.deptId}" >
+                                <p:outputLabel value="#{billFee.billItem.referanceBillItem.bill.deptId}" >
                                 </p:outputLabel>
+                                <p:commandLink 
+                                    ajax="false"
+                                    action="#{billSearch.navigateViewBillByBillTypeAtomic()}">
+                                    <h:outputText title="View Bill" styleClass="fa fa-eye" />
+                                    <f:setPropertyActionListener 
+                                        value="#{billFee.billItem.referanceBillItem.bill}" 
+                                        target="#{billSearch.bill}" >
+                                    </f:setPropertyActionListener>
+                                </p:commandLink>
                             </p:column>
 
                             <p:column 

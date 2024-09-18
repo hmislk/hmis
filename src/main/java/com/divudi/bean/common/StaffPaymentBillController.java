@@ -195,12 +195,11 @@ public class StaffPaymentBillController implements Serializable {
 
     public void setSpeciality(Speciality speciality) {
         this.speciality = speciality;
-        currentStaff = null;
-        dueBillFees = new ArrayList<>();
-        payingBillFees = new ArrayList<>();
-        totalPaying = 0.0;
-        totalDue = 0.0;
-
+//        currentStaff = null;
+//        dueBillFees = new ArrayList<>();
+//        payingBillFees = new ArrayList<>();
+//        totalPaying = 0.0;
+//        totalDue = 0.0;
     }
 
     public List<Staff> completeStaff(String query) {
@@ -282,9 +281,9 @@ public class StaffPaymentBillController implements Serializable {
         params.put("fd", fromDate);
         params.put("td", toDate);
         params.put("staff", currentStaff);
-        
-        boolean testing=false;
-        if(testing){
+
+        boolean testing = false;
+        if (testing) {
             BillFee bf = new BillFee();
             bf.getBill();
         }
@@ -422,18 +421,17 @@ public class StaffPaymentBillController implements Serializable {
     }
 
     public void setCurrentStaff(Staff currentStaff) {
-
         this.currentStaff = currentStaff;
-
-        dueBillFees = new ArrayList<BillFee>();
-        payingBillFees = new ArrayList<BillFee>();
-        totalPaying = 0.0;
-        totalDue = 0.0;
-        printPreview = false;
-
-        calculateDueFees();
-        performCalculations();
-
+//
+//        dueBillFees = new ArrayList<BillFee>();
+//        payingBillFees = new ArrayList<BillFee>();
+//        totalPaying = 0.0;
+//        totalDue = 0.0;
+//        printPreview = false;
+//
+//        calculateDueFees();
+//        performCalculations();
+//
     }
 
     public List<Bill> getSelectedItems() {
@@ -521,27 +519,23 @@ public class StaffPaymentBillController implements Serializable {
             return;
         }
         calculateTotalPay();
-        Bill b = createPaymentBill();
-        current = b;
-        getBillFacade().create(b);
-        Payment p = createPayment(b, paymentMethod);
-        saveBillCompo(b, p);
+        Bill newlyCreatedPaymentBill = createPaymentBill();
+        current = newlyCreatedPaymentBill;
+        getBillFacade().create(newlyCreatedPaymentBill);
+        Payment newlyCreatedPayment = createPayment(newlyCreatedPaymentBill, paymentMethod);
+        saveBillCompo(newlyCreatedPaymentBill, newlyCreatedPayment);
         printPreview = true;
-
-        WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(b, getSessionController().getLoggedUser());
-        getSessionController().setLoggedUser(wb);
         JsfUtil.addSuccessMessage("Successfully Paid");
-        //////// // System.out.println("Paid");
     }
 
-    private void saveBillCompo(Bill b, Payment p) {
-        for (BillFee bf : getPayingBillFees()) {
+    private void saveBillCompo(Bill paymentBill, Payment paymentBillPayment) {
+        for (BillFee originalBillFee : getPayingBillFees()) {
 //            saveBillItemForPaymentBill(b, bf); //for create bill fees and billfee payments
-            saveBillItemForPaymentBill(b, bf, p);
+            saveBillItemForPaymentBill(paymentBill, originalBillFee, paymentBillPayment);
 //            saveBillFeeForPaymentBill(b,bf); No need to add fees for this bill
-            bf.setPaidValue(bf.getFeeValue());
-            bf.setSettleValue(bf.getFeeValue());
-            getBillFeeFacade().edit(bf);
+            originalBillFee.setPaidValue(originalBillFee.getFeeValue());
+            originalBillFee.setSettleValue(originalBillFee.getFeeValue());
+            getBillFeeFacade().edit(originalBillFee);
             //////// // System.out.println("marking as paid");
         }
     }
@@ -566,25 +560,25 @@ public class StaffPaymentBillController implements Serializable {
         b.getBillItems().add(i);
     }
 
-    private void saveBillItemForPaymentBill(Bill b, BillFee bf, Payment p) {
-        BillItem i = new BillItem();
-        i.setReferanceBillItem(bf.getBillItem());
-        i.setReferenceBill(bf.getBill());
-        i.setPaidForBillFee(bf);
-        i.setBill(b);
-        i.setCreatedAt(Calendar.getInstance().getTime());
-        i.setCreater(getSessionController().getLoggedUser());
-        i.setDiscount(0.0);
-        i.setGrossValue(bf.getFeeValue());
+    private void saveBillItemForPaymentBill(Bill newPaymentBill, BillFee originalBillFee, Payment p) {
+        BillItem newlyCreatedPayingBillItem = new BillItem();
+        newlyCreatedPayingBillItem.setReferanceBillItem(originalBillFee.getBillItem());
+        newlyCreatedPayingBillItem.setReferenceBill(originalBillFee.getBill());
+        newlyCreatedPayingBillItem.setPaidForBillFee(originalBillFee);
+        newlyCreatedPayingBillItem.setBill(newPaymentBill);
+        newlyCreatedPayingBillItem.setCreatedAt(Calendar.getInstance().getTime());
+        newlyCreatedPayingBillItem.setCreater(getSessionController().getLoggedUser());
+        newlyCreatedPayingBillItem.setDiscount(0.0);
+        newlyCreatedPayingBillItem.setGrossValue(originalBillFee.getFeeValue());
 //        if (bf.getBillItem() != null && bf.getBillItem().getItem() != null) {
 //            i.setItem(bf.getBillItem().getItem());
 //        }
-        i.setNetValue(bf.getFeeValue());
-        i.setQty(1.0);
-        i.setRate(bf.getFeeValue());
-        getBillItemFacade().create(i);
-        saveBillFee(i, p);
-        b.getBillItems().add(i);
+        newlyCreatedPayingBillItem.setNetValue(originalBillFee.getFeeValue());
+        newlyCreatedPayingBillItem.setQty(1.0);
+        newlyCreatedPayingBillItem.setRate(originalBillFee.getFeeValue());
+        getBillItemFacade().create(newlyCreatedPayingBillItem);
+        saveBillFee(newlyCreatedPayingBillItem, p);
+        newPaymentBill.getBillItems().add(newlyCreatedPayingBillItem);
     }
 
     public void setSelectText(String selectText) {
@@ -684,6 +678,8 @@ public class StaffPaymentBillController implements Serializable {
         bf.setCreatedAt(Calendar.getInstance().getTime());
         bf.setCreater(getSessionController().getLoggedUser());
         bf.setBillItem(bi);
+        bf.setReferenceBillFee(bi.getPaidForBillFee());
+        bf.setReferenceBillItem(bi.getReferanceBillItem());
         bf.setPatienEncounter(bi.getBill().getPatientEncounter());
         bf.setPatient(bi.getBill().getPatient());
         bf.setFeeValue(0 - bi.getNetValue());
