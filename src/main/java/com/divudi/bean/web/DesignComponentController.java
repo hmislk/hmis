@@ -98,7 +98,7 @@ public class DesignComponentController implements Serializable {
     }
 
     public String navigateToListDataEntryItems() {
-        sdfsdf;
+
         listOfDataEntryItems = listDataEntryForms();
         return "/forms/data_entry_items?faces-redirect=true";
     }
