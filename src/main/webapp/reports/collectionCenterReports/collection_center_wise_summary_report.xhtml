@@ -28,20 +28,20 @@
                             <p:datePicker value="#{reportController.toDate}"
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
 
-                                          <p:outputLabel value="Institution/Branch" />
-                                          <p:outputLabel value=" : " />
-                                          <p:selectOneMenu
-                                              id="cmdInstitution"
-                                              value="#{reportController.institution}"
-                                              style=" max-width: 100%; overflow-x: auto; "
-                                              class="w-100"
-                                              filter="true">
-                                              <f:selectItem itemLabel="All"></f:selectItem>
-                                              <f:selectItems value="#{institutionController.companies}"
-                                                             var="i"
-                                                             itemLabel="#{i.name}"
-                                                             itemValue="#{i}"></f:selectItems>
-                                          </p:selectOneMenu>
+                            <p:outputLabel value="Institution/Branch" />
+                            <p:outputLabel value=" : " />
+                            <p:selectOneMenu
+                                id="cmdInstitution"
+                                value="#{reportController.institution}"
+                                style=" max-width: 100%; overflow-x: auto; "
+                                class="w-100"
+                                filter="true">
+                                <f:selectItem itemLabel="All"></f:selectItem>
+                                <f:selectItems value="#{institutionController.companies}"
+                                               var="i"
+                                               itemLabel="#{i.name}"
+                                               itemValue="#{i}"></f:selectItems>
+                            </p:selectOneMenu>
 
                             <p:outputLabel value="Collecting Center Name"></p:outputLabel>
                             <p:outputLabel value=" : " />
@@ -74,7 +74,11 @@
                         </h:panelGrid>
 
                         <h:panelGrid columns="6" class="my-3">
-                            <p:commandButton ajax="false" value="Process" icon="fas fa-cogs" class="ui-button-warning" >
+                            <p:commandButton 
+                                ajax="false"
+                                action="#{reportController.ccSummaryReportByItem}"
+                                value="Process"
+                                icon="fas fa-cogs" class="ui-button-warning" >
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Print" icon="fas fa-print" class="ui-button-info mx-1"  >
                                 <p:printer target="dtaPr"/>
@@ -87,7 +91,12 @@
                             </p:commandButton>
                         </h:panelGrid>
 
-                        <p:dataTable id="dtaPr" value="null" var="c" class="my-2">
+                        <p:dataTable id="dtaPr" 
+
+                                     rowKey="#{c.uuid}"
+                                     rowIndexVar="count"
+                                     value="#{reportController.bundle.reportTemplateRows}"
+                                     var="c" class="my-2">
                             <f:facet name="header">
                                 <h:outputLabel value="Collection Centre Wise Summary Report" /><br/>
                                 <h:outputLabel value="From Date &emsp;&nbsp;&nbsp; :  &emsp;"/>
@@ -104,28 +113,28 @@
                                 <h:outputLabel value="#{reportController.collectingCentre}"  ></h:outputLabel>
                             </f:facet>
                             <p:column headerText="S. No" >
-                                <h:outputText value="" ></h:outputText>
+                                <h:outputText value="#{count+1}" ></h:outputText>
                             </p:column>
                             <p:column headerText="CC Code" >
-                                <h:outputText value="null" ></h:outputText>
+                                <h:outputText value="#{c.institution.code}" ></h:outputText>
                             </p:column>
                             <p:column headerText="CC Name" >
-                                <h:outputText value="null" ></h:outputText>
+                                <h:outputText value="#{c.institution.name}" ></h:outputText>
                             </p:column>
                             <p:column headerText="Count" >
-                                <h:outputText value="null" ></h:outputText>
+                                <h:outputText value="#{c.itemCount}" ></h:outputText>
                             </p:column>
                             <p:column headerText="Hos Fee" >
-                                <h:outputText value="null" ></h:outputText>
+                                <h:outputText value="#{c.itemHospitalFee}" ></h:outputText>
                             </p:column>
                             <p:column headerText="CC Fee" >
-                                <h:outputText value="null" ></h:outputText>
+                                <h:outputText value="#{c.itemCollectingCentreFee}" ></h:outputText>
                             </p:column>
                             <p:column headerText="Staff" >
-                                <h:outputText value="null" ></h:outputText>
+                                <h:outputText value="#{c.itemProfessionalFee}" ></h:outputText>
                             </p:column>
                             <p:column headerText="Net Total" >
-                                <h:outputText value="null" ></h:outputText>
+                                <h:outputText value="#{c.itemNetTotal}" ></h:outputText>
                             </p:column>
 
                         </p:dataTable>
