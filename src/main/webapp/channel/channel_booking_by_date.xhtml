@@ -1051,6 +1051,9 @@
                                             <h:panelGroup rendered="#{bookingControllerViewScope.departmentPreference.channelBillPaperType eq 'PosPaper'}" >
                                                 <ez:bmsChannelBill  bill="#{bookingControllerViewScope.printingBill}"/>
                                             </h:panelGroup>
+                                            <h:panelGroup rendered="#{bookingControllerViewScope.departmentPreference.channelBillPaperType eq 'FiveFIvePaperCustom2'}" >
+                                                <ez:fivefivePapaerCustom2 bill="#{bookingControllerViewScope.printingBill}" paymentMethodData="#{bookingControllerViewScope.paymentMethodData}" payments="#{bookingControllerViewScope.payments}"/>
+                                            </h:panelGroup>
                                             <h:panelGroup rendered="#{bookingControllerViewScope.departmentPreference.channelBillPaperType eq 'FiveFivePaper'}" >
                                                 <ez:bms5x5ChannelBill bill="#{bookingControllerViewScope.printingBill}" payments="#{bookingControllerViewScope.payments}"/> 
                                             </h:panelGroup>
