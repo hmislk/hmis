@@ -42,11 +42,21 @@
 
                                     <p:commandButton 
                                         class="my-1 w-100"
-                                        value="Shift End Funds By Bills (Temporarily)"
-                                        icon=""
+                                        value="Record Shift Shortage"
+                                        icon="ui-icon-minus"
                                         ajax="false" 
-                                        action="#{financialTransactionController.navigateToCreateShiftEndSummaryBillByBills()}" >
+                                        action="#{financialTransactionController.navigateToRecordShiftShortage()}" >
                                     </p:commandButton>
+
+                                    <p:commandButton 
+                                        class="my-1 w-100"
+                                        value="Record Shift Excess"
+                                        icon="ui-icon-plus"
+                                        ajax="false" 
+                                        action="#{financialTransactionController.navigateToRecordShiftExcess()}" >
+                                    </p:commandButton>
+
+
 
 
                                     <p:commandButton 
@@ -89,21 +99,7 @@
                                 <!-- New Payment Management Tab for new features -->
                                 <p:tab title="Payment Management">
                                     <p class="m-0">
-                                        <p:commandButton 
-                                            class="my-1 w-100"
-                                            value="Record Shift Shortage"
-                                            icon="ui-icon-minus"
-                                            ajax="false" 
-                                            action="#{financialTransactionController.navigateToRecordShiftShortage()}" >
-                                        </p:commandButton>
 
-                                        <p:commandButton 
-                                            class="my-1 w-100"
-                                            value="Record Shift Excess"
-                                            icon="ui-icon-plus"
-                                            ajax="false" 
-                                            action="#{financialTransactionController.navigateToRecordShiftExcess()}" >
-                                        </p:commandButton>
 
                                         <p:commandButton 
                                             class="my-1 w-100"
