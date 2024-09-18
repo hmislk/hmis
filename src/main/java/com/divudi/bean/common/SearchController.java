@@ -6504,6 +6504,10 @@ public class SearchController implements Serializable {
 
         return "/pharmacy/pharmacy_search_pre_bill_not_paid?faces-redirect=true";
     }
+    
+    public String navigateToItemizedSaleSummary() {
+         return "/opd/analytics/itemized_sale_summary?faces-redirect=true";
+    }
 
     public String navigateToItemizedSaleSummary() {
         return "/opd/analytics/itemized_sale_summary?faces-redirect=true";
@@ -11904,11 +11908,7 @@ public class SearchController implements Serializable {
     }
 
     public void createItemizedSalesSummary() {
-        bundle = generateItemizedSalesSummary();
-    }
-
-    public void createItemizedSalesReport() {
-        bundle = generateItemizedSalesReport();
+        bundle =  generateItemizedSalesSummary();
     }
 
     public void generateDailyReturn() {
@@ -12070,6 +12070,7 @@ public class SearchController implements Serializable {
         return biBundle;
     }
 
+
     public ReportTemplateRowBundle generateItemizedSalesSummary() {
         ReportTemplateRowBundle oiBundle = new ReportTemplateRowBundle();
         String jpql = "select bi "
@@ -12127,6 +12128,7 @@ public class SearchController implements Serializable {
         return oiBundle;
     }
 
+
     public ReportTemplateRowBundle generateItemizedSalesReport() {
         ReportTemplateRowBundle oiBundle = new ReportTemplateRowBundle();
         String jpql = "select bi "
@@ -12183,6 +12185,7 @@ public class SearchController implements Serializable {
 
         return oiBundle;
     }
+
 
     public ReportTemplateRowBundle generateOpdServiceCollection() {
         ReportTemplateRowBundle opdServiceCollection = new ReportTemplateRowBundle();
@@ -12655,7 +12658,8 @@ public class SearchController implements Serializable {
 
     }
 
-    public void billItemsToBundleForOpdUnderCategory(ReportTemplateRowBundle rtrb, List<BillItem> billItems) {
+    
+      public void billItemsToBundleForOpdUnderCategory(ReportTemplateRowBundle rtrb, List<BillItem> billItems) {
         Map<String, ReportTemplateRow> categoryMap = new HashMap<>();
         Map<String, ReportTemplateRow> itemMap = new HashMap<>();
         List<ReportTemplateRow> rowsToAdd = new ArrayList<>();
@@ -12741,6 +12745,7 @@ public class SearchController implements Serializable {
         rtrb.setTotal(totalOpdServiceCollection);
     }
 
+
     public void billItemsToItamizedSaleSummary(ReportTemplateRowBundle rtrb, List<BillItem> billItems) {
         Map<String, ReportTemplateRow> categoryMap = new HashMap<>();
         Map<String, ReportTemplateRow> itemMap = new HashMap<>();
@@ -12756,6 +12761,7 @@ public class SearchController implements Serializable {
             } else if (bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.NONE) {
                 continue;
             }
+
 
             String categoryName = bi.getItem() != null && bi.getItem().getCategory() != null ? bi.getItem().getCategory().getName() : "No Category";
             String itemName = bi.getItem() != null ? bi.getItem().getName() : "No Item";
@@ -12824,6 +12830,7 @@ public class SearchController implements Serializable {
         rtrb.getReportTemplateRows().addAll(rowsToAdd);
         rtrb.setTotal(totalOpdServiceCollection);
     }
+
 
     public void billItemsToItamizedSaleReport(ReportTemplateRowBundle rtrb, List<BillItem> billItems) {
         Map<String, ReportTemplateRow> categoryMap = new HashMap<>();
@@ -12899,6 +12906,7 @@ public class SearchController implements Serializable {
         rtrb.getReportTemplateRows().addAll(rowsToAdd);
         rtrb.setTotal(totalOpdServiceCollection);
     }
+
 
     public ReportTemplateRowBundle billItemsToBundleForOpd(ReportTemplateRowBundle rtrb, List<BillItem> billItems) {
 
