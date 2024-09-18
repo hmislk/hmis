@@ -255,8 +255,8 @@ public class StaffPaymentBillController implements Serializable {
     public void setTotalPaying(double totalPaying) {
         this.totalPaying = totalPaying;
     }
-
-    public void calculateDueFees() {
+    
+     public void calculateDueFees() {
         if (currentStaff == null || currentStaff.getId() == null) {
             dueBillFees = new ArrayList<>();
         } else {
@@ -289,6 +289,57 @@ public class StaffPaymentBillController implements Serializable {
                             + " and bi.referanceBillItem.id=" + bf.getBillItem().getId();
                     h.put("class", RefundBill.class);
                     BillItem rbi = getBillItemFacade().findFirstByJpql(sql, h);
+
+                    if (rbi != null) {
+                        removeingBillFees.add(bf);
+                    }
+
+                }
+                dueBillFees.removeAll(removeingBillFees);
+            }
+
+        }
+    }
+
+    public void calculateDueFeesOpdForSelectedPeriod() {
+        if (currentStaff == null || currentStaff.getId() == null) {
+            dueBillFees = new ArrayList<>();
+        } else {
+            System.out.print(speciality.getName()+ currentStaff.getName());
+            List<BillTypeAtomic> btcs = new ArrayList<>();
+            btcs.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+            btcs.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+            btcs.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+            btcs.add(BillTypeAtomic.CC_BILL);
+            String jpql;
+            HashMap params = new HashMap();
+            jpql = "select bf from BillFee bf where "
+                    + " bf.retired=false"
+                    + " and bf.bill.createdAt between :fd and :td "
+                    + " and bf.bill.billTypeAtomic in :btcs"
+                    + " and bf.bill.cancelled=false "
+                    + " and (bf.feeValue - bf.paidValue) > 0 "
+                    + " and bf.staff=:staff ";
+            params.put("btcs", btcs);
+            params.put("fd", fromDate);
+            params.put("td", toDate);
+            params.put("staff", currentStaff);
+            
+          
+
+            dueBillFees = getBillFeeFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+            if (configOptionApplicationController.getBooleanValueByKey("Remove Refunded Bill From OPD Staff Payment")) {
+                List<BillFee> removeingBillFees = new ArrayList<>();
+                for (BillFee bf : dueBillFees) {
+                    params = new HashMap();
+                    jpql = "SELECT bi FROM BillItem bi where "
+                            + " bi.retired=false"
+                            + " and bi.bill.cancelled=false "
+                            + " and type(bi.bill)=:class "
+                            + " and bi.referanceBillItem.id=" + bf.getBillItem().getId();
+                    params.put("class", RefundBill.class);
+                    BillItem rbi = getBillItemFacade().findFirstByJpql(jpql, params);
 
                     if (rbi != null) {
                         removeingBillFees.add(bf);
@@ -374,7 +425,8 @@ public class StaffPaymentBillController implements Serializable {
         totalDue = 0.0;
         printPreview = false;
 
-        calculateDueFees();
+        calculateDueFeesOpdForSelectedPeriod();
+//        calculateDueFees();
         performCalculations();
 
     }
@@ -425,7 +477,8 @@ public class StaffPaymentBillController implements Serializable {
     public String navigateToStaffPaymentFromDuePayment(Staff s) {
         currentStaff = s;
         speciality = s.getSpeciality();
-        calculateDueFees();
+        calculateDueFeesOpdForSelectedPeriod();
+//        calculateDueFees();
         return "/payment_staff_bill?faces-redirect=true";
     }
 
