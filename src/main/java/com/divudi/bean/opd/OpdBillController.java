@@ -3471,6 +3471,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
     public void calculateBillfeePayments(List<BillFee> billFees, Payment p) {
         for (BillFee bf : billFees) {
+            
+            if(bf.getId() == null){
+                continue;
+            }
 
             if (bf.getId() == null) {
                 continue;
