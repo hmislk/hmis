@@ -15,6 +15,16 @@ import com.divudi.data.ItemLight;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.TestWiseCountReport;
+import com.divudi.data.lab.ListingEntity;
+import com.divudi.data.lab.PatientInvestigationStatus;
+import com.divudi.data.lab.SearchDateType;
+import static com.divudi.data.lab.SearchDateType.ORDERED_DATE;
+import static com.divudi.data.lab.SearchDateType.REPORT_AUTHORIZED;
+import static com.divudi.data.lab.SearchDateType.REPORT_PRINTED;
+import static com.divudi.data.lab.SearchDateType.SAMPLE_ACCEPTED_DATE;
+import static com.divudi.data.lab.SearchDateType.SAMPLE_COLLECTED_DATE;
+import static com.divudi.data.lab.SearchDateType.SAMPLE_GENERATED_DATE;
+import static com.divudi.data.lab.SearchDateType.SAMPLE_SENT_DATE;
 import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
@@ -32,10 +42,12 @@ import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.Machine;
+import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.facade.AgentHistoryFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.InstitutionFacade;
+import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import com.divudi.light.common.PrescriptionSummaryReportRow;
@@ -76,6 +88,8 @@ public class ReportController implements Serializable {
     InstitutionFacade institutionFacade;
     @EJB
     AgentHistoryFacade agentHistoryFacade;
+    @EJB
+    PatientInvestigationFacade patientInvestigationFacade;
 
     @Inject
     private InstitutionController institutionController;
@@ -111,6 +125,7 @@ public class ReportController implements Serializable {
     private WebUser webUser;
 
     private double investigationResult;
+    private PatientInvestigationStatus patientInvestigationStatus;
 
     private String visitType;
     private Patient patient;
@@ -151,6 +166,7 @@ public class ReportController implements Serializable {
     private List<BillLight> billLights;
 
     private List<ItemCount> reportOpdServiceCount;
+    private List<PatientInvestigation> patientInvestigations;
 
     CommonFunctions commonFunctions;
 
@@ -176,6 +192,7 @@ public class ReportController implements Serializable {
 
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
+
         m.put("bt", BillType.PettyCash); 
         
         if(toDepartment != null){
@@ -413,6 +430,83 @@ public class ReportController implements Serializable {
         reportOpdServiceCount = (List<ItemCount>) billItemFacade.findLightsByJpql(jpql, m);
     }
 
+    public void listCcReportPrint() {
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+
+        jpql = "SELECT i "
+                + " FROM PatientInvestigation i "
+                + " WHERE i.retired = :ret ";
+
+        jpql += " AND i.billItem.bill.createdAt BETWEEN :fd AND :td ";
+        params.put("fd", getFromDate());
+        params.put("td", getToDate());
+
+        if (institution != null) {
+            jpql += " AND i.billItem.bill.institution = :orderedInstitution ";
+            params.put("orderedInstitution", institution);
+        }
+
+        if (department != null) {
+            jpql += " AND i.billItem.bill.department = :orderedDepartment ";
+            params.put("orderedDepartment", department);
+        }
+
+        if (site != null) {
+            jpql += " AND i.billItem.bill.department = :orderedDepartment ";
+            params.put("orderedDepartment", department);
+        }
+
+        if (toInstitution != null) {
+            jpql += " AND i.performInstitution = :peformingInstitution ";
+            params.put("peformingInstitution", toInstitution);
+        }
+
+        if (toDepartment != null) {
+            jpql += " AND i.performDepartment = :peformingDepartment ";
+            params.put("peformingDepartment", toDepartment);
+        }
+
+        if (collectingCentre != null) {
+            jpql += " AND (i.billItem.bill.collectingCentre = :collectionCenter OR i.billItem.bill.fromInstitution = :collectionCenter) ";
+            params.put("collectionCenter", collectingCentre);
+        }
+
+        if (route != null) {
+            jpql += " AND (i.billItem.bill.collectingCentre.route = :route OR i.billItem.bill.fromInstitution.route = :route) ";
+            params.put("route", getRoute());
+        }
+
+        if (phn != null && !phn.trim().isEmpty()) {
+            jpql += " AND i.billItem.bill.patient.phn=:phn ";
+            params.put("phn", phn);
+        }
+
+        if (doctor != null) {
+            jpql += " AND i.billItem.bill.referringDoctor = :referringDoctor ";
+            params.put("referringDoctor", doctor);
+        }
+
+        if (investigation != null) {
+            jpql += " AND i.investigation = :investigation ";
+            params.put("investigation", getInvestigation());
+        }
+
+        if (patientInvestigationStatus != null) {
+            jpql += " AND i.status = :patientInvestigationStatus ";
+            params.put("patientInvestigationStatus", getPatientInvestigationStatus());
+        }
+
+        jpql += " ORDER BY i.id DESC";
+
+        params.put("ret", false);
+
+        System.out.println("params = " + params);
+
+        patientInvestigations = patientInvestigationFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+
+    @Deprecated
     public void processCollectingCentreReportsToPrint() {
         String jpql = "select bi "
                 + " from BillItem bi "
@@ -473,25 +567,24 @@ public class ReportController implements Serializable {
 
         billItems = billItemFacade.findByJpql(jpql, m);
     }
-    
+
     public void processCollectingCentreStatementReportNew() {
-        
+
         String jpql = "select ah "
                 + " from AgentHistory ah "
                 + " where ah.retired=:ret"
                 + " and ah.createdAt between :fd and :td ";
-         
+
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
         m.put("fd", fromDate);
         m.put("td", toDate);
-        
+
         if (collectingCentre != null) {
             jpql += " and ah.agency = :cc ";
             m.put("cc", collectingCentre);
         }
-    
-        
+
         if (institution != null) {
             jpql += " and ah.bill.institution = :ins ";
             m.put("ins", institution);
@@ -503,7 +596,7 @@ public class ReportController implements Serializable {
         }
         System.out.println("m = " + m);
         System.out.println("jpql = " + jpql);
-        agentHistories = agentHistoryFacade.findByJpql(jpql, m,TemporalType.TIMESTAMP);  
+        agentHistories = agentHistoryFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
     }
 
     public void processCollectingCentreStatementReport() {
@@ -827,24 +920,24 @@ public class ReportController implements Serializable {
 //        }
         bills = billFacade.findByJpql(jpql, m);
     }
-    
-    public void processCollectingCentreAgentHistory(){
-         String jpql = "select ah "
+
+    public void processCollectingCentreAgentHistory() {
+        String jpql = "select ah "
                 + " from AgentHistory ah "
                 + " where ah.retired=:ret"
                 + " and ah.createdAt between :fd and :td ";
-         
+
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
         m.put("fd", fromDate);
         m.put("td", toDate);
-        
+
         if (collectingCentre != null) {
             jpql += " and ah.agency = :cc ";
             m.put("cc", collectingCentre);
         }
-    
-        agentHistories = agentHistoryFacade.findByJpql(jpql, m,TemporalType.TIMESTAMP);   
+
+        agentHistories = agentHistoryFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
     }
 
     public void processCollectingCentreReciptReport() {
@@ -861,6 +954,7 @@ public class ReportController implements Serializable {
                 + " and bill.billDate between :fd and :td "
                 + " and bill.billType in :bTypes";
         
+
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
         m.put("fd", fromDate);
@@ -1725,7 +1819,7 @@ public class ReportController implements Serializable {
 
     public List<ItemLight> getInvestigationsAndServices() {
         if (investigationsAndServices == null) {
-            investigationsAndServices=itemApplicationController.getInvestigationsAndServices();
+            investigationsAndServices = itemApplicationController.getInvestigationsAndServices();
         }
         return investigationsAndServices;
     }
@@ -1918,6 +2012,15 @@ public class ReportController implements Serializable {
         this.referingDoctor = referingDoctor;
     }
 
+
+    public PatientInvestigationStatus getPatientInvestigationStatus() {
+        return patientInvestigationStatus;
+    }
+
+    public void setPatientInvestigationStatus(PatientInvestigationStatus patientInvestigationStatus) {
+        this.patientInvestigationStatus = patientInvestigationStatus;
+    }
+
     public Institution getSite() {
         return site;
     }
@@ -1925,6 +2028,13 @@ public class ReportController implements Serializable {
     public void setSite(Institution site) {
         this.site = site;
     }
+
+    public List<PatientInvestigation> getPatientInvestigations() {
+        return patientInvestigations;
+    }
+
+    public void setPatientInvestigations(List<PatientInvestigation> patientInvestigations) {
+        this.patientInvestigations = patientInvestigations;
 
     public Staff getToStaff() {
         return toStaff;
@@ -1940,6 +2050,7 @@ public class ReportController implements Serializable {
 
     public void setWebUser(WebUser webUser) {
         this.webUser = webUser;
+
     }
 
 }

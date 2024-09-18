@@ -1,20 +1,16 @@
-package com.divudi.bean.opd;
 
-import com.divudi.bean.cashTransaction.CashBookEntryController;
-import com.divudi.bean.cashTransaction.FinancialTransactionController;
-import com.divudi.bean.common.*;
-import com.divudi.bean.collectingCentre.CollectingCentreBillController;
-import com.divudi.bean.hr.WorkingTimeController;
-import com.divudi.bean.membership.MembershipSchemeController;
-import com.divudi.bean.membership.PaymentSchemeController;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.DepartmentType;
-import com.divudi.data.FeeType;
-import com.divudi.data.ItemLight;
-import com.divudi.data.MessageType;
-import com.divudi.data.OpdBillingStrategy;
+/*
+ * Open Hospital Management Information System
+ *
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
+ */
+package com.divudi.bean.common;
+import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.HistoryType;
+
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
@@ -76,10 +72,7 @@ import com.divudi.facade.TokenFacade;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import java.io.Serializable;
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
+
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -207,114 +200,25 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     private PaymentScheme paymentScheme;
     private PaymentMethod paymentMethod;
     private Patient patient;
-    private Doctor referredBy;
-    private String referredByName;
-    private Institution referredByInstitution;
-    private String referralId;
-    private Institution creditCompany;
-    private Institution collectingCentre;
-    private Staff staff;
-    private Staff toStaff;
-    private double total;
-    private double discount;
-    private double vat;
-    private double netTotal;
-    private double netPlusVat;
-    private double cashPaid;
-    private double cashBalance;
-    private double cashRemain = cashPaid;
-    private double remainMultiplePaymentBalance;
-    private BillType billType;
 
-    private Double grosTotal;
-    private boolean foreigner = false;
-    private Date sessionDate;
-    private String strTenderedValue;
-    private PaymentMethodData paymentMethodData;
-    private Integer index;
-    private boolean fromOpdEncounter = false;
-    private String opdEncounterComments = "";
-    private int patientSearchTab = 0;
-    private String comment;
-    private double opdPaymentCredit;
-    private Date fromDate;
-    private Date toDate;
-    private Department department;
-    private Institution institution;
-    private Category category;
-    private SearchKeyword searchKeyword;
+    private Boolean patientDetailsEditable = false;
+    private List<PatientDepositHistory> latestPatientDeposits;
+    private List<PatientDepositHistory> latestPatientDepositHistory;
+    
+    private int patientDepositManagementIndex=0;
+    
+    public String navigateToAddNewPatientDeposit(){
+       patientController.clearDataForPatientDeposite();
+        return "/patient_deposit/receive?faces-redirect=true";
+    } 
+    
+    public void getPatientDepositOnPatientDepositAdding(){
+        patientController.quickSearchPatientLongPhoneNumber(this);
+        current = null;
+        current = getDepositOfThePatient(patient,sessionController.getDepartment());
+        fillLatestPatientDeposits(current);
+        fillLatestPatientDepositHistory(current);
 
-    private Institution fromInstitution;
-    private Institution toInstitution;
-    private Department fromDepartment;
-    private Department toDepartment;
-
-    //Print Last Bill
-    private Bill bill;
-    private Bill batchBill;
-    private Bill billPrint;
-    private boolean billSettlingStarted;
-
-    private List<Bill> bills;
-    private List<Bill> selectedBills;
-
-    private BilledBill opdBill;
-    private BillItem currentBillItem;
-
-    private List<BillComponent> lstBillComponents;
-    private List<BillComponent> lstBillComponentsPrint;
-
-    private List<BillFee> lstBillFees;
-    private List<BillFee> lstBillFeesPrint;
-    private List<BillFeeBundleEntry> billFeeBundleEntrys;
-
-    private List<Payment> payments;
-
-    private List<BillItem> lstBillItems;
-    private List<BillItem> lstBillItemsPrint;
-
-    private List<BillEntry> lstBillEntries;
-    private List<Bill> billsPrint;
-
-    private List<BillEntry> lstBillEntriesPrint;
-
-    private List<BillLight> billLights;
-    private BillLight billLight;
-
-    private Long billId;
-    private int opdSummaryIndex;
-    private int opdAnalyticsIndex;
-
-    private List<ItemLight> opdItems;
-    private List<ItemLight> departmentOpdItems;
-    private boolean patientDetailsEditable;
-
-    private List<Staff> currentlyWorkingStaff;
-    private Staff selectedCurrentlyWorkingStaff;
-    List<BillSession> billSessions;
-    private List<Department> opdItemDepartments;
-    private Department selectedOpdItemDepartment;
-
-    private boolean duplicatePrint;
-    private Token token;
-
-    private Double totalHospitalFee;
-    private Double totalSaffFee;
-    private boolean canChangeSpecialityAndDoctorInAddedBillItem;
-    private String localNumber;
-
-    private String refNo;
-    private double remainAmount;
-
-    /**
-     *
-     * Navigation Methods
-     *
-     */
-    public String navigateToSearchPatients() {
-        patientController.clearSearchDetails();
-        patientController.setSearchedPatients(null);
-        return "/opd/patient_search?faces-redirect=true";
     }
 
     public void changeTheSelectedFeeFromFeeBundle(BillFee ibf) {
@@ -390,12 +294,12 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         if (wts == null) {
             return;
         }
-        for (WorkingTime wt : wts) {
-            if (wt.getStaffShift() != null && wt.getStaffShift().getStaff() != null) {
-                currentlyWorkingStaff.add(wt.getStaffShift().getStaff());
-//                selectedCurrentlyWorkingStaff = wt.getStaffShift().getStaff();
-            }
-        }
+
+        patientController.settlePatientDepositReturn();
+        updateBalance(patientController.getBill(), current);
+        billBeanController.createPayment(patientController.getBill(),
+                patientController.getBill().getPaymentMethod(), 
+                patientController.getPaymentMethodData() );
 
     }
 
@@ -464,18 +368,32 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         return temItems;
     }
 
-    private List<ItemLight> filterItemLightesByDepartment(List<ItemLight> ils, Department dept) {
-        boolean listItemsByDepartment = configOptionApplicationController.getBooleanValueByKey("List OPD Items by Department", false);
-        if (!listItemsByDepartment || dept == null || dept.getId() == null) {
-            return ils;
+    
+    public PatientDeposit getDepositOfThePatient(Patient p , Department d){        
+        Map m = new HashMap<>();
+        String jpql = "select pd from PatientDeposit pd"
+                + " where pd.patient.id=:pt "
+                + " and pd.department.id=:dep "
+                + " and pd.retired=:ret";
+        
+        m.put("pt",p.getId());
+        m.put("dep", d.getId());
+        m.put("ret", false);
+        
+        PatientDeposit pd = patientDepositFacade.findFirstByJpql(jpql, m);
+        
+        if(pd == null){
+            pd = new PatientDeposit();
+            pd.setBalance(0.0);
+            pd.setPatient(p);
+            pd.setDepartment(sessionController.getDepartment());
+            pd.setInstitution(sessionController.getInstitution());
+            pd.setCreater(sessionController.getLoggedUser());
+            pd.setCreatedAt(new Date());
+            patientDepositFacade.create(pd);
         }
-        List<ItemLight> tils = new ArrayList<>();
-        for (ItemLight il : ils) {
-            if (il.getDepartmentId() != null && il.getDepartmentId().equals(dept.getId())) {
-                tils.add(il);
-            }
-        }
-        return tils;
+        return pd;
+
     }
 
     public void departmentChanged() {

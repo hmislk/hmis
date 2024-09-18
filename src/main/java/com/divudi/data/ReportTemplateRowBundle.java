@@ -22,12 +22,15 @@ public class ReportTemplateRowBundle implements Serializable {
     private List<ReportTemplateRowBundle> bundles;
     private ReportTemplate reportTemplate;
     private List<ReportTemplateRow> reportTemplateRows;
+
     private Double grossTotal;
+    private Double discount;
+    private Double total;
+
     private Double hospitalTotal;
     private Double staffTotal;
     private Double ccTotal;
-    private Double discount;
-    private Double total;
+
     private Double totalIn;
     private Double totalOut;
     private Long countIn;
@@ -122,7 +125,7 @@ public class ReportTemplateRowBundle implements Serializable {
         return "ReportTemplateRowBundle{id=" + getId() + '}';
     }
 
-    public void calculatePaymentMethodTotals() {
+    public void calculateTotals() {
         // Reset totals and boolean flags before starting calculation
         resetTotalsAndFlags();
 
@@ -145,6 +148,28 @@ public class ReportTemplateRowBundle implements Serializable {
                 addValueAndUpdateFlag("patientDeposit", safeDouble(row.getPatientDepositValue()));
                 addValueAndUpdateFlag("patientPoints", safeDouble(row.getPatientPointsValue()));
                 addValueAndUpdateFlag("onlineSettlement", safeDouble(row.getOnlineSettlementValue()));
+                addValueAndUpdateFlag("grossTotal", safeDouble(row.getGrossTotal()));
+                addValueAndUpdateFlag("discount", safeDouble(row.getDiscount()));
+                addValueAndUpdateFlag("total", safeDouble(row.getTotal()));
+                addValueAndUpdateFlag("hospitalTotal", safeDouble(row.getHospitalTotal()));
+                addValueAndUpdateFlag("staffTotal", safeDouble(row.getStaffTotal()));
+                addValueAndUpdateFlag("ccTotal", safeDouble(row.getCcTotal()));
+            }
+        }
+    }
+
+    public void createRowValuesFromBill() {
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getBill() == null) {
+                    continue;
+                }
+                row.setGrossTotal(row.getBill().getGrantTotal());
+                row.setDiscount(row.getBill().getDiscount());
+                row.setTotal(row.getBill().getNetTotal());
+                row.setHospitalTotal(row.getHospitalTotal());
+                row.setStaffTotal(row.getBill().getTotalStaffFee());
+                row.setCcTotal(row.getBill().getTotalCenterFee());
             }
         }
     }
@@ -154,7 +179,9 @@ public class ReportTemplateRowBundle implements Serializable {
         this.cashValue = this.cardValue = this.multiplePaymentMethodsValue = this.staffValue
                 = this.creditValue = this.staffWelfareValue = this.voucherValue = this.iouValue
                 = this.agentValue = this.chequeValue = this.slipValue = this.eWalletValue
-                = this.patientDepositValue = this.patientPointsValue = this.onlineSettlementValue = 0;
+                = this.patientDepositValue = this.patientPointsValue = this.onlineSettlementValue
+                = this.grossTotal = this.discount = this.total
+                = this.hospitalTotal = this.staffTotal = this.ccTotal = 0.0;
 
         this.hasCashTransaction = this.hasCardTransaction = this.hasMultiplePaymentMethodsTransaction = this.hasStaffTransaction
                 = this.hasCreditTransaction = this.hasStaffWelfareTransaction = this.hasVoucherTransaction = this.hasIouTransaction
@@ -162,9 +189,13 @@ public class ReportTemplateRowBundle implements Serializable {
                 = this.hasPatientDepositTransaction = this.hasPatientPointsTransaction = this.hasOnlineSettlementTransaction = false;
     }
 
-    private void addValueAndUpdateFlag(String paymentMethod, double amount) {
+    private void addValueAndUpdateFlag(String calculationAttribute, double amount) {
+        System.out.println("addValueAndUpdateFlag");
+        System.out.println("amount = " + amount);
+        System.out.println("calculationAttribute = " + calculationAttribute);
+
         if (amount != 0) {
-            switch (paymentMethod) {
+            switch (calculationAttribute) {
                 case "cash":
                     this.cashValue += amount;
                     this.hasCashTransaction = true;
@@ -209,7 +240,7 @@ public class ReportTemplateRowBundle implements Serializable {
                     this.slipValue += amount;
                     this.hasSlipTransaction = true;
                     break;
-                case "eWallet":
+                case "Wallet":
                     this.eWalletValue += amount;
                     this.hasEWalletTransaction = true;
                     break;
@@ -224,6 +255,24 @@ public class ReportTemplateRowBundle implements Serializable {
                 case "onlineSettlement":
                     this.onlineSettlementValue += amount;
                     this.hasOnlineSettlementTransaction = true;
+                    break;
+                case "grossTotal":
+                    this.grossTotal += amount;
+                    break;
+                case "discount":
+                    this.discount += amount;
+                    break;
+                case "total":
+                    this.total += amount;
+                    break;
+                case "hospitalTotal":
+                    this.hospitalTotal += amount;
+                    break;
+                case "staffTotal":
+                    this.staffTotal += amount;
+                    break;
+                case "ccTotal":
+                    this.ccTotal += amount;
                     break;
                 default:
                     // Log unexpected payment method or handle error
