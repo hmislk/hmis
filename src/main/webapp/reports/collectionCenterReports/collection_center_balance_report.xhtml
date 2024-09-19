@@ -15,31 +15,42 @@
                         <p:panel header="Collection Center Balance Report" >
                             <h:panelGrid columns="4">
                                 <div class="col-md-2 w-100">
-                                    <p:outputLabel value="From Date" >
-                                    </p:outputLabel>
+                                    <h:panelGroup >
+                                        <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
+                                        <h:outputLabel value="From Date"  class="mx-3"/>
+                                    </h:panelGroup>
+
                                 </div>
-                                <div class="col-md-4 w-100 mx-2">
+                                <div class="col-md-10 w-100 mx-2">
                                     <p:datePicker value="#{reportController.fromDate}" 
                                                   style=" max-width: 100%; overflow-x: auto; "
                                                   class="w-100"
+                                                  inputStyleClass="w-100"
                                                   pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
                                 </div>
 
                                 <div class="col-md-2 w-100">
-                                    <p:outputLabel value="To Date" >
-                                    </p:outputLabel>
+                                    <h:panelGroup >
+                                        <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
+                                        <h:outputLabel value="To Date"  class="mx-3"/>
+                                    </h:panelGroup>
                                 </div>
                                 <div class="col-md-4 mx-2">
                                     <p:datePicker value="#{reportController.toDate}"
                                                   style=" max-width: 100%; overflow-x: auto; "
                                                   class="w-100"
+                                                  inputStyleClass="w-100"
                                                   pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
                                 </div>
                                 <div class="col-md-3">
-                                    <p:outputLabel value="Collection Center Name"></p:outputLabel>
+                                    <h:panelGroup >
+                                        <h:outputText value="&#xf1ad;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                        <h:outputLabel value="Collection Center Name"  class="mx-3"/>
+                                        <p:outputLabel  />
+                                    </h:panelGroup>
                                 </div>
-                                <div class="col-md-4">
-                                    <p:selectOneMenu value="#{reportController.collectingCentre}">
+                                <div class="col-md-4 w-50 " >
+                                    <p:selectOneMenu value="#{reportController.collectingCentre}" >
                                         <f:selectItems var="r" itemLabel="#{r.name}" value="#{collectingCentreController.items}" itemValue="#{r}"/>
                                     </p:selectOneMenu>
                                 </div>
@@ -47,13 +58,25 @@
 
                             <div class="row mb-2">
                                 <div class="col-md-2">
-                                    <p:commandButton ajax="false" value="Process" action="#{reportController.processCollectionCenterBalance}" >
+                                    <p:commandButton ajax="false" 
+                                                     value="Process" 
+                                                     action="#{reportController.processCollectionCenterBalance}" 
+                                                     class="w-50 ui-button-warning"
+                                                     icon="fas fa-cogs">
                                     </p:commandButton>
+                                </div>
+                                <div  class="col-md-2">
+                                    <p:commandButton id="btnExcel" class="m-1 ui-button-success"
+                                                     icon="fas fa-file-excel"
+                                                     ajax="false" value="Export to Excel">
+                                        <p:dataExporter type="xlsx" target="tbl" fileName="itemized_sale_summary" />
+                                    </p:commandButton>
+                                    
                                 </div>
                             </div>
 
 
-                            <h:panelGrid columns="2">
+                            <h:panelGrid columns="2" class="my-4">
                                 <h:outputLabel value="From Date :  "/>
                                 <h:outputLabel value="#{reportController.fromDate}"  >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
@@ -81,6 +104,9 @@
                                 </p:column>
                                 <p:column headerText="CC Route" >
                                     <h:outputText value="#{c.route.name}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="CC Code" >
+                                    <h:outputText value="#{c.code}" ></h:outputText>
                                 </p:column>
                                 <p:column headerText="CC Phone No" >
                                     <h:outputText value="#{c.phone}" ></h:outputText>
