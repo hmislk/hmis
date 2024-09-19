@@ -2546,6 +2546,7 @@ public class BillController implements Serializable {
 
     }
     
+
     public void addMissingBillTypeAtomics(){
         String jpql = "select b "
                 + " from Bill b "
@@ -2561,6 +2562,7 @@ public class BillController implements Serializable {
         }
     }
     
+
     public List<BillType> getBillTypesByAtomicBillTypes(List<BillTypeAtomic> ba){
         List<BillType> bt = new ArrayList<>();
         if (ba == null) {
