@@ -6098,6 +6098,85 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     }
 
+    public void calculateBillTotalsFromBillFeesForChangingFeeBeforeBillSettlings(BillFee updatingFee) {
+        System.out.println("calculateBillTotalsFromBillFeesForChangingFeeBeforeBillSettlings" );
+        
+        if(updatingFee==null){
+            return;
+        }
+        
+        System.out.println("updatingFee = " + updatingFee);
+        System.out.println("updatingFee = " + updatingFee.getId());
+        System.out.println("updatingFee = " + updatingFee.getFeeValue());
+        
+        //TODO: Until Discount is finalized
+        updatingFee.setFeeValue(updatingFee.getFeeGrossValue());
+        
+        billFeeFacade.editAndCommit(updatingFee);
+
+        selectedBillSession = billSessionFacade.find(selectedBillSession.getId());
+
+        double calculatingGrossBillTotal = 0.0;
+        double calculatingNetBillTotal = 0.0;
+        for (BillItem bi : selectedBillSession.getBill().getBillItems()) {
+            System.out.println("bi = " + bi);
+            double calculatingGrossBillItemTotal = 0.0;
+            double calculatingNetBillItemTotal = 0.0;
+            double billItemHospitalFee =0.0;
+            double billItemStaffFee=0.0;
+            for (BillFee iteratingBillFee : bi.getBillFees()) {
+
+                System.out.println("iteratingBillFee = " + updatingFee);
+                System.out.println("iteratingBillFee = " + updatingFee.getId());
+                System.out.println("iteratingBillFee = " + updatingFee.getFeeValue());
+                if (iteratingBillFee.getFee() == null) {
+                    continue;
+                }
+                calculatingNetBillItemTotal += iteratingBillFee.getFeeValue();
+                calculatingGrossBillItemTotal += iteratingBillFee.getFeeGrossValue();
+                calculatingGrossBillTotal += iteratingBillFee.getFeeGrossValue();
+                calculatingNetBillTotal += iteratingBillFee.getFeeValue();
+                
+                if(iteratingBillFee.getStaff()!=null || iteratingBillFee.getSpeciality()!=null){
+                    billItemStaffFee+=iteratingBillFee.getFeeValue();
+                }else{
+                    billItemHospitalFee+=iteratingBillFee.getFeeValue();
+                }
+
+                
+            }
+            bi.setGrossValue(calculatingGrossBillItemTotal);
+            bi.setNetValue(calculatingNetBillItemTotal);
+            bi.setHospitalFee(billItemHospitalFee);
+            bi.setStaffFee(billItemStaffFee);
+            billItemFacade.edit(bi);
+        }
+        selectedBillSession.getBill().setDiscount(calculatingGrossBillTotal - calculatingNetBillTotal);
+        selectedBillSession.getBill().setNetTotal(calculatingNetBillTotal);
+        selectedBillSession.getBill().setTotal(calculatingGrossBillTotal);
+        getBillFacade().edit(selectedBillSession.getBill());
+        
+        billSessionFacade.edit(selectedBillSession);
+
+    }
+
+    public void calculateBillTotalsFromBillFeesForChangingFeeBeforeBillSettlings(boolean byBillItem) {
+        double calculatingGrossBillTotal = 0.0;
+        double calculatingNetBillTotal = 0.0;
+        for (BillFee iteratingBillFee : selectedBillSession.getBill().getBillFees()) {
+            if (iteratingBillFee.getFee() == null) {
+                continue;
+            }
+            calculatingGrossBillTotal += iteratingBillFee.getFeeGrossValue();
+            calculatingNetBillTotal += iteratingBillFee.getFeeValue();
+        }
+        selectedBillSession.getBill().setDiscount(calculatingGrossBillTotal - calculatingNetBillTotal);
+        selectedBillSession.getBill().setNetTotal(calculatingNetBillTotal);
+        selectedBillSession.getBill().setTotal(calculatingGrossBillTotal);
+        getBillFacade().edit(selectedBillSession.getBill());
+
+    }
+
     private void calculateBillTotalsFromBillFees(Bill billToCaclculate, List<BillFee> billfeesAvailable) {
 //        System.out.println("calculateBillTotalsFromBillFees");
 //        System.out.println("billToCaclculate = " + billToCaclculate);
