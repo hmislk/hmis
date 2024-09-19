@@ -15,24 +15,30 @@
                     <p:panel header="Staff Payments" >
                         <h:form>
                             <h:panelGrid columns="2" >
+                                
+                                <h:panelGroup>
+                                    <p:outputLabel value="From Date" />
+                                    <p:calendar 
+                                        value="#{staffPaymentBillController.fromDate}" 
+                                        id="fDate" 
+                                        class="w-100" 
+                                        inputStyleClass="w-100"                                                  
+                                        navigator="true" 
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
 
-                                <p:outputLabel value="From Date" />
-                                <p:calendar 
-                                    value="#{staffPaymentBillController.fromDate}" 
-                                    id="fDate" 
-                                    class="w-100" 
-                                    inputStyleClass="w-100"                                                  
-                                    navigator="true" 
-                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
-                                <p:outputLabel value="To Date" />
-                                <p:calendar 
-                                    value="#{staffPaymentBillController.toDate}" 
-                                    id="tDate" 
-                                    class="w-100 mx-2" 
-                                    inputStyleClass="w-100" 
-                                    navigator="true" 
-                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
+                                </h:panelGroup>
 
+                                <h:panelGroup>
+                                    <p:outputLabel value="To Date" />
+                                    <p:calendar 
+                                        value="#{staffPaymentBillController.toDate}" 
+                                        id="tDate" 
+                                        class="w-100 mx-2" 
+                                        inputStyleClass="w-100" 
+                                        navigator="true" 
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
+
+                                </h:panelGroup>
 
                                 <h:outputLabel value="Select Speciality" ></h:outputLabel>
 
@@ -62,19 +68,11 @@
                                 </p:selectOneMenu>
 
 
-
-
-
-                                <!--                                    <p:commandButton ajax="false" value="Process" >
-                                                                    </p:commandButton>-->  
-
                             </h:panelGrid>
 
 
-                            <p:commandButton 
-                                value="Process" 
-                                action="#{staffPaymentBillController.calculateDueFeesForOpdForSelectedPeriod}" ajax="false" icon="fa-solid fa-arrows-rotate"
-                                class="w-25 ui-button-warning my-1" />
+                            <p:commandButton value="Process" action="#{staffPaymentBillController.calculateDueFeesOpdForSelectedPeriod()}" ajax="false" icon="fa-solid fa-arrows-rotate"
+                                             class="w-25 ui-button-warning my-1" />
 
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" icon="fa-solid fa-file-excel"
                                              class="w-25 ui-button-success my-1 mx-2" >
