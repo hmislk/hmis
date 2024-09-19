@@ -2545,6 +2545,7 @@ public class BillController implements Serializable {
 
     }
     
+
     public void addMissingBillTypeAtomics(){
         String jpql = "select b "
                 + " from Bill b "
@@ -2558,6 +2559,25 @@ public class BillController implements Serializable {
             b.setBillTypeAtomic(BillTypeAtomic.getBillTypeAtomic(b.getBillType(), b.getBillClassType()));
             getFacade().edit(b);
         }
+    }
+
+    
+
+    public List<BillType> getBillTypesByAtomicBillTypes(List<BillTypeAtomic> ba){
+        List<BillType> bt = new ArrayList<>();
+        if (ba == null) {
+            return bt;
+        }
+        for (BillTypeAtomic billTypeAtomic : ba) {
+            if (billTypeAtomic==billTypeAtomic.PHARMACY_GRN) {
+                bt.add(billType.PharmacyGrnBill);
+            }else if(billTypeAtomic==billTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL){
+                bt.add(billType.PharmacyWholeSale);
+            } else if(billTypeAtomic==billTypeAtomic.PHARMACY_DIRECT_PURCHASE){
+                bt.add(billType.PharmacyPurchaseBill);
+            }
+        }
+        return bt;
     }
 
     public List<Bill> listBills(
