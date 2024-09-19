@@ -1,9 +1,13 @@
 package com.divudi.data;
 
+import com.divudi.entity.Bill;
+import com.divudi.entity.Department;
 import com.divudi.entity.ReportTemplate;
+import com.divudi.entity.WebUser;
 import com.divudi.entity.channel.SessionInstance;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -86,8 +90,127 @@ public class ReportTemplateRowBundle implements Serializable {
     private boolean hasPatientPointsTransaction;
     private boolean hasOnlineSettlementTransaction;
 
+    private WebUser user;
+    private Date date;
+    private Department department;
+    private Bill startBill;
+    private Bill endBill;
+
     public ReportTemplateRowBundle() {
         this.id = UUID.randomUUID();
+    }
+
+    private double nullSafeDouble(Double value) {
+        return value != null ? value : 0.0;
+    }
+
+    private void resetTotals() {
+        grossTotal = 0.0;
+        discount = 0.0;
+        total = 0.0;
+        hospitalTotal = 0.0;
+        staffTotal = 0.0;
+        ccTotal = 0.0;
+        totalIn = 0.0;
+        totalOut = 0.0;
+        countIn = 0L;
+        countOut = 0L;
+        count = 0L;
+
+        onCallValue = 0.0;
+        cashValue = 0.0;
+        cardValue = 0.0;
+        multiplePaymentMethodsValue = 0.0;
+        staffValue = 0.0;
+        creditValue = 0.0;
+        staffWelfareValue = 0.0;
+        voucherValue = 0.0;
+        iouValue = 0.0;
+        agentValue = 0.0;
+        chequeValue = 0.0;
+        slipValue = 0.0;
+        eWalletValue = 0.0;
+        patientDepositValue = 0.0;
+        patientPointsValue = 0.0;
+        onlineSettlementValue = 0.0;
+
+        hasOnCallTransaction = false;
+        hasCashTransaction = false;
+        hasCardTransaction = false;
+        hasMultiplePaymentMethodsTransaction = false;
+        hasStaffTransaction = false;
+        hasCreditTransaction = false;
+        hasStaffWelfareTransaction = false;
+        hasVoucherTransaction = false;
+        hasIouTransaction = false;
+        hasAgentTransaction = false;
+        hasChequeTransaction = false;
+        hasSlipTransaction = false;
+        hasEWalletTransaction = false;
+        hasPatientDepositTransaction = false;
+        hasPatientPointsTransaction = false;
+        hasOnlineSettlementTransaction = false;
+    }
+
+    public void aggregateTotals() {
+        resetTotals(); // Resets all totals before computation
+
+        if (bundles != null) {
+            for (ReportTemplateRowBundle childBundle : bundles) {
+                System.out.println("childBundle = " + childBundle.getId().toString());
+                grossTotal += nullSafeDouble(childBundle.grossTotal);
+                discount += nullSafeDouble(childBundle.discount);
+                total += nullSafeDouble(childBundle.total);
+                hospitalTotal += nullSafeDouble(childBundle.hospitalTotal);
+                staffTotal += nullSafeDouble(childBundle.staffTotal);
+                ccTotal += nullSafeDouble(childBundle.ccTotal);
+                totalIn += nullSafeDouble(childBundle.totalIn);
+                totalOut += nullSafeDouble(childBundle.totalOut);
+
+                // Increment counts
+                countIn += childBundle.countIn != null ? childBundle.countIn : 0;
+                countOut += childBundle.countOut != null ? childBundle.countOut : 0;
+                count += childBundle.count != null ? childBundle.count : 0;
+
+                // Payment values
+                onCallValue += childBundle.onCallValue;
+                cashValue += childBundle.cashValue;
+                System.out.println("childBundle = " + childBundle.getCardValue());
+                System.out.println("cashValue = " + cashValue);
+                cardValue += childBundle.cardValue;
+                multiplePaymentMethodsValue += childBundle.multiplePaymentMethodsValue;
+                staffValue += childBundle.staffValue;
+                creditValue += childBundle.creditValue;
+                staffWelfareValue += childBundle.staffWelfareValue;
+                voucherValue += childBundle.voucherValue;
+                iouValue += childBundle.iouValue;
+                agentValue += childBundle.agentValue;
+                chequeValue += childBundle.chequeValue;
+                slipValue += childBundle.slipValue;
+                eWalletValue += childBundle.eWalletValue;
+                patientDepositValue += childBundle.patientDepositValue;
+                patientPointsValue += childBundle.patientPointsValue;
+                onlineSettlementValue += childBundle.onlineSettlementValue;
+
+                // Aggregate flags
+                hasOnCallTransaction |= childBundle.hasOnCallTransaction;
+                hasCashTransaction |= childBundle.hasCashTransaction;
+                hasCardTransaction |= childBundle.hasCardTransaction;
+                hasMultiplePaymentMethodsTransaction |= childBundle.hasMultiplePaymentMethodsTransaction;
+                hasStaffTransaction |= childBundle.hasStaffTransaction;
+                hasCreditTransaction |= childBundle.hasCreditTransaction;
+                hasStaffWelfareTransaction |= childBundle.hasStaffWelfareTransaction;
+                hasVoucherTransaction |= childBundle.hasVoucherTransaction;
+                hasIouTransaction |= childBundle.hasIouTransaction;
+                hasAgentTransaction |= childBundle.hasAgentTransaction;
+                hasChequeTransaction |= childBundle.hasChequeTransaction;
+                hasSlipTransaction |= childBundle.hasSlipTransaction;
+                hasEWalletTransaction |= childBundle.hasEWalletTransaction;
+                hasPatientDepositTransaction |= childBundle.hasPatientDepositTransaction;
+                hasPatientPointsTransaction |= childBundle.hasPatientPointsTransaction;
+                hasOnlineSettlementTransaction |= childBundle.hasOnlineSettlementTransaction;
+            }
+        }
     }
 
     public ReportTemplateRowBundle(List<ReportTemplateRow> reportTemplateRows) {
@@ -154,6 +277,94 @@ public class ReportTemplateRowBundle implements Serializable {
                 addValueAndUpdateFlag("hospitalTotal", safeDouble(row.getHospitalTotal()));
                 addValueAndUpdateFlag("staffTotal", safeDouble(row.getStaffTotal()));
                 addValueAndUpdateFlag("ccTotal", safeDouble(row.getCcTotal()));
+            }
+        }
+    }
+
+    public void calculateTotalsByPayments() {
+        resetTotalsAndFlags();
+
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getPayment() == null || row.getPayment().getPaymentMethod() == null) {
+                    continue;
+                }
+
+                Double amount = safeDouble(row.getPayment().getPaidValue());  // Ensure amounts are not null
+                PaymentMethod method = row.getPayment().getPaymentMethod();  // Using the enum type directly
+                total+=amount;
+                System.out.println("method = " + method);
+                System.out.println("amount = " + amount);
+                switch (method) {
+                    case Agent:
+                        this.agentValue += amount;
+                        this.hasAgentTransaction = true;
+                        break;
+                    case Card:
+                        this.cardValue += amount;
+                        this.hasCardTransaction = true;
+                        break;
+                    case Cash:
+                        this.cashValue += amount;
+                        this.hasCashTransaction = true;
+                        break;
+                    case Cheque:
+                        this.chequeValue += amount;
+                        this.hasChequeTransaction = true;
+                        break;
+                    case Credit:
+                        this.creditValue += amount;
+                        this.hasCreditTransaction = true;
+                        break;
+                    case IOU:
+                        this.iouValue += amount;
+                        this.hasIouTransaction = true;
+                        break;
+                    case MultiplePaymentMethods:
+                        this.multiplePaymentMethodsValue += amount;
+                        this.hasMultiplePaymentMethodsTransaction = true;
+                        break;
+                    case OnlineSettlement:
+                        this.onlineSettlementValue += amount;
+                        this.hasOnlineSettlementTransaction = true;
+                        break;
+                    case PatientDeposit:
+                        this.patientDepositValue += amount;
+                        this.hasPatientDepositTransaction = true;
+                        break;
+                    case PatientPoints:
+                        this.patientPointsValue += amount;
+                        this.hasPatientPointsTransaction = true;
+                        break;
+                    case Slip:
+                        this.slipValue += amount;
+                        this.hasSlipTransaction = true;
+                        break;
+                    case Staff:
+                        this.staffValue += amount;
+                        this.hasStaffTransaction = true;
+                        break;
+                    case Staff_Welfare:
+                        this.staffWelfareValue += amount;
+                        this.hasStaffWelfareTransaction = true;
+                        break;
+                    case Voucher:
+                        this.voucherValue += amount;
+                        this.hasVoucherTransaction = true;
+                        break;
+                    case YouOweMe:
+                        this.iouValue += amount;  // Assuming YouOweMe is equivalent to IOU
+                        this.hasIouTransaction = true;
+                        break;
+                    case ewallet:
+                        this.eWalletValue += amount;
+                        this.hasEWalletTransaction = true;
+                        break;
+                    default:
+                        // Log unexpected payment method or handle error
+                        System.out.println("Unhandled payment method: " + method);
+                        break;
+                }
             }
         }
     }
@@ -777,6 +988,46 @@ public class ReportTemplateRowBundle implements Serializable {
 
     public void setDiscount(Double discount) {
         this.discount = discount;
+    }
+
+    public WebUser getUser() {
+        return user;
+    }
+
+    public void setUser(WebUser user) {
+        this.user = user;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public Bill getStartBill() {
+        return startBill;
+    }
+
+    public void setStartBill(Bill startBill) {
+        this.startBill = startBill;
+    }
+
+    public Bill getEndBill() {
+        return endBill;
+    }
+
+    public void setEndBill(Bill endBill) {
+        this.endBill = endBill;
     }
 
 }
