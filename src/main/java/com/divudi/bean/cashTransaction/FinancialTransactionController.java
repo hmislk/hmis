@@ -1910,6 +1910,21 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setReferenceBill(null);
         return "/cashier/handover_start_all?faces-redirect=true";
     }
+    
+    public String navigateToHandoverCreateBillForSelectedShift(Bill startBill) {
+        resetClassVariables();
+        handoverValuesCreated = false;
+        System.out.println("startBill = " + startBill);
+        bundle = generatePaymentsFromShiftStartToEndToEnterToCashbookFilteredByDateAndDepartment(startBill, startBill.getReferenceBill());
+        bundle.setUser(sessionController.getLoggedUser());
+        bundle.aggregateTotals();
+        currentBill = new Bill();
+        currentBill.setBillType(BillType.CashHandoverCreateBill);
+        currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE);
+        currentBill.setBillClassType(BillClassType.PreBill);
+        currentBill.setReferenceBill(null);
+        return "/cashier/handover_start_all?faces-redirect=true";
+    }
 
     public String navigateToMyShifts() {
         bundle = new ReportTemplateRowBundle();
@@ -2364,6 +2379,8 @@ public class FinancialTransactionController implements Serializable {
 
     public ReportTemplateRowBundle generatePaymentsFromShiftStartToEndToEnterToCashbookFilteredByDateAndDepartment(
             Bill startBill, Bill endBill) {
+        System.out.println("startBill = " + startBill);
+        System.out.println("endBill = " + endBill);
         if (startBill == null || startBill.getId() == null || startBill.getCreater() == null) {
             return null;
         }
@@ -2397,7 +2414,7 @@ public class FinancialTransactionController implements Serializable {
         String jpql = jpqlBuilder.toString();
 
         List<Payment> shiftPayments = paymentFacade.findByJpql(jpql, m);
-
+        System.out.println("shiftPayments = " + shiftPayments);
         // To hold grouped data
         Map<String, ReportTemplateRowBundle> groupedBundles = new HashMap<>();
 

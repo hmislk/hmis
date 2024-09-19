@@ -55,51 +55,51 @@
                             var="ssb" 
                             rowKey="#{ssb.id}">
 
-                            <p:column headerText="Date" width="10em" >
+                            <p:column headerText="Start Date" width="10em" >
                                 <h:outputText value="#{ssb.bill.billDate}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                 </h:outputText>
 
                             </p:column>
-                            <p:column headerText="Time"  width="10em" >
+                            <p:column headerText="Start Time"  width="10em" >
                                 <h:outputText value="#{ssb.bill.createdAt}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" ></f:convertDateTime>
                                 </h:outputText>
                             </p:column>
-                            <p:column headerText="User" >
-                                #{ssb.billcreater} - #{ssb.billcreater.role.name} - #{ssb.billcreater.staff.speciality.name}
+
+                            <p:column headerText="Shift End Date" rendered="true" width="15em" >
+                                <h:panelGroup rendered="#{ssb.bill.referenceBill ne null}" class="text-success">
+                                    <h:outputText value="#{ssb.bill.referenceBill.createdAt}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                                    </h:outputText>
+                                </h:panelGroup>
                             </p:column>
 
-                            <p:column headerText="Shift End" rendered="true" width="15em" >
-                                <h:panelGroup rendered="#{ssb.billreferenceBill eq null}" class="text-danger">
-                                    <h:outputText value="NOT Ended" ></h:outputText>
-                                </h:panelGroup>
-                                <h:panelGroup rendered="#{ssb.billreferenceBill ne null}" class="text-success">
-                                    <h:outputText value="Ended at " ></h:outputText>
-                                    <h:outputText value="#{ssb.billreferenceBill.createdAt}" >
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                            <p:column headerText="Shift End Time" rendered="true" width="15em" >
+                                <h:panelGroup rendered="#{ssb.bill.referenceBill ne null}" class="text-success">
+                                    <h:outputText value="#{ssb.bill.referenceBill.createdAt}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" ></f:convertDateTime>
                                     </h:outputText>
                                 </h:panelGroup>
                             </p:column>
 
                             <p:column headerText="Actions">
-                                <h:panelGroup rendered="#{ssb.billreferenceBill eq null}" >
-                                    <p:commandButton 
-                                        ajax="false"
-                                        class="ui-button-danger"
-                                        value="View Summery - Not Closed" 
-                                        action="#{financialTransactionController.navigateToViewShiftSratToNow(ssb)}"  
-                                        ></p:commandButton>
-                                </h:panelGroup>
-                                <h:panelGroup rendered="#{ssb.billreferenceBill ne null}" >
-                                    <p:commandButton 
-                                        ajax="false"
-                                        class="ui-button-success"
-                                        value="View Closed Summery" 
-                                        action="#{financialTransactionController.navigateToViewShiftSrartToEnd(ssb)}"  
-                                        ></p:commandButton>
-                                </h:panelGroup>
+                                <p:commandButton 
+                                    ajax="false"
+                                    class="ui-button-warning m-1" 
+                                    value="Start Handover" 
+                                    icon="pi pi-play" 
+                                    action="#{financialTransactionController.navigateToHandoverCreateBillForSelectedShift(ssb.bill)}">
+                                </p:commandButton>
+                                <p:commandButton 
+                                    ajax="false"
+                                    class="ui-button-success m-1" 
+                                    value="View Handovers" 
+                                    icon="pi pi-eye"  
+                                    action="#{financialTransactionController.navigateToViewHandovers(ssb.bill)}">
+                                </p:commandButton>
                             </p:column>
+
 
                         </p:dataTable>
 
