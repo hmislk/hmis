@@ -129,15 +129,15 @@
                                     <p:commandButton   
                                         class="w-100 my-2"  
                                         ajax="false" 
-                                        action="/reports/profesional_payment_reports/professional_fees_opd"
+                                        action="/reports/profesional_payment_reports/professional_fees_opd?faces-redirect=true"
                                         value="Professional Fees" />
                                     <p:commandButton   
                                         class="w-100 my-2"  
-                                         action="/reports/profesional_payment_reports/professional_fee_payments_opd"
+                                         action="/reports/profesional_payment_reports/professional_fee_payments_opd?faces-redirect=true"
                                         ajax="false" value="Professional Fee Payments" />
                                     <p:commandButton   
                                         class="w-100 my-2"  
-                                         action="/reports/profesional_payment_reports/professional_payments_opd"
+                                         action="/reports/profesional_payment_reports/professional_payments_opd?faces-redirect=true"
                                         ajax="false" value="Professional Payments" />
                                     
                                     
@@ -320,11 +320,11 @@
                                 <p:tab title="Salary Reports">
                                     <div class="d-grid gap-2">
                                         <p:commandButton   class="w-100"  ajax="false" value="1. All Staff Salary Summary" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="2. Staff Payroll" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="3. Staff Payroll(Accountant)" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="2. Staff Payroll" action ="/reports/salary_reports/staff_payroll_report?faces-redirect=true" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="3. Staff Payroll(Accountant)" action="#{reportController.navigateToStaffPayrollAccountant}"/>
                                         <p:commandButton   class="w-100"  ajax="false" value="4. Staff Payroll(By Department, By Roster)" />
                                         <p:commandButton   class="w-100"  ajax="false" value="5. Staff Payroll(Selected Staff)" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="6. Staff Over Time" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="6. Staff Over Time" action ="/reports/salary_reports/staff_over_time_report?faces-redirect=true" />
                                         <p:commandButton   class="w-100"  ajax="false" value="7. No Pay and Salary Allowance Report" />
                                         <p:commandButton   class="w-100"  ajax="false" value="8. Staff Paysheet Component List" />
                                         <p:commandButton   class="w-100"  ajax="false" value="9. Staff Salary Bank Wise" />
