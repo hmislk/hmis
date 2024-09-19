@@ -225,6 +225,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     private String searchPhone;
     private String searchNic;
     private String searchPhn;
+    private String searchMrn;
     private String searchPatientCode;
     private String searchPatientId;
     private String searchBillId;
@@ -1360,6 +1361,10 @@ public class PatientController implements Serializable, ControllerWithPatient {
         if (searchPhn != null && !searchPhn.trim().equals("")) {
             noSearchCriteriaWasFound = false;
         }
+        
+        if (searchMrn != null && !searchMrn.trim().equals("")) {
+            noSearchCriteriaWasFound = false;
+        }
 
         if (searchPhone != null && !searchPhone.trim().equals("")) {
             noSearchCriteriaWasFound = false;
@@ -1432,6 +1437,21 @@ public class PatientController implements Serializable, ControllerWithPatient {
         clearSearchDetails();
         return "";
     }
+    
+    public String searchPatientForPatientDepost() {
+        boolean noError = searchPatientCommon();
+        if (!noError) {
+            return "";
+        }
+        if (searchedPatients == null || searchedPatients.isEmpty()) {
+            JsfUtil.addErrorMessage("No Matches. Please use different criteria");
+            return "";
+        } else if (searchedPatients.size() == 1) {
+            setCurrent(searchedPatients.get(0));
+        }
+        clearSearchDetails();
+        return "";
+    }
 
     public String searchPatientForOptician() {
         boolean noError = searchPatientCommon();
@@ -1459,6 +1479,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         searchName = null;
         searchPhone = null;
         searchPhn = null;
+        searchMrn = null;
         searchNic = null;
         searchPatientCode = null;
         searchPatientId = null;
@@ -1566,6 +1587,12 @@ public class PatientController implements Serializable, ControllerWithPatient {
         if (searchPhn != null && !searchPhn.trim().equals("")) {
             j += " and p.phn =:phn";
             m.put("phn", searchPhn);
+            atLeastOneCriteriaIsGiven = true;
+        }
+        
+        if (searchMrn != null && !searchMrn.trim().equals("")) {
+            j += " and p.code =:mrn";
+            m.put("mrn", searchMrn);
             atLeastOneCriteriaIsGiven = true;
         }
 
@@ -3046,6 +3073,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
                 searchByNic(searchNic);
             } else if (searchPhn != null && !searchPhn.isEmpty()) {
                 searchByPhn(searchPhn);
+            } else if (searchMrn != null && !searchMrn.isEmpty()) {
+                searchByMrn(searchMrn);
             } else if (searchPatientCode != null && !searchPatientCode.isEmpty()) {
                 searchByPatientCode(searchPatientCode);
             } else if (searchPatientId != null && !searchPatientId.isEmpty()) {
@@ -3072,6 +3101,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
                 searchByNic(searchNic);
             } else if (searchPhn != null && !searchPhn.isEmpty()) {
                 searchByPhn(searchPhn);
+            } else if (searchMrn != null && !searchMrn.isEmpty()) {
+                searchByMrn(searchMrn);
             } else if (searchPatientCode != null && !searchPatientCode.isEmpty()) {
                 searchByPatientCode(searchPatientCode);
             } else if (searchPatientId != null && !searchPatientId.isEmpty()) {
@@ -3098,6 +3129,9 @@ public class PatientController implements Serializable, ControllerWithPatient {
             count++;
         }
         if (searchPhn != null && !searchPhn.isEmpty()) {
+            count++;
+        }
+        if (searchMrn != null && !searchMrn.isEmpty()) {
             count++;
         }
         if (searchPatientCode != null && !searchPatientCode.isEmpty()) {
@@ -3255,6 +3289,17 @@ public class PatientController implements Serializable, ControllerWithPatient {
         Map m1 = new HashMap();
         m1.put("ret", false);
         m1.put("phn", phn);
+        searchedPersons = personFacade.findLongList(j1, m1);
+    }
+    
+    private void searchByMrn(String mrn) {
+        String j1 = "Select p.person "
+                + " from Patient p"
+                + " where p.retired=:ret"
+                + " and p.code=:mrn ";
+        Map m1 = new HashMap();
+        m1.put("ret", false);
+        m1.put("mrn", mrn);
         searchedPersons = personFacade.findLongList(j1, m1);
     }
 
@@ -3804,6 +3849,14 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     public void setDepartment(Department department) {
         this.department = department;
+    }
+
+    public String getSearchMrn() {
+        return searchMrn;
+    }
+
+    public void setSearchMrn(String searchMrn) {
+        this.searchMrn = searchMrn;
     }
 
     /**
