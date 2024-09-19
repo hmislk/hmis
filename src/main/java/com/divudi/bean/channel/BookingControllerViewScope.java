@@ -6124,7 +6124,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             double calculatingNetBillItemTotal = 0.0;
             double billItemHospitalFee =0.0;
             double billItemStaffFee=0.0;
-            for (BillFee iteratingBillFee : bi.getBillFees()) {
+            for (BillFee iteratingBillFee : billBeanController.getBillFee(bi)) {
 
                 System.out.println("iteratingBillFee = " + updatingFee);
                 System.out.println("iteratingBillFee = " + updatingFee.getId());
