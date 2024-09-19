@@ -9,7 +9,7 @@
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
                 <h:form >
-                    <p:panel header="Staff Salary Component" >
+                    <p:panel header="Staff Salary Component (Bank Wise)" >
                         <p:panelGrid columns="4" class="w-100">
 
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -60,45 +60,7 @@
                                                itemValue="" ></f:selectItems>
                             </p:selectOneMenu>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf007;" styleClass="fa mr-2" /> <!-- FontAwesome user icon for Employee -->
-                                <h:outputLabel value="Employee" for="cmbEmployee" class="mx-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu value="" filter="true" class="w-100 ">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var="i"
-                                               itemLabel=""
-                                               itemValue=""
-                                               ></f:selectItems>
-                            </p:selectOneMenu>
 
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf0c0;" styleClass="fa mr-2" /> <!-- FontAwesome users icon for Staff Category -->
-                                <h:outputLabel value="Staff Category" for="cmbStaffCategory" class="mx-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var="i"
-                                               itemLabel=""
-                                               itemValue=""
-                                               ></f:selectItems>
-                            </p:selectOneMenu>
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf0b1;" styleClass="fa mr-2" /> <!-- FontAwesome id-badge icon for Staff Designation -->
-                                <h:outputLabel value="Staff Designation" for="cmbStaffDesignation" class="mx-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var="i"
-                                               itemLabel=""
-                                               itemValue=""
-                                               ></f:selectItems>
-                            </p:selectOneMenu>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon for Staff Roster -->
@@ -127,21 +89,6 @@
                             </p:selectOneMenu>
 
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf09d;" styleClass="fa mr-2" /> <!-- FontAwesome university icon for Bank -->
-                                <h:outputLabel value="Bank" for="cmbBank" class="mx-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var="i"
-                                               itemLabel=""
-                                               itemValue=""
-                                               ></f:selectItems>
-                            </p:selectOneMenu>
-
-
-
                         </p:panelGrid>
 
                         <div class="d-flex align-items-center">
@@ -162,51 +109,25 @@
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
 
-                            <p:column headerText="Emp No" width="5em">
+                            <p:column headerText="No" width="5em">
                                 <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Emp Name" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Paysheet Component" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="ID" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Bank" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Component Value" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="EPF Staff Value" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="EPF Company Value" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="ETF Company Value" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Total" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            
+                                </p:column>
+                                <p:column headerText="Bank Name" width="5em">
+                                    <h:outputText value="" />
+                                    </p:column>
+                                    <p:column headerText="Total" width="5em">
+                                        <h:outputText value="" />
+                                    </p:column>
+                         </p:dataTable>
 
 
 
+                                    </p:panel>
 
-                        </p:dataTable>
+                                    </h:form>
 
+                                    </ui:define>
+                                    </ui:composition>
 
-
-                    </p:panel>
-
-                </h:form>
-
-            </ui:define>
-        </ui:composition>
-
-    </h:body>
-</html>
+                                    </h:body>
+                                    </html>
