@@ -109,10 +109,17 @@ public class Payment implements Serializable {
 
     private boolean cashbookEntryStated;
     private boolean cashbookEntryCompleted;
+    private boolean paymentRecordStated;
+    private boolean paymentRecordCompleted;
+
     @ManyToOne
     private Bill handoverCreatedBill;
     @ManyToOne
     private Bill handoverAcceptBill;
+    @ManyToOne
+    private Bill paymentRecordCreateBill;
+    @ManyToOne
+    private Bill paymentRecordCompleteBill;
     @ManyToOne
     private CashBookEntry cashbookEntry;
     @ManyToOne
@@ -121,6 +128,8 @@ public class Payment implements Serializable {
     public Payment() {
         cashbookEntryStated = false;
         cashbookEntryCompleted = false;
+        paymentRecordStated = false;
+        paymentRecordCompleted = false;
     }
 
     public Long getId() {
@@ -130,6 +139,8 @@ public class Payment implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
+    
+    
 
     public List<String> getHumanReadableDenominations() {
         List<String> humanReadableList = new ArrayList<>();
@@ -500,6 +511,38 @@ public class Payment implements Serializable {
 
     public void setCashbookEntryStated(boolean cashbookEntryStated) {
         this.cashbookEntryStated = cashbookEntryStated;
+    }
+
+    public Bill getPaymentRecordCreateBill() {
+        return paymentRecordCreateBill;
+    }
+
+    public void setPaymentRecordCreateBill(Bill paymentRecordCreateBill) {
+        this.paymentRecordCreateBill = paymentRecordCreateBill;
+    }
+
+    public Bill getPaymentRecordCompleteBill() {
+        return paymentRecordCompleteBill;
+    }
+
+    public void setPaymentRecordCompleteBill(Bill paymentRecordCompleteBill) {
+        this.paymentRecordCompleteBill = paymentRecordCompleteBill;
+    }
+
+    public boolean isPaymentRecordStated() {
+        return paymentRecordStated;
+    }
+
+    public void setPaymentRecordStated(boolean paymentRecordStated) {
+        this.paymentRecordStated = paymentRecordStated;
+    }
+
+    public boolean isPaymentRecordCompleted() {
+        return paymentRecordCompleted;
+    }
+
+    public void setPaymentRecordCompleted(boolean paymentRecordCompleted) {
+        this.paymentRecordCompleted = paymentRecordCompleted;
     }
 
 }
