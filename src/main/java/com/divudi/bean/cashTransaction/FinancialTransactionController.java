@@ -41,6 +41,7 @@ import com.divudi.java.CommonFunctions;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -108,7 +109,7 @@ public class FinancialTransactionController implements Serializable {
     private ReportTemplateRowBundle opdDocPayment;
     private ReportTemplateRowBundle channellingDocPayment;
     private boolean handoverValuesCreated = false;
-    
+
     private ReportTemplateRowBundle opdBilled;
     private ReportTemplateRowBundle opdReturns;
     private ReportTemplateRowBundle opdBundle;
@@ -116,14 +117,14 @@ public class FinancialTransactionController implements Serializable {
     private ReportTemplateRowBundle channellingReturns;
     private ReportTemplateRowBundle pharmacyBilld;
     private ReportTemplateRowBundle pharmacyReturned;
-    
+
     private ReportTemplateRowBundle channellingOnsite;
     private ReportTemplateRowBundle channellingAgent;
     private ReportTemplateRowBundle channellingOnline;
     private ReportTemplateRowBundle opdByDepartment;
-    
+
     private List<ReportTemplateRowBundle> shiftEndBundles;
-    
+
     private Payment currentPayment;
     private PaymentMethodData paymentMethodData;
     private Payment removingPayment;
@@ -135,20 +136,22 @@ public class FinancialTransactionController implements Serializable {
     private List<Bill> fundBillsForClosureBills;
     private Bill selectedBill;
     private Bill nonClosedShiftStartFundBill;
-    
+
     private ReportTemplateRowBundle refundBundle;
     private ReportTemplateRowBundle cancelledBundle;
-    
+
     private List<Payment> paymentsFromShiftSratToNow;
     private List<Payment> cardPaymentsFromShiftSratToNow;
     private List<Payment> chequeFromShiftSratToNow;
     private List<Payment> paymentsSelected;
     private List<Payment> recievedBIllPayments;
     private List<Bill> allBillsShiftStartToNow;
-    
+
     private ReportTemplateRowBundle chequeTransactionPaymentBundle;
     private ReportTemplateRowBundle cardTransactionPaymentBundle;
-    
+
+    private ReportTemplateRowBundle bundle;
+
     @Deprecated
     private PaymentMethodValues paymentMethodValues;
     private AtomicBillTypeTotals atomicBillTypeTotalsByBills;
@@ -179,21 +182,21 @@ public class FinancialTransactionController implements Serializable {
     private double totalBillRefundValue;
     private double totalBillCancelledValue;
     private double totalBilledBillValue;
-    
+
     private double totalShiftStartValue;
     private double totalBalanceTransfer;
     private double totalTransferRecive;
-    
+
     private double totalFunds;
     private double shiftEndTotalValue;
     private double shiftEndRefundBillValue;
     private double shiftEndCanceledBillValue;
     private double totalWithdrawals;
     private double totalDeposits;
-    
+
     private double Deductions;
     private double additions;
-    
+
     private int fundTransferBillsToReceiveCount;
     private int handoverBillsToReceiveCount;
     private Date fromDate;
@@ -203,9 +206,9 @@ public class FinancialTransactionController implements Serializable {
     private List<Date> cashbookDates;
     private List<Department> cashbookDepartments;
     private List<PaymentMethodValue> handingOverPaymentMethodValues;
-    
+
     private ReportTemplateRowBundle paymentSummaryBundle;
-    
+
     private Department department;
     private WebUser user;
     private Staff fromStaff;
@@ -213,7 +216,7 @@ public class FinancialTransactionController implements Serializable {
     private Department forDepartment;
     private Department toDepartment;
     private Date forDate;
-    
+
     private int tabIndex;
 
     // </editor-fold>  
@@ -228,7 +231,7 @@ public class FinancialTransactionController implements Serializable {
         fillFundTransferBillsForMeToReceive();
         return "/cashier/index?faces-redirect=true;";
     }
-    
+
     public String navigateToCreateNewInitialFundBill() {
         resetClassVariables();
         prepareToAddNewInitialFundBill();
@@ -240,14 +243,14 @@ public class FinancialTransactionController implements Serializable {
         if (startDate == null || endDate == null) {
             return "N/A";
         }
-        
+
         LocalDateTime startDateTime = convertToLocalDateTime(startDate);
         LocalDateTime endDateTime = convertToLocalDateTime(endDate);
-        
+
         Duration duration = Duration.between(startDateTime, endDateTime);
         long hours = duration.toHours();
         long minutes = duration.minusHours(hours).toMinutes();
-        
+
         return String.format("%d hours, %d minutes", hours, minutes);
     }
 
@@ -255,7 +258,7 @@ public class FinancialTransactionController implements Serializable {
     private LocalDateTime convertToLocalDateTime(Date date) {
         return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
     }
-    
+
     public ReportTemplateRowBundle addChannellingByCategories(
             ReportTemplateType type,
             List<BillTypeAtomic> btas,
@@ -272,11 +275,11 @@ public class FinancialTransactionController implements Serializable {
             Institution paramCreditCompany,
             Long paramStartId,
             Long paramEndId) {
-        
+
         ReportTemplateRowBundle bundle;
         List<BillTypeAtomic> inBts = BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.CHANNELLING, BillFinanceType.CASH_IN);
         List<BillTypeAtomic> outBts = BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.CHANNELLING, BillFinanceType.CASH_OUT);
-        
+
         ReportTemplateRowBundle ins = reportTemplateController.generateReport(
                 type,
                 inBts,
@@ -293,7 +296,7 @@ public class FinancialTransactionController implements Serializable {
                 paramCreditCompany,
                 paramStartId,
                 paramEndId);
-        
+
         ReportTemplateRowBundle outs = reportTemplateController.generateReport(
                 type,
                 outBts,
@@ -310,12 +313,12 @@ public class FinancialTransactionController implements Serializable {
                 paramCreditCompany,
                 paramStartId,
                 paramEndId);
-        
+
         bundle = combineBundlesByCategory(ins, outs);
-        
+
         return bundle;
     }
-    
+
     public ReportTemplateRowBundle addProfessionalPayments(
             ReportTemplateType type,
             List<BillTypeAtomic> btas,
@@ -333,13 +336,13 @@ public class FinancialTransactionController implements Serializable {
             Long paramStartId,
             Long paramEndId) {
         System.out.println("addOpdByDepartments");
-        
+
         ReportTemplateRowBundle bundle;
         List<BillTypeAtomic> inBts = BillTypeAtomic.findByCountedServiceType(CountedServiceType.CHANNELLING_PROFESSIONAL_PAYMENT);
         inBts.addAll(BillTypeAtomic.findByCountedServiceType(CountedServiceType.OPD_PROFESSIONAL_PAYMENT));
         List<BillTypeAtomic> outBts = BillTypeAtomic.findByCountedServiceType(CountedServiceType.CHANNELLING_PROFESSIONAL_PAYMENT_RETURN);
         outBts.addAll(BillTypeAtomic.findByCountedServiceType(CountedServiceType.OPD_PROFESSIONAL_PAYMENT_RETURN));
-        
+
         ReportTemplateRowBundle ins = reportTemplateController.generateReport(
                 type,
                 inBts,
@@ -356,7 +359,7 @@ public class FinancialTransactionController implements Serializable {
                 paramCreditCompany,
                 paramStartId,
                 paramEndId);
-        
+
         ReportTemplateRowBundle outs = reportTemplateController.generateReport(
                 type,
                 outBts,
@@ -373,12 +376,12 @@ public class FinancialTransactionController implements Serializable {
                 paramCreditCompany,
                 paramStartId,
                 paramEndId);
-        
+
         bundle = combineBundlesByBillTypeAtomic(ins, outs);
-        
+
         return bundle;
     }
-    
+
     public ReportTemplateRowBundle addOpdByDepartments(
             ReportTemplateType type,
             List<BillTypeAtomic> btas,
@@ -396,11 +399,11 @@ public class FinancialTransactionController implements Serializable {
             Long paramStartId,
             Long paramEndId) {
         System.out.println("addOpdByDepartments");
-        
+
         ReportTemplateRowBundle bundle;
         List<BillTypeAtomic> inBts = BillTypeAtomic.findByCountedServiceType(CountedServiceType.OPD_IN);
         List<BillTypeAtomic> outBts = BillTypeAtomic.findByCountedServiceType(CountedServiceType.OPD_OUT);
-        
+
         ReportTemplateRowBundle ins = reportTemplateController.generateReport(
                 type,
                 inBts,
@@ -417,7 +420,7 @@ public class FinancialTransactionController implements Serializable {
                 paramCreditCompany,
                 paramStartId,
                 paramEndId);
-        
+
         ReportTemplateRowBundle outs = reportTemplateController.generateReport(
                 type,
                 outBts,
@@ -434,18 +437,18 @@ public class FinancialTransactionController implements Serializable {
                 paramCreditCompany,
                 paramStartId,
                 paramEndId);
-        
+
         bundle = combineBundlesByItemDepartment(ins, outs);
-        
+
         return bundle;
     }
-    
+
     public void processShiftEndReport() {
         shiftEndBundles = new ArrayList<>();
         ReportTemplateType channelingType = ReportTemplateType.ITEM_CATEGORY_SUMMARY_BY_BILL;
         ReportTemplateType opdType = ReportTemplateType.ITEM_DEPARTMENT_SUMMARY_BY_BILL_ITEM;
         ReportTemplateType paymentsType = ReportTemplateType.BILL_TYPE_ATOMIC_SUMMARY_USING_BILLS;
-        
+
         List<BillTypeAtomic> btas = null;
         Date paramDate = null;
         Date paramFromDate = null;
@@ -463,7 +466,7 @@ public class FinancialTransactionController implements Serializable {
         if (nonClosedShiftStartFundBill.getReferenceBill() != null) {
             paramEndId = nonClosedShiftStartFundBill.getReferenceBill().getId();
         }
-        
+
         ReportTemplateRowBundle tmpChannellingBundle = addChannellingByCategories(
                 channelingType,
                 btas,
@@ -481,7 +484,7 @@ public class FinancialTransactionController implements Serializable {
                 paramStartId,
                 paramEndId
         );
-        
+
         ReportTemplateRowBundle tmpOpdBundle
                 = addOpdByDepartments(
                         opdType,
@@ -500,7 +503,7 @@ public class FinancialTransactionController implements Serializable {
                         paramStartId,
                         paramEndId
                 );
-        
+
         ReportTemplateRowBundle tmpPaymentBundle
                 = addProfessionalPayments(
                         paymentsType,
@@ -519,20 +522,20 @@ public class FinancialTransactionController implements Serializable {
                         paramStartId,
                         paramEndId
                 );
-        
+
         tmpChannellingBundle.setName("Channelling");
         tmpOpdBundle.setName("OPD");
         tmpPaymentBundle.setName("Payments");
         shiftEndBundles.add(tmpChannellingBundle);
         shiftEndBundles.add(tmpOpdBundle);
         shiftEndBundles.add(tmpPaymentBundle);
-        
+
     }
-    
+
     public String navigateToDayEndReport() {
         return "/cashier/day_end_report?faces-redirect=true;";
     }
-    
+
     public void processDayEndReport() {
         List<BillTypeAtomic> channellingOnlineBooking = new ArrayList<>();
         channellingOnlineBooking.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT_ONLINE);
@@ -552,7 +555,7 @@ public class FinancialTransactionController implements Serializable {
                 null,
                 null,
                 null);
-        
+
         Institution agent = new Institution();
         channellingAgent = reportTemplateController.generateReport(
                 ReportTemplateType.BILL_NET_TOTAL,
@@ -570,7 +573,7 @@ public class FinancialTransactionController implements Serializable {
                 null,
                 null,
                 null);
-        
+
         agent.setId(1l);
         channellingBilled = reportTemplateController.generateReport(
                 ReportTemplateType.BILL_NET_TOTAL,
@@ -588,7 +591,7 @@ public class FinancialTransactionController implements Serializable {
                 null,
                 null,
                 null);
-        
+
         opdByDepartment = reportTemplateController.generateReport(
                 ReportTemplateType.ITEM_DEPARTMENT_SUMMARY_BY_BILL_ITEM,
                 BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.OPD, BillFinanceType.CASH_IN),
@@ -685,14 +688,14 @@ public class FinancialTransactionController implements Serializable {
                 null,
                 null,
                 null);
-        
+
         fillPayments(fromDate, toDate, null);
     }
-    
+
     private ReportTemplateRowBundle combineBundlesByItem(ReportTemplateRowBundle inBundle, ReportTemplateRowBundle outBundle) {
         ReportTemplateRowBundle temOutBundle = new ReportTemplateRowBundle();
         Map<Item, ReportTemplateRow> combinedRows = new HashMap<>();
-        
+
         if (inBundle != null && inBundle.getReportTemplateRows() != null) {
             for (ReportTemplateRow inRow : inBundle.getReportTemplateRows()) {
                 if (inRow != null) {
@@ -708,7 +711,7 @@ public class FinancialTransactionController implements Serializable {
                 }
             }
         }
-        
+
         if (outBundle != null && outBundle.getReportTemplateRows() != null) {
             for (ReportTemplateRow outRow : outBundle.getReportTemplateRows()) {
                 if (outRow != null) {
@@ -724,37 +727,37 @@ public class FinancialTransactionController implements Serializable {
                 }
             }
         }
-        
+
         long totalInCount = 0;
         long totalOutCount = 0;
         double totalInValue = 0.0;
         double totalOutValue = 0.0;
-        
+
         for (ReportTemplateRow row : combinedRows.values()) {
             row.setRowCount((row.getRowCountIn() != null ? row.getRowCountIn() : 0L) + (row.getRowCountOut() != null ? row.getRowCountOut() : 0L));
             row.setRowValue((row.getRowValueIn() != null ? row.getRowValueIn() : 0.0) + (row.getRowValueOut() != null ? row.getRowValueOut() : 0.0));
             temOutBundle.getReportTemplateRows().add(row);
-            
+
             totalInCount += (row.getRowCountIn() != null ? row.getRowCountIn() : 0L);
             totalOutCount += (row.getRowCountOut() != null ? row.getRowCountOut() : 0L);
             totalInValue += (row.getRowValueIn() != null ? row.getRowValueIn() : 0.0);
             totalOutValue += (row.getRowValueOut() != null ? row.getRowValueOut() : 0.0);
         }
-        
+
         temOutBundle.setCountIn(totalInCount);
         temOutBundle.setCountOut(totalOutCount);
         temOutBundle.setCount(totalInCount + totalOutCount);
         temOutBundle.setTotalIn(totalInValue);
         temOutBundle.setTotalOut(totalOutValue);
         temOutBundle.setTotal(totalInValue + totalOutValue);
-        
+
         return temOutBundle;
     }
-    
+
     private ReportTemplateRowBundle combineBundlesByCategory(ReportTemplateRowBundle inBundle, ReportTemplateRowBundle outBundle) {
         ReportTemplateRowBundle temOutBundle = new ReportTemplateRowBundle();
         Map<Category, ReportTemplateRow> combinedRows = new HashMap<>();
-        
+
         if (inBundle != null && inBundle.getReportTemplateRows() != null) {
             for (ReportTemplateRow inRow : inBundle.getReportTemplateRows()) {
                 if (inRow != null) {
@@ -770,7 +773,7 @@ public class FinancialTransactionController implements Serializable {
                 }
             }
         }
-        
+
         if (outBundle != null && outBundle.getReportTemplateRows() != null) {
             for (ReportTemplateRow outRow : outBundle.getReportTemplateRows()) {
                 if (outRow != null) {
@@ -786,40 +789,40 @@ public class FinancialTransactionController implements Serializable {
                 }
             }
         }
-        
+
         long totalInCount = 0;
         long totalOutCount = 0;
         double totalInValue = 0.0;
         double totalOutValue = 0.0;
-        
+
         for (ReportTemplateRow row : combinedRows.values()) {
             row.setRowCount((row.getRowCountIn() != null ? row.getRowCountIn() : 0L) + (row.getRowCountOut() != null ? row.getRowCountOut() : 0L));
             row.setRowValue((row.getRowValueIn() != null ? row.getRowValueIn() : 0.0) + (row.getRowValueOut() != null ? row.getRowValueOut() : 0.0));
             temOutBundle.getReportTemplateRows().add(row);
-            
+
             totalInCount += (row.getRowCountIn() != null ? row.getRowCountIn() : 0L);
             totalOutCount += (row.getRowCountOut() != null ? row.getRowCountOut() : 0L);
             totalInValue += (row.getRowValueIn() != null ? row.getRowValueIn() : 0.0);
             totalOutValue += (row.getRowValueOut() != null ? row.getRowValueOut() : 0.0);
         }
-        
+
         temOutBundle.setCountIn(totalInCount);
         temOutBundle.setCountOut(totalOutCount);
         temOutBundle.setCount(totalInCount + totalOutCount);
         temOutBundle.setTotalIn(totalInValue);
         temOutBundle.setTotalOut(totalOutValue);
         temOutBundle.setTotal(totalInValue + totalOutValue);
-        
+
         return temOutBundle;
     }
-    
+
     private ReportTemplateRowBundle combineBundlesByItemDepartment(ReportTemplateRowBundle inBundle, ReportTemplateRowBundle outBundle) {
         System.out.println("Starting combineBundlesByDepartment method");
-        
+
         ReportTemplateRowBundle temOutBundle = new ReportTemplateRowBundle();
         temOutBundle.setReportTemplateRows(new ArrayList<>());  // Ensure the list is initialized
         Map<Object, ReportTemplateRow> combinedRows = new HashMap<>();
-        
+
         final Object NULL_DEPARTMENT_KEY = new Object();  // Placeholder for null departments
 
         if (inBundle != null && inBundle.getReportTemplateRows() != null) {
@@ -841,7 +844,7 @@ public class FinancialTransactionController implements Serializable {
             }
         } else {
         }
-        
+
         if (outBundle != null && outBundle.getReportTemplateRows() != null) {
             for (ReportTemplateRow outRow : outBundle.getReportTemplateRows()) {
                 if (outRow != null) {
@@ -861,45 +864,45 @@ public class FinancialTransactionController implements Serializable {
             }
         } else {
         }
-        
+
         long totalInCount = 0;
         long totalOutCount = 0;
         double totalInValue = 0.0;
         double totalOutValue = 0.0;
-        
+
         for (ReportTemplateRow row : combinedRows.values()) {
             String deptName = (row.getItemDepartment() != null) ? row.getItemDepartment().getName() : "NULL_DEPARTMENT";
             row.setRowCount((row.getRowCountIn() != null ? row.getRowCountIn() : 0L) + (row.getRowCountOut() != null ? row.getRowCountOut() : 0L));
             row.setRowValue((row.getRowValueIn() != null ? row.getRowValueIn() : 0.0) + (row.getRowValueOut() != null ? row.getRowValueOut() : 0.0));
             temOutBundle.getReportTemplateRows().add(row);
-            
+
             totalInCount += (row.getRowCountIn() != null ? row.getRowCountIn() : 0L);
             totalOutCount += (row.getRowCountOut() != null ? row.getRowCountOut() : 0L);
             totalInValue += (row.getRowValueIn() != null ? row.getRowValueIn() : 0.0);
             totalOutValue += (row.getRowValueOut() != null ? row.getRowValueOut() : 0.0);
         }
-        
+
         temOutBundle.setCountIn(totalInCount);
         temOutBundle.setCountOut(totalOutCount);
         temOutBundle.setCount(totalInCount + totalOutCount);
         temOutBundle.setTotalIn(totalInValue);
         temOutBundle.setTotalOut(totalOutValue);
         temOutBundle.setTotal(totalInValue + totalOutValue);
-        
+
         System.out.println("Total In Count: " + totalInCount);
         System.out.println("Total Out Count: " + totalOutCount);
         System.out.println("Total In Value: " + totalInValue);
-        
+
         return temOutBundle;
     }
-    
+
     private ReportTemplateRowBundle combineBundlesByBillTypeAtomic(ReportTemplateRowBundle inBundle, ReportTemplateRowBundle outBundle) {
         System.out.println("Starting combineBundlesByDepartment method");
-        
+
         ReportTemplateRowBundle temOutBundle = new ReportTemplateRowBundle();
         temOutBundle.setReportTemplateRows(new ArrayList<>());  // Ensure the list is initialized
         Map<Object, ReportTemplateRow> combinedRows = new HashMap<>();
-        
+
         final Object NULL_DEPARTMENT_KEY = new Object();  // Placeholder for null departments
 
         if (inBundle != null && inBundle.getReportTemplateRows() != null) {
@@ -921,7 +924,7 @@ public class FinancialTransactionController implements Serializable {
             }
         } else {
         }
-        
+
         if (outBundle != null && outBundle.getReportTemplateRows() != null) {
             for (ReportTemplateRow outRow : outBundle.getReportTemplateRows()) {
                 if (outRow != null) {
@@ -941,38 +944,38 @@ public class FinancialTransactionController implements Serializable {
             }
         } else {
         }
-        
+
         long totalInCount = 0;
         long totalOutCount = 0;
         double totalInValue = 0.0;
         double totalOutValue = 0.0;
-        
+
         for (ReportTemplateRow row : combinedRows.values()) {
             String deptName = (row.getItemDepartment() != null) ? row.getItemDepartment().getName() : "NULL_DEPARTMENT";
             row.setRowCount((row.getRowCountIn() != null ? row.getRowCountIn() : 0L) + (row.getRowCountOut() != null ? row.getRowCountOut() : 0L));
             row.setRowValue((row.getRowValueIn() != null ? row.getRowValueIn() : 0.0) + (row.getRowValueOut() != null ? row.getRowValueOut() : 0.0));
             temOutBundle.getReportTemplateRows().add(row);
-            
+
             totalInCount += (row.getRowCountIn() != null ? row.getRowCountIn() : 0L);
             totalOutCount += (row.getRowCountOut() != null ? row.getRowCountOut() : 0L);
             totalInValue += (row.getRowValueIn() != null ? row.getRowValueIn() : 0.0);
             totalOutValue += (row.getRowValueOut() != null ? row.getRowValueOut() : 0.0);
         }
-        
+
         temOutBundle.setCountIn(totalInCount);
         temOutBundle.setCountOut(totalOutCount);
         temOutBundle.setCount(totalInCount + totalOutCount);
         temOutBundle.setTotalIn(totalInValue);
         temOutBundle.setTotalOut(totalOutValue);
         temOutBundle.setTotal(totalInValue + totalOutValue);
-        
+
         System.out.println("Total In Count: " + totalInCount);
         System.out.println("Total Out Count: " + totalOutCount);
         System.out.println("Total In Value: " + totalInValue);
-        
+
         return temOutBundle;
     }
-    
+
     public void processShiftEndReportOpdCategory() {
         reportTemplateType = ReportTemplateType.ITEM_CATEGORY_SUMMARY_BY_BILL_ITEM;
         List<BillTypeAtomic> bts = new ArrayList<>();
@@ -1012,7 +1015,7 @@ public class FinancialTransactionController implements Serializable {
                 nonClosedShiftStartFundBill.getReferenceBill().getId());
         opdBundle = combineBundlesByCategory(opdBilled, opdReturns);
     }
-    
+
     public void processShiftEndReportOpdItem() {
         reportTemplateType = ReportTemplateType.ITEM_SUMMARY_BY_BILL;
         List<BillTypeAtomic> bts = new ArrayList<>();
@@ -1052,40 +1055,40 @@ public class FinancialTransactionController implements Serializable {
                 nonClosedShiftStartFundBill.getReferenceBill().getId());
         opdBundle = combineBundlesByItem(opdBilled, opdReturns);
     }
-    
+
     public String navigateToListShiftEndSummaries() {
         resetClassVariables();
         return "/cashier/initial_fund_bill_list?faces-redirect=true;";
     }
-    
+
     public void listShiftStartBills() {
         String jpql = "select b "
                 + " from Bill b "
                 + " where b.retired=:ret"
                 + " and b.billTypeAtomic=:bta "
                 + " and b.createdAt between :fd and :td ";
-        
+
         Map params = new HashMap<>();
         params.put("ret", false);
         params.put("bta", BillTypeAtomic.FUND_SHIFT_START_BILL);
         params.put("fd", fromDate);
         params.put("td", toDate);
-        
+
         if (getDepartment() != null) {
             jpql += " and b.department =:dept";
             params.put("dept", getDepartment());
         }
         jpql += " order by b.id ";
-        
+
         shiaftStartBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
-    
+
     public String navigateToFundTransferBill() {
         resetClassVariables();
         prepareToAddNewFundTransferBill();
         return "/cashier/fund_transfer_bill?faces-redirect=true";
     }
-    
+
     public String navigateToFundDepositBill() {
         resetClassVariables();
         prepareToAddNewFundDepositBill();
@@ -1119,59 +1122,59 @@ public class FinancialTransactionController implements Serializable {
         prepareToRecordPayments();
         return "/cashier/payment_recording?faces-redirect=true";
     }
-    
+
     private void prepareToAddNewShiftShortageRecord() {
         currentBill = new Bill();
         currentBill.setBillType(BillType.ShiftShortage);
         currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL);
         currentBill.setBillClassType(BillClassType.Bill);
     }
-    
+
     private void prepareToAddNewShiftExcessRecord() {
         currentBill = new Bill();
         currentBill.setBillType(BillType.ShiftExcess);
         currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_END_BILL);
         currentBill.setBillClassType(BillClassType.Bill);
     }
-    
+
     private void prepareToTransferPaymentMethod() {
         // Prepare any necessary configurations or data before transferring payment methods
     }
-    
+
     private void prepareToRecordPayments() {
         // Set up required data and context before recording payments
     }
-    
+
     public String navigateToCashierSummary() {
         return "/cashier/cashier_summary?faces-redirect=true";
     }
-    
+
     public String navigateToCashierReport() {
         processShiftEndReport();
         return "/cashier/shift_end_report_bill_of_selected_user?faces-redirect=true";
     }
-    
+
     public String navigateToCashierReportOpd() {
         resetBundles();
         return "/cashier/shift_end_report_bill_of_selected_user_opd?faces-redirect=true";
     }
-    
+
     public String navigateToCashierSummaryBreakdown() {
         return "/cashier/shift_end_summary_breakdown?faces-redirect=true";
     }
-    
+
     public String navigateToCashierSummaryBreakdownFromShiftClosingForCash() {
         List<PaymentMethod> pms = new ArrayList<>();
         pms.add(PaymentMethod.Cash);
         return navigateToCashierSummaryBreakdownFromShiftClosing(pms);
     }
-    
+
     public String navigateToCashierSummaryBreakdownFromShiftClosingForCashAdmin() {
         List<PaymentMethod> pms = new ArrayList<>();
         pms.add(PaymentMethod.Cash);
         return navigateToCashierSummaryBreakdownFromShiftClosing(pms, nonClosedShiftStartFundBill.getCreater(), nonClosedShiftStartFundBill.getId(), nonClosedShiftStartFundBill.getReferenceBill().getId());
     }
-    
+
     public void selectCashierSummaryBreakdownFromShiftClosingForCashAdmin() {
         List<PaymentMethod> paymentMethods = financialReportByPayments.getPaymentMethodsForCollectedCash();
         List<BillTypeAtomic> billTypes = financialReportByPayments.getBillTypesForCollectedCash();
@@ -1185,7 +1188,7 @@ public class FinancialTransactionController implements Serializable {
         }
         paymentsSelected = selectedPayments;
     }
-    
+
     public void selectRefundedCashDetails() {
         List<PaymentMethod> paymentMethods = financialReportByPayments.getPaymentMethodsForRefundedCash();
         List<BillTypeAtomic> billTypes = financialReportByPayments.getBillTypesForRefundedCash();
@@ -1199,7 +1202,7 @@ public class FinancialTransactionController implements Serializable {
         }
         paymentsSelected = selectedPayments;
     }
-    
+
     public void selectNetCashTotalDetails() {
         List<PaymentMethod> paymentMethods = financialReportByPayments.getPaymentMethodsForNetCashTotal();
         List<BillTypeAtomic> billTypes = financialReportByPayments.getBillTypesForNetCashTotal();
@@ -1213,7 +1216,7 @@ public class FinancialTransactionController implements Serializable {
         }
         paymentsSelected = selectedPayments;
     }
-    
+
     public void selectCollectedCreditCardDetails() {
         List<PaymentMethod> paymentMethods = financialReportByPayments.getPaymentMethodsForCollectedCreditCard();
         List<BillTypeAtomic> billTypes = financialReportByPayments.getBillTypesForCollectedCreditCard();
@@ -1227,7 +1230,7 @@ public class FinancialTransactionController implements Serializable {
         }
         paymentsSelected = selectedPayments;
     }
-    
+
     public void selectRefundedCreditCardDetails() {
         List<PaymentMethod> paymentMethods = financialReportByPayments.getPaymentMethodsForRefundedCreditCard();
         List<BillTypeAtomic> billTypes = financialReportByPayments.getBillTypesForRefundedCreditCard();
@@ -1241,7 +1244,7 @@ public class FinancialTransactionController implements Serializable {
         }
         paymentsSelected = selectedPayments;
     }
-    
+
     public void selectNetCreditCardTotalDetails() {
         List<PaymentMethod> paymentMethods = financialReportByPayments.getPaymentMethodsForNetCreditCardTotal();
         List<BillTypeAtomic> billTypes = financialReportByPayments.getBillTypesForNetCreditCardTotal();
@@ -1255,7 +1258,7 @@ public class FinancialTransactionController implements Serializable {
         }
         paymentsSelected = selectedPayments;
     }
-    
+
     public void selectCollectedVoucherDetails() {
         List<PaymentMethod> paymentMethods = financialReportByPayments.getPaymentMethodsForCollectedVoucher();
         List<BillTypeAtomic> billTypes = financialReportByPayments.getBillTypesForCollectedVoucher();
@@ -1269,7 +1272,7 @@ public class FinancialTransactionController implements Serializable {
         }
         paymentsSelected = selectedPayments;
     }
-    
+
     public void selectRefundedVoucherDetails() {
         List<PaymentMethod> paymentMethods = financialReportByPayments.getPaymentMethodsForRefundedVoucher();
         List<BillTypeAtomic> billTypes = financialReportByPayments.getBillTypesForRefundedVoucher();
@@ -1283,7 +1286,7 @@ public class FinancialTransactionController implements Serializable {
         }
         paymentsSelected = selectedPayments;
     }
-    
+
     public void selectNetVoucherTotalDetails() {
         List<PaymentMethod> paymentMethods = financialReportByPayments.getPaymentMethodsForNetVoucherTotal();
         List<BillTypeAtomic> billTypes = financialReportByPayments.getBillTypesForNetVoucherTotal();
@@ -1297,7 +1300,7 @@ public class FinancialTransactionController implements Serializable {
         }
         paymentsSelected = selectedPayments;
     }
-    
+
     public void selectCollectedOtherNonCreditDetails() {
         List<PaymentMethod> paymentMethods = financialReportByPayments.getPaymentMethodsForCollectedDebitCard();
         List<BillTypeAtomic> billTypes = financialReportByPayments.getBillTypesForCollectedDebitCard();
@@ -1311,7 +1314,7 @@ public class FinancialTransactionController implements Serializable {
         }
         paymentsSelected = selectedPayments;
     }
-    
+
     public void selectRefundedOtherNonCreditDetails() {
         List<PaymentMethod> paymentMethods = financialReportByPayments.getPaymentMethodsForRefundedDebitCard();
         List<BillTypeAtomic> billTypes = financialReportByPayments.getBillTypesForRefundedDebitCard();
@@ -1325,7 +1328,7 @@ public class FinancialTransactionController implements Serializable {
         }
         paymentsSelected = selectedPayments;
     }
-    
+
     public void selectNetOtherNonCreditTotalDetails() {
         List<PaymentMethod> paymentMethods = financialReportByPayments.getPaymentMethodsForBankDeposits();
         List<BillTypeAtomic> billTypes = financialReportByPayments.getBillTypesForBankDeposits();
@@ -1339,7 +1342,7 @@ public class FinancialTransactionController implements Serializable {
         }
         paymentsSelected = selectedPayments;
     }
-    
+
     public void selectShiftStartFundsDetails() {
         List<PaymentMethod> paymentMethods = financialReportByPayments.getPaymentMethodsForFloatMySafe();
         List<BillTypeAtomic> billTypes = financialReportByPayments.getBillTypesForFloatMySafe();
@@ -1353,7 +1356,7 @@ public class FinancialTransactionController implements Serializable {
         }
         paymentsSelected = selectedPayments;
     }
-    
+
     public void selectFloatReceivedDetails() {
         List<BillTypeAtomic> billTypes = financialReportByPayments.getBillTypesForFloatCollected();
         List<Payment> allPayments = paymentsFromShiftSratToNow;
@@ -1365,7 +1368,7 @@ public class FinancialTransactionController implements Serializable {
         }
         paymentsSelected = selectedPayments;
     }
-    
+
     public void selectFloatHandoverDetails() {
         List<BillTypeAtomic> billTypes = financialReportByPayments.getBillTypesForFloatHandover();
         List<Payment> allPayments = paymentsFromShiftSratToNow;
@@ -1377,9 +1380,9 @@ public class FinancialTransactionController implements Serializable {
         }
         paymentsSelected = selectedPayments;
     }
-    
+
     public void selectNetFloatDetails() {
-        
+
         List<BillTypeAtomic> billTypes = financialReportByPayments.getBillTypesForFloatCollected();
         billTypes.addAll(financialReportByPayments.getBillTypesForFloatHandover());
         List<Payment> allPayments = paymentsFromShiftSratToNow;
@@ -1391,7 +1394,7 @@ public class FinancialTransactionController implements Serializable {
         }
         paymentsSelected = selectedPayments;
     }
-    
+
     public void selectBankWithdrawalsDetails() {
         List<PaymentMethod> paymentMethods = financialReportByPayments.getPaymentMethodsForBankWithdrawals();
         List<BillTypeAtomic> billTypes = financialReportByPayments.getBillTypesForBankWithdrawals();
@@ -1405,7 +1408,7 @@ public class FinancialTransactionController implements Serializable {
         }
         paymentsSelected = selectedPayments;
     }
-    
+
     public void selectBankDepositsDetails() {
         List<PaymentMethod> paymentMethods = financialReportByPayments.getPaymentMethodsForBankDeposits();
         List<BillTypeAtomic> billTypes = financialReportByPayments.getBillTypesForBankDeposits();
@@ -1419,7 +1422,7 @@ public class FinancialTransactionController implements Serializable {
         }
         paymentsSelected = selectedPayments;
     }
-    
+
     public void selectNetBankTransactionDetails() {
         List<PaymentMethod> paymentMethods = financialReportByPayments.getPaymentMethodsForBankWithdrawals();
         List<BillTypeAtomic> billTypes = financialReportByPayments.getBillTypesForBankWithdrawals();
@@ -1433,12 +1436,12 @@ public class FinancialTransactionController implements Serializable {
         }
         paymentsSelected = selectedPayments;
     }
-    
+
     public void selectTotalDetails() {
         // Assuming this method should simply select all payments
         paymentsSelected = new ArrayList<>(paymentsFromShiftSratToNow);
     }
-    
+
     public void selectShortExcessDetails() {
         List<PaymentMethod> paymentMethods = financialReportByPayments.getPaymentMethodsForShortExcess();
         List<BillTypeAtomic> billTypes = financialReportByPayments.getBillTypesForShortExcess();
@@ -1452,19 +1455,19 @@ public class FinancialTransactionController implements Serializable {
         }
         paymentsSelected = selectedPayments;
     }
-    
+
     public String navigateToCashierSummaryBreakdownFromShiftClosingForCard() {
         List<PaymentMethod> pms = new ArrayList<>();
         pms.add(PaymentMethod.Card);
         return navigateToCashierSummaryBreakdownFromShiftClosing(pms);
     }
-    
+
     public String navigateToCashierSummaryBreakdownFromShiftClosingForVoucher() {
         List<PaymentMethod> pms = new ArrayList<>();
         pms.add(PaymentMethod.Voucher);
         return navigateToCashierSummaryBreakdownFromShiftClosing(pms);
     }
-    
+
     public String navigateToCashierSummaryBreakdownFromShiftClosingForAllExceptCashCardVaucher() {
         List<PaymentMethod> pms = PaymentMethod.asList();
         pms.remove(PaymentMethod.Voucher);
@@ -1472,12 +1475,12 @@ public class FinancialTransactionController implements Serializable {
         pms.remove(PaymentMethod.Card);
         return navigateToCashierSummaryBreakdownFromShiftClosing(pms);
     }
-    
+
     public String navigateToCashierSummaryBreakdownFromShiftClosing(List<PaymentMethod> pms) {
         navigateToCashierSummaryBreakdownFromShiftClosing(pms, sessionController.getLoggedUser(), nonClosedShiftStartFundBill.getId(), null);
         return "/cashier/shift_end_summary_breakdown?faces-redirect=true";
     }
-    
+
     public String navigateToCashierSummaryBreakdownFromShiftClosing(List<PaymentMethod> pms, WebUser user, Long startId, Long endId) {
         searchController.setWebUser(user);
         searchController.setStartBillId(startId);
@@ -1486,7 +1489,7 @@ public class FinancialTransactionController implements Serializable {
         searchController.processAllFinancialTransactionalSummarybySingleUserByIds();
         return "/analytics/shift_end_summary_breakdown?faces-redirect=true";
     }
-    
+
     public String navigateToReceiveNewFundTransferBill() {
         if (selectedBill == null) {
             JsfUtil.addErrorMessage("Please select a bill");
@@ -1500,7 +1503,7 @@ public class FinancialTransactionController implements Serializable {
         prepareToAddNewFundTransferReceiveBill();
         return "/cashier/fund_transfer_receive_bill?faces-redirect=true";
     }
-    
+
     public String navigateToReceiveNewHandoverBill() {
         if (selectedBill == null) {
             JsfUtil.addErrorMessage("Please select a bill");
@@ -1521,19 +1524,19 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setFromDate(selectedBill.getFromDate());
         return "/cashier/handover_bill_view?faces-redirect=true";
     }
-    
+
     public String navigateToReceiveFundTransferBillsForMe() {
         findNonClosedShiftStartFundBillIsAvailable();
         fillFundTransferBillsForMeToReceive();
         return "/cashier/fund_transfer_bills_for_me_to_receive?faces-redirect=true";
     }
-    
+
     public String navigateToReceiveHandoverBillsForMe() {
         findNonClosedShiftStartFundBillIsAvailable();
         fillHandoverBillsForMeToReceive();
         return "/cashier/handover_bills_for_me_to_receive?faces-redirect=true";
     }
-    
+
     private void prepareToAddNewInitialFundBill() {
         currentBill = new Bill();
         currentBill.setBillType(BillType.ShiftStartFundBill);
@@ -1541,26 +1544,26 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setBillClassType(BillClassType.Bill);
         currentBill.setStaff(sessionController.getLoggedUser().getStaff());
     }
-    
+
     private void prepareToAddNewFundTransferBill() {
         currentBill = new Bill();
         currentBill.setBillType(BillType.FundTransferBill);
         currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_TRANSFER_BILL);
         currentBill.setBillClassType(BillClassType.Bill);
     }
-    
+
     private void prepareToAddNewFundDepositBill() {
         currentBill = new Bill();
         currentBill.setBillType(BillType.DepositFundBill);
         currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_DEPOSIT_BILL);
         currentBill.setBillClassType(BillClassType.Bill);
     }
-    
+
     private void prepareToAddNewFundTransferReceiveBill() {
         currentBill = new Bill();
         currentBill.setBillType(BillType.FundTransferReceivedBill);
         currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL);
-        
+
         currentBill.setBillClassType(BillClassType.Bill);
         currentBill.setReferenceBill(selectedBill);
         if (selectedBill != null) {
@@ -1569,11 +1572,11 @@ public class FinancialTransactionController implements Serializable {
         if (selectedBill.getPayments() == null || selectedBill.getPayments().isEmpty()) {
             selectedBill.setPayments(findPaymentsForBill(selectedBill));
         }
-        
+
         for (Payment p : selectedBill.getPayments()) {
             Payment np = p.copyAttributes();
             currentBillPayments.add(np);
-            
+
         }
     }
 
@@ -1591,9 +1594,9 @@ public class FinancialTransactionController implements Serializable {
         nonClosedShiftStartFundBill = null;
         paymentsFromShiftSratToNow = null;
         department = null;
-        
+
     }
-    
+
     public void resetClassVariablesForAcceptHandoverBill() {
         currentPayment = null;
         removingPayment = null;
@@ -1603,9 +1606,9 @@ public class FinancialTransactionController implements Serializable {
         nonClosedShiftStartFundBill = null;
         paymentsFromShiftSratToNow = null;
         department = null;
-        
+
     }
-    
+
     public void resetClassVariablesWithoutSelectedBill() {
         currentBill = null;
         currentPayment = null;
@@ -1616,7 +1619,7 @@ public class FinancialTransactionController implements Serializable {
         nonClosedShiftStartFundBill = null;
         paymentsFromShiftSratToNow = null;
     }
-    
+
     public List<Payment> findPaymentsForBill(Bill b) {
         String jpql = "select p "
                 + " from Payment p "
@@ -1628,7 +1631,7 @@ public class FinancialTransactionController implements Serializable {
         m.put("ret", false);
         return paymentFacade.findByJpql(jpql, m);
     }
-    
+
     public void addPaymentToInitialFundBill() {
         if (currentBill == null) {
             JsfUtil.addErrorMessage("Error");
@@ -1653,7 +1656,7 @@ public class FinancialTransactionController implements Serializable {
         getCurrentPayment().setCurrencyDenominations(null);
         getCurrentPayment().setCurrencyDenominationsJson("");
     }
-    
+
     public void addPaymentToFundTransferBill() {
         if (currentBill == null) {
             JsfUtil.addErrorMessage("Error");
@@ -1675,7 +1678,7 @@ public class FinancialTransactionController implements Serializable {
         calculateFundTransferBillTotal();
         currentPayment = null;
     }
-    
+
     public void addPaymentToShiftEndFundBill() {
         if (currentBill == null) {
             JsfUtil.addErrorMessage("Error");
@@ -1697,7 +1700,7 @@ public class FinancialTransactionController implements Serializable {
         calculateShiftEndFundBillTotal();
         currentPayment = null;
     }
-    
+
     public void addPaymentToWithdrawalFundBill() {
         if (currentBill == null) {
             JsfUtil.addErrorMessage("Error");
@@ -1719,13 +1722,13 @@ public class FinancialTransactionController implements Serializable {
         calculateWithdrawalFundBillTotal();
         currentPayment = null;
     }
-    
+
     public void removePayment() {
         getCurrentBillPayments().remove(removingPayment);
         calculateInitialFundBillTotal();
         currentPayment = null;
     }
-    
+
     private void calculateInitialFundBillTotal() {
         double total = 0.0;
         for (Payment p : getCurrentBillPayments()) {
@@ -1734,7 +1737,7 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setTotal(total);
         currentBill.setNetTotal(total);
     }
-    
+
     private void calculateFundTransferBillTotal() {
         double total = 0.0;
         for (Payment p : getCurrentBillPayments()) {
@@ -1743,7 +1746,7 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setTotal(total);
         currentBill.setNetTotal(total);
     }
-    
+
     private void calculateShiftEndFundBillTotal() {
         double total = 0.0;
         for (Payment p : getCurrentBillPayments()) {
@@ -1752,7 +1755,7 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setTotal(total);
         currentBill.setNetTotal(total);
     }
-    
+
     private void calculateWithdrawalFundBillTotal() {
         double total = 0.0;
         for (Payment p : getCurrentBillPayments()) {
@@ -1761,7 +1764,7 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setTotal(total);
         currentBill.setNetTotal(total);
     }
-    
+
     public String settleInitialFundBill() {
         if (currentBill == null) {
             JsfUtil.addErrorMessage("Error");
@@ -1774,16 +1777,16 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setDepartment(sessionController.getDepartment());
         currentBill.setInstitution(sessionController.getInstitution());
         currentBill.setStaff(sessionController.getLoggedUser().getStaff());
-        
+
         currentBill.setBillDate(new Date());
         currentBill.setBillTime(new Date());
-        
+
         findNonClosedShiftStartFundBillIsAvailable();
         if (nonClosedShiftStartFundBill != null) {
             JsfUtil.addErrorMessage("A shift start fund bill is already available for closure.");
             return "";
         }
-        
+
         billController.save(currentBill);
         for (Payment p : getCurrentBillPayments()) {
             p.setBill(currentBill);
@@ -1795,7 +1798,7 @@ public class FinancialTransactionController implements Serializable {
         }
         return "/cashier/initial_fund_bill_print?faces-redirect=true";
     }
-    
+
     public String settleFundTransferBill() {
         if (currentBill == null) {
             JsfUtil.addErrorMessage("Error");
@@ -1813,10 +1816,10 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setInstitution(sessionController.getInstitution());
         currentBill.setStaff(sessionController.getLoggedUser().getStaff());
         currentBill.setFromStaff(sessionController.getLoggedUser().getStaff());
-        
+
         currentBill.setBillDate(new Date());
         currentBill.setBillTime(new Date());
-        
+
         billController.save(currentBill);
         for (Payment p : getCurrentBillPayments()) {
             p.setBill(currentBill);
@@ -1828,7 +1831,7 @@ public class FinancialTransactionController implements Serializable {
         billController.save(currentBill);
         return "/cashier/fund_transfer_bill_print?faces-redirect=true";
     }
-    
+
     public String settleWithdrawalFundBill() {
         if (currentBill == null) {
             JsfUtil.addErrorMessage("Error");
@@ -1841,10 +1844,10 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setDepartment(sessionController.getDepartment());
         currentBill.setInstitution(sessionController.getInstitution());
         currentBill.setStaff(sessionController.getLoggedUser().getStaff());
-        
+
         currentBill.setBillDate(new Date());
         currentBill.setBillTime(new Date());
-        
+
         billController.save(currentBill);
         for (Payment p : getCurrentBillPayments()) {
             p.setBill(currentBill);
@@ -1863,7 +1866,7 @@ public class FinancialTransactionController implements Serializable {
         findNonClosedShiftStartFundBillIsAvailable();
         fillPaymentsFromShiftStartToNow();
     }
-    
+
     public String navigateToCreateShiftEndSummaryBill() {
         resetClassVariables();
         findNonClosedShiftStartFundBillIsAvailable();
@@ -1879,7 +1882,7 @@ public class FinancialTransactionController implements Serializable {
         }
         return "/cashier/shift_end_summery_bill?faces-redirect=true";
     }
-    
+
     public String navigateToHandoverCreateBill() {
         resetClassVariables();
         handoverValuesCreated = false;
@@ -1892,80 +1895,95 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setReferenceBill(null);
         return "/cashier/handover_start?faces-redirect=true";
     }
-    
+
+    public String navigateToHandoverCreateBillForAllDaysAndDepartmentsForCurrentShift() {
+        resetClassVariables();
+        handoverValuesCreated = false;
+        Bill startBill = findNonClosedShiftStartFundBill(sessionController.getLoggedUser());
+        bundle = generatePaymentsFromShiftStartToEndToEnterToCashbookFilteredByDateAndDepartment(startBill, null);
+        bundle.setUser(sessionController.getLoggedUser());
+        bundle.aggregateTotals();
+        currentBill = new Bill();
+        currentBill.setBillType(BillType.CashHandoverCreateBill);
+        currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE);
+        currentBill.setBillClassType(BillClassType.PreBill);
+        currentBill.setReferenceBill(null);
+        return "/cashier/handover_start_all?faces-redirect=true";
+    }
+
     public String navigateToDayEndSummary() {
         return "/analytics/day_end_summery?faces-redirect=true";
     }
-    
+
     public void processDayEndSummary() {
         resetClassVariables();
         fillPaymentsForDateRange();
         createPaymentSummery();
-        
+
     }
-    
+
     private void createPaymentSummery() {
-        
+
         if (paymentsFromShiftSratToNow == null) {
             return;
         }
         paymentSummaryBundle = new ReportTemplateRowBundle();
         Map<String, Double> aggregatedPayments = new HashMap<>();
         Map<String, ReportTemplateRow> keyMap = new HashMap<>();
-        
+
         for (Payment p : paymentsFromShiftSratToNow) {
-            
+
             if (p == null || p.getBill() == null) {
                 continue; // Skip this iteration if p or p.getBill() is null
             }
-            
+
             ReportTemplateRow row = new ReportTemplateRow();
-            
+
             if (p.getBill().getCategory() != null) {
                 row.setCategory(p.getBill().getCategory());
             }
-            
+
             if (p.getBill().getBillTypeAtomic() != null) {
                 row.setBillTypeAtomic(p.getBill().getBillTypeAtomic());
-                
+
                 if (p.getBill().getBillTypeAtomic().getServiceType() != null) {
                     row.setServiceType(p.getBill().getBillTypeAtomic().getServiceType());
                 }
             }
-            
+
             if (p.getBill().getCreditCompany() != null) {
                 row.setCreditCompany(p.getBill().getCreditCompany());
             }
-            
+
             if (p.getBill().getToDepartment() != null) {
                 row.setToDepartment(p.getBill().getToDepartment());
             }
-            
+
             row.setRowValue(p.getPaidValue());
-            
+
             String keyString = row.getCustomKey();
-            
+
             if (keyString != null) {
                 keyMap.putIfAbsent(keyString, row);
                 aggregatedPayments.merge(keyString, p.getPaidValue(), Double::sum);
             }
-            
+
         }
-        
+
         List<ReportTemplateRow> rows = aggregatedPayments.entrySet().stream().map(entry -> {
             ReportTemplateRow row = keyMap.get(entry.getKey());
-            
+
             if (row != null) {
                 row.setRowValue(entry.getValue());
             }
-            
+
             return row;
         }).collect(Collectors.toList());
-        
+
         getPaymentSummaryBundle().getReportTemplateRows().addAll(rows);
-        
+
     }
-    
+
     public String navigateToViewShiftSratToNow(Bill startBill) {
         resetClassVariables();
         if (startBill == null) {
@@ -1980,7 +1998,7 @@ public class FinancialTransactionController implements Serializable {
         fillPaymentsFromShiftStartToNow(startBill, startBill.getCreater());
         return "/cashier/shift_end_summery_bill_of_selected_user?faces-redirect=true";
     }
-    
+
     public String navigateToViewShiftSrartToEnd(Bill startBill) {
         resetClassVariables();
         if (startBill == null) {
@@ -2001,7 +2019,8 @@ public class FinancialTransactionController implements Serializable {
         fillPaymentsFromShiftStartToEnd(startBill, endBill, startBill.getCreater());
         return "/cashier/shift_end_summery_bill_of_selected_user?faces-redirect=true";
     }
-    
+
+    @Deprecated
     public String navigateToCreateShiftEndSummaryBillByBills() {
         resetClassVariables();
         findNonClosedShiftStartFundBillIsAvailable();
@@ -2018,7 +2037,7 @@ public class FinancialTransactionController implements Serializable {
         }
         return "/cashier/shift_end_summery_bill_by_bills?faces-redirect=true";
     }
-    
+
     public void fillPaymentsFromShiftStartToNow() {
         paymentsFromShiftSratToNow = new ArrayList<>();
         if (nonClosedShiftStartFundBill == null) {
@@ -2051,9 +2070,9 @@ public class FinancialTransactionController implements Serializable {
         }
 //        calculateTotalFundsFromShiftStartToNow();
         financialReportByPayments = new FinancialReport(atomicBillTypeTotalsByPayments);
-        
+
     }
-    
+
     public void fillPaymentsFromShiftStartToNowNotYetStartedToEntereToCashbook() {
         paymentsFromShiftSratToNow = new ArrayList<>();
         if (nonClosedShiftStartFundBill == null) {
@@ -2068,26 +2087,26 @@ public class FinancialTransactionController implements Serializable {
                 + "AND p.id > :cid "
                 + "AND p.cashbookEntryStated = :started ";
         m.put("started", false);
-        
+
         jpql += "ORDER BY p.id DESC";
-        
+
         m.put("cr", nonClosedShiftStartFundBill.getCreater());
         m.put("ret", false);
         m.put("cid", shiftStartBillId);
         System.out.println("jpql = " + jpql);
         paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m);
-        
+
         atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
-        
+
         Set<Department> uniqueDepartments = new HashSet<>();
         Set<LocalDate> uniqueDates = new HashSet<>();
-        
+
         for (Payment p : paymentsFromShiftSratToNow) {
             Bill bill = p.getBill();
             if (bill == null) {
                 continue;
             }
-            
+
             if (bill.getBillTypeAtomic() == null) {
             } else {
                 Department dept = bill.getDepartment();
@@ -2095,7 +2114,7 @@ public class FinancialTransactionController implements Serializable {
                     uniqueDepartments.add(dept);
                 } else {
                 }
-                
+
                 if (p.getCreatedAt() != null) {
                     LocalDate createdDateOnly = p.getCreatedAt().toInstant()
                             .atZone(ZoneId.systemDefault())
@@ -2103,11 +2122,11 @@ public class FinancialTransactionController implements Serializable {
                     uniqueDates.add(createdDateOnly);
                 } else {
                 }
-                
+
                 atomicBillTypeTotalsByPayments.addOrUpdateAtomicRecord(bill.getBillTypeAtomic(), p.getPaymentMethod(), p.getPaidValue());
             }
         }
-        
+
         cashbookDepartments = new ArrayList<>(uniqueDepartments);
 
         // Convert Set<LocalDate> to List<Date>
@@ -2116,10 +2135,10 @@ public class FinancialTransactionController implements Serializable {
             Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
             cashbookDates.add(date); // Add converted Date to the list
         }
-        
+
         financialReportByPayments = new FinancialReport(atomicBillTypeTotalsByPayments);
     }
-    
+
     public void fillPaymentsFromViewHandoverAcceptBill() {
         paymentsFromShiftSratToNow = new ArrayList<>();
         Map<String, Object> m = new HashMap<>();
@@ -2128,24 +2147,24 @@ public class FinancialTransactionController implements Serializable {
                 + "WHERE p.retired = :ret "
                 + "AND p.handoverCreatedBill = :hcb ";
         m.put("hcb", selectedBill);
-        
+
         jpql += "ORDER BY p.id DESC";
-        
+
         m.put("ret", false);
         System.out.println("jpql = " + jpql);
         paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m);
-        
+
         atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
         currentBillPayments = paymentsFromShiftSratToNow;
         Set<Department> uniqueDepartments = new HashSet<>();
         Set<LocalDate> uniqueDates = new HashSet<>();
-        
+
         for (Payment p : paymentsFromShiftSratToNow) {
             Bill bill = p.getBill();
             if (bill == null) {
                 continue;
             }
-            
+
             if (bill.getBillTypeAtomic() == null) {
             } else {
                 Department dept = bill.getDepartment();
@@ -2153,7 +2172,7 @@ public class FinancialTransactionController implements Serializable {
                     uniqueDepartments.add(dept);
                 } else {
                 }
-                
+
                 if (p.getCreatedAt() != null) {
                     LocalDate createdDateOnly = p.getCreatedAt().toInstant()
                             .atZone(ZoneId.systemDefault())
@@ -2161,11 +2180,11 @@ public class FinancialTransactionController implements Serializable {
                     uniqueDates.add(createdDateOnly);
                 } else {
                 }
-                
+
                 atomicBillTypeTotalsByPayments.addOrUpdateAtomicRecord(bill.getBillTypeAtomic(), p.getPaymentMethod(), p.getPaidValue());
             }
         }
-        
+
         cashbookDepartments = new ArrayList<>(uniqueDepartments);
 
         // Convert Set<LocalDate> to List<Date>
@@ -2174,21 +2193,21 @@ public class FinancialTransactionController implements Serializable {
             Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
             cashbookDates.add(date); // Add converted Date to the list
         }
-        
+
         financialReportByPayments = new FinancialReport(atomicBillTypeTotalsByPayments);
     }
-    
+
     public void fillPaymentsFromShiftStartToNowNotYetStartedToEntereToCashbookFilteredByDateAndDepartment() {
         paymentsFromShiftSratToNow = new ArrayList<>();
         if (nonClosedShiftStartFundBill == null) {
             return;
         }
         Long shiftStartBillId = nonClosedShiftStartFundBill.getId();
-        
+
         List<BillTypeAtomic> btas = new ArrayList<>();
         btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_IN));
         btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_OUT));
-        
+
         Map<String, Object> m = new HashMap<>();
         String jpql = "SELECT p FROM Payment p JOIN p.bill b "
                 + "WHERE p.creater = :cr "
@@ -2199,7 +2218,7 @@ public class FinancialTransactionController implements Serializable {
                 + "AND FUNCTION('DATE', p.createdAt) = :createdDate "
                 + "AND b.department = :dept "
                 + "ORDER BY p.id DESC";
-        
+
         m.put("dept", cashbookDepartment);
         m.put("btas", btas);
         m.put("createdDate", cashbookDate);
@@ -2243,14 +2262,14 @@ public class FinancialTransactionController implements Serializable {
 // Optionally, set other properties for the bundles
         cancelledBundle.setName("Cancelled Bills");
         cancelledBundle.setBundleType("cancelledBillBundle");
-        
+
         refundBundle.setName("Refunded Bills");
         refundBundle.setBundleType("refundBillBundle");
 //        
         chequeFromShiftSratToNow = paymentsFromShiftSratToNow.stream()
                 .filter(p -> p.getPaymentMethod() == PaymentMethod.Cheque)
                 .collect(Collectors.toList());
-        
+
         cardPaymentsFromShiftSratToNow = paymentsFromShiftSratToNow.stream()
                 .filter(p -> p.getPaymentMethod() == PaymentMethod.Card)
                 .collect(Collectors.toList());
@@ -2276,18 +2295,18 @@ public class FinancialTransactionController implements Serializable {
 // Optionally, set other properties for the bundles
         cardTransactionPaymentBundle.setName("Card Payments");
         cardTransactionPaymentBundle.setBundleType("paymentReportCard");
-        
+
         chequeTransactionPaymentBundle.setName("Cheque Payments");
         chequeTransactionPaymentBundle.setBundleType("paymentReportCheque");
-        
+
         atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
-        
+
         for (Payment p : paymentsFromShiftSratToNow) {
             Bill bill = p.getBill();
             if (bill == null) {
                 continue;
             }
-            
+
             if (bill.getBillTypeAtomic() == null) {
             } else {
                 atomicBillTypeTotalsByPayments.addOrUpdateAtomicRecord(bill.getBillTypeAtomic(), p.getPaymentMethod(), p.getPaidValue());
@@ -2296,7 +2315,72 @@ public class FinancialTransactionController implements Serializable {
         financialReportByPayments = new FinancialReport(atomicBillTypeTotalsByPayments);
         financialReportByPayments.getRefundedCash();
     }
-    
+
+    public ReportTemplateRowBundle generatePaymentsFromShiftStartToEndToEnterToCashbookFilteredByDateAndDepartment(
+            Bill startBill, Bill endBill) {
+        if (startBill == null || startBill.getId() == null || startBill.getCreater() == null) {
+            return null;
+        }
+
+        WebUser user = startBill.getCreater();
+
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_IN));
+        btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_OUT));
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("btas", btas);
+        m.put("started", false);
+        m.put("cr", user);
+        m.put("ret", false);
+        m.put("sid", startBill.getId());
+
+        StringBuilder jpqlBuilder = new StringBuilder("SELECT p FROM Payment p JOIN p.bill b WHERE p.creater = :cr ")
+                .append("AND p.retired = :ret AND p.id > :sid ");
+
+        if (endBill != null && endBill.getId() != null) {
+            jpqlBuilder.append("AND p.id < :eid ");
+            m.put("eid", endBill.getId());
+        }
+
+        jpqlBuilder.append("AND b.billTypeAtomic IN :btas AND p.cashbookEntryStated = :started ")
+                .append("ORDER BY p.createdAt, b.department, p.creater");
+
+        String jpql = jpqlBuilder.toString();
+
+        List<Payment> shiftPayments = paymentFacade.findByJpql(jpql, m);
+
+        // To hold grouped data
+        Map<String, ReportTemplateRowBundle> groupedBundles = new HashMap<>();
+
+        for (Payment p : shiftPayments) {
+            String key = sdf.format(p.getCreatedAt()) + "-" + p.getDepartment().getId() + "-" + p.getCreater().getId();
+
+            ReportTemplateRowBundle b = groupedBundles.getOrDefault(key, new ReportTemplateRowBundle());
+            b.setUser(user);
+            b.setDate(p.getCreatedAt());
+            b.setDepartment(p.getDepartment());
+
+            ReportTemplateRow r = new ReportTemplateRow();
+            r.setPayment(p);
+            b.getReportTemplateRows().add(r);
+
+            // Temporarily store the bundle
+            groupedBundles.put(key, b);
+        }
+
+        // Calculate totals once all payments have been grouped
+        for (ReportTemplateRowBundle tmpBundle : groupedBundles.values()) {
+            tmpBundle.calculateTotalsByPayments();
+        }
+
+        ReportTemplateRowBundle bundleToHoldDeptUserDayBundle = new ReportTemplateRowBundle();
+        bundleToHoldDeptUserDayBundle.setBundles(new ArrayList<>(groupedBundles.values()));
+        return bundleToHoldDeptUserDayBundle;
+    }
+
     public void fillPaymentsForDateRange() {
         paymentsFromShiftSratToNow = new ArrayList<>();
         String jpql = "SELECT p "
@@ -2309,7 +2393,7 @@ public class FinancialTransactionController implements Serializable {
         m.put("td", getToDate());
         m.put("ret", true);
     }
-    
+
     public void fillPaymentsFromShiftStartToNow(Bill startBill, WebUser user) {
         paymentsFromShiftSratToNow = new ArrayList<>();
         if (startBill == null) {
@@ -2341,7 +2425,7 @@ public class FinancialTransactionController implements Serializable {
         }
         financialReportByPayments = new FinancialReport(atomicBillTypeTotalsByPayments);
     }
-    
+
     public void fillPayments(Date fromDateParam, Date toDateParam, WebUser user) {
         paymentsFromShiftSratToNow = new ArrayList<>();
         if (fromDateParam == null) {
@@ -2352,7 +2436,7 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("No End Date");
             return;
         }
-        
+
         String jpql = "SELECT p "
                 + "FROM Payment p "
                 + "WHERE p.retired = :ret "
@@ -2363,13 +2447,13 @@ public class FinancialTransactionController implements Serializable {
             jpql += " and p.creater = :cr ";
             m.put("cr", user);
         }
-        
+
         m.put("ret", false);
         m.put("sid", fromDateParam);
         m.put("eid", toDateParam);
-        
+
         System.out.println("m = " + m);
-        
+
         paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m);
         atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
         for (Payment p : paymentsFromShiftSratToNow) {
@@ -2380,7 +2464,7 @@ public class FinancialTransactionController implements Serializable {
         }
         financialReportByPayments = new FinancialReport(atomicBillTypeTotalsByPayments);
     }
-    
+
     public void fillPaymentsFromShiftStartToEnd(Bill startBill, Bill endBill, WebUser user) {
         paymentsFromShiftSratToNow = new ArrayList<>();
         if (startBill == null) {
@@ -2405,9 +2489,9 @@ public class FinancialTransactionController implements Serializable {
         m.put("ret", false);
         m.put("sid", shiftStartBillId);
         m.put("eid", shiftEndBillId);
-        
+
         System.out.println("m = " + m);
-        
+
         paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m);
         atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
         for (Payment p : paymentsFromShiftSratToNow) {
@@ -2418,7 +2502,7 @@ public class FinancialTransactionController implements Serializable {
         }
         financialReportByPayments = new FinancialReport(atomicBillTypeTotalsByPayments);
     }
-    
+
     public void fillBillsFromShiftStartToNow() {
         currentBills = new ArrayList<>();
         if (nonClosedShiftStartFundBill == null) {
@@ -2433,7 +2517,7 @@ public class FinancialTransactionController implements Serializable {
         billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.FLOAT_INCREASE));
         billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.FLOAT_STARTING_BALANCE));
         billTypesToFilter.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.FLOAT_CLOSING_BALANCE));
-        
+
         Long shiftStartBillId = nonClosedShiftStartFundBill.getId();
         String jpql = "SELECT p "
                 + "FROM Bill p "
@@ -2504,7 +2588,7 @@ public class FinancialTransactionController implements Serializable {
         if (p.getBillTypeAtomic() == null) {
             return;
         }
-        
+
         paymentMethodValues.addValue(p);
 
 //        switch (p.getBillTypeAtomic().getBillCategory()) {
@@ -2528,7 +2612,7 @@ public class FinancialTransactionController implements Serializable {
 //
 //        }
     }
-    
+
     public void calculateTotalFundsFromShiftStartToNow() {
         //System.out.println("additions");
         //System.out.println("financialReportByPayments.getBankWithdrawals() = " + financialReportByPayments.getBankWithdrawals());
@@ -2548,48 +2632,48 @@ public class FinancialTransactionController implements Serializable {
         //System.out.println("financialReportByPayments.getBankDeposits() = " + financialReportByPayments.getBankDeposits());
         totalFunds = additions - Deductions;
         shiftEndTotalValue = totalFunds;
-        
+
     }
-    
+
     public void resetTotalFundsValues() {
         totalOpdBillValue = 0.0;
         totalPharmecyBillValue = 0.0;
         totalChannelBillValue = 0.0;
         totalCcBillValue = 0.0;
         totalProfessionalPaymentBillValue = 0.0;
-        
+
         totalOpdBillCanceledValue = 0.0;
         totalPharmecyBillCanceledValue = 0.0;
         totalChannelBillCancelledValue = 0.0;
         totalCcBillCanceledValue = 0.0;
         totalProfessionalPaymentBillCancelledValue = 0.0;
-        
+
         totalOpdBillRefundValue = 0.0;
         totalPharmacyBillRefundValue = 0.0;
         totalChannelBillRefundValue = 0.0;
         totalCcBillRefundValue = 0.0;
-        
+
         totalBillRefundValue = 0.0;
         totalBillCancelledValue = 0.0;
         totalBilledBillValue = 0.0;
-        
+
         totalShiftStartValue = 0.0;
         totalBalanceTransfer = 0.0;
         totalTransferRecive = 0.0;
-        
+
         totalFunds = 0.0;
         shiftEndTotalValue = 0.0;
         shiftEndRefundBillValue = 0.0;
         shiftEndCanceledBillValue = 0.0;
         totalWithdrawals = 0.0;
         totalDeposits = 0.0;
-        
+
         Deductions = 0.0;
         additions = 0.0;
-        
+
         fundTransferBillsToReceiveCount = 0;
     }
-    
+
     public void findNonClosedShiftStartFundBillIsAvailable() {
         nonClosedShiftStartFundBill = null;
         String jpql = "select b "
@@ -2604,7 +2688,22 @@ public class FinancialTransactionController implements Serializable {
         m.put("ofb", BillType.ShiftStartFundBill);
         nonClosedShiftStartFundBill = billFacade.findFirstByJpql(jpql, m);
     }
-    
+
+    public Bill findNonClosedShiftStartFundBill(WebUser user) {
+        nonClosedShiftStartFundBill = null;
+        String jpql = "select b "
+                + " from Bill b "
+                + " where b.creater=:user "
+                + " and b.retired=:ret "
+                + " and b.billType=:ofb "
+                + " and b.referenceBill is null";
+        Map m = new HashMap();
+        m.put("user", user);
+        m.put("ret", false);
+        m.put("ofb", BillType.ShiftStartFundBill);
+        return billFacade.findFirstByJpql(jpql, m);
+    }
+
     public void listBillsFromInitialFundBillUpToNow() {
         List<Bill> shiftStartFundBill;
         String jpql = "select b "
@@ -2618,12 +2717,12 @@ public class FinancialTransactionController implements Serializable {
         m.put("ret", false);
         m.put("ofb", BillType.ShiftStartFundBill);
         shiftStartFundBill = billFacade.findByJpql(jpql, m);
-        
+
     }
-    
+
     public String settleShiftEndFundBill() {
         boolean fundTransferBillTocollect = false;
-        
+
         if (currentBill == null) {
             JsfUtil.addErrorMessage("Error");
             return "";
@@ -2639,12 +2738,12 @@ public class FinancialTransactionController implements Serializable {
         if (fundTransferBillsToReceive != null && !fundTransferBillsToReceive.isEmpty()) {
             fundTransferBillTocollect = true;
         }
-        
+
         if (fundTransferBillTocollect) {
             JsfUtil.addErrorMessage("Please collect funds transferred to you before closing.");
             return "";
         }
-        
+
         currentBill.setDepartment(sessionController.getDepartment());
         currentBill.setInstitution(sessionController.getInstitution());
         currentBill.setStaff(sessionController.getLoggedUser().getStaff());
@@ -2662,133 +2761,133 @@ public class FinancialTransactionController implements Serializable {
         calculateTotalFundsFromShiftStartToNow();
         nonClosedShiftStartFundBill.setReferenceBill(currentBill);
         billController.save(nonClosedShiftStartFundBill);
-        
+
         BillComponent bcCollectedCash = new BillComponent();
         bcCollectedCash.setName("Collected Cash");
         bcCollectedCash.setComponentValue(financialReportByPayments.getCollectedCash());
         bcCollectedCash.setBill(currentBill);
         billComponentFacade.create(bcCollectedCash);
-        
+
         BillComponent bcRefundedCash = new BillComponent();
         bcRefundedCash.setName("Refunded Cash");
         bcRefundedCash.setComponentValue(financialReportByPayments.getRefundedCash());
         bcRefundedCash.setBill(currentBill);
         billComponentFacade.create(bcRefundedCash);
-        
+
         BillComponent bcNetCashTotal = new BillComponent();
         bcNetCashTotal.setName("Net Cash Total");
         bcNetCashTotal.setComponentValue(financialReportByPayments.getNetCashTotal());
         bcNetCashTotal.setBill(currentBill);
         billComponentFacade.create(bcNetCashTotal);
-        
+
         BillComponent bcCollectedCreditCard = new BillComponent();
         bcCollectedCreditCard.setName("Collected Credit Card");
         bcCollectedCreditCard.setComponentValue(financialReportByPayments.getCollectedCreditCard());
         bcCollectedCreditCard.setBill(currentBill);
         billComponentFacade.create(bcCollectedCreditCard);
-        
+
         BillComponent bcRefundedCreditCard = new BillComponent();
         bcRefundedCreditCard.setName("Refunded Credit Card");
         bcRefundedCreditCard.setComponentValue(financialReportByPayments.getRefundedCreditCard());
         bcRefundedCreditCard.setBill(currentBill);
         billComponentFacade.create(bcRefundedCreditCard);
-        
+
         BillComponent bcNetCreditCardTotal = new BillComponent();
         bcNetCreditCardTotal.setName("Net Credit Card Total");
         bcNetCreditCardTotal.setComponentValue(financialReportByPayments.getNetCreditCardTotal());
         bcNetCreditCardTotal.setBill(currentBill);
         billComponentFacade.create(bcNetCreditCardTotal);
-        
+
         BillComponent bcCollectedVoucher = new BillComponent();
         bcCollectedVoucher.setName("Collected Voucher");
         bcCollectedVoucher.setComponentValue(financialReportByPayments.getCollectedVoucher());
         bcCollectedVoucher.setBill(currentBill);
         billComponentFacade.create(bcCollectedVoucher);
-        
+
         BillComponent bcRefundedVoucher = new BillComponent();
         bcRefundedVoucher.setName("Refunded Voucher");
         bcRefundedVoucher.setComponentValue(financialReportByPayments.getRefundedVoucher());
         bcRefundedVoucher.setBill(currentBill);
         billComponentFacade.create(bcRefundedVoucher);
-        
+
         BillComponent bcNetVoucherTotal = new BillComponent();
         bcNetVoucherTotal.setName("Net Voucher Total");
         bcNetVoucherTotal.setComponentValue(financialReportByPayments.getNetVoucherTotal());
         bcNetVoucherTotal.setBill(currentBill);
         billComponentFacade.create(bcNetVoucherTotal);
-        
+
         BillComponent bcCollectedOtherNonCredit = new BillComponent();
         bcCollectedOtherNonCredit.setName("Collected Other Non-Credit");
         bcCollectedOtherNonCredit.setComponentValue(financialReportByPayments.getCollectedOtherNonCredit());
         bcCollectedOtherNonCredit.setBill(currentBill);
         billComponentFacade.create(bcCollectedOtherNonCredit);
-        
+
         BillComponent bcRefundedOtherNonCredit = new BillComponent();
         bcRefundedOtherNonCredit.setName("Refunded Other Non-Credit");
         bcRefundedOtherNonCredit.setComponentValue(financialReportByPayments.getRefundedOtherNonCredit());
         bcRefundedOtherNonCredit.setBill(currentBill);
         billComponentFacade.create(bcRefundedOtherNonCredit);
-        
+
         BillComponent bcNetOtherNonCreditTotal = new BillComponent();
         bcNetOtherNonCreditTotal.setName("Net Other Non-Credit Total");
         bcNetOtherNonCreditTotal.setComponentValue(financialReportByPayments.getNetOtherNonCreditTotal());
         bcNetOtherNonCreditTotal.setBill(currentBill);
         billComponentFacade.create(bcNetOtherNonCreditTotal);
-        
+
         BillComponent bcShiftStartFunds = new BillComponent();
         bcShiftStartFunds.setName("Shift Start Funds");
         bcShiftStartFunds.setComponentValue(financialReportByPayments.getShiftStartFunds());
         bcShiftStartFunds.setBill(currentBill);
         billComponentFacade.create(bcShiftStartFunds);
-        
+
         BillComponent bcFloatReceived = new BillComponent();
         bcFloatReceived.setName("Float Received");
         bcFloatReceived.setComponentValue(financialReportByPayments.getFloatReceived());
         bcFloatReceived.setBill(currentBill);
         billComponentFacade.create(bcFloatReceived);
-        
+
         BillComponent bcFloatHandover = new BillComponent();
         bcFloatHandover.setName("Float Handover");
         bcFloatHandover.setComponentValue(financialReportByPayments.getFloatHandover());
         bcFloatHandover.setBill(currentBill);
         billComponentFacade.create(bcFloatHandover);
-        
+
         BillComponent bcBankWithdrawals = new BillComponent();
         bcBankWithdrawals.setName("Bank Withdrawals");
         bcBankWithdrawals.setComponentValue(financialReportByPayments.getBankWithdrawals());
         bcBankWithdrawals.setBill(currentBill);
         billComponentFacade.create(bcBankWithdrawals);
-        
+
         BillComponent bcBankDeposits = new BillComponent();
         bcBankDeposits.setName("Bank Deposits");
         bcBankDeposits.setComponentValue(financialReportByPayments.getBankDeposits());
         bcBankDeposits.setBill(currentBill);
         billComponentFacade.create(bcBankDeposits);
-        
+
         BillComponent bcCashCollectedTransferIn = new BillComponent();
         bcCashCollectedTransferIn.setName("Cash Collected Transfer In");
         bcCashCollectedTransferIn.setComponentValue(financialReportByPayments.getCashCollectedTransferIn());
         bcCashCollectedTransferIn.setBill(currentBill);
         billComponentFacade.create(bcCashCollectedTransferIn);
-        
+
         BillComponent bcCashGivenOutTransferOut = new BillComponent();
         bcCashGivenOutTransferOut.setName("Cash Given Out Transfer Out");
         bcCashGivenOutTransferOut.setComponentValue(financialReportByPayments.getCashGivenOutTransferOut());
         bcCashGivenOutTransferOut.setBill(currentBill);
         billComponentFacade.create(bcCashGivenOutTransferOut);
-        
+
         BillComponent bcTotal = new BillComponent();
         bcTotal.setName("Total");
         bcTotal.setComponentValue(financialReportByPayments.getTotal());
         bcTotal.setBill(currentBill);
         billComponentFacade.create(bcTotal);
-        
+
         BillComponent bcShortExcess = new BillComponent();
         bcShortExcess.setName("Short/Excess");
         bcShortExcess.setComponentValue(currentBill.getNetTotal() - financialReportByPayments.getTotal());
         bcShortExcess.setBill(currentBill);
         billComponentFacade.create(bcShortExcess);
-        
+
         currentBill.getBillComponents().add(bcCollectedCash);
         currentBill.getBillComponents().add(bcRefundedCash);
         currentBill.getBillComponents().add(bcNetCashTotal);
@@ -2805,10 +2904,10 @@ public class FinancialTransactionController implements Serializable {
         currentBill.getBillComponents().add(bcFloatReceived);
         currentBill.getBillComponents().add(bcFloatHandover);
         currentBill.getBillComponents().add(bcBankWithdrawals);
-        
+
         return "/cashier/shift_end_summery_bill_print?faces-redirect=true";
     }
-    
+
     public String settleHandoverStartBill() {
         boolean fundTransferBillTocollect = false;
         if (!handoverValuesCreated) {
@@ -2839,12 +2938,12 @@ public class FinancialTransactionController implements Serializable {
             p.setHandoverCreatedBill(currentBill);
             p.setCashbookEntryStated(true);
             p.setCashbookEntryCompleted(false);
-            
+
             paymentController.save(p);
         }
-        
+
         billController.save(currentBill);
-        
+
         for (PaymentMethodValue pmv : handingOverPaymentMethodValues) {
             if (pmv.getId() == null) {
                 paymentMethodValueFacade.create(pmv);
@@ -2856,11 +2955,11 @@ public class FinancialTransactionController implements Serializable {
             bc.setComponentValue(pmv.getAmount());
             bc.setBill(currentBill);
             billComponentFacade.create(bc);
-            
+
             currentBill.getBillComponents().add(bc);
-            
+
         }
-        
+
         return "/cashier/handover_creation_bill_print?faces-redirect=true";
     }
 
@@ -2901,9 +3000,9 @@ public class FinancialTransactionController implements Serializable {
         tempMap.put("logStaff", sessionController.getLoggedUser().getStaff());
         fundTransferBillsToReceive = billFacade.findByJpql(sql, tempMap);
         fundTransferBillsToReceiveCount = fundTransferBillsToReceive.size();
-        
+
     }
-    
+
     public void fillHandoverBillsForMeToReceive() {
         String sql;
         fundTransferBillsToReceive = new ArrayDeque<>();
@@ -2920,21 +3019,21 @@ public class FinancialTransactionController implements Serializable {
         tempMap.put("ret", false);
         tempMap.put("logStaff", sessionController.getLoggedUser().getStaff());
         handovertBillsToReceive = billFacade.findByJpql(sql, tempMap);
-        
+
         try {
             handoverBillsToReceiveCount = handovertBillsToReceive.size();
         } catch (Exception e) {
             handoverBillsToReceiveCount = 0;
         }
-        
+
     }
-    
+
     public List<Bill> findHandoverCompletionBills(ReportTemplateRow row) {
         String sql;
         Staff forStaff = row.getUser().getStaff();
         Date forDate = row.getDate();
         Department forDepartment = row.getDepartment();
-        
+
         List<Bill> bills;
         Map tempMap = new HashMap();
         sql = "select s "
@@ -2951,28 +3050,28 @@ public class FinancialTransactionController implements Serializable {
         bills = billFacade.findByJpql(sql, tempMap);
         return bills;
     }
-    
+
     public String settleFundTransferReceiveBill() {
         if (currentBill == null) {
             JsfUtil.addErrorMessage("Error");
             return "";
         }
-        
+
         if (currentBill.getReferenceBill() == null) {
             JsfUtil.addErrorMessage("Error");
             return "";
         }
-        
+
         if (currentBill.getBillType() != BillType.FundTransferReceivedBill) {
             JsfUtil.addErrorMessage("Error - bill type");
             return "";
         }
-        
+
         if (currentBill.getReferenceBill().getBillType() != BillType.FundTransferBill) {
             JsfUtil.addErrorMessage("Error - Reference bill type");
             return "";
         }
-        
+
         currentBill.setDepartment(sessionController.getDepartment());
         currentBill.setInstitution(sessionController.getInstitution());
         currentBill.setStaff(sessionController.getLoggedUser().getStaff());
@@ -2987,10 +3086,10 @@ public class FinancialTransactionController implements Serializable {
         }
         currentBill.getReferenceBill().setReferenceBill(currentBill);
         billController.save(currentBill.getReferenceBill());
-        
+
         return "/cashier/fund_transfer_receive_bill_print?faces-redirect=true";
     }
-    
+
     public String acceptHandoverBill() {
         if (currentBill == null) {
             JsfUtil.addErrorMessage("Error");
@@ -3000,17 +3099,17 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Error");
             return "";
         }
-        
+
         if (currentBill.getBillType() != BillType.CashHandoverAcceptBill) {
             JsfUtil.addErrorMessage("Error - bill type");
             return "";
         }
-        
+
         if (currentBill.getReferenceBill().getBillType() != BillType.CashHandoverCreateBill) {
             JsfUtil.addErrorMessage("Error - Reference bill type");
             return "";
         }
-        
+
         currentBill.setDepartment(sessionController.getDepartment());
         currentBill.setInstitution(sessionController.getInstitution());
         currentBill.setStaff(sessionController.getLoggedUser().getStaff());
@@ -3020,9 +3119,9 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setFromDepartment(currentBill.getReferenceBill().getFromDepartment());
         double total = 0.0;
         billController.save(currentBill);
-        
+
         Map<PaymentMethod, Double> paymentMethodTotals = new HashMap<>();
-        
+
         for (Payment p : currentBillPayments) {
             PaymentMethod method = p.getPaymentMethod();
             Double amount = p.getPaidValue();
@@ -3042,24 +3141,24 @@ public class FinancialTransactionController implements Serializable {
             pmv.setCreatedAt(new Date());
             paymentMethodValueFacade.create(pmv);
             pmvs.add(pmv);
-            
+
             BillComponent bc = new BillComponent();
             bc.setName("Collected  " + pmv.getPaymentMethod().getLabel());
             bc.setComponentValue(pmv.getAmount());
             bc.setPaymentMethodValue(pmv);
             bc.setBill(currentBill);
             billComponentFacade.create(bc);
-            
+
             currentBill.getBillComponents().add(bc);
-            
+
         }
-        
+
         handingOverPaymentMethodValues = pmvs;
-        
+
         currentBill.getReferenceBill().setReferenceBill(currentBill);
         currentBill.setNetTotal(total);
         billController.save(currentBill.getReferenceBill());
-        
+
         return "/cashier/handover_receive_bill_print?faces-redirect=true";
     }
 
@@ -3087,20 +3186,20 @@ public class FinancialTransactionController implements Serializable {
         calculateFundDepositBillTotal();
         currentPayment = null;
     }
-    
+
     public void addShortageRecord() {
-        if (currentPayment == null ) {
+        if (currentPayment == null) {
             JsfUtil.addErrorMessage("Please provide valid amount for the shortage.");
             return;
         }
-        currentPayment.setPaidValue(0-Math.abs(currentPayment.getPaidValue()));
+        currentPayment.setPaidValue(0 - Math.abs(currentPayment.getPaidValue()));
         currentPayment.setCreatedAt(new Date()); // Set payment date to now
         currentBillPayments.add(currentPayment); // Add to the current bill's payments list
         calculateShortageBillTotal();
         JsfUtil.addSuccessMessage("Shortage recorded successfully.");
         currentPayment = new Payment(); // Reset currentPayment for the next entry
     }
-    
+
     public void removeShortageRecord(Payment payment) {
         if (payment == null || !currentBillPayments.remove(payment)) {
             JsfUtil.addErrorMessage("Failed to remove the record or record not found.");
@@ -3115,11 +3214,11 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("No excess records to settle.");
             return "";  // Staying on the same page due to lack of records
         }
-        
+
         currentBill.setDepartment(sessionController.getDepartment());
         currentBill.setInstitution(sessionController.getInstitution());
         currentBill.setStaff(sessionController.getLoggedUser().getStaff());
-        
+
         currentBill.setBillDate(new Date());
         currentBill.setBillTime(new Date());
 
@@ -3139,15 +3238,15 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Please enter a valid excess amount.");
             return;
         }
-        
+
         currentPayment.setCreatedAt(new Date());
         currentPayment.setPaidValue(Math.abs(currentPayment.getPaidValue()));
         currentBillPayments.add(currentPayment); // Add to current bill's payments list
         calculateExcessBillTotal();
         JsfUtil.addSuccessMessage("Excess record added successfully.");
-        
+
         currentPayment = new Payment(); // Reset currentPayment for next entry
-        
+
     }
 
 // Method to remove an excess record
@@ -3158,7 +3257,7 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addSuccessMessage("Excess record removed successfully.");
         }
     }
-    
+
     public String settleShiftShortages() {
         if (currentBill == null || currentBillPayments.isEmpty()) {
             JsfUtil.addErrorMessage("No shortage records to settle or no current bill set.");
@@ -3175,7 +3274,7 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setDepartment(sessionController.getDepartment());
         currentBill.setInstitution(sessionController.getInstitution());
         currentBill.setStaff(sessionController.getLoggedUser().getStaff());
-        
+
         try {
             billController.save(currentBill);  // Save the bill
             // Save each payment linked to this bill
@@ -3185,7 +3284,7 @@ public class FinancialTransactionController implements Serializable {
                 p.setInstitution(sessionController.getInstitution());
                 paymentController.save(p);
             }
-            
+
             JsfUtil.addSuccessMessage("All shift shortage records have been successfully recorded.");
             return "/cashier/record_shift_shortage_print?faces-redirect=true";  // Redirect to a summary page
         } catch (Exception e) {
@@ -3193,7 +3292,7 @@ public class FinancialTransactionController implements Serializable {
             return "";  // Optionally, redirect to an error page
         }
     }
-    
+
     private void calculateShortageBillTotal() {
         double total = 0.0;
         for (Payment p : getCurrentBillPayments()) {
@@ -3202,7 +3301,7 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setTotal(total);
         currentBill.setNetTotal(total);
     }
-    
+
     private void calculateExcessBillTotal() {
         double total = 0.0;
         for (Payment p : getCurrentBillPayments()) {
@@ -3211,7 +3310,7 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setTotal(total);
         currentBill.setNetTotal(total);
     }
-    
+
     private void calculateFundDepositBillTotal() {
         double total = 0.0;
         for (Payment p : getCurrentBillPayments()) {
@@ -3220,7 +3319,7 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setTotal(total);
         currentBill.setNetTotal(total);
     }
-    
+
     public String settleFundDepositBill() {
         if (currentBill == null) {
             JsfUtil.addErrorMessage("Error");
@@ -3233,10 +3332,10 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setDepartment(sessionController.getDepartment());
         currentBill.setInstitution(sessionController.getInstitution());
         currentBill.setStaff(sessionController.getLoggedUser().getStaff());
-        
+
         currentBill.setBillDate(new Date());
         currentBill.setBillTime(new Date());
-        
+
         billController.save(currentBill);
         for (Payment p : getCurrentBillPayments()) {
             p.setBill(currentBill);
@@ -3253,7 +3352,7 @@ public class FinancialTransactionController implements Serializable {
         prepareToAddNewWithdrawalProcessingBill();
         return "/cashier/fund_withdrawal_bill?faces-redirect=true;";
     }
-    
+
     private void prepareToAddNewWithdrawalProcessingBill() {
         currentBillPayments = null;
         currentBill = new Bill();
@@ -3288,7 +3387,7 @@ public class FinancialTransactionController implements Serializable {
             pmvs.add(pmv);
 //            paymentMethodValueFacade.create(pmv);
         }
-        
+
         handingOverPaymentMethodValues = pmvs;
         currentBill.setNetTotal(totalValue);
         handoverValuesCreated = true;
@@ -3299,11 +3398,11 @@ public class FinancialTransactionController implements Serializable {
     public Bill getCurrentBill() {
         return currentBill;
     }
-    
+
     public void setCurrentBill(Bill currentBill) {
         this.currentBill = currentBill;
     }
-    
+
     public Payment getCurrentPayment() {
         if (currentPayment == null) {
             currentPayment = new Payment();
@@ -3313,24 +3412,24 @@ public class FinancialTransactionController implements Serializable {
         }
         return currentPayment;
     }
-    
+
     public PaymentMethodData getPaymentMethodData() {
         if (paymentMethodData == null) {
             paymentMethodData = new PaymentMethodData();
         }
         return paymentMethodData;
     }
-    
+
     public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
         this.paymentMethodData = paymentMethodData;
     }
-    
+
     public void updateCashDenominations(AjaxBehaviorEvent event) {
-        
+
         if (currentPayment == null) {
             return;
         }
-        
+
         double total = 0;
         List<Denomination> denominations = currentPayment.getCurrencyDenominations();
         for (Denomination denomination : denominations) {
@@ -3349,42 +3448,42 @@ public class FinancialTransactionController implements Serializable {
         }
         currentPayment.setCurrencyDenominationsJson(jsonArray.toString());
     }
-    
+
     public void setCurrentPayment(Payment currentPayment) {
         this.currentPayment = currentPayment;
     }
-    
+
     public List<Payment> getCurrentBillPayments() {
         if (currentBillPayments == null) {
             currentBillPayments = new ArrayList<>();
         }
         return currentBillPayments;
     }
-    
+
     public void setCurrentBillPayments(List<Payment> currentBillPayments) {
         this.currentBillPayments = currentBillPayments;
     }
-    
+
     public Payment getRemovingPayment() {
         return removingPayment;
     }
-    
+
     public void setRemovingPayment(Payment removingPayment) {
         this.removingPayment = removingPayment;
     }
-    
+
     public List<Bill> getFundTransferBillsToReceive() {
         return fundTransferBillsToReceive;
     }
-    
+
     public void setFundTransferBillsToReceive(List<Bill> fundTransferBillsToReceive) {
         this.fundTransferBillsToReceive = fundTransferBillsToReceive;
     }
-    
+
     public Bill getSelectedBill() {
         return selectedBill;
     }
-    
+
     public void setSelectedBill(Bill selectedBill) {
         this.selectedBill = selectedBill;
     }
@@ -3393,472 +3492,472 @@ public class FinancialTransactionController implements Serializable {
     public List<Bill> getFundBillsForClosureBills() {
         return fundBillsForClosureBills;
     }
-    
+
     public void setFundBillsForClosureBills(List<Bill> fundBillsForClosureBills) {
         this.fundBillsForClosureBills = fundBillsForClosureBills;
     }
-    
+
     public Bill getNonClosedShiftStartFundBill() {
         return nonClosedShiftStartFundBill;
     }
-    
+
     public void setNonClosedShiftStartFundBill(Bill nonClosedShiftStartFundBill) {
         this.nonClosedShiftStartFundBill = nonClosedShiftStartFundBill;
     }
-    
+
     public List<Payment> getPaymentsFromShiftSratToNow() {
         if (paymentsFromShiftSratToNow == null) {
             paymentsFromShiftSratToNow = new ArrayList<>();
         }
         return paymentsFromShiftSratToNow;
     }
-    
+
     public void setPaymentsFromShiftSratToNow(List<Payment> paymentsFromShiftSratToNow) {
         this.paymentsFromShiftSratToNow = paymentsFromShiftSratToNow;
     }
-    
+
     public List<Bill> getAllBillsShiftStartToNow() {
         if (allBillsShiftStartToNow == null) {
             allBillsShiftStartToNow = new ArrayList<>();
         }
         return allBillsShiftStartToNow;
     }
-    
+
     public void setAllBillsShiftStartToNow(List<Bill> allBillsShiftStartToNow) {
         this.allBillsShiftStartToNow = allBillsShiftStartToNow;
     }
-    
+
     public double getTotalOpdBillValue() {
         return totalOpdBillValue;
     }
-    
+
     public void setTotalOpdBillValue(double totalOpdBillValue) {
         this.totalOpdBillValue = totalOpdBillValue;
     }
-    
+
     public double getTotalPharmecyBillValue() {
         return totalPharmecyBillValue;
     }
-    
+
     public void setTotalPharmecyBillValue(double totalPharmecyBillValue) {
         this.totalPharmecyBillValue = totalPharmecyBillValue;
     }
-    
+
     public double getTotalShiftStartValue() {
         return totalShiftStartValue;
     }
-    
+
     public void setTotalShiftStartValue(double totalShiftStartValue) {
         this.totalShiftStartValue = totalShiftStartValue;
     }
-    
+
     public double getTotalBalanceTransfer() {
         return totalBalanceTransfer;
     }
-    
+
     public void setTotalBalanceTransfer(double totalBalanceTransfer) {
         this.totalBalanceTransfer = totalBalanceTransfer;
     }
-    
+
     public double getTotalTransferRecive() {
         return totalTransferRecive;
     }
-    
+
     public void setTotalTransferRecive(double totalTransferRecive) {
         this.totalTransferRecive = totalTransferRecive;
     }
-    
+
     public double getTotalFunds() {
         return totalFunds;
     }
-    
+
     public void setTotalFunds(double totalFunds) {
         this.totalFunds = totalFunds;
     }
-    
+
     public double getShiftEndTotalValue() {
         return shiftEndTotalValue;
     }
-    
+
     public void setShiftEndTotalValue(double shiftEndTotalValue) {
         this.shiftEndTotalValue = shiftEndTotalValue;
     }
-    
+
     public double getShiftEndRefundBillValue() {
         return shiftEndRefundBillValue;
     }
-    
+
     public void setShiftEndRefundBillValue(double shiftEndRefundBillValue) {
         this.shiftEndRefundBillValue = shiftEndRefundBillValue;
     }
-    
+
     public double getShiftEndCanceledBillValue() {
         return shiftEndCanceledBillValue;
     }
-    
+
     public void setShiftEndCanceledBillValue(double shiftEndCanceledBillValue) {
         this.shiftEndCanceledBillValue = shiftEndCanceledBillValue;
     }
-    
+
     public double getTotalWithdrawals() {
         return totalWithdrawals;
     }
-    
+
     public void setTotalWithdrawals(double totalWithdrawals) {
         this.totalWithdrawals = totalWithdrawals;
     }
-    
+
     public double getTotalDeposits() {
         return totalDeposits;
     }
-    
+
     public void setTotalDeposits(double totalDeposits) {
         this.totalDeposits = totalDeposits;
     }
-    
+
     public double getTotalBillRefundValue() {
         return totalBillRefundValue;
     }
-    
+
     public void setTotalBillRefundValue(double totalBillRefundValue) {
         this.totalBillRefundValue = totalBillRefundValue;
     }
-    
+
     public double getTotalBillCancelledValue() {
         return totalBillCancelledValue;
     }
-    
+
     public void setTotalBillCancelledValue(double totalBillCancelledValue) {
         this.totalBillCancelledValue = totalBillCancelledValue;
     }
-    
+
     public double getTotalBilledBillValue() {
         return totalBilledBillValue;
     }
-    
+
     public void setTotalBilledBillValue(double totalBilledBillValue) {
         this.totalBilledBillValue = totalBilledBillValue;
     }
-    
+
     public double getDeductions() {
         return Deductions;
     }
-    
+
     public void setDeductions(double Deductions) {
         this.Deductions = Deductions;
     }
-    
+
     public double getAdditions() {
         return additions;
     }
-    
+
     public void setAdditions(double additions) {
         this.additions = additions;
     }
-    
+
     public double getTotalCcBillValue() {
         return totalCcBillValue;
     }
-    
+
     public void setTotalCcBillValue(double totalCcBillValue) {
         this.totalCcBillValue = totalCcBillValue;
     }
-    
+
     public double getTotalOpdBillCanceledValue() {
         return totalOpdBillCanceledValue;
     }
-    
+
     public void setTotalOpdBillCanceledValue(double totalOpdBillCanceledValue) {
         this.totalOpdBillCanceledValue = totalOpdBillCanceledValue;
     }
-    
+
     public double getTotalPharmecyBillCanceledValue() {
         return totalPharmecyBillCanceledValue;
     }
-    
+
     public void setTotalPharmecyBillCanceledValue(double totalPharmecyBillCanceledValue) {
         this.totalPharmecyBillCanceledValue = totalPharmecyBillCanceledValue;
     }
-    
+
     public double getTotalCcBillCanceledValue() {
         return totalCcBillCanceledValue;
     }
-    
+
     public void setTotalCcBillCanceledValue(double totalCcBillCanceledValue) {
         this.totalCcBillCanceledValue = totalCcBillCanceledValue;
     }
-    
+
     public int getFundTransferBillsToReceiveCount() {
         return fundTransferBillsToReceiveCount;
     }
-    
+
     public void setFundTransferBillsToReceiveCount(int fundTransferBillsToReceiveCount) {
         this.fundTransferBillsToReceiveCount = fundTransferBillsToReceiveCount;
     }
-    
+
     public List<Payment> getRecievedBIllPayments() {
         return recievedBIllPayments;
     }
-    
+
     public void setRecievedBIllPayments(List<Payment> recievedBIllPayments) {
         this.recievedBIllPayments = recievedBIllPayments;
     }
-    
+
     public double getTotalChannelBillValue() {
         return totalChannelBillValue;
     }
-    
+
     public void setTotalChannelBillValue(double totalChannelBillValue) {
         this.totalChannelBillValue = totalChannelBillValue;
     }
-    
+
     public double getTotalChannelBillCancelledValue() {
         return totalChannelBillCancelledValue;
     }
-    
+
     public void setTotalChannelBillCancelledValue(double totalChannelBillCancelledValue) {
         this.totalChannelBillCancelledValue = totalChannelBillCancelledValue;
     }
-    
+
     public double getTotalOpdBillRefundValue() {
         return totalOpdBillRefundValue;
     }
-    
+
     public void setTotalOpdBillRefundValue(double totalOpdBillRefundValue) {
         this.totalOpdBillRefundValue = totalOpdBillRefundValue;
     }
-    
+
     public double getTotalPharmacyBillRefundValue() {
         return totalPharmacyBillRefundValue;
     }
-    
+
     public void setTotalPharmacyBillRefundValue(double totalPharmacyBillRefundValue) {
         this.totalPharmacyBillRefundValue = totalPharmacyBillRefundValue;
     }
-    
+
     public double getTotalChannelBillRefundValue() {
         return totalChannelBillRefundValue;
     }
-    
+
     public void setTotalChannelBillRefundValue(double totalChannelBillRefundValue) {
         this.totalChannelBillRefundValue = totalChannelBillRefundValue;
     }
-    
+
     public double getTotalCcBillRefundValue() {
         return totalCcBillRefundValue;
     }
-    
+
     public void setTotalCcBillRefundValue(double totalCcBillRefundValue) {
         this.totalCcBillRefundValue = totalCcBillRefundValue;
     }
-    
+
     public double getTotalProfessionalPaymentBillValue() {
         return totalProfessionalPaymentBillValue;
     }
-    
+
     public void setTotalProfessionalPaymentBillValue(double totalProfessionalPaymentBillValue) {
         this.totalProfessionalPaymentBillValue = totalProfessionalPaymentBillValue;
     }
-    
+
     public double getTotalProfessionalPaymentBillCancelledValue() {
         return totalProfessionalPaymentBillCancelledValue;
     }
-    
+
     public void setTotalProfessionalPaymentBillCancelledValue(double totalProfessionalPaymentBillCancelledValue) {
         this.totalProfessionalPaymentBillCancelledValue = totalProfessionalPaymentBillCancelledValue;
     }
-    
+
     public PaymentMethodValues getPaymentMethodValues() {
         return paymentMethodValues;
     }
-    
+
     public AtomicBillTypeTotals getAtomicBillTypeTotalsByBills() {
         return atomicBillTypeTotalsByBills;
     }
-    
+
     public void setAtomicBillTypeTotalsByBills(AtomicBillTypeTotals atomicBillTypeTotalsByBills) {
         this.atomicBillTypeTotalsByBills = atomicBillTypeTotalsByBills;
     }
-    
+
     public FinancialReport getFinancialReportByBills() {
         return financialReportByBills;
     }
-    
+
     public void setFinancialReportByBills(FinancialReport financialReportByBills) {
         this.financialReportByBills = financialReportByBills;
     }
-    
+
     public List<Bill> getCurrentBills() {
         return currentBills;
     }
-    
+
     public void setCurrentBills(List<Bill> currentBills) {
         this.currentBills = currentBills;
     }
-    
+
     public AtomicBillTypeTotals getAtomicBillTypeTotalsByPayments() {
         return atomicBillTypeTotalsByPayments;
     }
-    
+
     public void setAtomicBillTypeTotalsByPayments(AtomicBillTypeTotals atomicBillTypeTotalsByPayments) {
         this.atomicBillTypeTotalsByPayments = atomicBillTypeTotalsByPayments;
     }
-    
+
     public FinancialReport getFinancialReportByPayments() {
         return financialReportByPayments;
     }
-    
+
     public void setFinancialReportByPayments(FinancialReport financialReportByPayments) {
         this.financialReportByPayments = financialReportByPayments;
     }
-    
+
     public Date getFromDate() {
         if (fromDate == null) {
             fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
-    
+
     public void setFromDate(Date fromDate) {
         this.fromDate = fromDate;
     }
-    
+
     public Date getToDate() {
         if (toDate == null) {
             toDate = CommonFunctions.getEndOfDay(toDate);
         }
         return toDate;
     }
-    
+
     public void setToDate(Date toDate) {
         this.toDate = toDate;
     }
-    
+
     public ReportTemplateRowBundle getPaymentSummaryBundle() {
         if (paymentSummaryBundle == null) {
             paymentSummaryBundle = new ReportTemplateRowBundle();
         }
         return paymentSummaryBundle;
     }
-    
+
     public void setPaymentSummaryBundle(ReportTemplateRowBundle paymentSummaryBundle) {
         this.paymentSummaryBundle = paymentSummaryBundle;
     }
-    
+
     public List<Bill> getShiaftStartBills() {
         return shiaftStartBills;
     }
-    
+
     public void setShiaftStartBills(List<Bill> shiaftStartBills) {
         this.shiaftStartBills = shiaftStartBills;
-        
+
     }
-    
+
     public List<Payment> getPaymentsSelected() {
         return paymentsSelected;
     }
-    
+
     public void setPaymentsSelected(List<Payment> paymentsSelected) {
         this.paymentsSelected = paymentsSelected;
-        
+
     }
-    
+
     public ReportTemplateRowBundle getReportTemplateRowBundle() {
         return reportTemplateRowBundle;
     }
-    
+
     public void setReportTemplateRowBundle(ReportTemplateRowBundle reportTemplateRowBundle) {
         this.reportTemplateRowBundle = reportTemplateRowBundle;
     }
-    
+
     public ReportTemplateRowBundle getOpdServiceBundle() {
         return opdServiceBundle;
     }
-    
+
     public void setOpdServiceBundle(ReportTemplateRowBundle opdServiceBundle) {
         this.opdServiceBundle = opdServiceBundle;
     }
-    
+
     public ReportTemplateRowBundle getChannellingBundle() {
         return channellingBundle;
     }
-    
+
     public void setChannellingBundle(ReportTemplateRowBundle channellingBundle) {
         this.channellingBundle = channellingBundle;
     }
-    
+
     public ReportTemplateRowBundle getOpdDocPayment() {
         return opdDocPayment;
     }
-    
+
     public void setOpdDocPayment(ReportTemplateRowBundle opdDocPayment) {
         this.opdDocPayment = opdDocPayment;
     }
-    
+
     public ReportTemplateRowBundle getChannellingDocPayment() {
         return channellingDocPayment;
     }
-    
+
     public void setChannellingDocPayment(ReportTemplateRowBundle channellingDocPayment) {
         this.channellingDocPayment = channellingDocPayment;
     }
-    
+
     public ReportTemplateRowBundle getOpdBilled() {
         return opdBilled;
     }
-    
+
     public void setOpdBilled(ReportTemplateRowBundle opdBilled) {
         this.opdBilled = opdBilled;
     }
-    
+
     public ReportTemplateRowBundle getOpdReturns() {
         return opdReturns;
     }
-    
+
     public void setOpdReturns(ReportTemplateRowBundle opdReturns) {
         this.opdReturns = opdReturns;
     }
-    
+
     public ReportTemplateRowBundle getChannellingBilled() {
         return channellingBilled;
     }
-    
+
     public void setChannellingBilled(ReportTemplateRowBundle channellingBilled) {
         this.channellingBilled = channellingBilled;
     }
-    
+
     public ReportTemplateRowBundle getChannellingReturns() {
         return channellingReturns;
     }
-    
+
     public void setChannellingReturns(ReportTemplateRowBundle channellingReturns) {
         this.channellingReturns = channellingReturns;
     }
-    
+
     public ReportTemplateRowBundle getPharmacyBilld() {
         return pharmacyBilld;
     }
-    
+
     public void setPharmacyBilld(ReportTemplateRowBundle pharmacyBilld) {
         this.pharmacyBilld = pharmacyBilld;
     }
-    
+
     public ReportTemplateRowBundle getPharmacyReturned() {
         return pharmacyReturned;
     }
-    
+
     public void setPharmacyReturned(ReportTemplateRowBundle pharmacyReturned) {
         this.pharmacyReturned = pharmacyReturned;
     }
-    
+
     public ReportTemplateRowBundle getOpdBundle() {
         return opdBundle;
     }
-    
+
     public void setOpdBundle(ReportTemplateRowBundle opdBundle) {
         this.opdBundle = opdBundle;
     }
-    
+
     private void resetBundles() {
         reportTemplateRowBundle = new ReportTemplateRowBundle();
         opdServiceBundle = new ReportTemplateRowBundle();
@@ -3873,333 +3972,341 @@ public class FinancialTransactionController implements Serializable {
         pharmacyBilld = new ReportTemplateRowBundle();
         pharmacyReturned = new ReportTemplateRowBundle();
     }
-    
+
     public ReportTemplateType getReportTemplateType() {
         return reportTemplateType;
     }
-    
+
     public void setReportTemplateType(ReportTemplateType reportTemplateType) {
         this.reportTemplateType = reportTemplateType;
     }
-    
+
     public ReportTemplateRowBundle getChannellingOnsite() {
         return channellingOnsite;
     }
-    
+
     public void setChannellingOnsite(ReportTemplateRowBundle channellingOnsite) {
         this.channellingOnsite = channellingOnsite;
     }
-    
+
     public ReportTemplateRowBundle getChannellingAgent() {
         return channellingAgent;
     }
-    
+
     public void setChannellingAgent(ReportTemplateRowBundle channellingAgent) {
         this.channellingAgent = channellingAgent;
     }
-    
+
     public ReportTemplateRowBundle getChannellingOnline() {
         return channellingOnline;
     }
-    
+
     public void setChannellingOnline(ReportTemplateRowBundle channellingOnline) {
         this.channellingOnline = channellingOnline;
     }
-    
+
     public ReportTemplateRowBundle getOpdByDepartment() {
         return opdByDepartment;
     }
-    
+
     public void setOpdByDepartment(ReportTemplateRowBundle opdByDepartment) {
         this.opdByDepartment = opdByDepartment;
     }
-    
+
     public List<ReportTemplateRowBundle> getShiftEndBundles() {
         return shiftEndBundles;
     }
-    
+
     public void setShiftEndBundles(List<ReportTemplateRowBundle> shiftEndBundles) {
         this.shiftEndBundles = shiftEndBundles;
     }
-    
+
     public List<BillComponent> getCurrentBillComponents() {
         return currentBillComponents;
     }
-    
+
     public void setCurrentBillComponents(List<BillComponent> currentBillComponents) {
         this.currentBillComponents = currentBillComponents;
     }
-    
+
     public Department getDepartment() {
         return department;
     }
-    
+
     public void setDepartment(Department department) {
         this.department = department;
     }
-    
+
     public Date getCashbookDate() {
         return cashbookDate;
     }
-    
+
     public void setCashbookDate(Date cashbookDate) {
         this.cashbookDate = cashbookDate;
     }
-    
+
     public Department getCashbookDepartment() {
         return cashbookDepartment;
     }
-    
+
     public void setCashbookDepartment(Department cashbookDepartment) {
         this.cashbookDepartment = cashbookDepartment;
     }
-    
+
     public List<Date> getCashbookDates() {
         return cashbookDates;
     }
-    
+
     public void setCashbookDates(List<Date> cashbookDates) {
         this.cashbookDates = cashbookDates;
     }
-    
+
     public List<Department> getCashbookDepartments() {
         return cashbookDepartments;
     }
-    
+
     public void setCashbookDepartments(List<Department> cashbookDepartments) {
         this.cashbookDepartments = cashbookDepartments;
     }
-    
+
     public List<PaymentMethodValue> getHandingOverPaymentMethodValues() {
         return handingOverPaymentMethodValues;
     }
-    
+
     public void setHandingOverPaymentMethodValues(List<PaymentMethodValue> handingOverPaymentMethodValues) {
         this.handingOverPaymentMethodValues = handingOverPaymentMethodValues;
     }
-    
+
     public List<Bill> getHandovertBillsToReceive() {
         return handovertBillsToReceive;
     }
-    
+
     public void setHandovertBillsToReceive(List<Bill> handovertBillsToReceive) {
         this.handovertBillsToReceive = handovertBillsToReceive;
     }
-    
+
     public BillFacade getBillFacade() {
         return billFacade;
     }
-    
+
     public void setBillFacade(BillFacade billFacade) {
         this.billFacade = billFacade;
     }
-    
+
     public PaymentFacade getPaymentFacade() {
         return paymentFacade;
     }
-    
+
     public void setPaymentFacade(PaymentFacade paymentFacade) {
         this.paymentFacade = paymentFacade;
     }
-    
+
     public BillComponentFacade getBillComponentFacade() {
         return billComponentFacade;
     }
-    
+
     public void setBillComponentFacade(BillComponentFacade billComponentFacade) {
         this.billComponentFacade = billComponentFacade;
     }
-    
+
     public PaymentMethodValueFacade getPaymentMethodValueFacade() {
         return paymentMethodValueFacade;
     }
-    
+
     public void setPaymentMethodValueFacade(PaymentMethodValueFacade paymentMethodValueFacade) {
         this.paymentMethodValueFacade = paymentMethodValueFacade;
     }
-    
+
     public SessionController getSessionController() {
         return sessionController;
     }
-    
+
     public void setSessionController(SessionController sessionController) {
         this.sessionController = sessionController;
     }
-    
+
     public CashBookEntryController getCashBookEntryController() {
         return cashBookEntryController;
     }
-    
+
     public void setCashBookEntryController(CashBookEntryController cashBookEntryController) {
         this.cashBookEntryController = cashBookEntryController;
     }
-    
+
     public ReportTemplateController getReportTemplateController() {
         return reportTemplateController;
     }
-    
+
     public void setReportTemplateController(ReportTemplateController reportTemplateController) {
         this.reportTemplateController = reportTemplateController;
     }
-    
+
     public BillController getBillController() {
         return billController;
     }
-    
+
     public void setBillController(BillController billController) {
         this.billController = billController;
     }
-    
+
     public PaymentController getPaymentController() {
         return paymentController;
     }
-    
+
     public void setPaymentController(PaymentController paymentController) {
         this.paymentController = paymentController;
     }
-    
+
     public SearchController getSearchController() {
         return searchController;
     }
-    
+
     public void setSearchController(SearchController searchController) {
         this.searchController = searchController;
     }
-    
+
     public BillSearch getBillSearch() {
         return billSearch;
     }
-    
+
     public void setBillSearch(BillSearch billSearch) {
         this.billSearch = billSearch;
     }
-    
+
     public ConfigOptionApplicationController getConfigOptionApplicationController() {
         return configOptionApplicationController;
     }
-    
+
     public void setConfigOptionApplicationController(ConfigOptionApplicationController configOptionApplicationController) {
         this.configOptionApplicationController = configOptionApplicationController;
     }
-    
+
     public boolean isHandoverValuesCreated() {
         return handoverValuesCreated;
     }
-    
+
     public void setHandoverValuesCreated(boolean handoverValuesCreated) {
         this.handoverValuesCreated = handoverValuesCreated;
     }
-    
+
     public WebUser getUser() {
         return user;
     }
-    
+
     public void setUser(WebUser user) {
         this.user = user;
     }
-    
+
     public Staff getFromStaff() {
         return fromStaff;
     }
-    
+
     public void setFromStaff(Staff fromStaff) {
         this.fromStaff = fromStaff;
     }
-    
+
     public Staff getToStaff() {
         return toStaff;
     }
-    
+
     public void setToStaff(Staff toStaff) {
         this.toStaff = toStaff;
     }
-    
+
     public Department getForDepartment() {
         return forDepartment;
     }
-    
+
     public void setForDepartment(Department forDepartment) {
         this.forDepartment = forDepartment;
     }
-    
+
     public Department getToDepartment() {
         return toDepartment;
     }
-    
+
     public void setToDepartment(Department toDepartment) {
         this.toDepartment = toDepartment;
     }
-    
+
     public Date getForDate() {
         return forDate;
     }
-    
+
     public void setForDate(Date forDate) {
         this.forDate = forDate;
     }
-    
+
     public int getHandoverBillsToReceiveCount() {
         return handoverBillsToReceiveCount;
     }
-    
+
     public void setHandoverBillsToReceiveCount(int handoverBillsToReceiveCount) {
         this.handoverBillsToReceiveCount = handoverBillsToReceiveCount;
     }
-    
+
     public List<Payment> getCardPaymentsFromShiftSratToNow() {
         return cardPaymentsFromShiftSratToNow;
     }
-    
+
     public void setCardPaymentsFromShiftSratToNow(List<Payment> cardPaymentsFromShiftSratToNow) {
         this.cardPaymentsFromShiftSratToNow = cardPaymentsFromShiftSratToNow;
     }
-    
+
     public List<Payment> getChequeFromShiftSratToNow() {
         return chequeFromShiftSratToNow;
     }
-    
+
     public void setChequeFromShiftSratToNow(List<Payment> chequeFromShiftSratToNow) {
         this.chequeFromShiftSratToNow = chequeFromShiftSratToNow;
     }
-    
+
     public ReportTemplateRowBundle getChequeTransactionPaymentBundle() {
         return chequeTransactionPaymentBundle;
     }
-    
+
     public void setChequeTransactionPaymentBundle(ReportTemplateRowBundle chequeTransactionPaymentBundle) {
         this.chequeTransactionPaymentBundle = chequeTransactionPaymentBundle;
     }
-    
+
     public ReportTemplateRowBundle getCardTransactionPaymentBundle() {
         return cardTransactionPaymentBundle;
     }
-    
+
     public void setCardTransactionPaymentBundle(ReportTemplateRowBundle cardTransactionPaymentBundle) {
         this.cardTransactionPaymentBundle = cardTransactionPaymentBundle;
     }
-    
+
     public ReportTemplateRowBundle getRefundBundle() {
         return refundBundle;
     }
-    
+
     public void setRefundBundle(ReportTemplateRowBundle refundBundle) {
         this.refundBundle = refundBundle;
     }
-    
+
     public ReportTemplateRowBundle getCancelledBundle() {
         return cancelledBundle;
     }
-    
+
     public void setCancelledBundle(ReportTemplateRowBundle cancelledBundle) {
         this.cancelledBundle = cancelledBundle;
     }
-    
+
     public int getTabIndex() {
         return tabIndex;
     }
-    
+
     public void setTabIndex(int tabIndex) {
         this.tabIndex = tabIndex;
     }
-    
+
+    public ReportTemplateRowBundle getBundle() {
+        return bundle;
+    }
+
+    public void setBundle(ReportTemplateRowBundle bundle) {
+        this.bundle = bundle;
+    }
+
 }
