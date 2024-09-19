@@ -2002,6 +2002,8 @@ public class FinancialTransactionController implements Serializable {
         return "/cashier/shift_end_summery_bill_of_selected_user?faces-redirect=true";
     }
     
+    
+    @Deprecated
     public String navigateToCreateShiftEndSummaryBillByBills() {
         resetClassVariables();
         findNonClosedShiftStartFundBillIsAvailable();
