@@ -9,7 +9,7 @@
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
                 <h:form >
-                    <p:panel header="Staff Payroll" >
+                    <p:panel header="Staff Salary Component" >
                         <p:panelGrid columns="4" class="w-100">
 
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -114,8 +114,8 @@
                             </p:selectOneMenu>
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf58e;" styleClass="fa mr-2" /> <!-- FontAwesome clipboard icon for Staff Grade -->
-                                <h:outputLabel value="Staff Grade" for="cmbStaffGrade" class="mx-3"/>
+                                <h:outputText value="&#xf571;" styleClass="fa mr-2" /> <!-- FontAwesome file-invoice-dollar icon for Staff Paysheet Component -->
+                                <h:outputLabel value="Staff Paysheet Component" for="cmbStaffPaysheet" class="mx-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu value="" filter="true"  class="w-100 " >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
@@ -125,6 +125,22 @@
                                                itemValue=""
                                                ></f:selectItems>
                             </p:selectOneMenu>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf09d;" styleClass="fa mr-2" /> <!-- FontAwesome university icon for Bank -->
+                                <h:outputLabel value="Bank" for="cmbBank" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
+
+
 
                         </p:panelGrid>
 
@@ -146,114 +162,37 @@
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
 
-                            <p:column headerText="Code" width="5em">
+                            <p:column headerText="Emp No" width="5em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="EPF" width="5em">
+                            <p:column headerText="Emp Name" width="5em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Join" width="5em">
+                            <p:column headerText="Paysheet Component" width="5em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Staff" width="5em">
+                            <p:column headerText="ID" width="5em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Des" width="5em">
+                            <p:column headerText="Bank" width="5em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Basic + BR" width="5em">
+                            <p:column headerText="Component Value" width="5em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Merchan" width="5em">
+                            <p:column headerText="EPF Staff Value" width="5em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Poya" width="5em">
+                            <p:column headerText="EPF Company Value" width="5em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Day Off" width="5em">
+                            <p:column headerText="ETF Company Value" width="5em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Basic Adjust" width="5em">
+                            <p:column headerText="Total" width="5em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Total Salary" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="No pay Basic" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="EPF/ETF Deductable Salary" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Travelling Allowance" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Assist. Charges" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="KPI Channel" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Chemo Allowance" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="COL Allowance" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Per Allowance" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Other Allowance" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Allowance Adjust" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="No Pay Allowance" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Total Allowance" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Gross Salary" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="EPF Staff" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Company Loan Installment" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Other Deduction" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Salary Advance" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Bank Loan Installment(A)" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Loan Interest" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Festival Advance" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Payee Tax Deduction" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Total Deduct" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Net Salary" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="EPF Company" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="ETF Company" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
+                            
 
 
 
