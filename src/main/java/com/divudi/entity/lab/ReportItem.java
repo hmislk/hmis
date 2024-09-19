@@ -5,9 +5,16 @@
 package com.divudi.entity.lab;
 
 import com.divudi.data.CssFontStyle;
+import static com.divudi.data.CssFontStyle.Italic;
+import static com.divudi.data.CssFontStyle.Normal;
+import static com.divudi.data.CssFontStyle.Oblique;
 import com.divudi.data.CssOverflow;
 import com.divudi.data.CssPosition;
 import com.divudi.data.CssTextAlign;
+import static com.divudi.data.CssTextAlign.Center;
+import static com.divudi.data.CssTextAlign.Justify;
+import static com.divudi.data.CssTextAlign.Left;
+import static com.divudi.data.CssTextAlign.Right;
 import com.divudi.data.CssTextDecoration;
 import com.divudi.data.CssVerticalAlign;
 import com.divudi.data.InvestigationItemType;
@@ -113,6 +120,8 @@ public class ReportItem implements Serializable {
     String formatPrefix;
     String formatSuffix;
     String formatString;
+    @Lob
+    private String customCss;
     @Transient
     String cssStyle;
     @Enumerated(EnumType.STRING)
@@ -192,9 +201,6 @@ public class ReportItem implements Serializable {
     private String valueCode;
     private String valueUnitCodeSystem;
     private String valueUnitCode;
-    
-    
-    
 
     private boolean canNotApproveIfValueIsEmpty;
     private boolean canNotApproveIfValueIsBelowAbsoluteLowValue;
@@ -686,78 +692,99 @@ public class ReportItem implements Serializable {
 //        return cssStyle;
 //    }
     public String getCssStyle() {
-        cssStyle = "";
+        cssStyle = "position:static; "; // Initialize with a default style
+
         if (getRiTop() != 0) {
-            cssStyle += "top:" + getRiTop() + "%!important;;";
+            cssStyle += "top:" + getRiTop() + "%!important; ";
         }
         if (getRiLeft() != 0) {
-            cssStyle += "left:" + getRiLeft() + "%!important;;";
+            cssStyle += "left:" + getRiLeft() + "%!important; ";
         }
         if (getRiWidth() != 0) {
-            cssStyle += "width:" + getRiWidth() + "%!important;;";
+            cssStyle += "width:" + getRiWidth() + "%!important; ";
         }
         if (getRiHeight() != 0) {
-            cssStyle += "height:" + getRiHeight() + "%!important;";
-        }
-        if (getRiFontSize() != 0) {
-            cssStyle += "font-size:" + getRiFontSize() + "pt!important;";
+            cssStyle += "height:" + getRiHeight() + "%!important; ";
         }
 
-        switch (getCssTextAlign()) {
-            case Center:
-                cssStyle += "text-align:center!important;;";
-                break;
-            case Justify:
-                cssStyle += "text-align:justify!important;;";
-                break;
-            case Left:
-                cssStyle += "text-align:left!important;;";
-                break;
-            case Right:
-                cssStyle += "text-align:right!important;;";
-                break;
-            default:
+        if (customCss != null && !customCss.trim().equals("")) {
+            cssStyle += " " + customCss;
+        } else {
+            if (getRiFontSize() != 0) {
+                cssStyle += "font-size:" + getRiFontSize() + "pt!important; ";
+            }
+
+            // Text alignment
+            switch (getCssTextAlign()) {
+                case Center:
+                    cssStyle += "text-align:center!important; ";
+                    break;
+                case Justify:
+                    cssStyle += "text-align:justify!important; ";
+                    break;
+                case Left:
+                    cssStyle += "text-align:left!important; ";
+                    break;
+                case Right:
+                    cssStyle += "text-align:right!important; ";
+                    break;
+                default:
+            }
+
+            // Font style
+            switch (getCssFontStyle()) {
+                case Normal:
+                    cssStyle += "font-style:normal!important; ";
+                    break;
+                case Italic:
+                    cssStyle += "font-style:italic!important; ";
+                    break;
+                case Oblique:
+                    cssStyle += "font-style:oblique!important; ";
+                    break;
+                default:
+            }
+
+            if (cssFontFamily != null && !cssFontFamily.isEmpty()) {
+                cssStyle += "font-family:" + cssFontFamily + "!important; ";
+            }
+
+            if (cssFontWeight != null && !cssFontWeight.isEmpty()) {
+                cssStyle += "font-weight:" + cssFontWeight + "!important; ";
+            }
+
+            // New CSS properties
+            if (cssBackColor != null && !cssBackColor.isEmpty()) {
+                cssStyle += "background-color:" + cssBackColor + "!important; ";
+            }
+            if (cssColor != null && !cssColor.isEmpty()) {
+                cssStyle += "color:" + cssColor + "!important; ";
+            }
+            if (cssBorderRadius != null && !cssBorderRadius.isEmpty()) {
+                cssStyle += "border-radius:" + cssBorderRadius + "!important; ";
+            }
+            if (cssMargin != null && !cssMargin.isEmpty()) {
+                cssStyle += "margin:" + cssMargin + "!important; ";
+            }
+            if (cssPadding != null && !cssPadding.isEmpty()) {
+                cssStyle += "padding:" + cssPadding + "!important; ";
+            }
+            if (cssBorder != null && !cssBorder.isEmpty()) {
+                cssStyle += "border:" + cssBorder + "!important; ";
+            }
+
+            if (cssVerticalAlign != null) {
+                cssStyle += "vertical-align:" + cssVerticalAlign + "!important; ";
+                if (cssVerticalAlign == CssVerticalAlign.Middle) {
+                    cssStyle += " display: flex; align-items: center; justify-content: center; ";
+                }
+            }
+
         }
 
-        switch (getCssFontStyle()) {
-            case Normal:
-                cssStyle += "font-style:normal!important;;";
-                break;
-            case Italic:
-                cssStyle += "font-style:italic!important;;";
-                break;
-            case Oblique:
-                cssStyle += "font-style:oblique!important;;";
-                break;
-            default:
-        }
-
-        if (cssFontFamily != null && !cssFontFamily.equals("")) {
-            cssStyle += "font-family:" + cssFontFamily + "!important;; ";
-        }
-
-        if (cssFontWeight != null && !cssFontWeight.equals("")) {
-            cssStyle += "font-weight:" + getCssFontWeight() + "!important;; ";
-        }
-
-        cssStyle += "position:static; ";
-        if (cssVerticalAlign != null) {
-            cssStyle += "vertical-align: " + cssVerticalAlign + "!important;; ";
-        }
-
-//        cssStyle = "top:" + getRiTop() + "%; left:" + getRiLeft()
-//                + "%; width:" + getRiWidth() + "; height:"
-//                + getRiHeight() + "; background-color:" + cssColor + ";"
-//                + "font-style:" + cssFontStyle + ";font-size:"
-//                + cssFontSize + "%;line-height:" + cssLineHeight
-//                + "%;margin:" + cssMargin + "%;padding:" + cssPadding + "%;"
-//                + "border:" + cssBorder + "%;background-color:" + cssBackColor + ";"
-//                + "position:" + cssPosition + "; vertical-align: " + cssVerticalAlign + ";"
-//                + "text-align: " + cssTextAlign + ";z-index: " + cssZorder + ";"
-//                + "clip:" + cssClip + ";font-family: " + cssFontFamily + ";font-variant:" + cssFontVariant + ";"
-//                + "font-weight: " + cssFontWeight + ":border-radius: " + cssBorderRadius + ";";
-        //TODO (Later) to add cssHeight, font styles, etc, Now 12
-//        //// // System.out.println("cssStyle = " + cssStyle);
+        /**
+         *
+         */
         return cssStyle;
     }
 
@@ -1228,6 +1255,14 @@ public class ReportItem implements Serializable {
 
     public void setValueUnitCode(String valueUnitCode) {
         this.valueUnitCode = valueUnitCode;
+    }
+
+    public String getCustomCss() {
+        return customCss;
+    }
+
+    public void setCustomCss(String customCss) {
+        this.customCss = customCss;
     }
 
 }
