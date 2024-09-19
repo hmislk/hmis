@@ -311,7 +311,7 @@ public class ReportController implements Serializable {
         }
 
         if (site != null) {
-            jpql += " AND pc.site=:site ";
+            jpql += " AND pc.department.site=:site ";
             m.put("site", site);
         }
 
