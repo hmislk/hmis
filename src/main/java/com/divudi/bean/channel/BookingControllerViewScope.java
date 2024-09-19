@@ -6138,9 +6138,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 calculatingNetBillTotal += iteratingBillFee.getFeeValue();
                 
                 if(iteratingBillFee.getStaff()!=null || iteratingBillFee.getSpeciality()!=null){
-                    billItemStaffFee+=iteratingBillFee.getFeeValue();
+                    billItemStaffFee+=iteratingBillFee.getFeeGrossValue();
                 }else{
-                    billItemHospitalFee+=iteratingBillFee.getFeeValue();
+                    billItemHospitalFee+=iteratingBillFee.getFeeGrossValue();
                 }
 
                 
@@ -6155,8 +6155,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         selectedBillSession.getBill().setNetTotal(calculatingNetBillTotal);
         selectedBillSession.getBill().setTotal(calculatingGrossBillTotal);
         getBillFacade().edit(selectedBillSession.getBill());
-        
+        feeTotalForSelectedBill=calculatingNetBillTotal;
         billSessionFacade.edit(selectedBillSession);
+        selectedBillSession = billSessionFacade.find(selectedBillSession.getId());
 
     }
 

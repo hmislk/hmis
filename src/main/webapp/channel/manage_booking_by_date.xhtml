@@ -663,7 +663,8 @@
                                             <h:panelGrid id="gdManageBookings" class="w-100 m-2" columns="2"  >
                                                 <p:outputLabel value="Tenderd Amount" />
                                                 <h:panelGroup class="w-100 my-2" style="font-weight: bolder" >
-                                                    <p:inputText id="paid" value="#{bookingControllerViewScope.strTenderedValue}">
+                                                    <p:inputText id="paid" value="#{bookingControllerViewScope.cashPaid}"
+                                                                 onfocus="this.select()">
                                                         <p:ajax event="keyup" process=" paid" update="balance"/>
                                                     </p:inputText>
                                                 </h:panelGroup>
@@ -756,18 +757,18 @@
                                                     <h:outputText value="#{bf.fee.item.name}" ></h:outputText>
                                                     <h:outputText value="#{bf.fee.name}" ></h:outputText>
                                                 </p:column>
-                                                <p:column headerText="Gross Fee">
-                                                    <h:outputText value="#{bf.fee.fee}" >
+                                                <p:column rendered="false" headerText="Gross Fee">
+                                                    <h:outputText value="#{bf.feeGrossValue}" >
                                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                     </h:outputText>
                                                 </p:column>
-                                                <p:column headerText="Discount">
+                                                <p:column rendered="false" headerText="Discount">
                                                     <h:outputText value="#{bf.feeDiscount}" >
                                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                     </h:outputText>
                                                 </p:column>
                                                 <p:column headerText="Value" >
-                                                    <p:inputText id="txtFee" value="#{bf.feeGrossValue}" >
+                                                    <p:inputText id="txtFee" value="#{bf.feeGrossValue}" onfocus="this.select()">
                                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                     </p:inputText>
                                                     <p:commandButton 
