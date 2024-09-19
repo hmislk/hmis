@@ -140,7 +140,7 @@ public class WebUserController implements Serializable {
 
     private LoginPage loginPage;
 
-    boolean grantAllPrivilegesToAllUsersForTesting = false;
+    private boolean grantAllPrivilegesToAllUsersForTesting = false;
 
     private List<UserNotification> userNotifications;
     private int userNotificationCount;
@@ -279,6 +279,9 @@ public class WebUserController implements Serializable {
         this.staffFacade = staffFacade;
     }
 
+    
+    
+    
     public boolean hasPrivilege(String privilege) {
         boolean hasPri = false;
         if (grantAllPrivilegesToAllUsersForTesting) {
@@ -1119,6 +1122,14 @@ public class WebUserController implements Serializable {
 
     public void setLoginPage(LoginPage loginPage) {
         this.loginPage = loginPage;
+    }
+
+    public boolean isGrantAllPrivilegesToAllUsersForTesting() {
+        return grantAllPrivilegesToAllUsersForTesting;
+    }
+
+    public void setGrantAllPrivilegesToAllUsersForTesting(boolean grantAllPrivilegesToAllUsersForTesting) {
+        this.grantAllPrivilegesToAllUsersForTesting = grantAllPrivilegesToAllUsersForTesting;
     }
 
     @FacesConverter(forClass = WebUser.class)
