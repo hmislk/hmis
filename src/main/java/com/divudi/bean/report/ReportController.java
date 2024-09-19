@@ -1419,6 +1419,10 @@ public class ReportController implements Serializable {
         return "/reports/salary_reports/staff_salary_bank_wise?faces-redirect=true";
     }
     
+    public String navigateToEPF(){
+        return "/reports/salary_reports/EPF?faces-redirect=true";
+    }
+    
     public String navigateToLeaveForm() {
 
         return "/reports/HRReports/leave_form";
