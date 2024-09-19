@@ -2532,7 +2532,6 @@ public class BillController implements Serializable {
             jpql += " and b.paymentMethod=:pm ";
         }
         if (billTypes != null) {
-            bts=getBillTypesByAtomicBillTypes(billTypes);
             hm.put("bts", billTypes);
             jpql += " and b.billTypeAtomic in :bts";
         }
@@ -2561,6 +2560,7 @@ public class BillController implements Serializable {
             getFacade().edit(b);
         }
     }
+
     
 
     public List<BillType> getBillTypesByAtomicBillTypes(List<BillTypeAtomic> ba){
