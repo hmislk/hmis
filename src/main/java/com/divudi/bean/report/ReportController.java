@@ -853,8 +853,7 @@ public class ReportController implements Serializable {
         billtypes.add(BillType.CollectingCentreBill);
         billtypes.add(BillType.CollectingCentrePaymentMadeBill);
         billtypes.add(BillType.CollectingCentrePaymentReceiveBill);
- 
-        
+      
         String jpql = "select bill "
                 + " from Bill bill "
                 + " where bill.retired=:ret"
@@ -1918,6 +1917,14 @@ public class ReportController implements Serializable {
         this.referingDoctor = referingDoctor;
     }
 
+    public PatientInvestigationStatus getPatientInvestigationStatus() {
+        return patientInvestigationStatus;
+    }
+
+    public void setPatientInvestigationStatus(PatientInvestigationStatus patientInvestigationStatus) {
+        this.patientInvestigationStatus = patientInvestigationStatus;
+    }
+
     public Institution getSite() {
         return site;
     }
@@ -1940,6 +1947,10 @@ public class ReportController implements Serializable {
 
     public void setWebUser(WebUser webUser) {
         this.webUser = webUser;
+
+    public void setPatientInvestigations(List<PatientInvestigation> patientInvestigations) {
+        this.patientInvestigations = patientInvestigations;
+
     }
 
 }
