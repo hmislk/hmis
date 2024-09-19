@@ -782,6 +782,14 @@ public class Bill implements Serializable {
         margin = 0 - bill.getMargin();
         grnNetTotal = 0 - bill.getGrnNetTotal();
         billTotal = 0 - bill.getBillTotal();
+        refundAmount = 0 - bill.getRefundAmount();
+        serviceCharge = 0 - bill.getServiceCharge();
+        expenseTotal = 0 - bill.getExpenseTotal();
+        claimableTotal = 0 - bill.getClaimableTotal();
+        tenderedAmount = 0 - bill.getTenderedAmount();
+        totalHospitalFee = 0 - bill.getTotalHospitalFee();
+        totalCenterFee = 0 - bill.getTotalCenterFee();
+        totalStaffFee = 0 - bill.getTotalStaffFee();
     }
 
     public void invertValue() {
@@ -805,6 +813,14 @@ public class Bill implements Serializable {
         grnNetTotal = 0 - getGrnNetTotal();
         vatPlusNetTotal = 0 - getVatPlusNetTotal();
         billTotal = 0 - getBillTotal();
+        refundAmount = 0 - getRefundAmount();
+        serviceCharge = 0 - getServiceCharge();
+        expenseTotal = 0 - getExpenseTotal();
+        claimableTotal = 0 - getClaimableTotal();
+        tenderedAmount = 0 - getTenderedAmount();
+        totalHospitalFee = 0 - getTotalHospitalFee();
+        totalCenterFee = 0 - getTotalCenterFee();
+        totalStaffFee = 0 - getTotalStaffFee();
     }
 
     public void copy(Bill bill) {
@@ -2340,7 +2356,5 @@ public class Bill implements Serializable {
     public void setCreditBill(boolean creditBill) {
         this.creditBill = creditBill;
     }
-    
-    
 
 }
