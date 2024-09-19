@@ -1382,7 +1382,11 @@ public class ReportController implements Serializable {
     public String navigateToStaffPayrollAccountant(){
         return "/reports/salary_reports/staff_payroll_accountant";
     }
-
+    
+    public String navigateToNopayandSalaryAllowanceReport(){
+        return "/reports/salary_reports/nopay_and_salary_allowance_report?faces-redirect=true";
+    }
+    
     public String navigateToLeaveForm() {
 
         return "/reports/HRReports/leave_form";
