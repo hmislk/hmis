@@ -1378,6 +1378,10 @@ public class ReportController implements Serializable {
 
         return "/reports/HRReports/fingerprint_approve";
     }
+    
+    public String navigateToStaffPayrollAccountant(){
+        return "/reports/salary_reports/staff_payroll_accountant";
+    }
 
     public String navigateToLeaveForm() {
 
