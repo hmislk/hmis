@@ -1,5 +1,12 @@
 package com.divudi.data;
 
+import static com.divudi.data.BillType.PharmacyAddtoStock;
+import static com.divudi.data.BillType.PharmacyAdjustment;
+import static com.divudi.data.BillType.PharmacyAdjustmentDepartmentSingleStock;
+import static com.divudi.data.BillType.PharmacyGrnBill;
+import static com.divudi.data.BillType.PharmacyPre;
+import static com.divudi.data.BillType.PharmacyPurchaseBill;
+import static com.divudi.data.BillType.PharmacyWholeSale;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -233,6 +240,54 @@ public enum BillTypeAtomic {
     private final BillFinanceType billFinanceType;
     private final CountedServiceType countedServiceType;
     private final PaymentCategory paymentCategory;
+
+    public static BillTypeAtomic getBillTypeAtomic(BillType billType, BillClassType billClassType) {
+        switch (billClassType) {
+            case Bill:
+                switch (billType) {
+                    case PharmacyWholeSale:
+                        return BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL;
+                    case PharmacyPurchaseBill:
+                        return BillTypeAtomic.PHARMACY_DIRECT_PURCHASE;
+                }
+                break;
+            case BilledBill:
+                switch (billType) {
+                    case PharmacyGrnBill:
+                        return BillTypeAtomic.PHARMACY_GRN;
+                    case PharmacyWholeSale:
+                        return BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL;
+                    case PharmacyPurchaseBill:
+                        return BillTypeAtomic.PHARMACY_DIRECT_PURCHASE;
+                }
+            case CancelledBill:
+                switch (billType) {
+                    case PharmacyGrnBill:
+                        return BillTypeAtomic.PHARMACY_GRN_CANCELLED;
+                    case PharmacyWholeSale:
+                        return BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL_CANCELLED;
+                    case PharmacyPurchaseBill:
+                        return BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED;
+                }
+            case OtherBill:
+                return null;
+            case PreBill:
+                return null;
+            case RefundBill:
+                switch (billType) {
+                    case PharmacyGrnBill:
+                        return BillTypeAtomic.PHARMACY_GRN_REFUND;
+                    case PharmacyWholeSale:
+                        return BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL_REFUND;
+                    case PharmacyPurchaseBill:
+                        return BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED;
+                }
+
+            default:
+                return null;
+        }
+        return null;
+    }
 
     BillTypeAtomic(String label, BillCategory billCategory, ServiceType serviceType, BillFinanceType billFinanceType, CountedServiceType countedServiceType, PaymentCategory paymentCategory) {
         this.label = label;

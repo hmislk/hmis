@@ -2546,6 +2546,23 @@ public class BillController implements Serializable {
 
     }
     
+
+    public void addMissingBillTypeAtomics(){
+        String jpql = "select b "
+                + " from Bill b "
+                + " where b.retired=:ret "
+                + " and b.billTypeAtomic is null "
+                + " and b.billType is not null ";
+        Map m = new HashMap();
+        m.put("ret", false);
+        List<Bill> billsWithoutBillTypeAtomic = getFacade().findByJpql(jpql,m, 1000);
+        for(Bill b:billsWithoutBillTypeAtomic){
+            b.setBillTypeAtomic(BillTypeAtomic.getBillTypeAtomic(b.getBillType(), b.getBillClassType()));
+            getFacade().edit(b);
+        }
+    }
+    
+
     public List<BillType> getBillTypesByAtomicBillTypes(List<BillTypeAtomic> ba){
         List<BillType> bt = new ArrayList<>();
         if (ba == null) {
