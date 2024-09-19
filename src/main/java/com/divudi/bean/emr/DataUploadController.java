@@ -131,6 +131,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.UUID;
 import org.apache.poi.ss.SpreadsheetVersion;
 
 @Named
@@ -278,7 +279,7 @@ public class DataUploadController implements Serializable {
         uploadComplete = false;
         return "/admin/institutions/collecting_centre_upload?faces-redirect=true";
     }
-    
+
     public String navigateToAgencyUpload() {
         uploadComplete = false;
         return "/admin/institutions/agency_upload?faces-redirect=true";
@@ -3330,7 +3331,7 @@ public class DataUploadController implements Serializable {
         uploadComplete = true;
         JsfUtil.addSuccessMessage("Successfully Uploaded");
     }
-    
+
     public void uploadAgencies() {
         agencies = new ArrayList<>();
         if (file != null) {
@@ -3607,8 +3608,6 @@ public class DataUploadController implements Serializable {
         return collectingCentresList;
     }
 
-    
-    
     private List<Institution> readAgenciesFromExcel(InputStream inputStream) throws IOException {
         Workbook workbook = new XSSFWorkbook(inputStream);
         Sheet sheet = workbook.getSheetAt(0);
@@ -3627,32 +3626,23 @@ public class DataUploadController implements Serializable {
 
             agency = null;
             //ToDo: Delete unnecessary fields
-            
-            Route route = null;
 
+            Double codeDbl = 0.0;
             String code = null;
             String agencyName = null;
-            Boolean active = null;
-            Boolean withCommissionStatus = null;
-            String routeName = null;
-            Double percentage = null;
-            String collectingCentrePrintingName = null;
-            Double standardCreditLimit = null;
-            Double allowedCreditLimit = null;
-            Double maxCreditLimit = null;
-            String phone = null;
-            String email = null;
-            String ownerName = null;
-            String address = null;
+            Double creditLimit = null;
 
             Cell codeCell = row.getCell(0);
             if (codeCell != null && codeCell.getCellType() == CellType.STRING) {
                 code = codeCell.getStringCellValue();
+            } else if (codeCell != null && codeCell.getCellType() == CellType.NUMERIC) {
+                codeDbl = codeCell.getNumericCellValue();
+                code = codeDbl.toString();
+            }else{
+                code = UUID.randomUUID().toString();
             }
+            System.out.println("code = " + code);
 
-            if (code == null || code.trim().equals("")) {
-                continue;
-            }
 
             //    Item masterItem = itemController.findMasterItemByName(code);
             Cell agentNameCell = row.getCell(1);
@@ -3660,133 +3650,18 @@ public class DataUploadController implements Serializable {
             if (agentNameCell != null && agentNameCell.getCellType() == CellType.STRING) {
                 agencyName = agentNameCell.getStringCellValue();
             }
+            System.out.println("agencyName = " + agencyName);
             if (agencyName == null || agencyName.trim().equals("")) {
                 continue;
             }
 
-            Cell agentPrintingNameCell = row.getCell(2);
-
-            if (agentPrintingNameCell != null && agentPrintingNameCell.getCellType() == CellType.STRING) {
-                collectingCentrePrintingName = agentPrintingNameCell.getStringCellValue();
-
-            }
-            if (collectingCentrePrintingName == null || collectingCentrePrintingName.trim().equals("")) {
-                collectingCentrePrintingName = agencyName;
-            }
-
-            Cell activeCell = row.getCell(3);
-
-            if (activeCell != null && activeCell.getCellType() == CellType.BOOLEAN) {
-                active = activeCell.getBooleanCellValue();
-
-            }
-            if (active == null) {
-                active = false;
-            }
-
-            Cell withCommissionStatusCell = row.getCell(4);
-
-            if (withCommissionStatusCell != null && withCommissionStatusCell.getCellType() == CellType.BOOLEAN) {
-                withCommissionStatus = withCommissionStatusCell.getBooleanCellValue();
-
-            }
-            if (withCommissionStatus == null) {
-                withCommissionStatus = false;
-            }
-
-            Cell routeNameCell = row.getCell(5);
-            if (routeNameCell != null && routeNameCell.getCellType() == CellType.STRING) {
-                routeName = routeNameCell.getStringCellValue();
-                route = routeController.findAndCreateRouteByName(routeName);
-
-            }
-            if (routeName == null || routeName.trim().equals("")) {
-                route = null;
-            }
-
-            Cell percentageCell = row.getCell(6);
-
-            if (percentageCell != null) {
-                if (percentageCell.getCellType() == CellType.NUMERIC) {
-                    percentage = percentageCell.getNumericCellValue();
-
-                } else if (percentageCell.getCellType() == CellType.STRING) {
-                    percentage = Double.parseDouble(percentageCell.getStringCellValue());
-                }
-            }
-
-            if (percentage == null) {
-                percentage = 0.0;
-            }
-
-            Cell contactNumberCell = row.getCell(7);
-
-            if (contactNumberCell != null) {
-                if (contactNumberCell.getCellType() == CellType.NUMERIC) {
-                    DecimalFormat decimalFormat = new DecimalFormat("#");
-                    phone = decimalFormat.format(contactNumberCell.getNumericCellValue());
-
-                } else if (contactNumberCell.getCellType() == CellType.STRING) {
-                    phone = contactNumberCell.getStringCellValue();
-                }
-            }
-            if (phone == null || phone.trim().equals("")) {
-                phone = null;
-            }
-
-            Cell emailAddressCell = row.getCell(8);
-
-            if (emailAddressCell != null && emailAddressCell.getCellType() == CellType.STRING) {
-                email = emailAddressCell.getStringCellValue();
-
-            }
-            if (email == null || email.trim().equals("")) {
-                email = null;
-            }
-
-            Cell ownerNameCell = row.getCell(9);
-
-            if (ownerNameCell != null && ownerNameCell.getCellType() == CellType.STRING) {
-                ownerName = ownerNameCell.getStringCellValue();
-            }
-            if (ownerName == null || ownerName.trim().equals("")) {
-                ownerName = null;
-            }
-
-            Cell addressCell = row.getCell(10);
-
-            if (addressCell != null && addressCell.getCellType() == CellType.STRING) {
-                address = addressCell.getStringCellValue();
-            }
-            if (address == null || address.trim().equals("")) {
-                address = null;
-            }
-
-            Cell standardCreditCell = row.getCell(11);
+            Cell standardCreditCell = row.getCell(2);
             if (standardCreditCell != null && standardCreditCell.getCellType() == CellType.NUMERIC) {
-                standardCreditLimit = standardCreditCell.getNumericCellValue();
-
+                creditLimit = standardCreditCell.getNumericCellValue();
             }
-            if (standardCreditLimit == null) {
-                standardCreditLimit = 0.0;
-            }
-
-            Cell allowedCreditCell = row.getCell(12);
-            if (allowedCreditCell != null && allowedCreditCell.getCellType() == CellType.NUMERIC) {
-                allowedCreditLimit = allowedCreditCell.getNumericCellValue();
-
-            }
-            if (allowedCreditLimit == null) {
-                allowedCreditLimit = 0.0;
-            }
-
-            Cell maxCreditCell = row.getCell(13);
-            if (maxCreditCell != null && maxCreditCell.getCellType() == CellType.NUMERIC) {
-                maxCreditLimit = maxCreditCell.getNumericCellValue();
-
-            }
-            if (maxCreditLimit == null) {
-                maxCreditLimit = 0.0;
+            System.out.println("creditLimit = " + creditLimit);
+            if (creditLimit == null) {
+                creditLimit = 0.0;
             }
 
             if (code.trim().equals("")) {
@@ -3796,38 +3671,21 @@ public class DataUploadController implements Serializable {
             if (agencyName.trim().equals("")) {
                 continue;
             }
-            
-            //Change code to name
 
-            agency = agencyController.findAgencyByName(code);
-            
-            
-            
+            //Change code to name
+//            agency = agencyController.findAgencyByName(code);
+            agency = agencyController.findAgencyByName(agencyName);
+            System.out.println("agency name " + agency);
+
             if (agency == null) {
                 agency = new Institution();
-                agency.setInstitutionType(InstitutionType.CollectingCentre);
+                agency.setInstitutionType(InstitutionType.Agency);
                 agency.setCode(code);
                 agency.setName(agencyName);
-            }
-            if (withCommissionStatus) {
-                agency.setCollectingCentrePaymentMethod(CollectingCentrePaymentMethod.FULL_PAYMENT_WITH_COMMISSION);
-            } else {
-                agency.setCollectingCentrePaymentMethod(CollectingCentrePaymentMethod.PAYMENT_WITHOUT_COMMISSION);
+                agency.setAllowedCreditLimit(creditLimit);
             }
 
-            agency.setInactive(active);
-            agency.setRoute(route);
-            agency.setChequePrintingName(collectingCentrePrintingName);
-            agency.setPercentage(percentage);
-            agency.setPhone(phone);
-            agency.setEmail(email);
-            agency.setOwnerName(ownerName);
-            agency.setAddress(address);
-            agency.setAllowedCredit(standardCreditLimit);
-            agency.setAllowedCreditLimit(allowedCreditLimit);
-            agency.setMaxCreditLimit(maxCreditLimit);
-
-            collectingCentreController.save(agency);
+            agencyController.save(agency);
 
             agencyList.add(agency);
         }
@@ -3835,7 +3693,6 @@ public class DataUploadController implements Serializable {
         return agencyList;
     }
 
-    
     private List<Institution> readSuppliersFromExcel(InputStream inputStream) throws IOException {
         Workbook workbook = new XSSFWorkbook(inputStream);
         Sheet sheet = workbook.getSheetAt(0);
@@ -6470,6 +6327,4 @@ public class DataUploadController implements Serializable {
         this.agencies = agencies;
     }
 
-    
-    
 }
