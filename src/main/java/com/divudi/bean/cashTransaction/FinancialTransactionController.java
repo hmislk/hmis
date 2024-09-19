@@ -1911,6 +1911,40 @@ public class FinancialTransactionController implements Serializable {
         return "/cashier/handover_start_all?faces-redirect=true";
     }
 
+    public String navigateToMyShifts() {
+        bundle = new ReportTemplateRowBundle();
+        fillMyShifts(10);
+        return "/cashier/my_shifts?faces-redirect=true";
+    }
+
+    public void fillMyShifts() {
+        fillMyShifts(null);
+    }
+
+    public void fillMyShifts(Integer count) {
+        String jpql = "Select new com.divudi.data.ReportTemplateRow(b) "
+                + " from Bill b "
+                + " where b.retired=:ret "
+                + " and b.billTypeAtomic=:bta "
+                + " and b.creater=:user ";
+        Map params = new HashMap();
+        params.put("ret", false);
+        params.put("user", sessionController.getLoggedUser());
+        params.put("bta", BillTypeAtomic.FUND_SHIFT_START_BILL);
+        if (count == null) {
+            jpql = " and b.createdAt between: fd and :td ";
+            params.put("fd", getFromDate());
+            params.put("ret", getToDate());
+        }
+        List<ReportTemplateRow> rows;
+        if (count == null) {
+            rows = (List<ReportTemplateRow>) billFacade.findLightsByJpql(jpql, params, TemporalType.DATE);
+        } else {
+            rows = (List<ReportTemplateRow>) billFacade.findLightsByJpql(jpql, params, TemporalType.DATE, count);
+        }
+        bundle.setReportTemplateRows(rows);
+    }
+
     public String navigateToDayEndSummary() {
         return "/analytics/day_end_summery?faces-redirect=true";
     }
@@ -2316,6 +2350,18 @@ public class FinancialTransactionController implements Serializable {
         financialReportByPayments.getRefundedCash();
     }
 
+    public String navigateToViewIndividualShiftForHandover() {
+        return null;
+    }
+
+    public String navigateToAddExcessForShiftForHandover() {
+        return null;
+    }
+
+    public String navigateToMarkShortagesForShiftForHandover() {
+        return null;
+    }
+
     public ReportTemplateRowBundle generatePaymentsFromShiftStartToEndToEnterToCashbookFilteredByDateAndDepartment(
             Bill startBill, Bill endBill) {
         if (startBill == null || startBill.getId() == null || startBill.getCreater() == null) {
@@ -2378,6 +2424,8 @@ public class FinancialTransactionController implements Serializable {
 
         ReportTemplateRowBundle bundleToHoldDeptUserDayBundle = new ReportTemplateRowBundle();
         bundleToHoldDeptUserDayBundle.setBundles(new ArrayList<>(groupedBundles.values()));
+        bundleToHoldDeptUserDayBundle.setStartBill(startBill);
+        bundleToHoldDeptUserDayBundle.setEndBill(endBill);
         return bundleToHoldDeptUserDayBundle;
     }
 
