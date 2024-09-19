@@ -199,15 +199,15 @@ public class ReportController implements Serializable {
         }
         
         if(webUser != null){
-            jpql += " AND pc.institution=:ins ";
-            m.put("ins", webUser);
+            jpql += " AND pc.creater=:wb ";
+            m.put("wb", webUser);
         }
 
         jpql += "AND pc.createdAt BETWEEN :fromDate AND :toDate";
         m.put("fromDate", getFromDate());
         m.put("toDate", getToDate());
         
-        bills = billFacade.findByJpql(jpql, m);
+        bills = billFacade.findByJpql(jpql, m,TemporalType.TIMESTAMP);
     }
 
     public String navigatetoOPDLabReportByMenu() {
