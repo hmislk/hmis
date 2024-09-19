@@ -14,15 +14,103 @@
                 <div class="row" >
                     <div class="col-2">
                         <h:form>
-                            <p:accordionPanel widgetVar="basic" scrollIntoView="center">
-                                <p:tab title="Financial Transaction Manager">
-                                    <p class="m-0">
+                            <p:accordionPanel 
+                                widgetVar="basic"
+                                id="accordion"
+                                activeIndex="#{financialTransactionController.tabIndex}"
+                                scrollIntoView="center">
+                                <p:ajax process="accordion" ></p:ajax>
+                                <p:tab title="Shift Management">
+
+                                    <p:commandButton 
+                                        class="my-1 w-100" 
+                                        value="Shift Start Funds"
+                                        icon=""
+                                        ajax="false" 
+                                        action="#{financialTransactionController.navigateToCreateNewInitialFundBill()}" >
+                                    </p:commandButton>
+
+
+
+                                    <p:commandButton 
+                                        class="my-1 w-100"
+                                        value="Shift End Funds"
+                                        icon=""
+                                        ajax="false" 
+                                        action="#{financialTransactionController.navigateToCreateShiftEndSummaryBill()}" >
+                                    </p:commandButton>
+
+                                    <p:commandButton 
+                                        class="my-1 w-100"
+                                        value="Shift End Funds By Bills (Temporarily)"
+                                        icon=""
+                                        ajax="false" 
+                                        action="#{financialTransactionController.navigateToCreateShiftEndSummaryBillByBills()}" >
+                                    </p:commandButton>
+
+
+                                    <p:commandButton 
+                                        class="my-1 w-100"
+                                        value="Fund Transfer"
+                                        icon=""
+                                        ajax="false" 
+                                        action="#{financialTransactionController.navigateToFundTransferBill()}" >
+                                    </p:commandButton>
+
+                                    <p:badge severity="danger" value="#{financialTransactionController.fundTransferBillsToReceiveCount}">
                                         <p:commandButton 
-                                            class="my-1 w-100" 
-                                            value="Shift Start Funds"
+                                            class="my-1 w-100"
+                                            value=" Fund Transfers for me to Receive"
                                             icon=""
                                             ajax="false" 
-                                            action="#{financialTransactionController.navigateToCreateNewInitialFundBill()}" >
+                                            action="#{financialTransactionController.navigateToReceiveFundTransferBillsForMe()}" >
+                                        </p:commandButton>
+                                    </p:badge>
+
+
+                                    <p:commandButton 
+                                        class="my-1 w-100"
+                                        value="Fund Withdrawal"
+                                        icon=""
+                                        ajax="false" 
+                                        action="#{financialTransactionController.navigateToCreateNewFundWithdrawalBill()}" >
+                                    </p:commandButton>
+
+                                    <p:commandButton 
+                                        class="my-1 w-100"
+                                        value="Fund Deposit to Safe/Bank"
+                                        icon=""
+                                        ajax="false" 
+                                        action="#{financialTransactionController.navigateToFundDepositBill()}" >
+                                    </p:commandButton>
+
+                                </p:tab >
+
+                                <!-- New Payment Management Tab for new features -->
+                                <p:tab title="Payment Management">
+                                    <p class="m-0">
+                                        <p:commandButton 
+                                            class="my-1 w-100"
+                                            value="Record Shift Shortage"
+                                            icon="ui-icon-minus"
+                                            ajax="false" 
+                                            action="#{financialTransactionController.navigateToRecordShiftShortage()}" >
+                                        </p:commandButton>
+
+                                        <p:commandButton 
+                                            class="my-1 w-100"
+                                            value="Record Shift Excess"
+                                            icon="ui-icon-plus"
+                                            ajax="false" 
+                                            action="#{financialTransactionController.navigateToRecordShiftExcess()}" >
+                                        </p:commandButton>
+
+                                        <p:commandButton 
+                                            class="my-1 w-100"
+                                            value="Transfer Payment Method"
+                                            icon="ui-icon-transfer"
+                                            ajax="false" 
+                                            action="#{financialTransactionController.navigateToTransferPaymentMethod()}" >
                                         </p:commandButton>
 
                                         <p:commandButton 
@@ -32,8 +120,8 @@
                                             ajax="false" 
                                             action="#{financialTransactionController.navigateToHandoverCreateBill}" >
                                         </p:commandButton>
-                                        
-                                         <p:badge severity="danger" value="#{financialTransactionController.fundTransferBillsToReceiveCount}">
+
+                                        <p:badge severity="danger" value="#{financialTransactionController.fundTransferBillsToReceiveCount}">
                                             <p:commandButton 
                                                 class="my-1 w-100"
                                                 value=" Handovers for me to Receive"
@@ -45,54 +133,26 @@
 
                                         <p:commandButton 
                                             class="my-1 w-100"
-                                            value="Shift End Funds"
-                                            icon=""
+                                            value="Payment Recording"
+                                            icon="ui-icon-document"
                                             ajax="false" 
-                                            action="#{financialTransactionController.navigateToCreateShiftEndSummaryBill()}" >
+                                            action="#{financialTransactionController.navigateToPaymentRecording()}" >
                                         </p:commandButton>
+                                    </p>
+                                </p:tab>
 
-                                        <p:commandButton 
-                                            class="my-1 w-100"
-                                            value="Shift End Funds By Bills (Temporarily)"
-                                            icon=""
-                                            ajax="false" 
-                                            action="#{financialTransactionController.navigateToCreateShiftEndSummaryBillByBills()}" >
-                                        </p:commandButton>
+                                <p:tab title="Cash Book">
+                                    <p:commandButton 
+                                        class="my-1 w-100"
+                                        value="Cash Book Entries"
+                                        icon=""
+                                        ajax="false" 
+                                        action="#{searchController.navigateToListCashBookEntry()}" >
+                                    </p:commandButton>
+                                </p:tab>
 
-
-                                        <p:commandButton 
-                                            class="my-1 w-100"
-                                            value="Fund Transfer"
-                                            icon=""
-                                            ajax="false" 
-                                            action="#{financialTransactionController.navigateToFundTransferBill()}" >
-                                        </p:commandButton>
-                                        <p:badge severity="danger" value="#{financialTransactionController.fundTransferBillsToReceiveCount}">
-                                            <p:commandButton 
-                                                class="my-1 w-100"
-                                                value=" Fund Transfers for me to Receive"
-                                                icon=""
-                                                ajax="false" 
-                                                action="#{financialTransactionController.navigateToReceiveFundTransferBillsForMe()}" >
-                                            </p:commandButton>
-                                        </p:badge>
-
-
-                                        <p:commandButton 
-                                            class="my-1 w-100"
-                                            value="Fund Withdrawal"
-                                            icon=""
-                                            ajax="false" 
-                                            action="#{financialTransactionController.navigateToCreateNewFundWithdrawalBill()}" >
-                                        </p:commandButton>
-                                        <p:commandButton 
-                                            class="my-1 w-100"
-                                            value="Fund Deposit to Safe/Bank"
-                                            icon=""
-                                            ajax="false" 
-                                            action="#{financialTransactionController.navigateToFundDepositBill()}" >
-                                        </p:commandButton>
-
+                                <p:tab title="Reports">
+                                    <p class="m-0">
                                         <p:commandButton 
                                             class="my-1 w-100"
                                             value="Cashier Summary"
@@ -117,15 +177,6 @@
                                             action="#{searchController.navigateToListSingleUserBills()}" >
                                         </p:commandButton>
                                     </p>
-                                </p:tab >
-                                <p:tab title="Cash Book">
-                                    <p:commandButton 
-                                        class="my-1 w-100"
-                                        value="Cash Book Entries"
-                                        icon=""
-                                        ajax="false" 
-                                        action="#{searchController.navigateToListCashBookEntry()}" >
-                                    </p:commandButton>
                                 </p:tab>
                             </p:accordionPanel>
 

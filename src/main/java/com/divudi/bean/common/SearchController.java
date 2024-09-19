@@ -863,7 +863,7 @@ public class SearchController implements Serializable {
     public String navigatToAllCashierSummary() {
         return "/reports/cashier_reports/all_cashier_summary?faces-redirect=true";
     }
-    
+
     public String navigatToShiftStartAndEnds() {
         return "/reports/cashier_reports/shift_start_and_ends?faces-redirect=true";
     }
@@ -6520,6 +6520,15 @@ public class SearchController implements Serializable {
         duplicateBillView = true;
 
         return "/pharmacy/pharmacy_search_pre_bill_not_paid?faces-redirect=true";
+    }
+
+    public String navigateToItemizedSaleSummary() {
+        return "/opd/analytics/itemized_sale_summary?faces-redirect=true";
+    }
+
+    
+    public String navigateToItemizedSaleReport() {
+        return "/opd/analytics/itemized_sale_report?faces-redirect=true";
     }
 
     public String navigateToItemizedSaleSummaryOpd() {
@@ -12240,6 +12249,8 @@ public class SearchController implements Serializable {
         rtrb.setTotal(totalOpdServiceCollection);
     }
 
+    
+    
     public ReportTemplateRowBundle generateIncomeBreakdownByCategoryOpd() {
         ReportTemplateRowBundle oiBundle = new ReportTemplateRowBundle();
         String jpql = "select bi "
@@ -13196,6 +13207,8 @@ public class SearchController implements Serializable {
         bundle.calculateTotals();
     }
 
+    
+
     public void billItemsToItamizedSaleReport(ReportTemplateRowBundle rtrb, List<BillItem> billItems) {
         Map<String, ReportTemplateRow> categoryMap = new HashMap<>();
         Map<String, ReportTemplateRow> itemSummaryMap = new HashMap<>();
@@ -13503,18 +13516,15 @@ public class SearchController implements Serializable {
         }
         jpql += " AND b.billTypeAtomic=:bta ";
         parameters.put("bta", BillTypeAtomic.FUND_SHIFT_END_BILL);
-        
+
         jpql += " AND b.createdAt BETWEEN :fd AND :td";
         parameters.put("fd", fromDate);
         parameters.put("td", toDate);
 
-        
-
-        bills =  billFacade.findByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        bills = billFacade.findByJpql(jpql, parameters, TemporalType.TIMESTAMP);
         System.out.println("bills = " + bills);
     }
-    
-    
+
     public SearchController() {
     }
 
@@ -14242,6 +14252,7 @@ public class SearchController implements Serializable {
             e.printStackTrace(); // Handle exceptions properly
         }
     }
+
     public void directPurchaseOrderSearch() {
         bills = null;
         Map<String, Object> m = new HashMap<>();
@@ -14256,7 +14267,6 @@ public class SearchController implements Serializable {
         bills = billFacade.findByJpql(jpql, m);
 
     }
-
 
     public void prepareDataBillsAndBillItemsDownload() {
         // JPQL to fetch Bills and their BillItems through Payments
