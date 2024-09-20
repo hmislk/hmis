@@ -17,7 +17,7 @@ public class Drawer implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+    Long id;
     String name;
     private WebUser drawerUser;
     @ManyToOne
@@ -621,7 +621,6 @@ public class Drawer implements Serializable {
         this.youOweMeBalance = youOweMeBalance;
     }
 
-    import javax.persistence.Transient ;
 
 // Dynamic Boolean Methods using @Transient annotation
     @Transient
