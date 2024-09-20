@@ -15,18 +15,37 @@
                     <div>
                         <div class="row mb-2">
                             <div class="col-12 my-4">
-                                <h2>EPF</h2>
+                                <h2>ETF</h2>
                             </div>
                         </div>
 
                         <div class="row mb-2">
                             <div class="col-md-2">                             
                                 <i class="fa fa-repeat" aria-hidden="true"></i>
-                                <p:outputLabel value="Salary Cycle" class="mx-2"/>
+                                <p:outputLabel value="Salary Cycle From" class="mx-2"/>
                             </div>
                             <div class="col-md-4">
-                                <p:inputText value="" class="w-100" />
+                                <p:datePicker
+                                    class="w-100" inputStyleClass="w-100"
+                                    showTime="true"
+                                    value="#{reportController.fromDate}" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                             </div>
+                            <div class="col-md-2">                             
+                                <i class="fa fa-repeat" aria-hidden="true"></i>
+                                <p:outputLabel value="Salary Cycle To" class="mx-2"/>
+                            </div>
+                            <div class="col-md-4">
+                                <p:datePicker
+                                    class="w-100" inputStyleClass="w-100"
+                                    showTime="true"
+                                    value="#{reportController.fromDate}" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                            </div>
+                        </div>
+
+                        <div class="row mb-2">
+
                             <div class="col-md-2">
                                 <i class="fa fa-university" aria-hidden="true"></i>
                                 <p:outputLabel value="Institution" class="mx-2"/>
@@ -42,10 +61,9 @@
                                                    itemLabel="#{i.name}"
                                                    itemValue="#{i}" />
                                 </p:selectOneMenu>
-                            </div>
-                        </div>
 
-                        <div class="row mb-2">
+                            </div>
+
                             <div class="col-md-2">
                                 <i class="fa fa-hospital" aria-hidden="true"></i>
                                 <p:outputLabel value="Department" class="mx-2"/>
@@ -62,12 +80,31 @@
                                                    itemValue="#{i}" />
                                 </p:selectOneMenu>
                             </div>
+
+                        </div>
+
+                        <div class="row mb-2">
+
                             <div class="col-md-2">
                                 <i class="fa fa-user" aria-hidden="true"></i>
                                 <p:outputLabel value="Employee" class="mx-2"/>
                             </div>
                             <div class="col-md-4">
                                 <p:inputText value="" class="w-100" />
+                            </div>
+
+                            <div class="col-md-2">
+                                <i class="fa fa-user" aria-hidden="true"></i>
+                                <p:outputLabel value="Staff Catogary" class="mx-2"/>
+                            </div>
+                            <div class="col-md-4">
+                                <p:selectOneMenu
+                                    value=""
+                                    style=" max-width: 100%; overflow-x: auto; "
+                                    class="w-100">
+                                    <f:selectItem itemLabel="Select Catogary" />
+                                    <f:selectItems value="" var="sts" itemLabel="#{sts.label}" itemValue="#{sts}" ></f:selectItems>
+                                </p:selectOneMenu>
                             </div>
                         </div>
 
@@ -92,19 +129,7 @@
                                                 </div>-->
 
                         <div class="row mb-2">
-                            <div class="col-md-2">
-                                <i class="fa fa-user" aria-hidden="true"></i>
-                                <p:outputLabel value="Staff Catogary" class="mx-2"/>
-                            </div>
-                            <div class="col-md-4">
-                                <p:selectOneMenu
-                                    value=""
-                                    style=" max-width: 100%; overflow-x: auto; "
-                                    class="w-100">
-                                    <f:selectItem itemLabel="Select Catogary" />
-                                    <f:selectItems value="" var="sts" itemLabel="#{sts.label}" itemValue="#{sts}" ></f:selectItems>
-                                </p:selectOneMenu>
-                            </div>
+
 
                             <div class="col-md-2">
                                 <i class="fa fa-address-card" aria-hidden="true"></i>
@@ -114,22 +139,6 @@
                                 <p:inputText value="" class="w-100" />
                             </div>
 
-                            <!--                                <p:commandButton ajax="false"
-                                                                             value="Process"
-                                                                             class="ui-button-warning"
-                                                                             action="#{reportController.processCollectingCentreReciptReport()}" />-->
-                            <!--                                <p:commandButton ajax="false"
-                                                                             value="Download to Excel"
-                                                                             class="mx-1 ui-button-success"
-                                                                             ><p:dataExporter 
-                                                                    type="xls" 
-                                                                    target="tblExport"
-                                                                    fileName="c_transaction_reports"
-                                                                    /></p:commandButton>-->
-
-                        </div>
-
-                        <div class="row mb-2">
                             <div class="col-md-2">
                                 <i class="fa fa-clock" aria-hidden="true"></i>
                                 <p:outputLabel value="Staff Roster" class="mx-2"/>
@@ -141,33 +150,40 @@
 
 
                         </div>
+
+                        <div class="row mb-2">
+
+
+
+                        </div>
                     </div>
 
-                    
-                         <p:commandButton ajax="false" 
-                                         class="ui-button-warning mx-2"
-                                         icon="fas fa-cogs"
-                                         value="Process"
-                                         style="width: 150px"
-                                         action="#{reportController.listCcReportPrint()}" />
-                         <p:commandButton ajax="false" 
-                                         class="ui-button-help mx-2"
-                                         icon="fas fa-stop"
-                                         value="Hold"
-                                         style="width: 150px"
-                                         action="#{reportController.listCcReportPrint()}" />
-                         
-                         <p:commandButton ajax="false" 
-                                         class="ui-button-danger mx-2"
-                                         icon="fas fa-lock"
-                                         value="Blocked"
-                                         style="width: 150px"
-                                         action="#{reportController.listCcReportPrint()}" />
-                         
-                       
-                   
-                        
-               
+
+                    <p:commandButton ajax="false" 
+                                     class="ui-button-warning mx-2"
+                                     icon="fas fa-cogs"
+                                     value="Process"
+                                     style="width: 150px"
+                                     action="#{reportController.listCcReportPrint()}" />
+                    <p:commandButton ajax="false" 
+                                     class="ui-button-help mx-2"
+                                     icon="fas fa-stop"
+                                     value="Hold"
+                                     style="width: 150px"
+                                     action="#{reportController.listCcReportPrint()}" />
+
+                    <p:commandButton ajax="false" 
+                                     class="ui-button-danger mx-2"
+                                     icon="fas fa-lock"
+                                     value="Blocked"
+                                     style="width: 150px"
+                                     action="#{reportController.listCcReportPrint()}" />
+
+
+
+
+
+
 
                     <p:dataTable value="#{reportController.bills}" var="bi" id="tblExport">
                         <!--                        //Mandatory filters
@@ -202,18 +218,13 @@
                         <p:column headerText="EPF No" width="5rem">
                             <h:outputText value="" ></h:outputText>
                         </p:column>
-                        <p:column headerText="Total" width="5rem">
+                        <p:column headerText="Company (3%)" width="5rem">
                             <h:outputText value="" ></h:outputText>
                         </p:column>
-                        <p:column headerText="Staff (8%)" width="5rem">
+                        <p:column headerText="EPF / ETF Deductable Salary " width="5rem">
                             <h:outputText value="" ></h:outputText>
                         </p:column>
-                        <p:column headerText="Company (12%)" width="5rem">
-                            <h:outputText value="" ></h:outputText>
-                        </p:column>
-                        <p:column headerText="EPF/ETF Deductable Salary" width="5rem">
-                            <h:outputText value="" ></h:outputText>
-                        </p:column>
+                        
 
                     </p:dataTable>
                 </h:form>
