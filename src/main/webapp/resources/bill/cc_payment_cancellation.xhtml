@@ -15,7 +15,6 @@
     <cc:implementation>
 
 
-
         <style>
             .fiveinchbill {
                 max-width: 5in;
@@ -25,12 +24,14 @@
                 font-size: 1.1rem;
             }
 
+
             .receipt-header {
                 text-align: center;
                 font-weight: bold;
                 text-decoration: underline;
                 margin-bottom: 20px;
             }
+
 
 
             .receipt-info, .receipt-details, .receipt-footer {
@@ -69,7 +70,6 @@
                 padding-top: 0.5in;
                 text-decoration: overline;
                 margin-left: 3.5in;
-
             }
         </style>
 
@@ -79,7 +79,6 @@
             <div class="header">
                 <h:outputLabel value="Collecting Centre Credit Note" rendered="#{cc.attrs.bill.billType eq 'AgentPaymentReceiveBill'}" />
             </div>
-
 
 
 
