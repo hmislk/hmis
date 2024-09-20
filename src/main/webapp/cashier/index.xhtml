@@ -38,6 +38,22 @@
                                     </p:commandButton>
 
                                     <p:commandButton 
+                                        class="my-1 w-100 ui-button-primary"
+                                        value="Handover Current Shift"
+                                        icon="pi pi-forward"
+                                        ajax="false" 
+                                        action="#{financialTransactionController.navigateToHandoverCreateBillForAllDaysAndDepartmentsForCurrentShift}" >
+                                    </p:commandButton>
+
+                                    <p:commandButton 
+                                        class="my-1 w-100 ui-button-info"
+                                        value="Track My Shifts"
+                                        icon="pi pi-map-marker"
+                                        ajax="false" 
+                                        action="#{financialTransactionController.navigateToMyShifts}">
+                                    </p:commandButton>
+
+                                    <p:commandButton 
                                         class="my-1 w-100 ui-button-danger"
                                         value="Record Shift Shortage"
                                         icon="pi pi-minus"
@@ -92,21 +108,7 @@
 
                                 <p:tab title="Payment Management">
 
-                                    <p:commandButton 
-                                        class="my-1 w-100 ui-button-primary"
-                                        value="Handover Current Shift"
-                                        icon="pi pi-forward"
-                                        ajax="false" 
-                                        action="#{financialTransactionController.navigateToHandoverCreateBillForAllDaysAndDepartmentsForCurrentShift}" >
-                                    </p:commandButton>
 
-                                    <p:commandButton 
-                                        class="my-1 w-100 ui-button-info"
-                                        value="Track My Shifts"
-                                        icon="pi pi-map-marker"
-                                        ajax="false" 
-                                        action="#{financialTransactionController.navigateToMyShifts}">
-                                    </p:commandButton>
 
 
                                     <p:commandButton 
@@ -114,18 +116,17 @@
                                         value="Handover Shift - Old one to cross cheque"
                                         icon="pi pi-forward"
                                         ajax="false" 
+                                        rendered="false"
                                         action="#{financialTransactionController.navigateToHandoverCreateBill}" >
                                     </p:commandButton>
 
-                                    <p:badge severity="danger"  value="#{financialTransactionController.fundTransferBillsToReceiveCount}">
-                                        <p:commandButton 
-                                            class="my-1 w-100 ui-button-danger"
-                                            value="Shift Handovers to Accept"
-                                            icon="pi pi-sign-in"
-                                            ajax="false" 
-                                            action="#{financialTransactionController.navigateToReceiveHandoverBillsForMe()}" >
-                                        </p:commandButton>
-                                    </p:badge>
+                                    <p:commandButton 
+                                        class="my-1 w-100 ui-button-danger"
+                                        value="Shift Handovers to Accept"
+                                        icon="pi pi-sign-in"
+                                        ajax="false" 
+                                        action="#{financialTransactionController.navigateToReceiveHandoverBillsForMe()}" >
+                                    </p:commandButton>
 
                                     <p:commandButton 
                                         class="my-1 w-100 ui-button-info"
