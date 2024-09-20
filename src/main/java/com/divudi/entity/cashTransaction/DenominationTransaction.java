@@ -1,9 +1,6 @@
 package com.divudi.entity.cashTransaction;
 
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
 import com.divudi.entity.WebUser;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
@@ -15,22 +12,20 @@ import javax.persistence.Temporal;
 
 /**
  *
- * @author Lawan Chaamindu
+ * @author Dr M H B Ariyaratne, buddhika.ari@gmail.com
+ * 
  */
 @Entity
-public class CashBook implements Serializable {
+public class DenominationTransaction implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    private String Name;
     @ManyToOne
-    private Institution institution;
-    @ManyToOne
-    private Institution site;
-    @ManyToOne
-    private Department department;
+    private Denomination denomination;
+    private Long denominationQty;
+    private Double denominationValue;
     
     //Created Properties
     @ManyToOne
@@ -46,11 +41,7 @@ public class CashBook implements Serializable {
     private Date retiredAt;
     private String retireComments;
     
-    //Editer Properties
-    @ManyToOne
-    private WebUser editer;
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    private Date editedAt;
+    
 
     public Long getId() {
         return id;
@@ -70,10 +61,10 @@ public class CashBook implements Serializable {
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof CashBook)) {
+        if (!(object instanceof DenominationTransaction)) {
             return false;
         }
-        CashBook other = (CashBook) object;
+        DenominationTransaction other = (DenominationTransaction) object;
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
@@ -82,39 +73,31 @@ public class CashBook implements Serializable {
 
     @Override
     public String toString() {
-        return "com.divudi.entity.cashTransaction.CashBook[ id=" + id + " ]";
+        return "com.divudi.entity.cashTransaction.DenominationTransaction[ id=" + id + " ]";
     }
 
-    public String getName() {
-        return Name;
+    public Denomination getDenomination() {
+        return denomination;
     }
 
-    public void setName(String Name) {
-        this.Name = Name;
+    public void setDenomination(Denomination denomination) {
+        this.denomination = denomination;
     }
 
-    public Institution getInstitution() {
-        return institution;
+    public Long getDenominationQty() {
+        return denominationQty;
     }
 
-    public void setInstitution(Institution institution) {
-        this.institution = institution;
+    public void setDenominationQty(Long denominationQty) {
+        this.denominationQty = denominationQty;
     }
 
-    public Institution getSite() {
-        return site;
+    public Double getDenominationValue() {
+        return denominationValue;
     }
 
-    public void setSite(Institution site) {
-        this.site = site;
-    }
-
-    public Department getDepartment() {
-        return department;
-    }
-
-    public void setDepartment(Department department) {
-        this.department = department;
+    public void setDenominationValue(Double denominationValue) {
+        this.denominationValue = denominationValue;
     }
 
     public WebUser getCreater() {
@@ -163,22 +146,6 @@ public class CashBook implements Serializable {
 
     public void setRetireComments(String retireComments) {
         this.retireComments = retireComments;
-    }
-
-    public WebUser getEditer() {
-        return editer;
-    }
-
-    public void setEditer(WebUser editer) {
-        this.editer = editer;
-    }
-
-    public Date getEditedAt() {
-        return editedAt;
-    }
-
-    public void setEditedAt(Date editedAt) {
-        this.editedAt = editedAt;
     }
     
 }
