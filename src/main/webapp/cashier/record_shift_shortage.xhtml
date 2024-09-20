@@ -16,17 +16,17 @@
                     <p:panel >
                         <f:facet name="header">
                             <i class="fas fa-piggy-bank mt-2"/>
-                            <p:outputLabel value="Deposit Funds" class="mx-2 mt-2"></p:outputLabel>
+                            <p:outputLabel value="Shift Shortage" class="mx-2 mt-2"></p:outputLabel>
                             <p:commandButton 
                                 icon="fa-solid fa-check"
                                 class="ui-button-success"
                                 style="float: right;"
-                                value="Deposit" 
+                                value="Confirm" 
                                 ajax="false" 
-                                action="#{financialTransactionController.settleFundDepositBill()}" >
+                                action="#{financialTransactionController.settleShiftShortages()}" >
                             </p:commandButton>
                         </f:facet>
-                        <p:panel header="Add Deposit Funds" class="my-2">
+                        <p:panel header="Add Excess" class="my-2">
 
                             <div class="row">
                                 <div class="col-md-3">
@@ -77,19 +77,6 @@
                                                 onfocus="this.select()"
                                                 value="#{financialTransactionController.currentPayment.paidValue}" >
                                             </p:inputText>
-                                            <p:inputText 
-                                                class="mx-2"
-                                                id="txtCashRefNo" 
-                                                onfocus="this.select()"
-                                                placeholder="Reference Number"
-                                                value="#{financialTransactionController.currentPayment.chequeRefNo}" >
-                                            </p:inputText>
-                                            <p:selectOneMenu  value="#{financialTransactionController.currentPayment.bank}" class="mx-2" id="cashDepositedBank">
-                                                <f:selectItem itemLabel="Select Bank"/>
-                                                <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
-                                                <p:ajax process="@this" ></p:ajax>
-                                            </p:selectOneMenu>
-
                                         </h:panelGrid>
 
                                         <h:panelGrid
@@ -139,21 +126,21 @@
                                         class="ui-button-success"
                                         process="btnAdd cmdPayment paymentDetails"
                                         update="tblPayments totals cmdPayment paymentDetails"
-                                        action="#{financialTransactionController.addPaymentToFundDepositBill()}" >
+                                        action="#{financialTransactionController.addShortageRecord()}" >
                                     </p:commandButton>
                                 </div>
                             </div>
 
                         </p:panel>
-                        <p:panel  header="Funds" >
+                        <p:panel  header="Excesses" >
                             <f:facet name="header">
                                 <h:panelGroup id="totals">
                                     <div class="d-flex justify-content-between">
                                         <div>
-                                            <h:outputText value="Deposits List" ></h:outputText>
+                                            <h:outputText value="Shortage List" ></h:outputText>
                                         </div>
                                         <div class="d-flex">
-                                            <h:outputText value=" Total Deposits : " ></h:outputText>
+                                            <h:outputText value=" Total Shortage : " ></h:outputText>
                                             <p:outputLabel 
 
                                                 class="mx-2"
@@ -179,14 +166,6 @@
                                             <h:outputLabel value="Cheque Date : #{bp.chequeDate}" >
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"  ></f:convertDateTime>
                                             </h:outputLabel>
-                                        </div>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{bp.paymentMethod eq 'Cash'}">
-                                        <div class="row ">
-                                            <h:outputLabel value="Bank Name : #{bp.bank.name}" ></h:outputLabel>
-                                        </div>
-                                        <div class="row ">
-                                            <h:outputLabel value="Reference No : #{bp.chequeRefNo}" ></h:outputLabel>
                                         </div>
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{bp.paymentMethod eq 'Card'}">
