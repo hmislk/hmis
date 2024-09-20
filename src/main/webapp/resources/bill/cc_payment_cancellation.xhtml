@@ -14,53 +14,62 @@
 
     <cc:implementation>
 
-        <style type="text/css">
+
+
+        <style>
             .fiveinchbill {
-                width: 5in;
+                max-width: 5in;
                 padding: 0.5in;
-                border: 2px solid #000;
-                background-color: #fff;
-                font-family: 'Arial', sans-serif;
-                color: #333;
-                box-shadow: 0 0 10px rgba(0,0,0,0.1);
+                margin: 0 auto;
+                border: 1px solid #000;
+                font-size: 1.1rem;
             }
 
-            table {
-                width: 100%;
-                border-collapse: collapse;
-            }
-
-            td, th {
-                border: 1px solid #dddddd;
-                text-align: left;
-                padding: 8px;
-            }
-
-            .header {
+            .receipt-header {
                 text-align: center;
                 font-weight: bold;
-                font-size: 16px;
                 text-decoration: underline;
                 margin-bottom: 20px;
             }
 
-            .details {
-                padding-top: 2%;
-                padding-left: 5%;
-                padding-right: 5%;
-                font-size: 14px;
+
+            .receipt-info, .receipt-details, .receipt-footer {
+                margin-bottom: 15px;
             }
 
-            .total-amount {
-                text-align: right;
+            .receipt-info div, .receipt-details div {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 8px;
+            }
+
+            .receipt-info div label, .receipt-details div label {
+                flex: 1;
                 font-weight: bold;
-                font-size: 16px;
+            }
+
+            .receipt-info div span, .receipt-details div span {
+                flex: 2;
+                text-align: right;
+            }
+
+            .receipt-total {
+                font-weight: bold;
+                font-size: 1.2rem;
+                margin-top: 20px;
+                margin-bottom: 20px;
+            }
+
+            .receipt-footer {
+                text-align: center;
+                font-style: italic;
             }
 
             .signature {
-                text-align: right;
-                font-size: 12px;
+                padding-top: 0.5in;
                 text-decoration: overline;
+                margin-left: 3.5in;
+
             }
         </style>
 
@@ -71,57 +80,89 @@
                 <h:outputLabel value="Collecting Centre Credit Note" rendered="#{cc.attrs.bill.billType eq 'AgentPaymentReceiveBill'}" />
             </div>
 
-            <!-- Receipt Details in a Table Format -->
-            <table>
-                <tr>
-                    <td colspan="2"><h:outputLabel value="Collecting Centre Payment Cancellation"/></td>
-                </tr>
-                <tr>
-                    <td>Receipt No:</td>
-                    <td><h:outputLabel value="#{cc.attrs.bill.deptId}"/></td>
-                </tr>
-                <tr>
-                    <td>Date:</td>
-                    <td><h:outputLabel value="#{cc.attrs.bill.billDate}">
-                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
-                    </h:outputLabel></td>
-                </tr>
-                <tr>
-                    <td>Time:</td>
-                    <td><h:outputLabel value="#{cc.attrs.bill.billTime}">
-                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
-                    </h:outputLabel></td>
-                </tr>
-                <tr>
-                    <td>Agency:</td>
-                    <td><h:outputLabel value="#{cc.attrs.bill.fromInstitution.name}" /></td>
-                </tr>
-                <tr>
-                    <td>Code:</td>
-                    <td><h:outputLabel value="#{cc.attrs.bill.fromInstitution.institutionCode}" /></td>
-                </tr>
-                <tr>
-                    <td>Payment Type:</td>
-                    <td><h:outputLabel value="#{cc.attrs.bill.paymentMethod}" /></td>
-                </tr>
-                <tr>
-                    <td>Bank:</td>
-                    <td><h:outputLabel value="#{cc.attrs.bill.bank.name}" rendered="#{cc.attrs.bill.bank ne null}"/></td>
-                </tr>
-                <tr>
-                    <td>Cheque No:</td>
-                    <td><h:outputLabel value="#{cc.attrs.bill.chequeRefNo}" rendered="#{cc.attrs.bill.chequeRefNo ne null}" /></td>
-                </tr>
-                <tr class="total-amount">
-                    <td>Total:</td>
-                    <td><h:outputLabel value="#{cc.attrs.bill.netTotal}">
-                        <f:convertNumber pattern="#,##0.00" />
-                    </h:outputLabel></td>
-                </tr>
-                <tr>
-                    <td colspan="2" class="signature">Cashier: <h:outputLabel value="#{cc.attrs.bill.creater.code}" /></td>
-                </tr>
-            </table>
+
+
+
+            <div class="receipt-header">
+                <h:outputLabel value="Collecting Centre Payment Cancellation" style="font-size: 1.2em"/>
+            </div>
+
+            <div class="receipt-info">
+                <div>
+                    <label>Receipt No:</label>
+                    <span>
+                        <h:outputLabel value="#{cc.attrs.bill.deptId}"/>
+                    </span>
+                </div>
+
+                <div>
+                    <label>Date:</label>
+                    <span>                     
+                        <h:outputLabel value="#{cc.attrs.bill.billDate}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                        </h:outputLabel>
+                    </span>
+                </div> 
+
+                <div>
+                    <label>Time:</label>
+                    <span>                        
+                        <h:outputLabel value="#{cc.attrs.bill.billTime}">
+                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
+                        </h:outputLabel>
+                    </span>
+                </div>
+
+                <div>
+                    <label>Agency:</label>
+                    <span>
+                        <h:outputLabel value="#{cc.attrs.bill.fromInstitution.name}" />
+                    </span>
+                </div>
+                <div>
+                    <label>Code:</label>
+                    <span>
+                        <h:outputLabel value="#{cc.attrs.bill.fromInstitution.institutionCode}" />
+                    </span>
+                </div>
+
+                <div>
+                    <label>Payment Type:</label>
+                    <span>
+                        <h:outputLabel value="#{cc.attrs.bill.paymentMethod}"/>
+                    </span>
+                </div>
+                <div>
+                    <label>Bank:</label>
+                    <span>
+                        <h:outputLabel value="#{cc.attrs.bill.bank.name}" rendered="#{cc.attrs.bill.bank ne null}" />
+                    </span>
+                </div>
+                <div rendered="#{cc.attrs.bill.chequeRefNo ne null}">
+                    <label>Cheque No:</label>
+                    <span>
+                        <h:outputLabel value="#{cc.attrs.bill.chequeRefNo}" />
+                    </span>
+                </div>
+
+                <div class="receipt-total">
+                    <label>Total:</label>
+                    <span>
+                        <h:outputLabel value="#{cc.attrs.bill.netTotal}" style="font-size: 1.2rem;">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                    </span>
+                </div>
+                <div class="signature">
+                    <label>Cashier</label>
+                    <span>
+                        <h:outputLabel value="#{cc.attrs.bill.creater.code}">
+                        </h:outputLabel>
+                    </span>
+                </div>
+
+            </div>   
+
         </div>
     </cc:implementation>
 </html>
