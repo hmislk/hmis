@@ -4,6 +4,7 @@ import com.divudi.bean.common.DoctorController;
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.ItemApplicationController;
 import com.divudi.bean.common.ItemController;
+import com.divudi.bean.common.PatientController;
 import com.divudi.bean.common.PersonController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillItemStatus;
@@ -27,6 +28,7 @@ import com.divudi.entity.Doctor;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
+import com.divudi.entity.PatientDepositHistory;
 import com.divudi.entity.Person;
 import com.divudi.entity.Route;
 import com.divudi.entity.Service;
@@ -40,6 +42,7 @@ import com.divudi.facade.AgentHistoryFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.InstitutionFacade;
+import com.divudi.facade.PatientDepositHistoryFacade;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import com.divudi.light.common.PrescriptionSummaryReportRow;
@@ -81,6 +84,8 @@ public class ReportController implements Serializable {
     InstitutionFacade institutionFacade;
     @EJB
     AgentHistoryFacade agentHistoryFacade;
+    @EJB
+    PatientDepositHistoryFacade patientDepositHistoryFacade;
 
     @Inject
     private InstitutionController institutionController;
@@ -92,6 +97,8 @@ public class ReportController implements Serializable {
     ItemApplicationController itemApplicationController;
     @Inject
     ItemController itemController;
+    @Inject
+    PatientController patientController;
 
     private int reportIndex;
     private Institution institution;
@@ -157,6 +164,8 @@ public class ReportController implements Serializable {
 
     private List<ItemCount> reportOpdServiceCount;
     private ReportTemplateRowBundle bundle;
+    
+   private List<PatientDepositHistory> patientDepositHistories;
 
     CommonFunctions commonFunctions;
     private List<PatientInvestigation> patientInvestigations;
@@ -243,6 +252,25 @@ public class ReportController implements Serializable {
         bundle.setTotal(totalNetValue);
         bundle.setReportTemplateRows(rows);
     }
+    
+    
+    public void createPatientDepositSummary(){
+        String jpql = "select pdh"
+                + " from PatientDepositHistory pdh"
+                + " where pdh.retired=:ret"
+                + " and pdh.patientDeposit.patient = :p ";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        Patient pt = patientController.getCurrent();
+        m.put("p", pt);
+        
+         jpql += " AND pdh.createdAt BETWEEN :fromDate AND :toDate";
+        m.put("fromDate", getFromDate());
+        m.put("toDate", getToDate());
+
+        patientDepositHistories = patientDepositHistoryFacade.findByJpql(jpql, m,TemporalType.TIMESTAMP);
+    }
 
     public void processCollectionCenterBalance() {
         String jpql = "select cc"
@@ -283,7 +311,7 @@ public class ReportController implements Serializable {
         }
 
         if (site != null) {
-            jpql += " AND pc.site=:site ";
+            jpql += " AND pc.department.site=:site ";
             m.put("site", site);
         }
 
@@ -2071,6 +2099,14 @@ public class ReportController implements Serializable {
 
     public List<PatientInvestigation> getPatientInvestigations() {
         return patientInvestigations;
+    }
+
+    public List<PatientDepositHistory> getPatientDepositHistories() {
+        return patientDepositHistories;
+    }
+
+    public void setPatientDepositHistories(List<PatientDepositHistory> patientDepositHistories) {
+        this.patientDepositHistories = patientDepositHistories;
     }
 
 }
