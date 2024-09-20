@@ -210,6 +210,7 @@
                                         <h:outputLabel value="#{bill.id}"/>
                                     </p:column>
                                     <p:column headerText="Bill No*" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}" filterMatchMode="contains">                                
+                                        <div>
                                         <p:commandLink 
                                             id="billNo" 
                                             ajax="false" 
@@ -217,6 +218,26 @@
                                             action="#{billSearch.navigateToViewSingleOpdBill()}">
                                             <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                         </p:commandLink>
+                                        </div>
+                                        <div>
+                                            <p:commandLink
+                                            id="CancelBillNo"
+                                            ajax="false"
+                                            value="#{bill.cancelledBill.deptId}"
+                                            action="#{billSearch.navigateToViewSingleOpdBill()}"
+                                            rendered="#{bill.cancelled}" style="color: red">
+                                                 <f:setPropertyActionListener value="#{bill.cancelledBill}" target="#{billSearch.bill}"/>
+                                        </p:commandLink>
+                                             <p:commandLink
+                                            id="RefundBillNo"
+                                            ajax="false"
+                                            value="#{bill.refundedBill.deptId}"
+                                            action="#{billSearch.navigateToViewSingleOpdBill()}"
+                                            rendered="#{bill.refunded}" style="color: orange">
+                                                 <f:setPropertyActionListener value="#{bill.refundedBill}" target="#{billSearch.bill}"/>
+                                        </p:commandLink>
+                                        </div>
+                                        
                                     </p:column>
                                     <p:column headerText="Batch Bill" sortBy="#{bill.backwardReferenceBill.deptId}" 
                                               filterMatchMode="contains"
@@ -229,14 +250,18 @@
                                     <p:column headerText="Billed At" filterBy="#{bill.billDate}" sortBy="#{bill.billDate}">
                                         <h:panelGroup rendered="#{fn:substring(searchController.fromDate, 0, 10) eq fn:substring(searchController.toDate, 0, 10)}">
                                             <p:outputLabel id="billTime1" value="#{bill.createdAt}" >
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
                                             </p:outputLabel>
                                             <div>
                                                 <p:outputLabel value="#{bill.cancelledBill.createdAt}" rendered="#{bill.cancelled}" style="color: red">
-                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
+                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
+                                                </p:outputLabel>
+                                                <p:outputLabel value="#{bill.cancelledBill.paymentMethod}" rendered="#{bill.cancelled}" style="color: red">
                                                 </p:outputLabel>
                                                 <p:outputLabel value="#{bill.refundedBill.createdAt}" style="color: orange">
-                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
+                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
+                                                </p:outputLabel>
+                                                <p:outputLabel value="#{bill.refundedBill.paymentMethod}" style="color: orange">
                                                 </p:outputLabel>
                                             </div>
 
@@ -350,7 +375,7 @@
                                         <p:commandLink 
                                             ajax="false" 
                                             value="View Bill" 
-                                            action="#{billSearch.navigateToViewOpdBill()}">
+                                            action="#{billSearch.navigateToManageOpdBill()}">
                                             <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                         </p:commandLink>
                                         <p:spacer width="5" ></p:spacer>

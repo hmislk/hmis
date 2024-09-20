@@ -1,0 +1,120 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+                    <p:panel  >
+                        <f:facet name="header" >
+                            <h:outputText styleClass="fas fa-pencil" />
+                            <h:outputText value="Edit Payment Details" class="mx-3" ></h:outputText>
+                            <div style="float: right"> 
+                                <p:commandButton 
+                                    value="Save" 
+                                    class="ui-button-success mx-2"
+                                    icon="fas fa-floppy-disk"
+                                    ajax="false" 
+                                    action="#{paymentController.save(billSearch.payment)}" ></p:commandButton>
+                                <p:commandButton 
+                                    ajax="false" 
+                                    value="Back" 
+                                    class="ui-button-warning"
+                                    icon="fas fa-arrow-left"
+                                    action="/opd/view/opd_batch_bill?faces-redirect=true"></p:commandButton>
+                            </div>
+                        </f:facet>
+
+                        <p:panelGrid columns="2" class="w-100" layout="grid" >
+                            <h:outputText value="ID" ></h:outputText>
+                            <h:outputText value="#{billSearch.payment.id}" ></h:outputText>
+
+                            <h:outputText value="Value" ></h:outputText>
+                            <p:inputText value="#{billSearch.payment.paidValue}" ></p:inputText>
+
+                            <h:outputText value="Retired or Not" ></h:outputText>
+                            <p:selectBooleanCheckbox value="#{billSearch.payment.retired}" >
+                            </p:selectBooleanCheckbox>
+
+                            <h:outputText value="Payment Method" ></h:outputText>
+                            <p:selectOneMenu   
+                                id="pay"
+                                value="#{billSearch.payment.paymentMethod}"
+                                >     
+                                <f:selectItems 
+                                    value="#{enumController.paymentMethodsForOpdBilling}"  
+                                    var="pm"
+                                    itemLabel="#{pm.label}"
+                                    itemValue="#{pm}"/>
+                                <p:ajax process="@this" 
+                                        update="paymentDetails"
+                                        event="change"/>
+                            </p:selectOneMenu>
+
+                            <h:outputLabel></h:outputLabel>
+
+                            <h:panelGroup id="paymentDetails"  >
+                                <h:panelGroup
+                                    layout="block"  
+                                    id="creditCard" rendered="#{billSearch.payment.paymentMethod eq 'Card'}" >
+                                    <p:inputText 
+                                        autocomplete="off"
+                                        style="width: 150px"
+                                        value="#{billSearch.payment.creditCardRefNo}"  
+                                        id="refno"
+                                        placeholder="Card Last 4 Digits">
+                                        <p:ajax process="@this" ></p:ajax>
+                                    </p:inputText>                          
+                                    <p:selectOneMenu style="width: 150px" class="mx-3" value="#{billSearch.payment.bank}" filter="true" filterMatchMode="contains"  >
+                                        <f:selectItem itemLabel="Select Bank"/>
+                                        <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
+                                        <p:ajax process="@this" ></p:ajax>
+                                    </p:selectOneMenu>
+                                </h:panelGroup>
+                                <h:panelGroup
+                                    layout="block" 
+                                    id="cheque"  rendered="#{billSearch.payment.paymentMethod eq 'Cheque'}" >
+                                    <p:inputText 
+                                        placeholder="Cheque No" 
+                                        autocomplete="off"  
+                                        value="#{billSearch.payment.chequeRefNo}" 
+                                        style="width: 10em;" 
+                                        id="chequNo" >
+                                        <p:ajax process="@this" ></p:ajax>
+                                    </p:inputText>
+                                    <p:selectOneMenu  value="#{billSearch.payment.bank}" class="mx-3" style="width: 15em;" >
+                                        <f:selectItem itemLabel="Select Bank"/>
+                                        <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
+                                        <p:ajax process="@this" ></p:ajax>
+                                    </p:selectOneMenu>
+                                    <p:calendar 
+                                        placeholder="Cheque Date" 
+                                        value="#{billSearch.payment.chequeDate}" 
+                                        pattern="#{sessionController.applicationPreference.longDateFormat}" 
+                                        id="ChequeDate" class="w-50">                            
+                                        <p:ajax process="@this" ></p:ajax>
+                                    </p:calendar>
+                                </h:panelGroup>
+                            </h:panelGroup>
+
+                        </p:panelGrid>
+
+
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

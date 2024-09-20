@@ -595,7 +595,7 @@ public class ChannelReportTemplateController implements Serializable {
 
         for (ReportTemplateRow row : rs) {
             if (row != null) {
-                row.setId(idCounter++);
+                row.setCounter(idCounter++);
                 SessionInstance sessionInstance = row.getSessionInstance();
                 if (sessionInstance != null) {
                     bundle.setLong1(bundle.getLong1() + (sessionInstance.getBookedPatientCount() != null ? sessionInstance.getBookedPatientCount() : 0));
@@ -864,7 +864,7 @@ public class ChannelReportTemplateController implements Serializable {
 
         for (ReportTemplateRow row : rs) {
             if (row != null) {
-                row.setId(idCounter++);
+                row.setCounter(idCounter++);
                 SessionInstance sessionInstance = row.getSessionInstance();
                 if (sessionInstance != null) {
                     bundle.setLong1(bundle.getLong1() + (sessionInstance.getBookedPatientCount() != null ? sessionInstance.getBookedPatientCount() : 0));
@@ -927,7 +927,7 @@ public class ChannelReportTemplateController implements Serializable {
 
         for (ReportTemplateRow row : rs) {
             if (row != null) {
-                row.setId(idCounter++);
+                row.setCounter(idCounter++);
                 SessionInstance sessionInstance = row.getSessionInstance();
                 if (sessionInstance != null) {
                     bundle.setLong1(bundle.getLong1() + (sessionInstance.getBookedPatientCount() != null ? sessionInstance.getBookedPatientCount() : 0));
@@ -993,7 +993,7 @@ public class ChannelReportTemplateController implements Serializable {
 
         for (ReportTemplateRow row : rs) {
             if (row != null) {
-                row.setId(idCounter++);
+                row.setCounter(idCounter++);
 
                 // Directly sum the values from the aggregated query results
                 bundle.setLong1(bundle.getLong1() + (row.getLong1() != null ? row.getLong1() : 0)); // Booked Patient Count

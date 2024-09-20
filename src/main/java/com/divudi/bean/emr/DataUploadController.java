@@ -11,6 +11,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import com.divudi.bean.clinical.DiagnosisController;
 import com.divudi.bean.clinical.PatientEncounterController;
+import com.divudi.bean.common.AgencyController;
 import com.divudi.bean.common.AreaController;
 import com.divudi.bean.common.CategoryController;
 import com.divudi.bean.common.CommonController;
@@ -130,6 +131,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.UUID;
 import org.apache.poi.ss.SpreadsheetVersion;
 
 @Named
@@ -183,6 +185,8 @@ public class DataUploadController implements Serializable {
     @Inject
     CollectingCentreController collectingCentreController;
     @Inject
+    AgencyController agencyController;
+    @Inject
     RouteController routeController;
     @Inject
     DoctorSpecialityController doctorSpecialityController;
@@ -226,6 +230,7 @@ public class DataUploadController implements Serializable {
     private List<Item> items;
     private List<ItemFee> itemFees;
     private List<Institution> collectingCentres;
+    private List<Institution> agencies;
     private List<Institution> suppliers;
     private List<Department> departments;
     private List<Area> areas;
@@ -273,6 +278,11 @@ public class DataUploadController implements Serializable {
     public String navigateToCollectingCenterUpload() {
         uploadComplete = false;
         return "/admin/institutions/collecting_centre_upload?faces-redirect=true";
+    }
+
+    public String navigateToAgencyUpload() {
+        uploadComplete = false;
+        return "/admin/institutions/agency_upload?faces-redirect=true";
     }
 
     public String navigateToDepartmentUpload() {
@@ -3322,6 +3332,21 @@ public class DataUploadController implements Serializable {
         JsfUtil.addSuccessMessage("Successfully Uploaded");
     }
 
+    public void uploadAgencies() {
+        agencies = new ArrayList<>();
+        if (file != null) {
+            try (InputStream inputStream = file.getInputStream()) {
+                agencies = readAgenciesFromExcel(inputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+                uploadComplete = false;
+                JsfUtil.addErrorMessage("Error in Uploading. " + e.getMessage());
+            }
+        }
+        uploadComplete = true;
+        JsfUtil.addSuccessMessage("Successfully Uploaded");
+    }
+
     public void uploadSuppliers() {
         suppliers = new ArrayList<>();
         if (file != null) {
@@ -3581,6 +3606,91 @@ public class DataUploadController implements Serializable {
         }
 
         return collectingCentresList;
+    }
+
+    private List<Institution> readAgenciesFromExcel(InputStream inputStream) throws IOException {
+        Workbook workbook = new XSSFWorkbook(inputStream);
+        Sheet sheet = workbook.getSheetAt(0);
+        Iterator<Row> rowIterator = sheet.rowIterator();
+
+        List<Institution> agencyList = new ArrayList<>();
+        Institution agency;
+
+        // Assuming the first row contains headers, skip it
+        if (rowIterator.hasNext()) {
+            rowIterator.next();
+        }
+
+        while (rowIterator.hasNext()) {
+            Row row = rowIterator.next();
+
+            agency = null;
+            //ToDo: Delete unnecessary fields
+
+            Double codeDbl = 0.0;
+            String code = null;
+            String agencyName = null;
+            Double creditLimit = null;
+
+            Cell codeCell = row.getCell(0);
+            if (codeCell != null && codeCell.getCellType() == CellType.STRING) {
+                code = codeCell.getStringCellValue();
+            } else if (codeCell != null && codeCell.getCellType() == CellType.NUMERIC) {
+                codeDbl = codeCell.getNumericCellValue();
+                code = codeDbl.toString();
+            }else{
+                code = UUID.randomUUID().toString();
+            }
+            System.out.println("code = " + code);
+
+
+            //    Item masterItem = itemController.findMasterItemByName(code);
+            Cell agentNameCell = row.getCell(1);
+
+            if (agentNameCell != null && agentNameCell.getCellType() == CellType.STRING) {
+                agencyName = agentNameCell.getStringCellValue();
+            }
+            System.out.println("agencyName = " + agencyName);
+            if (agencyName == null || agencyName.trim().equals("")) {
+                continue;
+            }
+
+            Cell standardCreditCell = row.getCell(2);
+            if (standardCreditCell != null && standardCreditCell.getCellType() == CellType.NUMERIC) {
+                creditLimit = standardCreditCell.getNumericCellValue();
+            }
+            System.out.println("creditLimit = " + creditLimit);
+            if (creditLimit == null) {
+                creditLimit = 0.0;
+            }
+
+            if (code.trim().equals("")) {
+                continue;
+            }
+
+            if (agencyName.trim().equals("")) {
+                continue;
+            }
+
+            //Change code to name
+//            agency = agencyController.findAgencyByName(code);
+            agency = agencyController.findAgencyByName(agencyName);
+            System.out.println("agency name " + agency);
+
+            if (agency == null) {
+                agency = new Institution();
+                agency.setInstitutionType(InstitutionType.Agency);
+                agency.setCode(code);
+                agency.setName(agencyName);
+                agency.setAllowedCreditLimit(creditLimit);
+            }
+
+            agencyController.save(agency);
+
+            agencyList.add(agency);
+        }
+
+        return agencyList;
     }
 
     private List<Institution> readSuppliersFromExcel(InputStream inputStream) throws IOException {
@@ -6207,6 +6317,14 @@ public class DataUploadController implements Serializable {
 
     public void setRoutes(List<Route> routes) {
         this.routes = routes;
+    }
+
+    public List<Institution> getAgencies() {
+        return agencies;
+    }
+
+    public void setAgencies(List<Institution> agencies) {
+        this.agencies = agencies;
     }
 
 }

@@ -16,6 +16,8 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
+        
+        
 
         <div class="posbill" style="text-align: left!important; page-break-after: always;" >
             <div style="position: absolute; padding-left: 165px;">
@@ -143,19 +145,20 @@
                 </tr>
 
                 <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Show Bill fees with Item Name in Channel Booking Bill')}" >
+<!--                    <h1>SSSS</h1>-->
                     <ui:repeat value="#{cc.attrs.bill.billFeesWIthoutZeroValue}" var="cbif" >
                         <tr>
                             <td>
                                 <h:outputLabel value="#{cbif.fee.name}" rendered="#{cbif.feeGrossValue ne 0.0}"></h:outputLabel>
                             </td>
                             <td>
-                                <p:spacer width="10" rendered="#{cbif.feeGrossValue ne 0.0}"></p:spacer>
+                                <p:spacer width="10" rendered="#{cbif.feeValue ne 0.0}"></p:spacer>
                             </td>
                             <td>
-                                <h:outputLabel value=":" rendered="#{cbif.feeGrossValue ne 0.0}"></h:outputLabel>
+                                <h:outputLabel value=":" rendered="#{cbif.feeValue ne 0.0}"></h:outputLabel>
                             </td>
                             <td>
-                                <h:outputLabel value="#{cbif.feeGrossValue}" rendered="#{cbif.feeGrossValue ne 0.0}">
+                                <h:outputLabel value="#{cbif.feeValue}" rendered="#{cbif.feeValue ne 0.0}">
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputLabel>
                             </td>
@@ -171,19 +174,19 @@
                             </td>
                         </tr>
                         <tr>
-                            <ui:repeat value="#{cbi.item.itemFeesAuto}" var="cbif" >
+                            <ui:repeat value="#{cbi.billFees}" var="cbif" >
                                 <tr>
                                     <td>
-                                        <h:outputLabel value="#{cbif.name}" rendered="#{cbif.fee ne 0.0}"></h:outputLabel>
+                                        <h:outputLabel value="#{cbif.fee.name}" rendered="#{cbif.fee ne 0.0}"></h:outputLabel>
                                     </td>
                                     <td>
-                                        <p:spacer width="10" rendered="#{cbif.fee ne 0.0}"></p:spacer>
+                                        <p:spacer width="10" rendered="#{cbif.feeValue ne 0.0}"></p:spacer>
                                     </td>
                                     <td>
-                                        <h:outputLabel value=":" rendered="#{cbif.fee ne 0.0}"></h:outputLabel>
+                                        <h:outputLabel value=":" rendered="#{cbif.feeValue ne 0.0}"></h:outputLabel>
                                     </td>
                                     <td>
-                                        <h:outputLabel value="#{cbif.fee}" rendered="#{cbif.fee ne 0.0}">
+                                        <h:outputLabel value="#{cbif.feeValue}" rendered="#{cbif.feeValue ne 0.0}">
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputLabel>
                                     </td>

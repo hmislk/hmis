@@ -111,7 +111,7 @@ public class Bill implements Serializable {
     // Bank Detail
     private String creditCardRefNo;
     private String chequeRefNo;
-
+    private boolean creditBill;
     private int creditDuration;
     @ManyToOne(fetch = FetchType.LAZY)
     private Institution bank;
@@ -316,6 +316,8 @@ public class Bill implements Serializable {
     private Date smsedAt;
     @OneToMany(mappedBy = "bill")
     private List<Sms> sentSmses;
+    
+    private boolean completed;
 
     //Print Information
     private boolean printed;
@@ -372,10 +374,10 @@ public class Bill implements Serializable {
     private double totalHospitalFee;
     private double totalCenterFee;
     private double totalStaffFee;
-    
+
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date fromDate;
-    
+
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date toDate;
 
@@ -782,6 +784,14 @@ public class Bill implements Serializable {
         margin = 0 - bill.getMargin();
         grnNetTotal = 0 - bill.getGrnNetTotal();
         billTotal = 0 - bill.getBillTotal();
+        refundAmount = 0 - bill.getRefundAmount();
+        serviceCharge = 0 - bill.getServiceCharge();
+        expenseTotal = 0 - bill.getExpenseTotal();
+        claimableTotal = 0 - bill.getClaimableTotal();
+        tenderedAmount = 0 - bill.getTenderedAmount();
+        totalHospitalFee = 0 - bill.getTotalHospitalFee();
+        totalCenterFee = 0 - bill.getTotalCenterFee();
+        totalStaffFee = 0 - bill.getTotalStaffFee();
     }
 
     public void invertValue() {
@@ -805,6 +815,14 @@ public class Bill implements Serializable {
         grnNetTotal = 0 - getGrnNetTotal();
         vatPlusNetTotal = 0 - getVatPlusNetTotal();
         billTotal = 0 - getBillTotal();
+        refundAmount = 0 - getRefundAmount();
+        serviceCharge = 0 - getServiceCharge();
+        expenseTotal = 0 - getExpenseTotal();
+        claimableTotal = 0 - getClaimableTotal();
+        tenderedAmount = 0 - getTenderedAmount();
+        totalHospitalFee = 0 - getTotalHospitalFee();
+        totalCenterFee = 0 - getTotalCenterFee();
+        totalStaffFee = 0 - getTotalStaffFee();
     }
 
     public void copy(Bill bill) {
@@ -2299,8 +2317,8 @@ public class Bill implements Serializable {
     }
 
     public PatientInvestigationStatus getStatus() {
-        if(status==null){
-            status=PatientInvestigationStatus.ORDERED;
+        if (status == null) {
+            status = PatientInvestigationStatus.ORDERED;
         }
         return status;
     }
@@ -2333,4 +2351,22 @@ public class Bill implements Serializable {
         this.toDate = toDate;
     }
 
+    public boolean isCreditBill() {
+        return creditBill;
+    }
+
+    public void setCreditBill(boolean creditBill) {
+        this.creditBill = creditBill;
+    }
+
+    public boolean isCompleted() {
+        return completed;
+    }
+
+    public void setCompleted(boolean completed) {
+        this.completed = completed;
+    }
+
+
+    
 }

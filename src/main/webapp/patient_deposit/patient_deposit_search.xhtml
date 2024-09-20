@@ -24,62 +24,108 @@
                             </div>
                         </div>
                     </f:facet>
-                </p:panel>
-            </h:form>
-        </h:panelGroup>
+                    <div class="row">
+                        <div class="col-md-2">
+                            <h:panelGroup class="d-flex flex-column">
+                                <h:outputLabel value="From Date"/>
+                                <p:calendar styleClass="dateTimePicker"
+                                            id="fromDate"
+                                            value="#{searchController.fromDate}"
+                                            class="w-100"
+                                            inputStyleClass="form-control"
+                                            navigator="false"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                                </p:calendar>
 
+                                <h:outputLabel value="To Date"/>
+                                <p:calendar id="toDate"
+                                            value="#{searchController.toDate}"
+                                            navigator="false"
+                                            class="w-100"
+                                            inputStyleClass="form-control"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                                </p:calendar>
 
-        <h:panelGroup rendered="#{patientController.printPreview}">
-            <h:form >
-                <p:panel>
+                                <p:commandButton id="btnSearch"
+                                                 ajax="false"
+                                                 value="Search"
+                                                 icon="fa fa-search"
+                                                 class="ui-button-success mt-2"
+                                                 action="#{searchController.createPatientDepositTable}" />
+                                <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
 
-                    <f:facet name="header">
-                        <h:panelGrid columns="4" style="size: 0.5rem; float: right" >
-                            <p:commandButton value="Print Bill" icon="pi pi-print" class="ui-button-info" ajax="false">
-                                <p:printer target="billPanel"></p:printer>
-                            </p:commandButton>
-                            <p:commandButton icon="fas fa-plus" class="mx-1" value="New Bill"
-                                             ajax="false" action="/payments/patient/receive?faces-redirect=true"
-                                             actionListener="#{patientController.clearDataForPatientDeposite()}" >
-                            </p:commandButton>
-                            <p:commandButton ajax="false" icon="fas fa-search" value="Patient Lookup" class="mx-1 ui-button-warning"
-                                             action="#{patientController.navigateToSearchPatients}"></p:commandButton>
-                            <p:commandButton
-                                value="Profile"
-                                ajax="false"
-                                icon="fa fa-user"
-                                class="ui-button-warning  w-100"
-                                action="#{patientController.navigateToOpdPatientProfile()}"
-                                >
-                                <f:setPropertyActionListener
-                                    value="#{patientController.bill.patient}"
-                                    target="#{patientController.current}" ></f:setPropertyActionListener>
-                            </p:commandButton>
-                        </h:panelGrid>
-                    </f:facet>
+<!--                                <p:inputText autocomplete="off" placeholder="Bill No" value="#{searchController.searchKeyword.billNo}" class="my-1"/>-->
+                                <p:inputText autocomplete="off" placeholder="Patient Name" value="#{searchController.searchKeyword.patientName}" class="my-1"/>
+<!--                                <p:inputText autocomplete="off" placeholder="Value" value="#{searchController.searchKeyword.netTotal}" class="my-1"/>-->
+                                <h:outputLabel/>
+                            </h:panelGroup>
+                        </div>
+                        <div class="col-md-10">
+                            <p:dataTable id="tblBills" value="#{searchController.bills}" var="bill"  >
+                                <p:column headerText="Bill No" >
+                                    <h:commandLink action="/patient_deposit/view/patient_deposit_bill?faces-redirect=true" value="#{bill.deptId}">
+                                        <h:outputLabel  ></h:outputLabel>
+                                        <f:setPropertyActionListener value="#{bill}" target="#{patientController.bill}"/>
+                                    </h:commandLink>
+                                </p:column>
+                                <p:column headerText="Billed At"  >
+                                    <h:commandLink action="/patient_deposit/view/patient_deposit_bill?faces-redirect=true" >
+                                        <h:outputLabel value="#{bill.createdAt}" >
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputLabel>
+                                        <f:setPropertyActionListener value="#{bill}" target="#{patientController.bill}"/>
+                                    </h:commandLink>
+                                    <br/>
+                                    <h:panelGroup rendered="#{bill.cancelled}" >
+                                        <h:outputLabel style="color: red;" value="Cancelled At " />
+                                        <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.createdAt}" >
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputLabel>
+                                    </h:panelGroup>
 
+                                </p:column>
+                                <p:column headerText="Billed By" >
+                                    <h:commandLink action="/patient_deposit/view/patient_deposit_bill?faces-redirect=true" >
+                                        <h:outputLabel value="#{bill.creater.webUserPerson.name}" >
+                                        </h:outputLabel>
+                                        <f:setPropertyActionListener value="#{bill}" target="#{patientController.bill}"/>
+                                    </h:commandLink>
+                                    <br/>
+                                    <h:panelGroup rendered="#{bill.cancelled}" >
+                                        <h:outputLabel style="color: red;" value="Cancelled At " />
+                                        <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.name}" >
+                                        </h:outputLabel>
+                                    </h:panelGroup>
+                                </p:column>
+                                <p:column headerText="Patient Name" >
+                                    <h:commandLink action="/patient_deposit/view/patient_deposit_bill?faces-redirect=true" >
+                                        <h:outputLabel value="#{bill.patient.person.name}" ></h:outputLabel>
+                                        <f:setPropertyActionListener value="#{bill}" target="#{patientController.bill}"/>
+                                    </h:commandLink>
+                                </p:column>
 
-
-
-
-
-                    <div class="container-fluid my-2">
-                        <div class="row justify-content-center align-items-center">
-                            <div class="col-md-6">
-                                <div class="align-items-center my-2" style="max-width: 80%" >
-                                    <div>
-                                        <h:panelGroup id="billPanel" class="bill" layout="block">
-                                            <prints:five_five_paper_patient_deposit bill="#{patientController.bill}" />
-                                        </h:panelGroup>
-                                    </div>
-                                </div>
-                            </div>
+                                <p:column headerText="Net Value" styleClass="averageNumericColumn">
+                                    <h:commandLink action="/patient_deposit/view/patient_deposit_bill?faces-redirect=true" >
+                                        <h:outputLabel value="#{bill.netTotal}" >
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                        <f:setPropertyActionListener value="#{bill}" target="#{patientController.bill}"/>
+                                    </h:commandLink>
+                                </p:column>
+                                <p:column headerText="Comments" >
+                                    <h:outputLabel rendered="#{bill.refundedBill ne null}" value="#{bill.refundedBill.comments}" >
+                                    </h:outputLabel>
+                                    <h:outputLabel  rendered="#{bill.cancelledBill ne null}" value="#{bill.cancelledBill.comments}" >
+                                    </h:outputLabel>
+                                </p:column>
+                            </p:dataTable>
                         </div>
                     </div>
                 </p:panel>
             </h:form>
-
         </h:panelGroup>
+
+
 
     </ui:define>
 

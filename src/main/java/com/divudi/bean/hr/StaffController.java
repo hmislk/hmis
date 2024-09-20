@@ -1503,7 +1503,7 @@ public class StaffController implements Serializable {
         }
         return items;
     }
-
+    
     public void fillItems() {
         String temSql;
         temSql = "SELECT i FROM Staff i where i.retired=false and i.person is not null and i.person.name is not null order by i.person.name";
@@ -1522,6 +1522,20 @@ public class StaffController implements Serializable {
         Map m = new HashMap();
         m.put("ret", true);
         m.put("name", name);
+        return getFacade().findFirstByJpql(jpql, m);
+    }
+    
+    public Staff findStaffById(Long id) {
+        if (id == null) {
+            return null;
+        }
+        String jpql = "select c "
+                + " from Staff c "
+                + " where c.retired<>:ret "
+                + " and c.id=:id";
+        Map m = new HashMap();
+        m.put("ret", true);
+        m.put("id", id);
         return getFacade().findFirstByJpql(jpql, m);
     }
 

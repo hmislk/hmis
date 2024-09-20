@@ -10,7 +10,7 @@
 
         <ui:composition template="/forms/index.xhtml">
 
-            <ui:define name="contents">
+            <ui:define name="subcontent">
 
                 <h1>Data Entry Form</h1>
 
@@ -18,29 +18,40 @@
                 <h:form class="form" >
 
                     <p:outputLabel value="Name" for="txtName" class="form-label" ></p:outputLabel>
-                    <p:inputText id="txtName" value="#{designComponentController.current.name}" 
+                    <p:inputText id="txtName" value="#{designComponentController.currentDataEntryForm.name}" 
                                  required="true" requiredMessage="Please enter a name" 
                                  class="form-control">
                     </p:inputText>
 
                     <p:outputLabel value="Description" class="form-label"></p:outputLabel>
-                    <p:inputText value="#{designComponentController.current.description}" 
-                                 class="form-control"></p:inputText>
-                    
-                    
-                    
+                    <p:inputTextarea value="#{designComponentController.currentDataEntryForm.description}" 
+                                     class="form-control"></p:inputTextarea>
 
-                    <p:commandButton ajax="false" value="Save" action="#{designComponentController.saveCurrent()}" >
+                    <p:outputLabel value="Edit Mode HTML" class="form-label"></p:outputLabel>
+                    <p:inputTextarea value="#{designComponentController.currentDataEntryForm.editHtml}" 
+                                     class="form-control"></p:inputTextarea>
+
+                    <p:outputLabel value="View Mode HTML" class="form-label"></p:outputLabel>
+                    <p:inputTextarea value="#{designComponentController.currentDataEntryForm.viewHtml}" 
+                                     class="form-control"></p:inputTextarea>
+
+
+
+
+                    <p:commandButton class="m-2" ajax="false" value="Save" action="#{designComponentController.saveCurrentDataEntryForm()}" >
                     </p:commandButton>
-                    
-                    <p:commandButton ajax="false" value="Add New Component" action="#{designComponentController.navigateToAddComponentsToDataEntryForm()}" >
+
+                    <p:commandButton  class="m-2"  ajax="false" value="Add New Component" action="#{designComponentController.navigateToAddComponentsToDataEntryForm()}" >
                     </p:commandButton>
-                    
-                    <p:commandButton ajax="false" value="View Components" action="#{designComponentController.navigateToListComponentsOfDataEntryForm()}" >
+
+                    <p:commandButton  class="m-2" ajax="false" value="View Components" action="#{designComponentController.navigateToListComponentsOfDataEntryForm()}" >
                     </p:commandButton>
+
+
 
 
                 </h:form>
+
 
 
 

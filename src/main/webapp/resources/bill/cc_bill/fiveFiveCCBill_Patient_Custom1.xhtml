@@ -175,7 +175,6 @@
 
 
             <div class="billline">
-                <h>dfdsfsdfsd</h>
                 <hr style="border: 1px solid black; margin-left: 5%; margin-right: 5%;" />
             </div>
 
@@ -274,8 +273,9 @@
 
             </div>
 
-            <div style="text-decoration: overline; margin-left: 5%; margin-top: 10px;">
+            <div class="d-flex justify-content-between" style=" margin-left: 5%; margin-right:  5%; margin-top: 10px;">
                 <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.staff.name}"/>
+                <h:outputLabel value="#{cc.attrs.bill.institution.code}"/>
             </div>
             <div class="footer" style="text-align: center;">
                 <br/>

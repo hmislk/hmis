@@ -12,6 +12,7 @@ import com.divudi.data.BillFeeBundleEntry;
 import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.FeeType;
+import com.divudi.data.InstitutionType;
 import com.divudi.data.OpdBillingStrategy;
 import com.divudi.data.PaymentMethod;
 import static com.divudi.data.PaymentMethod.Agent;
@@ -27,6 +28,7 @@ import static com.divudi.data.PaymentMethod.Slip;
 import static com.divudi.data.PaymentMethod.Staff;
 import static com.divudi.data.PaymentMethod.YouOweMe;
 import static com.divudi.data.PaymentMethod.ewallet;
+import com.divudi.data.PaymentType;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.inward.InwardChargeType;
@@ -1235,15 +1237,14 @@ public class BillBeanController implements Serializable {
         temMap.put("ins", institution);
         return getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
-    
+
     public List<BillItem> fetchBillItems(Bill b) {
         String jpql;
         HashMap params = new HashMap();
 
         jpql = "SELECT bi "
                 + " FROM BillItem bi "
-                + " WHERE bi.retired=false "
-                + " and bi.bill=:bl "
+                + " WHERE bi.bill=:bl "
                 + " order by bi.id";
 
         params.put("bl", b);
@@ -2529,6 +2530,30 @@ public class BillBeanController implements Serializable {
         return tbs;
     }
 
+    public List<Bill> fetchIndividualBillsOfBatchBill(Bill batchBill) {
+        System.out.println("batchBill = " + batchBill);
+        String j = "Select b "
+                + " from Bill b "
+                + " where b.backwardReferenceBill=:bb ";
+        Map m = new HashMap();
+        m.put("bb", batchBill);
+        System.out.println("m = " + m);
+        System.out.println("j = " + j);
+        List<Bill> tbs = billFacade.findByJpql(j, m);
+        return tbs;
+    }
+
+    public List<Bill> fetchRefundBillsOfBilledBill(Bill billedBill) {
+        System.out.println("billedBill = " + billedBill);
+        String j = "Select b "
+                + " from Bill b "
+                + " where b.billedBill=:bb ";
+        Map m = new HashMap();
+        m.put("bb", billedBill);
+        List<Bill> tbs = billFacade.findByJpql(j, m);
+        return tbs;
+    }
+
     public List<Bill> findValidBillsForSampleCollection(Long bill) {
         Bill b = billFacade.find(bill);
 
@@ -2612,8 +2637,12 @@ public class BillBeanController implements Serializable {
             b.setBank(paymentMethodData.getCreditCard().getInstitution());
         }
 
+        if (paymentMethod.getPaymentType() == PaymentType.CREDIT) {
+            b.setCreditBill(true);
+        }
+
     }
-    
+
     public List<Payment> createPayment(Bill bill, PaymentMethod pm, PaymentMethodData paymentMethodData) {
         List<Payment> ps = new ArrayList<>();
         if (bill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
@@ -3167,6 +3196,49 @@ public class BillBeanController implements Serializable {
         return e.getBillItem();
     }
 
+    private boolean billFeeIsThereAsSelectedInBillFeeBundle(BillFee bf, List<BillFeeBundleEntry> billFeeBundleEntries) {
+        if (bf == null) {
+            return false;
+        }
+        if (bf.getFee() == null) {
+            return false;
+        }
+        if (billFeeBundleEntries == null) {
+            return false;
+        }
+        if (billFeeBundleEntries.isEmpty()) {
+            return false;
+        }
+        boolean found = false;
+        for (BillFeeBundleEntry bfbe : billFeeBundleEntries) {
+            if (bfbe.getSelectedBillFee().equals(bf)) {
+                found = true;
+            }
+        }
+        return found;
+    }
+
+    public BillItem saveBillItemForOpdBill(Bill b, BillEntry e, WebUser wu, List<BillFeeBundleEntry> billFeeBundleEntries) {
+
+        e.getBillItem().setCreatedAt(new Date());
+        e.getBillItem().setCreater(wu);
+        e.getBillItem().setBill(b);
+
+        if (e.getBillItem().getId() == null) {
+            getBillItemFacade().create(e.getBillItem());
+        }
+
+        saveBillComponentForOpdBill(e, b, wu);
+        saveBillFeeForOpdBill(e, b, wu,billFeeBundleEntries);
+
+        //System.out.println("BillItems().size() = " + b.getBillItems().size());
+        for (BillItem bi : b.getBillItems()) {
+            //System.out.println("bif = " + bi.getBillFees().size());
+        }
+
+        return e.getBillItem();
+    }
+
     public BillItem saveBillItem(Bill b, BillEntry e, WebUser wu, Payment p) {
         e.getBillItem().setCreatedAt(new Date());
         e.getBillItem().setCreater(wu);
@@ -3184,27 +3256,8 @@ public class BillBeanController implements Serializable {
 
     @Inject
     BillController billController;
-    
 
-    private boolean billFeeIsThereAsSelectedInBillFeeBundle(BillFee bf, List<BillFeeBundleEntry> bundleFeeEntries) {
-        if (bf == null) {
-            return false;
-        }
-        if (bf.getFee() == null) {
-            return false;
-        }
-        if (bundleFeeEntries == null || bundleFeeEntries.isEmpty()) {
-            return true;
-        }
-        boolean found = false;
-        for (BillFeeBundleEntry bfbe : bundleFeeEntries) {
-            if (bfbe.getSelectedBillFee().equals(bf)) {
-                found = true;
-            }
-        }
-        return found;
-    }
-
+  
     public void calculateBillItems(Bill bill, List<BillEntry> billEntrys) {
         double staff = 0.0;
         double ins = 0.0;
@@ -3471,6 +3524,52 @@ public class BillBeanController implements Serializable {
 
     }
 
+    public List<BillFee> saveBillFeeForOpdBill(BillEntry e, Bill b, WebUser wu, List<BillFeeBundleEntry> billFeeBundleEntries) {
+        List<BillFee> list = new ArrayList<>();
+        double ccfee = 0.0;
+        double woccfee = 0.0;
+        double staffFee=0.0;
+        double collectingCentreFee=0.0;
+        double hospitalFee=0.0;
+        for (BillFee bf : e.getLstBillFees()) {
+
+            boolean needToAddBillFee = billFeeIsThereAsSelectedInBillFeeBundle(bf, billFeeBundleEntries);
+
+            if (!needToAddBillFee) {
+                continue;
+            }
+
+//            asdadas;
+            bf.setCreatedAt(Calendar.getInstance().getTime());
+            bf.setCreater(wu);
+            bf.setBillItem(e.getBillItem());
+            bf.setPatienEncounter(b.getPatientEncounter());
+            bf.setPatient(b.getPatient());
+
+            bf.setBill(b);
+
+            if (bf.getId() == null) {
+                getBillFeeFacade().create(bf);
+            }
+            if(bf.getStaff()!=null){
+                staffFee +=bf.getFeeValue();
+            }else if(bf.getSpeciality()!=null){
+                staffFee +=bf.getFeeValue();
+            }else if(bf.getInstitution()!=null && bf.getInstitution().getInstitutionType()==InstitutionType.CollectingCentre){
+                collectingCentreFee+=bf.getFeeValue();
+            }else{
+                hospitalFee+=bf.getFeeValue();
+            }
+            list.add(bf);
+        }
+        e.getBillItem().setTransCCFee(ccfee);
+        e.getBillItem().setTransWithOutCCFee(woccfee);
+        e.getBillItem().setHospitalFee(hospitalFee);
+        e.getBillItem().setStaffFee(staffFee);
+        e.getBillItem().setCollectingCentreFee(collectingCentreFee);
+        return list;
+    }
+
     public List<BillFee> saveBillFee(BillEntry e, Bill b, WebUser wu) {
         List<BillFee> list = new ArrayList<>();
         double ccfee = 0.0;
@@ -3478,6 +3577,7 @@ public class BillBeanController implements Serializable {
         double staffFee;
         double collectingCentreFee;
         double hospitalFee;
+        double otherFee;
         for (BillFee bf : e.getLstBillFees()) {
             bf.setCreatedAt(Calendar.getInstance().getTime());
             bf.setCreater(wu);
@@ -3689,6 +3789,28 @@ public class BillBeanController implements Serializable {
     }
 
     public void saveBillComponent(BillEntry e, Bill b, WebUser wu) {
+        for (BillComponent bc : e.getLstBillComponents()) {
+
+            bc.setCreatedAt(Calendar.getInstance().getTime());
+            bc.setCreater(wu);
+
+            bc.setDepartment(b.getDepartment());
+            bc.setInstitution(b.getDepartment().getInstitution());
+
+            bc.setBill(b);
+
+            if (bc.getId() == null) {
+                getBillComponentFacade().create(bc);
+            }
+
+            if (bc.getItem() instanceof Investigation) {
+                savePatientInvestigation(e, bc, wu);
+            }
+
+        }
+    }
+
+    public void saveBillComponentForOpdBill(BillEntry e, Bill b, WebUser wu) {
         for (BillComponent bc : e.getLstBillComponents()) {
 
             bc.setCreatedAt(Calendar.getInstance().getTime());
@@ -4441,25 +4563,47 @@ public class BillBeanController implements Serializable {
         return t;
     }
 
-    
-    
-     public List<BillFee> fetchBillFees(Bill bill) {
-        List<BillFee> fetchingBillFees ;
+    public List<BillFee> fetchBillFees(Bill bill) {
+        List<BillFee> fetchingBillFees;
         String jpql;
         Map params = new HashMap();
         jpql = "Select bf "
                 + " from BillFee bf "
-                + "where bf.retired=:ret "
-                + "and bf.bill=:bill "
+                + "where bf.bill=:bill "
                 + "order by bf.billItem.id";
-        params.put("ret", false);
         params.put("bill", bill);
         fetchingBillFees = billFeeFacade.findByJpql(jpql, params);
         return fetchingBillFees;
     }
 
-    
-    
+    public List<BillComponent> fetchBillComponents(Bill bill) {
+        System.out.println("bill = " + bill);
+        List<BillComponent> fetchingBillComponents;
+        String jpql;
+        Map params = new HashMap();
+        jpql = "Select bc "
+                + " from BillComponent bc "
+                + "where bc.bill=:bill "
+                + "order by bc.id";
+        params.put("bill", bill);
+        fetchingBillComponents = billComponentFacade.findByJpql(jpql, params);
+        return fetchingBillComponents;
+    }
+
+    public List<Payment> fetchBillPayments(Bill bill) {
+        System.out.println("bill = " + bill);
+        List<Payment> fetchingBillComponents;
+        String jpql;
+        Map params = new HashMap();
+        jpql = "Select p "
+                + " from Payment p "
+                + "where p.bill=:bill "
+                + "order by p.id";
+        params.put("bill", bill);
+        fetchingBillComponents = paymentFacade.findByJpql(jpql, params);
+        return fetchingBillComponents;
+    }
+
     public List<BillFee> forInstitutionBillFeefromBillItem(BillItem billItem, Institution forIns) {
         List<BillFee> t = new ArrayList<>();
         BillFee f;

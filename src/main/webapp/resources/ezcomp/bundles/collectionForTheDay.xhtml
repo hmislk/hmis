@@ -13,22 +13,40 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <div class="row" >
-            <div class="col" >
-                <h1>
-                    <h:outputText value="#{cc.attrs.bundle.name}" ></h:outputText>
-                </h1>
+        <hr/>
+        <table class="table w-100">
+            <thead>
+                <tr class="text-light bg-dark">
+                    <th class="text-light bg-dark" colspan="5">
+                        Collection for the Day
+                    </th>
+                    <th class="text-light bg-dark text-end">
+                        <h:outputText value="#{cc.attrs.bundle.total}" >
+                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                        </h:outputText>
+                    </th>
+                </tr>
+            </thead>
+        </table>
+        <hr/>
 
-            </div>
-            <div class="col" >
-                <h1>
-                    <h:outputText value="#{cc.attrs.bundle.total}" >
-                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                    </h:outputText>
-                </h1>
-
-            </div>
-        </div>
+        <!--
+                <div class="row" >
+                    <div class="col" >
+                        <h1>
+                            <h:outputText value="#{cc.attrs.bundle.name}" ></h:outputText>
+                        </h1>
+        
+                    </div>
+                    <div class="col" >
+                        <h1>
+                            <h:outputText value="#{cc.attrs.bundle.total}" >
+                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            </h:outputText>
+                        </h1>
+        
+                    </div>
+                </div>-->
 
     </cc:implementation>
 </html>

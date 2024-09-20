@@ -481,6 +481,7 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.StoreAdministration, "Administration Menu"), storeNode);
 
         TreeNode courierNode = new DefaultTreeNode(new PrivilegeHolder(null, "Courier"), allNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.Courier, "Courier Menu"), courierNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.CourierCollectSamples, "Courier Collect Samples"), courierNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.CourierHandoverSamplesToLab, "Courier Handover Samples to Lab"), courierNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.CourierViewReports, "Courier View Reports"), courierNode);
@@ -774,7 +775,7 @@ public class UserPrivilageController implements Serializable {
                     privileges.add(ph);
                 } else {
                     // Handle the case where the data is not of type PrivilegeHolder
-                    
+
                 }
             }
         }
@@ -905,6 +906,39 @@ public class UserPrivilageController implements Serializable {
         privilegesLoaded = true;
     }
 
+    public WebUserPrivilege addUserPrivilege(Privileges prv, WebUser wu, Department dept) {
+        if (prv == null) {
+            return null;
+        }
+        if (wu == null) {
+            return null;
+        }
+        if (dept == null) {
+            return null;
+        }
+        String j = "SELECT i "
+                + " FROM WebUserPrivilege i "
+                + " where i.webUser=:wu "
+                + " and i.privilege=:p "
+                + " and i.department=:dep";
+        Map m = new HashMap();
+        m.put("wu", wu);
+        m.put("p", prv);
+        m.put("dep", dept);
+        WebUserPrivilege wup = getEjbFacade().findFirstByJpql(j, m);
+        if (wup == null) {
+            wup = new WebUserPrivilege();
+            wup.setDepartment(dept);
+            wup.setWebUser(wu);
+            wup.setPrivilege(prv);
+            getFacade().create(wup);
+        } else {
+            wup.setRetired(false);
+            getFacade().edit(wup);
+        }
+        return wup;
+    }
+
     public void makePrivilegesNeededToBeReloaded() {
         privilegesLoaded = false;
     }
@@ -930,6 +964,22 @@ public class UserPrivilageController implements Serializable {
         currentUserPrivilegeHolders = createRolePrivilegeHolders(currentWebUserRolePrivileges);
         unselectTreeNodes(rootTreeNode);
         checkNodes(rootTreeNode, currentUserPrivilegeHolders);
+    }
+
+    public List<WebUserRolePrivilege> fetchUserPrivileges(WebUserRole role) {
+        List<WebUserRolePrivilege> wups;
+        if (role == null) {
+            return null;
+        }
+        String j = "SELECT i "
+                + " FROM WebUserRolePrivilege i "
+                + " where i.webUserRole=:wu "
+                + " and i.retired=:ret ";
+        Map m = new HashMap();
+        m.put("wu", role);
+        m.put("ret", false);
+        wups = getRoleFacede().findByJpql(j, m);
+        return wups;
     }
 
     // </editor-fold>

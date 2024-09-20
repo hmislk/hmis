@@ -157,6 +157,9 @@ public enum BillType {
     FundTransferReceivedBill, // For receiving the transferred balance from one shift to another
     DepositFundBill, // For processing deposits of all payment types into the bank by the main or bulk cashier
     WithdrawalFundBill, // For handling withdrawal transactions from the bank for operational purposes
+    ShiftShortage,
+    ShiftExcess,
+    PaymentTransfer,
     @Deprecated
     TransactionHandoverBill, // For handling the handover of all transaction types at the end of a cashier's shift
     @Deprecated
@@ -165,7 +168,8 @@ public enum BillType {
     FinancialReconciliationBill, // For reconciling all types of recorded transactions against actual bank statements and balances
     @Deprecated
     FinancialAuditingBill, // For broader auditing purposes, ensuring compliance with policies and regulatory requirements
-    StaffCreditSettle;
+    StaffCreditSettle,
+    FUND_SHIFT_COMPONANT_HANDOVER_CREATE;
 
     public String getLabel() {
         switch (this) {

@@ -59,6 +59,7 @@ import com.divudi.bean.opd.OpdBillController;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.entity.FamilyMember;
+import com.divudi.entity.PatientDeposit;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
 import com.divudi.java.CommonFunctions;
@@ -142,6 +143,8 @@ public class BillController implements Serializable {
     private WebUserController webUserController;
     @Inject
     private OpdBillController opdBillController;
+    @Inject
+    PatientDepositController patientDepositController;
 
     /**
      * Class Vairables
@@ -1707,14 +1710,14 @@ public class BillController implements Serializable {
         }
          
         if(paymentMethod == PaymentMethod.PatientDeposit){
-            if(getBatchBill().getPatient().getHasAnAccount() == null){
-                JsfUtil.addErrorMessage("Create Patient Account First");
-                return "";
-            }
-            if(!getBatchBill().getPatient().getHasAnAccount()){
-                JsfUtil.addErrorMessage("Create Patient Account First");
-                return "";
-            }
+//            if(getBatchBill().getPatient().getHasAnAccount() == null){
+//                JsfUtil.addErrorMessage("Create Patient Account First");
+//                return "";
+//            }
+//            if(!getBatchBill().getPatient().getHasAnAccount()){
+//                JsfUtil.addErrorMessage("Create Patient Account First");
+//                return "";
+//            }
         }
         
         Bill cancellationBatchBill = new CancelledBill();
@@ -1756,12 +1759,14 @@ public class BillController implements Serializable {
         cancellationBatchBill.setBilledBill(batchBill);
         
         if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.PatientDeposit) {
-            if (cancellationBatchBill.getPatient().getRunningBalance() == null) {
-                cancellationBatchBill.getPatient().setRunningBalance(Math.abs(cancellationBatchBill.getNetTotal()));
-            } else {
-                cancellationBatchBill.getPatient().setRunningBalance(cancellationBatchBill.getPatient().getRunningBalance() + Math.abs(cancellationBatchBill.getNetTotal()));
-            }
-            patientFacade.edit(cancellationBatchBill.getPatient());
+//            if (cancellationBatchBill.getPatient().getRunningBalance() == null) {
+//                cancellationBatchBill.getPatient().setRunningBalance(Math.abs(cancellationBatchBill.getNetTotal()));
+//            } else {
+//                cancellationBatchBill.getPatient().setRunningBalance(cancellationBatchBill.getPatient().getRunningBalance() + Math.abs(cancellationBatchBill.getNetTotal()));
+//            }
+//            patientFacade.edit(cancellationBatchBill.getPatient());
+           PatientDeposit pd = patientDepositController.getDepositOfThePatient(cancellationBatchBill.getPatient(), sessionController.getDepartment());
+           patientDepositController.updateBalance(cancellationBatchBill, pd);
         }
 
         createPaymentForOpdBatchBillCancellation(cancellationBatchBill, batchBill.getPaymentMethod());
@@ -1876,7 +1881,7 @@ public class BillController implements Serializable {
         } else {
             getBillFacade().edit(cancellationBill);
         }
-        createPayment(cancellationBill, cancellationBatchBill.getPaymentMethod());
+        //createPayment(cancellationBill, cancellationBatchBill.getPaymentMethod());
 
         String deptId = getBillNumberGenerator().generateBillNumber(cancellationBill.getFromDepartment(), cancellationBill.getToDepartment(), cancellationBill.getBillType(), cancellationBill.getBillClassType());
         String insId = getBillNumberGenerator().generateBillNumber(cancellationBill.getInstitution(), cancellationBill.getBillType(), cancellationBill.getBillClassType());
@@ -2506,6 +2511,7 @@ public class BillController implements Serializable {
     public List<Bill> findUnpaidBills(Date frmDate, Date toDate, List<BillTypeAtomic> billTypes, PaymentMethod pm, Double balanceGraterThan) {
         String jpql;
         HashMap hm;
+        List<BillType> bts=null;
         jpql = "Select b "
                 + " From Bill b "
                 + " where b.retired=:ret "
@@ -2529,9 +2535,52 @@ public class BillController implements Serializable {
             hm.put("bts", billTypes);
             jpql += " and b.billTypeAtomic in :bts";
         }
+        
+        if (bts != null) {
+            hm.put("bt", bts);
+            jpql += " or b.billType in :bt";
+        }
+        
         return getBillFacade().findByJpql(jpql, hm, TemporalType.TIMESTAMP);
 
     }
+    
+
+    public void addMissingBillTypeAtomics(){
+        String jpql = "select b "
+                + " from Bill b "
+                + " where b.retired=:ret "
+                + " and b.billTypeAtomic is null "
+                + " and b.billType is not null ";
+        Map m = new HashMap();
+        m.put("ret", false);
+        List<Bill> billsWithoutBillTypeAtomic = getFacade().findByJpql(jpql,m, 1000);
+        for(Bill b:billsWithoutBillTypeAtomic){
+            b.setBillTypeAtomic(BillTypeAtomic.getBillTypeAtomic(b.getBillType(), b.getBillClassType()));
+            getFacade().edit(b);
+        }
+    }
+
+
+    public List<BillType> getBillTypesByAtomicBillTypes(List<BillTypeAtomic> ba){
+        List<BillType> bt = new ArrayList<>();
+        if (ba == null) {
+            return bt;
+        }
+        for (BillTypeAtomic billTypeAtomic : ba) {
+            if (billTypeAtomic==billTypeAtomic.PHARMACY_GRN) {
+                bt.add(billType.PharmacyGrnBill);
+            }else if(billTypeAtomic==billTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL){
+                bt.add(billType.PharmacyWholeSale);
+            } else if(billTypeAtomic==billTypeAtomic.PHARMACY_DIRECT_PURCHASE){
+                bt.add(billType.PharmacyPurchaseBill);
+            }
+        }
+        return bt;
+    }
+
+
+
 
     public List<Bill> listBills(
             List<BillType> billTypes,

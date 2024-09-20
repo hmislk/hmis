@@ -89,6 +89,7 @@ public class UserPreference implements Serializable {
      */
     @Lob
     private String opdBillForCashierTemplate;
+    @Deprecated
     @Lob
     private String smsTemplateForOpdBillSetting;
 
@@ -149,6 +150,8 @@ public class UserPreference implements Serializable {
     @Deprecated
     @Enumerated(EnumType.STRING)
     private ApplicationInstitution applicationInstitution;
+    
+    @Deprecated //Use Application Configuration
     @Enumerated(EnumType.STRING)
     private PaymentMethod channellingPaymentMethod;
 
@@ -652,6 +655,7 @@ public class UserPreference implements Serializable {
         this.channelingDoctorPaymentBillTemplate = channelingDoctorPaymentBillTemplate;
     }
 
+    @Deprecated //Use Application Configuration
     public PaymentMethod getChannellingPaymentMethod() {
         if (channellingPaymentMethod == null) {
             channellingPaymentMethod = PaymentMethod.OnCall;
@@ -659,6 +663,7 @@ public class UserPreference implements Serializable {
         return channellingPaymentMethod;
     }
 
+    @Deprecated //Use Application Configuration
     public void setChannellingPaymentMethod(PaymentMethod channellingPaymentMethod) {
         this.channellingPaymentMethod = channellingPaymentMethod;
     }
@@ -1004,10 +1009,12 @@ public class UserPreference implements Serializable {
         this.smsAuthenticationType = smsAuthenticationType;
     }
 
+    @Deprecated
     public String getSmsTemplateForOpdBillSetting() {
         return smsTemplateForOpdBillSetting;
     }
 
+    @Deprecated
     public void setSmsTemplateForOpdBillSetting(String smsTemplateForOpdBillSetting) {
         this.smsTemplateForOpdBillSetting = smsTemplateForOpdBillSetting;
     }

@@ -1,30 +1,41 @@
 package com.divudi.data;
 
 import com.divudi.entity.Bill;
+import com.divudi.entity.BillFee;
+import com.divudi.entity.BillItem;
 import com.divudi.entity.BillSession;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.Payment;
+import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.channel.SessionInstance;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.logging.Logger;
 
 /**
  *
  * @author buddhika
  */
-public class ReportTemplateRow {
+public class ReportTemplateRow implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private String uuid;
+    private Long counter;
 
     private Category category;
     private Bill bill;
+    private BillItem billItem;
+    private BillFee billFee;
     private Payment payment;
 
     private Item item;
@@ -60,7 +71,6 @@ public class ReportTemplateRow {
     private Long rowCountIn;
     private Long rowCountOut;
     private Long rowCount;
-    private Long id;
 
     private Long long1;
     private Long long2;
@@ -81,6 +91,7 @@ public class ReportTemplateRow {
     private BillSession billSession;
     private Department department;
     private Institution institution;
+    private Institution site;
 
     private Date date;
     private Date fromDate;
@@ -92,6 +103,7 @@ public class ReportTemplateRow {
     private Long startId;
     private Long endId;
     private SessionInstance sessionInstance;
+    private Speciality speciality;
     private Staff staff;
     private Institution referringInstitution;
     private Staff referringStaff;
@@ -114,8 +126,69 @@ public class ReportTemplateRow {
     private double patientDepositValue;
     private double patientPointsValue;
     private double onlineSettlementValue;
+    
+    private Double grossTotal;
+    private Double discount;
+    private Double total;
+
+    private Double hospitalTotal;
+    private Double staffTotal;
+    private Double ccTotal;
 
     private String rowType;
+
+    private UUID id;
+
+    // Constructor to generate a new UUID when an object is created
+    public ReportTemplateRow() {
+        this.id = UUID.randomUUID();
+    }
+
+    
+    
+    public ReportTemplateRow(Institution institution, Long itemCount, Double itemHospitalFee, Double itemCollectingCentreFee, Double itemProfessionalFee, Double itemNetTotal) {
+        this.itemCount = itemCount;
+        this.itemHospitalFee = itemHospitalFee;
+        this.itemCollectingCentreFee = itemCollectingCentreFee;
+        this.itemProfessionalFee = itemProfessionalFee;
+        this.itemNetTotal = itemNetTotal;
+        this.institution = institution;
+    }
+    
+    
+
+    // Getter for UUID (optional, depending on use case)
+    public UUID getId() {
+        if (id == null) {
+            id = UUID.randomUUID();
+        }
+        return id;
+    }
+
+    // Override equals() using UUID field
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ReportTemplateRow that = (ReportTemplateRow) o;
+        return Objects.equals(getId(), that.id);
+    }
+
+    // Override hashCode() using UUID field
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId());
+    }
+
+    // Override toString() for better readability (optional)
+    @Override
+    public String toString() {
+        return "ReportTemplateRow{id=" + getId() + '}';
+    }
 
     public ReportTemplateRow(SessionInstance sessionInstance) {
         this.sessionInstance = sessionInstance;
@@ -151,6 +224,32 @@ public class ReportTemplateRow {
         this.onlineSettlementValue = onlineSettlementValue;
     }
 
+    
+    public ReportTemplateRow(Bill bill,
+            double cashValue, double cardValue, double multiplePaymentMethodsValue,
+            double staffValue, double creditValue, double staffWelfareValue,
+            double voucherValue, double iouValue, double agentValue,
+            double chequeValue, double slipValue, double eWalletValue,
+            double patientDepositValue, double patientPointsValue, double onlineSettlementValue) {
+        this.bill = bill;
+        this.cashValue = cashValue;
+        this.cardValue = cardValue;
+        this.multiplePaymentMethodsValue = multiplePaymentMethodsValue;
+        this.staffValue = staffValue;
+        this.creditValue = creditValue;
+        this.staffWelfareValue = staffWelfareValue;
+        this.voucherValue = voucherValue;
+        this.iouValue = iouValue;
+        this.agentValue = agentValue;
+        this.chequeValue = chequeValue;
+        this.slipValue = slipValue;
+        this.eWalletValue = eWalletValue;
+        this.patientDepositValue = patientDepositValue;
+        this.patientPointsValue = patientPointsValue;
+        this.onlineSettlementValue = onlineSettlementValue;
+    }
+
+    
     public ReportTemplateRow(Department department, Date date, WebUser user,
             double cashValue, double cardValue, double multiplePaymentMethodsValue,
             double staffValue, double creditValue, double staffWelfareValue,
@@ -319,6 +418,8 @@ public class ReportTemplateRow {
         this.rowValue = rowValue;
     }
 
+    
+    
     public ReportTemplateRow(BillTypeAtomic billTypeAtomic, Double rowValue) {
         this.billTypeAtomic = billTypeAtomic;
         this.rowValue = rowValue;
@@ -334,19 +435,8 @@ public class ReportTemplateRow {
         this.rowValue = rowValue;
     }
 
-    public ReportTemplateRow() {
-    }
-
     public ReportTemplateRow(BillTypeAtomic billTypeAtomic) {
         this.billTypeAtomic = billTypeAtomic;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public Category getCategory() {
@@ -988,6 +1078,102 @@ public class ReportTemplateRow {
         this.payment = payment;
     }
 
+    public BillItem getBillItem() {
+        return billItem;
+    }
+
+    public void setBillItem(BillItem billItem) {
+        this.billItem = billItem;
+    }
+
+    public ReportTemplateRow(BillItem billItem) {
+        this.billItem = billItem;
+    }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
+    }
+
+    public Long getCounter() {
+        return counter;
+    }
+
+    public void setCounter(Long counter) {
+        this.counter = counter;
+    }
+
+    public BillFee getBillFee() {
+        return billFee;
+    }
+
+    public void setBillFee(BillFee billFee) {
+        this.billFee = billFee;
+    }
+
+    public ReportTemplateRow(BillFee billFee) {
+        this.billFee = billFee;
+    }
+
+    public Speciality getSpeciality() {
+        return speciality;
+    }
+
+    public void setSpeciality(Speciality speciality) {
+        this.speciality = speciality;
+    }
+
+    public Double getGrossTotal() {
+        return grossTotal;
+    }
+
+    public void setGrossTotal(Double grossTotal) {
+        this.grossTotal = grossTotal;
+    }
+
+    public Double getDiscount() {
+        return discount;
+    }
+
+    public void setDiscount(Double discount) {
+        this.discount = discount;
+    }
+
+    public Double getTotal() {
+        return total;
+    }
+
+    public void setTotal(Double total) {
+        this.total = total;
+    }
+
+    public Double getHospitalTotal() {
+        return hospitalTotal;
+    }
+
+    public void setHospitalTotal(Double hospitalTotal) {
+        this.hospitalTotal = hospitalTotal;
+    }
+
+    public Double getStaffTotal() {
+        return staffTotal;
+    }
+
+    public void setStaffTotal(Double staffTotal) {
+        this.staffTotal = staffTotal;
+    }
+
+    public Double getCcTotal() {
+        return ccTotal;
+    }
+
+    public void setCcTotal(Double ccTotal) {
+        this.ccTotal = ccTotal;
+    }
     
     
+
 }

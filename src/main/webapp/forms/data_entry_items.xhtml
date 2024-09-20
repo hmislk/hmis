@@ -10,18 +10,27 @@
         <ui:composition template="./index.xhtml">
 
 
-            <ui:define name="contents">
+            <ui:define name="subcontent">
                 <h:form>
-                    <h1>List of Components for #{designComponentController.current.name}</h1>
+                    <h1>List of Components for #{designComponentController.currentDataEntryForm.name}</h1>
                     <p:commandButton ajax="false" value="Back" action="#{designComponentController.navigateToEditDataEntryForm()}"></p:commandButton>
-                    <p:dataTable value="#{designComponentController.list}" 
+                    <p:dataTable value="#{designComponentController.listOfDataEntryItems}" 
                                  var="i"
                                  >
                         <p:column headerText="Name">
                             <h:outputText value="#{i.name}" ></h:outputText>
                         </p:column>
-                        <p:column headerText="Des">
+                        <p:column headerText="Code">
+                            <h:outputText value="#{i.code}" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Description">
                             <h:outputText value="#{i.description}" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Code">
+                            <h:outputText value="#{i.componentDataType}" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Code">
+                            <h:outputText value="#{i.componentPresentationType}" ></h:outputText>
                         </p:column>
                         <p:column headerText="Actions">
                             <p:commandButton ajax="false" 
@@ -29,7 +38,7 @@
                                              action="#{designComponentController.navigateToEditDesignComponent()}" >
                                 <f:setPropertyActionListener 
                                     value="#{i}" 
-                                    target="#{designComponentController.current}" >
+                                    target="#{designComponentController.currentDataEntryItem}" >
                                 </f:setPropertyActionListener>
                             </p:commandButton>
                         </p:column>

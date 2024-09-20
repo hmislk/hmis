@@ -14,21 +14,41 @@
     <cc:implementation>
         <h:form >
             <p:panel header="Collection Centre Statement Report" styleClass="w-100">
-                <p:panelGrid columns="4" styleClass="mb-2" columnClasses="col-md-2, col-md-4, col-md-2, col-md-4">
-                    <p:outputLabel value="From Date" />
-                    <p:datePicker  showTime="true" value="#{reportController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                <p:panelGrid columns="4" styleClass="" columnClasses="col-md-2, col-md-4, col-md-2, col-md-4">
+                    <h:panelGroup >
+                        <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
+                        <h:outputLabel value="From Date"  class="mx-3"/>
+                    </h:panelGroup>
+                    <p:datePicker  showTime="true" 
+                                   class="w-100"
+                                   inputStyleClass="w-100"
+                                   value="#{reportController.fromDate}" 
+                                   pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
 
-                    <p:outputLabel value="To Date" />
-                    <p:datePicker showTime="true" value="#{reportController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                    <h:panelGroup >
+                        <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
+                        <h:outputLabel value="To Date"  class="mx-3"/>
+                    </h:panelGroup>
+                    <p:datePicker showTime="true" 
+                                  class="w-100"
+                                  inputStyleClass="w-100"
+                                  value="#{reportController.toDate}" 
+                                  pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
 
-                    <p:outputLabel value="Institution/Branch" />
+                    <h:panelGroup >
+                        <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
+                        <h:outputLabel value="Institution/Branch"  class="mx-3"/>
+                    </h:panelGroup>
                     <p:selectOneMenu filter="true" id="cmdInstitution" style=" max-width: 100%; overflow-x: auto;" class="w-100" value="#{reportController.institution}">
                         <f:selectItem itemLabel="All" />
                         <f:selectItems value="#{institutionController.companies}" var="i" itemLabel="#{i.name}" itemValue="#{i}" />
                     </p:selectOneMenu>
 
-                    <p:outputLabel value="Collecting Centre" />
-
+                    <h:panelGroup layout="block" styleClass="form-group">
+                        <h:outputText value="&#xf1ad;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                        <h:outputLabel value="Collection Center " for="cmbCCname" class="mx-3"/>
+                        <p:outputLabel  />
+                    </h:panelGroup>
                     <p:autoComplete 
                         id="creditCom" 
                         forceSelection="true" 
@@ -53,7 +73,10 @@
                     </p:autoComplete>
 
 
-                    <p:outputLabel value="Invoice No." />
+                    <h:panelGroup layout="block" styleClass="form-group">
+                        <h:outputText value="&#xf0f6;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                        <h:outputLabel value="Invoice Number" for="cmbInvno" class="mx-3"/>
+                    </h:panelGroup>
                     <p:inputText style=" max-width: 100%; overflow-x: auto;" class="w-100" value="#{reportController.invoiceNumber}" />
 
                     <!-- Empty spaces for alignment -->
@@ -62,11 +85,11 @@
                 </p:panelGrid>
 
                 <p:commandButton 
-                    class="m-2" 
                     ajax="false" 
-                    value="Process" 
-                    action="#{reportController.processCollectingCentreStatementReportNew()}" 
-                    icon="pi pi-check" />
+                    value="Process"
+                    icon="fas fa-cogs"
+                    class="m-2 ui-button-warning"
+                    action="#{reportController.processCollectingCentreStatementReportNew()}"  />
 
 
                 <p:commandButton 
@@ -115,31 +138,33 @@
                         action="#{billSearch.navigateViewBillByBillTypeAtomic()}" >
                         <f:setPropertyActionListener value="#{agentHx.bill}" target="#{billSearch.bill}" />
                     </p:commandLink>
-                    
+
                     <p:badge value="#{agentHx.bill.cancelled ? 'Cancelled' : ''}" severity="danger" rendered="#{agentHx.bill.cancelled}" />
                     <p:badge value="#{agentHx.bill.refunded ? 'Refunded' : ''}" severity="warning" rendered="#{agentHx.bill.refunded}" />
 
 <!--                    <p:commandLink value="Original Bill - #{agentHx.bill.deptId}" 
-                                   ajax="false"
-                                   rendered="#{agentHx.bill.billedBill}"
-                                   action="#{billSearch.navigateViewBillByBillTypeAtomic()}" >
-                        <f:setPropertyActionListener value="#{agentHx.bill.billedBill}" target="#{billSearch.bill}" />
-                    </p:commandLink>-->
+               ajax="false"
+               rendered="#{agentHx.bill.billedBill}"
+               action="#{billSearch.navigateViewBillByBillTypeAtomic()}" >
+    <f:setPropertyActionListener value="#{agentHx.bill.billedBill}" target="#{billSearch.bill}" />
+</p:commandLink>-->
 
                 </p:column>
 
 
                 <p:column headerText="Data &nbsp; Time" sortBy="#{agentHx.createdAt}" filterBy="#{agentHx.createdAt}" filterMatchMode="contains">
                     <h:outputText value="#{agentHx.createdAt}" >
-                        <f:convertDateTime pattern="dd mm yyyy hh:mm:ss a" ></f:convertDateTime>
+                        <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a" ></f:convertDateTime>
                     </h:outputText>
                 </p:column>
 
                 <p:column toggleable="true" headerText="Bill Type" sortBy="#{agentHx.bill.billTypeAtomic.label}" filterBy="#{agentHx.bill.billTypeAtomic.label}" filterMatchMode="contains">
                     <h:outputText value="#{agentHx.bill.billTypeAtomic.label}" />
                 </p:column>
-
-                <p:column toggleable="true" headerText="Reference No." sortBy="#{agentHx.bill.referenceNumber}" filterBy="#{agentHx.bill.referenceNumber}" filterMatchMode="contains">
+                <p:column toggleable="true" headerText="CC Code" sortBy="#{agentHx.bill.billTypeAtomic.label}" filterBy="#{agentHx.bill.billTypeAtomic.label}" filterMatchMode="contains">
+                    <h:outputText value="#{agentHx.bill.collectingCentre.code}" />
+                </p:column>
+                <p:column toggleable="true" headerText="Leaf No." sortBy="#{agentHx.bill.referenceNumber}" filterBy="#{agentHx.bill.referenceNumber}" filterMatchMode="contains">
                     <h:outputText value="#{agentHx.bill.referenceNumber}" />
                 </p:column>
 

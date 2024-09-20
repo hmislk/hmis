@@ -8,7 +8,6 @@ package com.divudi.data;
  * @author Buddhika
  */
 public enum CssVerticalAlign {
-
     Baseline,
     Sub,
     Super,

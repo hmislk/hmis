@@ -31,6 +31,7 @@ import com.divudi.entity.pharmacy.Vmpp;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemFeeFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.bean.lab.InvestigationController;
 import com.divudi.data.SessionNumberType;
 import com.divudi.data.Sex;
 import com.divudi.entity.UserPreference;
@@ -131,6 +132,8 @@ public class ItemController implements Serializable {
     ItemApplicationController itemApplicationController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    InvestigationController investigationController;
 
     /**
      * Properties
@@ -169,6 +172,7 @@ public class ItemController implements Serializable {
     boolean masterItem;
     private Sex patientGender;
     private UploadedFile file;
+    private Category selectedCategory;
 
     ReportKeyWord reportKeyWord;
 
@@ -1303,6 +1307,19 @@ public class ItemController implements Serializable {
         }
         JsfUtil.addSuccessMessage("All Marked as Fees Changable at Billing");
     }
+    
+    public void updateSelectedItemCategory() {
+        if (selectedList == null || selectedList.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing is selected");
+            return;
+        }
+        for (Item i : selectedList) {
+            i.setCategory(selectedCategory);
+            itemFacade.edit(i);
+        }
+        JsfUtil.addSuccessMessage("Category Updated Successfully");
+    }
+    
 
     public void markSelectedItemsAsDiscountableAtBilling() {
         if (selectedList == null || selectedList.isEmpty()) {
@@ -1444,6 +1461,8 @@ public class ItemController implements Serializable {
         investigationsAndServices = null;
         getInvestigationsAndServices();
     }
+    
+    
 
     public List<Department> fillInstitutionDepatrments() {
         Map m = new HashMap();
@@ -2047,10 +2066,11 @@ public class ItemController implements Serializable {
         HashMap hm = new HashMap();
 
         sql = "select c from Item c where c.retired=false and type(c)=:cls"
-                + " and (c.name) like :q order by c.name";
+                + " and (c.name) like :q or (c.code) like :q2 order by c.name";
 
         hm.put("cls", Investigation.class);
         hm.put("q", "%" + query.toUpperCase() + "%");
+        hm.put("q2", "%" + query + "%");
         suggestions = getFacade().findByJpql(sql, hm, 20);
 
         return suggestions;
@@ -2065,10 +2085,12 @@ public class ItemController implements Serializable {
                 + " where c.retired=false "
                 + " and type(c)=:cls "
                 + " and (c.name) like :q "
+                + " or (c.code) like :q2"
                 + " and c.institution=:ins "
                 + " order by c.name";
         hm.put("cls", Investigation.class);
         hm.put("q", "%" + query.toUpperCase() + "%");
+        hm.put("q2", "%" + query + "%");
         hm.put("ins", sessionController.getLoggedUser().getInstitution());
         lst = getFacade().findByJpql(sql, hm, 20);
         return lst;
@@ -2115,7 +2137,7 @@ public class ItemController implements Serializable {
         StringBuilder sqlBuilder = new StringBuilder();
         sqlBuilder.append("select c from Item c ")
                 .append("where c.retired = false ")
-                .append("and c.name like :query ")
+                .append("and (c.name like :query or c.code like :query ) ")
                 .append("and type(c) != :pac ")
                 .append("and (type(c) = :ser ")
                 .append("or type(c) = :inv ")
@@ -3332,6 +3354,14 @@ public class ItemController implements Serializable {
 // Log the error if the string is not a valid Long
                         return null;
         }
+    }
+
+    public Category getSelectedCategory() {
+        return selectedCategory;
+    }
+
+    public void setSelectedCategory(Category selectedCategory) {
+        this.selectedCategory = selectedCategory;
     }
 
     @FacesConverter("itemLightConverter")

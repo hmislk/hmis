@@ -225,6 +225,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     private String searchPhone;
     private String searchNic;
     private String searchPhn;
+    private String searchMrn;
     private String searchPatientCode;
     private String searchPatientId;
     private String searchBillId;
@@ -1086,6 +1087,46 @@ public class PatientController implements Serializable, ControllerWithPatient {
         
         printPreview = true;
     }
+    
+    public int settlePatientDepositReceiveNew() {
+        if (getBill().getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Please select a Payment Method");
+            return 1;
+        }
+//        if (!current.getHasAnAccount()) {
+//            JsfUtil.addErrorMessage("Please Create Patient Account");
+//            return;
+//        }
+        if (paymentSchemeController.checkPaymentMethodError(getBill().getPaymentMethod(), paymentMethodData)) {
+            JsfUtil.addErrorMessage("Please enter all relavent Payment Method Details");
+            return 2;
+        }
+
+        settleBill(BillType.PatientPaymentReceiveBill, HistoryType.PatientDeposit, BillNumberSuffix.PD, current);
+        
+        printPreview = true;
+        return 0;
+    }
+    
+    public int settlePatientDepositReceiveCancelNew() {
+        if (getBill().getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Please select a Payment Method");
+            return 1;
+        }
+//        if (!current.getHasAnAccount()) {
+//            JsfUtil.addErrorMessage("Please Create Patient Account");
+//            return;
+//        }
+        if (paymentSchemeController.checkPaymentMethodError(getBill().getPaymentMethod(), paymentMethodData)) {
+            JsfUtil.addErrorMessage("Please enter all relavent Payment Method Details");
+            return 2;
+        }
+
+        settleCancelBill(BillType.PatientPaymentCanceldBill, HistoryType.PatientDeposit, BillNumberSuffix.PDC, current);
+        
+        printPreview = true;
+        return 0;
+    }
 
     private boolean errorCheck() {
         if (paymentSchemeController.checkPaymentMethodError(getBill().getPaymentMethod(), paymentMethodData)) {
@@ -1101,6 +1142,27 @@ public class PatientController implements Serializable, ControllerWithPatient {
         addToBill();
         saveBillItem();
         getBill().setBillTypeAtomic(BillTypeAtomic.PATIENT_DEPOSIT);
+        billFacade.edit(getBill());
+        //TODO: Add Patient Balance History
+        if (patient.getRunningBalance() == null) {
+            patient.setRunningBalance(getBill().getNetTotal());
+        } else {
+            patient.setRunningBalance(patient.getRunningBalance() + getBill().getNetTotal());
+        }
+        getFacade().edit(patient);
+
+        JsfUtil.addSuccessMessage("Bill Saved");
+        printPreview = true;
+
+    }
+    
+    public void settleCancelBill(BillType billType, HistoryType historyType, BillNumberSuffix billNumberSuffix, Patient patient) {
+
+        saveCancelBill(billType, billNumberSuffix, patient);
+        billBeanController.setPaymentMethodData(getBill(), getBill().getPaymentMethod(), getPaymentMethodData());
+        addToCancelBill();
+        saveBillItem();
+        getBill().setBillTypeAtomic(BillTypeAtomic.PATIENT_DEPOSIT_CANCELLED);
         billFacade.edit(getBill());
         //TODO: Add Patient Balance History
         if (patient.getRunningBalance() == null) {
@@ -1140,43 +1202,98 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     public void settlePatientDepositReturn() {
+        System.out.println("started = ");
         if (getPatient().getId() == null) {
             JsfUtil.addErrorMessage("Please Create Patient Account");
+            System.out.println("error 1");
             return;
         }
         if (getBill().getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Please select a Payment Method");
+            System.out.println("`error 2 = " );
             return;
         }
 
-        if (!getPatient().getHasAnAccount() || getPatient().getHasAnAccount() == null) {
-            JsfUtil.addErrorMessage("Patient has No Account");
-            return;
-        }
+//        if (!getPatient().getHasAnAccount() || getPatient().getHasAnAccount() == null) {
+//            JsfUtil.addErrorMessage("Patient has No Account");
+//            return;
+//        }
 
         if (getBill().getNetTotal() <= 0.0) {
             JsfUtil.addErrorMessage("The Refunded Value is Missing");
+            System.out.println("error 3");
             return;
         }
 
         if (getPatient().getRunningBalance() < getBill().getNetTotal()) {
             JsfUtil.addErrorMessage("The Refunded Value is more than the Current Deposit Value of the Patient");
+            System.out.println("error 4 = ");
             return;
         }
 
         if (getBill().getComments().trim().equalsIgnoreCase("")) {
             JsfUtil.addErrorMessage("Please Add Comment");
+            System.out.println("erior 5");
             return;
         }
 
         if (paymentSchemeController.checkPaymentMethodError(getBill().getPaymentMethod(), paymentMethodData)) {
             JsfUtil.addErrorMessage("Please enter all relavent Payment Method Details");
+            System.out.println("error 6 = ");
             return;
         }
-
+        System.out.println("Runned");
         settleReturnBill(BillType.PatientPaymentRefundBill, HistoryType.PatientDepositReturn, BillNumberSuffix.PDR, current, BillTypeAtomic.PATIENT_DEPOSIT_REFUND);
         printPreview = true;
     }
+    
+     public int settlePatientDepositReturnNew() {
+        System.out.println("started = ");
+        if (getPatient().getId() == null) {
+            JsfUtil.addErrorMessage("Please Create Patient Account");
+            System.out.println("error 1");
+            return 1;
+        }
+        if (getBill().getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Please select a Payment Method");
+            System.out.println("`error 2 = " );
+            return 2;
+        }
+
+//        if (!getPatient().getHasAnAccount() || getPatient().getHasAnAccount() == null) {
+//            JsfUtil.addErrorMessage("Patient has No Account");
+//            return;
+//        }
+
+        if (getBill().getNetTotal() <= 0.0) {
+            JsfUtil.addErrorMessage("The Refunded Value is Missing");
+            System.out.println("error 3");
+            return 3;
+        }
+
+        if (getPatient().getRunningBalance() < getBill().getNetTotal()) {
+            JsfUtil.addErrorMessage("The Refunded Value is more than the Current Deposit Value of the Patient");
+            System.out.println("error 4 = ");
+            return 4;
+        }
+
+        if (getBill().getComments().trim().equalsIgnoreCase("")) {
+            JsfUtil.addErrorMessage("Please Add Comment");
+            System.out.println("erior 5");
+            return 5;
+        }
+
+        if (paymentSchemeController.checkPaymentMethodError(getBill().getPaymentMethod(), paymentMethodData)) {
+            JsfUtil.addErrorMessage("Please enter all relavent Payment Method Details");
+            System.out.println("error 6 = ");
+            return 6;
+        }
+        System.out.println("Runned");
+        settleReturnBill(BillType.PatientPaymentRefundBill, HistoryType.PatientDepositReturn, BillNumberSuffix.PDR, current, BillTypeAtomic.PATIENT_DEPOSIT_REFUND);
+        printPreview = true;
+        return 0;
+    }
+
 
     public void settleReturnBill(BillType billType, HistoryType historyType, BillNumberSuffix billNumberSuffix, Patient patient, BillTypeAtomic billTypeAtomic) {
         saveBill(billType, billNumberSuffix, patient, billTypeAtomic);
@@ -1184,6 +1301,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         addToBill();
         saveBillItem();
         billFacade.edit(getBill());
+        System.out.println("getBill() = " + getBill());
         //TODO: Add Patient Balance History
         patient.setRunningBalance(Math.abs(patient.getRunningBalance()) - Math.abs(getBill().getNetTotal()));
         getFacade().edit(patient);
@@ -1241,6 +1359,17 @@ public class PatientController implements Serializable, ControllerWithPatient {
         getBillItem().setRate(getBill().getNetTotal());
         getBillItems().add(getBillItem());
     }
+    
+    public void addToCancelBill() {
+        getBillItem().setNetValue(0-getBill().getNetTotal());
+        getBillItem().setGrossValue(0-getBill().getNetTotal());
+        getBillItem().setBillSession(null);
+        getBillItem().setDiscount(0.0);
+        getBillItem().setItem(null);
+        getBillItem().setQty(1.0);
+        getBillItem().setRate(getBill().getNetTotal());
+        getBillItems().add(getBillItem());
+    }
 
     private void saveBillItem() {
         for (BillItem tmp : getBillItems()) {
@@ -1272,6 +1401,36 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
         getBill().setGrantTotal(getBill().getNetTotal());
         getBill().setTotal(getBill().getNetTotal());
+        getBill().setDiscount(0.0);
+        getBill().setDiscountPercent(0);
+
+        if (getBill().getId() == null) {
+            billFacade.create(getBill());
+        } else {
+            billFacade.edit(getBill());
+        }
+    }
+    
+    private void saveCancelBill(BillType billType, BillNumberSuffix billNumberSuffix, Patient patient) {
+        getBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), billType, BillClassType.CancelledBill, billNumberSuffix));
+        getBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(sessionController.getDepartment(), billType, BillClassType.CancelledBill, billNumberSuffix));
+        getBill().setBillType(billType);
+
+        getBill().setPatient(patient);
+
+        getBill().setCreatedAt(new Date());
+        getBill().setCreater(sessionController.getLoggedUser());
+        getBill().setBillDate(new Date());
+        getBill().setBillTime(new Date());
+
+        getBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
+        getBill().setInstitution(getSessionController().getLoggedUser().getInstitution());
+
+        getBill().setCreatedAt(new Date());
+        getBill().setCreater(getSessionController().getLoggedUser());
+
+        getBill().setGrantTotal(0-getBill().getNetTotal());
+        getBill().setTotal(0-getBill().getNetTotal());
         getBill().setDiscount(0.0);
         getBill().setDiscountPercent(0);
 
@@ -1352,6 +1511,10 @@ public class PatientController implements Serializable, ControllerWithPatient {
         if (searchPhn != null && !searchPhn.trim().equals("")) {
             noSearchCriteriaWasFound = false;
         }
+        
+        if (searchMrn != null && !searchMrn.trim().equals("")) {
+            noSearchCriteriaWasFound = false;
+        }
 
         if (searchPhone != null && !searchPhone.trim().equals("")) {
             noSearchCriteriaWasFound = false;
@@ -1424,6 +1587,21 @@ public class PatientController implements Serializable, ControllerWithPatient {
         clearSearchDetails();
         return "";
     }
+    
+    public String searchPatientForPatientDepost() {
+        boolean noError = searchPatientCommon();
+        if (!noError) {
+            return "";
+        }
+        if (searchedPatients == null || searchedPatients.isEmpty()) {
+            JsfUtil.addErrorMessage("No Matches. Please use different criteria");
+            return "";
+        } else if (searchedPatients.size() == 1) {
+            setCurrent(searchedPatients.get(0));
+        }
+        clearSearchDetails();
+        return "";
+    }
 
     public String searchPatientForOptician() {
         boolean noError = searchPatientCommon();
@@ -1451,6 +1629,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         searchName = null;
         searchPhone = null;
         searchPhn = null;
+        searchMrn = null;
         searchNic = null;
         searchPatientCode = null;
         searchPatientId = null;
@@ -1558,6 +1737,12 @@ public class PatientController implements Serializable, ControllerWithPatient {
         if (searchPhn != null && !searchPhn.trim().equals("")) {
             j += " and p.phn =:phn";
             m.put("phn", searchPhn);
+            atLeastOneCriteriaIsGiven = true;
+        }
+        
+        if (searchMrn != null && !searchMrn.trim().equals("")) {
+            j += " and p.code =:mrn";
+            m.put("mrn", searchMrn);
             atLeastOneCriteriaIsGiven = true;
         }
 
@@ -3038,6 +3223,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
                 searchByNic(searchNic);
             } else if (searchPhn != null && !searchPhn.isEmpty()) {
                 searchByPhn(searchPhn);
+            } else if (searchMrn != null && !searchMrn.isEmpty()) {
+                searchByMrn(searchMrn);
             } else if (searchPatientCode != null && !searchPatientCode.isEmpty()) {
                 searchByPatientCode(searchPatientCode);
             } else if (searchPatientId != null && !searchPatientId.isEmpty()) {
@@ -3064,6 +3251,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
                 searchByNic(searchNic);
             } else if (searchPhn != null && !searchPhn.isEmpty()) {
                 searchByPhn(searchPhn);
+            } else if (searchMrn != null && !searchMrn.isEmpty()) {
+                searchByMrn(searchMrn);
             } else if (searchPatientCode != null && !searchPatientCode.isEmpty()) {
                 searchByPatientCode(searchPatientCode);
             } else if (searchPatientId != null && !searchPatientId.isEmpty()) {
@@ -3090,6 +3279,9 @@ public class PatientController implements Serializable, ControllerWithPatient {
             count++;
         }
         if (searchPhn != null && !searchPhn.isEmpty()) {
+            count++;
+        }
+        if (searchMrn != null && !searchMrn.isEmpty()) {
             count++;
         }
         if (searchPatientCode != null && !searchPatientCode.isEmpty()) {
@@ -3247,6 +3439,17 @@ public class PatientController implements Serializable, ControllerWithPatient {
         Map m1 = new HashMap();
         m1.put("ret", false);
         m1.put("phn", phn);
+        searchedPersons = personFacade.findLongList(j1, m1);
+    }
+    
+    private void searchByMrn(String mrn) {
+        String j1 = "Select p.person "
+                + " from Patient p"
+                + " where p.retired=:ret"
+                + " and p.code=:mrn ";
+        Map m1 = new HashMap();
+        m1.put("ret", false);
+        m1.put("mrn", mrn);
         searchedPersons = personFacade.findLongList(j1, m1);
     }
 
@@ -3796,6 +3999,14 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     public void setDepartment(Department department) {
         this.department = department;
+    }
+
+    public String getSearchMrn() {
+        return searchMrn;
+    }
+
+    public void setSearchMrn(String searchMrn) {
+        this.searchMrn = searchMrn;
     }
 
     /**
