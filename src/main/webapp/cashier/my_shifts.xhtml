@@ -1,0 +1,114 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ezb="http://xmlns.jcp.org/jsf/composite/ezcomp/bundles"
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
+
+    <h:body>
+
+        <ui:composition template="/cashier/index.xhtml">
+
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel  class="m-1 p-1 container-flex">
+                        <f:facet name="header">
+                            <p:outputLabel value="My Shifts" />
+                        </f:facet>
+
+                        <p:panelGrid layout="tabular" columns="2" class="w-100" >
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="From" for="fromDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar 
+                                styleClass="w-100" 
+                                inputStyleClass="w-100 form-control" 
+                                id="fromDate" 
+                                value="#{financialTransactionController.fromDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                />
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="To" for="toDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar 
+                                styleClass="w-100" 
+                                inputStyleClass="w-100 form-control" 
+                                id="toDate" 
+                                value="#{financialTransactionController.toDate}" 
+                                navigator="false" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                />
+
+
+                        </p:panelGrid>
+
+
+
+                        <p:dataTable 
+                            value="#{financialTransactionController.bundle.reportTemplateRows}" 
+                            var="ssb" 
+                            rowKey="#{ssb.id}">
+
+                            <p:column headerText="Start Date" width="10em" >
+                                <h:outputText value="#{ssb.bill.billDate}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                                </h:outputText>
+
+                            </p:column>
+                            <p:column headerText="Start Time"  width="10em" >
+                                <h:outputText value="#{ssb.bill.createdAt}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" ></f:convertDateTime>
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Shift End Date" rendered="true" width="15em" >
+                                <h:panelGroup rendered="#{ssb.bill.referenceBill ne null}" class="text-success">
+                                    <h:outputText value="#{ssb.bill.referenceBill.createdAt}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                                    </h:outputText>
+                                </h:panelGroup>
+                            </p:column>
+
+                            <p:column headerText="Shift End Time" rendered="true" width="15em" >
+                                <h:panelGroup rendered="#{ssb.bill.referenceBill ne null}" class="text-success">
+                                    <h:outputText value="#{ssb.bill.referenceBill.createdAt}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" ></f:convertDateTime>
+                                    </h:outputText>
+                                </h:panelGroup>
+                            </p:column>
+
+                            <p:column headerText="Actions">
+                                <p:commandButton 
+                                    ajax="false"
+                                    class="ui-button-warning m-1" 
+                                    value="Start Handover" 
+                                    icon="pi pi-play" 
+                                    action="#{financialTransactionController.navigateToHandoverCreateBillForSelectedShift(ssb.bill)}">
+                                </p:commandButton>
+                                <p:commandButton 
+                                    ajax="false"
+                                    class="ui-button-success m-1" 
+                                    value="View Handovers" 
+                                    icon="pi pi-eye"  
+                                    action="#{financialTransactionController.navigateToViewHandovers(ssb.bill)}">
+                                </p:commandButton>
+                            </p:column>
+
+
+                        </p:dataTable>
+
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>
