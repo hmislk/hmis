@@ -103,6 +103,7 @@ public class StaffPaymentBillController implements Serializable {
     List<BillFee> payingBillFees;
     double totalDue;
     double totalPaying;
+
     private Boolean printPreview = false;
     PaymentMethod paymentMethod;
     Speciality speciality;
@@ -194,12 +195,11 @@ public class StaffPaymentBillController implements Serializable {
 
     public void setSpeciality(Speciality speciality) {
         this.speciality = speciality;
-        currentStaff = null;
-        dueBillFees = new ArrayList<>();
-        payingBillFees = new ArrayList<>();
-        totalPaying = 0.0;
-        totalDue = 0.0;
-
+//        currentStaff = null;
+//        dueBillFees = new ArrayList<>();
+//        payingBillFees = new ArrayList<>();
+//        totalPaying = 0.0;
+//        totalDue = 0.0;
     }
 
     public List<Staff> completeStaff(String query) {
@@ -255,8 +255,65 @@ public class StaffPaymentBillController implements Serializable {
     public void setTotalPaying(double totalPaying) {
         this.totalPaying = totalPaying;
     }
-    
-     public void calculateDueFees() {
+
+
+    public void calculateDueFeesForOpdForSelectedPeriod() {
+        if (currentStaff == null || currentStaff.getId() == null) {
+            dueBillFees = new ArrayList<>();
+            return;
+        }
+        List<BillTypeAtomic> btcs = new ArrayList<>();
+        btcs.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+        btcs.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        btcs.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+        btcs.add(BillTypeAtomic.CC_BILL);
+        String jpql;
+        HashMap params = new HashMap();
+        jpql = "select bf "
+                + " from BillFee bf "
+                + " where bf.retired=false "
+                + " and bf.bill.billTypeAtomic in :btcs "
+                + " and bf.bill.cancelled=:bc "
+                + " and bf.bill.createdAt between :fd and :td "
+                + " and (bf.feeValue - bf.paidValue) > 0 "
+                + " and bf.staff=:staff ";
+        params.put("btcs", btcs);
+        params.put("bc", false);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+        params.put("staff", currentStaff);
+
+        boolean testing = false;
+        if (testing) {
+            BillFee bf = new BillFee();
+            bf.getBill();
+        }
+
+        dueBillFees = getBillFeeFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        if (configOptionApplicationController.getBooleanValueByKey("Remove Refunded Bill From OPD Staff Payment")) {
+            List<BillFee> removeingBillFees = new ArrayList<>();
+            for (BillFee bf : dueBillFees) {
+                params = new HashMap();
+                jpql = "SELECT bi FROM BillItem bi where "
+                        + " bi.retired=false"
+                        + " and bi.bill.cancelled=false "
+                        + " and type(bi.bill)=:class "
+                        + " and bi.referanceBillItem.id=" + bf.getBillItem().getId();
+                params.put("class", RefundBill.class);
+                BillItem rbi = getBillItemFacade().findFirstByJpql(jpql, params);
+
+                if (rbi != null) {
+                    removeingBillFees.add(bf);
+                }
+
+            }
+            dueBillFees.removeAll(removeingBillFees);
+        }
+
+    }
+
+    public void calculateDueFees() {
         if (currentStaff == null || currentStaff.getId() == null) {
             dueBillFees = new ArrayList<>();
         } else {
@@ -416,9 +473,7 @@ public class StaffPaymentBillController implements Serializable {
     }
 
     public void setCurrentStaff(Staff currentStaff) {
-
         this.currentStaff = currentStaff;
-
         dueBillFees = new ArrayList<BillFee>();
         payingBillFees = new ArrayList<BillFee>();
         totalPaying = 0.0;
@@ -517,27 +572,23 @@ public class StaffPaymentBillController implements Serializable {
             return;
         }
         calculateTotalPay();
-        Bill b = createPaymentBill();
-        current = b;
-        getBillFacade().create(b);
-        Payment p = createPayment(b, paymentMethod);
-        saveBillCompo(b, p);
+        Bill newlyCreatedPaymentBill = createPaymentBill();
+        current = newlyCreatedPaymentBill;
+        getBillFacade().create(newlyCreatedPaymentBill);
+        Payment newlyCreatedPayment = createPayment(newlyCreatedPaymentBill, paymentMethod);
+        saveBillCompo(newlyCreatedPaymentBill, newlyCreatedPayment);
         printPreview = true;
-
-        WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(b, getSessionController().getLoggedUser());
-        getSessionController().setLoggedUser(wb);
         JsfUtil.addSuccessMessage("Successfully Paid");
-        //////// // System.out.println("Paid");
     }
 
-    private void saveBillCompo(Bill b, Payment p) {
-        for (BillFee bf : getPayingBillFees()) {
+    private void saveBillCompo(Bill paymentBill, Payment paymentBillPayment) {
+        for (BillFee originalBillFee : getPayingBillFees()) {
 //            saveBillItemForPaymentBill(b, bf); //for create bill fees and billfee payments
-            saveBillItemForPaymentBill(b, bf, p);
+            saveBillItemForPaymentBill(paymentBill, originalBillFee, paymentBillPayment);
 //            saveBillFeeForPaymentBill(b,bf); No need to add fees for this bill
-            bf.setPaidValue(bf.getFeeValue());
-            bf.setSettleValue(bf.getFeeValue());
-            getBillFeeFacade().edit(bf);
+            originalBillFee.setPaidValue(originalBillFee.getFeeValue());
+            originalBillFee.setSettleValue(originalBillFee.getFeeValue());
+            getBillFeeFacade().edit(originalBillFee);
             //////// // System.out.println("marking as paid");
         }
     }
@@ -562,25 +613,25 @@ public class StaffPaymentBillController implements Serializable {
         b.getBillItems().add(i);
     }
 
-    private void saveBillItemForPaymentBill(Bill b, BillFee bf, Payment p) {
-        BillItem i = new BillItem();
-        i.setReferanceBillItem(bf.getBillItem());
-        i.setReferenceBill(bf.getBill());
-        i.setPaidForBillFee(bf);
-        i.setBill(b);
-        i.setCreatedAt(Calendar.getInstance().getTime());
-        i.setCreater(getSessionController().getLoggedUser());
-        i.setDiscount(0.0);
-        i.setGrossValue(bf.getFeeValue());
+    private void saveBillItemForPaymentBill(Bill newPaymentBill, BillFee originalBillFee, Payment p) {
+        BillItem newlyCreatedPayingBillItem = new BillItem();
+        newlyCreatedPayingBillItem.setReferanceBillItem(originalBillFee.getBillItem());
+        newlyCreatedPayingBillItem.setReferenceBill(originalBillFee.getBill());
+        newlyCreatedPayingBillItem.setPaidForBillFee(originalBillFee);
+        newlyCreatedPayingBillItem.setBill(newPaymentBill);
+        newlyCreatedPayingBillItem.setCreatedAt(Calendar.getInstance().getTime());
+        newlyCreatedPayingBillItem.setCreater(getSessionController().getLoggedUser());
+        newlyCreatedPayingBillItem.setDiscount(0.0);
+        newlyCreatedPayingBillItem.setGrossValue(originalBillFee.getFeeValue());
 //        if (bf.getBillItem() != null && bf.getBillItem().getItem() != null) {
 //            i.setItem(bf.getBillItem().getItem());
 //        }
-        i.setNetValue(bf.getFeeValue());
-        i.setQty(1.0);
-        i.setRate(bf.getFeeValue());
-        getBillItemFacade().create(i);
-        saveBillFee(i, p);
-        b.getBillItems().add(i);
+        newlyCreatedPayingBillItem.setNetValue(originalBillFee.getFeeValue());
+        newlyCreatedPayingBillItem.setQty(1.0);
+        newlyCreatedPayingBillItem.setRate(originalBillFee.getFeeValue());
+        getBillItemFacade().create(newlyCreatedPayingBillItem);
+        saveBillFee(newlyCreatedPayingBillItem, p);
+        newPaymentBill.getBillItems().add(newlyCreatedPayingBillItem);
     }
 
     public void setSelectText(String selectText) {
@@ -680,6 +731,8 @@ public class StaffPaymentBillController implements Serializable {
         bf.setCreatedAt(Calendar.getInstance().getTime());
         bf.setCreater(getSessionController().getLoggedUser());
         bf.setBillItem(bi);
+        bf.setReferenceBillFee(bi.getPaidForBillFee());
+        bf.setReferenceBillItem(bi.getReferanceBillItem());
         bf.setPatienEncounter(bi.getBill().getPatientEncounter());
         bf.setPatient(bi.getBill().getPatient());
         bf.setFeeValue(0 - bi.getNetValue());
@@ -812,7 +865,7 @@ public class StaffPaymentBillController implements Serializable {
             } else if (getStaffPaymentMethodData().getCheque().getInstitution() == null) {
                 JsfUtil.addErrorMessage("Select Cheque Bank");
                 return true;
-            } else if (getStaffPaymentMethodData().getCheque().getDate() == null ) {
+            } else if (getStaffPaymentMethodData().getCheque().getDate() == null) {
                 JsfUtil.addErrorMessage("Add Cheque Date");
                 return true;
             } else if (getStaffPaymentMethodData().getCheque().getComment().trim().equalsIgnoreCase("") && configOptionApplicationController.getBooleanValueByKey("Staff Credit Settle - Cheque Comment is Mandatory", false)) {
@@ -824,7 +877,7 @@ public class StaffPaymentBillController implements Serializable {
             if (getStaffPaymentMethodData().getSlip().getInstitution() == null) {
                 JsfUtil.addErrorMessage("Select Slip Bank");
                 return true;
-            } else if (getStaffPaymentMethodData().getSlip().getDate()== null) {
+            } else if (getStaffPaymentMethodData().getSlip().getDate() == null) {
                 JsfUtil.addErrorMessage("Add Slip Date");
                 return true;
             } else if (getStaffPaymentMethodData().getSlip().getComment().trim().equalsIgnoreCase("") && configOptionApplicationController.getBooleanValueByKey("Staff Credit Settle - Slip Comment is Mandatory", false)) {
@@ -841,7 +894,7 @@ public class StaffPaymentBillController implements Serializable {
             JsfUtil.addErrorMessage("Select Staff");
             return true;
         }
-        
+
         if (getCurrent().getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Select Payment Method");
             return true;
@@ -851,18 +904,18 @@ public class StaffPaymentBillController implements Serializable {
             JsfUtil.addErrorMessage("Type Amount");
             return true;
         }
-        
+
         return false;
     }
 
     public void settleStaffCredit() {
 
-        if(errorCheckForCreditSettle()){
-            return ;
+        if (errorCheckForCreditSettle()) {
+            return;
         }
-        
-        if(paymentMethodDataErrorCheck()){
-            return ;
+
+        if (paymentMethodDataErrorCheck()) {
+            return;
         }
 
         getCurrent().setTotal(getCurrent().getNetTotal());

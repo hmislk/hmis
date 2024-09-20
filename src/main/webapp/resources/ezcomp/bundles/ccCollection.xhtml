@@ -57,7 +57,7 @@
                                                action="#{billSearch.navigateViewBillByBillTypeAtomic()}" 
                                                styleClass="btn btn-link mx-2 no-print">
                                     <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}" />
-                                    <f:setPropertyActionListener value="true" target="#{agentPaymentRecieveBillController.printPreview}" />
+                                    <f:setPropertyActionListener value="true" target="#{agentAndCcPaymentController.printPreview}" />
                                     <h:outputText title="View Details" value="&#xf05a;" styleClass="fa" />
                                 </h:commandLink>
                             </td>
@@ -108,8 +108,8 @@
                     <h:outputText value="Bil No" />
                 </f:facet>
                 <h:commandLink action="#{billSearch.navigateViewBillByBillTypeAtomic()}" value="#{row.bill.deptId}">
-                    <f:setPropertyActionListener value="#{row.bill}" target="#{agentPaymentRecieveBillController.current}" />
-                    <f:setPropertyActionListener value="true" target="#{agentPaymentRecieveBillController.printPreview}" />
+                    <f:setPropertyActionListener value="#{row.bill}" target="#{agentAndCcPaymentController.current}" />
+                    <f:setPropertyActionListener value="true" target="#{agentAndCcPaymentController.printPreview}" />
                 </h:commandLink>
             </p:column>
 

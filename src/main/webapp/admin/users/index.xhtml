@@ -35,6 +35,16 @@
                                             ajax="false" 
                                             value="User Roles" 
                                             action="#{webUserRoleController.navigateToManageWebUserRoles()}" />
+
+                                        <p:commandButton
+                                            disabled="#{webUserRoleController.current.id == null}"
+                                            icon="fa fa-user-cog"
+                                            value="Add Privileges to Users by Role"
+                                            class="m-1"
+                                            action="#{webUserRoleController.navigateToManageWebUserRoleUsers()}"
+                                            ajax="false" >
+                                        </p:commandButton>
+                                        <hr/>
                                         <p:commandButton 
                                             ajax="false" 
                                             value="View Non Staff Users" 

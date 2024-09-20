@@ -170,8 +170,6 @@ public class BillItem implements Serializable {
     @OneToMany(mappedBy = "parentBillItem")
     private List<BillItem> chiledBillItems;
 
-    
-
     @Transient
     double transCCFee;
     @Transient
@@ -284,6 +282,9 @@ public class BillItem implements Serializable {
         hospitalFee = 0 - billItem.getHospitalFee();
         vat = 0 - billItem.getVat();
         vatPlusNetValue = 0 - billItem.getVatPlusNetValue();
+        collectingCentreFee = 0 - billItem.getCollectingCentreFee();
+        otherFee = 0 - billItem.getOtherFee();
+        feeValue = 0 - billItem.getFeeValue();
     }
 
     public void invertValue() {
@@ -301,6 +302,9 @@ public class BillItem implements Serializable {
         hospitalFee = 0 - getHospitalFee();
         vat = 0 - getVat();
         vatPlusNetValue = 0 - getVatPlusNetValue();
+        collectingCentreFee = 0 - getCollectingCentreFee();
+        otherFee = 0 - getOtherFee();
+        feeValue = 0 - getFeeValue();
     }
 
     @Override
@@ -914,8 +918,6 @@ public class BillItem implements Serializable {
         this.previousRecieveFreeQtyInUnit = previousRecieveFreeQtyInUnit;
     }
 
-    
-    
     @Transient
     private void calculateFeeTotals() {
         totalHospitalFeeValueTransient = 0.0;

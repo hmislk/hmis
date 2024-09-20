@@ -159,7 +159,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     @Inject
     FeeValueController feeValueController;
     @Inject
-    CollectingCentreApplicationController collectingCentreApplicationController;
+    AgentAndCcApplicationController collectingCentreApplicationController;
     /**
      * Properties
      */
@@ -876,7 +876,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 //            HistoryType historyType,
 //            Bill bill
 //        
-        collectingCentreApplicationController.updateBalance(
+        collectingCentreApplicationController.updateCcBalance(
                 collectingCentre,
                 totalHosFee,
                 totalCCFee,

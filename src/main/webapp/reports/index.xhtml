@@ -40,8 +40,6 @@
                                 </p:tab>
                                 <p:tab title="Cafe and Kitchen Reports">
                                     <div class="d-grid gap-2">
-
-
                                         <p:commandButton   class="w-100"  ajax="false" value="1. Café Discount" />
                                         <p:commandButton   class="w-100"  ajax="false" value="2. Café Sale"  />
                                         <p:commandButton   class="w-100"  ajax="false" value="3. Café Expiry" />
@@ -56,12 +54,22 @@
                                     <div class="d-grid gap-2">
                                         <p:commandButton  
                                             action="#{searchController.navigatToAllCashierSummary()}"
-                                            class="w-100"  ajax="false" value="1. All Cashier Summary" ></p:commandButton>
+                                            class="w-100"  
+                                            ajax="false" 
+                                            value="1. All Cashier Summary" >
+                                        </p:commandButton>
                                         <p:commandButton  
                                             action="#{searchController.navigatToCashierSummary()}"
-                                            class="w-100"  ajax="false" value="2. Cashier Summary" ></p:commandButton>
-                                        <p:commandButton   class="w-100"  ajax="false" value="3. Shift End Summary" ></p:commandButton>
-
+                                            class="w-100"  
+                                            ajax="false" 
+                                            value="2. Cashier Summary" >
+                                        </p:commandButton>
+                                        <p:commandButton  
+                                            class="w-100"  
+                                            ajax="false" 
+                                            action="#{searchController.navigatToShiftStartAndEnds()}"
+                                            value="3. Shift End Summary" >
+                                        </p:commandButton>
                                     </div>
                                 </p:tab>
                                 <p:tab title="Collection Center Reports">
@@ -121,15 +129,15 @@
                                     <p:commandButton   
                                         class="w-100 my-2"  
                                         ajax="false" 
-                                        action="/reports/profesional_payment_reports/professional_fees"
+                                        action="/reports/profesional_payment_reports/professional_fees_opd"
                                         value="Professional Fees" />
                                     <p:commandButton   
                                         class="w-100 my-2"  
-                                         action="/reports/profesional_payment_reports/professional_fee_payments"
+                                         action="/reports/profesional_payment_reports/professional_fee_payments_opd"
                                         ajax="false" value="Professional Fee Payments" />
                                     <p:commandButton   
                                         class="w-100 my-2"  
-                                         action="/reports/profesional_payment_reports/professional_payments"
+                                         action="/reports/profesional_payment_reports/professional_payments_opd"
                                         ajax="false" value="Professional Payments" />
                                     
                                     

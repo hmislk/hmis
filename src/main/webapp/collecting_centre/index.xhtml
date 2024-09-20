@@ -23,8 +23,8 @@
                                             <p:commandButton icon="fa fa-check-circle" 
                                                              ajax="false" 
                                                              value="Accept Collecting Centre Deposits"
-                                                             action="/collecting_centre/collecting_centre_deposit_bill?faces-redirect=true"
-                                                             actionListener="#{agentPaymentRecieveBillController.prepareNewBill()}"
+                                                             action="#{agentAndCcPaymentController.navigateToCcDeposit}"
+                                                             actionListener="#{agentAndCcPaymentController.prepareNewBill()}"
                                                              class="w-100 m-1"/>
                                             <p:commandButton icon="fa fa-search" ajax="false" value="Search Collecting Centre Deposits"
                                                              action="/collecting_centre/collecting_centre_bill_search_own?faces-redirect=true"
@@ -55,7 +55,7 @@
                                         <h:panelGrid columns="1" class="w-100" >
                                             <p:commandButton icon="fa fa-plus-circle" ajax="false" value="Credit Note"
                                                              action="/collecting_centre/collecting_center_credit_note_bill?faces-redirect=true"
-                                                             actionListener="#{agentPaymentRecieveBillController.prepareNewBill()}"
+                                                             actionListener="#{agentAndCcPaymentController.prepareNewBill()}"
                                                              rendered="#{webUserController.hasPrivilege('ChannelCrdeitNote')}"
                                                              class="w-100 m-1"/>
                                             <p:commandButton icon="fa fa-search-plus" ajax="false" value="Credit Note Search"
@@ -65,7 +65,7 @@
                                                              class="w-100 m-1"/>
                                             <p:commandButton icon="fa fa-minus-circle" ajax="false" value="Debit Note"
                                                              action="/collecting_centre/collecting_center_debit_note_bill?faces-redirect=true"
-                                                             actionListener="#{agentPaymentRecieveBillController.prepareNewBill()}"
+                                                             actionListener="#{agentAndCcPaymentController.prepareNewBill()}"
                                                              rendered="#{webUserController.hasPrivilege('ChannelDebitNote')}"
                                                              class="w-100 m-1"/>
                                             <p:commandButton icon="fa fa-search-minus" ajax="false" value="Debit Note Search"

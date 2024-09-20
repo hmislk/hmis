@@ -23,7 +23,7 @@
 
                     <p:panelGrid
                         class="w-100 my-2"
-                        columns="2">
+                        columns="3">
 
 
                         <p:outputLabel value="User" ></p:outputLabel>
@@ -43,9 +43,7 @@
 
 
                         <p:outputLabel  value="Role" ></p:outputLabel>
-                        <p:selectOneMenu
-                            class="w-100"
-                            value="#{webUserRoleUserController.webUserRole}" >
+                        <p:selectOneMenu value="#{webUserRoleUserController.webUserRole}" >
                             <f:selectItem itemLabel="Select" ></f:selectItem>
                             <f:selectItems value="#{webUserRoleController.items}" 
                                            var="ur" 
@@ -71,7 +69,6 @@
                         <p:outputLabel value="Department"  ></p:outputLabel>  
                         <h:panelGroup id="gpDept" >
                             <p:selectOneMenu 
-                                class="w-100"
                                 rendered="#{webUserRoleUserController.institution ne null}"
                                 value="#{webUserRoleUserController.department}" >
                                 <f:selectItem itemLabel="Select" ></f:selectItem>
@@ -83,19 +80,56 @@
                         </h:panelGroup>
 
 
-                        <p:spacer ></p:spacer>
+                        <p:commandButton
+                            id="btnList"
+                            title="List Users for the User Roles"
+                            value="List Users"
+                            process="btnList cmbDepartment"
+                            class="ui-button-warning w-100"
+                            ajax="false"
+                            icon="fa fa-list"
+                            update="tbl"
+                            action="#{webUserRoleUserController.fillUsers}"
+                            >
+                        </p:commandButton>
 
                         <p:commandButton
-                            value="Add User and Role Privileges to Department"
-                            icon="fa fa-plus"
-                            class="ui-button-success w-100"
-                            action="#{webUserRoleUserController.addUsersToDepartmentRoleWithPrivileges}"
+                            value="List Department"
+                            icon="fa fa-list"
+                            class="ui-button-warning w-100"
+                            action="#{webUserRoleUserController.fillDepartment}"
                             ajax="false"
                             update="tbl"
                             />
+
+                        <p:outputLabel  value="Department" ></p:outputLabel>
+                        <p:selectOneMenu
+                            id="cmbDepartment"
+                            placeholder="Department"
+                            class="w-100"
+                            value="#{webUserRoleUserController.department}"
+                            filter="true"
+                            autoWidth="false">
+                            <f:selectItem itemLabel="All" ></f:selectItem>
+                            <f:selectItems
+                                value="#{webUserRoleUserController.departments}"
+                                var="d"
+                                itemLabel="#{d.name}"
+                                itemValue="#{d}" ></f:selectItems>
+                        </p:selectOneMenu>
+                        <p:commandButton
+                            value="Add User"
+                            icon="fa fa-plus"
+                            class="ui-button-success w-100"
+                            action="#{webUserRoleUserController.addUsers}"
+                            ajax="false"
+                            update="tbl"
+                            />
+
+
+
+
                     </p:panelGrid>
-
-
                 </p:panel>
 
                 <p:dataTable
