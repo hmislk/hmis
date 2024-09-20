@@ -2580,6 +2580,8 @@ public class BillController implements Serializable {
     }
 
 
+
+
     public List<Bill> listBills(
             List<BillType> billTypes,
             Institution ins,
