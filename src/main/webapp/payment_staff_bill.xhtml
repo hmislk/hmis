@@ -14,93 +14,87 @@
                 <h:panelGroup id="panbilledit" rendered="#{!staffPaymentBillController.printPreview}" styleClass="alignTop" >
                     <p:panel header="Staff Payments" >
                         <h:form>
-                            <h:panelGrid columns="5" class="w-100">
-                                <p:outputLabel 
-                                    value="From" />
+                            <h:panelGrid columns="2" >
+
+
+                                <p:outputLabel value="From Date" />
                                 <p:calendar 
                                     value="#{staffPaymentBillController.fromDate}" 
                                     id="fDate" 
-                                    class="w-100 m-1" 
+                                    class="w-100" 
                                     inputStyleClass="w-100"                                                  
                                     navigator="true" 
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
-                                <p:spacer 
-                                    width="50" >
-                                </p:spacer>
-                                <p:outputLabel 
-                                    value="To" />
+                                <p:outputLabel value="To Date" />
                                 <p:calendar 
                                     value="#{staffPaymentBillController.toDate}" 
                                     id="tDate" 
-                                    class="w-100 m-1" 
+                                    class="w-100 mx-2" 
                                     inputStyleClass="w-100" 
                                     navigator="true" 
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
 
 
-                                <h:outputLabel 
-                                    value="Speciality" ></h:outputLabel>
-                                <p:autoComplete 
-                                    forceSelection="true" 
-                                    value="#{staffPaymentBillController.speciality}"
-                                    inputStyleClass="w-100" 
-                                    class="m-1 w-100"
-                                    id="acSpeciality"
-                                    completeMethod="#{specialityController.completeSpeciality}" 
-                                    var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
-                                    >
-                                    <f:ajax 
-                                        event="itemSelect" 
-                                        execute="acSpeciality" 
-                                        render="scStaff"  />
+                                <h:outputLabel value="Select Speciality" ></h:outputLabel>
+
+                                <p:autoComplete forceSelection="true" value="#{staffPaymentBillController.speciality}"
+                                                inputStyleClass="mx-1 w-100" class="mx-1 w-100"
+                                                id="acSpeciality"
+                                                completeMethod="#{specialityController.completeSpeciality}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
+                                                >
+                                    <f:ajax event="itemSelect" execute="acSpeciality" render="scStaff"  />
                                 </p:autoComplete>
-                                <p:spacer 
-                                    width="50" ></p:spacer>
-                                <h:outputLabel 
-                                    value="Professional" ></h:outputLabel>
-                                <p:autoComplete 
-                                    forceSelection="true" 
-                                    value="#{staffPaymentBillController.currentStaff}"
-                                    inputStyleClass="m-2 w-100" class="mx-1 w-100 my-1"
-                                    id="scStaff"
-                                    completeMethod="#{staffPaymentBillController.completeStaff}"
-                                    var="mys" 
-                                    itemLabel="#{mys.person.nameWithTitle}" 
-                                    itemValue="#{mys}"
-                                    >
+
+                                <h:outputLabel  value="Select Staff / Doctor" ></h:outputLabel>
+
+                                <p:autoComplete forceSelection="true" value="#{staffPaymentBillController.currentStaff}"
+                                                inputStyleClass="mx-1 w-100" class="mx-1 w-100 my-1"
+                                                id="scStaff"
+                                                completeMethod="#{staffPaymentBillController.completeStaff}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
+                                                >
+                                    <!--                                    <f:ajax event="itemSelect" execute="scStaff" render="tblFee pTotals" />-->
                                 </p:autoComplete>
+
+
+                                <h:outputLabel value="Payment Method" ></h:outputLabel>
+
+                                <p:selectOneMenu  id="cmbPay" value="#{staffPaymentBillController.paymentMethod}" class="mx-2 w-100">                                      
+                                    <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"  />
+                                </p:selectOneMenu>
+
+
+
+
+
+
+                                <!--                                    <p:commandButton ajax="false" value="Process" >
+                                                                    </p:commandButton>-->  
+
                             </h:panelGrid>
+
 
 
                             <p:commandButton 
                                 value="Process" 
-                                action="#{staffPaymentBillController.calculateDueFeesForOpdForSelectedPeriod}" 
-                                ajax="false" 
-                                icon="fa-solid fa-arrows-rotate"
+                                action="#{staffPaymentBillController.calculateDueFeesForOpdForSelectedPeriod}" ajax="false" icon="fa-solid fa-arrows-rotate"
                                 class="w-25 ui-button-warning my-1" />
 
-                            <p:commandButton 
-                                ajax="false" 
-                                value="Excel" 
-                                styleClass="noPrintButton" 
-                                icon="fa-solid fa-file-excel"
-                                class="w-25 ui-button-success my-1 mx-2" >
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" icon="fa-solid fa-file-excel"
+                                             class="w-25 ui-button-success my-1 mx-2" >
                                 <p:dataExporter type="xlsx" target=":#{p:resolveFirstComponentWithId('tblFee',view).clientId}" fileName="Staff_Payment_Due_OPD"  />
                             </p:commandButton>
 
 
 
                             <p:dataTable   
-                                id="tblFee"
-                                value="#{staffPaymentBillController.dueBillFees}"
+                                id="tblFee" value="#{staffPaymentBillController.dueBillFees}"
                                 selection="#{staffPaymentBillController.payingBillFees}"
                                 class="w-100"
                                 paginator="true" paginatorPosition="bottom"
                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                 currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
                                 rowsPerPageTemplate="{ShowAll|'All'}"
-                                var="bf" 
-                                rowKey="#{bf.id}" >
+                                var="bf" rowKey="#{bf.id}" >
 
                                 <f:ajax  event="rowSelectCheckbox" execute="tblFee" listener="#{staffPaymentBillController.performCalculations()}"   
                                          render=":#{p:resolveFirstComponentWithId('scStaff',view).clientId}  :#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId} tblFee"  />  
@@ -182,11 +176,6 @@
                                     <h:outputLabel value="Payment Details" />
                                 </f:facet>
                                 <h:panelGrid columns="3" >
-                                    <h:outputLabel value="Payment Method" ></h:outputLabel>
-                                    <p:spacer width="30"/>
-                                    <p:selectOneMenu  id="cmbPay" value="#{staffPaymentBillController.paymentMethod}" class="mx-2 w-100">                                      
-                                        <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"  />
-                                    </p:selectOneMenu>
                                     <h:outputLabel value="Total Due" ></h:outputLabel>
                                     <p:spacer width="30"/>
                                     <h:outputLabel id="lblDue" value="#{staffPaymentBillController.totalDue}" >
