@@ -316,6 +316,8 @@ public class Bill implements Serializable {
     private Date smsedAt;
     @OneToMany(mappedBy = "bill")
     private List<Sms> sentSmses;
+    
+    private boolean completed;
 
     //Print Information
     private boolean printed;
@@ -2357,4 +2359,14 @@ public class Bill implements Serializable {
         this.creditBill = creditBill;
     }
 
+    public boolean isCompleted() {
+        return completed;
+    }
+
+    public void setCompleted(boolean completed) {
+        this.completed = completed;
+    }
+
+
+    
 }
