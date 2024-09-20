@@ -71,7 +71,7 @@
                                                      ajax="false" value="Export to Excel">
                                         <p:dataExporter type="xlsx" target="tbl" fileName="itemized_sale_summary" />
                                     </p:commandButton>
-                                    
+
                                 </div>
                             </div>
 
@@ -95,9 +95,9 @@
 
                             <p:spacer height="5"></p:spacer>
 
-                            <p:dataTable value="#{reportController.collectionCenters}" var="c">
+                            <p:dataTable value="#{reportController.collectionCenters}" var="c" rowIndexVar="i">
                                 <p:column headerText="S. No" >
-                                    <h:outputText value="" ></h:outputText>
+                                    <h:outputText value="#{i+1}" ></h:outputText>
                                 </p:column>
                                 <p:column headerText="CC Name" >
                                     <h:outputText value="#{c.name}" ></h:outputText>
