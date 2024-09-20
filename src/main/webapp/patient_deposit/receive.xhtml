@@ -38,7 +38,8 @@
                                                  class="mx-2"
                                                  value="Clear for New Deposit"
                                                  ajax="false" 
-                                                 action="#{patientController.navigateToReceiveDepositsFromPatientProfile()}"  >
+                                                 immediate="true"
+                                                 action="#{patientDepositController.navigateToAddNewPatientDeposit()}"  >
                                 </p:commandButton>
                             </div>
                         </div>
@@ -501,7 +502,7 @@
                                 </f:facet>
                                 <p:column>
                                     <h:outputLabel value="#{lpd.createdAt}">
-                                        <f:convertDateTime parent="#{sessionController.applicationPreference.longDateFormat}" />
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column>
@@ -511,7 +512,7 @@
                                 </p:column>
                                 <p:column>
                                     <h:outputLabel value="#{lpd.transactionValue}">
-                                        <f:convertNumber parent="#,###,##0.00" />
+                                        <f:convertNumber pattern="#,###,##0.00" />
                                     </h:outputLabel>
                                 </p:column>
                             </p:dataTable>
@@ -525,7 +526,11 @@
                                 </f:facet>
                                 <p:column>
                                     <h:outputLabel value="#{lpdh.createdAt}">
-                                        <f:convertDateTime parent="#{sessionController.applicationPreference.longDateFormat}" />
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel value="#{lpdh.bill.deptId}">
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column>
@@ -533,8 +538,22 @@
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column>
-                                    <h:outputLabel value="#{lpdh.transactionValue}">
-                                        <f:convertNumber parent="#,###,##0.00" />
+                                    <h:outputLabel value="#{lpdh.transactionValue}" 
+                                                   rendered="#{lpdh.transactionValue gt 0}" 
+                                                   style="color: green;">
+                                        <f:convertNumber pattern="#,###,##0.00" />
+                                    </h:outputLabel>
+
+                                    <h:outputLabel value="#{lpdh.transactionValue}" 
+                                                   rendered="#{lpdh.transactionValue lt 0}" 
+                                                   style="color: red;">
+                                        <f:convertNumber pattern="#,###,##0.00" />
+                                    </h:outputLabel>
+
+                                    <h:outputLabel value="#{lpdh.transactionValue}" 
+                                                   rendered="#{lpdh.transactionValue eq 0}" 
+                                                   style="color: black;">
+                                        <f:convertNumber pattern="#,###,##0.00" />
                                     </h:outputLabel>
                                 </p:column>
                             </p:dataTable>
