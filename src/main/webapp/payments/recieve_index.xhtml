@@ -27,13 +27,13 @@
                                 </p:tab>
                                 <p:tab title="Agent" >
                                     <div class="d-grid gap-2">
-                                        <p:commandButton  class="w-100" ajax="false" action="/agent_bill?faces-redirect=true" value="Agent Payment" actionListener="#{agentPaymentRecieveBillController.prepareNewBill()}"/>
+                                        <p:commandButton  class="w-100" ajax="false" action="/agent_bill?faces-redirect=true" value="Agent Payment" actionListener="#{agentAndCcPaymentController.prepareNewBill()}"/>
                                         <p:commandButton  class="w-100" ajax="false" action="/agent_bill_search_own?faces-redirect=true"
                                          actionListener="#{searchController.makeListNull}"  value="Agent Payment Bill Search"/>
                                     </div>
                                 </p:tab>
                                 <p:tab title="Collecting Center" >
-                                    <p:commandButton  class="w-100" ajax="false" action="/collecting_centre/collecting_centre_deposit_bill?faces-redirect=true" value="Collecting Centre Payment" actionListener="#{agentPaymentRecieveBillController.prepareNewBill()}" />
+                                    <p:commandButton  class="w-100" ajax="false" action="#{agentAndCcPaymentController.navigateToCcDeposit}" value="Collecting Centre Payment" actionListener="#{agentAndCcPaymentController.prepareNewBill()}" />
                                 </p:tab>
                                 <p:tab title="Patient Deposite" >
                                     <div class="d-grid gap-2">
