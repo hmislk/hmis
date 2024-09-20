@@ -195,7 +195,7 @@ public class BillSearch implements Serializable {
     @Inject
     ChannelSearchController channelSearchController;
     @Inject
-    CollectingCentreApplicationController collectingCentreApplicationController;
+    AgentAndCcApplicationController collectingCentreApplicationController;
     /**
      * Class Variables
      */
@@ -1568,7 +1568,7 @@ public class BillSearch implements Serializable {
 //            HistoryType historyType,
 //            Bill bill
 //        
-        collectingCentreApplicationController.updateBalance(
+        collectingCentreApplicationController.updateCcBalance(
                 getBill().getInstitution(),
                 rb.getTotalHospitalFee(),
                 rb.getTotalCenterFee(),
@@ -2345,7 +2345,7 @@ public class BillSearch implements Serializable {
 //            double transactionValue,
 //            HistoryType historyType,
 //            Bill bill
-        collectingCentreApplicationController.updateBalance(
+        collectingCentreApplicationController.updateCcBalance(
                 getBill().getCollectingCentre(),
                 bill.getTotalHospitalFee(),
                 bill.getTotalCenterFee(),
