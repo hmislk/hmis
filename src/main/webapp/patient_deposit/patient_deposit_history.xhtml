@@ -105,12 +105,35 @@
                     <p:datePicker showTime="true" value="#{reportController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                 </p:panelGrid>
 
-                <p:commandButton 
-                    class="m-2" 
+                <h:panelGrid columns="6" class="my-2">
+                    <p:commandButton 
+                    class="ui-button-warning" 
                     ajax="false" 
                     value="Process" 
                     action="#{reportController.createPatientDepositSummary()}" 
-                    icon="pi pi-check" />
+                    icon="fas fa-cogs" />
+                     <p:commandButton 
+                    class="mx-1 ui-button-info" 
+                    ajax="false" 
+                    value="Print" 
+                         icon="fas fa-print" >
+                         <p:printer target="tbl" />
+                     </p:commandButton>
+                      <p:commandButton 
+                    class="ui-button-success" 
+                    ajax="false" 
+                    value="Excel" 
+                          icon="fas fa-file-excel" >
+                          <p:dataExporter type="xlsx" fileName="Patient Deposit History #{sessionController.institution.name} - #{sessionController.department.name}" target="tbl" />
+                      </p:commandButton>
+                     <p:commandButton 
+                    class=" mx-1 ui-button-danger" 
+                    ajax="false" 
+                    value="PDF" 
+                          icon="fas fa-file-pdf" >
+<!--                          <p:dataExporter type="pdf" fileName="Patient Deposit History #{sessionController.institution.name} - #{sessionController.department.name}" target="tbl" />-->
+                      </p:commandButton>
+                </h:panelGrid>
                 
 
                 <h:panelGrid columns="2" styleClass="mt-4">
