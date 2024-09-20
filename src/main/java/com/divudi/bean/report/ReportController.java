@@ -1406,7 +1406,27 @@ public class ReportController implements Serializable {
 
         return "/reports/HRReports/fingerprint_approve";
     }
-
+    
+    public String navigateToStaffPayrollAccountant(){
+        return "/reports/salary_reports/staff_payroll_accountant?faces-redirect=true";
+    }
+    
+    public String navigateToNopayandSalaryAllowanceReport(){
+        return "/reports/salary_reports/nopay_and_salary_allowance_report?faces-redirect=true";
+    }
+    
+    public String navigateToStaffSalaryBankWise(){
+        return "/reports/salary_reports/staff_salary_bank_wise?faces-redirect=true";
+    }
+    
+    public String navigateToEPF(){
+        return "/reports/salary_reports/EPF?faces-redirect=true";
+    }
+    
+     public String navigateToETF(){
+        return "/reports/salary_reports/ETF?faces-redirect=true";
+    }
+    
     public String navigateToLeaveForm() {
 
         return "/reports/HRReports/leave_form";
