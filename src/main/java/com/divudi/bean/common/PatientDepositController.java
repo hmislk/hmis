@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.common;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.bean.report.ReportController;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.HistoryType;
@@ -52,6 +53,8 @@ public class PatientDepositController implements Serializable, ControllerWithPat
     PatientController patientController;
     @Inject
     BillBeanController billBeanController;
+    @Inject
+    ReportController reportController;
     @EJB
     private PatientDepositFacade patientDepositFacade;
     @EJB
@@ -73,7 +76,22 @@ public class PatientDepositController implements Serializable, ControllerWithPat
     public String navigateToAddNewPatientDeposit(){
        patientController.clearDataForPatientDeposite();
         return "/patient_deposit/receive?faces-redirect=true";
-    } 
+    }
+    
+    public void clearDataForPatientDeposit(){
+        patientController.setCurrent(null);
+        current = null;
+        patient = new Patient();
+        latestPatientDepositHistory = new ArrayList<>();
+        latestPatientDeposits = new ArrayList<>();
+        patientController.clearDataForPatientDeposite();
+    }
+    
+    public void clearDataForPatientDepositHistory(){
+        patientController.setCurrent(null);
+        reportController.setFromDate(null);
+        reportController.setToDate(null);
+    }
     
     public void getPatientDepositOnPatientDepositAdding(){
         patientController.quickSearchPatientLongPhoneNumber(this);
