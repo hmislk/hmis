@@ -89,6 +89,7 @@ public class DesignComponentController implements Serializable {
             JsfUtil.addErrorMessage("Nothing selected");
             return "";
         }
+        listOfDataEntryItems = listItemsOfDataEntryForm(currentDataEntryForm);
         return "/forms/data_entry_form?faces-redirect=true";
     }
 
@@ -97,6 +98,7 @@ public class DesignComponentController implements Serializable {
         return "/forms/data_entry_forms?faces-redirect=true";
     }
 
+    
     public String navigateToListDataEntryItems() {
 
         listOfDataEntryItems = listDataEntryForms();
@@ -263,6 +265,9 @@ public class DesignComponentController implements Serializable {
     }
 
     public List<DesignComponent> getListOfDataEntryItems() {
+        if(listOfDataEntryItems==null){
+            listOfDataEntryItems=new ArrayList<>();
+        }
         return listOfDataEntryItems;
     }
 
