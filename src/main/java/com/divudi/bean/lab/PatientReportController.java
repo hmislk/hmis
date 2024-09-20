@@ -1800,7 +1800,7 @@ public class PatientReportController implements Serializable {
         getPiFacade().edit(currentPtIx);
         
         
-        currentPatientReport.setApproved(Boolean.FALSE);
+        currentPatientReport.setApproved(Boolean.TRUE);
         
         currentPatientReport.setApproveAt(Calendar.getInstance().getTime());
         currentPatientReport.setApproveDepartment(getSessionController().getLoggedUser().getDepartment());
