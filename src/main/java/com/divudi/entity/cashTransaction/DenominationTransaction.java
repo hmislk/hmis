@@ -1,5 +1,7 @@
 package com.divudi.entity.cashTransaction;
 
+import com.divudi.entity.Bill;
+import com.divudi.entity.Payment;
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
 import java.util.Date;
@@ -13,7 +15,7 @@ import javax.persistence.Temporal;
 /**
  *
  * @author Dr M H B Ariyaratne, buddhika.ari@gmail.com
- * 
+ *
  */
 @Entity
 public class DenominationTransaction implements Serializable {
@@ -26,13 +28,16 @@ public class DenominationTransaction implements Serializable {
     private Denomination denomination;
     private Long denominationQty;
     private Double denominationValue;
-    
+    private Bill bill;
+    private Payment payment;
+    private DetailedFinancialBill detailedFinancialBill;
+
     //Created Properties
     @ManyToOne
     private WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date createdAt;
-    
+
     //Retairing properties 
     private boolean retired;
     @ManyToOne
@@ -40,8 +45,6 @@ public class DenominationTransaction implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date retiredAt;
     private String retireComments;
-    
-    
 
     public Long getId() {
         return id;
@@ -147,5 +150,29 @@ public class DenominationTransaction implements Serializable {
     public void setRetireComments(String retireComments) {
         this.retireComments = retireComments;
     }
-    
+
+    public DetailedFinancialBill getDetailedFinancialBill() {
+        return detailedFinancialBill;
+    }
+
+    public void setDetailedFinancialBill(DetailedFinancialBill detailedFinancialBill) {
+        this.detailedFinancialBill = detailedFinancialBill;
+    }
+
+    public Bill getBill() {
+        return bill;
+    }
+
+    public void setBill(Bill bill) {
+        this.bill = bill;
+    }
+
+    public Payment getPayment() {
+        return payment;
+    }
+
+    public void setPayment(Payment payment) {
+        this.payment = payment;
+    }
+
 }

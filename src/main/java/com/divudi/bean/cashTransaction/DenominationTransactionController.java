@@ -37,10 +37,8 @@ public class DenominationTransactionController implements Serializable {
     @Inject
     private SessionController sessionController;
 
-    private DenominationTransaction denominationTransaction;
     private DenominationTransaction selected;
-    Bill bill;
-    Payment payment;
+
 
     public DenominationTransactionController() {
     }
@@ -51,14 +49,6 @@ public class DenominationTransactionController implements Serializable {
 
     public void setDenominationTransactionFacade(DenominationTransactionFacade denominationTransactionFacade) {
         this.denominationTransactionFacade = denominationTransactionFacade;
-    }
-
-    public DenominationTransaction getDenominationTransaction() {
-        return denominationTransaction;
-    }
-
-    public void setDenominationTransaction(DenominationTransaction denominationTransaction) {
-        this.denominationTransaction = denominationTransaction;
     }
 
     public DenominationTransaction getSelected() {

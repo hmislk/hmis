@@ -11,11 +11,12 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
+import javax.persistence.Transient;
 
 /**
  *
  * @author Dr M H B Ariyaratne, buddhika.ari@gmail.com
- * 
+ *
  */
 @Entity
 public class DetailedFinancialBill implements Serializable {
@@ -26,74 +27,73 @@ public class DetailedFinancialBill implements Serializable {
     private Long id;
     @OneToOne
     private Bill bill;
-    
+
     // Calculated values for each payment method
-private Double cashCalculateValue;
-private Double cardCalculateValue;
-private Double chequeCalculateValue;
-private Double slipCalculateValue;
-private Double ewalletCalculateValue;
-private Double onCallCalculateValue;
-private Double multiplePaymentMethodsCalculateValue;
-private Double staffCalculateValue;
-private Double creditCalculateValue;
-private Double staffWelfareCalculateValue;
-private Double voucherCalculateValue;
-private Double iouCalculateValue;
-private Double agentCalculateValue;
-private Double patientDepositCalculateValue;
-private Double patientPointsCalculateValue;
-private Double onlineSettlementCalculateValue;
-private Double noneCalculateValue;
-private Double youOweMeCalculateValue;
+    private Double cashCalculateValue;
+    private Double cardCalculateValue;
+    private Double chequeCalculateValue;
+    private Double slipCalculateValue;
+    private Double ewalletCalculateValue;
+    private Double onCallCalculateValue;
+    private Double multiplePaymentMethodsCalculateValue;
+    private Double staffCalculateValue;
+    private Double creditCalculateValue;
+    private Double staffWelfareCalculateValue;
+    private Double voucherCalculateValue;
+    private Double iouCalculateValue;
+    private Double agentCalculateValue;
+    private Double patientDepositCalculateValue;
+    private Double patientPointsCalculateValue;
+    private Double onlineSettlementCalculateValue;
+    private Double noneCalculateValue;
+    private Double youOweMeCalculateValue;
 
 // Actual values for each payment method
-private Double cashActualValue;
-private Double cardActualValue;
-private Double chequeActualValue;
-private Double slipActualValue;
-private Double ewalletActualValue;
-private Double onCallActualValue;
-private Double multiplePaymentMethodsActualValue;
-private Double staffActualValue;
-private Double creditActualValue;
-private Double staffWelfareActualValue;
-private Double voucherActualValue;
-private Double iouActualValue;
-private Double agentActualValue;
-private Double patientDepositActualValue;
-private Double patientPointsActualValue;
-private Double onlineSettlementActualValue;
-private Double noneActualValue;
-private Double youOweMeActualValue;
+    private Double cashActualValue;
+    private Double cardActualValue;
+    private Double chequeActualValue;
+    private Double slipActualValue;
+    private Double ewalletActualValue;
+    private Double onCallActualValue;
+    private Double multiplePaymentMethodsActualValue;
+    private Double staffActualValue;
+    private Double creditActualValue;
+    private Double staffWelfareActualValue;
+    private Double voucherActualValue;
+    private Double iouActualValue;
+    private Double agentActualValue;
+    private Double patientDepositActualValue;
+    private Double patientPointsActualValue;
+    private Double onlineSettlementActualValue;
+    private Double noneActualValue;
+    private Double youOweMeActualValue;
 
 // Difference values for each payment method (calculated as actualValue - calculateValue)
-private Double cashDifferenceValue;
-private Double cardDifferenceValue;
-private Double chequeDifferenceValue;
-private Double slipDifferenceValue;
-private Double ewalletDifferenceValue;
-private Double onCallDifferenceValue;
-private Double multiplePaymentMethodsDifferenceValue;
-private Double staffDifferenceValue;
-private Double creditDifferenceValue;
-private Double staffWelfareDifferenceValue;
-private Double voucherDifferenceValue;
-private Double iouDifferenceValue;
-private Double agentDifferenceValue;
-private Double patientDepositDifferenceValue;
-private Double patientPointsDifferenceValue;
-private Double onlineSettlementDifferenceValue;
-private Double noneDifferenceValue;
-private Double youOweMeDifferenceValue;
+    private Double cashDifferenceValue;
+    private Double cardDifferenceValue;
+    private Double chequeDifferenceValue;
+    private Double slipDifferenceValue;
+    private Double ewalletDifferenceValue;
+    private Double onCallDifferenceValue;
+    private Double multiplePaymentMethodsDifferenceValue;
+    private Double staffDifferenceValue;
+    private Double creditDifferenceValue;
+    private Double staffWelfareDifferenceValue;
+    private Double voucherDifferenceValue;
+    private Double iouDifferenceValue;
+    private Double agentDifferenceValue;
+    private Double patientDepositDifferenceValue;
+    private Double patientPointsDifferenceValue;
+    private Double onlineSettlementDifferenceValue;
+    private Double noneDifferenceValue;
+    private Double youOweMeDifferenceValue;
 
-    
-        //Created Properties
+    //Created Properties
     @ManyToOne
     private WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date createdAt;
-    
+
     //Retairing properties 
     private boolean retired;
     @ManyToOne
@@ -101,8 +101,6 @@ private Double youOweMeDifferenceValue;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date retiredAt;
     private String retireComments;
-
-    
 
     public Long getId() {
         return id;
@@ -624,5 +622,103 @@ private Double youOweMeDifferenceValue;
     public void setYouOweMeDifferenceValue(Double youOweMeDifferenceValue) {
         this.youOweMeDifferenceValue = youOweMeDifferenceValue;
     }
+
     
+    @Transient
+    public boolean isCashValuePresent() {
+        return isValuePresent(cashCalculateValue, cashActualValue, cashDifferenceValue);
+    }
+
+    @Transient
+    public boolean isCardValuePresent() {
+        return isValuePresent(cardCalculateValue, cardActualValue, cardDifferenceValue);
+    }
+
+    @Transient
+    public boolean isChequeValuePresent() {
+        return isValuePresent(chequeCalculateValue, chequeActualValue, chequeDifferenceValue);
+    }
+
+    @Transient
+    public boolean isSlipValuePresent() {
+        return isValuePresent(slipCalculateValue, slipActualValue, slipDifferenceValue);
+    }
+
+    @Transient
+    public boolean isEwalletValuePresent() {
+        return isValuePresent(ewalletCalculateValue, ewalletActualValue, ewalletDifferenceValue);
+    }
+
+    @Transient
+    public boolean isOnCallValuePresent() {
+        return isValuePresent(onCallCalculateValue, onCallActualValue, onCallDifferenceValue);
+    }
+
+    @Transient
+    public boolean isMultiplePaymentMethodsValuePresent() {
+        return isValuePresent(multiplePaymentMethodsCalculateValue, multiplePaymentMethodsActualValue, multiplePaymentMethodsDifferenceValue);
+    }
+
+    @Transient
+    public boolean isStaffValuePresent() {
+        return isValuePresent(staffCalculateValue, staffActualValue, staffDifferenceValue);
+    }
+
+    @Transient
+    public boolean isCreditValuePresent() {
+        return isValuePresent(creditCalculateValue, creditActualValue, creditDifferenceValue);
+    }
+
+    @Transient
+    public boolean isStaffWelfareValuePresent() {
+        return isValuePresent(staffWelfareCalculateValue, staffWelfareActualValue, staffWelfareDifferenceValue);
+    }
+
+    @Transient
+    public boolean isVoucherValuePresent() {
+        return isValuePresent(voucherCalculateValue, voucherActualValue, voucherDifferenceValue);
+    }
+
+    @Transient
+    public boolean isIouValuePresent() {
+        return isValuePresent(iouCalculateValue, iouActualValue, iouDifferenceValue);
+    }
+
+    @Transient
+    public boolean isAgentValuePresent() {
+        return isValuePresent(agentCalculateValue, agentActualValue, agentDifferenceValue);
+    }
+
+    @Transient
+    public boolean isPatientDepositValuePresent() {
+        return isValuePresent(patientDepositCalculateValue, patientDepositActualValue, patientDepositDifferenceValue);
+    }
+
+    @Transient
+    public boolean isPatientPointsValuePresent() {
+        return isValuePresent(patientPointsCalculateValue, patientPointsActualValue, patientPointsDifferenceValue);
+    }
+
+    @Transient
+    public boolean isOnlineSettlementValuePresent() {
+        return isValuePresent(onlineSettlementCalculateValue, onlineSettlementActualValue, onlineSettlementDifferenceValue);
+    }
+
+    @Transient
+    public boolean isNoneValuePresent() {
+        return isValuePresent(noneCalculateValue, noneActualValue, noneDifferenceValue);
+    }
+
+    @Transient
+    public boolean isYouOweMeValuePresent() {
+        return isValuePresent(youOweMeCalculateValue, youOweMeActualValue, youOweMeDifferenceValue);
+    }
+
+// Helper method to check if any of the given values are present
+    private boolean isValuePresent(Double calculateValue, Double actualValue, Double differenceValue) {
+        return (calculateValue != null && calculateValue != 0.0)
+                || (actualValue != null && actualValue != 0.0)
+                || (differenceValue != null && differenceValue != 0.0);
+    }
+
 }
