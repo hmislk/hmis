@@ -14,9 +14,12 @@
                 <h:panelGroup id="panbilledit" rendered="#{!staffPaymentBillController.printPreview}" styleClass="alignTop" >
                     <p:panel header="Staff Payments" >
                         <h:form>
-                            <h:panelGrid columns="5" class="w-100">
-                                <p:outputLabel 
-                                    value="From" />
+
+                            <h:panelGrid columns="2" >
+
+
+                                <p:outputLabel value="From Date" />
+
                                 <p:calendar 
                                     value="#{staffPaymentBillController.fromDate}" 
                                     id="fDate" 
