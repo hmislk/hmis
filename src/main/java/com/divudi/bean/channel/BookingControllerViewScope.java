@@ -13,6 +13,7 @@ import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.ControllerWithMultiplePayments;
 import com.divudi.bean.common.ControllerWithPatientViewScope;
 import com.divudi.bean.common.DoctorSpecialityController;
+import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.ItemForItemController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SecurityController;
@@ -236,6 +237,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     SecurityController securityController;
     @Inject
     StaffController staffController;
+    @Inject
+    EnumController enumController;
     /**
      * Properties
      */
@@ -1557,27 +1560,33 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void clearSessionInstanceData() {
+        System.out.println("clearSessionInstanceData");
         additionalBillItems = new ArrayList<>();
+        itemsAddedToBooking = new ArrayList<>();
         addedItemFees = new ArrayList<>();
         sessionFees = new ArrayList<>();
         selectedItemFees = new ArrayList<>();
     }
 
     public void fillSessionInstanceDetails() {
+        System.out.println("fillSessionInstanceDetails");
+        System.out.println("selectedSessionInstance = " + selectedSessionInstance);
         if (selectedSessionInstance == null) {
             return;
         }
+        System.out.println("selectedSessionInstance.getOriginatingSession() = " + selectedSessionInstance.getOriginatingSession());
         if (selectedSessionInstance.getOriginatingSession() == null) {
-            return;
-        }
-        if (sessionController.getDepartmentPreference() == null) {
             return;
         }
         fillItemAvailableToAdd();
         fillBaseFees();
         fillReservedNumbers();
         printPreview = false;
-        paymentMethod = sessionController.getDepartmentPreference().getChannellingPaymentMethod();
+        for (PaymentMethod dpm : enumController.getPaymentMethodsForChanneling()) {
+            if (configOptionApplicationController.getBooleanValueByKey("Default Payment Method for Channelling is " + dpm.getLabel())) {
+                paymentMethod = dpm;
+            }
+        }
     }
 
     public void fillReservedNumbers() {
@@ -5407,11 +5416,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     private Bill saveBilledBill(boolean forReservedNumbers) {
         Bill savingBill = createBill();
-        BillItem savingBillItem = createSessionItem(savingBill);
+        BillItem savingBillItemForSession = createSessionItem(savingBill);
 
         PriceMatrix priceMatrix;
-        List<BillItem> additionalBillItems = new ArrayList<>();
-        if (!getItemsAddedToBooking().isEmpty()) {
+        if (itemsAddedToBooking != null || itemsAddedToBooking.isEmpty()) {
             for (Item ai : itemsAddedToBooking) {
                 BillItem aBillItem = createAdditionalItem(savingBill, ai);
                 additionalBillItems.add(aBillItem);
@@ -5419,19 +5427,20 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
         BillSession savingBillSession;
 
-        savingBillSession = createBillSession(savingBill, savingBillItem, forReservedNumbers);
+        savingBillSession = createBillSession(savingBill, savingBillItemForSession, forReservedNumbers);
 
         List<BillFee> savingBillFees = new ArrayList<>();
 
         priceMatrix = priceMatrixController.fetchChannellingMemberShipDiscount(paymentMethod, paymentScheme, selectedSessionInstance.getOriginatingSession().getCategory());
 //        System.out.println("priceMatrix = " + priceMatrix);
 
-        List<BillFee> savingBillFeesFromSession = createBillFeeForSessions(savingBill, savingBillItem, false, priceMatrix);
+        List<BillFee> savingBillFeesFromSession = createBillFeeForSessions(savingBill, savingBillItemForSession, false, priceMatrix);
 
         List<BillFee> savingBillFeesFromAdditionalItems = new ArrayList<>();
+
         if (!additionalBillItems.isEmpty()) {
             for (BillItem abi : additionalBillItems) {
-                List<BillFee> blf = createBillFeeForSessions(savingBill, abi, true, priceMatrix);
+                List<BillFee> blf = createBillFeeForSessions(savingBill, abi, addedItemFees, priceMatrix);
                 for (BillFee bf : blf) {
                     savingBillFeesFromAdditionalItems.add(bf);
                 }
@@ -5446,22 +5455,23 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
 
         List<BillItem> savingBillItems = new ArrayList<>();
-        savingBillItems.add(savingBillItem);
-        getBillItemFacade().edit(savingBillItem);
-        savingBillItem.setHospitalFee(billBeanController.calFeeValue(FeeType.OwnInstitution, savingBillItem));
-        savingBillItem.setStaffFee(billBeanController.calFeeValue(FeeType.Staff, savingBillItem));
-        savingBillItem.setBillSession(savingBillSession);
+        savingBillItems.add(savingBillItemForSession);
+        getBillItemFacade().edit(savingBillItemForSession);
+        savingBillItemForSession.setHospitalFee(billBeanController.calFeeValue(FeeType.OwnInstitution, savingBillItemForSession));
+        savingBillItemForSession.setStaffFee(billBeanController.calFeeValue(FeeType.Staff, savingBillItemForSession));
+        savingBillItemForSession.setBillSession(savingBillSession);
+
         getBillSessionFacade().edit(savingBillSession);
         savingBill.setHospitalFee(billBeanController.calFeeValue(FeeType.OwnInstitution, savingBill));
         savingBill.setStaffFee(billBeanController.calFeeValue(FeeType.Staff, savingBill));
-        savingBill.setSingleBillItem(savingBillItem);
+        savingBill.setSingleBillItem(savingBillItemForSession);
         savingBill.setSingleBillSession(savingBillSession);
         savingBill.setBillItems(savingBillItems);
         savingBill.setBillFees(savingBillFees);
         savingBill.setCashPaid(cashPaid);
         savingBill.setCashBalance(cashBalance);
         if (savingBill.getBillType() == BillType.ChannelAgent) {
-            updateBallance(savingBill.getCreditCompany(), 0 - savingBill.getNetTotal(), HistoryType.ChannelBooking, savingBill, savingBillItem, savingBillSession, savingBillItem.getAgentRefNo());
+            updateBallance(savingBill.getCreditCompany(), 0 - savingBill.getNetTotal(), HistoryType.ChannelBooking, savingBill, savingBillItemForSession, savingBillSession, savingBillItemForSession.getAgentRefNo());
             savingBill.setBalance(0.0);
             savingBillSession.setPaidBillSession(savingBillSession);
         } else if (savingBill.getBillType() == BillType.ChannelCash) {
@@ -5474,7 +5484,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             savingBillSession.setPaidBillSession(savingBillSession);
         }
 
-        savingBill.setSingleBillItem(savingBillItem);
+        savingBill.setSingleBillItem(savingBillItemForSession);
         savingBill.setSingleBillSession(savingBillSession);
         if (referredBy != null) {
             savingBill.setReferredBy(referredBy);
@@ -5889,6 +5899,104 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             billFeeList.add(bf);
         }
 
+        billItem.setDiscount(tmpDiscount);
+        billItem.setNetValue(tmpTotal);
+        getBillItemFacade().edit(billItem);
+
+        return billFeeList;
+
+    }
+
+    private List<BillFee> createBillFeeForSessions(Bill bill, BillItem billItem, List<ItemFee> itemFees, PriceMatrix priceMatrix) {
+        List<BillFee> billFeeList = new ArrayList<>();
+        double tmpTotal = 0;
+        double tmpDiscount = 0;
+        double tmpGrossTotal = 0.0;
+        if (itemFees == null) {
+            return billFeeList;
+        }
+        for (ItemFee f : itemFees) {
+
+            if (paymentMethod != PaymentMethod.Agent) {
+                if (f.getFeeType() == FeeType.OtherInstitution) {
+                    continue;
+                }
+            }
+            if (paymentMethod != PaymentMethod.OnCall) {
+                if (f.getFeeType() == FeeType.OwnInstitution && f.getName().equalsIgnoreCase("On-Call Fee")) {
+                    continue;
+                }
+            }
+
+            if (f.getItem().equals(billItem.getItem())) {
+                BillFee bf = new BillFee();
+                bf.setBill(bill);
+                bf.setBillItem(billItem);
+                bf.setCreatedAt(new Date());
+                bf.setCreater(getSessionController().getLoggedUser());
+                if (f.getFeeType() == FeeType.OwnInstitution) {
+                    bf.setInstitution(f.getInstitution());
+                    bf.setDepartment(f.getDepartment());
+                } else if (f.getFeeType() == FeeType.OtherInstitution) {
+                    bf.setInstitution(institution);
+                } else if (f.getFeeType() == FeeType.Staff) {
+                    bf.setSpeciality(f.getSpeciality());
+                    bf.setStaff(f.getStaff());
+                }
+
+                bf.setFee(f);
+                bf.setFeeAt(new Date());
+                bf.setOrderNo(0);
+                bf.setPatient(bill.getPatient());
+
+                if (bf.getPatienEncounter() != null) {
+                    bf.setPatienEncounter(bill.getPatientEncounter());
+                }
+
+                bf.setPatient(bill.getPatient());
+
+                if (f.getFeeType() == FeeType.Staff) {
+                    bf.setStaff(f.getStaff());
+                }
+
+                if (f.getFeeType() == FeeType.OwnInstitution) {
+                    bf.setInstitution(sessionController.getInstitution());
+                }
+
+                double d = 0;
+                if (foriegn) {
+                    bf.setFeeValue(f.getFfee());
+                    bf.setFeeGrossValue(f.getFfee());
+                } else {
+                    bf.setFeeValue(f.getFee());
+                    bf.setFeeGrossValue(f.getFee());
+                }
+
+//            priceMatrix = priceMatrixController.fetchChannellingMemberShipDiscount(paymentMethod, paymentScheme, selectedSessionInstance.getOriginatingSession().getCategory());
+                if (priceMatrix != null) {
+                    if (f.getFeeType() == FeeType.OwnInstitution) {
+                        d = bf.getFeeValue() * (priceMatrix.getDiscountPercent() / 100);
+                        bf.setFeeDiscount(d);
+                    } else if (f.getFeeType() == FeeType.Staff) {
+                        bf.setFeeDiscount(0.0);
+                    } else {
+                        bf.setFeeDiscount(0.0);
+                    }
+
+                    bf.setFeeGrossValue(bf.getFeeGrossValue());
+                    bf.setFeeValue(bf.getFeeGrossValue() - bf.getFeeDiscount());
+                    tmpDiscount += d;
+                }
+
+                tmpGrossTotal += bf.getFeeGrossValue();
+                tmpTotal += bf.getFeeValue();
+                billFeeFacade.create(bf);
+                billFeeList.add(bf);
+            }
+
+        }
+
+        billItem.setGrossValue(tmpGrossTotal);
         billItem.setDiscount(tmpDiscount);
         billItem.setNetValue(tmpTotal);
         getBillItemFacade().edit(billItem);
