@@ -13,14 +13,14 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-                    <h:panelGroup rendered="#{!billSearch.printPreview}" styleClass="alignTop">
+                    <h:panelGroup rendered="#{!patientController.printPreview}" styleClass="alignTop">
                         <p:panel>
                             <f:facet name="header">
                                 <h:outputText value="Cancellation" class="mt-5"/>
                                 <h:panelGrid columns="3" style="float: right" class="w-50">
                                     <p:selectOneMenu 
                                         id="commentsMenu" 
-                                        value="#{billSearch.comment}" 
+                                        value="#{patientController.cancelBill.comments}" 
                                         editable="true" 
                                         filter="true" 
                                         placeholder="Select or enter a comment"
@@ -62,17 +62,9 @@
                                 </f:facet>
                                 <p:selectOneMenu 
                                     id="cmbPs" 
-                                    value="#{billSearch.paymentMethod}" 
-                                    rendered="#{billSearch.bill.billType eq 'OpdBill'}">
-                                    <f:selectItem itemLabel="Select paymentMethod"/>
+                                    value="#{patientController.cancelBill.paymentMethod}" >
+                                    <f:selectItem itemLabel="Select payment Method"/>
                                     <f:selectItems value="#{enumController.paymentMethodsForOpdBillCanceling}"/>
-                                </p:selectOneMenu>
-
-                                <p:selectOneMenu id="cmbPs2" value="#{billSearch.paymentMethod}"  
-                                                 disabled="#{billSearch.bill.paymentMethod eq 'Agent'}"
-                                                 rendered="#{billSearch.bill.billType eq 'CollectingCentreBill'}">
-                                    <f:selectItem itemLabel="Select paymentMethod"/>
-                                    <f:selectItems value="#{enumController.collectingCentrePaymentMethods}"/>
                                 </p:selectOneMenu>
                             </p:panel>
 
@@ -84,7 +76,7 @@
                                             <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
                                             <h:outputLabel value="Patient Details" class="mx-2"></h:outputLabel>
                                         </f:facet>
-                                        <common:patient patient="#{billSearch.bill.patient}" class="w-100"/>
+                                        <common:patient patient="#{patientController.bill.patient}" class="w-100"/>
                                     </p:panel>
                                 </div>
                                 <div class="col-6">
@@ -95,20 +87,20 @@
                                         </f:facet>
                                         <p:panelGrid columns="2">
                                             <h:outputLabel value="Collecting Centre Name:" ></h:outputLabel>
-                                            <h:outputLabel value="#{billSearch.bill.collectingCentre.name}" ></h:outputLabel>
+                                            <h:outputLabel value="#{patientController.bill.collectingCentre.name}" ></h:outputLabel>
                                             <h:outputLabel value="Collecting Centre Code:" ></h:outputLabel>
-                                            <h:outputLabel value="#{billSearch.bill.collectingCentre.code}" ></h:outputLabel>
+                                            <h:outputLabel value="#{patientController.bill.collectingCentre.code}" ></h:outputLabel>
                                             <h:outputLabel value="Route :" ></h:outputLabel>
-                                            <h:outputLabel value="#{billSearch.bill.collectingCentre.route.name}" ></h:outputLabel>
+                                            <h:outputLabel value="#{patientController.bill.collectingCentre.route.name}" ></h:outputLabel>
                                             
                                             <h:outputLabel value="Bill No :" ></h:outputLabel>
-                                            <h:outputLabel value="#{billSearch.bill.deptId}" ></h:outputLabel>
+                                            <h:outputLabel value="#{patientController.bill.deptId}" ></h:outputLabel>
                                             <h:outputLabel value="Total :" ></h:outputLabel>
-                                            <h:outputLabel value="#{billSearch.bill.total}" ></h:outputLabel>
+                                            <h:outputLabel value="#{patientController.bill.total}" ></h:outputLabel>
                                             <h:outputLabel value="Discount :" ></h:outputLabel>
-                                            <h:outputLabel value="#{billSearch.bill.discount}" ></h:outputLabel>
+                                            <h:outputLabel value="#{patientController.bill.discount}" ></h:outputLabel>
                                             <h:outputLabel value="Net Total :" ></h:outputLabel>
-                                            <h:outputLabel value="#{billSearch.bill.netTotal}" ></h:outputLabel>
+                                            <h:outputLabel value="#{patientController.bill.netTotal}" ></h:outputLabel>
                                         </p:panelGrid>
                                     </p:panel>
                                 </div>
@@ -120,7 +112,7 @@
                                     <h:outputText styleClass="fas fa-list-alt"></h:outputText>
                                     <h:outputLabel value="Bill Item Detail" class="mx-2"></h:outputLabel>
                                 </f:facet>
-                                <p:dataTable rowIndexVar="rowIndex" value="#{billSearch.billItems}" var="bip">
+                                <p:dataTable rowIndexVar="rowIndex" value="#{patientController.billItems}" var="bip">
                                     <p:column>
                                         <f:facet name="header">No</f:facet>
                                         <h:outputLabel value="#{rowIndex+1}"/>
@@ -139,82 +131,57 @@
                     </h:panelGroup>
 
                     <!-- Print Preview Panel -->
-                    <p:panel rendered="#{billSearch.printPreview}">
-                        <f:facet name="header" >
-                            <div class="d-flex justify-content-between">
-                                <h:outputLabel value="Bill Preview" class="mt-2"></h:outputLabel>
-                                <div>
-                                    <h:panelGroup rendered="#{billSearch.bill.billType ne 'CollectingCentreBill'}">
-                                        <p:commandButton  
-                                            class="ui-button-secondary d-flex justify-content-end mx-2"
-                                            style="float: right"
-                                            value="Back To Search"
-                                            icon="fa-solid fa-arrow-left"
-                                            action="/opd/opd_bill_search?faces-redirect=true"
-                                            ajax="false">
-                                        </p:commandButton>
-                                    </h:panelGroup> 
+                      <h:panelGroup rendered="#{patientController.printPreview}">
+            <h:form >
+                <p:panel>
 
-                                    <h:panelGroup rendered="#{billSearch.bill.billType eq 'CollectingCentreBill'}">
-                                        <p:commandButton 
-                                            value="New Collectiong Centre Bill" 
-                                            ajax="false" 
-                                            icon="fa fa-plus"
-                                            class="ui-button-success"
-                                            action="#{collectingCentreBillController.navigateToCollectingCenterBillingromMenu()}" >
-                                        </p:commandButton>
-                                    </h:panelGroup> 
+                    <f:facet name="header">
+                        <h:panelGrid columns="4" style="size: 0.5rem; float: right" >
+                            <p:commandButton value="Print Bill" icon="pi pi-print" class="ui-button-info" ajax="false">
+                                <p:printer target="billPanel"></p:printer>
+                            </p:commandButton>
+                            <p:commandButton icon="fas fa-plus" class="mx-1" value="New Bill"
+                                             ajax="false" action="/payments/patient/receive?faces-redirect=true"
+                                             actionListener="#{patientDepositController.clearDataForPatientDeposit()}" >
+                            </p:commandButton>
+                            <p:commandButton ajax="false" icon="fas fa-search" value="Patient Lookup" class="mx-1 ui-button-warning"
+                                             action="#{patientController.navigateToSearchPatients}"></p:commandButton>
+                            <p:commandButton
+                                value="Profile"
+                                ajax="false"
+                                icon="fa fa-user"
+                                class="ui-button-warning  w-100"
+                                action="#{patientController.navigateToOpdPatientProfile()}"
+                                >
+                                <f:setPropertyActionListener
+                                    value="#{patientController.bill.patient}"
+                                    target="#{patientController.current}" ></f:setPropertyActionListener>
+                            </p:commandButton>
+                        </h:panelGrid>
+                    </f:facet>
+
+
+
+
+
+
+                    <div class="container-fluid my-2">
+                        <div class="row justify-content-center align-items-center">
+                            <div class="col-md-6">
+                                <div class="align-items-center my-2" style="max-width: 80%" >
+                                    <div>
+                                        <h:panelGroup id="billPanel" class="bill" layout="block">
+                                            <prints:five_five_paper_patient_deposit bill="#{patientController.cancelBill}" />
+                                        </h:panelGroup>
+                                    </div>
                                 </div>
                             </div>
-                        </f:facet>
-
-                        <div class="d-flex justify-content-end">
-                            <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
-                            <p:selectOneMenu value="#{sessionController.departmentPreference.opdBillPaperType}" class="m-1" style="width: 13em;">
-                                <f:selectItem itemLabel="Please Select Paper Type" />
-                                <f:selectItems value="#{enumController.paperTypes}" />
-                            </p:selectOneMenu>
-                            <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button m-1" title="Redraw Bill"></p:commandButton>
-                            <p:commandButton value="Print" 
-                                             class="ui-button-info m-1"
-                                             icon="fa fa-print"
-                                             ajax="false">
-                                <p:printer target="groupPrint" />
-                            </p:commandButton> 
-
                         </div>
-                        <h:panelGroup id="groupPrint" >
-                            <!-- Bill Print Templates -->
-                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >       
-                                <prints:five_five_paper_with_headings bill="#{billSearch.bill}"/>
-                            </h:panelGroup>
-                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}" >       
-                                <prints:five_five_paper_coustom_1  bill="#{billSearch.bill}"/>
-                            </h:panelGroup>
-                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >
-                                <prints:five_five_paper_without_headings 
-                                    bill="#{billSearch.bill}" 
-                                    duplicate="#{opdBillController.duplicatePrint}" 
-                                    payments="#{opdBillController.payments}"/>
-                            </h:panelGroup>
+                    </div>
+                </p:panel>
+            </h:form>
 
-                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPrintedPaper'}" >     
-                                <prints:posOpdBillWithoutLogo bill="#{billSearch.bill}" duplicate="#{opdBillController.duplicatePrint}"/>         
-                            </h:panelGroup>
-
-                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" >
-                                <prints:posOpdBill bill="#{billSearch.bill}" duplicate="#{opdBillController.duplicatePrint}"/>
-                            </h:panelGroup>
-
-                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'A4Paper'}" >   
-                                <prints:A4_paper_with_headings bill="#{billSearch.bill}" duplicate="#{opdBillController.duplicatePrint}"/>
-                            </h:panelGroup>
-                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'A4PrintedPaper'}" >
-                                <prints:A4_paper_without_headings bill="#{billSearch.bill}" duplicate="#{opdBillController.duplicatePrint}"/>
-                            </h:panelGroup>
-
-                        </h:panelGroup>
-                    </p:panel>
+        </h:panelGroup>
                 </h:form>                
             </ui:define>
         </ui:composition>
