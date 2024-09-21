@@ -52,6 +52,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import javax.ejb.EJB;
 import javax.inject.Inject;
 import org.apache.poi.ss.usermodel.Cell;
@@ -215,32 +216,32 @@ public class ReportController implements Serializable {
 
         // Calculate the aggregate values using stream.
         long totalCount = rows.stream()
-                .mapToLong(ReportTemplateRow::getItemCount)
+                .mapToLong(row -> Optional.ofNullable(row.getItemCount()).orElse(0L))
                 .sum();
 
         double totalHospitalFee = rows.stream()
-                .mapToDouble(ReportTemplateRow::getItemHospitalFee)
+                .mapToDouble(row -> Optional.ofNullable(row.getItemHospitalFee()).orElse(0.0))
                 .sum();
 
         double totalStaffFee = rows.stream()
-                .mapToDouble(ReportTemplateRow::getStaffTotal)
+                .mapToDouble(row -> Optional.ofNullable(row.getItemProfessionalFee()).orElse(0.0))
                 .sum();
 
         double totalCcFee = rows.stream()
-                .mapToDouble(ReportTemplateRow::getCcTotal)
+                .mapToDouble(row -> Optional.ofNullable(row.getItemCollectingCentreFee()).orElse(0.0))
                 .sum();
 
         double totalNetValue = rows.stream()
-                .mapToDouble(ReportTemplateRow::getTotal)
+                .mapToDouble(row -> Optional.ofNullable(row.getItemNetTotal()).orElse(0.0))
                 .sum();
 
-// Set the calculated values to the bundle.
+        // Set the calculated values to the bundle.
         bundle.setCount(totalCount);
         bundle.setHospitalTotal(totalHospitalFee);
         bundle.setStaffTotal(totalStaffFee);
         bundle.setCcTotal(totalCcFee);
         bundle.setTotal(totalNetValue);
-
+        bundle.setReportTemplateRows(rows);
     }
 
     public void processCollectionCenterBalance() {
@@ -295,7 +296,7 @@ public class ReportController implements Serializable {
         m.put("fromDate", getFromDate());
         m.put("toDate", getToDate());
 
-        bills = billFacade.findByJpql(jpql, m);
+        bills = billFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
     }
 
     public String navigatetoOPDLabReportByMenu() {
@@ -1377,7 +1378,27 @@ public class ReportController implements Serializable {
 
         return "/reports/HRReports/fingerprint_approve";
     }
-
+    
+    public String navigateToStaffPayrollAccountant(){
+        return "/reports/salary_reports/staff_payroll_accountant?faces-redirect=true";
+    }
+    
+    public String navigateToNopayandSalaryAllowanceReport(){
+        return "/reports/salary_reports/nopay_and_salary_allowance_report?faces-redirect=true";
+    }
+    
+    public String navigateToStaffSalaryBankWise(){
+        return "/reports/salary_reports/staff_salary_bank_wise?faces-redirect=true";
+    }
+    
+    public String navigateToEPF(){
+        return "/reports/salary_reports/EPF?faces-redirect=true";
+    }
+    
+     public String navigateToETF(){
+        return "/reports/salary_reports/ETF?faces-redirect=true";
+    }
+    
     public String navigateToLeaveForm() {
 
         return "/reports/HRReports/leave_form";

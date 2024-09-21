@@ -75,8 +75,8 @@
             <!-- Total Amount -->
             <div class="row">
                 <div class="col-xs-12" style="text-align: right; font-weight: bold; font-size: 16px;">
-                    <strong>Total:</strong> #{cc.attrs.bill.netTotal}
-                    <f:convertNumber pattern="#,##0.00" />
+                    <strong>Total:</strong><h:outputLabel value="#{cc.attrs.bill.netTotal}" >
+                        <f:convertNumber pattern="#,##0.00" /> </h:outputLabel>
                 </div>
             </div>
 
