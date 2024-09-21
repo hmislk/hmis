@@ -4,7 +4,8 @@
  * Dr M H B Ariyaratne
  * Acting Consultant (Health Informatics)
  * (94) 71 5812399
- * (94) 71 5812399
+ * (94) 91 2241603
+ *
  */
 package com.divudi.bean.cashTransaction;
 
@@ -29,7 +30,11 @@ import javax.inject.Named;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * Consultant in Health Informatics
+ * buddhika.ari@gmail.com
+ * (+94) 71 5812399
+ * (+94) 71 1569020
+ * 
  */
 @Named
 @SessionScoped
@@ -196,7 +201,7 @@ public class DrawerController implements Serializable {
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + DrawerController.class.getName());
+                        + object.getClass().getName() + "; expected type: " + Drawer.class.getName());
             }
         }
     }
