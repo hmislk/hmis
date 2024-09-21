@@ -164,8 +164,8 @@ public class ReportController implements Serializable {
 
     private List<ItemCount> reportOpdServiceCount;
     private ReportTemplateRowBundle bundle;
-    
-   private List<PatientDepositHistory> patientDepositHistories;
+
+    private List<PatientDepositHistory> patientDepositHistories;
 
     CommonFunctions commonFunctions;
     private List<PatientInvestigation> patientInvestigations;
@@ -252,9 +252,8 @@ public class ReportController implements Serializable {
         bundle.setTotal(totalNetValue);
         bundle.setReportTemplateRows(rows);
     }
-    
-    
-    public void createPatientDepositSummary(){
+
+    public void createPatientDepositSummary() {
         String jpql = "select pdh"
                 + " from PatientDepositHistory pdh"
                 + " where pdh.retired=:ret"
@@ -264,12 +263,12 @@ public class ReportController implements Serializable {
         m.put("ret", false);
         Patient pt = patientController.getCurrent();
         m.put("p", pt);
-        
-         jpql += " AND pdh.createdAt BETWEEN :fromDate AND :toDate";
+
+        jpql += " AND pdh.createdAt BETWEEN :fromDate AND :toDate";
         m.put("fromDate", getFromDate());
         m.put("toDate", getToDate());
 
-        patientDepositHistories = patientDepositHistoryFacade.findByJpql(jpql, m,TemporalType.TIMESTAMP);
+        patientDepositHistories = patientDepositHistoryFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
     }
 
     public void processCollectionCenterBalance() {
@@ -1406,27 +1405,27 @@ public class ReportController implements Serializable {
 
         return "/reports/HRReports/fingerprint_approve";
     }
-    
-    public String navigateToStaffPayrollAccountant(){
+
+    public String navigateToStaffPayrollAccountant() {
         return "/reports/salary_reports/staff_payroll_accountant?faces-redirect=true";
     }
-    
-    public String navigateToNopayandSalaryAllowanceReport(){
+
+    public String navigateToNopayandSalaryAllowanceReport() {
         return "/reports/salary_reports/nopay_and_salary_allowance_report?faces-redirect=true";
     }
-    
-    public String navigateToStaffSalaryBankWise(){
+
+    public String navigateToStaffSalaryBankWise() {
         return "/reports/salary_reports/staff_salary_bank_wise?faces-redirect=true";
     }
-    
-    public String navigateToEPF(){
+
+    public String navigateToEPF() {
         return "/reports/salary_reports/EPF?faces-redirect=true";
     }
-    
-     public String navigateToETF(){
+
+    public String navigateToETF() {
         return "/reports/salary_reports/ETF?faces-redirect=true";
     }
-    
+
     public String navigateToLeaveForm() {
 
         return "/reports/HRReports/leave_form";
@@ -2085,6 +2084,11 @@ public class ReportController implements Serializable {
         this.webUser = webUser;
     }
 
+    public void setPatientInvestigations(List<PatientInvestigation> patientInvestigations) {
+        this.patientInvestigations = patientInvestigations;
+
+    }
+
     public ReportTemplateRowBundle getBundle() {
         return bundle;
     }
@@ -2093,9 +2097,6 @@ public class ReportController implements Serializable {
         this.bundle = bundle;
     }
 
-    public void setPatientInvestigations(List<PatientInvestigation> patientInvestigations) {
-        this.patientInvestigations = patientInvestigations;
-    }
 
     public List<PatientInvestigation> getPatientInvestigations() {
         return patientInvestigations;

@@ -1107,6 +1107,26 @@ public class PatientController implements Serializable, ControllerWithPatient {
         printPreview = true;
         return 0;
     }
+    
+    public int settlePatientDepositReceiveCancelNew() {
+        if (getBill().getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Please select a Payment Method");
+            return 1;
+        }
+//        if (!current.getHasAnAccount()) {
+//            JsfUtil.addErrorMessage("Please Create Patient Account");
+//            return;
+//        }
+        if (paymentSchemeController.checkPaymentMethodError(getBill().getPaymentMethod(), paymentMethodData)) {
+            JsfUtil.addErrorMessage("Please enter all relavent Payment Method Details");
+            return 2;
+        }
+
+        settleCancelBill(BillType.PatientPaymentCanceldBill, HistoryType.PatientDeposit, BillNumberSuffix.PDC, current);
+        
+        printPreview = true;
+        return 0;
+    }
 
     private boolean errorCheck() {
         if (paymentSchemeController.checkPaymentMethodError(getBill().getPaymentMethod(), paymentMethodData)) {
@@ -1122,6 +1142,27 @@ public class PatientController implements Serializable, ControllerWithPatient {
         addToBill();
         saveBillItem();
         getBill().setBillTypeAtomic(BillTypeAtomic.PATIENT_DEPOSIT);
+        billFacade.edit(getBill());
+        //TODO: Add Patient Balance History
+        if (patient.getRunningBalance() == null) {
+            patient.setRunningBalance(getBill().getNetTotal());
+        } else {
+            patient.setRunningBalance(patient.getRunningBalance() + getBill().getNetTotal());
+        }
+        getFacade().edit(patient);
+
+        JsfUtil.addSuccessMessage("Bill Saved");
+        printPreview = true;
+
+    }
+    
+    public void settleCancelBill(BillType billType, HistoryType historyType, BillNumberSuffix billNumberSuffix, Patient patient) {
+
+        saveCancelBill(billType, billNumberSuffix, patient);
+        billBeanController.setPaymentMethodData(getBill(), getBill().getPaymentMethod(), getPaymentMethodData());
+        addToCancelBill();
+        saveBillItem();
+        getBill().setBillTypeAtomic(BillTypeAtomic.PATIENT_DEPOSIT_CANCELLED);
         billFacade.edit(getBill());
         //TODO: Add Patient Balance History
         if (patient.getRunningBalance() == null) {
@@ -1318,6 +1359,17 @@ public class PatientController implements Serializable, ControllerWithPatient {
         getBillItem().setRate(getBill().getNetTotal());
         getBillItems().add(getBillItem());
     }
+    
+    public void addToCancelBill() {
+        getBillItem().setNetValue(0-getBill().getNetTotal());
+        getBillItem().setGrossValue(0-getBill().getNetTotal());
+        getBillItem().setBillSession(null);
+        getBillItem().setDiscount(0.0);
+        getBillItem().setItem(null);
+        getBillItem().setQty(1.0);
+        getBillItem().setRate(getBill().getNetTotal());
+        getBillItems().add(getBillItem());
+    }
 
     private void saveBillItem() {
         for (BillItem tmp : getBillItems()) {
@@ -1349,6 +1401,36 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
         getBill().setGrantTotal(getBill().getNetTotal());
         getBill().setTotal(getBill().getNetTotal());
+        getBill().setDiscount(0.0);
+        getBill().setDiscountPercent(0);
+
+        if (getBill().getId() == null) {
+            billFacade.create(getBill());
+        } else {
+            billFacade.edit(getBill());
+        }
+    }
+    
+    private void saveCancelBill(BillType billType, BillNumberSuffix billNumberSuffix, Patient patient) {
+        getBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), billType, BillClassType.CancelledBill, billNumberSuffix));
+        getBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(sessionController.getDepartment(), billType, BillClassType.CancelledBill, billNumberSuffix));
+        getBill().setBillType(billType);
+
+        getBill().setPatient(patient);
+
+        getBill().setCreatedAt(new Date());
+        getBill().setCreater(sessionController.getLoggedUser());
+        getBill().setBillDate(new Date());
+        getBill().setBillTime(new Date());
+
+        getBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
+        getBill().setInstitution(getSessionController().getLoggedUser().getInstitution());
+
+        getBill().setCreatedAt(new Date());
+        getBill().setCreater(getSessionController().getLoggedUser());
+
+        getBill().setGrantTotal(0-getBill().getNetTotal());
+        getBill().setTotal(0-getBill().getNetTotal());
         getBill().setDiscount(0.0);
         getBill().setDiscountPercent(0);
 

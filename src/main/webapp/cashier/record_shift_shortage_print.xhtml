@@ -55,9 +55,20 @@
                                     </f:facet>
                                     <h:panelGrid id="shortagebill">
                                         <div class="d-flex justify-content-center">
-                                            <prints:five_five_paper_with_headings_for_shift_shortage 
-                                                payments="#{financialTransactionController.currentBillPayments}" 
-                                                bill="#{financialTransactionController.currentBill}"/>
+
+                                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Shift Shortage Bill is Five Five Paper',true)}">
+                                                <prints:five_five_paper_with_headings_for_shift_shortage 
+                                                    payments="#{financialTransactionController.currentBillPayments}" 
+                                                    bill="#{financialTransactionController.currentBill}"/>
+                                            </h:panelGroup>
+                                            
+                                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Shift Shortage Bill is POS Paper', false)}">
+                                                <prints:pos_paper_for_shift_shortage 
+                                                    payments="#{financialTransactionController.currentBillPayments}" 
+                                                    bill="#{financialTransactionController.currentBill}"/>
+                                            </h:panelGroup>
+
+
                                         </div>
                                     </h:panelGrid>
                                 </p:panel>
