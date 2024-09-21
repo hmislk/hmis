@@ -125,7 +125,7 @@
                                             <h:outputLabel value="#{rowIndex + 1}" />
                                         </p:column>
 
-                                        <p:column headerText="Patient" style="vertical-align: top; padding: 8px; display: flex;" filterBy="#{b.patient.person.nameWithTitle}" filterMatchMode="contains">
+                                        <p:column headerText="Patient" style=" padding: 8px; " filterBy="#{b.patient.person.nameWithTitle}" filterMatchMode="contains">
                                             <i class="fas fa-user text-primary"></i>
                                             <h:outputLabel value="#{b.patient.person.nameWithTitle}" class="mx-3" />
                                         </p:column>
@@ -346,7 +346,7 @@
                                                             </f:setPropertyActionListener>
                                                         </p:commandLink>
                                                         <p:graphicImage 
-                                                            rendered="#{dpr.printed}"
+                                                            rendered="false"
                                                             id="imgPrinted" 
                                                             library="image" 
                                                             name="print_ok.png" 
