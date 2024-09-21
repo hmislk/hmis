@@ -44,7 +44,12 @@
                                 navigator="false" 
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
                                 />
-
+                            
+                            <p:spacer ></p:spacer>
+                            <p:commandButton 
+                                value="List My Shifts"
+                                ajax="false"
+                                action="#{financialTransactionController.fillMyShifts}"></p:commandButton>
 
                         </p:panelGrid>
 
@@ -66,6 +71,12 @@
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" ></f:convertDateTime>
                                 </h:outputText>
                             </p:column>
+                            <p:column headerText="Shift Start Referance No"  width="10em" >
+                                <h:outputText value="#{ssb.bill.deptId}" rendered="#{ssb.bill.deptId ne null}" >
+                                </h:outputText>
+                                <h:outputText value="#{ssb.bill.id}" rendered="#{ssb.bill.deptId eq null}" >
+                                </h:outputText>
+                            </p:column>
 
                             <p:column headerText="Shift End Date" rendered="true" width="15em" >
                                 <h:panelGroup rendered="#{ssb.bill.referenceBill ne null}" class="text-success">
@@ -81,6 +92,13 @@
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" ></f:convertDateTime>
                                     </h:outputText>
                                 </h:panelGroup>
+                            </p:column>
+
+                            <p:column headerText="Shift End Referance No"  width="10em" >
+                                <h:outputText value="#{ssb.bill.referenceBill.deptId}" rendered="#{ssb.bill.referenceBill.deptId ne null}" >
+                                </h:outputText>
+                                <h:outputText value="#{ssb.bill.referenceBill.id}" rendered="#{ssb.bill.referenceBill.deptId eq null}" >
+                                </h:outputText>
                             </p:column>
 
                             <p:column headerText="Actions">

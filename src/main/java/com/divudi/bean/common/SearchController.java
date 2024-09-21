@@ -6526,7 +6526,6 @@ public class SearchController implements Serializable {
         return "/opd/analytics/itemized_sale_summary?faces-redirect=true";
     }
 
-    
     public String navigateToItemizedSaleReport() {
         return "/opd/analytics/itemized_sale_report?faces-redirect=true";
     }
@@ -12249,8 +12248,6 @@ public class SearchController implements Serializable {
         rtrb.setTotal(totalOpdServiceCollection);
     }
 
-    
-    
     public ReportTemplateRowBundle generateIncomeBreakdownByCategoryOpd() {
         ReportTemplateRowBundle oiBundle = new ReportTemplateRowBundle();
         String jpql = "select bi "
@@ -13206,8 +13203,6 @@ public class SearchController implements Serializable {
         bundle.createRowValuesFromBill();
         bundle.calculateTotals();
     }
-
-    
 
     public void billItemsToItamizedSaleReport(ReportTemplateRowBundle rtrb, List<BillItem> billItems) {
         Map<String, ReportTemplateRow> categoryMap = new HashMap<>();

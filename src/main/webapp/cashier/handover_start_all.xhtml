@@ -270,20 +270,54 @@
 
                                     <p:panelGrid columns="2" layout="tabular" class="w-100 m-1" >
                                         <f:facet name="header" >
+                                            <p:outputLabel value="Adjustments" class="font-weight-bold" ></p:outputLabel>
+                                        </f:facet>
+                                        <p:outputLabel value="Department" class="font-weight-bold" ></p:outputLabel>
+                                        <p:selectOneMenu value="#{financialTransactionController.department}" >
+                                            <f:selectItem itemLabel="Select" ></f:selectItem>
+                                            <f:selectItems value="#{financialTransactionController.bundle.department}" ></f:selectItems>
+                                        </p:selectOneMenu>
+                                        <p:spacer ></p:spacer>
+                                        <h:panelGroup >
+                                            <p:commandButton 
+                                                class="m-1 ui-button-warning" 
+                                                value="Add Excess"
+                                                icon="pi pi-plus"  
+                                                action="#{financialTransactionController.navigateToViewIndividualShiftForHandover}">
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                class="m-1 ui-button-danger" 
+                                                value="Mark Shortage"
+                                                icon="pi pi-exclamation-triangle"
+                                                action="#{financialTransactionController.navigateToViewIndividualShiftForHandover}">
+                                            </p:commandButton>
+                                        </h:panelGroup>
+
+
+                                    </p:panelGrid>
+
+                                    <p:panelGrid columns="2" layout="tabular" class="w-100 m-1" >
+                                        <f:facet name="header" >
                                             <p:outputLabel value="Handover" class="font-weight-bold" ></p:outputLabel>
                                         </f:facet>
 
                                         <p:outputLabel value="Hand over to" class="font-weight-bold" ></p:outputLabel>
                                         <p:autoComplete
-                                            completeMethod="#{staffController.completeStaff}"
+                                            completeMethod="#{webUserController.completeUser}"
                                             class="mx-2 w-100"
                                             id="acStaff" 
                                             inputStyleClass="w-100"
-                                            value="#{financialTransactionController.currentBill.toStaff}" 
-                                            var="staff"
+                                            value="#{financialTransactionController.user}" 
+                                            var="user"
                                             scrollHeight="450"
-                                            itemLabel="#{staff.person.name}" 
-                                            itemValue="#{staff}" >
+                                            itemLabel="#{user.webUserPerson.name}" 
+                                            itemValue="#{user}" >
+                                            <p:column headerText="Username" >
+                                                <h:outputText value="#{user.name}" ></h:outputText>
+                                            </p:column>
+                                            <p:column headerText="Name" >
+                                                <h:outputText value="#{user.webUserPerson.name}" ></h:outputText>
+                                            </p:column>
                                         </p:autoComplete>
 
                                         <p:spacer ></p:spacer>
@@ -291,8 +325,19 @@
                                             class="ui-button-success mx-2" 
                                             ajax="false" 
                                             value="Handover" 
-                                            action="#{financialTransactionController.settleHandoverStartBill()}" >
+                                            icon="pi pi-database"
+                                            action="#{financialTransactionController.settleHandoverStartBill()}">
                                         </p:commandButton>
+
+
+<!--                                        <ui:repeat value="#{financialTransactionController.bundle.bundles}" var="b" >
+                                            <ui:repeat value="#{b.reportTemplateRows}" var="r" >
+                                                #{r.payment}
+                                            </ui:repeat>
+                                        </ui:repeat>-->
+
+
+
                                     </p:panelGrid>
                                 </div>
 
@@ -522,8 +567,8 @@
                                         </f:facet>
                                     </p:column>
 
-                                    <p:column headerText="Grand Total">
-                                        <h:outputText value="#{financialTransactionController.bundle.total}">
+                                    <p:column headerText="Total">
+                                        <h:outputText value="#{summary.total}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
                                         <f:facet name="footer">
@@ -544,18 +589,7 @@
                                             icon="pi pi-eye"  
                                             action="#{financialTransactionController.navigateToViewIndividualShiftForHandover}">
                                         </p:commandButton>
-                                        <p:commandButton 
-                                            class="m-1 ui-button-warning" 
-                                            value="Add Excess"
-                                            icon="pi pi-plus"  
-                                            action="#{financialTransactionController.navigateToViewIndividualShiftForHandover}">
-                                        </p:commandButton>
-                                        <p:commandButton
-                                            class="m-1 ui-button-danger" 
-                                            value="Mark Shortage"
-                                            icon="pi pi-exclamation-triangle"
-                                            action="#{financialTransactionController.navigateToViewIndividualShiftForHandover}">
-                                        </p:commandButton>
+
                                     </p:column>
 
 

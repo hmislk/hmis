@@ -115,6 +115,10 @@ public class Payment implements Serializable {
     @ManyToOne
     private Bill handoverCreatedBill;
     @ManyToOne
+    private Bill handoverShiftBill;
+    @ManyToOne
+    private Bill handoverShiftComponantBill;
+    @ManyToOne
     private Bill handoverAcceptBill;
     @ManyToOne
     private Bill paymentRecordCreateBill;
@@ -544,5 +548,23 @@ public class Payment implements Serializable {
     public void setPaymentRecordCompleted(boolean paymentRecordCompleted) {
         this.paymentRecordCompleted = paymentRecordCompleted;
     }
+
+    public Bill getHandoverShiftBill() {
+        return handoverShiftBill;
+    }
+
+    public void setHandoverShiftBill(Bill handoverShiftBill) {
+        this.handoverShiftBill = handoverShiftBill;
+    }
+
+    public Bill getHandoverShiftComponantBill() {
+        return handoverShiftComponantBill;
+    }
+
+    public void setHandoverShiftComponantBill(Bill handoverShiftComponantBill) {
+        this.handoverShiftComponantBill = handoverShiftComponantBill;
+    }
+    
+    
 
 }
