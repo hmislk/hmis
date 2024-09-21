@@ -8,8 +8,10 @@ import com.divudi.entity.channel.SessionInstance;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -93,6 +95,7 @@ public class ReportTemplateRowBundle implements Serializable {
     private WebUser user;
     private Date date;
     private Department department;
+    private List<Department> departments;
     private Bill startBill;
     private Bill endBill;
 
@@ -150,6 +153,18 @@ public class ReportTemplateRowBundle implements Serializable {
         hasPatientDepositTransaction = false;
         hasPatientPointsTransaction = false;
         hasOnlineSettlementTransaction = false;
+    }
+
+    public void collectDepartments() {
+        Set<Department> uniqueDepartments = new HashSet<>();
+        if (bundles != null) {
+            for (ReportTemplateRowBundle b : bundles) {
+                if (b.getDepartment() != null) {
+                    uniqueDepartments.add(b.getDepartment());
+                }
+            }
+        }
+        departments = new ArrayList<>(uniqueDepartments);
     }
 
     public void aggregateTotals() {
@@ -292,7 +307,7 @@ public class ReportTemplateRowBundle implements Serializable {
 
                 Double amount = safeDouble(row.getPayment().getPaidValue());  // Ensure amounts are not null
                 PaymentMethod method = row.getPayment().getPaymentMethod();  // Using the enum type directly
-                total+=amount;
+                total += amount;
                 System.out.println("method = " + method);
                 System.out.println("amount = " + amount);
                 switch (method) {
@@ -1028,6 +1043,14 @@ public class ReportTemplateRowBundle implements Serializable {
 
     public void setEndBill(Bill endBill) {
         this.endBill = endBill;
+    }
+
+    public List<Department> getDepartments() {
+        return departments;
+    }
+
+    public void setDepartments(List<Department> departments) {
+        this.departments = departments;
     }
 
 }
