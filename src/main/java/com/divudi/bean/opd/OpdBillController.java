@@ -342,11 +342,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     public String navigateToOpdBatchBillList() {
         return "/opd/analytics/opd_batch_bill_search?faces-redirect=true";
     }
-    
+
     public String navigateToOpdBillItemList() {
         return "/opd/analytics/opd_bill_item_list?faces-redirect=true";
     }
-    
+
     public String navigateToOpdBillList() {
         return "/opd/analytics/opd_bill_list?faces-redirect=true";
     }
@@ -1546,7 +1546,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             JsfUtil.addErrorMessage("Sending SMS Failed.");
         }
     }
-    
+
     public void sendSmsOnOpdBillSettling(String smsMessage) {
         Sms s = new Sms();
         s.setPending(false);
@@ -1607,7 +1607,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 //
 //        return true;
 //    }
-
     public boolean createMultipleBillsFromOrderList() {
         bills = new ArrayList<>();
         OpdBillingStrategy strategy = sessionController.getDepartmentPreference().getOpdBillingStrategy();
@@ -1636,7 +1635,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             List<BillEntry> tmp = new ArrayList<>();
             for (BillEntry e : lstBillEntries) {
                 if (Objects.equals(e.getBillItem().getItem().getDepartment().getId(), d.getId())) {
-                    BillItem bi = getBillBean().saveBillItemForOpdBill(myBill, e, getSessionController().getLoggedUser(),getBillFeeBundleEntrys());
+                    BillItem bi = getBillBean().saveBillItemForOpdBill(myBill, e, getSessionController().getLoggedUser(), getBillFeeBundleEntrys());
                     myBill.getBillItems().add(bi);
                     tmp.add(e);
                 }
@@ -1762,7 +1761,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         }
         boolean sendSmsAfterOpdBilling = configOptionApplicationController.getBooleanValueByKey("Send SMS after OPD Billing", false);
         String smsTempalteForTheSmsAfterOpdBilling = configOptionApplicationController.getLongTextValueByKey("SMS Tempalte for the Sms after OPD Billing");
-        if (sendSmsAfterOpdBilling && smsTempalteForTheSmsAfterOpdBilling!=null && !smsTempalteForTheSmsAfterOpdBilling.trim().equals("")) {
+        if (sendSmsAfterOpdBilling && smsTempalteForTheSmsAfterOpdBilling != null && !smsTempalteForTheSmsAfterOpdBilling.trim().equals("")) {
             sendSmsOnOpdBillSettling(smsTempalteForTheSmsAfterOpdBilling);
         }
 
@@ -1964,7 +1963,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 //        duplicatePrint = false;
 //        return true;
 //    }
-
     public void markToken(Bill b) {
         Token t = getToken();
         if (t == null) {
@@ -2509,10 +2507,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             runningBalance = pd.getBalance();
             double availableForPurchase = runningBalance + creditLimitAbsolute;
 
-            
             System.out.println("netTotal = " + netTotal);
             System.out.println("availableForPurchase = " + availableForPurchase);
-            
+
             if (netTotal > availableForPurchase) {
                 JsfUtil.addErrorMessage("No Sufficient Patient Deposit");
                 return true;
@@ -2584,12 +2581,12 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     double availableForPurchase = runningBalance + creditLimitAbsolute;
 
                     if (cd.getPaymentMethodData().getPatient_deposit().getTotalValue() > availableForPurchase) {
-                        
+
                         System.out.println("cd.getPaymentMethodData().getPatient_deposit().getTotalValue() = " + cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
-                        
+
                         System.out.println("availableForPurchase = " + availableForPurchase);
-                        
-                        System.out.println("no sufficient data = " );
+
+                        System.out.println("no sufficient data = ");
                         JsfUtil.addErrorMessage("No Sufficient Patient Deposit");
                         return true;
                     }
@@ -3499,15 +3496,17 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     }
 
     public void setBillFeePaymentAndPayment(double amount, BillFee bf, Payment p) {
-        BillFeePayment bfp = new BillFeePayment();
-        bfp.setBillFee(bf);
-        bfp.setAmount(amount);
-        bfp.setInstitution(bf.getBillItem().getItem().getInstitution());
-        bfp.setDepartment(bf.getBillItem().getItem().getDepartment());
-        bfp.setCreater(getSessionController().getLoggedUser());
-        bfp.setCreatedAt(new Date());
-        bfp.setPayment(p);
-        billFeePaymentFacade.create(bfp);
+        if (bf.getId() != null) {
+            BillFeePayment bfp = new BillFeePayment();
+            bfp.setBillFee(bf);
+            bfp.setAmount(amount);
+            bfp.setInstitution(bf.getBillItem().getItem().getInstitution());
+            bfp.setDepartment(bf.getBillItem().getItem().getDepartment());
+            bfp.setCreater(getSessionController().getLoggedUser());
+            bfp.setCreatedAt(new Date());
+            bfp.setPayment(p);
+            billFeePaymentFacade.create(bfp);
+        }
     }
 
     public double calBillPaidValue(Bill b) {
@@ -4184,8 +4183,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         bills = null;
         return "/opd/analytics/opd_bill_payments";
     }
-    
-    
 
     // This is the setter for selectedItemLightId
     public void setSelectedItemLightId(Long id) {
