@@ -2035,6 +2035,10 @@ public class ReportController implements Serializable {
 
     public void setWebUser(WebUser webUser) {
         this.webUser = webUser;
+
+    public void setPatientInvestigations(List<PatientInvestigation> patientInvestigations) {
+        this.patientInvestigations = patientInvestigations;
+
     }
 
     public ReportTemplateRowBundle getBundle() {
