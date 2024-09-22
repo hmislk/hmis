@@ -8,6 +8,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.CashBookController;
+import com.divudi.bean.cashTransaction.DenominationController;
 import com.divudi.bean.channel.BookingController;
 import com.divudi.bean.collectingCentre.CourierController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
@@ -41,6 +42,7 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.Route;
 import com.divudi.entity.Staff;
 import com.divudi.entity.cashTransaction.CashBook;
+import com.divudi.entity.cashTransaction.Denomination;
 import com.divudi.facade.StaffFacade;
 import java.io.IOException;
 import java.io.Serializable;
@@ -126,6 +128,8 @@ public class SessionController implements Serializable, HttpSessionListener {
     CourierController courierController;
     @Inject
     CashBookController cashBookController;
+    @Inject
+    DenominationController denominationController;
     /**
      * Properties
      */
@@ -2227,6 +2231,10 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public void setLoggedSite(Institution loggedSite) {
         this.loggedSite = loggedSite;
+    }
+
+    public List<Denomination> findDefaultDenominations() {
+        return denominationController.getDenominations();
     }
 
 }

@@ -154,6 +154,8 @@ public class FinancialTransactionController implements Serializable {
     private ReportTemplateRowBundle cardTransactionPaymentBundle;
 
     private ReportTemplateRowBundle bundle;
+    private ReportTemplateRowBundle selectedBundle;
+    private PaymentMethod selectedPaymentMethod;
 
     @Deprecated
     private PaymentMethodValues paymentMethodValues;
@@ -1086,6 +1088,21 @@ public class FinancialTransactionController implements Serializable {
         shiaftStartBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
+    public String navigateToSelectPaymentsForHandoverCreate(ReportTemplateRowBundle inputBundle, PaymentMethod inputPaymentMethod) {
+        if (inputBundle == null) {
+            JsfUtil.addErrorMessage("No Bundle Selected");
+            return null;
+        }
+        selectedBundle = inputBundle;
+        selectedPaymentMethod = inputPaymentMethod;
+        return "/cashier/handover_start_select?faces-redirect=true";
+    }
+    
+    public String navigateBackToPaymentHandoverCreate(){
+        selectedBundle.calculateTotalsByPayments();
+        return "/cashier/handover_start_all?faces-redirect=true";
+    }
+
     public String navigateToFundTransferBill() {
         resetClassVariables();
         prepareToAddNewFundTransferBill();
@@ -1524,7 +1541,7 @@ public class FinancialTransactionController implements Serializable {
                 paymentsToAcceptForHandover);
         bundle.aggregateTotals();
         bundle.collectDepartments();
-        
+
 //        
 //        
 //         fillPaymentsFromViewHandoverAcceptBill();
@@ -1935,15 +1952,9 @@ public class FinancialTransactionController implements Serializable {
         Bill startBill = findNonClosedShiftStartFundBill(sessionController.getLoggedUser());
         List<Payment> shiftPayments = generatePaymentsFromShiftStartToEndByDateAndDepartment(startBill, null);
         bundle = generatePaymentBundleForHandovers(startBill, null, shiftPayments);
-//        bundle = generatePaymentsFromShiftStartToEndToEnterToCashbookFilteredByDateAndDepartment(startBill, null);
         bundle.setUser(sessionController.getLoggedUser());
         bundle.aggregateTotals();
         bundle.collectDepartments();
-//        currentBill = new Bill();
-//        currentBill.setBillType(BillType.CashHandoverCreateBill);
-//        currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE);
-//        currentBill.setBillClassType(BillClassType.PreBill);
-//        currentBill.setReferenceBill(null);
         return "/cashier/handover_start_all?faces-redirect=true";
     }
 
@@ -2461,18 +2472,22 @@ public class FinancialTransactionController implements Serializable {
         Map<String, ReportTemplateRowBundle> groupedBundles = new HashMap<>();
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        
 
         for (Payment p : shiftPayments) {
             String key = sdf.format(p.getCreatedAt()) + "-" + p.getDepartment().getId() + "-" + p.getCreater().getId();
 
             ReportTemplateRowBundle b = groupedBundles.getOrDefault(key, new ReportTemplateRowBundle());
+            if (b.getSessionController() == null) {
+                b.setSessionController(sessionController);
+            }
             b.setUser(startBill.getCreater());
             b.setDate(p.getCreatedAt());
             b.setDepartment(p.getDepartment());
 
             ReportTemplateRow r = new ReportTemplateRow();
             r.setPayment(p);
+            boolean selectAllHandoverPayments = configOptionApplicationController.getBooleanValueByKey("Select all payments by default for Handing over of the shift.", false);
+            r.setSelected(selectAllHandoverPayments);
             b.getReportTemplateRows().add(r);
 
             // Temporarily store the bundle
@@ -4511,5 +4526,23 @@ public class FinancialTransactionController implements Serializable {
     public void setBundle(ReportTemplateRowBundle bundle) {
         this.bundle = bundle;
     }
+
+    public ReportTemplateRowBundle getSelectedBundle() {
+        return selectedBundle;
+    }
+
+    public void setSelectedBundle(ReportTemplateRowBundle selectedBundle) {
+        this.selectedBundle = selectedBundle;
+    }
+
+    public PaymentMethod getSelectedPaymentMethod() {
+        return selectedPaymentMethod;
+    }
+
+    public void setSelectedPaymentMethod(PaymentMethod selectedPaymentMethod) {
+        this.selectedPaymentMethod = selectedPaymentMethod;
+    }
+    
+    
 
 }
