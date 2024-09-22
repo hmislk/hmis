@@ -1,0 +1,189 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
+      xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>
+                    <h:panelGroup rendered="#{!patientController.printPreview}" styleClass="alignTop">
+                        <p:panel>
+                            <f:facet name="header">
+                                <h:outputText value="Cancellation" class="mt-5"/>
+                                <h:panelGrid columns="3" style="float: right" class="w-50">
+                                    <p:selectOneMenu 
+                                        id="commentsMenu" 
+                                        value="#{patientController.cancelBill.comments}" 
+                                        editable="true" 
+                                        filter="true" 
+                                        placeholder="Select or enter a comment"
+                                        filterMatchMode="contains"  
+                                        style="float: right; width: 100%" 
+                                        class="p-2">
+                                        <f:selectItem itemLabel="Select or enter a comment" itemValue="" noSelectionOption="true"/>
+                                        <f:selectItems 
+                                            value="#{configOptionApplicationController.getListOfCustomOptions('OPD Bill Cancellation Comments')}" 
+                                            var="option" 
+                                            itemLabel="#{option}" 
+                                            itemValue="#{option}"/>
+                                    </p:selectOneMenu>
+
+                                    <p:commandButton 
+                                        ajax="false"
+                                        value="Cancel Bill" 
+                                        icon="fa fa-cancel"
+                                        style="float: right"
+                                        class="ui-button-danger" 
+                                        action="#{patientDepositController.settlePatientDepositCancel()}">
+                                    </p:commandButton>
+                                    <p:commandButton  
+                                        class="ui-button-secondary d-flex justify-content-end mx-2"
+                                        style="float: right"
+                                        value="Back To Search"
+                                        icon="fa-solid fa-arrow-left"
+                                        action="/patient_deposit/patient_deposit_search?faces-redirect=true"
+                                        ajax="false">
+                                    </p:commandButton>
+                                </h:panelGrid>
+                            </f:facet>
+
+                            <!-- Payment Mode Panel -->
+                            <p:panel>
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fas fa-money-bill"></h:outputText>
+                                    <h:outputLabel value="Payment Mode" class="mx-2"></h:outputLabel>
+                                </f:facet>
+                                <p:selectOneMenu 
+                                    id="cmbPs" 
+                                    value="#{patientController.cancelBill.paymentMethod}" >
+                                    <f:selectItem itemLabel="Select payment Method"/>
+                                    <f:selectItems value="#{enumController.paymentMethodsForOpdBillCanceling}"/>
+                                </p:selectOneMenu>
+                            </p:panel>
+
+                            <!-- Patient Details and Bill Details Panels -->
+                            <div class="row">
+                                <div class="col-6">
+                                    <p:panel>
+                                        <f:facet name="header">
+                                            <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
+                                            <h:outputLabel value="Patient Details" class="mx-2"></h:outputLabel>
+                                        </f:facet>
+                                        <common:patient patient="#{patientController.bill.patient}" class="w-100"/>
+                                    </p:panel>
+                                </div>
+                                <div class="col-6">
+                                    <p:panel>
+                                        <f:facet name="header">
+                                            <h:outputText styleClass="fas fa-list-alt"></h:outputText>
+                                            <h:outputLabel value="Bill Detail" class="mx-2"></h:outputLabel>
+                                        </f:facet>
+                                        <p:panelGrid columns="2">
+                                            <h:outputLabel value="Collecting Centre Name:" ></h:outputLabel>
+                                            <h:outputLabel value="#{patientController.bill.collectingCentre.name}" ></h:outputLabel>
+                                            <h:outputLabel value="Collecting Centre Code:" ></h:outputLabel>
+                                            <h:outputLabel value="#{patientController.bill.collectingCentre.code}" ></h:outputLabel>
+                                            <h:outputLabel value="Route :" ></h:outputLabel>
+                                            <h:outputLabel value="#{patientController.bill.collectingCentre.route.name}" ></h:outputLabel>
+                                            
+                                            <h:outputLabel value="Bill No :" ></h:outputLabel>
+                                            <h:outputLabel value="#{patientController.bill.deptId}" ></h:outputLabel>
+                                            <h:outputLabel value="Total :" ></h:outputLabel>
+                                            <h:outputLabel value="#{patientController.bill.total}" ></h:outputLabel>
+                                            <h:outputLabel value="Discount :" ></h:outputLabel>
+                                            <h:outputLabel value="#{patientController.bill.discount}" ></h:outputLabel>
+                                            <h:outputLabel value="Net Total :" ></h:outputLabel>
+                                            <h:outputLabel value="#{patientController.bill.netTotal}" ></h:outputLabel>
+                                        </p:panelGrid>
+                                    </p:panel>
+                                </div>
+                            </div>
+
+                            <!-- Bill Item Detail Panel -->
+                            <p:panel>
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fas fa-list-alt"></h:outputText>
+                                    <h:outputLabel value="Bill Item Detail" class="mx-2"></h:outputLabel>
+                                </f:facet>
+                                <p:dataTable rowIndexVar="rowIndex" value="#{patientController.billItems}" var="bip">
+                                    <p:column>
+                                        <f:facet name="header">No</f:facet>
+                                        <h:outputLabel value="#{rowIndex+1}"/>
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header">Item</f:facet>
+                                        <h:outputLabel value="#{bip.item.name}"/>
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header">Fee</f:facet>
+                                        <h:outputLabel value="#{bip.netValue}"/>
+                                    </p:column>
+                                </p:dataTable>
+                            </p:panel>
+                        </p:panel>
+                    </h:panelGroup>
+
+                    <!-- Print Preview Panel -->
+                      <h:panelGroup rendered="#{patientController.printPreview}">
+            <h:form >
+                <p:panel>
+
+                    <f:facet name="header">
+                        <h:panelGrid columns="4" style="size: 0.5rem; float: right" >
+                            <p:commandButton value="Print Bill" icon="pi pi-print" class="ui-button-info" ajax="false">
+                                <p:printer target="billPanel"></p:printer>
+                            </p:commandButton>
+                            <p:commandButton icon="fas fa-plus" class="mx-1" value="New Bill"
+                                             ajax="false" action="/payments/patient/receive?faces-redirect=true"
+                                             actionListener="#{patientDepositController.clearDataForPatientDeposit()}" >
+                            </p:commandButton>
+                            <p:commandButton ajax="false" icon="fas fa-search" value="Patient Lookup" class="mx-1 ui-button-warning"
+                                             action="#{patientController.navigateToSearchPatients}"></p:commandButton>
+                            <p:commandButton
+                                value="Profile"
+                                ajax="false"
+                                icon="fa fa-user"
+                                class="ui-button-warning  w-100"
+                                action="#{patientController.navigateToOpdPatientProfile()}"
+                                >
+                                <f:setPropertyActionListener
+                                    value="#{patientController.bill.patient}"
+                                    target="#{patientController.current}" ></f:setPropertyActionListener>
+                            </p:commandButton>
+                        </h:panelGrid>
+                    </f:facet>
+
+
+
+
+
+
+                    <div class="container-fluid my-2">
+                        <div class="row justify-content-center align-items-center">
+                            <div class="col-md-6">
+                                <div class="align-items-center my-2" style="max-width: 80%" >
+                                    <div>
+                                        <h:panelGroup id="billPanel" class="bill" layout="block">
+                                            <prints:five_five_paper_patient_deposit bill="#{patientController.cancelBill}" />
+                                        </h:panelGroup>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </p:panel>
+            </h:form>
+
+        </h:panelGroup>
+                </h:form>                
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

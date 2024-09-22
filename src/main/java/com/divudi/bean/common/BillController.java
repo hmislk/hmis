@@ -2561,7 +2561,6 @@ public class BillController implements Serializable {
         }
     }
 
-
     public List<BillType> getBillTypesByAtomicBillTypes(List<BillTypeAtomic> ba){
         List<BillType> bt = new ArrayList<>();
         if (ba == null) {
@@ -2578,9 +2577,6 @@ public class BillController implements Serializable {
         }
         return bt;
     }
-
-
-
 
     public List<Bill> listBills(
             List<BillType> billTypes,
