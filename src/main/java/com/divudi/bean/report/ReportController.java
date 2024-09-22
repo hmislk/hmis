@@ -274,12 +274,15 @@ public class ReportController implements Serializable {
     public void processCollectionCenterBalance() {
         String jpql = "select cc"
                 + " from Institution cc"
-                + " where cc.retired=:ret"
-                + " and cc = :i";
+                + " where cc.retired=:ret";
 
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
-        m.put("i", collectingCentre);
+
+        if (collectingCentre != null) {
+            jpql += " and cc = :i";
+            m.put("i", collectingCentre);
+        }
 
         collectionCenters = institutionFacade.findByJpql(jpql, m);
     }
@@ -1040,7 +1043,7 @@ public class ReportController implements Serializable {
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Content-Disposition", "attachment; filename=test_counts.xlsx");
 
-        try (ServletOutputStream outputStream = response.getOutputStream()) {
+        try ( ServletOutputStream outputStream = response.getOutputStream()) {
             workbook.write(outputStream);
             fc.responseComplete();
         } catch (IOException e) {
@@ -1056,7 +1059,7 @@ public class ReportController implements Serializable {
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Content-Disposition", "attachment; filename=Sale_Item_Count.xlsx");
 
-        try (ServletOutputStream outputStream = response.getOutputStream()) {
+        try ( ServletOutputStream outputStream = response.getOutputStream()) {
             workbook.write(outputStream);
             fc.responseComplete();
         } catch (IOException e) {
@@ -1072,7 +1075,7 @@ public class ReportController implements Serializable {
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Content-Disposition", "attachment; filename=service_count.xlsx");
 
-        try (ServletOutputStream outputStream = response.getOutputStream()) {
+        try ( ServletOutputStream outputStream = response.getOutputStream()) {
             workbook.write(outputStream);
             fc.responseComplete();
         } catch (IOException e) {
@@ -2096,7 +2099,6 @@ public class ReportController implements Serializable {
     public void setBundle(ReportTemplateRowBundle bundle) {
         this.bundle = bundle;
     }
-
 
     public List<PatientInvestigation> getPatientInvestigations() {
         return patientInvestigations;

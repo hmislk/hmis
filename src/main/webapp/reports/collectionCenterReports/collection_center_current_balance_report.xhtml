@@ -21,9 +21,10 @@
                             value="#{reportController.collectionCenters}" 
                             var="c"
                             rowKey="#{c.id}"
+                            rowIndexVar="i"
                             >
                             <p:column headerText="S. No" >
-                                <h:outputText value="" ></h:outputText>
+                                <h:outputText value="#{i+1}" ></h:outputText>
                             </p:column>
                             <p:column headerText="CC Name" >
                                 <h:outputText value="#{c.name}" ></h:outputText>
