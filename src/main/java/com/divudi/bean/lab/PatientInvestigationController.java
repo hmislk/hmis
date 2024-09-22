@@ -432,8 +432,6 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public boolean addResultsToReportsForDimension(String sampleId, String testStr, String result, String unit, String error) {
-        //System.out.println("sampleId = " + sampleId);
-        //System.out.println("testStr = " + testStr);
         boolean temFlag = false;
         Long sid;
         try {
@@ -710,17 +708,13 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public boolean sampledForAnyItemInTheBill(Bill bill) {
-        ////System.out.println("bill = " + bill);
         String jpql;
         jpql = "select pi from PatientInvestigation pi where pi.billItem.bill=:b";
         Map m = new HashMap();
         m.put("b", bill);
         List<PatientInvestigation> pis = getFacade().findByJpql(jpql, m);
-        ////System.out.println("pis = " + pis);
         for (PatientInvestigation pi : pis) {
-            ////System.out.println("pi = " + pi);
             if (pi.getCollected() == true || pi.getReceived() == true || pi.getDataEntered() == true) {
-                ////System.out.println("can not cancel now." );
                 return true;
             }
         }
@@ -728,17 +722,13 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public boolean sampledForBillItem(BillItem billItem) {
-        ////System.out.println("bill = " + billItem);
         String jpql;
         jpql = "select pi from PatientInvestigation pi where pi.billItem=:b";
         Map m = new HashMap();
         m.put("b", billItem);
         List<PatientInvestigation> pis = getFacade().findByJpql(jpql, m);
-        ////System.out.println("pis = " + pis);
         for (PatientInvestigation pi : pis) {
-            ////System.out.println("pi = " + pi);
             if (pi.getReceived() == true || pi.getDataEntered() == true) {
-                ////System.out.println("can not return." );
                 return true;
             }
         }
@@ -773,11 +763,9 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public List<PatientInvestigation> getSelectedToReceive() {
-//        //////System.out.println("selected to receive");
         if (selectedToReceive != null) {
             for (PatientInvestigation pi : selectedToReceive) {
                 for (ReportItem ri : pi.getInvestigation().getReportItems()) {
-//                    //////System.out.println("ri is " + ri.getName());
                 }
             }
         } else {
@@ -1155,9 +1143,6 @@ public class PatientInvestigationController implements Serializable {
             } else {
                 temSql = "SELECT i FROM PatientInvestigation i where i.retired=false and i.collected = true and i.received=false and i.sampledAt between :fromDate and :toDate and i.receiveDepartment.id = " + getSessionController().getDepartment().getId();
             }
-//            //////System.out.println("Sql to get the receive list is " + temSql);
-//            //////System.out.println("FromDate to get the receive list is " + getFromDate());
-//            //////System.out.println("ToDate to get the receive list is " + getToDate());
             temMap.put("toDate", getToDate());
             temMap.put("fromDate", getFromDate());
             lstToReceive = getFacade().findByJpql(temSql, temMap, TemporalType.TIMESTAMP);
@@ -1171,7 +1156,6 @@ public class PatientInvestigationController implements Serializable {
 
     public List<PatientInvestigation> getLstToReceiveSearch() {
         if (lstToReceiveSearch == null) {
-//            //////System.out.println("getting lst to receive search");
             String temSql;
             Map temMap = new HashMap();
             if (selectText == null || selectText.trim().equals("")) {
@@ -1183,17 +1167,14 @@ public class PatientInvestigationController implements Serializable {
                 temSql = "select pi from PatientInvestigation pi join pi.investigation i join pi.billItem.bill b join b.patient.person p   where ((p.name) like '%" + selectText.toUpperCase() + "%' or (b.insId) like '%" + selectText.toUpperCase() + "%' or p.phone like '%" + selectText + "%' or (i.name) like '%" + selectText.toUpperCase() + "%' )  and pi.retired=false and b.createdAt between :fromDate and :toDate and pi.receiveDepartment.id = " + getSessionController().getDepartment().getId();
                 temMap.put("toDate", getToDate());
                 temMap.put("fromDate", getFromDate());
-//                //////System.out.println("sql is " + temSql);
                 lstToReceiveSearch = getFacade().findByJpql(temSql, temMap, TemporalType.TIMESTAMP);
 
             }
 
         }
         if (lstToReceiveSearch == null) {
-//            //////System.out.println("lstToReceiveSearch is null");
             lstToReceiveSearch = new ArrayList<PatientInvestigation>();
         }
-//        //////System.out.println("size is " + lstToReceiveSearch.size());
         return lstToReceiveSearch;
     }
 
@@ -1292,9 +1273,7 @@ public class PatientInvestigationController implements Serializable {
         listingEntity = ListingEntity.BILL_BARCODES;
         for (Bill b : selectedBills) {
             BillBarcode bb = new BillBarcode(b);
-            System.out.println("bb = " + b);
             List<Bill> bs = billBeanController.findValidBillsForSampleCollection(b);
-            System.out.println("bs = " + bs);
             List<PatientSampleWrapper> psws = new ArrayList<>();
             List<PatientSample> pss = prepareSampleCollectionByBillsForPhlebotomyRoom(bs, sessionController.getLoggedUser());
             if (pss != null) {
@@ -1324,10 +1303,6 @@ public class PatientInvestigationController implements Serializable {
             return;
         }
 
-//        if (billForBarcode.getStatus() != patientInvestigationStatus.ORDERED) {
-//            JsfUtil.addErrorMessage("This Bill has has Already Barcode Genatared");
-//            return;
-//        }
         BillBarcode bb = new BillBarcode(billForBarcode);
         List<PatientSampleWrapper> psws = new ArrayList<>();
         List<PatientSample> pss = prepareSampleCollectionByBillsForPhlebotomyRoom(billForBarcode, sessionController.getLoggedUser());
@@ -1382,13 +1357,6 @@ public class PatientInvestigationController implements Serializable {
             JsfUtil.addErrorMessage("No Patient Investigations are Selected");
             return;
         }
-//
-//        for (PatientInvestigation pi : selectedItems) {
-//            if (pi.getBillItem().getBill().getStatus() != patientInvestigationStatus.ORDERED) {
-//                JsfUtil.addErrorMessage("Barcode is already generated for Selected " + pi.getBillItem().getItem().getName() + " Investigation");
-//                return;
-//            }
-//        }
 
         // Create a set to track unique bills
         Set<Bill> uniqueBills = new HashSet<>();
@@ -1851,8 +1819,6 @@ public class PatientInvestigationController implements Serializable {
 
         params.put("ret", false);
 
-        System.out.println("params = " + params);
-
         bills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
@@ -1922,8 +1888,6 @@ public class PatientInvestigationController implements Serializable {
         jpql += " ORDER BY pi.billItem.bill.createdAt DESC";
 
         params.put("ret", false);
-
-        System.out.println("params = " + params);
 
         bills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
@@ -2046,8 +2010,6 @@ public class PatientInvestigationController implements Serializable {
         jpql += " ORDER BY b.id DESC";
 
         params.put("ret", false);
-
-        System.out.println("params = " + params);
 
         bills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
@@ -2375,8 +2337,6 @@ public class PatientInvestigationController implements Serializable {
 
         params.put("ret", false);
 
-        System.out.println("params = " + params);
-
         bills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
@@ -2430,7 +2390,6 @@ public class PatientInvestigationController implements Serializable {
 
         params.put("ret", false);
 
-        
         jpql += " AND i.billItem.bill.cancelled=:cancel ";
         params.put("cancel", false);
 
@@ -2538,13 +2497,10 @@ public class PatientInvestigationController implements Serializable {
 
         params.put("ret", false);
 
-        System.out.println("params = " + params);
-
         items = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     public void searchPatientInvestigationsWithoutSampleId() {
-        System.out.println("searchPatientInvestigations");
         listingEntity = ListingEntity.PATIENT_INVESTIGATIONS;
         String jpql;
         Map<String, Object> params = new HashMap<>();
@@ -2679,13 +2635,11 @@ public class PatientInvestigationController implements Serializable {
 
         params.put("ret", false);
 
-        System.out.println("params = " + params);
-
         items = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     public void searchPatientInvestigationsWithSampleId() {
-        System.out.println("searchPatientInvestigations");
+//        System.out.println("searchPatientInvestigations");
         listingEntity = ListingEntity.PATIENT_INVESTIGATIONS;
         String jpql;
         Map<String, Object> params = new HashMap<>();
@@ -2829,13 +2783,11 @@ public class PatientInvestigationController implements Serializable {
 
         params.put("ret", false);
 
-        System.out.println("params = " + params);
-
         items = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     public void searchPatientSamples() {
-        System.out.println("searchPatientInvestigations");
+//        System.out.println("searchPatientInvestigations");
         listingEntity = ListingEntity.PATIENT_SAMPLES;
         String jpql;
         Map<String, Object> params = new HashMap<>();
@@ -2963,13 +2915,11 @@ public class PatientInvestigationController implements Serializable {
 
         params.put("ret", false);
 
-        System.out.println("params = " + params);
-
         patientSamples = patientSampleFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     public List<PatientSampleComponant> getPatientSampleComponentsByInvestigation(PatientInvestigation patientInvestigation) {
-        System.out.println("patientInvestigation = " + patientInvestigation);
+//        System.out.println("patientInvestigation = " + patientInvestigation);
         String jpql = "SELECT psc "
                 + " FROM PatientSampleComponant psc "
                 + " WHERE psc.retired=:retired "
@@ -2977,13 +2927,12 @@ public class PatientInvestigationController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         params.put("retired", false);  // Assuming you want only non-retired records
         params.put("patientInvestigation", patientInvestigation);
-        System.out.println("params = " + params);
         List<PatientSampleComponant> pscs = patientSampleComponantFacade.findByJpql(jpql, params);
         return pscs;
     }
 
     public List<PatientSample> getPatientSamplesByInvestigation(PatientInvestigation patientInvestigation) {
-        System.out.println("patientInvestigation = " + patientInvestigation);
+//        System.out.println("patientInvestigation = " + patientInvestigation);
         String jpql = "SELECT DISTINCT psc.patientSample "
                 + "FROM PatientSampleComponant psc "
                 + "WHERE psc.retired = :retired "
@@ -2991,13 +2940,12 @@ public class PatientInvestigationController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         params.put("retired", false);  // Assuming you want only non-retired records
         params.put("patientInvestigation", patientInvestigation);
-        System.out.println("params = " + params);
         List<PatientSample> patientSamples = patientSampleFacade.findByJpql(jpql, params);
         return patientSamples;
     }
 
     public List<PatientInvestigation> getPatientInvestigationsBySample(PatientSample patientSample) {
-        System.out.println("patientSample = " + patientSample);
+//        System.out.println("patientSample = " + patientSample);
         String jpql = "SELECT psc.patientInvestigation "
                 + "FROM PatientSampleComponant psc "
                 + "WHERE psc.retired = :retired "
@@ -3005,7 +2953,7 @@ public class PatientInvestigationController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         params.put("retired", false);  // Assuming you want only non-retired records
         params.put("patientSample", patientSample);
-        System.out.println("params = " + params);
+//        System.out.println("params = " + params);
         List<PatientInvestigation> patientInvestigations = getFacade().findByJpql(jpql, params);
         return patientInvestigations;
     }
@@ -3471,7 +3419,7 @@ public class PatientInvestigationController implements Serializable {
         params.put("sc", sampleCollected);
         params.put("fromDate", fromDate);
         params.put("toDate", toDate);
-        System.out.println("jpql = " + jpql);
+//        System.out.println("jpql = " + jpql);
         pss = patientSampleFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         return pss;
     }
@@ -3528,7 +3476,6 @@ public class PatientInvestigationController implements Serializable {
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("d", getSessionController().getDepartment());
-//        //////System.out.println("Sql is " + temSql);
         toReceive = getFacade().findByJpql(temSql, temMap, TemporalType.TIMESTAMP);
 
     }
@@ -3555,7 +3502,6 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public void markSelectedAsReceived() {
-//        //////System.out.println("going to mark as received");
         for (PatientInvestigation pi : getSelectedToReceive()) {
             pi.setReceived(Boolean.TRUE);
             pi.setReceivedAt(new Date());
@@ -3581,7 +3527,6 @@ public class PatientInvestigationController implements Serializable {
             } else {
                 temSql = "SELECT i FROM PatientInvestigation i where i.retired=false and i.received=true and i.dataEntered=false  and i.sampledAt between :fromDate and :toDate and i.performDepartment.id = " + getSessionController().getDepartment().getId();
             }
-//            //////System.out.println(temSql);
             temMap.put("toDate", getToDate());
             temMap.put("fromDate", getFromDate());
             lstToEnterData = getFacade().findByJpql(temSql, temMap, TemporalType.TIMESTAMP);
@@ -3638,7 +3583,6 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public List<PatientReport> getLstToPrint() {
-//        //////System.out.println("getting lst to print");
 
         String temSql;
         temSql = "SELECT i FROM PatientReport i";
@@ -4273,16 +4217,12 @@ public class PatientInvestigationController implements Serializable {
         params.put("ret", false);
         params.put("bill", bill);
 
-        System.out.println("params = " + params);
-        System.out.println("jpql = " + jpql);
-
         items = getFacade().findByJpql(jpql, params);
     }
 
     public void navigateToSamplesFromSelectedBill(Bill bill) {
-        System.out.println("navigate To Samples From Selected Bill");
+//        System.out.println("navigate To Samples From Selected Bill");
         patientSamples = new ArrayList<>();
-        System.out.println("searchPatientInvestigations");
         listingEntity = ListingEntity.PATIENT_SAMPLES;
         String jpql;
         Map<String, Object> params = new HashMap<>();
@@ -4298,16 +4238,12 @@ public class PatientInvestigationController implements Serializable {
         params.put("ret", false);
         params.put("bill", bill);
 
-        System.out.println("params = " + params);
-        System.out.println("jpql = " + jpql);
-
         patientSamples = patientSampleFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
     }
-    
+
     public void navigateToPatientReportsFromSelectedInvestigation(PatientInvestigation patientInvestigation) {
         patientReports = new ArrayList<>();
-        System.out.println("navigate To Patient Report From Selected Investigation");
         listingEntity = ListingEntity.PATIENT_REPORTS;
         String jpql;
         Map<String, Object> params = new HashMap<>();
@@ -4324,7 +4260,6 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public void navigateToPatientReportsFromSelectedBill(Bill bill) {
-        System.out.println("navigate To Patient Report From Selected Bill");
         patientReports = new ArrayList<>();
         listingEntity = ListingEntity.PATIENT_REPORTS;
         String jpql;
@@ -4351,7 +4286,6 @@ public class PatientInvestigationController implements Serializable {
 
     @Deprecated
     public List<PatientSample> prepareSampleCollectionByBillsForPhlebotomyRoom(List<Bill> bills, WebUser wu) {
-        System.out.println("wu = " + wu);
         String j = "";
         Map m;
         Map<Long, PatientSample> rPatientSamplesMap = new HashMap<>();
@@ -4933,5 +4867,77 @@ public class PatientInvestigationController implements Serializable {
         }
         return iis;
     }
+
+//    public String getPatientInvestigationCurrentStatus(PatientInvestigation pi) {
+//        String status = "";
+//        List<PatientReport> reports = patientReportController.patientReports(pi);
+//
+//        for(PatientReport pr : reports){
+//            if(status == "Approved"){
+//                continue;
+//            }
+//            
+//            switch (pr.getPatientInvestigation().getStatus()) {
+//                case ORDERED:
+//                    status = "Ordered";
+//                    break;
+//                case SAMPLE_GENERATED:
+//                    status = "Ordered";
+//                    break;
+//                case SAMPLE_COLLECTED:
+//                    status = "Ordered";
+//                    break;
+//                case SAMPLE_SENT:
+//                    status = "Ordered";
+//                    break;
+//                case SAMPLE_ACCEPTED:
+//                    status = "Ordered";
+//                    break;
+//                case SAMPLE_REJECTED:
+//                    status = "Rejected";
+//                    break;
+//                case SAMPLE_REVERTED:
+//                    status = "Ordered";
+//                    break;
+//                case SAMPLE_RESENT:
+//                    status = "Resent";
+//                    break;
+//                case SAMPLE_RECOLLECTED:
+//                    status = "Recollected";
+//                    break;
+//                case SAMPLE_INTERFACED:
+//                    status = "Interfaced";
+//                    break;
+//                case SAMPLE_APPROVED:
+//                    status = "Ordered";
+//                    break;
+//                case SAMPLE_REPEATED:
+//                    status = "Repeated";
+//                    break;
+//                case REPORT_PRINTED:
+//                    status = "Printed";
+//                    break;
+//                case REPORT_DISTRIBUTED:
+//                    status = "Distributed";
+//                    break;
+//                case REPORT_REACHED_COLLECTING_CENTRE:
+//                    status = "Report Reached Collecting Centre";
+//                    break;
+//                case REPORT_HANDED_OVER:
+//                    status = "Report Handed Over";
+//                    break;
+//                case REPORT_CREATED:
+//                    status = "Created";
+//                    break;
+//                case REPORT_APPROVED:
+//                    status = "Approved";
+//                    break;
+//                default:
+//                    status = "Unknown";
+//                    break;
+//            }
+//        }
+//        return status;
+//    }
 
 }
