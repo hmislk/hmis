@@ -87,7 +87,12 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         latestPatientDeposits = new ArrayList<>();
         patientController.clearDataForPatientDeposite();
     }
-
+    
+    public String navigateToNewPatientDepositCancel() {
+        patientController.preparePatientDepositCancel();
+        return "/patient_deposit/view/bill_cancel?faces-redirect=true";
+    }
+    
     public void clearDataForPatientDepositHistory() {
         patientController.setCurrent(null);
         reportController.setFromDate(null);
@@ -153,10 +158,11 @@ public class PatientDepositController implements Serializable, ControllerWithPat
             JsfUtil.addErrorMessage("Please enter all relavent Payment Method Details");
              return;
         }
-        
-        updateBalance(patientController.getBill(), current);
+            
+        current = getDepositOfThePatient(patientController.getBill().getPatient(),sessionController.getDepartment());
+        updateBalance(patientController.getCancelBill(), current);
         billBeanController.createPayment(patientController.getBill(),
-                patientController.getBill().getPaymentMethod(),
+                patientController.getCancelBill().getPaymentMethod(),
                 patientController.getPaymentMethodData());
     }
 

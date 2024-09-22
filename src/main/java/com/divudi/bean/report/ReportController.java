@@ -35,10 +35,12 @@ import com.divudi.entity.Service;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
+import com.divudi.entity.channel.AgentReferenceBook;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.Machine;
 import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.facade.AgentHistoryFacade;
+import com.divudi.facade.AgentReferenceBookFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.InstitutionFacade;
@@ -56,6 +58,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.inject.Inject;
 import org.apache.poi.ss.usermodel.Cell;
@@ -86,6 +89,8 @@ public class ReportController implements Serializable {
     AgentHistoryFacade agentHistoryFacade;
     @EJB
     PatientDepositHistoryFacade patientDepositHistoryFacade;
+    @EJB
+    AgentReferenceBookFacade agentReferenceBookFacade;
 
     @Inject
     private InstitutionController institutionController;
@@ -164,12 +169,14 @@ public class ReportController implements Serializable {
 
     private List<ItemCount> reportOpdServiceCount;
     private ReportTemplateRowBundle bundle;
-    
-   private List<PatientDepositHistory> patientDepositHistories;
+
+    private List<PatientDepositHistory> patientDepositHistories;
 
     CommonFunctions commonFunctions;
     private List<PatientInvestigation> patientInvestigations;
     PatientInvestigationStatus patientInvestigationStatus;
+    
+    private List<AgentReferenceBook> agentReferenceBooks;
 
     public void ccSummaryReportByItem() {
         bundle = new ReportTemplateRowBundle();
@@ -252,9 +259,8 @@ public class ReportController implements Serializable {
         bundle.setTotal(totalNetValue);
         bundle.setReportTemplateRows(rows);
     }
-    
-    
-    public void createPatientDepositSummary(){
+
+    public void createPatientDepositSummary() {
         String jpql = "select pdh"
                 + " from PatientDepositHistory pdh"
                 + " where pdh.retired=:ret"
@@ -264,25 +270,44 @@ public class ReportController implements Serializable {
         m.put("ret", false);
         Patient pt = patientController.getCurrent();
         m.put("p", pt);
-        
-         jpql += " AND pdh.createdAt BETWEEN :fromDate AND :toDate";
+
+        jpql += " AND pdh.createdAt BETWEEN :fromDate AND :toDate";
         m.put("fromDate", getFromDate());
         m.put("toDate", getToDate());
 
-        patientDepositHistories = patientDepositHistoryFacade.findByJpql(jpql, m,TemporalType.TIMESTAMP);
+        patientDepositHistories = patientDepositHistoryFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
     }
 
     public void processCollectionCenterBalance() {
         String jpql = "select cc"
                 + " from Institution cc"
-                + " where cc.retired=:ret"
-                + " and cc = :i";
+                + " where cc.retired=:ret";
 
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
-        m.put("i", collectingCentre);
+
+        if (collectingCentre != null) {
+            jpql += " and cc = :i";
+            m.put("i", collectingCentre);
+        }
 
         collectionCenters = institutionFacade.findByJpql(jpql, m);
+    }
+    
+    public void processCollectingCentreBook(){
+        String sql;
+        HashMap m = new HashMap();
+        sql = "select a from AgentReferenceBook a "
+                + " where a.retired=false "
+                + " and a.deactivate=false "
+                + " and a.fullyUtilized=false ";
+        
+        if (collectingCentre != null) {
+            sql += "and a.institution=:ins order by a.id";
+            m.put("ins", collectingCentre);
+        }
+        agentReferenceBooks = agentReferenceBookFacade.findByJpql(sql, m);
+
     }
 
     public void processPettyCashPayment() {
@@ -1041,7 +1066,7 @@ public class ReportController implements Serializable {
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Content-Disposition", "attachment; filename=test_counts.xlsx");
 
-        try (ServletOutputStream outputStream = response.getOutputStream()) {
+        try ( ServletOutputStream outputStream = response.getOutputStream()) {
             workbook.write(outputStream);
             fc.responseComplete();
         } catch (IOException e) {
@@ -1057,7 +1082,7 @@ public class ReportController implements Serializable {
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Content-Disposition", "attachment; filename=Sale_Item_Count.xlsx");
 
-        try (ServletOutputStream outputStream = response.getOutputStream()) {
+        try ( ServletOutputStream outputStream = response.getOutputStream()) {
             workbook.write(outputStream);
             fc.responseComplete();
         } catch (IOException e) {
@@ -1073,7 +1098,7 @@ public class ReportController implements Serializable {
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Content-Disposition", "attachment; filename=service_count.xlsx");
 
-        try (ServletOutputStream outputStream = response.getOutputStream()) {
+        try ( ServletOutputStream outputStream = response.getOutputStream()) {
             workbook.write(outputStream);
             fc.responseComplete();
         } catch (IOException e) {
@@ -1406,27 +1431,27 @@ public class ReportController implements Serializable {
 
         return "/reports/HRReports/fingerprint_approve";
     }
-    
-    public String navigateToStaffPayrollAccountant(){
+
+    public String navigateToStaffPayrollAccountant() {
         return "/reports/salary_reports/staff_payroll_accountant?faces-redirect=true";
     }
-    
-    public String navigateToNopayandSalaryAllowanceReport(){
+
+    public String navigateToNopayandSalaryAllowanceReport() {
         return "/reports/salary_reports/nopay_and_salary_allowance_report?faces-redirect=true";
     }
-    
-    public String navigateToStaffSalaryBankWise(){
+
+    public String navigateToStaffSalaryBankWise() {
         return "/reports/salary_reports/staff_salary_bank_wise?faces-redirect=true";
     }
-    
-    public String navigateToEPF(){
+
+    public String navigateToEPF() {
         return "/reports/salary_reports/EPF?faces-redirect=true";
     }
-    
-     public String navigateToETF(){
+
+    public String navigateToETF() {
         return "/reports/salary_reports/ETF?faces-redirect=true";
     }
-    
+
     public String navigateToLeaveForm() {
 
         return "/reports/HRReports/leave_form";
@@ -2085,16 +2110,17 @@ public class ReportController implements Serializable {
         this.webUser = webUser;
     }
 
+    public void setPatientInvestigations(List<PatientInvestigation> patientInvestigations) {
+        this.patientInvestigations = patientInvestigations;
+
+    }
+
     public ReportTemplateRowBundle getBundle() {
         return bundle;
     }
 
     public void setBundle(ReportTemplateRowBundle bundle) {
         this.bundle = bundle;
-    }
-
-    public void setPatientInvestigations(List<PatientInvestigation> patientInvestigations) {
-        this.patientInvestigations = patientInvestigations;
     }
 
     public List<PatientInvestigation> getPatientInvestigations() {
@@ -2107,6 +2133,14 @@ public class ReportController implements Serializable {
 
     public void setPatientDepositHistories(List<PatientDepositHistory> patientDepositHistories) {
         this.patientDepositHistories = patientDepositHistories;
+    }
+
+    public List<AgentReferenceBook> getAgentReferenceBooks() {
+        return agentReferenceBooks;
+    }
+
+    public void setAgentReferenceBooks(List<AgentReferenceBook> agentReferenceBooks) {
+        this.agentReferenceBooks = agentReferenceBooks;
     }
 
 }

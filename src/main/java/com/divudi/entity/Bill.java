@@ -60,6 +60,7 @@ public class Bill implements Serializable {
     private Item item;
     @ManyToOne
     private MembershipScheme membershipScheme;
+    @Deprecated
     @OneToOne
     private CashTransaction cashTransaction;
     @OneToMany(mappedBy = "bill", fetch = FetchType.LAZY)
@@ -1889,10 +1890,12 @@ public class Bill implements Serializable {
         this.fromWebUser = fromWebUser;
     }
 
+    @Deprecated
     public CashTransaction getCashTransaction() {
         return cashTransaction;
     }
 
+    @Deprecated
     public void setCashTransaction(CashTransaction cashTransaction) {
         this.cashTransaction = cashTransaction;
 

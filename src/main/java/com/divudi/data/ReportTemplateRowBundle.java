@@ -1,9 +1,11 @@
 package com.divudi.data;
 
+import com.divudi.bean.common.SessionController;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Department;
 import com.divudi.entity.ReportTemplate;
 import com.divudi.entity.WebUser;
+import com.divudi.entity.cashTransaction.DenominationTransaction;
 import com.divudi.entity.channel.SessionInstance;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -25,7 +27,10 @@ public class ReportTemplateRowBundle implements Serializable {
     // UUID field to uniquely identify each object
     private UUID id;
 
+    private SessionController sessionController;
+
     private List<ReportTemplateRowBundle> bundles;
+    List<DenominationTransaction> denominationTransactions;
     private ReportTemplate reportTemplate;
     private List<ReportTemplateRow> reportTemplateRows;
 
@@ -57,6 +62,8 @@ public class ReportTemplateRowBundle implements Serializable {
     private Long long9;
     private Long long10;
 
+    private PaymentMethod paymentMethod;
+
     private double onCallValue;
     private double cashValue;
     private double cardValue;
@@ -73,6 +80,23 @@ public class ReportTemplateRowBundle implements Serializable {
     private double patientDepositValue;
     private double patientPointsValue;
     private double onlineSettlementValue;
+
+    private double onCallHandoverValue;
+    private double cashHandoverValue;
+    private double cardHandoverValue;
+    private double multiplePaymentMethodsHandoverValue;
+    private double staffHandoverValue;
+    private double creditHandoverValue;
+    private double staffWelfareHandoverValue;
+    private double voucherHandoverValue;
+    private double iouHandoverValue;
+    private double agentHandoverValue;
+    private double chequeHandoverValue;
+    private double slipHandoverValue;
+    private double eWalletHandoverValue;
+    private double patientDepositHandoverValue;
+    private double patientPointsHandoverValue;
+    private double onlineSettlementHandoverValue;
 
     // Booleans to track transactions
     private boolean hasOnCallTransaction;
@@ -101,6 +125,11 @@ public class ReportTemplateRowBundle implements Serializable {
 
     public ReportTemplateRowBundle() {
         this.id = UUID.randomUUID();
+    }
+
+    public ReportTemplateRowBundle(SessionController sessionController) {
+        this();
+        this.sessionController = sessionController;
     }
 
     private double nullSafeDouble(Double value) {
@@ -228,6 +257,113 @@ public class ReportTemplateRowBundle implements Serializable {
         }
     }
 
+    public Double getPaymentValue(PaymentMethod pm) {
+        switch (pm) {
+            case Agent:
+                return agentValue;
+            case Card:
+                return cardValue;
+            case Cash:
+                if (denominationTransactions == null) {
+                    denominationTransactions = createDefaultDenominationTransaction(PaymentMethod.Cash);
+                }
+                return cashValue;
+            case Cheque:
+                return chequeValue;
+            case Credit:
+                return creditValue;
+            case IOU:
+                return iouValue;
+            case MultiplePaymentMethods:
+                return multiplePaymentMethodsValue;
+            case OnlineSettlement:
+                return onlineSettlementValue;
+            case PatientDeposit:
+                return patientDepositValue;
+            case PatientPoints:
+                return patientPointsValue;
+            case Slip:
+                return slipValue;
+            case Staff:
+                return staffValue;
+            case Staff_Welfare:
+                return staffWelfareValue;
+            case Voucher:
+                return voucherValue;
+            case YouOweMe:
+                return iouValue; // Assuming YouOweMe is equivalent to IOU
+            case ewallet:
+                return eWalletValue;
+            default:
+                // Log unexpected payment method or handle error
+                System.out.println("Unhandled payment method: " + pm);
+                return null;
+        }
+    }
+
+    public Double getPaymentHandoverValue(PaymentMethod pm) {
+        switch (pm) {
+            case Agent:
+                return agentHandoverValue;
+            case Card:
+                return cardHandoverValue;
+            case Cash:
+                return cashHandoverValue;
+            case Cheque:
+                return chequeHandoverValue;
+            case Credit:
+                return creditHandoverValue;
+            case IOU:
+                return iouHandoverValue;
+            case MultiplePaymentMethods:
+                return multiplePaymentMethodsHandoverValue;
+            case OnlineSettlement:
+                return onlineSettlementHandoverValue;
+            case PatientDeposit:
+                return patientDepositHandoverValue;
+            case PatientPoints:
+                return patientPointsHandoverValue;
+            case Slip:
+                return slipHandoverValue;
+            case Staff:
+                return staffHandoverValue;
+            case Staff_Welfare:
+                return staffWelfareHandoverValue;
+            case Voucher:
+                return voucherHandoverValue;
+            case YouOweMe:
+                return iouHandoverValue; // Assuming YouOweMe is equivalent to IOU
+            case ewallet:
+                return eWalletHandoverValue;
+            default:
+                // Log unexpected payment method or handle error
+                System.out.println("Unhandled payment method: " + pm);
+                return null;
+        }
+    }
+
+    public List<ReportTemplateRow> getPaymentRows(PaymentMethod pm) {
+        List<ReportTemplateRow> prows = new ArrayList<>();
+        if (reportTemplateRows == null) {
+            return prows;
+        }
+        if (reportTemplateRows.isEmpty()) {
+            return prows;
+        }
+        for (ReportTemplateRow r : reportTemplateRows) {
+            if (r.getPayment() == null) {
+                continue;
+            }
+            if (r.getPayment().getPaymentMethod() == null) {
+                continue;
+            }
+            if (r.getPayment().getPaymentMethod() == pm) {
+                prows.add(r);
+            }
+        }
+        return prows;
+    }
+
     public ReportTemplateRowBundle(List<ReportTemplateRow> reportTemplateRows) {
         this.reportTemplateRows = reportTemplateRows;
     }
@@ -306,73 +442,97 @@ public class ReportTemplateRowBundle implements Serializable {
                 }
 
                 Double amount = safeDouble(row.getPayment().getPaidValue());  // Ensure amounts are not null
+                Double amountHandingOver = 0.0;
+
+                if (row.isSelected()) {
+                    amountHandingOver = amount;
+                }
+
                 PaymentMethod method = row.getPayment().getPaymentMethod();  // Using the enum type directly
                 total += amount;
-                System.out.println("method = " + method);
-                System.out.println("amount = " + amount);
+
                 switch (method) {
                     case Agent:
                         this.agentValue += amount;
+                        this.agentHandoverValue += amountHandingOver;
                         this.hasAgentTransaction = true;
                         break;
                     case Card:
                         this.cardValue += amount;
+                        this.cardHandoverValue += amountHandingOver;
                         this.hasCardTransaction = true;
                         break;
                     case Cash:
+                        if (denominationTransactions == null) {
+                            denominationTransactions = createDefaultDenominationTransaction(PaymentMethod.Cash);
+                        }
                         this.cashValue += amount;
+                        this.cashHandoverValue += amountHandingOver;
                         this.hasCashTransaction = true;
                         break;
                     case Cheque:
                         this.chequeValue += amount;
+                        this.chequeHandoverValue += amountHandingOver;
                         this.hasChequeTransaction = true;
                         break;
                     case Credit:
                         this.creditValue += amount;
+                        this.creditHandoverValue += amountHandingOver;
                         this.hasCreditTransaction = true;
                         break;
                     case IOU:
                         this.iouValue += amount;
+                        this.iouHandoverValue += amountHandingOver;
                         this.hasIouTransaction = true;
                         break;
                     case MultiplePaymentMethods:
                         this.multiplePaymentMethodsValue += amount;
+                        this.multiplePaymentMethodsHandoverValue += amountHandingOver;
                         this.hasMultiplePaymentMethodsTransaction = true;
                         break;
                     case OnlineSettlement:
                         this.onlineSettlementValue += amount;
+                        this.onlineSettlementHandoverValue += amountHandingOver;
                         this.hasOnlineSettlementTransaction = true;
                         break;
                     case PatientDeposit:
                         this.patientDepositValue += amount;
+                        this.patientDepositHandoverValue += amountHandingOver;
                         this.hasPatientDepositTransaction = true;
                         break;
                     case PatientPoints:
                         this.patientPointsValue += amount;
+                        this.patientPointsHandoverValue += amountHandingOver;
                         this.hasPatientPointsTransaction = true;
                         break;
                     case Slip:
                         this.slipValue += amount;
+                        this.slipHandoverValue += amountHandingOver;
                         this.hasSlipTransaction = true;
                         break;
                     case Staff:
                         this.staffValue += amount;
+                        this.staffHandoverValue += amountHandingOver;
                         this.hasStaffTransaction = true;
                         break;
                     case Staff_Welfare:
                         this.staffWelfareValue += amount;
+                        this.staffWelfareHandoverValue += amountHandingOver;
                         this.hasStaffWelfareTransaction = true;
                         break;
                     case Voucher:
                         this.voucherValue += amount;
+                        this.voucherHandoverValue += amountHandingOver;
                         this.hasVoucherTransaction = true;
                         break;
                     case YouOweMe:
                         this.iouValue += amount;  // Assuming YouOweMe is equivalent to IOU
+                        this.iouHandoverValue += amountHandingOver;
                         this.hasIouTransaction = true;
                         break;
                     case ewallet:
                         this.eWalletValue += amount;
+                        this.eWalletHandoverValue += amountHandingOver;
                         this.hasEWalletTransaction = true;
                         break;
                     default:
@@ -1051,6 +1211,185 @@ public class ReportTemplateRowBundle implements Serializable {
 
     public void setDepartments(List<Department> departments) {
         this.departments = departments;
+    }
+
+    public double getOnCallHandoverValue() {
+        return onCallHandoverValue;
+    }
+
+    public void setOnCallHandoverValue(double onCallHandoverValue) {
+        this.onCallHandoverValue = onCallHandoverValue;
+    }
+
+    public double getCashHandoverValue() {
+        return cashHandoverValue;
+    }
+
+    public void setCashHandoverValue(double cashHandoverValue) {
+        this.cashHandoverValue = cashHandoverValue;
+    }
+
+    public double getCardHandoverValue() {
+        return cardHandoverValue;
+    }
+
+    public void setCardHandoverValue(double cardHandoverValue) {
+        this.cardHandoverValue = cardHandoverValue;
+    }
+
+    public double getMultiplePaymentMethodsHandoverValue() {
+        return multiplePaymentMethodsHandoverValue;
+    }
+
+    public void setMultiplePaymentMethodsHandoverValue(double multiplePaymentMethodsHandoverValue) {
+        this.multiplePaymentMethodsHandoverValue = multiplePaymentMethodsHandoverValue;
+    }
+
+    public double getStaffHandoverValue() {
+        return staffHandoverValue;
+    }
+
+    public void setStaffHandoverValue(double staffHandoverValue) {
+        this.staffHandoverValue = staffHandoverValue;
+    }
+
+    public double getCreditHandoverValue() {
+        return creditHandoverValue;
+    }
+
+    public void setCreditHandoverValue(double creditHandoverValue) {
+        this.creditHandoverValue = creditHandoverValue;
+    }
+
+    public double getStaffWelfareHandoverValue() {
+        return staffWelfareHandoverValue;
+    }
+
+    public void setStaffWelfareHandoverValue(double staffWelfareHandoverValue) {
+        this.staffWelfareHandoverValue = staffWelfareHandoverValue;
+    }
+
+    public double getVoucherHandoverValue() {
+        return voucherHandoverValue;
+    }
+
+    public void setVoucherHandoverValue(double voucherHandoverValue) {
+        this.voucherHandoverValue = voucherHandoverValue;
+    }
+
+    public double getIouHandoverValue() {
+        return iouHandoverValue;
+    }
+
+    public void setIouHandoverValue(double iouHandoverValue) {
+        this.iouHandoverValue = iouHandoverValue;
+    }
+
+    public double getAgentHandoverValue() {
+        return agentHandoverValue;
+    }
+
+    public void setAgentHandoverValue(double agentHandoverValue) {
+        this.agentHandoverValue = agentHandoverValue;
+    }
+
+    public double getChequeHandoverValue() {
+        return chequeHandoverValue;
+    }
+
+    public void setChequeHandoverValue(double chequeHandoverValue) {
+        this.chequeHandoverValue = chequeHandoverValue;
+    }
+
+    public double getSlipHandoverValue() {
+        return slipHandoverValue;
+    }
+
+    public void setSlipHandoverValue(double slipHandoverValue) {
+        this.slipHandoverValue = slipHandoverValue;
+    }
+
+    public double geteWalletHandoverValue() {
+        return eWalletHandoverValue;
+    }
+
+    public void seteWalletHandoverValue(double eWalletHandoverValue) {
+        this.eWalletHandoverValue = eWalletHandoverValue;
+    }
+
+    public double getPatientDepositHandoverValue() {
+        return patientDepositHandoverValue;
+    }
+
+    public void setPatientDepositHandoverValue(double patientDepositHandoverValue) {
+        this.patientDepositHandoverValue = patientDepositHandoverValue;
+    }
+
+    public double getPatientPointsHandoverValue() {
+        return patientPointsHandoverValue;
+    }
+
+    public void setPatientPointsHandoverValue(double patientPointsHandoverValue) {
+        this.patientPointsHandoverValue = patientPointsHandoverValue;
+    }
+
+    public double getOnlineSettlementHandoverValue() {
+        return onlineSettlementHandoverValue;
+    }
+
+    public void setOnlineSettlementHandoverValue(double onlineSettlementHandoverValue) {
+        this.onlineSettlementHandoverValue = onlineSettlementHandoverValue;
+    }
+
+    public SessionController getSessionController() {
+        return sessionController;
+    }
+
+    public void setSessionController(SessionController sessionController) {
+        this.sessionController = sessionController;
+    }
+
+    public List<DenominationTransaction> getDenominationTransactions() {
+        return denominationTransactions;
+    }
+
+    public void setDenominationTransactions(List<DenominationTransaction> denominationTransactions) {
+        this.denominationTransactions = denominationTransactions;
+    }
+
+    public void calculateTotalHandoverByDenominationQuantities() {
+        cashHandoverValue = 0.0;
+        if (denominationTransactions == null || denominationTransactions.isEmpty()) {
+            return;
+        }
+        for (DenominationTransaction dt : denominationTransactions) {
+            if (dt == null || dt.getDenomination() == null || dt.getDenomination().getDenominationValue() == null || dt.getDenominationQty() == null) {
+                continue;
+            }
+            Double dv = dt.getDenomination().getDenominationValue() * dt.getDenominationQty();
+            dt.setDenominationValue(dv);
+            cashHandoverValue += dv;
+        }
+    }
+
+    private List<DenominationTransaction> createDefaultDenominationTransaction(PaymentMethod pm) {
+        List<DenominationTransaction> dts = new ArrayList<>();
+        List<com.divudi.entity.cashTransaction.Denomination> denominations = sessionController.findDefaultDenominations();
+        for (com.divudi.entity.cashTransaction.Denomination d : denominations) {
+            DenominationTransaction dt = new DenominationTransaction();
+            dt.setDenomination(d);
+            dt.setPaymentMethod(pm);
+            dts.add(dt);
+        }
+        return dts;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
 
 }
