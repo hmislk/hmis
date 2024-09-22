@@ -1135,6 +1135,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
                     getFacede().edit(u);
                     setLoggedUser(u);
+                    setLoggedUsersDrawer(drawerController.getUsersDrawer(u));
                     loggableDepartments = fillLoggableDepts();
                     loggableCollectingCentres = fillLoggableCollectingCentres();
                     if (webUserController.isGrantAllPrivilegesToAllUsersForTesting()) {
@@ -1550,6 +1551,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         userPrivilages = null;
         websiteUserGoingToLog = false;
         recordLogout();
+        setLoggedUsersDrawer(null);
         setLoggedUser(null);
         loggableDepartments = null;
         loggableSubDepartments = null;
@@ -2243,9 +2245,7 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     public Drawer getLoggedUserDrawer() {
-        Drawer drawer = drawerController.getLoggedUsersDrawer();
-        System.out.println("Logged User Drawer = " + drawer);
-        return drawer;
+        return loggedUserDrawer;
     }
 
     public void setLoggedUsersDrawer(Drawer loggedUserDrawer) {
