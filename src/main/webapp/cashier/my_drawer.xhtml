@@ -1,0 +1,339 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
+
+    <h:body>
+        <ui:composition template="/cashier/index.xhtml">
+
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel class="mt-3">
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between">
+                                <div class="d-flex gap-3">
+                                <i style="font-size: 30px; color: #487bff; font-weight: 700;" class="pi pi-folder-open mt-1" />
+                                <h:outputText style="font-size: 25px; font-weight: 700;" value="My Current Drawer Details"/>
+                                </div>
+                                <div class="d-flex gap-2" >
+                                    <p:outputLabel style="font-size: 25px; font-weight: 700;" value="#{sessionController.loggedUser.name}" ></p:outputLabel>
+                                    <p:outputLabel style="font-size: 25px; font-weight: 700;" value="-" ></p:outputLabel>
+                                    <p:outputLabel style="font-size: 25px; font-weight: 700;" value="#{sessionController.loggedUser.webUserPerson.nameWithTitle}" ></p:outputLabel>
+                                </div>
+                            </div>
+                        </f:facet>
+ 
+                        <style>
+                            table {
+                                width: 50%;
+                                border-collapse: collapse;
+                                font-size: 20px;
+                            }
+                            th, td {
+                                border: 2px solid black;
+                                padding: 8px;
+                                text-align: left;
+                                font-size: 20px;
+                                font-weight: 600;
+
+                            }
+
+                            th {
+                                font-weight: 600;
+                            }
+                            .centered {
+                                text-align: center;
+                                font-size: 25px;
+                                font-weight: bold;
+                            }
+
+                        </style>
+
+                        <div class="d-flex justify-content-center">
+
+                            <table border="1" style="margin: 10px;">
+                                <thead>
+                                    <tr>
+                                        <th >Payment Method</th>
+                                        <th style="width: 10em; text-align: center">In-Hand Value</th>
+                                        <th style="width: 10em; text-align: center">Shortage / Excess</th>
+                                        <th style="width: 10em; text-align: center">Balance</th>
+                                    </tr>
+                                </thead>                                
+                                <tbody>
+                                    <tr>
+                                        <td>Cash</td>
+                                        <td class="centered">
+                                            <p:outputLabel value="#{not empty financialTransactionController.loggedUserDrawer.cashInHandValue ? financialTransactionController.loggedUserDrawer.cashInHandValue : '0.00'}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </p:outputLabel>
+                                        </td>
+                                        <td class="centered">
+                                            <p:outputLabel 
+                                                style="color: #{financialTransactionController.loggedUserDrawer.cashShortageOrExcess >= 0 ? 'red' : 'green'};"
+                                                value="#{not empty financialTransactionController.loggedUserDrawer.cashShortageOrExcess ? financialTransactionController.loggedUserDrawer.cashShortageOrExcess : '0.00'}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </p:outputLabel>
+                                        </td>
+                                        <td class="centered">
+                                            <p:outputLabel value="#{not empty financialTransactionController.loggedUserDrawer.cashBalance ? financialTransactionController.loggedUserDrawer.cashBalance : '0.00'}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </p:outputLabel>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Card</td>
+                                        <td class="centered">
+                                            <p:outputLabel value="#{not empty financialTransactionController.loggedUserDrawer.cardInHandValue ? financialTransactionController.loggedUserDrawer.cardInHandValue : '0.00'}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </p:outputLabel>
+                                        </td>
+                                        <td class="centered">
+                                            <p:outputLabel 
+                                                style="color: #{financialTransactionController.loggedUserDrawer.cardShortageOrExcess >= 0 ? 'red' : 'green'};"
+                                                value="#{not empty financialTransactionController.loggedUserDrawer.cardShortageOrExcess ? financialTransactionController.loggedUserDrawer.cardShortageOrExcess : '0.00'}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </p:outputLabel>
+                                        </td>
+                                        <td class="centered">
+                                            <p:outputLabel value="#{not empty financialTransactionController.loggedUserDrawer.cardBalance ? financialTransactionController.loggedUserDrawer.cardBalance : '0.00'}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </p:outputLabel>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Staff</td>
+                                        <td class="centered">
+                                            <p:outputLabel value="#{not empty financialTransactionController.loggedUserDrawer.staffInHandValue ? financialTransactionController.loggedUserDrawer.staffInHandValue : '0.00'}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </p:outputLabel>
+                                        </td>
+                                        <td class="centered">
+                                            <p:outputLabel 
+                                                style="color: #{financialTransactionController.loggedUserDrawer.staffShortageOrExcess >= 0 ? 'red' : 'green'};"
+                                                value="#{not empty financialTransactionController.loggedUserDrawer.staffShortageOrExcess ? financialTransactionController.loggedUserDrawer.staffShortageOrExcess : '0.00'}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </p:outputLabel>
+                                        </td>
+                                        <td class="centered">
+                                            <p:outputLabel value="#{not empty financialTransactionController.loggedUserDrawer.staffBalance ? financialTransactionController.loggedUserDrawer.staffBalance : '0.00'}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </p:outputLabel>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Credit</td>
+                                        <td class="centered">
+                                            <p:outputLabel value="#{not empty financialTransactionController.loggedUserDrawer.creditInHandValue ? financialTransactionController.loggedUserDrawer.creditInHandValue : '0.00'}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </p:outputLabel>
+                                        </td>
+                                        <td class="centered">
+                                            <p:outputLabel 
+                                                style="color: #{financialTransactionController.loggedUserDrawer.creditShortageOrExcess >= 0 ? 'red' : 'green'};"
+                                                value="#{not empty financialTransactionController.loggedUserDrawer.creditShortageOrExcess ? financialTransactionController.loggedUserDrawer.creditShortageOrExcess : '0.00'}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </p:outputLabel>
+                                        </td>
+                                        <td class="centered">
+                                            <p:outputLabel value="#{not empty financialTransactionController.loggedUserDrawer.creditBalance ? financialTransactionController.loggedUserDrawer.creditBalance : '0.00'}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </p:outputLabel>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Staff Welfare</td>
+                                        <td class="centered">
+                                            <p:outputLabel value="#{not empty financialTransactionController.loggedUserDrawer.staffWelfareInHandValue ? financialTransactionController.loggedUserDrawer.staffWelfareInHandValue : '0.00'}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </p:outputLabel>
+                                        </td>
+                                        <td class="centered">
+                                            <p:outputLabel 
+                                                style="color: #{financialTransactionController.loggedUserDrawer.staffWelfareShortageOrExcess >= 0 ? 'red' : 'green'};"
+                                                value="#{not empty financialTransactionController.loggedUserDrawer.staffWelfareShortageOrExcess ? financialTransactionController.loggedUserDrawer.staffWelfareShortageOrExcess : '0.00'}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </p:outputLabel>
+                                        </td>
+                                        <td class="centered">
+                                            <p:outputLabel value="#{not empty financialTransactionController.loggedUserDrawer.staffWelfareBalance ? financialTransactionController.loggedUserDrawer.staffWelfareBalance : '0.00'}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </p:outputLabel>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Voucher</td>
+                                        <td class="centered">
+                                            <p:outputLabel value="#{not empty financialTransactionController.loggedUserDrawer.voucherInHandValue ? financialTransactionController.loggedUserDrawer.voucherInHandValue : '0.00'}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </p:outputLabel>
+                                        </td>
+                                        <td class="centered">
+                                            <p:outputLabel 
+                                                style="color: #{financialTransactionController.loggedUserDrawer.voucherShortageOrExcess >= 0 ? 'red' : 'green'};"
+                                                value="#{not empty financialTransactionController.loggedUserDrawer.voucherShortageOrExcess ? financialTransactionController.loggedUserDrawer.voucherShortageOrExcess : '0.00'}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </p:outputLabel>
+                                        </td>
+                                        <td class="centered">
+                                            <p:outputLabel value="#{not empty financialTransactionController.loggedUserDrawer.voucherBalance ? financialTransactionController.loggedUserDrawer.voucherBalance : '0.00'}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </p:outputLabel>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>IOU</td>
+                                        <td class="centered">
+                                            <p:outputLabel value="#{not empty financialTransactionController.loggedUserDrawer.iouInHandValue ? financialTransactionController.loggedUserDrawer.iouInHandValue : '0.00'}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </p:outputLabel>
+                                        </td>
+                                        <td class="centered">
+                                            <p:outputLabel 
+                                                style="color: #{financialTransactionController.loggedUserDrawer.iouShortageOrExcess >= 0 ? 'red' : 'green'};"
+                                                value="#{not empty financialTransactionController.loggedUserDrawer.iouShortageOrExcess ? financialTransactionController.loggedUserDrawer.iouShortageOrExcess : '0.00'}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </p:outputLabel>
+                                        </td>
+                                        <td class="centered">
+                                            <p:outputLabel value="#{not empty financialTransactionController.loggedUserDrawer.iouBalance ? financialTransactionController.loggedUserDrawer.iouBalance : '0.00'}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </p:outputLabel>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Agent</td>
+                                        <td class="centered">
+                                            <p:outputLabel value="#{not empty financialTransactionController.loggedUserDrawer.agentInHandValue ? financialTransactionController.loggedUserDrawer.agentInHandValue : '0.00'}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </p:outputLabel>
+                                        </td>
+                                        <td class="centered">
+                                            <p:outputLabel 
+                                                style="color: #{financialTransactionController.loggedUserDrawer.agentShortageOrExcess >= 0 ? 'red' : 'green'};"
+                                                value="#{not empty financialTransactionController.loggedUserDrawer.agentShortageOrExcess ? financialTransactionController.loggedUserDrawer.agentShortageOrExcess : '0.00'}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </p:outputLabel>
+                                        </td>
+                                        <td class="centered">
+                                            <p:outputLabel value="#{not empty financialTransactionController.loggedUserDrawer.agentBalance ? financialTransactionController.loggedUserDrawer.agentBalance : '0.00'}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </p:outputLabel>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Cheque</td>
+                                        <td class="centered">
+                                            <p:outputLabel value="#{not empty financialTransactionController.loggedUserDrawer.chequeInHandValue ? financialTransactionController.loggedUserDrawer.chequeInHandValue : '0.00'}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </p:outputLabel>
+                                        </td>
+                                        <td class="centered">
+                                            <p:outputLabel 
+                                                style="color: #{financialTransactionController.loggedUserDrawer.chequeShortageOrExcess >= 0 ? 'red' : 'green'};"
+                                                value="#{not empty financialTransactionController.loggedUserDrawer.chequeShortageOrExcess ? financialTransactionController.loggedUserDrawer.chequeShortageOrExcess : '0.00'}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </p:outputLabel>
+                                        </td>
+                                        <td class="centered">
+                                            <p:outputLabel value="#{not empty financialTransactionController.loggedUserDrawer.chequeBalance ? financialTransactionController.loggedUserDrawer.chequeBalance : '0.00'}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </p:outputLabel>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Slip</td>
+                                        <td class="centered">
+                                            <p:outputLabel value="#{not empty financialTransactionController.loggedUserDrawer.slipInHandValue ? financialTransactionController.loggedUserDrawer.slipInHandValue : '0.00'}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </p:outputLabel>
+                                        </td>
+                                        <td class="centered">
+                                            <p:outputLabel 
+                                                style="color: #{financialTransactionController.loggedUserDrawer.slipShortageOrExcess >= 0 ? 'red' : 'green'};"
+                                                value="#{not empty financialTransactionController.loggedUserDrawer.slipShortageOrExcess ? financialTransactionController.loggedUserDrawer.slipShortageOrExcess : '0.00'}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </p:outputLabel>
+                                        </td>
+                                        <td class="centered">
+                                            <p:outputLabel value="#{not empty financialTransactionController.loggedUserDrawer.slipBalance ? financialTransactionController.loggedUserDrawer.slipBalance : '0.00'}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </p:outputLabel>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>E-wallet</td>
+                                        <td class="centered">
+                                            <p:outputLabel value="#{not empty financialTransactionController.loggedUserDrawer.ewalletInHandValue ? financialTransactionController.loggedUserDrawer.ewalletInHandValue : '0.00'}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </p:outputLabel>
+                                        </td>
+                                        <td class="centered">
+                                            <p:outputLabel 
+                                                style="color: #{financialTransactionController.loggedUserDrawer.ewalletShortageOrExcess >= 0 ? 'red' : 'green'};"
+                                                value="#{not empty financialTransactionController.loggedUserDrawer.ewalletShortageOrExcess ? financialTransactionController.loggedUserDrawer.ewalletShortageOrExcess : '0.00'}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </p:outputLabel>
+                                        </td>
+                                        <td class="centered">
+                                            <p:outputLabel value="#{not empty financialTransactionController.loggedUserDrawer.ewalletBalance ? financialTransactionController.loggedUserDrawer.ewalletBalance : '0.00'}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </p:outputLabel>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Patient Deposit</td>
+                                        <td class="centered">
+                                            <p:outputLabel value="#{not empty financialTransactionController.loggedUserDrawer.patientDepositInHandValue ? financialTransactionController.loggedUserDrawer.patientDepositInHandValue : '0.00'}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </p:outputLabel>
+                                        </td>
+                                        <td class="centered">
+                                            <p:outputLabel 
+                                                style="color: #{financialTransactionController.loggedUserDrawer.patientDepositShortageOrExcess >= 0 ? 'red' : 'green'};"
+                                                value="#{not empty financialTransactionController.loggedUserDrawer.patientDepositShortageOrExcess ? financialTransactionController.loggedUserDrawer.patientDepositShortageOrExcess : '0.00'}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </p:outputLabel>
+                                        </td>
+                                        <td class="centered">
+                                            <p:outputLabel value="#{not empty financialTransactionController.loggedUserDrawer.patientDepositBalance ? financialTransactionController.loggedUserDrawer.patientDepositBalance : '0.00'}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </p:outputLabel>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Patient Points</td>
+                                        <td class="centered">
+                                            <p:outputLabel value="#{not empty financialTransactionController.loggedUserDrawer.patientPointsInHandValue ? financialTransactionController.loggedUserDrawer.patientPointsInHandValue : '0.00'}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </p:outputLabel>
+                                        </td>
+                                        <td class="centered">
+                                            <p:outputLabel 
+                                                style="color: #{financialTransactionController.loggedUserDrawer.patientPointsShortageOrExcess >= 0 ? 'red' : 'green'};"
+                                                value="#{not empty financialTransactionController.loggedUserDrawer.patientPointsShortageOrExcess ? financialTransactionController.loggedUserDrawer.patientPointsShortageOrExcess : '0.00'}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </p:outputLabel>
+                                        </td>
+                                        <td class="centered">
+                                            <p:outputLabel value="#{not empty financialTransactionController.loggedUserDrawer.patientPointsBalance ? financialTransactionController.loggedUserDrawer.patientPointsBalance : '0.00'}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </p:outputLabel>
+                                        </td>
+                                    </tr>
+                                    
+                                </tbody>
+                            </table>
+                            
+                        </div>
+                    </p:panel>
+                    
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

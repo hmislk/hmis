@@ -36,6 +36,7 @@ import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
+import com.divudi.entity.cashTransaction.Drawer;
 import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.PaymentMethodValueFacade;
 import com.divudi.java.CommonFunctions;
@@ -100,7 +101,9 @@ public class FinancialTransactionController implements Serializable {
     private BillSearch billSearch;
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
-    // </editor-fold>  
+    @Inject
+    private DrawerController drawerController;
+    // </editor-fold>   
 
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private Bill currentBill;
@@ -223,6 +226,8 @@ public class FinancialTransactionController implements Serializable {
     private Date forDate;
 
     private int tabIndex;
+    
+    private Drawer loggedUserDrawer;
 
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Constructors">
@@ -1097,8 +1102,8 @@ public class FinancialTransactionController implements Serializable {
         selectedPaymentMethod = inputPaymentMethod;
         return "/cashier/handover_start_select?faces-redirect=true";
     }
-    
-    public String navigateBackToPaymentHandoverCreate(){
+
+    public String navigateBackToPaymentHandoverCreate() {
         selectedBundle.calculateTotalsByPayments();
         return "/cashier/handover_start_all?faces-redirect=true";
     }
@@ -1915,6 +1920,11 @@ public class FinancialTransactionController implements Serializable {
     public void refreshCashNetTotalForMenu() {
         findNonClosedShiftStartFundBillIsAvailable();
         fillPaymentsFromShiftStartToNow();
+    }
+
+    public String navigateToMyDrawer() {
+        loggedUserDrawer = drawerController.getUsersDrawer(sessionController.getLoggedUser());
+        return "/cashier/my_drawer?faces-redirect=true";
     }
 
     public String navigateToCreateShiftEndSummaryBill() {
@@ -4542,7 +4552,22 @@ public class FinancialTransactionController implements Serializable {
     public void setSelectedPaymentMethod(PaymentMethod selectedPaymentMethod) {
         this.selectedPaymentMethod = selectedPaymentMethod;
     }
-    
-    
+
+    public DrawerController getDrawerController() {
+        return drawerController;
+    }
+
+    public void setDrawerController(DrawerController drawerController) {
+        this.drawerController = drawerController;
+    }
+
+    public Drawer getLoggedUserDrawer() {
+        
+        return loggedUserDrawer;
+    }
+
+    public void setLoggedUserDrawer(Drawer loggedUserDrawer) {
+        this.loggedUserDrawer = loggedUserDrawer;
+    }
 
 }
