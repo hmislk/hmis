@@ -11,6 +11,7 @@ package com.divudi.bean.cashTransaction;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.entity.WebUser;
 import com.divudi.entity.cashTransaction.Drawer;
 import com.divudi.facade.DrawerFacade;
 import java.io.Serializable;
@@ -59,23 +60,23 @@ public class DrawerController implements Serializable {
         drawers = getFacade().findByJpql(sql, hm);
     }
 
-    public Drawer getLoggedUsersDrawer() {
+    public Drawer getUsersDrawer(WebUser webUser) {
         String jpql;
         HashMap m = new HashMap();
         jpql = "select d from Drawer d "
                 + " where d.retired=false "
                 + " and d.drawerUser=:user";
         
-        m.put("user", sessionController.getLoggedUser());
+        m.put("user", webUser);
         
         Drawer drawer;
         drawer = getFacade().findFirstByJpql(jpql, m);
         
         if (drawer == null) {
-            current = new Drawer();
-            saveSelected();
+            drawer = new Drawer();
+            drawer.setDrawerUser(webUser);
+            save(drawer);
         }
-         
         return drawer;
     }
 
@@ -112,12 +113,23 @@ public class DrawerController implements Serializable {
         items = null;
     }
 
+    public void save(Drawer drawer) {
+        if (drawer.getId() != null && drawer.getId() > 0) {
+            getFacade().edit(drawer);
+            JsfUtil.addSuccessMessage("Updated Successfully.");
+        } else {
+            drawer.setCreatedAt(new Date());
+            drawer.setCreater(getSessionController().getLoggedUser());
+            getFacade().create(drawer);
+            JsfUtil.addSuccessMessage("Saved Successfully");
+        }
+    }
+    
     public void saveSelected() {
-
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Updated Successfully.");
-        } else {
+        } else {            
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
