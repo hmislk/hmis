@@ -12,6 +12,7 @@ import com.divudi.entity.Payment;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
+import com.divudi.entity.cashTransaction.DenominationTransaction;
 import com.divudi.entity.channel.SessionInstance;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -37,6 +38,8 @@ public class ReportTemplateRow implements Serializable {
     private BillItem billItem;
     private BillFee billFee;
     private Payment payment;
+    
+    private boolean selected;
 
     private Item item;
 
@@ -138,6 +141,8 @@ public class ReportTemplateRow implements Serializable {
     private String rowType;
 
     private UUID id;
+    
+    private List<DenominationTransaction> denominationTransactions;
 
     // Constructor to generate a new UUID when an object is created
     public ReportTemplateRow() {
@@ -1172,6 +1177,22 @@ public class ReportTemplateRow implements Serializable {
 
     public void setCcTotal(Double ccTotal) {
         this.ccTotal = ccTotal;
+    }
+
+    public boolean isSelected() {
+        return selected;
+    }
+
+    public void setSelected(boolean selected) {
+        this.selected = selected;
+    }
+
+    public List<DenominationTransaction> getDenominationTransactions() {
+        return denominationTransactions;
+    }
+
+    public void setDenominationTransactions(List<DenominationTransaction> denominationTransactions) {
+        this.denominationTransactions = denominationTransactions;
     }
     
     

@@ -48,7 +48,7 @@ public class DenominationController implements Serializable {
         String jpql = "select d "
                 + " from Denomination d "
                 + " where d.retired=:ret "
-                + " order by d.orderNo";
+                + " order by d.orderNumber";
         Map params = new HashMap<>();
         params.put("ret", false);
         denos = denominationFacade.findByJpql(jpql, params);

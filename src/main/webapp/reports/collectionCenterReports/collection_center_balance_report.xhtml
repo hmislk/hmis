@@ -51,6 +51,7 @@
                                 </div>
                                 <div class="col-md-4 w-50 " >
                                     <p:selectOneMenu value="#{reportController.collectingCentre}" >
+                                        <f:selectItem itemLabel="All" ></f:selectItem>
                                         <f:selectItems var="r" itemLabel="#{r.name}" value="#{collectingCentreController.items}" itemValue="#{r}"/>
                                     </p:selectOneMenu>
                                 </div>
