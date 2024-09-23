@@ -9,7 +9,7 @@
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
                 <h:form >
-                    <p:panel header="Staff Salary Payment To Bank" >
+                    <p:panel header="Staff Salary Payment To Bank (SLIP)" >
                         <p:panelGrid columns="4" class="w-100">
 
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -152,6 +152,19 @@
                                                itemValue=""
                                                ></f:selectItems>
                             </p:selectOneMenu>
+                            
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf133;" styleClass="fa mr-2" /> <!-- FontAwesome calendar-alt icon for Date -->
+                                <h:outputLabel value="Date" for="cmbDate" class="mx-3"/>
+                            </h:panelGroup>
+
+                            <p:calendar 
+                                value="" 
+                                pattern="MM/dd/yyyy" 
+                                showButtonPanel="true" 
+                                placeholder="Select Date" 
+                                class="w-100">
+                            </p:calendar>
 
 
 
@@ -176,39 +189,7 @@
 
 
 
-                        <p:dataTable id="tbl" value="" var="f" rowIndexVar="n" paginator="true" rows="10" 
-                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
-
-                            <p:column headerText="Emp No" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Emp Name" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Bank" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Bank Branch" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Account No" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Block" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Hold" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            
-
-
-
-
-
-
-                        </p:dataTable>
+                        
 
 
 
