@@ -85,27 +85,23 @@
                                 </div>
                             </div>
 
-                            <!--                        <div class="row mb-2">
-                                                        <div class="col-md-2">
-                                                            <p:outputLabel value="Collecting Centre Sites" />
-                                                        </div>
-                                                        <div class="col-md-4">
-                                                            <p:selectOneMenu 
-                                                                style=" max-width: 100%; overflow-x: auto; "
-                                                                class="w-100"
-                                                                value="#{institutionController.sites}"
-                                                                filter="true"
-                                                                filterMatchMode="contains">
-                                                                <f:selectItem itemLabel="All" />
-                                                                <f:selectItems value="#{routeController.site}"
-                                                                               var="r"
-                                                                               itemLabel="#{r.name}"
-                                                                               itemValue="#{r}" />
-                                                            </p:selectOneMenu>
-                                                        </div>
-                                                    </div>-->
-
                             <div class="row mb-2">
+                                <div class="col-md-2">
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
+                                        <h:outputLabel value="Site" class="mx-3"/>
+                                    </h:panelGroup>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:selectOneMenu
+                                        id="siteMenu"
+                                        styleClass="w-100 form-control"  
+                                        value="#{searchController.site}" 
+                                        filter="true">
+                                        <f:selectItem itemLabel="All Sites" />
+                                        <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                    </p:selectOneMenu>
+                                </div>
                                 <div class="col-md-2">
                                     <h:panelGroup >
                                         <h:outputText value="&#xf46d;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
@@ -122,23 +118,44 @@
                                     </p:selectOneMenu>
                                 </div>
                             </div>
-                                <div class="col-md-6 my-2">
-                                    <p:commandButton ajax="false"
-                                                     value="Process"
-                                                     icon="fas fa-cogs"
-                                                     class="ui-button-warning"
-                                                     action="#{reportController.processCollectingCentreReciptReport()}" />
-                                    <!--                                <p:commandButton ajax="false"
-                                                                                     value="Download to Excel"
-                                                                                     class="mx-1 ui-button-success"
-                                                                                     ><p:dataExporter 
-                                                                            type="xls" 
-                                                                            target="tblExport"
-                                                                            fileName="c_transaction_reports"
-                                                                            /></p:commandButton>-->
-                                </div>
-                            
                         </div>
+
+                        <h:panelGrid columns="6">
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Process" 
+                                icon="fas fa-cogs"
+                                class="m-2 ui-button-warning"
+                                action="#{reportController.processCollectingCentreReciptReport()}" >
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                icon="fa-solid fa-print"
+                                class="mx-1 ui-button-info"
+                                ajax="false" 
+                                value="Print"
+                                action="#{reportController.processCollectingCentreStatementReportNew()}">
+                                <p:printer target="tblExport" />
+                            </p:commandButton>
+                            <p:commandButton 
+                                class="m-2 ui-button-success" 
+                                icon="fas fa-file-excel"
+                                ajax="false" 
+                                value="Excel"
+                                action="#{reportController.processCollectingCentreStatementReportNew()}">
+                                <p:dataExporter type="xlsx" target="tblExport"  fileName="collection_center_recipt_report" ></p:dataExporter>
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                class="m-2 ui-button-raised" 
+                                icon="fa-solid fa-file-pdf"
+                                ajax="false" 
+                                value="PDF"
+                                action="#{reportController.processCollectingCentreStatementReportNew()}">
+                                <p:dataExporter type="pdf" target="tblExport"  fileName="collection_center_recipt_report" ></p:dataExporter>
+                            </p:commandButton>
+
+                        </h:panelGrid>
 
                         <p:dataTable value="#{reportController.bills}" var="bi" rowIndexVar="i" id="tblExport">
                             <!--                        //Mandatory filters
