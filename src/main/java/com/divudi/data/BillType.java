@@ -169,7 +169,8 @@ public enum BillType {
     @Deprecated
     FinancialAuditingBill, // For broader auditing purposes, ensuring compliance with policies and regulatory requirements
     StaffCreditSettle,
-    FUND_SHIFT_COMPONANT_HANDOVER_CREATE;
+    FUND_SHIFT_COMPONANT_HANDOVER_CREATE,
+    FUND_SHIFT_COMPONANT_HANDOVER_ACCEPT;
 
     public String getLabel() {
         switch (this) {
