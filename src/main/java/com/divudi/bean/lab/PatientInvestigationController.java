@@ -4493,6 +4493,54 @@ public class PatientInvestigationController implements Serializable {
         this.billItems = billItems;
     }
 
+    public Double getHospitalFeeTotal() {
+        return hospitalFeeTotal;
+    }
+
+    public void setHospitalFeeTotal(Double hospitalFeeTotal) {
+        this.hospitalFeeTotal = hospitalFeeTotal;
+    }
+
+    public Double getCcFeeTotal() {
+        return ccFeeTotal;
+    }
+
+    public void setCcFeeTotal(Double ccFeeTotal) {
+        this.ccFeeTotal = ccFeeTotal;
+    }
+
+    public Double getStaffFeeTotal() {
+        return staffFeeTotal;
+    }
+
+    public void setStaffFeeTotal(Double staffFeeTotal) {
+        this.staffFeeTotal = staffFeeTotal;
+    }
+
+    public Double getGrossFeeTotal() {
+        return grossFeeTotal;
+    }
+
+    public void setGrossFeeTotal(Double grossFeeTotal) {
+        this.grossFeeTotal = grossFeeTotal;
+    }
+
+    public Double getDiscountTotal() {
+        return discountTotal;
+    }
+
+    public void setDiscountTotal(Double discountTotal) {
+        this.discountTotal = discountTotal;
+    }
+
+    public Double getNetTotal() {
+        return netTotal;
+    }
+
+    public void setNetTotal(Double netTotal) {
+        this.netTotal = netTotal;
+    }
+
     /**
      *
      */
@@ -5163,6 +5211,8 @@ public class PatientInvestigationController implements Serializable {
         }
 
     }
+    
+    
 
     public List<PatientSampleComponant> getPatientSampleComponentsByPatientSample(PatientSample patientSample) {
         List<PatientSampleComponant> ptsc;
