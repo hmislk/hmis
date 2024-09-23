@@ -78,15 +78,15 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         clearDataForPatientDeposit();
         return "/patient_deposit/receive?faces-redirect=true";
     }
-    
+
     public String navigateToPatientDepositRefundFromOPDBill(Patient p) {
         clearDataForPatientDeposit();
         patient = p;
         current = getDepositOfThePatient(patient, sessionController.getDepartment());
         return "/patient_deposit/pay?faces-redirect=true";
     }
-    
-    public String navigateToReciveDepositWithPatient(Patient p){
+
+    public String navigateToReciveDepositWithPatient(Patient p) {
         clearDataForPatientDeposit();
         patient = p;
         current = getDepositOfThePatient(patient, sessionController.getDepartment());
@@ -103,16 +103,16 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         latestPatientDeposits = new ArrayList<>();
         patientController.clearDataForPatientDeposite();
     }
-    
+
     public String navigateToNewPatientDepositCancel() {
-        if(patientController.getBill().isCancelled()){
+        if (patientController.getBill().isCancelled()) {
             JsfUtil.addErrorMessage("Already Canceled Bill");
             return "";
         }
         patientController.preparePatientDepositCancel();
         return "/patient_deposit/view/bill_cancel?faces-redirect=true";
     }
-    
+
     public void clearDataForPatientDepositHistory() {
         patientController.setCurrent(null);
         reportController.setFromDate(null);
@@ -149,42 +149,42 @@ public class PatientDepositController implements Serializable, ControllerWithPat
             return;
         }
         int code = patientController.settlePatientDepositReceiveNew();
-        
-        if(code == 1){
+
+        if (code == 1) {
             JsfUtil.addErrorMessage("Please select a Payment Method");
             return;
-        }else if(code == 2){
+        } else if (code == 2) {
             JsfUtil.addErrorMessage("Please enter all relavent Payment Method Details");
-             return;
+            return;
         }
-        
+
         updateBalance(patientController.getBill(), current);
         billBeanController.createPayment(patientController.getBill(),
                 patientController.getBill().getPaymentMethod(),
                 patientController.getPaymentMethodData());
     }
-    
+
     public void settlePatientDepositCancel() {
         if (patient == null) {
             JsfUtil.addErrorMessage("Please Select a Patient");
             return;
         }
-        current = getDepositOfThePatient(patientController.getBill().getPatient(),sessionController.getDepartment());
-        if(patientController.getBill().getNetTotal() > current.getBalance()){
+        current = getDepositOfThePatient(patientController.getBill().getPatient(), sessionController.getDepartment());
+        if (patientController.getBill().getNetTotal() > current.getBalance()) {
             JsfUtil.addErrorMessage("Insufficient Balance");
             return;
         }
-        
+
         int code = patientController.settlePatientDepositReceiveCancelNew();
-        
-        if(code == 1){
+
+        if (code == 1) {
             JsfUtil.addErrorMessage("Please select a Payment Method");
             return;
-        }else if(code == 2){
+        } else if (code == 2) {
             JsfUtil.addErrorMessage("Please enter all relavent Payment Method Details");
-             return;
+            return;
         }
-        
+
         updateBalance(patientController.getCancelBill(), current);
         billBeanController.createPayment(patientController.getBill(),
                 patientController.getCancelBill().getPaymentMethod(),
@@ -254,7 +254,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
             case OPD_BILL_REFUND:
                 handleOPDBillCancel(b, pd);
                 break;
-                
+
             case PATIENT_DEPOSIT_CANCELLED:
                 handlePatientDepositBillCancel(b, pd);
                 break;
@@ -281,7 +281,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         JsfUtil.addSuccessMessage("Balance Updated.");
         createPatientDepositHitory(HistoryType.PatientDepositReturn, pd, b, beforeBalance, afterBalance, 0 - Math.abs(b.getNetTotal()));
     }
-    
+
     public void handlePatientDepositBillCancel(Bill b, PatientDeposit pd) {
         Double beforeBalance = pd.getBalance();
         Double afterBalance = beforeBalance - Math.abs(b.getNetTotal());
@@ -360,7 +360,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         }
         return pd;
     }
-    
+
     public PatientDeposit checkDepositOfThePatient(Patient p, Department d) {
         Map m = new HashMap<>();
         String jpql = "select pd from PatientDeposit pd"
