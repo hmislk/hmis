@@ -175,7 +175,7 @@ public class ReportController implements Serializable {
     CommonFunctions commonFunctions;
     private List<PatientInvestigation> patientInvestigations;
     PatientInvestigationStatus patientInvestigationStatus;
-    
+
     private List<AgentReferenceBook> agentReferenceBooks;
 
     public void ccSummaryReportByItem() {
@@ -293,15 +293,37 @@ public class ReportController implements Serializable {
 
         collectionCenters = institutionFacade.findByJpql(jpql, m);
     }
-    
-    public void processCollectingCentreBook(){
+
+    public void processCollectionCenterBalanceByAgentHistory() {
+        String jpql = "select ah"
+                + " from AgentHistory ah"
+                + " where ah.retired = :ret";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+
+        if (toDate != null) {
+            jpql += " and ah.createdAt < :td"; 
+            m.put("td", toDate);
+        }
+
+        if (collectingCentre != null) {
+            jpql += " and ah.institution = :i";
+            m.put("i", collectingCentre);
+        }
+        
+        System.out.println("jpql = " + jpql);
+        agentHistories = agentHistoryFacade.findByJpql(jpql, m);
+    }
+
+    public void processCollectingCentreBook() {
         String sql;
         HashMap m = new HashMap();
         sql = "select a from AgentReferenceBook a "
                 + " where a.retired=false "
                 + " and a.deactivate=false "
                 + " and a.fullyUtilized=false ";
-        
+
         if (collectingCentre != null) {
             sql += "and a.institution=:ins order by a.id";
             m.put("ins", collectingCentre);

@@ -94,11 +94,29 @@
 
                 <p:commandButton 
                     class="m-2 ui-button-success" 
+                    icon="fas fa-file-excel"
                     ajax="false" 
-                    value="Download" 
-                    action="#{reportController.processCollectingCentreStatementReportNew()}" 
-                    icon="pi pi-download" >
+                    value="Export to Excel"
+                    action="#{reportController.processCollectingCentreStatementReportNew()}">
                     <p:dataExporter type="xlsx" target="tbl"  fileName="cc_statement.xlsx" ></p:dataExporter>
+                </p:commandButton>
+
+                <p:commandButton 
+                    class="m-2 ui-button-raised" 
+                    icon="fa-solid fa-file-pdf"
+                    ajax="false" 
+                    value="PDF"
+                    action="#{reportController.processCollectingCentreStatementReportNew()}">
+                    <p:dataExporter type="pdf" target="tbl"  fileName="cc_statement.pdf" ></p:dataExporter>
+                </p:commandButton>
+
+                <p:commandButton 
+                    icon="fa-solid fa-print"
+                    class="mx-1 ui-button-info"
+                    ajax="false" 
+                    value="Print"
+                    action="#{reportController.processCollectingCentreStatementReportNew()}">
+                    <p:printer target="tbl" />
                 </p:commandButton>
 
                 <h:panelGrid columns="2" styleClass="mt-4">
@@ -162,62 +180,62 @@
                     <h:outputText value="#{agentHx.bill.billTypeAtomic.label}" />
                 </p:column>
                 <p:column toggleable="true" headerText="CC Code" sortBy="#{agentHx.bill.billTypeAtomic.label}" filterBy="#{agentHx.bill.billTypeAtomic.label}" filterMatchMode="contains">
-                    <h:outputText value="#{agentHx.bill.collectingCentre.code}" />
+                    <h:outputText value="#{agentHx.bill.collectingCentre.code}" style="text-align: right; display: block;"/>
                 </p:column>
                 <p:column toggleable="true" headerText="Leaf No." sortBy="#{agentHx.bill.referenceNumber}" filterBy="#{agentHx.bill.referenceNumber}" filterMatchMode="contains">
-                    <h:outputText value="#{agentHx.bill.referenceNumber}" />
+                    <h:outputText value="#{agentHx.bill.invoiceNumber}" style="text-align: right; display: block;"/>
                 </p:column>
 
                 <p:column headerText="Hospital Fee" sortBy="#{agentHx.bill.totalHospitalFee}" filterBy="#{agentHx.bill.totalHospitalFee}">
-                    <h:outputText value="#{agentHx.companyTransactionValue}">
+                    <h:outputText value="#{agentHx.companyTransactionValue}" style="text-align: right; display: block;">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
                 </p:column>
 
                 <p:column headerText="Staff Fee" sortBy="#{agentHx.bill.totalStaffFee}" filterBy="#{agentHx.bill.totalStaffFee}">
-                    <h:outputText value="#{agentHx.staffTrasnactionValue}">
+                    <h:outputText value="#{agentHx.staffTrasnactionValue}" style="text-align: right; display: block;">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
                 </p:column>
 
                 <p:column headerText="CC Fee" sortBy="#{agentHx.bill.totalCenterFee}" filterBy="#{agentHx.bill.totalCenterFee}">
-                    <h:outputText value="#{agentHx.agentTransactionValue}">
+                    <h:outputText value="#{agentHx.agentTransactionValue}" style="text-align: right; display: block;">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
                 </p:column>
 
                 <p:column headerText="Received from CC" sortBy="#{agentHx.paidAmountByAgency}" filterBy="#{agentHx.paidAmountByAgency}">
-                    <h:outputText value="#{agentHx.paidAmountByAgency}">
+                    <h:outputText value="#{agentHx.paidAmountByAgency}" style="text-align: right; display: block;">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
                 </p:column>
 
                 <p:column headerText="Paid to CC" sortBy="#{agentHx.paidAmountToAgency}" filterBy="#{agentHx.paidAmountToAgency}">
-                    <h:outputText value="#{agentHx.paidAmountToAgency}">
+                    <h:outputText value="#{agentHx.paidAmountToAgency}" style="text-align: right; display: block;">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
                 </p:column>
 
                 <p:column headerText="Adjustments to CC Balance" sortBy="#{agentHx.adjustmentToAgencyBalance}" filterBy="#{agentHx.adjustmentToAgencyBalance}">
-                    <h:outputText value="#{agentHx.adjustmentToAgencyBalance}">
+                    <h:outputText value="#{agentHx.adjustmentToAgencyBalance}" style="text-align: right; display: block;">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
                 </p:column>
 
                 <p:column headerText="CC Balance Before Transaction" sortBy="#{agentHx.balanceBeforeTransaction}" filterBy="#{agentHx.balanceBeforeTransaction}">
-                    <h:outputText value="#{agentHx.balanceBeforeTransaction}">
+                    <h:outputText value="#{agentHx.balanceBeforeTransaction}" style="text-align: right; display: block;">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
                 </p:column>
 
                 <p:column headerText="Transaction Amount" sortBy="#{agentHx.transactionValue}" filterBy="#{agentHx.transactionValue}">
-                    <h:outputText value="#{agentHx.transactionValue}">
+                    <h:outputText value="#{agentHx.transactionValue}" style="text-align: right; display: block;">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
                 </p:column>
 
                 <p:column headerText="CC Balance After Transaction" sortBy="#{agentHx.balanceAfterTransaction}" filterBy="#{agentHx.balanceAfterTransaction}">
-                    <h:outputText value="#{agentHx.balanceAfterTransaction}">
+                    <h:outputText value="#{agentHx.balanceAfterTransaction}" style="text-align: right; display: block;">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
                 </p:column>
