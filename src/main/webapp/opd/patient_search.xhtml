@@ -238,7 +238,15 @@
                                                                                                 </p:commandButton>-->
 
                                                 <p:commandButton value="Receive Deposits"
-                                                                 action="#{patientController.navigateToReceiveDepositsFromPatientProfile()}"
+                                                                 action="#{patientDepositController.navigateToReciveDepositWithPatient(p)}"
+                                                                 ajax="false"
+                                                                 styleClass="mx-1 mb-2">
+                                                    <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
+                                                </p:commandButton>
+                                                
+                                                <p:commandButton value="Patient Deposit History"
+                                                                 action="/patient_deposit/patient_deposit_history?faces-redirect=true"
+                                                                 actionListener="#{patientDepositController.clearDataForPatientDepositHistory()}"
                                                                  ajax="false"
                                                                  styleClass="mx-1 mb-2">
                                                     <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />

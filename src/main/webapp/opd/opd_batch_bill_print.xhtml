@@ -29,7 +29,7 @@
                                     rendered="#{opdBillController.batchBill.paymentMethod eq 'PatientDeposit'}"
                                     class="ui-button-group mx-1"
                                     icon="fa fa-money-bill-alt"
-                                    action="#{patientController.navigateToPatientDepositRefundFromOPDBill(opdBillController.batchBill.patient)}"
+                                    action="#{patientDepositController.navigateToPatientDepositRefundFromOPDBill(opdBillController.batchBill.patient)}"
                                     ajax="false">
                                     <f:setPropertyActionListener 
                                         value="#{opdBillController.batchBill.patient}" 
