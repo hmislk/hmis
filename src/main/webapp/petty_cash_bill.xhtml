@@ -89,7 +89,26 @@
                                             </p:column>
                                         </p:autoComplete>
                                     </p:tab> 
-
+                                    <p:tab id="tabDepartment" title="Department" >
+                                        <p:autoComplete   
+                                            id="cmbDept1" 
+                                            value="#{pettyCashBillController.current.toDepartment}" 
+                                            completeMethod="#{departmentController.completeDept}" 
+                                            forceSelection="true"
+                                            var="w" 
+                                            itemLabel="#{w.name}" 
+                                            itemValue="#{w}"
+                                            size="20"
+                                            inputStyleClass="form-control"
+                                            style="width: 400px;">
+                                            <p:column headerText="Department Name">
+                                                #{w.name}
+                                            </p:column>
+                                            <p:column headerText="Institution Name">
+                                                #{w.institution.name}
+                                            </p:column>
+                                        </p:autoComplete>
+                                    </p:tab> 
                                     <p:tab id="tabSearchPerson" title="Search Person">
                                         <p:autoComplete 
                                             widgetVar="aPt" 

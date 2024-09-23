@@ -307,6 +307,12 @@ public class PettyCashBillController implements Serializable {
                     return;
                 }
                 break;
+            case "tabDepartment":
+                if (getCurrent().getToDepartment().getId().equals(null)) {
+                    JsfUtil.addErrorMessage("Department?");
+                    return;
+                }
+                break;
             default:
                 JsfUtil.addErrorMessage(getTabId());
                 return;
