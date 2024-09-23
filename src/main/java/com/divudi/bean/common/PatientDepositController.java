@@ -105,6 +105,10 @@ public class PatientDepositController implements Serializable, ControllerWithPat
     }
     
     public String navigateToNewPatientDepositCancel() {
+        if(patientController.getBill().isCancelled()){
+            JsfUtil.addErrorMessage("Already Canceled Bill");
+            return "";
+        }
         patientController.preparePatientDepositCancel();
         return "/patient_deposit/view/bill_cancel?faces-redirect=true";
     }
@@ -165,6 +169,12 @@ public class PatientDepositController implements Serializable, ControllerWithPat
             JsfUtil.addErrorMessage("Please Select a Patient");
             return;
         }
+        current = getDepositOfThePatient(patientController.getBill().getPatient(),sessionController.getDepartment());
+        if(patientController.getBill().getNetTotal() > current.getBalance()){
+            JsfUtil.addErrorMessage("Insufficient Balance");
+            return;
+        }
+        
         int code = patientController.settlePatientDepositReceiveCancelNew();
         
         if(code == 1){
@@ -174,8 +184,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
             JsfUtil.addErrorMessage("Please enter all relavent Payment Method Details");
              return;
         }
-            
-        current = getDepositOfThePatient(patientController.getBill().getPatient(),sessionController.getDepartment());
+        
         updateBalance(patientController.getCancelBill(), current);
         billBeanController.createPayment(patientController.getBill(),
                 patientController.getCancelBill().getPaymentMethod(),

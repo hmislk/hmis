@@ -9,7 +9,7 @@
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
                 <h:form >
-                    <p:panel header="Staff Salary Component" >
+                    <p:panel header="Staff Salary Payment To Bank" >
                         <p:panelGrid columns="4" class="w-100">
 
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -113,9 +113,10 @@
                                                ></f:selectItems>
                             </p:selectOneMenu>
 
+
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf571;" styleClass="fa mr-2" /> <!-- FontAwesome file-invoice-dollar icon for Staff Paysheet Component -->
-                                <h:outputLabel value="Staff Paysheet Component" for="cmbStaffPaysheet" class="mx-3"/>
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon for Branch (Bank) -->
+                                <h:outputLabel value="Branch (Bank)" for="cmbBranch" class="mx-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu value="" filter="true"  class="w-100 " >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
@@ -125,7 +126,6 @@
                                                itemValue=""
                                                ></f:selectItems>
                             </p:selectOneMenu>
-
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf09d;" styleClass="fa mr-2" /> <!-- FontAwesome university icon for Bank -->
@@ -139,6 +139,22 @@
                                                itemValue=""
                                                ></f:selectItems>
                             </p:selectOneMenu>
+                            
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf4fc;" styleClass="fa mr-2" /> <!-- FontAwesome user-check icon for Employee Status -->
+                                <h:outputLabel value="Employee Status" for="cmbEmployeeStatus" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+
 
 
 
@@ -170,31 +186,24 @@
                             <p:column headerText="Emp Name" width="5em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Paysheet Component" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="ID" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
                             <p:column headerText="Bank" width="5em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Component Value" width="5em">
+                            <p:column headerText="Bank Branch" width="5em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="EPF Staff Value" width="5em">
+                            <p:column headerText="Account No" width="5em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="EPF Company Value" width="5em">
+                            <p:column headerText="Block" width="5em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="ETF Company Value" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Total" width="5em">
+                            <p:column headerText="Hold" width="5em">
                                 <h:outputText value="" />
                             </p:column>
                             
+
+
 
 
 
