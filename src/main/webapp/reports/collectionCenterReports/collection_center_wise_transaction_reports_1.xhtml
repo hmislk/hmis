@@ -14,7 +14,7 @@
                     <p:panel header="Collection Center Wise Transaction Reports" styleClass="w-100">
                         <div class="">
 
-                           <p:panelGrid columns="4"  >
+                            <p:panelGrid columns="4"  >
                                 <h:panelGroup >
                                     <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
                                     <h:outputLabel value="From Date"  class="mx-3"/>
@@ -69,6 +69,18 @@
                                                    value="#{collectingCentreController.items}" 
                                                    itemValue="#{r}" />
                                 </p:selectOneMenu>
+                                <h:panelGroup layout="block" styleClass="form-group">
+                                    <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
+                                    <h:outputLabel value="Site" class="mx-3"/>
+                                </h:panelGroup>
+                                <p:selectOneMenu
+                                    id="siteMenu"
+                                    styleClass="w-100 form-control"  
+                                    value="#{searchController.site}" 
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Sites" />
+                                    <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                </p:selectOneMenu>
                             </p:panelGrid>
                             <h:panelGrid columns="6">
                                 <p:commandButton ajax="false"
@@ -76,14 +88,33 @@
                                                  icon="fas fa-cogs"
                                                  class="ui-button-warning"
                                                  action="#{reportController.processCollectingCentreAgentHistory()}" />
-                                <!--                                <p:commandButton ajax="false"
-                                                                                 value="Download to Excel"
-                                                                                 class="mx-1 ui-button-success"
-                                                                                 ><p:dataExporter 
-                                                                        type="xls" 
-                                                                        target="tblExport"
-                                                                        fileName="c_transaction_reports"
-                                                                        /></p:commandButton>-->
+
+                                <p:commandButton 
+                                    icon="fa-solid fa-print"
+                                    class="mx-1 ui-button-info"
+                                    ajax="false" 
+                                    value="Print"
+                                    action="#{reportController.processCollectingCentreStatementReportNew()}">
+                                    <p:printer target="tblExport" />
+                                </p:commandButton>
+                                <p:commandButton 
+                                    class="m-2 ui-button-success" 
+                                    icon="fas fa-file-excel"
+                                    ajax="false" 
+                                    value="Excel"
+                                    action="#{reportController.processCollectingCentreStatementReportNew()}">
+                                    <p:dataExporter type="xlsx" target="tblExport"  fileName="Collection_Center_Wise_Transaction_Report.xlsx" ></p:dataExporter>
+                                </p:commandButton>
+
+                                <p:commandButton 
+                                    class="m-2 ui-button-raised" 
+                                    icon="fa-solid fa-file-pdf"
+                                    ajax="false" 
+                                    value="PDF"
+                                    action="#{reportController.processCollectingCentreStatementReportNew()}">
+                                    <p:dataExporter type="pdf" target="tblExport"  fileName="Collection_Center_Wise_Transaction_Report.pdf" ></p:dataExporter>
+                                </p:commandButton>
+
                             </h:panelGrid>  
                         </div>
 
