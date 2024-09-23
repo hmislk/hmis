@@ -24,8 +24,10 @@
                                 <div class="col float-right">
                                     <p:commandButton 
                                         value="Back to Shift Handover" 
+                                        class="m-1 ui-button-success"
+                                        icon="pi pi-arrow-left" 
                                         action="#{financialTransactionController.navigateBackToPaymentHandoverCreate()}"
-                                        ajax="false" >
+                                        ajax="false">
                                     </p:commandButton>
 
                                 </div>
@@ -332,7 +334,14 @@
                                         </h:panelGroup>
 
 
-
+                                        <h:outputText value="Recorded Shortages" />
+                                        <h:panelGroup>
+                                            <h:outputText 
+                                                rendered="#{financialTransactionController.selectedPaymentMethod eq 'Cash'}"
+                                                value="#{financialTransactionController.shortageBillTotal(financialTransactionController.selectedBundle, 'Cash' )}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </h:panelGroup>
 
                                     </p:panelGrid>
 
@@ -341,6 +350,15 @@
                             </div>
                             <div class="row mx-2" >
                                 <h:panelGroup id="gpDenominations" rendered="#{financialTransactionController.selectedPaymentMethod eq 'Cash'}">
+                                    <p:commandButton 
+                                        value="Create Shortage Bill" 
+                                        class="m-1 ui-button-danger"
+                                        icon="pi pi-exclamation-triangle" 
+                                        onclick="return confirm('Are you sure you want to create a shortage bill?');"
+                                        action="#{financialTransactionController.navigateToMarkShortagesForShiftForHandover('Cash')}">
+                                    </p:commandButton>
+
+
                                     <p:dataTable   value="#{financialTransactionController.selectedBundle.denominationTransactions}" var="deno"  >
                                         <p:column title="Denomination">
                                             <p:outputLabel value="#{deno.denomination.displayName}" ></p:outputLabel>
@@ -352,8 +370,7 @@
                                                 value="#{deno.denominationQty}" 
                                                 style="width: 100%;" 
                                                 label="Cash Handover" 
-                                                onfocus="this.select()"
-                                                required="true">
+                                                onfocus="this.select()">
                                                 <f:convertNumber integerOnly="true" />
                                                 <p:ajax 
                                                     event="blur"
@@ -373,11 +390,42 @@
 
                                     </p:dataTable>
                                 </h:panelGroup>
-
-
                             </div>
 
+                            <h:panelGroup rendered="#{financialTransactionController.selectedPaymentMethod eq 'Card'}" >
 
+
+                                <p:commandButton 
+                                    value="Create Shortage Bill" 
+                                    class="m-1 ui-button-danger"
+                                    icon="pi pi-exclamation-triangle" 
+                                    onclick="return confirm('Are you sure you want to create a shortage bill?');"
+                                    action="#{financialTransactionController.navigateToMarkShortagesForShiftForHandover('Card')}">
+                                </p:commandButton>
+
+                                <p:dataTable
+                                    value="#{financialTransactionController.selectedBundle.getPaymentRows('Card')}" var="cardPayment" >
+                                    <p:column  headerText="ID">
+                                        <h:outputText value="#{cardPayment.payment.id}" ></h:outputText>
+                                    </p:column>
+                                    <p:column  headerText="Bank">
+                                        <h:outputText value="#{cardPayment.payment.bank.name}" ></h:outputText>
+                                    </p:column>
+                                    <p:column  headerText="Ref No">
+                                        <h:outputText value="#{cardPayment.payment.creditCardRefNo}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Value">
+                                        <h:outputText value="#{cardPayment.payment.paidValue}" >
+                                            <f:convertNumber pattern="#,#00.00" ></f:convertNumber>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column  headerText="Ref No">
+                                        <p:selectBooleanCheckbox id="checkCardSelected" value="#{cardPayment.selected}" >
+                                            <p:ajax update="checkCardSelected" ></p:ajax>
+                                        </p:selectBooleanCheckbox>
+                                    </p:column>
+                                </p:dataTable>
+                            </h:panelGroup>
 
                         </h:panelGroup>
 
