@@ -2814,7 +2814,7 @@ public class PatientInvestigationController implements Serializable {
                 if (pi.getBillItem().isRefunded()) {
                     continue;
                 }
-                newItems.add(pi)
+                newItems.add(pi);
                 hospitalFeeTotal += pi.getBillItem().getHospitalFee();
                 ccFeeTotal += pi.getBillItem().getCollectingCentreFee();
                 staffFeeTotal += pi.getBillItem().getStaffFee();
