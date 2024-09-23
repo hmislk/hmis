@@ -84,6 +84,9 @@ public class CashBookEntryController implements Serializable {
     }
 
     public void writeCashBookEntryAtHandover(Payment p, CashBook cb) {
+        System.out.println("writeCashBookEntryAtHandover" );
+        System.out.println("p = " + p);
+        System.out.println("cb = " + cb);
         if (p == null) {
             JsfUtil.addErrorMessage("Cashbook Entry Error !");
             return;

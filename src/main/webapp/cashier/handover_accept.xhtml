@@ -129,7 +129,7 @@
                                                         icon="pi pi-check" 
                                                         ajax="false" 
                                                         onclick="return confirm('Are you sure you want to proceed with the handover?');" 
-                                                        action="#{financialTransactionController.settleHandoverStartBill()}">
+                                                        action="#{financialTransactionController.acceptHandoverBill()}">
                                                     </p:commandButton>
                                                 </div>
                                             </div>
@@ -238,6 +238,13 @@
                                         <h:outputText value="#{summary.cashValue}"  style="text-align: right;">
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputText>
+                                        <p:commandButton 
+                                            icon="pi pi-refresh" 
+                                            title="Change Handover Value" 
+                                            ajax="false" 
+                                            styleClass="ui-button-warning m-1 mx-2" 
+                                            action="#{financialTransactionController.navigateToSelectPaymentsForHandoverCreate(summary, 'Card')}" >
+                                        </p:commandButton>
                                         <f:facet name="footer" >
                                             <p:outputLabel value="#{financialTransactionController.bundle.cashValue}" >
                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
