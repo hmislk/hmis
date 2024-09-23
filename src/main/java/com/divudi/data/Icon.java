@@ -115,7 +115,11 @@ public enum Icon {
     Shift_End_Summary("Shift End Summary"),
     Day_End_Summary("Day End Summary"),
     Admit("Admit Patient"),
-    Manage_Shift_Fund_Bills("Manage Shift Fund Bills"),;
+    Manage_Shift_Fund_Bills("Manage Shift Fund Bills"),
+    
+    // icons for cashier
+    Cashier_Drawer("Logged User Drawer"),
+    ;
 
     private final String label;
 

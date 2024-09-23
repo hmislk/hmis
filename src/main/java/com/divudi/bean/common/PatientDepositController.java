@@ -78,6 +78,22 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         clearDataForPatientDeposit();
         return "/patient_deposit/receive?faces-redirect=true";
     }
+    
+    public String navigateToPatientDepositRefundFromOPDBill(Patient p) {
+        clearDataForPatientDeposit();
+        patient = p;
+        current = getDepositOfThePatient(patient, sessionController.getDepartment());
+        return "/patient_deposit/pay?faces-redirect=true";
+    }
+    
+    public String navigateToReciveDepositWithPatient(Patient p){
+        clearDataForPatientDeposit();
+        patient = p;
+        current = getDepositOfThePatient(patient, sessionController.getDepartment());
+        fillLatestPatientDeposits(current);
+        fillLatestPatientDepositHistory(current);
+        return "/patient_deposit/receive?faces-redirect=true";
+    }
 
     public void clearDataForPatientDeposit() {
         patientController.setCurrent(null);
@@ -333,6 +349,22 @@ public class PatientDepositController implements Serializable, ControllerWithPat
             pd.setCreatedAt(new Date());
             patientDepositFacade.create(pd);
         }
+        return pd;
+    }
+    
+    public PatientDeposit checkDepositOfThePatient(Patient p, Department d) {
+        Map m = new HashMap<>();
+        String jpql = "select pd from PatientDeposit pd"
+                + " where pd.patient.id=:pt "
+                + " and pd.department.id=:dep "
+                + " and pd.retired=:ret";
+
+        m.put("pt", p.getId());
+        m.put("dep", d.getId());
+        m.put("ret", false);
+
+        PatientDeposit pd = patientDepositFacade.findFirstByJpql(jpql, m);
+        System.out.println("pd = " + pd);
         return pd;
     }
 

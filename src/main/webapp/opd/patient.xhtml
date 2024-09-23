@@ -203,10 +203,18 @@
                                                      icon="fa fa-calendar-alt">
                                     </p:commandButton>
                                     <p:commandButton value="Receive Deposits"
-                                                     action="#{patientController.navigateToReceiveDepositsFromPatientProfile()}"
+                                                     action="#{patientDepositController.navigateToReciveDepositWithPatient(patientController.current)}"
                                                      ajax="false"
                                                      styleClass="mx-2 btn btn-secondary"
                                                      icon="fa fa-coins">
+                                    </p:commandButton>
+                                     <p:commandButton value="Patient Deposit History"
+                                                     action="/patient_deposit/patient_deposit_history?faces-redirect=true"
+                                                     actionListener="#{patientDepositController.clearDataForPatientDepositHistory()}"
+                                                     ajax="false"
+                                                     styleClass="mx-2 btn btn-secondary"
+                                                     icon="fa fa-coins">
+                                         <f:setPropertyActionListener target="#{patientController.current}" value="#{patientController.current}" />
                                     </p:commandButton>
                                     <p:messages></p:messages>
                                 </div>
