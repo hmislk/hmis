@@ -123,6 +123,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     private PersonFacade personFacade;
     @EJB
     BillNumberGenerator billNumberBean;
+    @EJB
+    private BillNumberGenerator billNumberGenerator;
 
     CommonFunctions commonFunctions;
     @EJB
@@ -1333,7 +1335,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     private void saveBill(BillType billType, BillNumberSuffix billNumberSuffix, Patient patient, BillTypeAtomic billTypeAtomic) {
         getBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), billType, BillClassType.BilledBill, billNumberSuffix));
-        getBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(sessionController.getDepartment(), billType, BillClassType.BilledBill, billNumberSuffix));
+//        getBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(sessionController.getDepartment(), billType, BillClassType.BilledBill, billNumberSuffix));
+        getBill().setDeptId(getBillNumberGenerator().departmentBillNumberGenerator(sessionController.getDepartment(), sessionController.getDepartment(), billType, BillClassType.BilledBill));
         getBill().setBillType(billType);
 
         getBill().setPatient(patient);
@@ -1405,7 +1408,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     private void saveBill(BillType billType, BillNumberSuffix billNumberSuffix, Patient patient) {
         getBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), billType, BillClassType.BilledBill, billNumberSuffix));
-        getBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(sessionController.getDepartment(), billType, BillClassType.BilledBill, billNumberSuffix));
+//        getBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(sessionController.getDepartment(), billType, BillClassType.BilledBill, billNumberSuffix));
+        getBill().setDeptId(getBillNumberGenerator().departmentBillNumberGenerator(sessionController.getDepartment(), sessionController.getDepartment(), billType, BillClassType.BilledBill));
         getBill().setBillType(billType);
 
         getBill().setPatient(patient);
@@ -1435,7 +1439,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     
     private void saveCancelBill(BillType billType, BillNumberSuffix billNumberSuffix, Patient patient) {
         getCancelBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), billType, BillClassType.CancelledBill, billNumberSuffix));
-        getCancelBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(sessionController.getDepartment(), billType, BillClassType.CancelledBill, billNumberSuffix));
+//        getCancelBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(sessionController.getDepartment(), billType, BillClassType.CancelledBill, billNumberSuffix));
+        getCancelBill().setDeptId(getBillNumberGenerator().departmentBillNumberGenerator(sessionController.getDepartment(), sessionController.getDepartment(), billType, BillClassType.CancelledBill));
         getCancelBill().setBillType(billType);
 
         getCancelBill().setPatient(patient);
@@ -4037,6 +4042,14 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     public void setCancelBill(Bill cancelBill) {
         this.cancelBill = cancelBill;
+    }
+
+    public BillNumberGenerator getBillNumberGenerator() {
+        return billNumberGenerator;
+    }
+
+    public void setBillNumberGenerator(BillNumberGenerator billNumberGenerator) {
+        this.billNumberGenerator = billNumberGenerator;
     }
 
     /**
