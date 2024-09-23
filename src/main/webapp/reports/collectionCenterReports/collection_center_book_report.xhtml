@@ -51,6 +51,7 @@
                                 </div>
                                 <div class="col-md-4 w-50 " >
                                     <p:selectOneMenu value="#{reportController.collectingCentre}" >
+                                        <f:selectItem itemLabel="All" ></f:selectItem>
                                         <f:selectItems var="r" itemLabel="#{r.name}" value="#{collectingCentreController.items}" itemValue="#{r}"/>
                                     </p:selectOneMenu>
                                 </div>
@@ -60,7 +61,7 @@
                                 <div class="col-md-2">
                                     <p:commandButton ajax="false" 
                                                      value="Process" 
-                                                     action="#{reportController.processCollectionCenterBalance}" 
+                                                     action="#{reportController.processCollectingCentreBook}" 
                                                      class="w-50 ui-button-warning"
                                                      icon="fas fa-cogs">
                                     </p:commandButton>
@@ -95,61 +96,61 @@
 
                             <p:spacer height="5"></p:spacer>
 
-                            <p:dataTable value="#{reportController.collectionCenters}" var="c" rowIndexVar="i">
+                            <p:dataTable value="#{reportController.agentReferenceBooks}" var="a" rowIndexVar="i">
                                 <p:column headerText="S. No" >
                                     <h:outputText value="#{i+1}" ></h:outputText>
                                 </p:column>
                                 <p:column headerText="CC Code" >
-                                    <h:outputText value="#{c.code}" ></h:outputText>
+                                    <h:outputText value="#{a.institution.code}" ></h:outputText>
                                 </p:column>
                                 <p:column headerText="CC Name" >
-                                    <h:outputText value="#{c.name}" ></h:outputText>
+                                    <h:outputText value="#{a.institution.name}" ></h:outputText>
                                 </p:column>
                                 <p:column headerText="Contact Person" >
-                                    <h:outputText value="#{c.contactPerson.nameWithTitle}" ></h:outputText>
+                                    <h:outputText value="#{a.institution.contactPerson.nameWithTitle}" ></h:outputText>
                                 </p:column>
                                 <p:column headerText="CC Phone No" >
-                                    <h:outputText value="#{c.phone}" ></h:outputText>
+                                    <h:outputText value="#{a.institution.phone}" ></h:outputText>
                                 </p:column>
                                 <p:column headerText="Contact Person E-mail" >
-                                    <h:outputText value="#{c.contactPerson.email}" ></h:outputText>
+                                    <h:outputText value="#{a.institution.contactPerson.email}" ></h:outputText>
                                 </p:column>
                                 <p:column headerText="Address" >
-                                    <h:outputText value="#{c.address}" ></h:outputText>
+                                    <h:outputText value="#{a.institution.address}" ></h:outputText>
                                 </p:column>
                                 <p:column headerText="Standard Credit" >
-                                    <h:outputText value="#{c.standardCreditLimit}" ></h:outputText>
+                                    <h:outputText value="#{a.institution.standardCreditLimit}" ></h:outputText>
                                 </p:column>
                                 <p:column headerText="Allowed Credit" >
-                                    <h:outputText value="#{c.allowedCreditLimit}" ></h:outputText>
+                                    <h:outputText value="#{a.institution.allowedCreditLimit}" ></h:outputText>
                                 </p:column>
                                 <p:column headerText="Max Credit " >
-                                    <h:outputText value="#{c.maxCreditLimit}" ></h:outputText>
+                                    <h:outputText value="#{a.institution.maxCreditLimit}" ></h:outputText>
                                 </p:column>
                                 <p:column headerText="Balance" >
-                                    <h:outputText value="#{c.ballance}" ></h:outputText>
+                                    <h:outputText value="#{a.institution.ballance}" ></h:outputText>
                                 </p:column>
                                 <p:column headerText="CC Book No" >
-                                    <h:outputText value="#{c.bankBranch.agentReferenceBooks.size}" ></h:outputText>
+                                    <h:outputText value="#{a.strbookNumber}" ></h:outputText>
                                 </p:column>
 
                                 <p:column headerText="Starting Reference Number" >
-                                    <h:outputText value="#{c.institution}" ></h:outputText>
+                                    <h:outputText value="#{a.startingReferenceNumber}" ></h:outputText>
                                 </p:column>
                                 <p:column headerText="Ending Reference Number" >
-                                    <h:outputText value="#{c.institution}" ></h:outputText>
+                                    <h:outputText value="#{a.endingReferenceNumber}" ></h:outputText>
                                 </p:column>
                                 <p:column headerText="Creater" >
-                                    <h:outputText value="#{c.creater}" ></h:outputText>
+                                    <h:outputText value="#{a.creater}" ></h:outputText>
                                 </p:column>
                                 <p:column headerText="Created Date" >
-                                    <h:outputText value="#{c.createdAt}" ></h:outputText>
+                                    <h:outputText value="#{a.createdAt}" ></h:outputText>
                                 </p:column>
                                 <p:column headerText="Editor" >
-                                    <h:outputText value="#{c.institution}" ></h:outputText>
+                                    <h:outputText value="#{a.editor.name}" ></h:outputText>
                                 </p:column>
                                 <p:column headerText="Edited Date" >
-                                    <h:outputText value="#{c.institution}" ></h:outputText>
+                                    <h:outputText value="#{a.editedAt}" ></h:outputText>
                                 </p:column>
                             </p:dataTable>
 
