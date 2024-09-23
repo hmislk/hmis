@@ -38,7 +38,8 @@
                                                  class="mx-2"
                                                  value="Clear for New Deposit"
                                                  ajax="false" 
-                                                 action="#{patientController.navigateToReceiveDepositsFromPatientProfile()}"  >
+                                                 immediate="true"
+                                                 action="#{patientDepositController.navigateToAddNewPatientDeposit()}"  >
                                 </p:commandButton>
                             </div>
                         </div>
@@ -107,8 +108,9 @@
                                                     icon="fa fa-search"
                                                     title="Quick Search from Phone Number"
                                                     action="#{patientDepositController.getPatientDepositOnPatientDepositAdding}"
+                                                    ajax="false"
                                                     process="btnSearchbyPhoneNo txtQuickSearchPhoneNumber"
-                                                    update="ptImp selectPatient editPatient viewPatient payment paymentDetails pBillDetails details"
+                                                    update="ptImp selectPatient editPatient viewPatient payment paymentDetails pBillDetails details lateTr lateDp"
                                                     styleClass="btn-sm mx-1">
                                                 </p:commandButton>
                                                 <p:defaultCommand target="btnSearchbyPhoneNo"> </p:defaultCommand>
@@ -139,10 +141,10 @@
                                             </p:column>
                                             <p:column>
                                                 <p:commandButton
-                                                    action="#{patientController.selectQuickOneFromQuickSearchPatient(patientDepositController)}"
+                                                    action="#{patientDepositController.getPatientDepositOnPatientDepositAddingMulti}"
                                                     id="btnSelectPt"
                                                     process="btnSelectPt tblPatients"
-                                                    update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId} :#{p:resolveFirstComponentWithId('paymentDetails',view).clientId} :#{p:resolveFirstComponentWithId('payment',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"
+                                                    update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId} :#{p:resolveFirstComponentWithId('paymentDetails',view).clientId} :#{p:resolveFirstComponentWithId('payment',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('details',view).clientId} :#{p:resolveFirstComponentWithId('lateTr',view).clientId} :#{p:resolveFirstComponentWithId('lateDp',view).clientId}"
                                                     value="select">
                                                     <f:setPropertyActionListener value="#{ps}" target="#{patientController.current}" />
                                                 </p:commandButton>
@@ -165,7 +167,7 @@
                                                                 requiredMessage="Please enter a title"
                                                                 value="#{patientDepositController.patient.person.title}">
                                                                 <f:selectItem itemLabel="Select Title" />
-                                                                <f:selectItems value="#{patientDepositController.title}" var="i"
+                                                                <f:selectItems value="#{opdBillController.title}" var="i"
                                                                                itemLabel="#{i.label}" itemValue="#{i}"/>
                                                                 <p:ajax event="change" process="cmbTitle" update="cmbSex" ></p:ajax>
                                                             </p:selectOneMenu>
@@ -197,7 +199,7 @@
                                                                 value="#{patientDepositController.patient.person.sex}"
                                                                 class="form-control w-100">
                                                                 <f:selectItem itemLabel="Select Gender"/>
-                                                                <f:selectItems value="#{patientDepositController.sex}"/>
+                                                                <f:selectItems value="#{opdBillController.sex}"/>
                                                             </p:selectOneMenu>
                                                         </div>
                                                         <div class="col-md-9 p-1">
@@ -492,7 +494,7 @@
                     </div>
                     <div class="row my-2" >
                         <div class="col-6" >
-                            <p:dataTable value="#{patientDepositController.latestPatientDeposits}"
+                            <p:dataTable id="lateDp" value="#{patientDepositController.latestPatientDeposits}"
                                          var="lpd"
                                          rowKey="#{lpd}">
                                 <f:facet name="header">
@@ -500,7 +502,7 @@
                                 </f:facet>
                                 <p:column>
                                     <h:outputLabel value="#{lpd.createdAt}">
-                                        <f:convertDateTime parent="#{sessionController.applicationPreference.longDateFormat}" />
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column>
@@ -510,13 +512,13 @@
                                 </p:column>
                                 <p:column>
                                     <h:outputLabel value="#{lpd.transactionValue}">
-                                        <f:convertNumber parent="#,###,##0.00" />
+                                        <f:convertNumber pattern="#,###,##0.00" />
                                     </h:outputLabel>
                                 </p:column>
                             </p:dataTable>
                         </div>
                         <div class="col-6" >
-                            <p:dataTable value="#{patientDepositController.latestPatientDepositHistory}"
+                            <p:dataTable id="lateTr" value="#{patientDepositController.latestPatientDepositHistory}"
                                          var="lpdh"
                                          rowKey="#{lpdh}">
                                 <f:facet name="header">
@@ -524,7 +526,11 @@
                                 </f:facet>
                                 <p:column>
                                     <h:outputLabel value="#{lpdh.createdAt}">
-                                        <f:convertDateTime parent="#{sessionController.applicationPreference.longDateFormat}" />
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel value="#{lpdh.bill.deptId}">
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column>
@@ -532,8 +538,22 @@
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column>
-                                    <h:outputLabel value="#{lpdh.transactionValue}">
-                                        <f:convertNumber parent="#,###,##0.00" />
+                                    <h:outputLabel value="#{lpdh.transactionValue}" 
+                                                   rendered="#{lpdh.transactionValue gt 0}" 
+                                                   style="color: green;">
+                                        <f:convertNumber pattern="#,###,##0.00" />
+                                    </h:outputLabel>
+
+                                    <h:outputLabel value="#{lpdh.transactionValue}" 
+                                                   rendered="#{lpdh.transactionValue lt 0}" 
+                                                   style="color: red;">
+                                        <f:convertNumber pattern="#,###,##0.00" />
+                                    </h:outputLabel>
+
+                                    <h:outputLabel value="#{lpdh.transactionValue}" 
+                                                   rendered="#{lpdh.transactionValue eq 0}" 
+                                                   style="color: black;">
+                                        <f:convertNumber pattern="#,###,##0.00" />
                                     </h:outputLabel>
                                 </p:column>
                             </p:dataTable>
@@ -556,7 +576,7 @@
                             </p:commandButton>
                             <p:commandButton icon="fas fa-plus" class="mx-1" value="New Bill"
                                              ajax="false" action="/payments/patient/receive?faces-redirect=true"
-                                             actionListener="#{patientController.clearDataForPatientDeposite()}" >
+                                             actionListener="#{patientDepositController.clearDataForPatientDeposit()}" >
                             </p:commandButton>
                             <p:commandButton ajax="false" icon="fas fa-search" value="Patient Lookup" class="mx-1 ui-button-warning"
                                              action="#{patientController.navigateToSearchPatients}"></p:commandButton>

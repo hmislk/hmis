@@ -4,12 +4,14 @@
  * Dr M H B Ariyaratne
  * Acting Consultant (Health Informatics)
  * (94) 71 5812399
- * (94) 71 5812399
+ * (94) 91 2241603
+ *
  */
 package com.divudi.bean.cashTransaction;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.entity.WebUser;
 import com.divudi.entity.cashTransaction.Drawer;
 import com.divudi.facade.DrawerFacade;
 import java.io.Serializable;
@@ -27,9 +29,13 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 /**
- *
+ * 
  * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * Consultant in Health Informatics
+ * buddhika.ari@gmail.com
+ * (+94) 71 5812399
+ * (+94) 71 1569020
+ * 
  */
 @Named
 @SessionScoped
@@ -52,6 +58,26 @@ public class DrawerController implements Serializable {
                 + " order by c.name";
 
         drawers = getFacade().findByJpql(sql, hm);
+    }
+
+    public Drawer getUsersDrawer(WebUser webUser) {
+        String jpql;
+        HashMap m = new HashMap();
+        jpql = "select d from Drawer d "
+                + " where d.retired=false "
+                + " and d.drawerUser=:user";
+        
+        m.put("user", webUser);
+        
+        Drawer drawer;
+        drawer = getFacade().findFirstByJpql(jpql, m);
+        
+        if (drawer == null) {
+            drawer = new Drawer();
+            drawer.setDrawerUser(webUser);
+            save(drawer);
+        }
+        return drawer;
     }
 
     public List<Drawer> getDrawers() {
@@ -87,12 +113,23 @@ public class DrawerController implements Serializable {
         items = null;
     }
 
+    public void save(Drawer drawer) {
+        if (drawer.getId() != null && drawer.getId() > 0) {
+            getFacade().edit(drawer);
+            JsfUtil.addSuccessMessage("Updated Successfully.");
+        } else {
+            drawer.setCreatedAt(new Date());
+            drawer.setCreater(getSessionController().getLoggedUser());
+            getFacade().create(drawer);
+            JsfUtil.addSuccessMessage("Saved Successfully");
+        }
+    }
+    
     public void saveSelected() {
-
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Updated Successfully.");
-        } else {
+        } else {            
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
@@ -196,10 +233,9 @@ public class DrawerController implements Serializable {
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + DrawerController.class.getName());
+                        + object.getClass().getName() + "; expected type: " + Drawer.class.getName());
             }
         }
     }
 
-   
 }

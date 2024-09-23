@@ -68,7 +68,7 @@
                             <p:outputLabel value=" : " />
                             <p:autoComplete
                                 value="#{reportController.institution}"
-                                completeMethod="#{institutionController.completeIns}"
+                                completeMethod="#{institutionController.completeCompany}"
                                 var="ins"
                                 class="w-75 mt-1"
                                 inputStyleClass="form-control"
@@ -138,13 +138,15 @@
                             </p:column>
                             <p:column headerText="Casheir"><h:outputText value="#{pc.creater.webUserPerson.name}" ></h:outputText></p:column>
                             <p:column headerText="Bill No" width="">
-                                <h:outputText value="#{pc.id}" ></h:outputText>
+                                <h:outputText value="#{pc.deptId}" ></h:outputText>
                             </p:column>
                             <p:column headerText="Bill Date" >
-                                <h:outputText value="#{pc.billDate}" ></h:outputText>
+                                <h:outputText value="#{pc.billDate}" >
+                                    <f:convertDateTime pattern="yyyy MM dd hh:mm a" />
+                                </h:outputText>
                             </p:column>
                             <p:column headerText="Document No" >
-                                <h:outputText value="#{pc.billedBill.referenceNumber}" ></h:outputText>
+                                <h:outputText value="#{pc.intInvoiceNumber}" ></h:outputText>
                             </p:column>
                             <p:column headerText="Date" >
                                 <h:outputText value="#{pc.billDate}" >

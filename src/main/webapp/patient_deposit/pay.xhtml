@@ -38,8 +38,10 @@
                                 <p:commandButton icon="fas fa-plus" 
                                                  class="mx-2"
                                                  value="Clear for New Deposit"
-                                                 ajax="false" 
-                                                 action="#{patientController.navigateToReceiveDepositsFromPatientProfile()}"  >
+                                                 ajax="false"
+                                                 immediate="true"
+                                                 action="/patient_deposit/pay?faces-redirect=true"
+                                                 actionListener="#{patientDepositController.clearDataForPatientDeposit()}" >
                                 </p:commandButton>
                             </div>
                         </div>
@@ -140,10 +142,10 @@
                                             </p:column>
                                             <p:column>
                                                 <p:commandButton
-                                                    action="#{patientController.selectQuickOneFromQuickSearchPatient(patientDepositController)}"
+                                                    action="#{patientDepositController.getPatientDepositOnPatientDepositAddingMulti}"
                                                     id="btnSelectPt"
                                                     process="btnSelectPt tblPatients"
-                                                    update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId} :#{p:resolveFirstComponentWithId('paymentDetails',view).clientId} :#{p:resolveFirstComponentWithId('payment',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"
+                                                    update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId} :#{p:resolveFirstComponentWithId('paymentDetails',view).clientId} :#{p:resolveFirstComponentWithId('payment',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('details',view).clientId}"
                                                     value="select">
                                                     <f:setPropertyActionListener value="#{ps}" target="#{patientController.current}" />
                                                 </p:commandButton>
