@@ -42,17 +42,16 @@
 
                                 </div>
                             </h:panelGrid>
-
-                            <div class="row mb-2">
-                                <div class="col-md-2">
+                            <div class="d-flex p-2 align-items-center">
+                                <div>
                                     <p:commandButton ajax="false" 
                                                      value="Process" 
                                                      action="#{reportController.processCollectionCenterBalanceByAgentHistory()}" 
-                                                     class="w-50 ui-button-warning"
+                                                     class="w-100 ui-button-warning"
                                                      icon="fas fa-cogs">
                                     </p:commandButton>
                                 </div>
-                                <div  class="col-md-2">
+                                <div >
                                     <p:commandButton id="btnExcel" class="m-1 ui-button-success"
                                                      icon="fas fa-file-excel"
                                                      ajax="false" value="Export to Excel">
@@ -60,13 +59,7 @@
                                     </p:commandButton>
 
                                 </div>
-                                <div  class="col-md-2">
-                                    <p:commandButton value="Export to PDF" icon="pi pi-file-pdf" ajax="false">
-                                        <p:dataExporter type="pdf" target="agentHistoriesTable" fileName="agent_histories_report" />
-                                    </p:commandButton>
-
-                                </div>
-                                <div  class="col-md-2">
+                                <div  >
                                     <p:commandButton id="btnPrint" class="m-1 ui-button-success"
                                                      icon="fas fa-file-excel"
                                                      ajax="false" value="Print">
