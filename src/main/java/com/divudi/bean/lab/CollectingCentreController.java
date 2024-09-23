@@ -64,7 +64,7 @@ public class CollectingCentreController implements Serializable {
     @EJB
     BillFacade billFacade;
 
-    private int ccManagementIndex=1;
+    private int ccManagementIndex = 0;
     
     List<Institution> selectedItems;
     private Institution current;
