@@ -2806,12 +2806,12 @@ public class PatientInvestigationController implements Serializable {
                 if (pi.getBillItem() == null) {
                     continue;
                 }
-                hospitalFeeTotal += (pi.getBillItem().getHospitalFee() != null ? pi.getBillItem().getHospitalFee() : 0.0);
-                ccFeeTotal += (pi.getBillItem().getCollectingCentreFee() != null ? pi.getBillItem().getCollectingCentreFee() : 0.0);
-                staffFeeTotal += (pi.getBillItem().getStaffFee() != null ? pi.getBillItem().getStaffFee() : 0.0);
-                grossFeeTotal += (pi.getBillItem().getGrossValue() != null ? pi.getBillItem().getGrossValue() : 0.0);
-                discountTotal += (pi.getBillItem().getDiscount() != null ? pi.getBillItem().getDiscount() : 0.0);
-                netTotal += (pi.getBillItem().getNetValue() != null ? pi.getBillItem().getNetValue() : 0.0);
+                hospitalFeeTotal += pi.getBillItem().getHospitalFee();
+                ccFeeTotal += pi.getBillItem().getCollectingCentreFee();
+                staffFeeTotal += pi.getBillItem().getStaffFee();
+                grossFeeTotal += pi.getBillItem().getGrossValue();
+                discountTotal += pi.getBillItem().getDiscount();
+                netTotal +=  pi.getBillItem().getNetValue();
             }
         }
     }
@@ -2955,12 +2955,12 @@ public class PatientInvestigationController implements Serializable {
 
         if (billItems != null) {
             for (BillItem billItem : billItems) {
-                hospitalFeeTotal += (billItem.getHospitalFee() != null ? billItem.getHospitalFee() : 0.0);
-                ccFeeTotal += (billItem.getCollectingCentreFee() != null ? billItem.getCollectingCentreFee() : 0.0);
-                staffFeeTotal += (billItem.getStaffFee() != null ? billItem.getStaffFee() : 0.0);
-                grossFeeTotal += (billItem.getGrossValue() != null ? billItem.getGrossValue() : 0.0);
-                discountTotal += (billItem.getDiscount() != null ? billItem.getDiscount() : 0.0);
-                netTotal += (billItem.getNetValue() != null ? billItem.getNetValue() : 0.0);
+                hospitalFeeTotal += billItem.getHospitalFee();
+                ccFeeTotal += billItem.getCollectingCentreFee();
+                staffFeeTotal += billItem.getStaffFee();
+                grossFeeTotal += billItem.getGrossValue();
+                discountTotal += billItem.getDiscount();
+                netTotal += billItem.getNetValue();
             }
         }
     }
