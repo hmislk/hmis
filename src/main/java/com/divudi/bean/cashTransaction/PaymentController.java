@@ -10,11 +10,14 @@ package com.divudi.bean.cashTransaction;
 
 import com.divudi.bean.common.*;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.entity.BillItem;
 import com.divudi.entity.Payment;
 import com.divudi.facade.PaymentFacade;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -86,6 +89,9 @@ public class PaymentController implements Serializable {
         }
     }
 
+    
+    
+    
     public PaymentFacade getEjbFacade() {
         return ejbFacade;
     }
