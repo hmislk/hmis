@@ -96,6 +96,9 @@
                                     <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePaper'}">
                                         <ez:bms5x5ChannelBill bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}"/>
                                     </h:panelGroup>
+                                    <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFIvePaperCustom2'}" >
+                                        <ez:fivefivePapaerCustom2 bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}"/>
+                                    </h:panelGroup>
                                     <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePrintedPaper'}">
                                         <ez:bms5x5WIthoutHeaderChannelBill bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}"/>
                                     </h:panelGroup>
@@ -159,6 +162,9 @@
                                                     <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePaper'}" >
                                                         <ez:bms5x5ChannelBill bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}" />
                    <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingControllerViewScope.printingBill}"/>  -->
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFIvePaperCustom2'}" >
+                                                        <ez:fivefivePapaerCustom2 bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}"/>
                                                     </h:panelGroup>
                                                     <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePrintedPaper'}" >
                                                         <ez:bms5x5WIthoutHeaderChannelBill bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}"/>
@@ -228,6 +234,9 @@
                                                         <ez:bms5x5ChannelBill bill="#{bookingControllerViewScope.selectedBillSession.bill}" duplicate="true" />
                     <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingControllerViewScope.printingBill}"/>  -->
                                                     </h:panelGroup>
+                                                    <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFIvePaperCustom2'}" >
+                                                        <ez:fivefivePapaerCustom2 bill="#{bookingControllerViewScope.selectedBillSession.bill}" duplicate="true"/>
+                                                    </h:panelGroup>
                                                     <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePrintedPaper'}" >
                                                         <ez:bms5x5WIthoutHeaderChannelBill bill="#{bookingControllerViewScope.selectedBillSession.bill}" duplicate="true"/>
                     <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingControllerViewScope.printingBill}"/>  -->
@@ -295,6 +304,9 @@
                                                     <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePaper'}" >
                                                         <ez:bms5x5ChannelBill bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}" />
                     <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingControllerViewScope.printingBill}"/>  -->
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFIvePaperCustom2'}" >
+                                                        <ez:fivefivePapaerCustom2 bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}"/>
                                                     </h:panelGroup>
                                                     <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePrintedPaper'}" >
                                                         <ez:bms5x5WIthoutHeaderChannelBill bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}"/>
@@ -1241,6 +1253,9 @@
                                                                     <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePaper'}" >
                                                                         <ez:bms5x5ChannelBill bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}" />
                                     <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingControllerViewScope.printingBill}"/>  -->
+                                                                    </h:panelGroup>
+                                                                    <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFIvePaperCustom2'}" >
+                                                                        <ez:fivefivePapaerCustom2 bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}"/>
                                                                     </h:panelGroup>
                                                                     <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePrintedPaper'}" >
                                                                         <ez:bms5x5WIthoutHeaderChannelBill bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}"/>

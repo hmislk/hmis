@@ -28,7 +28,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 /**
- *
+ * 
  * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
  * Consultant in Health Informatics
  * buddhika.ari@gmail.com
@@ -57,6 +57,26 @@ public class DrawerController implements Serializable {
                 + " order by c.name";
 
         drawers = getFacade().findByJpql(sql, hm);
+    }
+
+    public Drawer getLoggedUsersDrawer() {
+        String jpql;
+        HashMap m = new HashMap();
+        jpql = "select d from Drawer d "
+                + " where d.retired=false "
+                + " and d.drawerUser=:user";
+        
+        m.put("user", sessionController.getLoggedUser());
+        
+        Drawer drawer;
+        drawer = getFacade().findFirstByJpql(jpql, m);
+        
+        if (drawer == null) {
+            current = new Drawer();
+            saveSelected();
+        }
+         
+        return drawer;
     }
 
     public List<Drawer> getDrawers() {
@@ -206,5 +226,4 @@ public class DrawerController implements Serializable {
         }
     }
 
-   
 }

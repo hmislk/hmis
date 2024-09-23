@@ -202,7 +202,7 @@
                                                     </div>
                                                 </div>
                                             </p:column>
-                                           <p:column styleClass="#{s.completed ?'ui-messages-success': s.started ? 'ui-messages-info': s.cancelled ? 'ui-messages-fatal' : ''}"  style="#{s.completed ? 'background-color: #dff0d8' : s.started ? 'background-color: #d9edf7' : s.cancelled ? 'background-color: #f2dede' : ''}" >
+                                            <p:column styleClass="#{s.completed ?'ui-messages-success': s.started ? 'ui-messages-info': s.cancelled ? 'ui-messages-fatal' : ''}"  style="#{s.completed ? 'background-color: #dff0d8' : s.started ? 'background-color: #d9edf7' : s.cancelled ? 'background-color: #f2dede' : ''}" >
                                                 <div class="d-flex align-items-center justify-content-between ">
                                                     <div class="d-flex align-items-center">
                                                         <div class="text-center">
@@ -1303,15 +1303,20 @@
                                 <div >
                                     <h:panelGroup id="gpBillPreview">
                                         <ui:repeat value="#{bookingControllerViewScopeMonth.departmentPreference.channellingBillCopiesList}" var="copy">
-                                            <h:panelGroup rendered="#{bookingControllerViewScopeMonth.departmentPreference.channelBillPaperType eq 'PosPaper'}" >
+
+                                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Month Bill is PosPaper',true)}">
                                                 <ez:bmsChannelBill  bill="#{bookingControllerViewScopeMonth.printingBill}"/>
                                             </h:panelGroup>
-                                            <h:panelGroup rendered="#{bookingControllerViewScopeMonth.departmentPreference.channelBillPaperType eq 'FiveFivePaper'}" >
+                                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Month Bill is FiveFivePaper',true)}">
                                                 <ez:bms5x5ChannelBill bill="#{bookingControllerViewScopeMonth.printingBill}" payments="#{bookingControllerViewScopeMonth.payments}"/> 
                                             </h:panelGroup>
-                                            <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePrintedPaper'}" >
-                                                <ez:bms5x5WIthoutHeaderChannelBill controller="#{bookingControllerViewScopeMonth}" bill="#{bookingControllerViewScopeMonth.printingBill}" paymentMethodData="#{bookingControllerViewScopeMonth.paymentMethodData}" payments="#{bookingControllerViewScopeMonth.payments}"/>
+                                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Month Bill is FiveFIvePaperCustom2',true)}">
+                                                <ez:fivefivePapaerCustom2 bill="#{bookingControllerViewScopeMonth.printingBill}" paymentMethodData="#{bookingControllerViewScopeMonth.paymentMethodData}" payments="#{bookingControllerViewScopeMonth.payments}"/>
                                             </h:panelGroup>
+                                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Month Bill is FiveFivePrintedPaper',true)}">
+                                                <ez:bms5x5WIthoutHeaderChannelBill bill="#{bookingControllerViewScopeMonth.printingBill}" paymentMethodData="#{bookingControllerViewScopeMonth.paymentMethodData}" payments="#{bookingControllerViewScopeMonth.payments}"/>
+                                            </h:panelGroup>
+
                                         </ui:repeat>
                                     </h:panelGroup>
                                 </div>

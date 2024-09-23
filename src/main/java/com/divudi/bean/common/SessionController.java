@@ -9,6 +9,7 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.CashBookController;
 import com.divudi.bean.cashTransaction.DenominationController;
+import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.channel.BookingController;
 import com.divudi.bean.collectingCentre.CourierController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
@@ -43,6 +44,7 @@ import com.divudi.entity.Route;
 import com.divudi.entity.Staff;
 import com.divudi.entity.cashTransaction.CashBook;
 import com.divudi.entity.cashTransaction.Denomination;
+import com.divudi.entity.cashTransaction.Drawer;
 import com.divudi.facade.StaffFacade;
 import java.io.IOException;
 import java.io.Serializable;
@@ -130,6 +132,8 @@ public class SessionController implements Serializable, HttpSessionListener {
     CashBookController cashBookController;
     @Inject
     DenominationController denominationController;
+    @Inject
+    DrawerController drawerController;
     /**
      * Properties
      */
@@ -178,8 +182,9 @@ public class SessionController implements Serializable, HttpSessionListener {
     private CashBook loggedCashbook;
     private Institution loggedSite;
 
-    public String navigateToLoginPage() {
+    private Drawer loggedUserDrawer;
 
+    public String navigateToLoginPage() {
         return "/index1.xhtml";
     }
 
@@ -2235,6 +2240,16 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public List<Denomination> findDefaultDenominations() {
         return denominationController.getDenominations();
+    }
+
+    public Drawer getLoggedUserDrawer() {
+        Drawer drawer = drawerController.getLoggedUsersDrawer();
+        System.out.println("Logged User Drawer = " + drawer);
+        return drawer;
+    }
+
+    public void setLoggedUsersDrawer(Drawer loggedUserDrawer) {
+        this.loggedUserDrawer = loggedUserDrawer;
     }
 
 }
