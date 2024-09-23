@@ -21,14 +21,6 @@
                                     <i class="fa-solid fa-cash-register">&nbsp;&nbsp;</i>
                                     <p:outputLabel value="Shift Handover" />
                                 </div>
-                                <div class="col float-right">
-                                    <p:commandButton 
-                                        value="Print" 
-                                        ajax="false" >
-                                        <p:printer target="gpPrint" ></p:printer>
-                                    </p:commandButton>
-
-                                </div>
                             </div>
                         </f:facet>
 
@@ -109,14 +101,60 @@
 
 
                                 <div class="col-6" >
-
-
-                                    <p:panelGrid columns="2" layout="tabular" class="w-100 m-1">
+                                    <p:panelGrid columns="3" layout="tabular" class="w-100 m-1" >
                                         <f:facet name="header" >
-                                            <p:outputLabel value="Handover Values" class="font-weight-bold" ></p:outputLabel>
+                                            <p:outputLabel value="Handover" class="font-weight-bold" ></p:outputLabel>
                                         </f:facet>
 
-                                        <!-- Cash -->
+                                        <p:outputLabel value="Hand over to" class="font-weight-bold" ></p:outputLabel>
+                                        <p:autoComplete
+                                            completeMethod="#{webUserController.completeUser}"
+                                            class="mx-2 w-100"
+                                            id="acStaff" 
+                                            inputStyleClass="w-100"
+                                            value="#{financialTransactionController.user}" 
+                                            var="user"
+                                            scrollHeight="450"
+                                            itemLabel="#{user.webUserPerson.name}" 
+                                            itemValue="#{user}" >
+                                            <p:column headerText="Username" >
+                                                <h:outputText value="#{user.name}" ></h:outputText>
+                                            </p:column>
+                                            <p:column headerText="Name" >
+                                                <h:outputText value="#{user.webUserPerson.name}" ></h:outputText>
+                                            </p:column>
+                                        </p:autoComplete>
+                                        <p:commandButton 
+                                            class="ui-button-success mx-2" 
+                                            ajax="false" 
+                                            value="Handover" 
+                                            icon="pi pi-database"
+                                            onclick="return confirm('Are you sure you want to handover this shift?');"
+                                            action="#{financialTransactionController.settleHandoverStartBill()}">
+                                        </p:commandButton>
+                                    </p:panelGrid>
+
+                                    <p:panelGrid columns="5" layout="tabular" class="w-100 m-1">
+                                        <f:facet name="header">
+                                            <p:row>
+                                                <p:column>
+                                                    <p:outputLabel value="Payment Method" class="font-weight-bold text-center" />
+                                                </p:column>
+                                                <p:column>
+                                                    <p:outputLabel value="Collected" class="font-weight-bold text-center" />
+                                                </p:column>
+                                                <p:column>
+                                                    <p:outputLabel value="Handing Over" class="font-weight-bold text-center" />
+                                                </p:column>
+                                                <p:column>
+                                                    <p:outputLabel value="Difference" class="font-weight-bold text-center" />
+                                                </p:column>
+                                                <p:column>
+                                                    <p:outputLabel value="Actions" class="font-weight-bold text-center" />
+                                                </p:column>
+                                            </p:row>
+                                        </f:facet>
+
                                         <p:outputLabel value="Cash"
                                                        style="text-align: left;"
                                                        rendered="#{financialTransactionController.bundle.hasCashTransaction}" />
@@ -124,6 +162,17 @@
                                                        rendered="#{financialTransactionController.bundle.hasCashTransaction}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </p:outputLabel>
+                                        <p:outputLabel value="#{financialTransactionController.bundle.cashHandoverValue}"
+                                                       rendered="#{financialTransactionController.bundle.hasCashTransaction}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel>
+
+                                        <p:outputLabel value="#{financialTransactionController.bundle.cashValue - financialTransactionController.bundle.cashHandoverValue}"
+                                                       rendered="#{financialTransactionController.bundle.hasCashTransaction}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel>
+
+
 
                                         <!-- Card -->
                                         <p:outputLabel value="Card"
@@ -268,82 +317,97 @@
                                         </p:outputLabel>
                                     </p:panelGrid>
 
-                                    <p:panelGrid columns="2" layout="tabular" class="w-100 m-1" >
-                                        <f:facet name="header" >
-                                            <p:outputLabel value="Adjustments" class="font-weight-bold" ></p:outputLabel>
-                                        </f:facet>
-                                        <p:outputLabel value="Department" class="font-weight-bold" ></p:outputLabel>
-                                        <p:selectOneMenu value="#{financialTransactionController.department}" >
-                                            <f:selectItem itemLabel="Select" ></f:selectItem>
-                                            <f:selectItems value="#{financialTransactionController.bundle.department}" ></f:selectItems>
-                                        </p:selectOneMenu>
-                                        <p:spacer ></p:spacer>
-                                        <h:panelGroup >
-                                            <p:commandButton 
-                                                class="m-1 ui-button-warning" 
-                                                value="Add Excess"
-                                                icon="pi pi-plus"  
-                                                action="#{financialTransactionController.navigateToViewIndividualShiftForHandover}">
-                                            </p:commandButton>
-                                            <p:commandButton
-                                                class="m-1 ui-button-danger" 
-                                                value="Mark Shortage"
-                                                icon="pi pi-exclamation-triangle"
-                                                action="#{financialTransactionController.navigateToViewIndividualShiftForHandover}">
-                                            </p:commandButton>
-                                        </h:panelGroup>
 
-
-                                    </p:panelGrid>
-
-                                    <p:panelGrid columns="2" layout="tabular" class="w-100 m-1" >
-                                        <f:facet name="header" >
-                                            <p:outputLabel value="Handover" class="font-weight-bold" ></p:outputLabel>
-                                        </f:facet>
-
-                                        <p:outputLabel value="Hand over to" class="font-weight-bold" ></p:outputLabel>
-                                        <p:autoComplete
-                                            completeMethod="#{webUserController.completeUser}"
-                                            class="mx-2 w-100"
-                                            id="acStaff" 
-                                            inputStyleClass="w-100"
-                                            value="#{financialTransactionController.user}" 
-                                            var="user"
-                                            scrollHeight="450"
-                                            itemLabel="#{user.webUserPerson.name}" 
-                                            itemValue="#{user}" >
-                                            <p:column headerText="Username" >
-                                                <h:outputText value="#{user.name}" ></h:outputText>
-                                            </p:column>
-                                            <p:column headerText="Name" >
-                                                <h:outputText value="#{user.webUserPerson.name}" ></h:outputText>
-                                            </p:column>
-                                        </p:autoComplete>
-
-                                        <p:spacer ></p:spacer>
-                                        <p:commandButton 
-                                            class="ui-button-success mx-2" 
-                                            ajax="false" 
-                                            value="Handover" 
-                                            icon="pi pi-database"
-                                            action="#{financialTransactionController.settleHandoverStartBill()}">
-                                        </p:commandButton>
-
-
-<!--                                        <ui:repeat value="#{financialTransactionController.bundle.bundles}" var="b" >
-                                            <ui:repeat value="#{b.reportTemplateRows}" var="r" >
-                                        #{r.payment}
-                                    </ui:repeat>
-                                </ui:repeat>-->
-
-
-
-                                    </p:panelGrid>
                                 </div>
+
+
+
+                                <h:panelGroup id="tblCashier" >
+                                    <table class="ui-widget ui-panelgrid ui-widget-content w-100 m-1">
+                                        <thead class="ui-widget-header">
+                                            <tr>
+                                                <th class="text-center">Payment Method</th>
+                                                <th class="text-center">Collected</th>
+                                                <th class="text-center">Handing Over</th>
+                                                <th class="text-center">Difference</th>
+                                                <th class="text-center">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Cash Row -->
+                                            <tr rendered="#{financialTransactionController.bundle.hasCashTransaction}">
+                                                <td>Cash</td>
+                                                <td class="text-end">
+                                                    <h:outputText value="#{financialTransactionController.bundle.cashValue}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td class="text-end">
+                                                    <h:outputText value="#{financialTransactionController.bundle.cashHandoverValue}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td class="text-end">
+                                                    <h:outputText value="#{financialTransactionController.bundle.cashValue - financialTransactionController.bundle.cashHandoverValue}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td class="text-center">
+                                                    <p:commandButton 
+                                                        value="Create Shortage Bill" 
+                                                        class="ui-button-danger m-1"
+                                                        icon="pi pi-exclamation-triangle"
+                                                        onclick="return confirm('Are you sure you want to create a shortage bill?');"
+                                                        action="#{financialTransactionController.navigateToMarkShortagesForShiftForHandover('Cash')}">
+                                                    </p:commandButton>
+                                                </td>
+                                            </tr>
+
+                                            <!-- Card Row -->
+                                            <tr rendered="#{financialTransactionController.bundle.hasCardTransaction}">
+                                                <td>Card</td>
+                                                <td class="text-end">
+                                                    <h:outputText value="#{financialTransactionController.bundle.cardValue}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td class="text-end">
+                                                    <h:outputText value="#{financialTransactionController.bundle.cardHandoverValue}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td class="text-end">
+                                                    <h:outputText value="#{financialTransactionController.bundle.cardValue - financialTransactionController.bundle.cardHandoverValue}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td class="text-center">
+                                                   
+                                                </td>
+                                            </tr>
+
+                                            <!-- Repeat rows for other payment methods as needed -->
+
+                                        </tbody>
+                                    </table>
+
+                                </h:panelGroup>
+
+
+
 
                             </div>
 
                             <div class="row mx-2" >
+
+
+
+
+
+
+
+
+
 
                                 <p:dataTable 
                                     emptyMessage="No Financial Transactions to Handover"
@@ -352,7 +416,7 @@
                                     var="summary"
                                     paginator="true" 
                                     rows="10" 
-                                    id="tblCashier"
+
                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
                                     currentPageReportTemplate="(Page {currentPage} of {totalPages})"
                                     paginatorPosition="top">
@@ -697,6 +761,7 @@
                                         </p:commandButton>
                                     </p:column>
 
+                                    <!-- Patient Points Value Column -->
                                     <p:column 
                                         headerText="Patient Points Value" 
                                         class="text-end"
@@ -711,21 +776,24 @@
                                         </f:facet>
                                     </p:column>
 
+                                    <!-- Patient Points Handover Column -->
                                     <p:column 
                                         headerText="Patient Points Handover" 
                                         class="text-end"
                                         rendered="#{financialTransactionController.bundle.hasPatientPointsTransaction}">
-                                        <p:inputText 
-                                            value="#{summary.patientPointsHandoverValue}" 
-                                            style="width: 100%;" 
-                                            label="Patient Points Handover" 
-                                            required="true">
+                                        <h:outputText value="#{summary.patientPointsHandoverValue}">
                                             <f:convertNumber pattern="#,##0.00" />
-                                        </p:inputText>
+                                        </h:outputText>
+                                        <p:commandButton 
+                                            icon="pi pi-refresh" 
+                                            title="Change Handover Value" 
+                                            ajax="false" 
+                                            styleClass="ui-button-warning m-1 mx-2" 
+                                            action="#{financialTransactionController.navigateToSelectPaymentsForHandoverCreate(summary, 'PatientPoints')}" >
+                                        </p:commandButton>
                                     </p:column>
 
-
-
+                                    <!-- Online Settlement Value Column -->
                                     <p:column 
                                         headerText="Online Settlement Value" 
                                         class="text-end"
@@ -740,18 +808,55 @@
                                         </f:facet>
                                     </p:column>
 
+                                    <!-- Online Settlement Handover Column -->
                                     <p:column 
                                         headerText="Online Settlement Handover" 
                                         class="text-end"
                                         rendered="#{financialTransactionController.bundle.hasOnlineSettlementTransaction}">
-                                        <p:inputText 
-                                            value="#{summary.onlineSettlementHandoverValue}" 
-                                            style="width: 100%;" 
-                                            label="Online Settlement Handover" 
-                                            required="true">
+                                        <h:outputText value="#{summary.onlineSettlementHandoverValue}">
                                             <f:convertNumber pattern="#,##0.00" />
-                                        </p:inputText>
+                                        </h:outputText>
+                                        <p:commandButton 
+                                            icon="pi pi-refresh" 
+                                            title="Change Handover Value" 
+                                            ajax="false" 
+                                            styleClass="ui-button-warning m-1 mx-2" 
+                                            action="#{financialTransactionController.navigateToSelectPaymentsForHandoverCreate(summary, 'OnlineSettlement')}" >
+                                        </p:commandButton>
                                     </p:column>
+
+                                    <!-- On Call Value Column -->
+                                    <p:column 
+                                        headerText="On Call Value" 
+                                        class="text-end"
+                                        rendered="#{financialTransactionController.bundle.hasOnCallTransaction}">
+                                        <h:outputText value="#{summary.onCallValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{financialTransactionController.bundle.onCallValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+
+                                    <!-- On Call Handover Column -->
+                                    <p:column 
+                                        headerText="On Call Handover" 
+                                        class="text-end"
+                                        rendered="#{financialTransactionController.bundle.hasOnCallTransaction}">
+                                        <h:outputText value="#{summary.onCallHandoverValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                        <p:commandButton 
+                                            icon="pi pi-refresh" 
+                                            title="Change Handover Value" 
+                                            ajax="false" 
+                                            styleClass="ui-button-warning m-1 mx-2" 
+                                            action="#{financialTransactionController.navigateToSelectPaymentsForHandoverCreate(summary, 'OnCall')}" >
+                                        </p:commandButton>
+                                    </p:column>
+
 
 
                                 </p:dataTable>
