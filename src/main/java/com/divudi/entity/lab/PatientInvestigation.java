@@ -26,6 +26,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 
 /**
@@ -55,7 +56,7 @@ public class PatientInvestigation implements Serializable {
     private Patient patient;
     @ManyToOne
     private Investigation investigation;
-    @ManyToOne
+    @OneToOne
     private BillItem billItem;
     @ManyToOne
     BillComponent billComponent;

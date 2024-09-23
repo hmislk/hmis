@@ -7,6 +7,7 @@ package com.divudi.entity;
 import com.divudi.data.BillItemStatus;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.data.lab.Priority;
+import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.entity.pharmacy.Ampp;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.entity.pharmacy.UserStock;
@@ -115,6 +116,8 @@ public class BillItem implements Serializable {
     Date fromTime;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date toTime;
+    @OneToOne(mappedBy = "billItem")
+    private PatientInvestigation patientInvestigation;
     @OneToOne
     BillItem referanceBillItem;
     @OneToOne
@@ -977,5 +980,16 @@ public class BillItem implements Serializable {
     public void setFeeValue(double feeValue) {
         this.feeValue = feeValue;
     }
+
+    @OneToOne(mappedBy = "billItem")
+    public PatientInvestigation getPatientInvestigation() {
+        return patientInvestigation;
+    }
+
+    public void setPatientInvestigation(PatientInvestigation patientInvestigation) {
+        this.patientInvestigation = patientInvestigation;
+    }
+    
+    
 
 }

@@ -97,7 +97,7 @@
 
                         <p:commandButton 
                             ajax="false" 
-                            action="#{patientInvestigationController.listPatientInvestigationsForCcs}" 
+                            action="#{patientInvestigationController.listBillItemsForCcs()}" 
                             value="List Tests" 
                             icon="fas fa-search" 
                             styleClass="m-1 ui-button-primary"/>
@@ -121,10 +121,10 @@
                     <p:dataTable  
                         class="w-100"
                         id="tbl"
-                        value="#{patientInvestigationController.items}" 
-                        var="patientInvestigation" 
+                        value="#{patientInvestigationController.billItems}" 
+                        var="billItem" 
                         paginator="true"
-                        rowKey="#{patientInvestigation.id}"
+                        rowKey="#{billItem.id}"
                         paginatorPosition="bottom"
                         rows="10"
                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
@@ -133,7 +133,7 @@
                         <!-- Bill Number Column -->
                         <p:column headerText="Bill Number" >
                             <h:outputLabel 
-                                value="#{patientInvestigation.billItem.bill.deptId}" >
+                                value="#{billItem.bill.deptId}" >
                             </h:outputLabel>
                         </p:column>
 
@@ -142,71 +142,67 @@
                                 ajax="false" 
                                 value="View" 
                                 action="#{billSearch.navigateViewBillByBillTypeAtomic()}">
-                                <f:setPropertyActionListener value="#{patientInvestigation.billItem.bill}" target="#{billSearch.bill}"/>
+                                <f:setPropertyActionListener value="#{billItem.bill}" target="#{billSearch.bill}"/>
                             </p:commandButton>
                         </p:column>
 
                         <!-- Bill Date Column -->
-                        <p:column headerText="Bill Date" filterBy="#{patientInvestigation.billItem.bill.createdAt}" sortBy="#{patientInvestigation.billItem.bill.createdAt}">
-                            <h:outputLabel value="#{patientInvestigation.billItem.bill.createdAt}">
+                        <p:column headerText="Bill Date" filterBy="#{billItem.bill.createdAt}" sortBy="#{billItem.bill.createdAt}">
+                            <h:outputLabel value="#{billItem.bill.createdAt}">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
                             </h:outputLabel>
                         </p:column>
 
 
-
-
-
                         <!-- Patient Name Column -->
-                        <p:column headerText="Patient Name" filterBy="#{patientInvestigation.billItem.bill.patient.person.nameWithTitle}" sortBy="#{patientInvestigation.billItem.bill.patient.person.nameWithTitle}">
-                            <h:outputLabel value="#{patientInvestigation.billItem.bill.patient.person.nameWithTitle}" />
+                        <p:column headerText="Patient Name" filterBy="#{billItem.bill.patient.person.nameWithTitle}" sortBy="#{billItem.bill.patient.person.nameWithTitle}">
+                            <h:outputLabel value="#{billItem.bill.patient.person.nameWithTitle}" />
                         </p:column>
 
 
 
                         <!-- Investigation Name Column -->
-                        <p:column headerText="Investigation" filterBy="#{patientInvestigation.investigation.name}" sortBy="#{patientInvestigation.investigation.name}">
-                            <h:outputLabel value="#{patientInvestigation.investigation.name}" />
+                        <p:column headerText="Investigation" filterBy="#{billItem.patientInvestigation.investigation.name}" 
+                                  sortBy="#{billItem.patientInvestigation.investigation.name}">
+                            <h:outputLabel value="#{billItem.patientInvestigation.investigation.name}" />
                         </p:column>
 
                         <!-- Status Column -->
-                        <p:column headerText="Status" filterBy="#{patientInvestigation.status}" sortBy="#{patientInvestigation.status}">
-                            <h:outputLabel value="#{patientInvestigation.status}"/>
+                        <p:column headerText="Status" filterBy="#{billItem.patientInvestigation.status}" sortBy="#{billItem.patientInvestigation.status}">
+                            <h:outputLabel value="#{billItem.patientInvestigation.status}"/>
                         </p:column>
 
 
                         <!-- Collecting Centre Column -->
-                        <p:column headerText="Collecting Centre" filterBy="#{patientInvestigation.billItem.bill.collectingCentre.name}" sortBy="#{patientInvestigation.billItem.bill.collectingCentre.name}">
-                            <h:outputLabel value="#{patientInvestigation.billItem.bill.collectingCentre.name}" />
+                        <p:column headerText="Collecting Centre" filterBy="#{billItem.bill.collectingCentre.name}" sortBy="#{billItem.bill.collectingCentre.name}">
+                            <h:outputLabel value="#{billItem.bill.collectingCentre.name}" />
                         </p:column>
 
                         <!-- Lab Institution Column -->
-                        <p:column headerText="Lab" filterBy="#{patientInvestigation.billItem.bill.toInstitution.name}" sortBy="#{patientInvestigation.billItem.bill.toInstitution.name}">
-                            <h:outputLabel value="#{patientInvestigation.billItem.bill.toInstitution.name}" />
+                        <p:column headerText="Lab" filterBy="#{billItem.bill.toInstitution.name}" sortBy="#{billItem.bill.toInstitution.name}">
+                            <h:outputLabel value="#{billItem.bill.toInstitution.name}" />
                         </p:column>
 
                         <!-- Lab Department Column -->
-                        <p:column headerText="Lab Department" filterBy="#{patientInvestigation.billItem.bill.toDepartment.name}" sortBy="#{patientInvestigation.billItem.bill.toDepartment.name}">
-                            <h:outputLabel value="#{patientInvestigation.billItem.bill.toDepartment.name}" />
+                        <p:column headerText="Lab Department" filterBy="#{billItem.bill.toDepartment.name}" sortBy="#{billItem.bill.toDepartment.name}">
+                            <h:outputLabel value="#{billItem.bill.toDepartment.name}" />
                         </p:column>
 
-                        <!-- Lab Department Column -->
-                        <p:column headerText="Hospital Fee" >
-                            <h:outputLabel value="#{patientInvestigation.billItem.hospitalFee}" >
-                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                        <!-- Collecting Centre Fee Column -->
+                        <p:column headerText="CC Fee">
+                            <h:outputLabel value="#{billItem.collectingCentreFee}">
+                                <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
-                        </p:column>
-
-                        <!-- Lab Department Column -->
-                        <p:column headerText="CC Fee" >
-                            <h:outputLabel value="#{patientInvestigation.billItem.collectingCentreFee}" >
-                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                            </h:outputLabel>
+                            <f:facet name="footer">
+                                <h:outputText value="#{patientInvestigationController.ccFeeTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </f:facet>
                         </p:column>
 
                         <!-- Hospital Fee Column -->
                         <p:column headerText="Hospital Fee">
-                            <h:outputLabel value="#{patientInvestigation.billItem.staffFee}">
+                            <h:outputLabel value="#{billItem.staffFee}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                             <f:facet name="footer">
@@ -218,7 +214,7 @@
 
                         <!-- Gross Total Column -->
                         <p:column headerText="Gross Total">
-                            <h:outputLabel value="#{patientInvestigation.billItem.feeValue}">
+                            <h:outputLabel value="#{billItem.feeValue}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                             <f:facet name="footer">
@@ -230,7 +226,7 @@
 
                         <!-- Discount Column -->
                         <p:column headerText="Discount">
-                            <h:outputLabel value="#{patientInvestigation.billItem.discount}">
+                            <h:outputLabel value="#{billItem.discount}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                             <f:facet name="footer">
@@ -242,16 +238,27 @@
 
                         <!-- Net Total Column -->
                         <p:column headerText="Net Total">
-                            <h:outputLabel value="#{patientInvestigation.billItem.netValue}">
+                            <h:outputLabel value="#{billItem.netValue}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                             <f:facet name="footer">
-                                <h:outputText value="#{patientInvestigationController.n}">
+                                <h:outputText value="#{patientInvestigationController.netTotal}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </f:facet>
                         </p:column>
 
+
+                        <!-- Bill Date Column -->
+                        <p:column headerText="Cancellation">
+                            <h:outputLabel value="#{billItem.bill.cancelled?'Cancelled':''}">
+                            </h:outputLabel>
+                        </p:column>
+
+                        <p:column headerText="Refunded">
+                            <h:outputLabel value="#{billItem.refunded?'Refunded':''}">
+                            </h:outputLabel>
+                        </p:column>
 
                     </p:dataTable>
 
