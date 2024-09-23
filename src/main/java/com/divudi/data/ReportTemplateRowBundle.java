@@ -580,6 +580,50 @@ public class ReportTemplateRowBundle implements Serializable {
         }
     }
 
+    public void markSelectedAtHandover() {
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getPayment() == null || row.getPayment().getPaymentMethod() == null) {
+                    continue;
+                }
+                row.setSelected(row.getPayment().isSelectedForHandover());
+            }
+        }
+    }
+
+    public void markSelectedAtHandoverAccept() {
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getPayment() == null || row.getPayment().getPaymentMethod() == null) {
+                    continue;
+                }
+                row.setSelected(row.getPayment().isSelectedForCashbookEntry());
+            }
+        }
+    }
+
+    public void markSelectedAtRecordCreation() {
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getPayment() == null || row.getPayment().getPaymentMethod() == null) {
+                    continue;
+                }
+                row.setSelected(row.getPayment().isSelectedForRecording());
+            }
+        }
+    }
+    
+    public void markSelectedAtRecordConfirmation() {
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getPayment() == null || row.getPayment().getPaymentMethod() == null) {
+                    continue;
+                }
+                row.setSelected(row.getPayment().isSelectedForRecordingConfirmation());
+            }
+        }
+    }
+
     public void calculateTotalsByPaymentsAndDenominations() {
         resetTotalsAndFlags();
 
