@@ -2293,7 +2293,7 @@ public class BillSearch implements Serializable {
                 getBillFacade().edit(cancellationBill);
             }
         }
-        
+
         if (cancellationBill.getPaymentMethod() == PaymentMethod.PatientDeposit) {
 //            if (cancellationBatchBill.getPatient().getRunningBalance() == null) {
 //                cancellationBatchBill.getPatient().setRunningBalance(Math.abs(cancellationBatchBill.getNetTotal()));
@@ -2301,8 +2301,8 @@ public class BillSearch implements Serializable {
 //                cancellationBatchBill.getPatient().setRunningBalance(cancellationBatchBill.getPatient().getRunningBalance() + Math.abs(cancellationBatchBill.getNetTotal()));
 //            }
 //            patientFacade.edit(cancellationBatchBill.getPatient());
-           PatientDeposit pd = patientDepositController.getDepositOfThePatient(cancellationBill.getPatient(), sessionController.getDepartment());
-           patientDepositController.updateBalance(cancellationBill, pd);
+            PatientDeposit pd = patientDepositController.getDepositOfThePatient(cancellationBill.getPatient(), sessionController.getDepartment());
+            patientDepositController.updateBalance(cancellationBill, pd);
         }
 
         notificationController.createNotification(cancellationBill);
@@ -3011,7 +3011,7 @@ public class BillSearch implements Serializable {
         }
         return "/opd/view/opd_batch_bill?faces-redirect=true;";
     }
-    
+
     public String navigateToViewOpdProfessionalPaymentBill() {
         if (viewingBill == null) {
             JsfUtil.addErrorMessage("Nothing to cancel");
@@ -3082,7 +3082,6 @@ public class BillSearch implements Serializable {
 //        printPreview = true;
 //        return "/payment_bill_reprint.xhtml?faces-redirect=true;";
 //    }
-
     public String navigateToDownloadBillsAndBillItems() {
         return "/analytics/download_bills?faces-redirect=true;";
     }
@@ -3132,8 +3131,7 @@ public class BillSearch implements Serializable {
                 return navigateToViewOpdBill();
             case OPD_BATCH_BILL_WITH_PAYMENT:
                 return navigateToViewOpdBatchBill();
-                
-                
+
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES:
                 return navigateToViewOpdProfessionalPaymentBill();
             case CHANNEL_BOOKING_WITH_PAYMENT:
@@ -3988,6 +3986,20 @@ public class BillSearch implements Serializable {
         return bfs;
     }
 
+    public List<Bill> fetchBills(BillTypeAtomic billTypeAtomic, Bill referanceBill) {
+        Map m = new HashMap();
+        String j;
+        j = "select b "
+                + " from Bill b "
+                + " where b.retired=:ret "
+                + " and b.referanceBill=:rb "
+                + " abd b.billTypeAtomic=:bta";
+        m.put("ret", false);
+        m.put("rs", referanceBill);
+        m.put("bta", billTypeAtomic);
+        return billFacade.findByJpql(j, m);
+    }
+
     public AgentHistory fetchCCHistory(Bill b) {
         String sql;
         Map m = new HashMap();
@@ -4656,8 +4668,6 @@ public class BillSearch implements Serializable {
         }
 
     }
-    
-    
 
     public class OverallSummary {
 

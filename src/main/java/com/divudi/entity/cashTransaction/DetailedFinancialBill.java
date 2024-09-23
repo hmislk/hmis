@@ -28,6 +28,12 @@ public class DetailedFinancialBill implements Serializable {
     @OneToOne
     private Bill bill;
 
+    private Double floatInValue;
+    private Double floatOutValue;
+    private Double floatBalanceValue;
+    
+    
+    
     // Calculated values for each payment method
     private Double cashValue;
     private Double cardValue;
@@ -718,6 +724,30 @@ public class DetailedFinancialBill implements Serializable {
 
     public void setRetireComments(String retireComments) {
         this.retireComments = retireComments;
+    }
+
+    public Double getFloatInValue() {
+        return floatInValue;
+    }
+
+    public void setFloatInValue(Double floatInValue) {
+        this.floatInValue = floatInValue;
+    }
+
+    public Double getFloatOutValue() {
+        return floatOutValue;
+    }
+
+    public void setFloatOutValue(Double floatOutValue) {
+        this.floatOutValue = floatOutValue;
+    }
+
+    public Double getFloatBalanceValue() {
+        return floatBalanceValue;
+    }
+
+    public void setFloatBalanceValue(Double floatBalanceValue) {
+        this.floatBalanceValue = floatBalanceValue;
     }
 
     
