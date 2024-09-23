@@ -16,13 +16,34 @@
                             <i class="fa fa-money-bill-wave mt-2"/>
                             <p:outputLabel value="Start Shift" class="mx-2 mt-2"></p:outputLabel>
                         </f:facet>
-                        <p:commandButton 
-                            icon="fa-solid fa-check"
-                            class="ui-button-success"
-                            value="Start Shift" 
-                            ajax="false" 
-                            action="#{financialTransactionController.settleInitialFundBill()}" >
-                        </p:commandButton>
+
+
+
+                        <p:panelGrid layout="tabular" columns="2" class="w-100" >
+                            <f:facet name="header" >
+                                <p:outputLabel value="Shift" class="font-weight-bold" ></p:outputLabel>
+                            </f:facet>
+                            <!-- User with Icon -->
+                            <h:panelGroup>
+                                <i class="pi pi-user" style="margin-right:5px; color: #007bff;"></i>
+                                <p:outputLabel value="User" />
+                            </h:panelGroup>
+                            <p:outputLabel 
+                                value="#{financialTransactionController.bundle.user.webUserPerson.nameWithTitle}" 
+                                styleClass="ui-button-primary">
+                            </p:outputLabel>
+
+
+                            <p:spacer ></p:spacer>
+                            <p:commandButton 
+                                icon="pi pi-play"
+                                class="ui-button-success"
+                                value="Start Shift" 
+                                ajax="false" 
+                                action="#{financialTransactionController.settleInitialFundBill()}" >
+                            </p:commandButton>
+
+                        </p:panelGrid>
 
                     </p:panel>
                 </h:form>
