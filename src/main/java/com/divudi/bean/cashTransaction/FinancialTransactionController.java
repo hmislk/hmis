@@ -36,6 +36,7 @@ import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
+import com.divudi.entity.cashTransaction.DetailedFinancialBill;
 import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.PaymentMethodValueFacade;
 import com.divudi.java.CommonFunctions;
@@ -100,10 +101,13 @@ public class FinancialTransactionController implements Serializable {
     private BillSearch billSearch;
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    DetailedFinancialBillController detailedFinancialBillController;
     // </editor-fold>  
 
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private Bill currentBill;
+    private DetailedFinancialBill currentDetailedFinancialBill;
     private List<BillComponent> currentBillComponents;
     private ReportTemplateType reportTemplateType;
     private ReportTemplateRowBundle reportTemplateRowBundle;
@@ -1935,11 +1939,12 @@ public class FinancialTransactionController implements Serializable {
         }
         return "/cashier/shift_end_summery_bill?faces-redirect=true";
     }
-    
+
     public String navigateToCreateShiftEndSummaryBillForHandover() {
         resetClassVariables();
-        findNonClosedShiftStartFundBillIsAvailable();
-        fillPaymentsFromShiftStartToNow();
+        Bill startBill = findNonClosedShiftStartFundBill(sessionController.getLoggedUser());
+        nonClosedShiftStartFundBill = startBill;
+
         if (nonClosedShiftStartFundBill != null) {
             currentBill = new Bill();
             currentBill.setBillType(BillType.ShiftEndFundBill);
@@ -1948,8 +1953,18 @@ public class FinancialTransactionController implements Serializable {
             currentBill.setReferenceBill(nonClosedShiftStartFundBill);
         } else {
             currentBill = null;
+            JsfUtil.addErrorMessage("No Shift to End");
+            return null;
         }
-        return "/cashier/shift_end_summery_bill?faces-redirect=true";
+
+        List<Payment> shiftPayments = generatePaymentsFromShiftStartToEndByDateAndDepartment(startBill, null);
+        boolean selectAllHandoverPayments = true;
+        bundle = generatePaymentBundleForHandovers(startBill, null, shiftPayments, selectAllHandoverPayments);
+        bundle.setUser(sessionController.getLoggedUser());
+        bundle.aggregateTotalsFromChildBundles();
+        bundle.collectDepartments();
+
+        return "/cashier/shift_end_for_handover?faces-redirect=true";
     }
 
     public String navigateToHandoverCreateBill() {
@@ -3050,6 +3065,66 @@ public class FinancialTransactionController implements Serializable {
         m.put("ofb", BillType.ShiftStartFundBill);
         shiftStartFundBill = billFacade.findByJpql(jpql, m);
 
+    }
+
+    public String settleShiftEnd() {
+        boolean fundTransferBillTocollect = false;
+
+        if (currentBill == null) {
+            JsfUtil.addErrorMessage("Error");
+            return "";
+        }
+        if (currentBill.getBillType() != BillType.ShiftEndFundBill) {
+            JsfUtil.addErrorMessage("Error");
+            return "";
+        }
+        if (currentBill.getReferenceBill() == null) {
+            JsfUtil.addErrorMessage("Error");
+            return "";
+        }
+        if (fundTransferBillsToReceive != null && !fundTransferBillsToReceive.isEmpty()) {
+            fundTransferBillTocollect = true;
+        }
+
+        if (fundTransferBillTocollect) {
+            JsfUtil.addErrorMessage("Please collect funds transferred to you before closing.");
+            return "";
+        }
+
+        currentBill.setDepartment(sessionController.getDepartment());
+        currentBill.setInstitution(sessionController.getInstitution());
+        currentBill.setStaff(sessionController.getLoggedUser().getStaff());
+        currentBill.setWebUser(sessionController.getLoggedUser());
+        currentBill.setBillDate(new Date());
+        currentBill.setBillTime(new Date());
+        currentBill.setTotal(bundle.getTotal());
+        currentBill.setNetTotal(bundle.getTotal());
+        billController.save(currentBill);
+        DetailedFinancialBill fb = new DetailedFinancialBill();
+        fb.setBill(currentBill);
+
+        fb.setAgentValue(bundle.getAgentValue());
+        fb.setCashValue(bundle.getCashValue());
+        fb.setCardValue(bundle.getCardValue());
+        fb.setChequeValue(bundle.getChequeValue());
+        fb.setSlipValue(bundle.getSlipValue());
+        fb.setEwalletValue(bundle.getEwalletValue());
+        fb.setOnCallValue(bundle.getOnCallValue());
+        fb.setMultiplePaymentMethodsValue(bundle.getMultiplePaymentMethodsValue());
+        fb.setStaffValue(bundle.getStaffValue());
+        fb.setCreditValue(bundle.getCreditValue());
+        fb.setStaffWelfareValue(bundle.getStaffWelfareValue());
+        fb.setVoucherValue(bundle.getVoucherValue());
+        fb.setIouValue(bundle.getIouValue());
+        fb.setPatientDepositValue(bundle.getPatientDepositValue());
+        fb.setPatientPointsValue(bundle.getPatientPointsValue());
+        fb.setOnlineSettlementValue(bundle.getOnlineSettlementValue());
+
+        detailedFinancialBillController.save(fb);
+        
+        currentDetailedFinancialBill = fb;
+
+        return "/cashier/shift_end_print?faces-redirect=true";
     }
 
     public String settleShiftEndFundBill() {
@@ -4682,5 +4757,15 @@ public class FinancialTransactionController implements Serializable {
     public void setSelectedPaymentMethod(PaymentMethod selectedPaymentMethod) {
         this.selectedPaymentMethod = selectedPaymentMethod;
     }
+
+    public DetailedFinancialBill getCurrentDetailedFinancialBill() {
+        return currentDetailedFinancialBill;
+    }
+
+    public void setCurrentDetailedFinancialBill(DetailedFinancialBill currentDetailedFinancialBill) {
+        this.currentDetailedFinancialBill = currentDetailedFinancialBill;
+    }
+    
+    
 
 }
