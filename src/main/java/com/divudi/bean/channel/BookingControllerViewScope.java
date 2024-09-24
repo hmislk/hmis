@@ -7786,7 +7786,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         rbi.setReferanceBillItem(bi);
         getBillItemFacade().create(rbi);
 
-        bi.setRefunded(Boolean.TRUE);
+        bi.setRefunded(true);
         getBillItemFacade().edit(bi);
 
         return rbi;
