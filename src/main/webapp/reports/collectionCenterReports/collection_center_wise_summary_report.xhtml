@@ -112,8 +112,14 @@
                         <h:panelGrid columns="6" class="my-3">
                             <p:commandButton 
                                 ajax="false"
-                                action="#{reportController.ccSummaryReportByItem}"
-                                value="Process"
+                                action="#{reportController.ccSummaryReportByBill()}"
+                                value="Process by Bill"
+                                icon="fas fa-cogs" class="ui-button-warning" >
+                            </p:commandButton>
+                            <p:commandButton 
+                                ajax="false"
+                                action="#{reportController.ccSummaryReportByItem()}"
+                                value="Process By Bill Items"
                                 icon="fas fa-cogs" class="ui-button-warning" >
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Print" icon="fas fa-print" class="ui-button-info mx-1"  >
