@@ -9,6 +9,7 @@
  */
 package com.divudi.bean.common;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.bean.report.ReportController;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.HistoryType;
@@ -144,6 +145,20 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     @Inject
     private SessionController sessionController;
     @Inject
+    BillBeanController billBeanController;
+    @Inject
+    ReportController reportController;
+    @EJB
+    private PatientDepositFacade patientDepositFacade;
+    @EJB
+    private PatientDepositHistoryFacade patientDepositHistoryFacade;
+    private PatientDeposit current;
+    private List<PatientDeposit> items = null;
+    private boolean printPreview;
+    private PaymentMethodData paymentMethodData;
+    private Bill bill;
+    private BillItem billItem;
+
     private ItemController itemController;
     @Inject
     private ItemFeeManager itemFeeManager;
@@ -200,6 +215,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     private ItemLight itemLight;
     private Long selectedItemLightId;
     private PaymentScheme paymentScheme;
+
     private PaymentMethod paymentMethod;
     private Patient patient;
 
@@ -212,7 +228,22 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     public String navigateToAddNewPatientDeposit(){
        patientController.clearDataForPatientDeposite();
         return "/patient_deposit/receive?faces-redirect=true";
-    } 
+    }
+    
+    public void clearDataForPatientDeposit(){
+        patientController.setCurrent(null);
+        current = null;
+        patient = new Patient();
+        latestPatientDepositHistory = new ArrayList<>();
+        latestPatientDeposits = new ArrayList<>();
+        patientController.clearDataForPatientDeposite();
+    }
+    
+    public void clearDataForPatientDepositHistory(){
+        patientController.setCurrent(null);
+        reportController.setFromDate(null);
+        reportController.setToDate(null);
+    }
     
     public void getPatientDepositOnPatientDepositAdding(){
         patientController.quickSearchPatientLongPhoneNumber(this);
