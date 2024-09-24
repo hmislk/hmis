@@ -13,41 +13,72 @@
                 <h:form class="w-100">
                     <p:panel header="Service Category Wise Bill Detail Report" class="w-100">
                         <h:panelGrid columns="5" class="w-100 ">
-                            <p:outputLabel value="Discharge Date" >
-                            </p:outputLabel>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Discharge Date" class="mx-3" >
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:datePicker 
-                                pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                                pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>  
+
+
+
                             <p:spacer width="20"></p:spacer>
-                            <p:outputLabel value="Service Added Date" >
-                            </p:outputLabel>
+
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf271;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Service Added Date" class="mx-3" >
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:datePicker value="#{reportController.toDate}"
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
 
 
-                            <p:outputLabel value="Invoice Date" >
-                            </p:outputLabel>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf571;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Invoice Date" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:datePicker
                                 pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
 
-                                <p:spacer width="20"></p:spacer>
-                            <p:outputLabel value="Admission Type" for="institutionMenu"></p:outputLabel>
+
+                            <p:spacer width="20"></p:spacer>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf084;" styleClass="fa mr-2" /> 
+                                <p:outputLabel value="Admission Type" for="institutionMenu" class="mx-3"></p:outputLabel>
+                            </h:panelGroup>
                             <p:selectOneMenu id="institutionMenu" required="true">
                                 <f:selectItem itemLabel="Select Institution Type"/>
                                 <f:selectItems value="#{admissionController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
                                 <!--                               <p:ajax process="@this" update="cmdDepartment"></p:ajax>-->
                             </p:selectOneMenu>
 
-                            <p:outputLabel value="Room Category" for="institutionMenu"></p:outputLabel>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf236;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Room Category" for="institutionMenu" class="mx-3"></p:outputLabel>
+                            </h:panelGroup>
                             <p:selectOneMenu required="true">
-                                <f:selectItem itemLabel="Select Institution Type"/>
+                                <f:selectItem itemLabel="Select Room Category"/>
                                 <f:selectItems value="#{roomCategoryController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
                                 <!--                               <p:ajax process="@this" update="cmdDepartment"></p:ajax>-->
                             </p:selectOneMenu>
 
 
-                            <p:spacer/>
-                            <p:outputLabel value="Service Department">
-                            </p:outputLabel>
+                            <p:spacer width="20"></p:spacer>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf59c;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Service Department" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:selectOneMenu 
                                 id="cmdDepartment"
                                 value="#{reportController.department}" 
@@ -60,10 +91,14 @@
                                                itemValue="#{d}"></f:selectItems>
                             </p:selectOneMenu>
 
-                            <p:outputLabel value="Billed Department">
-                            </p:outputLabel>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf571;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Billed Department" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:selectOneMenu 
-                               
+
                                 filter="true"
                                 >
                                 <f:selectItem itemLabel="All"></f:selectItem>
@@ -73,45 +108,70 @@
                                                itemValue="#{d}"></f:selectItems>
                             </p:selectOneMenu>
 
+
                             <p:spacer width="20"></p:spacer>
-                            
-                            <p:outputLabel value="Visit Type" >
-                            </p:outputLabel>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf007;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Visit Type" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:selectOneMenu >
                                 <f:selectItem itemLabel="Select visit type"/>
-
                             </p:selectOneMenu>
-                            
-                            <p:outputLabel value="Service Group" >
-                            </p:outputLabel>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0c0;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Service Group" class="mx-3" >
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:selectOneMenu >
                                 <f:selectItem itemLabel="Select service group"/>
-
                             </p:selectOneMenu>
+
 
                             <p:spacer width="20"></p:spacer>
 
-                            <p:outputLabel value="Service Name" >
-                            </p:outputLabel>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf059;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Service Name" class="mx-3" >
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:selectOneMenu >
                                 <f:selectItem itemLabel="Select service name"/>
-
                             </p:selectOneMenu>
 
-                           
-                            <p:outputLabel value="Type" >
-                            </p:outputLabel>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf02b;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Type" class="mx-3" >
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:selectOneMenu >
                                 <f:selectItem itemLabel="Select type"/>
                             </p:selectOneMenu>
 
-                            
-                            <p:spacer></p:spacer><!-- comment -->
-                            <p:spacer></p:spacer><!-- comment -->
-                            <p:spacer></p:spacer>
-                            <p:commandButton ajax="false" value="Process" action="null" >
-                            </p:commandButton>
+
                         </h:panelGrid><br />
+
+
+
+                        <div class="d-flex align-items-center">
+                            <p:commandButton class="ui-button-warning mx-1" ajax="false" value="Process" icon="fas fa-cogs" >
+                            </p:commandButton>
+                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-danger mx-1" icon= "fas fa-file-pdf" ajax="false" value="PDF">
+                            </p:commandButton>
+                        </div>
+
+
+
 
                         <p:dataTable value="#{searchController.telephoneNumbers}" var="b" id="tb1" rowIndexVar="i"
                                      rowKey="#{b}" 
@@ -131,7 +191,7 @@
                                     </p:outputLabel>
                                 </f:facet>
                             </p:column>
-                            
+
                             <p:column style="text-align: left;" >
                                 <f:facet name="header" >
                                     <p:outputLabel value="Group Name" >
@@ -187,7 +247,7 @@
                                 </f:facet>
                             </p:column>
 
-                            
+
 
                         </p:dataTable>
 
