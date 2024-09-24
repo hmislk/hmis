@@ -3994,16 +3994,16 @@ public class BillSearch implements Serializable {
         return bfs;
     }
 
-    public List<Bill> fetchBills(BillTypeAtomic billTypeAtomic, Bill referranceBill) {
+    public List<Bill> fetchBills(BillTypeAtomic billTypeAtomic, Bill rb) {
         Map m = new HashMap();
         String j;
         j = "select b "
                 + " from Bill b "
                 + " where b.retired=:ret "
-                + " and b.referanceBill=:rb "
+                + " and b.referenceBill=:rb "
                 + " and b.billTypeAtomic=:bta";
         m.put("ret", false);
-        m.put("rs", referranceBill);
+        m.put("rb", rb);
         m.put("bta", billTypeAtomic);
         return billFacade.findByJpql(j, m);
     }

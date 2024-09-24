@@ -1581,9 +1581,11 @@ public class FinancialTransactionController implements Serializable {
         // Reset class variables for accepting handover bill
         resetClassVariablesForAcceptHandoverBill();
 
-        // Initialize bundle if null
-        if (bundle == null) {
-            bundle = new ReportTemplateRowBundle();
+        bundle = new ReportTemplateRowBundle();
+        bundle.setUser(selectedBill.getFromWebUser());
+        bundle.setStartBill(selectedBill.getReferenceBill());
+        if(selectedBill.getReferenceBill()!=null){
+            bundle.setEndBill(selectedBill.getReferenceBill().getReferenceBill());
         }
 
         // Fetch and process shift handover component bills
@@ -1595,7 +1597,7 @@ public class FinancialTransactionController implements Serializable {
 
         // Recreate data holder objects from persisted objects
         for (Bill b : shiftHandoverCompletionBills) {
-            ReportTemplateRowBundle childBundle = new ReportTemplateRowBundle();
+            ReportTemplateRowBundle childBundle = new ReportTemplateRowBundle(sessionController);
             childBundle.setDepartment(b.getDepartment());
             childBundle.setUser(b.getFromWebUser());
             childBundle.setDate(b.getBillDate());
