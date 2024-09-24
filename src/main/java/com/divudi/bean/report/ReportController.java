@@ -363,8 +363,8 @@ public class ReportController implements Serializable {
         }
 
         if (webUser != null) {
-            jpql += " AND pc.institution=:ins ";
-            m.put("ins", webUser);
+            jpql += " AND pc.creater=:wu ";
+            m.put("wu", webUser);
         }
 
         jpql += "AND pc.createdAt BETWEEN :fromDate AND :toDate";
