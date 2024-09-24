@@ -136,7 +136,12 @@
                                 <p:outputLabel value="Staff Designation" class="mx-2"/>
                             </div>
                             <div class="col-md-4">
-                                <p:inputText value="" class="w-100" />
+                                <p:selectCheckboxMenu id="rosters" 
+                                                      style="width:100%"
+                                                      label="Select Items" 
+                                                      multiple="true">
+                                    <f:selectItem itemLabel="Option 1" itemValue="1" />                                    
+                                </p:selectCheckboxMenu>
                             </div>
 
                             <div class="col-md-2">
