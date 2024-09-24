@@ -60,6 +60,14 @@ public class AgentReferenceBookController implements Serializable {
     Date frmDate;
     Date toDate;
 
+    private String comment;
+
+    private boolean bookActive;
+
+    private Institution collectingCentre;
+
+    private AgentReferenceBook current;
+
     public List<Institution> completeAgent(String query) {
         List<Institution> suggestions;
         String sql;
@@ -116,7 +124,6 @@ public class AgentReferenceBookController implements Serializable {
 
     }
 
-    
     public Boolean checkAgentReferenceNumberAlredyExsist(String refNumber, Institution institution, BillType bt, PaymentMethod pm) {
         Double dbl = null;
         try {
@@ -206,17 +213,57 @@ public class AgentReferenceBookController implements Serializable {
 
     public void searchReferenceBooks() {
         createAllBookTable();
+    }
 
+    public void updateAgentBook() {
+        if (current.getId() == null) {
+            JsfUtil.addSuccessMessage("No Reference Book Selected");
+            return;
+        }
+        current.setDeactivate(!bookActive);
+        current.setEditedAt(new Date());
+        current.setEditor(sessionController.getLoggedUser());
+        getAgentReferenceBookFacade().edit(current);
+        JsfUtil.addSuccessMessage("Agent Reference Book was Successfully Updated");
+    }
+
+    public void deleteAgentBook(AgentReferenceBook agentReferenceBook) {
+        if (getComment() == null || getComment().trim() == "") {
+            JsfUtil.addErrorMessage("Enter the comment");
+            return;
+        }
+        agentReferenceBook.setRetired(true);
+        agentReferenceBook.setRetiredAt(new Date());
+        agentReferenceBook.setRetirer(sessionController.getLoggedUser());
+        agentReferenceBook.setRetireComments(comment);
+        getAgentReferenceBookFacade().edit(agentReferenceBook);
+        JsfUtil.addSuccessMessage("Agent Reference Book was Successfully Deleted");
+    }
+
+    public boolean switchValue(boolean value) {
+        if (value) {
+            bookActive = false;
+        } else {
+            bookActive = true;
+        }
+        return bookActive;
     }
 
     public void createAllBookTable() {
-        String sql;
+        String jpql;
         HashMap m = new HashMap();
-        sql = "select a from AgentReferenceBook a where "
+        jpql = "select a from AgentReferenceBook a where "
                 + " a.createdAt between :fd and :td ";
+
+        if (getCollectingCentre() != null) {
+            jpql += " and a.institution=:cc";
+            m.put("cc", getCollectingCentre());
+        }
+
         m.put("fd", frmDate);
         m.put("td", toDate);
-        agentRefBookList = getAgentReferenceBookFacade().findByJpql(sql, m, TemporalType.DATE);
+
+        agentRefBookList = getAgentReferenceBookFacade().findByJpql(jpql, m, TemporalType.DATE);
     }
 
     public void createAllBooks() {
@@ -467,6 +514,38 @@ public class AgentReferenceBookController implements Serializable {
 
     public void setAgentRefBookList(List<AgentReferenceBook> agentRefBookList) {
         this.agentRefBookList = agentRefBookList;
+    }
+
+    public Institution getCollectingCentre() {
+        return collectingCentre;
+    }
+
+    public void setCollectingCentre(Institution collectingCentre) {
+        this.collectingCentre = collectingCentre;
+    }
+
+    public AgentReferenceBook getCurrent() {
+        return current;
+    }
+
+    public void setCurrent(AgentReferenceBook current) {
+        this.current = current;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public boolean isBookActive() {
+        return bookActive;
+    }
+
+    public void setBookActive(boolean bookActive) {
+        this.bookActive = bookActive;
     }
 
 }

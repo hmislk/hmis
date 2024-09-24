@@ -45,23 +45,27 @@ public class AgentReferenceBook implements Serializable {
     private WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date createdAt;
+    
     //Edited Properties
     @ManyToOne
     private WebUser editor;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date editedAt;
-    //Checking Property
+    
+//Checking Property
     @ManyToOne
     private WebUser checkedBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date checkeAt;
-    //Retairing properties
+    
+//Retairing properties
     private boolean retired;
     @ManyToOne
     private WebUser retirer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date retiredAt;
     private String retireComments;
+    
     @Enumerated(EnumType.STRING)
     ReferenceBookEnum referenceBookEnum;
     ////////////////
@@ -244,7 +248,5 @@ public class AgentReferenceBook implements Serializable {
     public void setFullyUtilized(boolean fullyUtilized) {
         this.fullyUtilized = fullyUtilized;
     }
-    
-    
-    
+
 }

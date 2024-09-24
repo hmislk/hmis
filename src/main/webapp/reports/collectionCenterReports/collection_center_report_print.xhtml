@@ -150,13 +150,17 @@
                                 <h:outputLabel value="Laboratory" for="cmbLab" class="mx-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu 
-                                style=" max-width: 100%; overflow-x: auto; "
-                                class="w-100"
-                                value="#{reportController.toDepartment}">
-                                <f:selectItem itemLabel="Select Laboratory" />
-                                <f:selectItems var="r" itemLabel="#{r.name}" 
-                                               value="#{departmentController.labs}" 
-                                               itemValue="#{r}" />
+                                class="form-control" 
+                                id="cmbCat" 
+                                filter="true"
+                                filterMatchMode="contains"
+                                value="#{investigationController.current.category}" >
+                                <f:selectItem itemLabel="Please select a laboratory category"/>
+                                <f:selectItems 
+                                    value="#{investigationCategoryController.items}" 
+                                    var="cat" 
+                                    itemLabel="#{cat.name}" 
+                                    itemValue="#{cat}" />
                             </p:selectOneMenu>
 
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -185,7 +189,7 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf46d;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
-                                <h:outputLabel value="Order Status" for="cmbOdrreq" class="mx-3"/>
+                                <h:outputLabel value="Result Status" for="cmbOdrreq" class="mx-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu
                                 value="#{reportController.status}"
@@ -195,37 +199,37 @@
                                 <f:selectItems value="#{enumController.billItemStatuses}" var="sts" itemLabel="#{sts.label}" itemValue="#{sts}" ></f:selectItems>
                             </p:selectOneMenu>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf1c3;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
-                                <h:outputLabel value="Sample Status" for="cmbSmpst" class="mx-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu filter="true" filterMatchMode="contains" class="w-100" style="max-width:100%;"
-                                             value="#{reportController.patientInvestigationStatus}">
-                                <f:selectItem itemLabel="Any" />
-                                <f:selectItems value="#{enumController.patientInvestigationStatuses}" var="pis" itemValue="#{pis}" itemLabel="#{pis.label}"/>
-                            </p:selectOneMenu>
-
-
                         </h:panelGrid>
+
                         <p:commandButton     ajax="false"
                                              value="Process"
                                              class="ui-button-warning"
                                              icon="fas fa-cogs"
                                              />
+                        <p:commandButton 
+                            icon="fa-solid fa-print"
+                            class="mx-1 ui-button-info"
+                            ajax="false" 
+                            value="Print">
+                            <p:printer target="tblExport" />
+                        </p:commandButton>
                         <p:commandButton id="btnExcel" class="m-1 ui-button-success"
                                          icon="fas fa-file-excel"
-                                         ajax="false" value="Export to Excel">
+                                         ajax="false" value="Excel">
                             <p:dataExporter type="xlsx" target="tbl" fileName="itemized_sale_summary" />
                         </p:commandButton>
+                        <p:commandButton 
+                            class="m-2 ui-button-raised" 
+                            icon="fa-solid fa-file-pdf"
+                            ajax="false" 
+                            value="PDF">
+                            <p:dataExporter type="pdf" target="tblExport"  fileName="Collection_Center_Wise_Transaction_Report.pdf" ></p:dataExporter>
+                        </p:commandButton>
+
                     </p:panel>
 
-
-
-
-
-
-
-                    <p:dataTable  
+                    <p:dataTable 
+                        id="tblExport"
                         class="w-100"
                         value="#{reportController.patientInvestigations}" 
                         var="patientInvestigation" 

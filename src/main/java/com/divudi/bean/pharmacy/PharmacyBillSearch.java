@@ -661,7 +661,7 @@ public class PharmacyBillSearch implements Serializable {
                 return false;
             }
 
-            if (i.isRefunded() == null) {
+            if (!i.isRefunded()) {
                 d = d + i.getNetValue();
                 getTempbillItems().add(i);
             }

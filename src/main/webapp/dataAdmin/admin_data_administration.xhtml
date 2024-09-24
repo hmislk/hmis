@@ -120,7 +120,7 @@
                                             
                                              <p:commandButton 
                                                 ajax="false"
-                                                action="#{billCotoller.addMissingBillTypeAtomics}"
+                                                action="#{billController.addMissingBillTypeAtomics}"
                                                 rendered="true"
                                                 class="w-100 m-1"
                                                 value="Add Bill Type Atomics" 
@@ -134,6 +134,15 @@
                                                 rendered="true"
                                                 class="w-100 m-1"
                                                 value="Add Missing Payment Dates" 
+                                                onclick="if (!confirm('Really want to do that?'))
+                                                            return false"/>
+                                             
+                                              <p:commandButton 
+                                                ajax="false"
+                                                action="#{billController.addMissingRefundStatusForCcRefunds()}"
+                                                rendered="true"
+                                                class="w-100 m-1"
+                                                value="Add Missing Refund Status to CC Bills" 
                                                 onclick="if (!confirm('Really want to do that?'))
                                                             return false"/>
                                             
