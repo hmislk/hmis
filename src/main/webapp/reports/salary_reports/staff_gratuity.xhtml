@@ -9,7 +9,7 @@
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
                 <h:form >
-                    <p:panel header="Staff Overtime" >
+                    <p:panel header="Staff Gratuity" >
                         <p:panelGrid columns="4" class="w-100">
 
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -113,6 +113,8 @@
                                                ></f:selectItems>
                             </p:selectOneMenu>
 
+                            
+
 
 
                         </p:panelGrid>
@@ -137,54 +139,35 @@
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
 
-                            <p:column headerText="Emp No" width="5em">
+                            <p:column headerText="Staff Code" width="5em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Emp Name" width="5em">
+                            <p:column headerText="EPF Codet" width="5em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Salary Cycle" width="5em">
+                            <p:column headerText="Staff" width="5em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Over 45 OT (Minutes)" width="5em">
+                            <p:column headerText="Designation" width="5em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Normal OT (Minutes)" width="5em">
+                            <p:column headerText="Basic + BR" width="5em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Rate Per Minute" width="5em">
+                            <p:column headerText="Years" width="5em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Over 45 OT" width="5em">
+                            <p:column headerText="Months" width="5em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Normal OT Value" width="5em">
+                            <p:column headerText="Days" width="5em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Total OT" width="5em">
+                            <p:column headerText="Gratuity" width="5em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="PH OT Min" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="RPM OT (1.5)" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="PH OT Value" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Off Day OT Min" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="RPM(2)" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Off Day OT Value" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Total" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
+                            
+                            
 
 
 

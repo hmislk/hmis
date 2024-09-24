@@ -1319,9 +1319,11 @@ public class BillNumberGenerator {
 
     public String departmentBillNumberGenerator(Department dep, Department toDept, BillType billType, BillClassType billClassType) {
         if (dep == null) {
+            System.out.println("error 1 = ");
             return "";
         }
         if (toDept == null) {
+            System.out.println("error 2 = ");
             return "";
         }
 
@@ -1344,6 +1346,7 @@ public class BillNumberGenerator {
 //
 //        billNumber.setLastBillNumber(dd);
 //        billNumberFacade.editAndFlush(billNumber);
+        System.out.println("result.toString() = " + result.toString());
 
         return result.toString();
     }
