@@ -101,50 +101,54 @@
                                                     </div>-->
 
 
-                            <p:panelGrid style="display: block; align-items: center;  ">
+                            <!--                            <p:panelGrid style="display: block; align-items: center;  ">-->
+                            <div class="row mb-2">
+                                <div class="col-md-12 mx-1">
+                                    <p:commandButton ajax="false"                                                 
+                                                     class="ui-button-danger mx-2"
+                                                     icon="fas fa-lock"
+                                                     value="Show Blocked"
 
-                                <p:commandButton ajax="false"                                                 
-                                                 class="ui-button-danger"
-                                                 icon="fas fa-stop"
-                                                 value="Show Blocked"
-                                                 style="width: 150px; margin-right: 80px "
-                                                 action="#{reportController.listCcReportPrint()}" />
+                                                     action="#{reportController.listCcReportPrint()}" />
+                               
+                                    <p:commandButton ajax="false" 
+                                                     class="ui-button-info mx-2"
+                                                     icon="fas fa-stop"
+                                                     value="Show Hold"
+
+                                                     action="#{reportController.listCcReportPrint()}" />
+
+                                
+                                    <p:commandButton ajax="false" 
+                                                     class="ui-button-warning mx-2"
+                                                     icon="fas fa-cogs"
+                                                     value="Process Net Salary"
+
+                                                     action="#{reportController.listCcReportPrint()}" />
+                                
+
+                                    <p:commandButton ajax="false" 
+                                                     class="ui-button-warning align-center mx-2"
+                                                     icon="fas fa-cogs"
+                                                     value="Process OT Payment"
+
+                                                     action="#{reportController.listCcReportPrint()}" />
+
+                               
+                                    <p:commandButton ajax="false" 
+                                                     class="ui-button-warning justify-content-end mx-2"
+                                                     icon="fas fa-cogs"
+                                                     value="Process Net And OT Payment "
+
+                                                     action="#{reportController.listCcReportPrint()}" />
+                                </div>
+
+                            </div>
 
 
-                                <p:commandButton ajax="false" 
-                                                 class="ui-button-info"
-                                                 icon="fas fa-pause"
-                                                 value="Show Hold"
-                                                 style="width: 150px; margin-left: 50px"
-                                                 action="#{reportController.listCcReportPrint()}" />
 
 
-
-                                <p:commandButton ajax="false" 
-                                                 class="ui-button-warning"
-                                                 icon="fas fa-cogs"
-                                                 value="Process Net Salary"
-                                                 style="width: 300px; margin-left: 100px"
-                                                 action="#{reportController.listCcReportPrint()}" />
-
-
-                                <p:commandButton ajax="false" 
-                                                 class="ui-button-warning align-center"
-                                                 icon="fas fa-cogs"
-                                                 value="Process OT Payment"
-                                                 style="width: 300px; margin-left: 300px"
-                                                 action="#{reportController.listCcReportPrint()}" />
-
-
-                                <p:commandButton ajax="false" 
-                                                 class="ui-button-warning justify-content-end"
-                                                 icon="fas fa-cogs"
-                                                 value="Process Net And OT Payment "
-                                                 style="width: 350px; margin-left: 500px"
-                                                 action="#{reportController.listCcReportPrint()}" />
-
-
-                            </p:panelGrid>     
+                            <!--                            </p:panelGrid>     -->
 
 
                         </div>
