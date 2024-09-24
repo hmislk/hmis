@@ -182,6 +182,23 @@ public class ReportTemplateRowBundle implements Serializable {
         patientPointsValue = 0.0;
         onlineSettlementValue = 0.0;
 
+        onCallHandoverValue = 0.0;
+        cashHandoverValue = 0.0;
+        cardHandoverValue = 0.0;
+        multiplePaymentMethodsHandoverValue = 0.0;
+        staffHandoverValue = 0.0;
+        creditHandoverValue = 0.0;
+        staffWelfareHandoverValue = 0.0;
+        voucherHandoverValue = 0.0;
+        iouHandoverValue = 0.0;
+        agentHandoverValue = 0.0;
+        chequeHandoverValue = 0.0;
+        slipHandoverValue = 0.0;
+        eWalletHandoverValue = 0.0;
+        patientDepositHandoverValue = 0.0;
+        patientPointsHandoverValue = 0.0;
+        onlineSettlementHandoverValue = 0.0;
+
         hasOnCallTransaction = false;
         hasCashTransaction = false;
         hasCardTransaction = false;
@@ -580,6 +597,20 @@ public class ReportTemplateRowBundle implements Serializable {
         }
     }
 
+    public void markAllAtHandover(PaymentMethod inputPaymentMethod) {
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getPayment() == null || row.getPayment().getPaymentMethod() == null) {
+                    continue;
+                }
+                if (row.getPayment().getPaymentMethod() == inputPaymentMethod) {
+                    row.getPayment().setSelectedForHandover(true);
+                    row.setSelected(row.getPayment().isSelectedForHandover());
+                }
+            }
+        }
+    }
+
     public void markSelectedAtHandover() {
         if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
             for (ReportTemplateRow row : this.reportTemplateRows) {
@@ -612,7 +643,7 @@ public class ReportTemplateRowBundle implements Serializable {
             }
         }
     }
-    
+
     public void markSelectedAtRecordConfirmation() {
         if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
             for (ReportTemplateRow row : this.reportTemplateRows) {

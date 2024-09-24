@@ -1110,7 +1110,7 @@ public class FinancialTransactionController implements Serializable {
         selectedPaymentMethod = inputPaymentMethod;
         return "/cashier/handover_start_select?faces-redirect=true";
     }
-    
+
     public String navigateToSelectPaymentsForHandoverAccept(ReportTemplateRowBundle inputBundle, PaymentMethod inputPaymentMethod) {
         if (inputBundle == null) {
             JsfUtil.addErrorMessage("No Bundle Selected");
@@ -1127,7 +1127,19 @@ public class FinancialTransactionController implements Serializable {
         bundle.aggregateTotalsFromChildBundles();
         return "/cashier/handover_start_all?faces-redirect=true";
     }
+
+    public void updateForPaymentHandoverSelectionAtCreate() {
+        selectedBundle.markSelectedAtHandover();
+        selectedBundle.calculateTotalsByPaymentsAndDenominations();
+        bundle.aggregateTotalsFromChildBundles();
+    }
     
+    public void selectAllForPaymentHandoverSelectionAtCreate() {
+        selectedBundle.markAllAtHandover(selectedPaymentMethod);
+        selectedBundle.calculateTotalsByPaymentsAndDenominations();
+        bundle.aggregateTotalsFromChildBundles();
+    }
+
     public String navigateBackToPaymentHandoverAccept() {
         selectedBundle.calculateTotalsByPaymentsAndDenominations();
         bundle.aggregateTotalsFromChildBundles();
@@ -1554,8 +1566,7 @@ public class FinancialTransactionController implements Serializable {
         prepareToAddNewFundTransferReceiveBill();
         return "/cashier/fund_transfer_receive_bill?faces-redirect=true";
     }
-    
-    
+
     public String navigateToReceiveNewHandoverBill() {
         if (selectedBill == null) {
             JsfUtil.addErrorMessage("Please select a bill");
@@ -1568,8 +1579,7 @@ public class FinancialTransactionController implements Serializable {
         resetClassVariablesForAcceptHandoverBill();
 
         List<Bill> shiftHandoverComopletionBills = billSearch.fetchBills(BillTypeAtomic.FUND_SHIFT_COMPONANT_HANDOVER_CREATE, selectedBill);
-        
-        
+
         List<Payment> paymentsToAcceptForHandover = fillPaymentsFromViewHandoverAcceptBill();
         Boolean selectAllHandoverPayments = null;
         bundle = generatePaymentBundleForHandovers(selectedBill.getReferenceBill(),
@@ -2745,7 +2755,7 @@ public class FinancialTransactionController implements Serializable {
                     case SELECT_FOR_HANDOVER_RECORD_CONFIRMATION:
                         selected = p.isSelectedForRecordingConfirmation();
                         break;
-                    
+
                     case NONE:
                         break;
 
@@ -3498,15 +3508,14 @@ public class FinancialTransactionController implements Serializable {
             billFacade.create(shiftHandoverComponantBill);
             System.out.println("shiftBundle = " + shiftBundle);
             System.out.println("shiftBundle.getStartBill() = " + shiftBundle.getStartBill());
-            
-            
-            if(shiftBundle.getDenominationTransactions()!=null){
-                for(DenominationTransaction dt:shiftBundle.getDenominationTransactions()){
+
+            if (shiftBundle.getDenominationTransactions() != null) {
+                for (DenominationTransaction dt : shiftBundle.getDenominationTransactions()) {
                     dt.setBill(shiftHandoverComponantBill);
                     denominationTransactionController.save(dt);
                 }
             }
-            
+
             for (ReportTemplateRow row : shiftBundle.getReportTemplateRows()) {
                 System.out.println("row = " + row);
                 if (row.getPayment() == null) {
