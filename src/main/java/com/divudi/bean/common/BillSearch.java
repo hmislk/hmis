@@ -1514,7 +1514,6 @@ public class BillSearch implements Serializable {
         if (refundingItems.isEmpty()) {
             JsfUtil.addErrorMessage("There is no item to Refund");
             return "";
-
         }
         if (comment == null || comment.trim().equals("")) {
             JsfUtil.addErrorMessage("Please enter a comment");
@@ -1548,7 +1547,7 @@ public class BillSearch implements Serializable {
 
         getBill().setRefunded(true);
         getBill().setRefundedBill(rb);
-        getBillFacade().edit(getBill());
+        getBillFacade().editAndCommit(getBill());
         double feeTotalExceptCcfs = 0.0;
 
 //            for (BillItem bi : refundingItems) {
@@ -1814,7 +1813,7 @@ public class BillSearch implements Serializable {
         rb.setVat(0 - refundVat);
         rb.setVatPlusNetTotal(0 - refundVatPlusTotal);
 
-        getBillFacade().create(rb);
+        getBillFacade().createAndFlush(rb);
 
         return rb;
 
@@ -1932,18 +1931,28 @@ public class BillSearch implements Serializable {
     public void refundBillItems(RefundBill refundingBill) {
         for (BillItem bi : refundingItems) {
             //set Bill Item as Refunded
+            BillItem originalBillItem = billItemFacade.find(bi.getId());
             BillItem rbi = new BillItem();
-            rbi.copy(bi);
-            rbi.invertValue(bi);
+            rbi.copy(originalBillItem);
+            rbi.invertValue(originalBillItem);
             rbi.setBill(refundingBill);
             rbi.setCreatedAt(Calendar.getInstance().getTime());
             rbi.setCreater(getSessionController().getLoggedUser());
-            rbi.setReferanceBillItem(bi);
-            getBillItemFacede().create(rbi);
-            bi.setRefunded(Boolean.TRUE);
-            getBillItemFacede().edit(bi);
+            rbi.setReferanceBillItem(originalBillItem);
+            getBillItemFacede().createAndFlush(rbi);
+            originalBillItem.setRefunded(true);
+            originalBillItem.setBillItemRefunded(true);
+            System.out.println("bi = " + originalBillItem);
+            System.out.println("1 bi Refunded= " + originalBillItem.isRefunded());
+            System.out.println("1 billItemRefunded= " + originalBillItem.isBillItemRefunded());
+            getBillItemFacede().editAndFlush(originalBillItem);
+            System.out.println("2 bi Refunded= " + originalBillItem.isRefunded());
+            System.out.println("2 billItemRefunded= " + originalBillItem.isBillItemRefunded());
+            originalBillItem = billItemFacade.find(bi.getId());
+            System.out.println("3 bi Refunded= " + originalBillItem.isRefunded());
+            System.out.println("3 billItemRefunded= " + originalBillItem.isBillItemRefunded());
             String sql = "Select bf From BillFee bf where "
-                    + " bf.retired=false and bf.billItem.id=" + bi.getId();
+                    + " bf.retired=false and bf.billItem.id=" + originalBillItem.getId();
             List<BillFee> tmp = getBillFeeFacade().findByJpql(sql);
             returnBillFee(refundingBill, rbi, tmp);
             //create BillFeePayments For Refund
@@ -2464,7 +2473,6 @@ public class BillSearch implements Serializable {
             bf.setSettleValue(0 - nB.getSettleValue());
             bf.setCreatedAt(new Date());
             bf.setCreater(getSessionController().getLoggedUser());
-
             getBillFeeFacade().create(bf);
         }
     }
@@ -3310,7 +3318,7 @@ public class BillSearch implements Serializable {
         return "/opd/bill_view?faces-redirect=true;";
     }
 
-    public String navigateToViewCollectingCentreBill() {
+    public String navigateToManageCollectingCentreBill() {
         if (bill == null) {
             JsfUtil.addErrorMessage("Nothing to cancel");
             return "";
@@ -3324,7 +3332,7 @@ public class BillSearch implements Serializable {
         printPreview = false;
         collectingCentreBillController.getBills().clear();
         collectingCentreBillController.getBills().add(bill);
-        return "/collecting_centre/view/cc_bill_view?faces-redirect=true;";
+        return "/collecting_centre/bill_reprint?faces-redirect=true;";
     }
 
     public String navigateToRefundOpdBill() {
