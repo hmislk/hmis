@@ -8413,6 +8413,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public PaymentMethod getSettlePaymentMethod() {
+        if (settlePaymentMethod == null) {
+            settlePaymentMethod=paymentMethod.Cash;
+        }
         return settlePaymentMethod;
     }
 
