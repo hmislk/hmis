@@ -7786,7 +7786,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         rbi.setReferanceBillItem(bi);
         getBillItemFacade().create(rbi);
 
-        bi.setRefunded(Boolean.TRUE);
+        bi.setRefunded(true);
         getBillItemFacade().edit(bi);
 
         return rbi;
@@ -8413,6 +8413,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public PaymentMethod getSettlePaymentMethod() {
+        if (settlePaymentMethod == null) {
+            settlePaymentMethod=paymentMethod.Cash;
+        }
         return settlePaymentMethod;
     }
 

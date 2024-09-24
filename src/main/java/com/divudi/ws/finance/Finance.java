@@ -42,7 +42,6 @@ import org.json.JSONObject;
 @RequestScoped
 public class Finance {
 
-
     @EJB
     private BillFacade billFacade;
     @Inject
@@ -403,9 +402,9 @@ public class Finance {
                     if (bi.getRate() != 0.0) {
                         joBi.put("Rate", bi.getRate());
                     }
-                    if (bi.getRefunded() != null) {
-                        joBi.put("Refunded", bi.getRefunded());
-                    }
+
+                    joBi.put("Refunded", bi.isRefunded());
+
                     if (bi.getSearialNo() != 0.0) {
                         joBi.put("SearialNo", bi.getSearialNo());
                     }
@@ -500,7 +499,6 @@ public class Finance {
         return array;
     }
 
-  
     private boolean isValidKey(String key) {
         if (key == null || key.trim().equals("")) {
             return false;
