@@ -180,7 +180,6 @@ public class ReportController implements Serializable {
 
     public void ccSummaryReportByItem() {
 
-
         ReportTemplateRowBundle billedBundle = new ReportTemplateRowBundle();
         billedBundle.setName("Collecting Centre Report By Item");
         billedBundle.setDescription("From : to :");
@@ -337,8 +336,7 @@ public class ReportController implements Serializable {
         crBundle.setCcTotal(totalCcFee);
         crBundle.setTotal(totalNetValue);
         crBundle.setReportTemplateRows(rows);
-        
-        
+
         bundle = combineBundles(billedBundle, crBundle);
     }
 
@@ -352,36 +350,47 @@ public class ReportController implements Serializable {
         // Process the billed bundle
         for (ReportTemplateRow row : billedBundle.getReportTemplateRows()) {
             Institution institution = row.getInstitution();
-            if (!combinedResults.containsKey(institution)) {
-                combinedResults.put(institution, new ReportTemplateRow(institution, row.getItemCount(), row.getItemHospitalFee(),
-                        row.getItemCollectingCentreFee(), row.getItemProfessionalFee(), row.getItemNetTotal()));
-            } else {
-                ReportTemplateRow existingRow = combinedResults.get(institution);
-                existingRow.setItemCount(existingRow.getItemCount() + row.getItemCount());
-                existingRow.setItemHospitalFee(existingRow.getItemHospitalFee() + row.getItemHospitalFee());
-                existingRow.setItemCollectingCentreFee(existingRow.getItemCollectingCentreFee() + row.getItemCollectingCentreFee());
-                existingRow.setItemProfessionalFee(existingRow.getItemProfessionalFee() + row.getItemProfessionalFee());
-                existingRow.setItemNetTotal(existingRow.getItemNetTotal() + row.getItemNetTotal());
-            }
+            combinedResults.putIfAbsent(institution, new ReportTemplateRow(institution, 0L, 0.0, 0.0, 0.0, 0.0));
+            ReportTemplateRow existingRow = combinedResults.get(institution);
+            existingRow.setItemCount(existingRow.getItemCount() + row.getItemCount());
+            existingRow.setItemHospitalFee(existingRow.getItemHospitalFee() + row.getItemHospitalFee());
+            existingRow.setItemCollectingCentreFee(existingRow.getItemCollectingCentreFee() + row.getItemCollectingCentreFee());
+            existingRow.setItemProfessionalFee(existingRow.getItemProfessionalFee() + row.getItemProfessionalFee());
+            existingRow.setItemNetTotal(existingRow.getItemNetTotal() + row.getItemNetTotal());
+            System.out.println("Added Billed - Institution: " + institution + " | NetTotal: " + row.getItemNetTotal());
         }
 
-        // Process the CR bundle and subtract values
+        // Process the CR bundle and adjust by taking absolute values and subtracting
         for (ReportTemplateRow row : crBundle.getReportTemplateRows()) {
             Institution institution = row.getInstitution();
-            if (combinedResults.containsKey(institution)) {
-                ReportTemplateRow existingRow = combinedResults.get(institution);
-                existingRow.setItemCount(existingRow.getItemCount() - row.getItemCount());
-                existingRow.setItemHospitalFee(existingRow.getItemHospitalFee() - row.getItemHospitalFee());
-                existingRow.setItemCollectingCentreFee(existingRow.getItemCollectingCentreFee() - row.getItemCollectingCentreFee());
-                existingRow.setItemProfessionalFee(existingRow.getItemProfessionalFee() - row.getItemProfessionalFee());
-                existingRow.setItemNetTotal(existingRow.getItemNetTotal() - row.getItemNetTotal());
-            } else {
-                combinedResults.put(institution, new ReportTemplateRow(institution, -row.getItemCount(), -row.getItemHospitalFee(),
-                        -row.getItemCollectingCentreFee(), -row.getItemProfessionalFee(), -row.getItemNetTotal()));
-            }
+            combinedResults.putIfAbsent(institution, new ReportTemplateRow(institution, 0L, 0.0, 0.0, 0.0, 0.0));
+            ReportTemplateRow existingRow = combinedResults.get(institution);
+            existingRow.setItemCount(existingRow.getItemCount() - row.getItemCount());  // Subtract the count
+            existingRow.setItemHospitalFee(existingRow.getItemHospitalFee() - Math.abs(row.getItemHospitalFee()));  // Subtract the absolute value
+            existingRow.setItemCollectingCentreFee(existingRow.getItemCollectingCentreFee() - Math.abs(row.getItemCollectingCentreFee()));
+            existingRow.setItemProfessionalFee(existingRow.getItemProfessionalFee() + row.getItemProfessionalFee());  // Assuming this is correctly negative
+            existingRow.setItemNetTotal(existingRow.getItemNetTotal() - Math.abs(row.getItemNetTotal()));
+            System.out.println("Processed CR - Institution: " + institution + " | NetTotal: " + (-Math.abs(row.getItemNetTotal())));
         }
 
         combinedBundle.setReportTemplateRows(new ArrayList<>(combinedResults.values()));
+
+        long totalCount = combinedResults.values().stream().mapToLong(ReportTemplateRow::getItemCount).sum();
+        double totalHospitalFee = combinedResults.values().stream().mapToDouble(ReportTemplateRow::getItemHospitalFee).sum();
+        double totalCCFee = combinedResults.values().stream().mapToDouble(ReportTemplateRow::getItemCollectingCentreFee).sum();
+        double totalProfessionalFee = combinedResults.values().stream().mapToDouble(ReportTemplateRow::getItemProfessionalFee).sum();
+        double totalNet = combinedResults.values().stream().mapToDouble(ReportTemplateRow::getItemNetTotal).sum();
+
+        
+        combinedBundle.setCount(totalCount);
+        combinedBundle.setTotal(totalNet);
+        combinedBundle.setHospitalTotal(totalHospitalFee);
+        combinedBundle.setCcTotal(totalCCFee);
+        combinedBundle.setStaffTotal(totalProfessionalFee);
+        
+        
+        System.out.println("Final Totals - Count: " + totalCount + " | Hospital Fee: " + totalHospitalFee
+                + " | CC Fee: " + totalCCFee + " | Professional Fee: " + totalProfessionalFee + " | Net Total: " + totalNet);
 
         return combinedBundle;
     }
