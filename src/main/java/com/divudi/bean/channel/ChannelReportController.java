@@ -48,6 +48,7 @@ import com.divudi.facade.SmsFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.WebUserFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.entity.Speciality;
 import com.divudi.facade.SessionInstanceFacade;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
@@ -159,6 +160,8 @@ public class ChannelReportController implements Serializable {
     SmsManagerEjb smsManagerEjb;
     @EJB
     SessionInstanceFacade sessionInstanceFacade;
+    
+    private Speciality speciality;
 
     private List<SessionInstance> sessioninstances;
 
@@ -354,6 +357,17 @@ public class ChannelReportController implements Serializable {
 
         m.put("fromDate", fromDate);
         m.put("toDate", toDate);
+        
+        if (speciality != null) {
+            m.put("sp", speciality);
+            sql += " and s.originatingSession.staff.speciality=:sp ";
+        }
+        
+        if (staff != null) {
+            m.put("sf", staff);
+            sql += " and s.originatingSession.staff=:sf ";
+        }
+        
         sessioninstances = sessionInstanceFacade.findByJpql(sql, m);
 
         for (SessionInstance s : sessioninstances) {
@@ -4203,6 +4217,14 @@ public class ChannelReportController implements Serializable {
 
     public void setSessioninstances(List<SessionInstance> sessioninstances) {
         this.sessioninstances = sessioninstances;
+    }
+
+    public Speciality getSpeciality() {
+        return speciality;
+    }
+
+    public void setSpeciality(Speciality speciality) {
+        this.speciality = speciality;
     }
 
     public class ChannelReportColumnModelBundle implements Serializable {

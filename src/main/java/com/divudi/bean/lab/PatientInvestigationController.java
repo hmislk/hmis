@@ -2721,6 +2721,8 @@ public class PatientInvestigationController implements Serializable {
         if (collectionCenter != null) {
             jpql += " AND (i.billItem.bill.collectingCentre = :collectionCenter OR i.billItem.bill.fromInstitution = :collectionCenter) ";
             params.put("collectionCenter", getCollectionCenter());
+        } else {
+            jpql += " AND i.billItem.bill.collectingCentre is not null ";
         }
 
         if (route != null) {
@@ -2773,15 +2775,11 @@ public class PatientInvestigationController implements Serializable {
             params.put("department", getDepartment());
         }
 
-        jpql += " AND i.billItem.bill.cancelled=:can ";
-        params.put("can", false);
+        jpql += " AND i.billItem.bill.cancelled<>:can ";
+        params.put("can", true);
 
-        jpql += " AND i.billItem.refunded=:ref ";
-        params.put("ref", false);
-
-        jpql += " AND i.billItem.bill.billTypeAtomic in :bts ";
-        params.put("bts", BillTypeAtomic.findByServiceType(ServiceType.COLLECTING_CENTRE));
-
+//        jpql += " AND i.billItem.refunded<>:ref ";
+//        params.put("ref", true);
         if (patientInvestigationStatus != null) {
             jpql += " AND i.status = :patientInvestigationStatus ";
             params.put("patientInvestigationStatus", getPatientInvestigationStatus());
@@ -2791,7 +2789,12 @@ public class PatientInvestigationController implements Serializable {
 
         params.put("ret", false);
 
+        System.out.println("params = " + params);
+        System.out.println("jpql = " + jpql);
+
         items = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        System.out.println("items = " + items);
 
         // Initialize totals
         hospitalFeeTotal = 0.0;
@@ -2801,25 +2804,35 @@ public class PatientInvestigationController implements Serializable {
         discountTotal = 0.0;
         netTotal = 0.0;
 
+        List<PatientInvestigation> newItems = new ArrayList<>();
+
         if (items != null) {
             for (PatientInvestigation pi : items) {
                 if (pi.getBillItem() == null) {
                     continue;
                 }
+                if (pi.getBillItem().isRefunded()) {
+                    continue;
+                }
+                newItems.add(pi);
                 hospitalFeeTotal += pi.getBillItem().getHospitalFee();
                 ccFeeTotal += pi.getBillItem().getCollectingCentreFee();
                 staffFeeTotal += pi.getBillItem().getStaffFee();
                 grossFeeTotal += pi.getBillItem().getGrossValue();
                 discountTotal += pi.getBillItem().getDiscount();
-                netTotal +=  pi.getBillItem().getNetValue();
+                netTotal += pi.getBillItem().getNetValue();
             }
         }
+        items = newItems;
     }
 
     public void listBillItemsForCcs() {
         String jpql;
         Map<String, Object> params = new HashMap<>();
-
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.CC_BILL);
+        btas.add(BillTypeAtomic.CC_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.CC_BILL_REFUND);
         // Starting from BillItem and joining to PatientInvestigation if needed
         jpql = "SELECT b "
                 + " FROM BillItem b "
@@ -2932,7 +2945,7 @@ public class PatientInvestigationController implements Serializable {
         }
 
         jpql += " AND b.bill.billTypeAtomic in :bts ";
-        params.put("bts", BillTypeAtomic.findByServiceType(ServiceType.COLLECTING_CENTRE));
+        params.put("bts", btas);
 
         if (patientInvestigationStatus != null) {
             jpql += " AND i.status = :patientInvestigationStatus ";
@@ -5211,8 +5224,6 @@ public class PatientInvestigationController implements Serializable {
         }
 
     }
-    
-    
 
     public List<PatientSampleComponant> getPatientSampleComponentsByPatientSample(PatientSample patientSample) {
         List<PatientSampleComponant> ptsc;

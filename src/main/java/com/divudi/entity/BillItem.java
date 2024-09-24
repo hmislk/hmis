@@ -89,7 +89,8 @@ public class BillItem implements Serializable {
     Bill bill;
     @ManyToOne
     Bill expenseBill;
-    Boolean refunded;
+    boolean refunded;
+    private boolean billItemRefunded;
     //Created Properties
     @ManyToOne
     WebUser creater;
@@ -430,15 +431,15 @@ public class BillItem implements Serializable {
         this.bill = bill;
     }
 
-    public Boolean isRefunded() {
+    public boolean isRefunded() {
         return refunded;
     }
 
-    public Boolean getRefunded() {
-        return refunded;
-    }
+//    public boolean getRefunded() {
+//        return refunded;
+//    }
 
-    public void setRefunded(Boolean refunded) {
+    public void setRefunded(boolean refunded) {
         this.refunded = refunded;
     }
 
@@ -981,13 +982,21 @@ public class BillItem implements Serializable {
         this.feeValue = feeValue;
     }
 
-    @OneToOne(mappedBy = "billItem")
+    
     public PatientInvestigation getPatientInvestigation() {
         return patientInvestigation;
     }
 
     public void setPatientInvestigation(PatientInvestigation patientInvestigation) {
         this.patientInvestigation = patientInvestigation;
+    }
+
+    public boolean isBillItemRefunded() {
+        return billItemRefunded;
+    }
+
+    public void setBillItemRefunded(boolean billItemRefunded) {
+        this.billItemRefunded = billItemRefunded;
     }
     
     
