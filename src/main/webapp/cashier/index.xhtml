@@ -23,18 +23,52 @@
                                 <p:tab title="Shift Management">
                                     <p:commandButton 
                                         class="my-1 w-100 ui-button-success" 
-                                        value="Shift Start Funds"
+                                        value="Start Shift"
                                         icon="pi pi-play"
                                         ajax="false" 
                                         action="#{financialTransactionController.navigateToCreateNewInitialFundBill()}" >
                                     </p:commandButton>
 
                                     <p:commandButton 
-                                        class="my-1 w-100 ui-button-warning"
-                                        value="Shift End Funds"
-                                        icon="pi pi-stop"
+                                        class="my-1 w-100 ui-button-danger"
+                                        value="End Shift"
+                                        icon="pi pi-power-off" 
+                                        ajax="false" 
+                                        action="#{financialTransactionController.navigateToCreateShiftEndSummaryBillForHandover()}" >
+                                    </p:commandButton>
+
+                                    <p:commandButton 
+                                        class="my-1 w-100 ui-button-danger"
+                                        value="End Shift - OLD"
+                                        icon="pi pi-power-off" 
                                         ajax="false" 
                                         action="#{financialTransactionController.navigateToCreateShiftEndSummaryBill()}" >
+                                    </p:commandButton>
+
+                                    <p:commandButton 
+                                        class="my-1 w-100 ui-button-primary" 
+                                        value="My Drawer" 
+                                        icon="pi pi-folder-open" 
+                                        style="background-color: #987bff; color: #ffffff;" 
+                                        ajax="false" 
+                                        action="#{financialTransactionController.navigateToMyDrawer()}">
+                                    </p:commandButton>
+
+
+                                    <p:commandButton 
+                                        class="my-1 w-100 ui-button-primary"
+                                        value="Handover"
+                                        icon="pi pi-forward"
+                                        ajax="false" 
+                                        action="#{financialTransactionController.navigateToHandoverCreateBillForAllDaysAndDepartmentsForCurrentShift}" >
+                                    </p:commandButton>
+
+                                    <p:commandButton 
+                                        class="my-1 w-100 ui-button-info"
+                                        value="My Shifts"
+                                        icon="pi pi-map-marker"
+                                        ajax="false" 
+                                        action="#{financialTransactionController.navigateToMyShifts}">
                                     </p:commandButton>
 
                                     <p:commandButton 
@@ -91,32 +125,26 @@
 
 
                                 <p:tab title="Payment Management">
-                                    
-                                     <p:commandButton 
-                                        class="my-1 w-100 ui-button-primary"
-                                        value="Handover Shift"
-                                        icon="pi pi-forward"
-                                        ajax="false" 
-                                        action="#{financialTransactionController.navigateToHandoverCreateBillForAllDaysAndDepartmentsForCurrentShift}" >
-                                    </p:commandButton>
-                                    
+
+
+
+
                                     <p:commandButton 
                                         class="my-1 w-100 ui-button-primary"
                                         value="Handover Shift - Old one to cross cheque"
                                         icon="pi pi-forward"
                                         ajax="false" 
+                                        rendered="false"
                                         action="#{financialTransactionController.navigateToHandoverCreateBill}" >
                                     </p:commandButton>
 
-                                    <p:badge severity="danger"  value="#{financialTransactionController.fundTransferBillsToReceiveCount}">
-                                        <p:commandButton 
-                                            class="my-1 w-100 ui-button-danger"
-                                            value="Shift Handovers to Accept"
-                                            icon="pi pi-sign-in"
-                                            ajax="false" 
-                                            action="#{financialTransactionController.navigateToReceiveHandoverBillsForMe()}" >
-                                        </p:commandButton>
-                                    </p:badge>
+                                    <p:commandButton 
+                                        class="my-1 w-100 ui-button-danger"
+                                        value="Shift Handovers to Accept"
+                                        icon="pi pi-sign-in"
+                                        ajax="false" 
+                                        action="#{financialTransactionController.navigateToReceiveHandoverBillsForMe()}" >
+                                    </p:commandButton>
 
                                     <p:commandButton 
                                         class="my-1 w-100 ui-button-info"

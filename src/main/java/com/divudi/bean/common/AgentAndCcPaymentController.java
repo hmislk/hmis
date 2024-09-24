@@ -66,7 +66,7 @@ public class AgentAndCcPaymentController implements Serializable {
 
     private Bill current;
     @EJB
-    BillNumberGenerator billNumberGenerator;
+    private BillNumberGenerator billNumberGenerator;   
     private boolean printPreview = false;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
@@ -192,7 +192,8 @@ public class AgentAndCcPaymentController implements Serializable {
 
     private void saveBill(BillType billType, BillNumberSuffix billNumberSuffix) {
         getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), billType, BillClassType.BilledBill, billNumberSuffix));
-        getCurrent().setDeptId(getBillNumberBean().departmentBillNumberGenerator(sessionController.getDepartment(), billType, BillClassType.BilledBill, billNumberSuffix));
+//        getCurrent().setDeptId(getBillNumberBean().departmentBillNumberGenerator(sessionController.getDepartment(), billType, BillClassType.BilledBill, billNumberSuffix));
+        getCurrent().setDeptId(getBillNumberGenerator().departmentBillNumberGenerator(sessionController.getDepartment(), sessionController.getDepartment(), billType, BillClassType.BilledBill));
         getCurrent().setBillType(billType);
 
         getCurrent().setDepartment(getSessionController().getLoggedUser().getDepartment());
@@ -885,6 +886,14 @@ public class AgentAndCcPaymentController implements Serializable {
 
     public void setAmount(double amount) {
         this.amount = amount;
+    }
+
+    public BillNumberGenerator getBillNumberGenerator() {
+        return billNumberGenerator;
+    }
+
+    public void setBillNumberGenerator(BillNumberGenerator billNumberGenerator) {
+        this.billNumberGenerator = billNumberGenerator;
     }
 
 }
