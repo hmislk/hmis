@@ -19,11 +19,11 @@
                             <div class="row">
                                 <div class="col">
                                     <i class="fa-solid fa-cash-register">&nbsp;&nbsp;</i>
-                                    <p:outputLabel value="Shift Handover" />
+                                    <p:outputLabel value="Handover Accept" />
                                 </div>
                                 <div class="col float-right">
                                     <p:commandButton 
-                                        value="Back to Shift Handover" 
+                                        value="Back to Shift Accept" 
                                         class="m-1 ui-button-success"
                                         icon="pi pi-arrow-left" 
                                         action="#{financialTransactionController.navigateBackToPaymentHandoverCreate()}"
@@ -420,7 +420,7 @@
                                         </h:outputText>
                                     </p:column>
                                     <p:column  headerText="Ref No">
-                                        <p:selectBooleanCheckbox id="checkCardSelected" value="#{cardPayment.payment.selectedForHandover}" >
+                                        <p:selectBooleanCheckbox id="checkCardSelected" value="#{cardPayment.payment.selectedForCashbookEntry}" >
                                             <p:ajax update="checkCardSelected" ></p:ajax>
                                         </p:selectBooleanCheckbox>
                                     </p:column>

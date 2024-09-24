@@ -119,19 +119,40 @@ public class Payment implements Serializable {
     private boolean cashbookEntryCompleted;
     private boolean paymentRecordStated;
     private boolean paymentRecordCompleted;
+    
+    private boolean selectedForHandover;
+    private boolean selectedForCashbookEntry;
+    private boolean selectedForRecording;
+    private boolean selectedForRecordingConfirmation;
 
-    @ManyToOne
-    private Bill handoverCreatedBill;
     @ManyToOne
     private Bill handoverShiftBill;
     @ManyToOne
     private Bill handoverShiftComponantBill;
+    
+    //Handover Creation
+    @ManyToOne
+    private Bill handoverCreatedBill;
+    @ManyToOne
+    private Bill handoverCreatedComponantBill;
+    
+    //Handover Accept
     @ManyToOne
     private Bill handoverAcceptBill;
     @ManyToOne
+    private Bill handoverAcceptComponantBill;
+    
+    //Payment Record Creation
+    @ManyToOne
     private Bill paymentRecordCreateBill;
     @ManyToOne
+    private Bill paymentRecordCreateComponantBill;
+    //Payment Record Accept
+    @ManyToOne
     private Bill paymentRecordCompleteBill;
+     @ManyToOne
+    private Bill paymentRecordCompleteComponantBill;
+    //Cash Book
     @ManyToOne
     private CashBookEntry cashbookEntry;
     @ManyToOne
@@ -614,6 +635,70 @@ public class Payment implements Serializable {
 
     public void setPaymentDate(Date paymentDate) {
         this.paymentDate = paymentDate;
+    }
+
+    public Bill getHandoverCreatedComponantBill() {
+        return handoverCreatedComponantBill;
+    }
+
+    public void setHandoverCreatedComponantBill(Bill handoverCreatedComponantBill) {
+        this.handoverCreatedComponantBill = handoverCreatedComponantBill;
+    }
+
+    public Bill getHandoverAcceptComponantBill() {
+        return handoverAcceptComponantBill;
+    }
+
+    public void setHandoverAcceptComponantBill(Bill handoverAcceptComponantBill) {
+        this.handoverAcceptComponantBill = handoverAcceptComponantBill;
+    }
+
+    public Bill getPaymentRecordCreateComponantBill() {
+        return paymentRecordCreateComponantBill;
+    }
+
+    public void setPaymentRecordCreateComponantBill(Bill paymentRecordCreateComponantBill) {
+        this.paymentRecordCreateComponantBill = paymentRecordCreateComponantBill;
+    }
+
+    public Bill getPaymentRecordCompleteComponantBill() {
+        return paymentRecordCompleteComponantBill;
+    }
+
+    public void setPaymentRecordCompleteComponantBill(Bill paymentRecordCompleteComponantBill) {
+        this.paymentRecordCompleteComponantBill = paymentRecordCompleteComponantBill;
+    }
+
+    public boolean isSelectedForHandover() {
+        return selectedForHandover;
+    }
+
+    public void setSelectedForHandover(boolean selectedForHandover) {
+        this.selectedForHandover = selectedForHandover;
+    }
+
+    public boolean isSelectedForRecording() {
+        return selectedForRecording;
+    }
+
+    public void setSelectedForRecording(boolean selectedForRecording) {
+        this.selectedForRecording = selectedForRecording;
+    }
+
+    public boolean isSelectedForCashbookEntry() {
+        return selectedForCashbookEntry;
+    }
+
+    public void setSelectedForCashbookEntry(boolean selectedForCashbookEntry) {
+        this.selectedForCashbookEntry = selectedForCashbookEntry;
+    }
+
+    public boolean isSelectedForRecordingConfirmation() {
+        return selectedForRecordingConfirmation;
+    }
+
+    public void setSelectedForRecordingConfirmation(boolean selectedForRecordingConfirmation) {
+        this.selectedForRecordingConfirmation = selectedForRecordingConfirmation;
     }
     
     

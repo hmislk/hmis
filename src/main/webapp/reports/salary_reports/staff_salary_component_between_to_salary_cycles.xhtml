@@ -9,12 +9,12 @@
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
                 <h:form >
-                    <p:panel header="Staff Overtime" >
+                    <p:panel header="Staff Salary Component (Between to Salary Cycles)" >
                         <p:panelGrid columns="4" class="w-100">
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf0d6;" styleClass="fa mr-2" /> <!-- FontAwesome dollar-sign icon for Salary Cycle -->
-                                <h:outputLabel value="Salary Cycle" for="cmbSalaryCycle" class="mx-3"/>
+                                <h:outputLabel value="Salary Cycle From" for="cmbSalaryCycle" class="mx-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu 
 
@@ -27,6 +27,23 @@
                                                itemLabel=""
                                                itemValue="" ></f:selectItems>
                             </p:selectOneMenu>
+                            
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0d6;" styleClass="fa mr-2" /> <!-- FontAwesome dollar-sign icon for Salary Cycle -->
+                                <h:outputLabel value="Salary Cycle To" for="cmbSalaryCycle" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu 
+
+                                value="" 
+                                filter="true"
+                                class="w-100 ">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="d"
+                                               itemLabel=""
+                                               itemValue="" ></f:selectItems>
+                            </p:selectOneMenu>
+                            
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
@@ -113,8 +130,37 @@
                                                ></f:selectItems>
                             </p:selectOneMenu>
 
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf571;" styleClass="fa mr-2" /> <!-- FontAwesome file-invoice-dollar icon for Staff Paysheet Component -->
+                                <h:outputLabel value="Staff Paysheet Component" for="cmbStaffPaysheet" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
 
 
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf09d;" styleClass="fa mr-2" /> <!-- FontAwesome university icon for Bank -->
+                                <h:outputLabel value="Bank" for="cmbBank" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+
+                            
+                            
                         </p:panelGrid>
 
                         <div class="d-flex align-items-center">
@@ -140,54 +186,27 @@
                             <p:column headerText="Emp No" width="5em">
                                 <h:outputText value="" />
                             </p:column>
+                            <p:column headerText="EPF Name" width="5em">
+                                <h:outputText value="" />
+                            </p:column>
                             <p:column headerText="Emp Name" width="5em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Salary Cycle" width="5em">
+                            <p:column headerText="DOJ" width="5em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Over 45 OT (Minutes)" width="5em">
+                            <p:column headerText="Basic Value" width="5em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Normal OT (Minutes)" width="5em">
+                            <p:column headerText="Per Value" width="5em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Rate Per Minute" width="5em">
+                            <p:column headerText="Travel Value" width="5em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Over 45 OT" width="5em">
+                            <p:column headerText="Component Total Value" width="5em">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Normal OT Value" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Total OT" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="PH OT Min" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="RPM OT (1.5)" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="PH OT Value" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Off Day OT Min" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="RPM(2)" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Off Day OT Value" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Total" width="5em">
-                                <h:outputText value="" />
-                            </p:column>
-
-
-
 
                         </p:dataTable>
 
