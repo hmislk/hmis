@@ -168,6 +168,28 @@
                                      value="Blocked"
                                      style="width: 150px"
                                      action="#{reportController.listCcReportPrint()}" />
+                    <p:commandButton 
+                        icon="fa-solid fa-print"
+                        class="mx-1 ui-button-info"
+                        style="width: 150px"
+                        ajax="false" 
+                        value="Print">
+                        <p:printer target="tblExport" />
+                    </p:commandButton>
+                    <p:commandButton id="btnExcel" class="m-1 ui-button-success"
+                                     icon="fas fa-file-excel"
+                                     style="width: 150px"
+                                     ajax="false" value="Excel">
+                        <p:dataExporter type="xlsx" target="tbl" fileName="EPF" />
+                    </p:commandButton>
+                    <p:commandButton 
+                        class="m-2 ui-button-danger" 
+                        icon="fa-solid fa-file-pdf"
+                        style="width: 150px"
+                        ajax="false" 
+                        value="PDF">
+                        <p:dataExporter type="pdf" target="tblExport"  fileName="EPF.pdf" ></p:dataExporter>
+                    </p:commandButton>
 
 
 
