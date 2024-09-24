@@ -110,7 +110,7 @@
                                                      value="Show Blocked"
 
                                                      action="#{reportController.listCcReportPrint()}" />
-                               
+
                                     <p:commandButton ajax="false" 
                                                      class="ui-button-info mx-2"
                                                      icon="fas fa-stop"
@@ -118,14 +118,14 @@
 
                                                      action="#{reportController.listCcReportPrint()}" />
 
-                                
+
                                     <p:commandButton ajax="false" 
                                                      class="ui-button-warning mx-2"
                                                      icon="fas fa-cogs"
                                                      value="Process Net Salary"
 
                                                      action="#{reportController.listCcReportPrint()}" />
-                                
+
 
                                     <p:commandButton ajax="false" 
                                                      class="ui-button-warning align-center mx-2"
@@ -134,13 +134,35 @@
 
                                                      action="#{reportController.listCcReportPrint()}" />
 
-                               
+
                                     <p:commandButton ajax="false" 
                                                      class="ui-button-warning justify-content-end mx-2"
                                                      icon="fas fa-cogs"
                                                      value="Process Net And OT Payment "
 
                                                      action="#{reportController.listCcReportPrint()}" />
+                                    <p:commandButton 
+                                        icon="fa-solid fa-print"
+                                        class="mx-1 ui-button-info mx-2"
+                                        ajax="false" 
+                                        style="width: 150px"
+                                        value="Print">
+                                        <p:printer target="tblExport" />
+                                    </p:commandButton>
+                                    <p:commandButton id="btnExcel" class="m-1 ui-button-success"
+                                                     icon="fas fa-file-excel"
+                                                     style="width: 150px"
+                                                     ajax="false" value="Excel">
+                                        <p:dataExporter type="xlsx" target="tblExport" fileName="staff_salary_bank_wise" />
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        class="m-2 ui-button-danger" 
+                                        icon="fa-solid fa-file-pdf"
+                                        ajax="false" 
+                                        style="width: 150px"
+                                        value="PDF">
+                                        <p:dataExporter type="pdf" target="tblExport"  fileName="staff_salary_bank_wise" ></p:dataExporter>
+                                    </p:commandButton>
                                 </div>
 
                             </div>
