@@ -18,7 +18,7 @@
 
                         <div class="row">
                             <div class="col-md-12">
-                                <h:panelGrid columns="5" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
+                                <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
                                     <h:panelGroup layout="block" styleClass="form-group">
                                         <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
                                         <h:outputLabel value="From" for="fromDate" class="mx-3"/>
@@ -77,7 +77,7 @@
                                         <f:selectItems value="#{departmentController.getInsDepartments(searchController.institution)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
                                     </p:selectOneMenu>
 
-
+                                    <p:spacer ></p:spacer>
 
                                     <h:panelGroup layout="block" styleClass="form-group">
                                         <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
@@ -92,9 +92,16 @@
                                         <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
                                     </p:selectOneMenu>
 
-                                    <p:spacer ></p:spacer>
-                                    <p:spacer ></p:spacer>
-                                    <p:spacer ></p:spacer>
+
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText styleClass="fas fa-user mr-2" />
+                                        <h:outputLabel value="User" class="mx-3"/>
+                                    </h:panelGroup>
+                                    <p:selectOneMenu class="w-100" filter="true" value="#{searchController.webUser}" id="acIx">
+                                        <f:selectItem itemLabel="Select a user"/>
+                                        <f:selectItems value="#{webUserController.items}" var="st" itemLabel="#{st.name}" itemValue="#{st}"/>
+                                    </p:selectOneMenu>
+
 
 
 
@@ -146,7 +153,7 @@
                                      var="row"
                                      paginator="true"
                                      rows="10"
-                                     rowIndexVar=""
+                                     rowIndexVar="n"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      rowsPerPageTemplate="5,10,20"
                                      rowKey="#{row.id}">
