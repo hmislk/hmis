@@ -185,13 +185,13 @@ public class ReportController implements Serializable {
         billedBundle.setDescription("From : to :");
         String jpql = "select new com.divudi.data.ReportTemplateRow("
                 + "b.collectingCentre, "
-                + "count(b), "
+                + "count(bi), "
                 + "sum(b.totalHospitalFee), "
                 + "sum(b.totalCenterFee), "
                 + "sum(b.totalStaffFee), "
                 + "sum(b.netTotal) "
                 + ") "
-                + " from Bill b "
+                + " from BillItem bi join bi.bill b "
                 + " where b.retired=:ret "
                 + " and b.createdAt between :fd and :td "
                 + " and b.billTypeAtomic in :bts ";
