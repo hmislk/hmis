@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
@@ -48,31 +49,44 @@ import org.primefaces.event.TabChangeEvent;
 @SessionScoped
 public class IouBillController implements Serializable {
 
-    @Inject
-    CommonController commonController;
-    @Inject
-    BillController billController;
-    private Bill current;
-    private boolean printPreview = false;
+    @EJB
+    private PersonFacade personFacade;
+    @EJB
+    private CashTransactionBean cashTransactionBean;
     @EJB
     private BillNumberGenerator billNumberBean;
-    @Inject
-    private SessionController sessionController;
     @EJB
     private BillFacade billFacade;
     @EJB
     private BillItemFacade billItemFacade;
     @EJB
     PaymentFacade paymentFacade;
+
+    @Inject
+    BillBeanController billBean;
+    @Inject
+    private SessionController sessionController;
+    @Inject
+    CommonController commonController;
+    @Inject
+    BillController billController;
+    @Inject
+    PaymentSchemeController paymentSchemeController;
+    @Inject
+    DrawerController drawerController;
+
+    private Bill current;
+    private boolean printPreview = false;
     private Person newPerson;
-    PaymentMethodData paymentMethodData;
-    String comment;
+    private PaymentMethodData paymentMethodData;
+    private String comment;
     private double returnAmount;
     private double returnTotal;
     private Bill currentReturnBill;
     private PaymentMethod paymentMethod;
     private boolean printPriview;
     private List<Bill> billList;
+    private String tabId = "tabStaff";
 
     public PaymentMethodData getPaymentMethodData() {
         if (paymentMethodData == null) {
@@ -92,9 +106,6 @@ public class IouBillController implements Serializable {
         return Title.values();
     }
 
-    @Inject
-    PaymentSchemeController paymentSchemeController;
-
     public PaymentSchemeController getPaymentSchemeController() {
         return paymentSchemeController;
     }
@@ -102,14 +113,14 @@ public class IouBillController implements Serializable {
     public void setPaymentSchemeController(PaymentSchemeController paymentSchemeController) {
         this.paymentSchemeController = paymentSchemeController;
     }
-    
-    public void fillBillsReferredByCurrentBill(){
-        billList=new ArrayList<>();
-        String sql="Select b from Bill b where b.retired=:ret and b.billedBill=:cb";
-        HashMap m=new HashMap();
+
+    public void fillBillsReferredByCurrentBill() {
+        billList = new ArrayList<>();
+        String sql = "Select b from Bill b where b.retired=:ret and b.billedBill=:cb";
+        HashMap m = new HashMap();
         m.put("ret", false);
         m.put("cb", getCurrent());
-        billList=getBillFacade().findByJpql(sql,m);
+        billList = getBillFacade().findByJpql(sql, m);
     }
 
     private boolean errorCheck() {
@@ -200,9 +211,6 @@ public class IouBillController implements Serializable {
         return s;
     }
 
-    @Inject
-    BillBeanController billBean;
-
     public BillBeanController getBillBean() {
         return billBean;
     }
@@ -219,48 +227,46 @@ public class IouBillController implements Serializable {
         this.comment = comment;
     }
 
+    public String navigateToCreateIou() {
+        prepareNewBill();
+        return "/cashier/iou_bill?faces-redirect=true";
+    }
+
+    public String navigateToTrackIous() {
+        return "/cashier/iou_track?faces-redirect=true";
+    }
+
+    public String navigateToSettleIous() {
+        return "/cashier/settle_iou?faces-redirect=true";
+    }
+
     private void saveBill() {
-
-        getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.IouIssue, BillClassType.BilledBill, BillNumberSuffix.PTYPAY));
-        getCurrent().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.IouIssue, BillClassType.BilledBill, BillNumberSuffix.PTYPAY));
-
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(),
+                BillTypeAtomic.IOU_CASH_ISSUE);
+        getCurrent().setInsId(deptId);
+        getCurrent().setDeptId(deptId);
         getCurrent().setBillType(BillType.IouIssue);
-
+        getCurrent().setBillTypeAtomic(BillTypeAtomic.IOU_CASH_ISSUE);
         getCurrent().setDepartment(getSessionController().getDepartment());
         getCurrent().setInstitution(getSessionController().getInstitution());
-//        getCurrent().setComments(comment);
-
         getCurrent().setBillDate(new Date());
         getCurrent().setBillTime(new Date());
-
         getCurrent().setCreatedAt(new Date());
         getCurrent().setCreater(getSessionController().getLoggedUser());
-
         getCurrent().setTotal(0 - getCurrent().getNetTotal());
         getCurrent().setNetTotal(0 - getCurrent().getNetTotal());
 
-        getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
-
         getBillFacade().create(getCurrent());
     }
-    @EJB
-    private PersonFacade personFacade;
-    @EJB
-    private CashTransactionBean cashTransactionBean;
-    
-    public String navigateToIouReturnBill(){
+
+    public String navigateToIouReturnBill() {
         return "";
     }
 
     public void settleBill() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         if (errorCheck()) {
             return;
         }
-
         switch (getTabId()) {
             case "tabStaff":
                 if (current.getStaff() == null) {
@@ -294,13 +300,11 @@ public class IouBillController implements Serializable {
         DecimalFormat df = new DecimalFormat("00000");
         String s = df.format(getCurrent().getIntInvoiceNumber());
         getCurrent().setInvoiceNumber(createInvoiceNumberSuffix() + s);
-
         saveBill();
         saveBillItem();
-
-        WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(getCurrent(), getSessionController().getLoggedUser());
-        getSessionController().setLoggedUser(wb);
-        JsfUtil.addSuccessMessage("Bill Saved");
+        List<Payment> payments = getBillBean().createPaymentsForNonCreditOuts(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
+        drawerController.updateDrawerForOuts(payments);
+        JsfUtil.addSuccessMessage("IOU Created");
         printPreview = true;
 
     }
@@ -318,7 +322,7 @@ public class IouBillController implements Serializable {
             paymentFacade.edit(p);
             getBillFacade().edit(getCurrent());
             saveIouReturnBill(rb);
-            printPriview=true;
+            printPriview = true;
         }
     }
 
@@ -399,31 +403,27 @@ public class IouBillController implements Serializable {
         currentReturnBill = rb;
         return true;
     }
-    
-    public void recreateModle(){
-        returnAmount=0.0;
-        printPreview=false;
-        currentReturnBill=null;
+
+    public void recreateModle() {
+        returnAmount = 0.0;
+        printPreview = false;
+        currentReturnBill = null;
     }
 
     private void saveBillItem() {
         BillItem tmp = new BillItem();
-
         tmp.setCreatedAt(new Date());
         tmp.setCreater(getSessionController().getLoggedUser());
         tmp.setBill(getCurrent());
         tmp.setNetValue(0 - getCurrent().getNetTotal());
         getBillItemFacade().create(tmp);
-
     }
-    private String tabId = "tabStaff";
 
     public void recreateModel() {
         current = null;
         printPreview = false;
         newPerson = null;
         comment = null;
-
         tabId = "tabStaff";
     }
 
@@ -433,6 +433,13 @@ public class IouBillController implements Serializable {
 
     public void prepareNewBill() {
         recreateModel();
+        current = new Bill();
+        current.setBillType(BillType.IouIssue);
+        current.setBillTypeAtomic(BillTypeAtomic.IOU_CASH_ISSUE);
+        current.setDepartment(sessionController.getDepartment());
+        current.setInstitution(sessionController.getInstitution());
+        printPreview = false;
+
     }
 
     public Bill getCurrent() {
