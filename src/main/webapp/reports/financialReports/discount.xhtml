@@ -20,9 +20,9 @@
                             </h:panelGroup>
                             <p:datePicker value="#{reportController.fromDate}" 
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"
-                                          class=" w-100" ></p:datePicker>
+                                          class=" w-100" inputStyleClass="w-100" ></p:datePicker>
 
-                                          
+
                             <p:spacer width="20"></p:spacer>
 
 
@@ -33,19 +33,19 @@
                             </h:panelGroup>
                             <p:datePicker value="#{reportController.toDate}"
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"
-                                          class=""></p:datePicker>
+                                          class="w-100" inputStyleClass="w-100"></p:datePicker>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf53d;" styleClass="fa mr-2" />
                                 <p:outputLabel value="Discount Amount" class="mx-3" >
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:inputText></p:inputText>
+                            <p:inputText class="w-100"></p:inputText>
 
-                            
+
                             <p:spacer width="20"></p:spacer>
 
-                            
+
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf007;" styleClass="fa mr-2" />
                                 <p:outputLabel value="Visit Type" class="mx-3" >
@@ -61,7 +61,7 @@
                                                itemLabel="#{d.name}"
                                                itemValue="#{d}" ></f:selectItems>
                             </p:selectOneMenu>
-                                                           
+
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf02b;" styleClass="fa mr-2" />
                                 <p:outputLabel value="Invoice Category" class="mx-3">
@@ -76,10 +76,10 @@
                                                ></f:selectItems>
                             </p:selectOneMenu>
 
-                            
+
                             <p:spacer width="20"></p:spacer>
-                            
-                            
+
+
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf543;" styleClass="fa mr-2" />
                                 <p:outputLabel value="Discount Plan" class="mx-3">
@@ -93,7 +93,7 @@
                                                itemValue=""
                                                ></f:selectItems>
                             </p:selectOneMenu>   
-                            
+
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf133;" styleClass="fa mr-2" />
                                 <p:outputLabel value=" Discharge Date" class="mx-3">
@@ -101,11 +101,11 @@
                             </h:panelGroup>
                             <p:datePicker value="#{reportController.fromDate}" 
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"
-                                          class=" w-100" ></p:datePicker>
+                                          class=" w-100" inputStyleClass="w-100" ></p:datePicker>
 
-                                          <p:spacer width="20"></p:spacer>
-                                          
-                                          
+                            <p:spacer width="20"></p:spacer>
+
+
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf271;" styleClass="fa mr-2" />
                                 <p:outputLabel value="Added Date" class="mx-3">
@@ -113,9 +113,9 @@
                             </h:panelGroup>
                             <p:datePicker value="#{reportController.toDate}"
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"
-                                          class=""></p:datePicker>
-                            
-                            
+                                          class="w-100" inputStyleClass="w-100"></p:datePicker>
+
+
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf075;" styleClass="fa mr-2" />
                                 <p:outputLabel value="Remarks" class="mx-3">
@@ -129,9 +129,9 @@
                                                itemValue=""
                                                ></f:selectItems>
                             </p:selectOneMenu>
-                            
-                            
-                            
+
+
+
                         </h:panelGrid><br/>
 
                         <div class="d-flex align-items-center">
@@ -144,7 +144,7 @@
                             <p:commandButton class="ui-button-danger mx-1" icon= "fas fa-file-pdf" ajax="false" value="PDF">
                             </p:commandButton>
                         </div>
-                        
+
 
                         <p:dataTable id="tbl" value="" 
                                      paginator="true"
