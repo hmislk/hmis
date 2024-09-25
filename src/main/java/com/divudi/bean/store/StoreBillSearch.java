@@ -258,7 +258,7 @@ public class StoreBillSearch implements Serializable {
                 return false;
             }
 
-            if (i.isRefunded() == null) {
+            if (!i.isRefunded()) {
                 d = d + i.getNetValue();
                 getTempbillItems().add(i);
             }
@@ -545,11 +545,11 @@ public class StoreBillSearch implements Serializable {
             rbi.setCreater(getSessionController().getLoggedUser());
             rbi.setItem(bi.getItem());
             rbi.setNetValue(0 - bi.getNetValue());
-            rbi.setRefunded(Boolean.TRUE);
+//            rbi.setRefunded(true);
             rbi.setReferanceBillItem(bi);
             getBillItemFacede().create(rbi);
 
-            bi.setRefunded(Boolean.TRUE);
+            bi.setRefunded(true);
             getBillItemFacede().edit(bi);
 
             String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + bi.getId();

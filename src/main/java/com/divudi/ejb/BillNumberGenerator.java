@@ -1327,25 +1327,54 @@ public class BillNumberGenerator {
 
         String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Sufix for " + billType, billType.getCode());
 
-        BillNumber billNumber = fetchLastBillNumber(dep, toDept, billType, billClassType);
-        Long dd = billNumber.getLastBillNumber();
-        StringBuilder result = new StringBuilder();
+        if (configOptionApplicationController.getBooleanValueByKey("Enable Custom Full Bill Number Sufix")) {
+            String template = "{{department_code}}/{{to_department_code}}/" + billSuffix;
+            String billSuffixTemplate = configOptionApplicationController.getLongTextValueByKey("Bill Number Sufix Template for " + billType, template);
+            BillNumber billNumber = fetchLastBillNumber(dep, toDept, billType, billClassType);
+            Long dd = billNumber.getLastBillNumber();
+            String detpCode = dep.getDepartmentCode();
+            String toDeptCode = toDept.getDepartmentCode();
+            String insCode = dep.getInstitution().getInstitutionCode();
+            String siteCode = dep.getSite().getInstitutionCode();
+            String s = billSuffixTemplate.replace("{{department_code}}", detpCode)
+                    .replace("{{to_department_code}}", toDeptCode)
+                    .replace("{{ins_code}}", insCode)
+                    .replace("{{site_code}}", siteCode);
+            System.out.println(s);
 
-        result.append(dep.getDepartmentCode());
-
-        result.append(toDept.getDepartmentCode());
-
-        result.append("/");
-        result.append(billSuffix);
-
-        result.append("/");
+            StringBuilder result = new StringBuilder();
+            result.append(s);
 //        dd++;
-        result.append(dd);
+            result.append(dd);
 //
 //        billNumber.setLastBillNumber(dd);
 //        billNumberFacade.editAndFlush(billNumber);
+            System.out.println("result.toString() = " + result.toString());
 
-        return result.toString();
+            return result.toString();
+        } else {
+
+            BillNumber billNumber = fetchLastBillNumber(dep, toDept, billType, billClassType);
+            Long dd = billNumber.getLastBillNumber();
+            StringBuilder result = new StringBuilder();
+
+            result.append(dep.getDepartmentCode());
+
+            result.append(toDept.getDepartmentCode());
+
+            result.append("/");
+            result.append(billSuffix);
+
+            result.append("/");
+//        dd++;
+            result.append(dd);
+//
+//        billNumber.setLastBillNumber(dd);
+//        billNumberFacade.editAndFlush(billNumber);
+            System.out.println("result.toString() = " + result.toString());
+
+            return result.toString();
+        }
     }
 
     public synchronized String generateBillNumber(Department fromDept, Department toDept, BillType billType, BillClassType billClassType) {
@@ -1455,28 +1484,60 @@ public class BillNumberGenerator {
         // Update the BillNumber entity in the database
         billNumberFacade.edit(billNumber);
 
-        // Generate the bill number string
-        StringBuilder result = new StringBuilder();
+        if (configOptionApplicationController.getBooleanValueByKey("Enable Custom Full Bill Number Sufix")) {
+            String template = "{{department_code}}/{{to_department_code}}/" + billSuffix;
+            String billSuffixTemplate = configOptionApplicationController.getLongTextValueByKey("Bill Number Sufix Template for " + billType, template);
+            String detpCode = dep.getDepartmentCode();
+            String insCode = dep.getInstitution().getInstitutionCode();
+            String siteCode = dep.getSite().getInstitutionCode();
+            String s = billSuffixTemplate.replace("{{department_code}}", detpCode)
+                    .replace("{{ins_code}}", insCode)
+                    .replace("{{site_code}}", siteCode);
+            System.out.println(s);
 
-        // Append institution code
-        result.append(ins.getInstitutionCode());
+            StringBuilder result = new StringBuilder();
+            result.append(s);
+//        dd++;
+            // Append current year (last two digits)
+            int year = Calendar.getInstance().get(Calendar.YEAR) % 100; // Get last two digits of year
+            result.append("/");
+            result.append(String.format("%02d", year)); // Ensure year is always two digits
 
-        // Append department code
-        result.append(dep.getDepartmentCode());
-        result.append("/");
-        result.append(billSuffix);
+            // Append formatted 6-digit bill number
+            result.append("/");
+            result.append(String.format("%06d", dd)); // Ensure bill number is always six digits
 
-        // Append current year (last two digits)
-        int year = Calendar.getInstance().get(Calendar.YEAR) % 100; // Get last two digits of year
-        result.append("/");
-        result.append(String.format("%02d", year)); // Ensure year is always two digits
+//        billNumber.setLastBillNumber(dd);
+//        billNumberFacade.editAndFlush(billNumber);
+            System.out.println("result.toString() = " + result.toString());
 
-        // Append formatted 6-digit bill number
-        result.append("/");
-        result.append(String.format("%06d", dd)); // Ensure bill number is always six digits
+            return result.toString();
 
-        // Return the formatted bill number
-        return result.toString();
+        } else {
+
+            // Generate the bill number string
+            StringBuilder result = new StringBuilder();
+
+            // Append institution code
+            result.append(ins.getInstitutionCode());
+
+            // Append department code
+            result.append(dep.getDepartmentCode());
+            result.append("/");
+            result.append(billSuffix);
+
+            // Append current year (last two digits)
+            int year = Calendar.getInstance().get(Calendar.YEAR) % 100; // Get last two digits of year
+            result.append("/");
+            result.append(String.format("%02d", year)); // Ensure year is always two digits
+
+            // Append formatted 6-digit bill number
+            result.append("/");
+            result.append(String.format("%06d", dd)); // Ensure bill number is always six digits
+
+            // Return the formatted bill number
+            return result.toString();
+        }
     }
 
     public String departmentBillNumberGenerator(Department dep, Department toDept, BillType billType, BillClassType billClassType, BillNumberSuffix billNumberSuffix) {

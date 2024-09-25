@@ -83,7 +83,10 @@ public class CashBookEntryController implements Serializable {
 
     }
 
-    public void writeCashBookEntryAtHandover(Payment p) {
+    public void writeCashBookEntryAtHandover(Payment p, CashBook cb) {
+        System.out.println("writeCashBookEntryAtHandover" );
+        System.out.println("p = " + p);
+        System.out.println("cb = " + cb);
         if (p == null) {
             JsfUtil.addErrorMessage("Cashbook Entry Error !");
             return;
@@ -92,19 +95,23 @@ public class CashBookEntryController implements Serializable {
         if (!chackPaymentMethodForCashBookEntryAtHandover(p.getPaymentMethod())) {
             return;
         }
-        current = new CashBookEntry();
-        current.setInstitution(p.getInstitution());
-        current.setDepartment(p.getDepartment());
-        current.setCreater(sessionController.getLoggedUser());
-        current.setCreatedAt(new Date());
-        current.setPaymentMethod(p.getPaymentMethod());
-        current.setEntryValue(p.getPaidValue());
-        current.setPayment(p);
-        current.setBill(p.getHandoverAcceptBill());
-        current.setCashBook(sessionController.getLoggedCashbook());
-        current.setSite(sessionController.getDepartment().getSite());
-        updateBalances(p.getPaymentMethod(), p.getPaidValue(), current);
-        cashbookEntryFacade.create(current);
+        CashBookEntry newCbEntry = new CashBookEntry();
+        newCbEntry.setInstitution(p.getInstitution());
+        newCbEntry.setDepartment(p.getDepartment());
+        newCbEntry.setSite(p.getDepartment().getSite());
+        newCbEntry.setCreater(sessionController.getLoggedUser());
+        newCbEntry.setCreatedAt(new Date());
+        newCbEntry.setPaymentMethod(p.getPaymentMethod());
+        newCbEntry.setEntryValue(p.getPaidValue());
+        newCbEntry.setPayment(p);
+        newCbEntry.setBill(p.getHandoverAcceptBill());
+        newCbEntry.setCashBook(cb);
+        updateBalances(p.getPaymentMethod(), p.getPaidValue(), newCbEntry);
+        
+        p.setCashbook(cb);
+        p.setCashbookEntry(newCbEntry);
+        paymentFacade.edit(p);
+        cashbookEntryFacade.create(newCbEntry);
 
     }
 

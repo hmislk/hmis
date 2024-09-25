@@ -60,6 +60,7 @@ public class Bill implements Serializable {
     private Item item;
     @ManyToOne
     private MembershipScheme membershipScheme;
+    @Deprecated
     @OneToOne
     private CashTransaction cashTransaction;
     @OneToMany(mappedBy = "bill", fetch = FetchType.LAZY)
@@ -224,6 +225,8 @@ public class Bill implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     private Staff staff;
     @ManyToOne(fetch = FetchType.LAZY)
+    private WebUser webUser;
+    @ManyToOne(fetch = FetchType.LAZY)
     private Staff fromStaff;
     @ManyToOne(fetch = FetchType.LAZY)
     private Staff toStaff;
@@ -316,7 +319,7 @@ public class Bill implements Serializable {
     private Date smsedAt;
     @OneToMany(mappedBy = "bill")
     private List<Sms> sentSmses;
-    
+
     private boolean completed;
 
     //Print Information
@@ -832,6 +835,7 @@ public class Bill implements Serializable {
         catId = bill.getCatId();
         creditCompany = bill.getCreditCompany();
         staff = bill.getStaff();
+        webUser = bill.getWebUser();
         toStaff = bill.getToStaff();
         fromStaff = bill.getFromStaff();
         toDepartment = bill.getToDepartment();
@@ -1889,10 +1893,12 @@ public class Bill implements Serializable {
         this.fromWebUser = fromWebUser;
     }
 
+    @Deprecated
     public CashTransaction getCashTransaction() {
         return cashTransaction;
     }
 
+    @Deprecated
     public void setCashTransaction(CashTransaction cashTransaction) {
         this.cashTransaction = cashTransaction;
 
@@ -2367,6 +2373,12 @@ public class Bill implements Serializable {
         this.completed = completed;
     }
 
+    public WebUser getWebUser() {
+        return webUser;
+    }
 
-    
+    public void setWebUser(WebUser webUser) {
+        this.webUser = webUser;
+    }
+
 }

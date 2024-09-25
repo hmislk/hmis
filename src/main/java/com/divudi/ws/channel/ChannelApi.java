@@ -978,19 +978,18 @@ public class ChannelApi {
     }
 
     public List<Object[]> doctorsListAll() {
-
         List<Object[]> consultants = new ArrayList<>();
-        String sql;
+        String jpql;
         Map m = new HashMap();
-
-        sql = " select pi.staff.id,"
-                + " pi.staff.person.name, "
-                + " pi.staff.speciality.name,"
-                + " pi.staff.code from PersonInstitution pi ";
-
-        sql += " order by pi.staff.speciality.name,pi.staff.person.name ";
-
-        consultants = getStaffFacade().findAggregates(sql);
+        jpql = " select staff.id,"
+                + " staff.person.name, "
+                + " staff.speciality.name,"
+                + " staff.code "
+                + " from Consultant staff ";
+        jpql += " where staff.retired=:ret ";
+        jpql += " order by staff.speciality.name, staff.person.name ";
+        m.put("ret", false);
+        consultants = getStaffFacade().findAggregates(jpql,m);
         return consultants;
     }
 

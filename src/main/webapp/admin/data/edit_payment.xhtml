@@ -63,6 +63,17 @@
                             <h:panelGroup id="paymentDetails"  >
                                 <h:panelGroup
                                     layout="block"  
+                                    id="cash" rendered="#{billSearch.payment.paymentMethod eq 'Cash'}" >
+                                    <p:inputText 
+                                        autocomplete="off"
+                                        style="width: 150px"
+                                        value="#{billSearch.payment.bill.cashPaid}"
+                                        placeholder="Tendered Amount">
+                                        <p:ajax process="@this" ></p:ajax>
+                                    </p:inputText>
+                                </h:panelGroup>
+                                <h:panelGroup
+                                    layout="block"  
                                     id="creditCard" rendered="#{billSearch.payment.paymentMethod eq 'Card'}" >
                                     <p:inputText 
                                         autocomplete="off"

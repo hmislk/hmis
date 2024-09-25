@@ -991,6 +991,14 @@ public class ChannelStaffPaymentBillController implements Serializable {
             JsfUtil.addErrorMessage("There is a Credit Bill");
             return true;
         }
+        for(BillFee bf:dueBillFees){
+            if(bf.getBill().getSingleBillSession().isAbsent()){
+                if(!bf.getBill().getSingleBillSession().getSessionInstance().getOriginatingSession().isPaidAppointmentsOnly()){
+                    JsfUtil.addErrorMessage("Contains Absent Patients. Please unselect absent patients and retry");
+                    return false;
+                }
+            }
+        }
 
         performCalculations();
         if (totalPaying == 0) {

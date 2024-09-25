@@ -27,11 +27,11 @@
                                 completeMethod="#{webUserController.completeUser}"
                                 class="mx-2"
                                 id="acStaff" 
-                                value="#{financialTransactionController.currentBill.toStaff}" 
+                                value="#{financialTransactionController.currentBill.toWebUser}" 
                                 var="s"
                                 scrollHeight="450"
                                 itemLabel="#{s.webUserPerson.nameWithTitle}" 
-                                itemValue="#{s.staff}" >
+                                itemValue="#{s}" >
                             </p:autoComplete>
 
                             <p:commandButton 
