@@ -151,7 +151,7 @@ public class FinancialTransactionController implements Serializable {
     private ReportTemplateRowBundle cardTransactionPaymentBundle;
 
     private ReportTemplateRowBundle bundle;
-
+  
     @Deprecated
     private PaymentMethodValues paymentMethodValues;
     private AtomicBillTypeTotals atomicBillTypeTotalsByBills;
@@ -216,10 +216,6 @@ public class FinancialTransactionController implements Serializable {
     private Department forDepartment;
     private Department toDepartment;
     private Date forDate;
-    
-    private int tabIndex;
-
-    private int tabIndex;
 
     private int tabIndex;
 
@@ -1899,21 +1895,6 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setReferenceBill(null);
         return "/cashier/handover_start?faces-redirect=true";
     }
-  
-    public String navigateToHandoverCreateBillForAllDaysAndDepartmentsForCurrentShift() {
-        resetClassVariables();
-        handoverValuesCreated = false;
-        Bill startBill = findNonClosedShiftStartFundBill(sessionController.getLoggedUser());
-        bundle = generatePaymentsFromShiftStartToEndToEnterToCashbookFilteredByDateAndDepartment(startBill, null);
-        bundle.setUser(sessionController.getLoggedUser());
-        bundle.aggregateTotals();
-        currentBill = new Bill();
-        currentBill.setBillType(BillType.CashHandoverCreateBill);
-        currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE);
-        currentBill.setBillClassType(BillClassType.PreBill);
-        currentBill.setReferenceBill(null);
-        return "/cashier/handover_start_all?faces-redirect=true";
-    }
 
     public String navigateToHandoverCreateBillForAllDaysAndDepartmentsForCurrentShift() {
         resetClassVariables();
@@ -2708,6 +2689,7 @@ public class FinancialTransactionController implements Serializable {
         nonClosedShiftStartFundBill = billFacade.findFirstByJpql(jpql, m);
     }
 
+
     public Bill findNonClosedShiftStartFundBill(WebUser user) {
         nonClosedShiftStartFundBill = null;
         String jpql = "select b "
@@ -3391,24 +3373,6 @@ public class FinancialTransactionController implements Serializable {
     }
 
     private void calculateShortageBillTotal() {
-        double total = 0.0;
-        for (Payment p : getCurrentBillPayments()) {
-            total += p.getPaidValue();
-        }
-        currentBill.setTotal(total);
-        currentBill.setNetTotal(total);
-    }
-
-    private void calculateExcessBillTotal() {
-        double total = 0.0;
-        for (Payment p : getCurrentBillPayments()) {
-            total += p.getPaidValue();
-        }
-        currentBill.setTotal(total);
-        currentBill.setNetTotal(total);
-    }
-
-    private void calculateFundDepositBillTotal() {
         double total = 0.0;
         for (Payment p : getCurrentBillPayments()) {
             total += p.getPaidValue();

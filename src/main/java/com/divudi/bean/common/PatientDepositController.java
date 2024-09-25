@@ -136,6 +136,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     private SmsManagerEjb smsManagerEjb;
     @EJB
     private TokenFacade tokenFacade;
+    @EJB
+    private PatientDepositFacade patientDepositFacade;
+    @EJB
+    private PatientDepositHistoryFacade patientDepositHistoryFacade;
 
     /**
      * Controllers
@@ -148,10 +152,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     BillBeanController billBeanController;
     @Inject
     ReportController reportController;
-    @EJB
-    private PatientDepositFacade patientDepositFacade;
-    @EJB
-    private PatientDepositHistoryFacade patientDepositHistoryFacade;
+   
     private PatientDeposit current;
     private List<PatientDeposit> items = null;
     private boolean printPreview;
@@ -215,7 +216,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     private ItemLight itemLight;
     private Long selectedItemLightId;
     private PaymentScheme paymentScheme;
-
     private PaymentMethod paymentMethod;
     private Patient patient;
 
@@ -1262,10 +1262,12 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         }
         if (r.getNetTotal() != null) {
             netTotal = r.getNetTotal();
+
         }
         if (r.getDiscount() != null) {
             discount = r.getDiscount();
         }
+
         if (r.getVat() != null) {
             vat = r.getVat();
         }
@@ -1277,7 +1279,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
     public void getPharmacySaleBills() {
         Date startTime = new Date();
-
         BillType[] billTypes;
         if (billType == null) {
             billTypes = new BillType[]{BillType.PharmacySale, BillType.PharmacyWholeSale};
