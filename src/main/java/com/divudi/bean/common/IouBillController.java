@@ -34,6 +34,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -60,7 +61,7 @@ public class IouBillController implements Serializable {
     @EJB
     private BillItemFacade billItemFacade;
     @EJB
-    PaymentFacade paymentFacade;
+    private PaymentFacade paymentFacade;
 
     @Inject
     BillBeanController billBean;
@@ -69,13 +70,16 @@ public class IouBillController implements Serializable {
     @Inject
     CommonController commonController;
     @Inject
-    BillController billController;
+    private BillController billController;
     @Inject
     PaymentSchemeController paymentSchemeController;
     @Inject
-    DrawerController drawerController;
+    private DrawerController drawerController;
 
     private Bill current;
+    private List<Payment> myIousToSettle;
+    private List<Payment> settlingIuos;
+    private List<Payment> paymentsForsettlingIuos;
     private boolean printPreview = false;
     private Person newPerson;
     private PaymentMethodData paymentMethodData;
@@ -123,7 +127,7 @@ public class IouBillController implements Serializable {
         billList = getBillFacade().findByJpql(sql, m);
     }
 
-    private boolean errorCheck() {
+    private boolean errorInIouCreateBill() {
         if (getCurrent().getPaymentMethod() == null) {
             return true;
         }
@@ -154,6 +158,41 @@ public class IouBillController implements Serializable {
             JsfUtil.addErrorMessage("Invoice Number Already Exist");
             return true;
         }
+
+        return false;
+    }
+
+    private boolean errorInSettlingIouBill() {
+        if (settlingIuos == null) {
+            JsfUtil.addErrorMessage("No IOUs selected. ");
+            return true;
+        }
+        if (settlingIuos.isEmpty()) {
+            JsfUtil.addErrorMessage("No IOUs selected. ");
+            return true;
+        }
+        if (paymentsForsettlingIuos == null) {
+            JsfUtil.addErrorMessage("No IOUs selected. ");
+            return true;
+        }
+        if (paymentsForsettlingIuos.isEmpty()) {
+            JsfUtil.addErrorMessage("No IOUs selected. ");
+            return true;
+        }
+        double settlingIouTotal = 0.0;
+        double paymentTotal = 0.0;
+        for (Payment pout : settlingIuos) {
+            settlingIouTotal += pout.getPaidValue();
+        }
+        for (Payment pin : paymentsForsettlingIuos) {
+            paymentTotal += pin.getPaidValue();
+        }
+        if (settlingIouTotal != paymentTotal) {
+            JsfUtil.addErrorMessage("Settling Total and Payment Totals does not match. Please check and retry");
+            return true;
+        }
+        getCurrent().setTotal(paymentTotal);
+        getCurrent().setNetTotal(paymentTotal);
 
         return false;
     }
@@ -237,6 +276,9 @@ public class IouBillController implements Serializable {
     }
 
     public String navigateToSettleIous() {
+        if (!prepareNewIouSettleBill()) {
+            return null;
+        }
         return "/cashier/settle_iou?faces-redirect=true";
     }
 
@@ -263,8 +305,8 @@ public class IouBillController implements Serializable {
         return "";
     }
 
-    public void settleBill() {
-        if (errorCheck()) {
+    public void settleIouSettlingBill() {
+        if (errorInSettlingIouBill()) {
             return;
         }
         switch (getTabId()) {
@@ -302,8 +344,68 @@ public class IouBillController implements Serializable {
         getCurrent().setInvoiceNumber(createInvoiceNumberSuffix() + s);
         saveBill();
         saveBillItem();
-        List<Payment> payments = getBillBean().createPaymentsForNonCreditOuts(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
-        drawerController.updateDrawerForOuts(payments);
+        List<Payment> paymentOuts = getBillBean().createPaymentsForNonCreditOuts(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
+        PaymentMethodData pmd = new PaymentMethodData();
+        pmd.setPaymentMethod(PaymentMethod.IOU);
+        pmd.getIou().setReferenceNo(getCurrent().getReferenceNumber());
+        List<Payment> paymentsIn = getBillBean().createPaymentsForNonCreditIns(getCurrent(),
+                PaymentMethod.IOU,
+                pmd);
+        drawerController.updateDrawerForOuts(paymentOuts);
+        drawerController.updateDrawerForIns(paymentsIn);
+        JsfUtil.addSuccessMessage("IOU Created");
+        printPreview = true;
+
+    }
+
+    public void settleIouCreateBill() {
+        if (errorInIouCreateBill()) {
+            return;
+        }
+        switch (getTabId()) {
+            case "tabStaff":
+                if (current.getStaff() == null) {
+                    JsfUtil.addErrorMessage("Staff?");
+                    return;
+                }
+                break;
+            case "tabSearchPerson":
+                if (current.getPerson() == null) {
+                    JsfUtil.addErrorMessage("Person?");
+                    return;
+                }
+                break;
+            case "tabNew":
+                if (getNewPerson().getName().trim().equals("")) {
+                    JsfUtil.addErrorMessage("Person?");
+                    return;
+                }
+                break;
+            default:
+                JsfUtil.addErrorMessage(getTabId());
+                return;
+        }
+
+        if (getTabId().equals("tabNew")) {
+            getPersonFacade().create(getNewPerson());
+            getCurrent().setPerson(getNewPerson());
+        }
+
+        getCurrent().setTotal(getCurrent().getNetTotal());
+        DecimalFormat df = new DecimalFormat("00000");
+        String s = df.format(getCurrent().getIntInvoiceNumber());
+        getCurrent().setInvoiceNumber(createInvoiceNumberSuffix() + s);
+        saveBill();
+        saveBillItem();
+        List<Payment> paymentOuts = getBillBean().createPaymentsForNonCreditOuts(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
+        PaymentMethodData pmd = new PaymentMethodData();
+        pmd.setPaymentMethod(PaymentMethod.IOU);
+        pmd.getIou().setReferenceNo(getCurrent().getReferenceNumber());
+        List<Payment> paymentsIn = getBillBean().createPaymentsForNonCreditIns(getCurrent(),
+                PaymentMethod.IOU,
+                pmd);
+        drawerController.updateDrawerForOuts(paymentOuts);
+        drawerController.updateDrawerForIns(paymentsIn);
         JsfUtil.addSuccessMessage("IOU Created");
         printPreview = true;
 
@@ -357,8 +459,8 @@ public class IouBillController implements Serializable {
         Bill rb = new RefundBill();
         rb.copy(getCurrent());
         rb.invertValue(getCurrent());
-        rb.setBillType(BillType.IouReturn);
-        rb.setBillTypeAtomic(BillTypeAtomic.IOU_CASH_RETURN);
+        rb.setBillType(BillType.IouSettle);
+        rb.setBillTypeAtomic(BillTypeAtomic.IOU_SETTLE);
         rb.setBilledBill(getCurrent());
         Date bd = Calendar.getInstance().getTime();
         rb.setBillDate(bd);
@@ -397,8 +499,8 @@ public class IouBillController implements Serializable {
         rb.setPaymentMethod(paymentMethod);
         rb.setReferenceBill(getCurrent());
         rb.setBilledBill(getCurrent());
-        rb.setBillType(BillType.IouReturn);
-        rb.setBillTypeAtomic(BillTypeAtomic.IOU_CASH_RETURN);
+        rb.setBillType(BillType.IouSettle);
+        rb.setBillTypeAtomic(BillTypeAtomic.IOU_SETTLE);
         billController.save(rb);
         currentReturnBill = rb;
         return true;
@@ -440,6 +542,32 @@ public class IouBillController implements Serializable {
         current.setInstitution(sessionController.getInstitution());
         printPreview = false;
 
+    }
+
+    public boolean prepareNewIouSettleBill() {
+        recreateModel();
+        current = new Bill();
+        current.setBillType(BillType.IouIssue);
+        current.setBillTypeAtomic(BillTypeAtomic.IOU_CASH_ISSUE);
+        current.setDepartment(sessionController.getDepartment());
+        current.setInstitution(sessionController.getInstitution());
+        printPreview = false;
+        String jpql = "select p "
+                + " from Payment p "
+                + " where p.retired=:ret "
+                + " and p.currentHolder=:user "
+                + " and p.cancelled=:can ";
+        Map params = new HashMap();
+        params.put("ret", false);
+        params.put("can", false);
+        params.put("user", sessionController.getLoggedUser());
+        myIousToSettle = paymentFacade.findByJpql(jpql, params);
+        if (myIousToSettle == null) {
+            JsfUtil.addErrorMessage("You do not have any IOUs to settle");
+            return false;
+        }
+
+        return true;
     }
 
     public Bill getCurrent() {
@@ -583,6 +711,54 @@ public class IouBillController implements Serializable {
 
     public void setBillList(List<Bill> billList) {
         this.billList = billList;
+    }
+
+    public PaymentFacade getPaymentFacade() {
+        return paymentFacade;
+    }
+
+    public void setPaymentFacade(PaymentFacade paymentFacade) {
+        this.paymentFacade = paymentFacade;
+    }
+
+    public BillController getBillController() {
+        return billController;
+    }
+
+    public void setBillController(BillController billController) {
+        this.billController = billController;
+    }
+
+    public DrawerController getDrawerController() {
+        return drawerController;
+    }
+
+    public void setDrawerController(DrawerController drawerController) {
+        this.drawerController = drawerController;
+    }
+
+    public List<Payment> getMyIousToSettle() {
+        return myIousToSettle;
+    }
+
+    public void setMyIousToSettle(List<Payment> myIousToSettle) {
+        this.myIousToSettle = myIousToSettle;
+    }
+
+    public List<Payment> getSettlingIuos() {
+        return settlingIuos;
+    }
+
+    public void setSettlingIuos(List<Payment> settlingIuos) {
+        this.settlingIuos = settlingIuos;
+    }
+
+    public List<Payment> getPaymentsForsettlingIuos() {
+        return paymentsForsettlingIuos;
+    }
+
+    public void setPaymentsForsettlingIuos(List<Payment> paymentsForsettlingIuos) {
+        this.paymentsForsettlingIuos = paymentsForsettlingIuos;
     }
 
 }
