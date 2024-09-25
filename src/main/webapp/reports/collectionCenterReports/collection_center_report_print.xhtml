@@ -203,27 +203,31 @@
 
                         <p:commandButton     ajax="false"
                                              value="Process"
-                                             class="ui-button-warning"
+                                             style="width: 150px"
+                                             class="ui-button-warning mx-2"
                                              icon="fas fa-cogs"
                                              />
                         <p:commandButton 
                             icon="fa-solid fa-print"
-                            class="mx-1 ui-button-info"
+                            class="mx-2 ui-button-info"
+                            style="width: 150px"
                             ajax="false" 
                             value="Print">
                             <p:printer target="tblExport" />
                         </p:commandButton>
-                        <p:commandButton id="btnExcel" class="m-1 ui-button-success"
+                        <p:commandButton id="btnExcel" class="mx-2 ui-button-success"
+                                         style="width: 150px"
                                          icon="fas fa-file-excel"
                                          ajax="false" value="Excel">
-                            <p:dataExporter type="xlsx" target="tbl" fileName="itemized_sale_summary" />
+                            <p:dataExporter type="xlsx" target="tblExport" fileName="Collection_Center_Report_print" />
                         </p:commandButton>
                         <p:commandButton 
-                            class="m-2 ui-button-danger" 
+                            class="mx-2 ui-button-danger" 
+                            style="width: 150px"
                             icon="fa-solid fa-file-pdf"
                             ajax="false" 
                             value="PDF">
-                            <p:dataExporter type="pdf" target="tblExport"  fileName="Collection_Center_Wise_Transaction_Report.pdf" ></p:dataExporter>
+                            <p:dataExporter type="pdf" target="tblExport"  fileName="Collection_Center_Report_print" ></p:dataExporter>
                         </p:commandButton>
 
                     </p:panel>

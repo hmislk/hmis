@@ -82,22 +82,25 @@
                             <p:commandButton 
                                 ajax="false" 
                                 value="Process" 
+                                style="width: 150px"
                                 icon="fas fa-cogs"
-                                class="m-2 ui-button-warning"
+                                class="mx-2 ui-button-warning"
                                 action="#{reportController.processCollectingCentreTestWiseCountReport()}" >
 
                             </p:commandButton>
 
                             <p:commandButton 
                                 icon="fa-solid fa-print"
-                                class="mx-1 ui-button-info"
+                                class="mx-2 ui-button-info"
+                                style="width: 150px"
                                 ajax="false" 
                                 value="Print"
                                 action="#{reportController.processCollectingCentreStatementReportNew()}">
                                 <p:printer target="tblExport" />
                             </p:commandButton>
                             <p:commandButton 
-                                class="m-2 ui-button-success" 
+                                class="mx-2 ui-button-success" 
+                                style="width: 150px"
                                 icon="fas fa-file-excel"
                                 ajax="false" 
                                 value="Excel"
@@ -106,8 +109,9 @@
                             </p:commandButton>
 
                             <p:commandButton 
-                                class="m-2 ui-button-raised" 
+                                class="mx-2 ui-button-danger" 
                                 icon="fa-solid fa-file-pdf"
+                                style="width: 150px"
                                 ajax="false" 
                                 value="PDF"
                                 action="#{reportController.processCollectingCentreStatementReportNew()}">
