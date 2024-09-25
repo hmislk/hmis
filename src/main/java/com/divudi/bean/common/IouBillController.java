@@ -355,15 +355,15 @@ public class IouBillController implements Serializable {
 
     public void addPaymentToSettlingIouBill() {
         if (current == null) {
-            JsfUtil.addErrorMessage("Error");
+            JsfUtil.addErrorMessage("Error - Current Null");
             return;
         }
-        if (current.getBillType() != BillType.ShiftStartFundBill) {
-            JsfUtil.addErrorMessage("Error");
+        if (current.getBillType() != BillType.IouSettle) {
+            JsfUtil.addErrorMessage("Error - Wrong Bill Type");
             return;
         }
         if (currentPayment == null) {
-            JsfUtil.addErrorMessage("Error");
+            JsfUtil.addErrorMessage("Error - No current Payment");
             return;
         }
         if (currentPayment.getPaymentMethod() == null) {
@@ -593,8 +593,8 @@ public class IouBillController implements Serializable {
     public boolean prepareNewIouSettleBill() {
         recreateModel();
         current = new Bill();
-        current.setBillType(BillType.IouIssue);
-        current.setBillTypeAtomic(BillTypeAtomic.IOU_CASH_ISSUE);
+        current.setBillType(BillType.IouSettle);
+        current.setBillTypeAtomic(BillTypeAtomic.IOU_SETTLE);
         current.setDepartment(sessionController.getDepartment());
         current.setInstitution(sessionController.getInstitution());
         printPreview = false;

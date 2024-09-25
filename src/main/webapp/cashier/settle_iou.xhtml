@@ -166,6 +166,7 @@
                                             style="float: right;"
                                             value="Add"
                                             icon="fa fa-plus"
+                                            ajax="false"
                                             class="ui-button-success"
                                             process="btnAdd cmdPayment paymentDetails"
                                             update="tblPayments totals cmdPayment paymentDetails"
@@ -187,7 +188,7 @@
                                                 <p:outputLabel 
 
                                                     class="mx-2"
-                                                    value="#{iouBillController.currentBill.total}" >
+                                                    value="#{iouBillController.current.total}" >
                                                 </p:outputLabel>
                                             </div>
                                         </div>
