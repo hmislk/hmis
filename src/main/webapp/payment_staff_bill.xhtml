@@ -86,6 +86,20 @@
 
 
 
+                            </h:panelGrid>
+
+
+
+                            <p:commandButton value="Process" action="#{staffPaymentBillController.calculateDueFeesOpdForSelectedPeriod()}" ajax="false" icon="fa-solid fa-arrows-rotate"
+                                             class="w-25 ui-button-warning my-1" />
+
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" icon="fa-solid fa-file-excel"
+                                             class="w-25 ui-button-success my-1 mx-2" >
+                                <p:dataExporter type="xlsx" target=":#{p:resolveFirstComponentWithId('tblFee',view).clientId}" fileName="Staff_Payment_Due_OPD"  />
+                            </p:commandButton>
+
+
+
                             <p:dataTable   
                                 id="tblFee" value="#{staffPaymentBillController.dueBillFees}"
                                 selection="#{staffPaymentBillController.payingBillFees}"
