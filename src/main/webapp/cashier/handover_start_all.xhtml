@@ -567,8 +567,8 @@
                                         </f:facet>
                                     </p:column>
 
-                                    <p:column headerText="Grand Total">
-                                        <h:outputText value="#{financialTransactionController.bundle.total}">
+                                    <p:column headerText="Total">
+                                        <h:outputText value="#{summary.total}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
                                         <f:facet name="footer">

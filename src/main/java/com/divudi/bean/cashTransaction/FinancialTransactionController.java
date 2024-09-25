@@ -1522,6 +1522,9 @@ public class FinancialTransactionController implements Serializable {
         bundle = generatePaymentBundleForHandovers(selectedBill.getReferenceBill(),
                 selectedBill.getReferenceBill().getReferenceBill(),
                 paymentsToAcceptForHandover);
+        bundle.aggregateTotals();
+        bundle.collectDepartments();
+        
 //        
 //        
 //         fillPaymentsFromViewHandoverAcceptBill();
@@ -2418,12 +2421,13 @@ public class FinancialTransactionController implements Serializable {
         Map<String, ReportTemplateRowBundle> groupedBundles = new HashMap<>();
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        
 
         for (Payment p : shiftPayments) {
             String key = sdf.format(p.getCreatedAt()) + "-" + p.getDepartment().getId() + "-" + p.getCreater().getId();
 
             ReportTemplateRowBundle b = groupedBundles.getOrDefault(key, new ReportTemplateRowBundle());
-            b.setUser(user);
+            b.setUser(startBill.getCreater());
             b.setDate(p.getCreatedAt());
             b.setDepartment(p.getDepartment());
 
@@ -2444,6 +2448,7 @@ public class FinancialTransactionController implements Serializable {
         bundleToHoldDeptUserDayBundle.setBundles(new ArrayList<>(groupedBundles.values()));
         bundleToHoldDeptUserDayBundle.setStartBill(startBill);
         bundleToHoldDeptUserDayBundle.setEndBill(endBill);
+        bundleToHoldDeptUserDayBundle.setUser(startBill.getCreater());
         return bundleToHoldDeptUserDayBundle;
     }
 
