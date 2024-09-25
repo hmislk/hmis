@@ -14,6 +14,9 @@ import com.divudi.entity.cashTransaction.DenominationTransaction;
 import com.divudi.facade.DenominationTransactionFacade;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -38,7 +41,6 @@ public class DenominationTransactionController implements Serializable {
     private SessionController sessionController;
 
     private DenominationTransaction selected;
-
 
     public DenominationTransactionController() {
     }
@@ -75,6 +77,16 @@ public class DenominationTransactionController implements Serializable {
         } else {
             denominationTransactionFacade.edit(transaction);
         }
+    }
+
+    List<DenominationTransaction> fetchDenominationTransactionFromBill(Bill b) {
+        String jpql = "select dt "
+                + " from DenominationTransaction dt "
+                + " where dt.retired=:ret "
+                + " and dt.bill=:b";
+        Map m = new HashMap();
+        m.put("b", b);
+        return denominationTransactionFacade.findByJpql(jpql, m);
     }
 
     @FacesConverter(forClass = DenominationTransaction.class)
