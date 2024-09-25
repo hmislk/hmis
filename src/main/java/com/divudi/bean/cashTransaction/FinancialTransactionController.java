@@ -1584,7 +1584,7 @@ public class FinancialTransactionController implements Serializable {
         bundle = new ReportTemplateRowBundle();
         bundle.setUser(selectedBill.getFromWebUser());
         bundle.setStartBill(selectedBill.getReferenceBill());
-        if(selectedBill.getReferenceBill()!=null){
+        if (selectedBill.getReferenceBill() != null) {
             bundle.setEndBill(selectedBill.getReferenceBill().getReferenceBill());
         }
 
@@ -1956,10 +1956,11 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setDepartment(sessionController.getDepartment());
         currentBill.setInstitution(sessionController.getInstitution());
         currentBill.setStaff(sessionController.getLoggedUser().getStaff());
-
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.FUND_SHIFT_START_BILL);
         currentBill.setBillDate(new Date());
         currentBill.setBillTime(new Date());
-
+        currentBill.setDeptId(deptId);
+        currentBill.setInsId(deptId);
         findNonClosedShiftStartFundBillIsAvailable();
         if (nonClosedShiftStartFundBill != null) {
             JsfUtil.addErrorMessage("A shift start fund bill is already available for closure.");
