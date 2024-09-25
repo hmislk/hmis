@@ -44,25 +44,37 @@
                                 </div>
                             </h:panelGrid>
 
-                            <div class="row mb-2">
+                            <div class="row mb-2 my-3">
                                 <div class="col-md-2">
                                     <p:commandButton ajax="false" 
                                                      value="Process" 
+                                                     style="width: 150px"
                                                      action="#{reportController.processCollectionCenterBalanceByAgentHistory()}" 
-                                                     class="w-50 ui-button-warning"
+                                                     class="mx-2 ui-button-warning"
                                                      icon="fas fa-cogs">
                                     </p:commandButton>
                                 </div>
                                 <div  class="col-md-2">
-                                    <p:commandButton id="btnExcel" class="m-1 ui-button-success"
+                                    <p:commandButton id="btnPrint" class="mx-2 ui-button-info"
                                                      icon="fas fa-file-excel"
-                                                     ajax="false" value="Export to Excel">
+                                                     style="width: 150px"
+                                                     ajax="false" value="Print">
+                                        <p:printer target="agentHistoriesTable" />
+                                    </p:commandButton>
+
+                                </div>
+                                
+                                <div  class="col-md-2">
+                                    <p:commandButton id="btnExcel" class="mx-2 ui-button-success"
+                                                     style="width: 150px"
+                                                     icon="fas fa-file-excel"
+                                                     ajax="false" value="Excel">
 
                                     </p:commandButton>
 
                                 </div>
                                 <div  class="col-md-2">
-                                    <p:commandButton value="Export to PDF" icon="pi pi-file-pdf" ajax="false">
+                                    <p:commandButton class="mx-2 ui-button-danger" style="width: 150px" value="PDF" icon="pi pi-file-pdf" ajax="false">
                                         <p:dataExporter
                                             type="pdf" target="agentHistoriesTable" fileName="agent_histories_report" />
                                     </p:commandButton>
@@ -74,14 +86,7 @@
 
 
                                 </div>
-                                <div  class="col-md-2">
-                                    <p:commandButton id="btnPrint" class="m-1 ui-button-success"
-                                                     icon="fas fa-file-excel"
-                                                     ajax="false" value="Print">
-                                        <p:printer target="agentHistoriesTable" />
-                                    </p:commandButton>
-
-                                </div>
+                                
                             </div>
 
 

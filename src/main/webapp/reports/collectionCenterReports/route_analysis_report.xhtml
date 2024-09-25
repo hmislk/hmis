@@ -12,7 +12,7 @@
 
                 <h:form >
                     <p:panel header="Route Analysis Report" styleClass="w-100">
-                        <h:panelGrid columns="5"  >
+                        <h:panelGrid columns="5" class=" w-100 m-2 my-3">
                             <h:panelGroup >
                                 <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
                                 <h:outputLabel value="From Date"  class="mx-3"/>
@@ -22,7 +22,9 @@
                                           class="w-100 mr-5"
                                           inputStyleClass="w-100"></p:datePicker>
 
-                            <p:spacer width=""></p:spacer>
+                            <p:spacer width="25"></p:spacer>
+
+
                             <h:panelGroup >
                                 <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
                                 <h:outputLabel value="To Date"  class="mx-3"/>
@@ -32,6 +34,8 @@
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"
                                           class="w-100"
                                           inputStyleClass="w-100"></p:datePicker>
+
+
 
                             <h:panelGroup >
                                 <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
@@ -52,8 +56,10 @@
 
                             </p:selectOneMenu>
 
+                            <p:spacer width="50"></p:spacer>
 
-                            <p:spacer width=""></p:spacer>
+
+
                             <h:panelGroup >
                                 <h:outputText value="&#xf277;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
                                 <h:outputLabel value="Route "  class="mx-3"/>
@@ -70,6 +76,8 @@
                                                itemValue="#{r}"
                                                />
                             </p:selectOneMenu>
+
+
                             <h:panelGroup >
                                 <h:outputText value="&#xf15c;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
                                 <h:outputLabel value="Report Type"  class="mx-3"/>
@@ -78,12 +86,12 @@
                             <p:selectOneMenu style=" max-width: 100%; overflow-x: auto;" class="w-100">
                                 <f:selectItem itemLabel="Select Type"/>
                             </p:selectOneMenu>
+                            <p:spacer width="50"></p:spacer>
 
-                            <p:spacer width=""></p:spacer>
 
                             <h:panelGroup >
                                 <h:outputText value="&#xf1ad;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
-                                <h:outputLabel value="Collection center "  class=""/>
+                                <h:outputLabel value="Collection center "  class="mx-3"/>
                                 <p:outputLabel  />
                             </h:panelGroup>
                             <p:selectOneMenu value="#{reportController.collectingCentre}" filter="true"  
@@ -98,17 +106,43 @@
 
 
 
-                            <p:commandButton ajax="false" value="Process" action="null"
-                                             icon="fas fa-cogs"
-                                             class="ui-button-warning">
-                            </p:commandButton>
+
 
                         </h:panelGrid>
 
+                        <p:commandButton ajax="false" value="Process" action="null"
+                                         style="width: 150px"
+                                         icon="fas fa-cogs"
+                                         class="ui-button-warning mx-2">
+                        </p:commandButton>
 
-                        <p:spacer height="5"></p:spacer>
+                        <p:commandButton 
+                            icon="fa-solid fa-print"
+                            class="mx-2 ui-button-info"
+                            style="width: 150px"
+                            ajax="false" 
+                            value="Print">
+                            <p:printer target="tblExport" />
+                        </p:commandButton>
+                        <p:commandButton id="btnExcel" class="mx-2 ui-button-success"
+                                         style="width: 150px"
+                                         icon="fas fa-file-excel"
+                                         ajax="false" value="Excel">
+                            <p:dataExporter type="xlsx" target="tbl" fileName="itemized_sale_summary" />
+                        </p:commandButton>
+                        <p:commandButton 
+                            class="mx-2 ui-button-danger" 
+                            style="width: 150px"
+                            icon="fa-solid fa-file-pdf"
+                            ajax="false" 
+                            value="PDF">
+                            <p:dataExporter type="pdf" target="tblExport"  fileName="Collection_Center_Wise_Transaction_Report.pdf" ></p:dataExporter>
+                        </p:commandButton>
 
-                        <h:panelGrid columns="2">
+
+
+
+                        <h:panelGrid columns="2" class="my-2">
                             <h:outputLabel value="From Date :  "/>
                             <h:outputLabel value="#{reportController.fromDate}"  >
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
@@ -125,7 +159,7 @@
                             </h:outputLabel>
                         </h:panelGrid>
 
-                        <p:spacer height="5"></p:spacer>
+
 
                         <!--                        <p:dataTable value="null" var="c">
                                                     <p:column colspan="2" headerText=""></p:column>
@@ -134,9 +168,9 @@
                         
                                                 </p:dataTable>-->
 
-                        <p:spacer height="5"></p:spacer>
 
-                        <p:dataTable value="#{reportController.collectingCentre}" var="c" rowIndexVar="rowIndex">
+
+                        <p:dataTable id="tblExport" value="#{reportController.collectingCentre}" var="c" rowIndexVar="rowIndex">
                             <p:column headerText="S. No" >
                                 <h:outputText value="#{rowIndex + 1}" ></h:outputText>
                             </p:column>

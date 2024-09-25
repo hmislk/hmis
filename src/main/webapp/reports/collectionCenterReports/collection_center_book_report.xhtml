@@ -13,71 +13,92 @@
                 <h:form >
                     <div>
                         <p:panel header="Collection Center Book Report" >
-                            <h:panelGrid columns="4">
-                                <div class="col-md-2 w-100">
-                                    <h:panelGroup >
-                                        <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
-                                        <h:outputLabel value="From Date"  class="mx-3"/>
-                                    </h:panelGroup>
+                            <p:panelGrid columns="4" >
 
-                                </div>
-                                <div class="col-md-10 w-100 mx-2">
-                                    <p:datePicker value="#{reportController.fromDate}" 
-                                                  style=" max-width: 100%; overflow-x: auto; "
-                                                  class="w-100"
-                                                  inputStyleClass="w-100"
-                                                  pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
-                                </div>
+                                <h:panelGroup >
+                                    <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
+                                    <h:outputLabel value="From Date"  class="mx-3"/>
+                                </h:panelGroup>
 
-                                <div class="col-md-2 w-100">
-                                    <h:panelGroup >
-                                        <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
-                                        <h:outputLabel value="To Date"  class="mx-3"/>
-                                    </h:panelGroup>
-                                </div>
-                                <div class="col-md-4 mx-2">
-                                    <p:datePicker value="#{reportController.toDate}"
-                                                  style=" max-width: 100%; overflow-x: auto; "
-                                                  class="w-100"
-                                                  inputStyleClass="w-100"
-                                                  pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
-                                </div>
-                                <div class="col-md-3">
-                                    <h:panelGroup >
-                                        <h:outputText value="&#xf1ad;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
-                                        <h:outputLabel value="Collection Center"  class="mx-3"/>
-                                        <p:outputLabel  />
-                                    </h:panelGroup>
-                                </div>
-                                <div class="col-md-4 w-50 " >
-                                    <p:selectOneMenu value="#{reportController.collectingCentre}" >
-                                        <f:selectItem itemLabel="All" ></f:selectItem>
-                                        <f:selectItems var="r" itemLabel="#{r.name}" value="#{collectingCentreController.items}" itemValue="#{r}"/>
+                                <p:datePicker value="#{reportController.fromDate}" 
+                                              class="w-100"
+                                              inputStyleClass="w-100"
+                                              pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+
+                                <h:panelGroup >
+                                    <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
+                                    <h:outputLabel value="To Date"  class="mx-3"/>
+                                </h:panelGroup>
+
+
+                                <p:datePicker value="#{reportController.toDate}"
+                                              style=" max-width: 100%; overflow-x: auto; "
+                                              class="w-100"
+                                              inputStyleClass="w-100"
+                                              pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+
+                                <h:panelGroup >
+                                    <h:outputText value="&#xf1ad;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                    <h:outputLabel value="Collection Center"  class="mx-3"/>
+                                    <p:outputLabel  />
+                                </h:panelGroup>
+
+                                <h:panelGroup >
+
+
+                                    <p:selectOneMenu value="#{reportController.collectingCentre}">
+                                        <f:selectItem itemLabel="All"  ></f:selectItem>
+                                        <f:selectItems  var="r" itemLabel="#{r.name}" value="#{collectingCentreController.items}" itemValue="#{r}"/>
                                     </p:selectOneMenu>
-                                </div>
-                            </h:panelGrid>
+                                </h:panelGroup>
 
-                            <div class="row mb-2">
-                                <div class="col-md-2">
+                            </p:panelGrid>
+
+                            <div class="row mb-2 my-3">
+                                <div class="col-md-12">
                                     <p:commandButton ajax="false" 
                                                      value="Process" 
+                                                     style="width: 150px"
                                                      action="#{reportController.processCollectingCentreBook}" 
-                                                     class="w-50 ui-button-warning"
+                                                     class=" ui-button-warning mx-2"
                                                      icon="fas fa-cogs">
+                                    </p:commandButton>
+
+                                    <p:commandButton 
+                                        icon="fa-solid fa-print"
+                                        class="mx-2 ui-button-info"
+                                        style="width: 150px"
+                                        ajax="false" 
+                                        value="Print">
+                                        <p:printer target="tblExport" />
+                                    </p:commandButton>
+                                    <p:commandButton id="btnExcel" class="mx-2 ui-button-success"
+                                                     style="width: 150px"
+                                                     icon="fas fa-file-excel"
+                                                     ajax="false" value="Excel">
+                                        <p:dataExporter type="xlsx" target="tbl" fileName="itemized_sale_summary" />
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        class="mx-2 ui-button-danger" 
+                                        style="width: 150px"
+                                        icon="fa-solid fa-file-pdf"
+                                        ajax="false" 
+                                        value="PDF">
+                                        <p:dataExporter type="pdf" target="tblExport"  fileName="Collection_Center_Wise_Transaction_Report.pdf" ></p:dataExporter>
                                     </p:commandButton>
                                 </div>
                                 <div  class="col-md-2">
-<!--                                    <p:commandButton id="btnExcel" class="m-1 ui-button-success"
-                                                     icon="fas fa-file-excel"
-                                                     ajax="false" value="Export to Excel">
-                                        <p:dataExporter type="xlsx" target="tbl" fileName="itemized_sale_summary" />
-                                    </p:commandButton>-->
+                                    <!--                                    <p:commandButton id="btnExcel" class="m-1 ui-button-success"
+                                                                                         icon="fas fa-file-excel"
+                                                                                         ajax="false" value="Export to Excel">
+                                                                            <p:dataExporter type="xlsx" target="tbl" fileName="itemized_sale_summary" />
+                                                                        </p:commandButton>-->
 
                                 </div>
                             </div>
 
 
-                            <h:panelGrid columns="2" class="my-4">
+                            <h:panelGrid columns="2" class="my-4" >
                                 <h:outputLabel value="From Date :  "/>
                                 <h:outputLabel value="#{reportController.fromDate}"  >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
@@ -96,60 +117,60 @@
 
                             <p:spacer height="5"></p:spacer>
 
-                            <p:dataTable value="#{reportController.agentReferenceBooks}" var="a" rowIndexVar="i">
-                                <p:column headerText="S. No" >
+                            <p:dataTable id="tblExport" value="#{reportController.agentReferenceBooks}" var="a" rowIndexVar="i">
+                                <p:column headerText="S. No" width="5rem">
                                     <h:outputText value="#{i+1}" ></h:outputText>
                                 </p:column>
-                                <p:column headerText="CC Code" >
+                                <p:column headerText="CC Code" width="5rem">
                                     <h:outputText value="#{a.institution.code}" ></h:outputText>
                                 </p:column>
-                                <p:column headerText="CC Name" >
+                                <p:column headerText="CC Name" width="5rem">
                                     <h:outputText value="#{a.institution.name}" ></h:outputText>
                                 </p:column>
-                                <p:column headerText="Contact Person" >
+                                <p:column headerText="Contact Person" width="5rem">
                                     <h:outputText value="#{a.institution.contactPerson.nameWithTitle}" ></h:outputText>
                                 </p:column>
-                                <p:column headerText="CC Phone No" >
+                                <p:column headerText="CC Phone No" width="5rem">
                                     <h:outputText value="#{a.institution.phone}" ></h:outputText>
                                 </p:column>
                                 <p:column headerText="Contact Person E-mail" >
                                     <h:outputText value="#{a.institution.contactPerson.email}" ></h:outputText>
                                 </p:column>
-                                <p:column headerText="Address" >
+                                <p:column headerText="Address" width="5rem">
                                     <h:outputText value="#{a.institution.address}" ></h:outputText>
                                 </p:column>
-                                <p:column headerText="Standard Credit" >
+                                <p:column headerText="Standard Credit" width="5rem">
                                     <h:outputText value="#{a.institution.standardCreditLimit}" ></h:outputText>
                                 </p:column>
-                                <p:column headerText="Allowed Credit" >
+                                <p:column headerText="Allowed Credit" width="5rem">
                                     <h:outputText value="#{a.institution.allowedCreditLimit}" ></h:outputText>
                                 </p:column>
-                                <p:column headerText="Max Credit " >
+                                <p:column headerText="Max Credit " width="5rem" >
                                     <h:outputText value="#{a.institution.maxCreditLimit}" ></h:outputText>
                                 </p:column>
-                                <p:column headerText="Balance" >
+                                <p:column headerText="Balance" width="5rem">
                                     <h:outputText value="#{a.institution.ballance}" ></h:outputText>
                                 </p:column>
-                                <p:column headerText="CC Book No" >
+                                <p:column headerText="CC Book No" width="5rem">
                                     <h:outputText value="#{a.strbookNumber}" ></h:outputText>
                                 </p:column>
 
                                 <p:column headerText="Starting Reference Number" >
                                     <h:outputText value="#{a.startingReferenceNumber}" ></h:outputText>
                                 </p:column>
-                                <p:column headerText="Ending Reference Number" >
+                                <p:column headerText="Ending Reference Number" width="5rem">
                                     <h:outputText value="#{a.endingReferenceNumber}" ></h:outputText>
                                 </p:column>
-                                <p:column headerText="Creater" >
+                                <p:column headerText="Creater" width="5rem">
                                     <h:outputText value="#{a.creater}" ></h:outputText>
                                 </p:column>
-                                <p:column headerText="Created Date" >
+                                <p:column headerText="Created Date" width="5rem">
                                     <h:outputText value="#{a.createdAt}" ></h:outputText>
                                 </p:column>
-                                <p:column headerText="Editor" >
+                                <p:column headerText="Editor" width="5rem">
                                     <h:outputText value="#{a.editor.name}" ></h:outputText>
                                 </p:column>
-                                <p:column headerText="Edited Date" >
+                                <p:column headerText="Edited Date" width="5rem">
                                     <h:outputText value="#{a.editedAt}" ></h:outputText>
                                 </p:column>
                             </p:dataTable>
