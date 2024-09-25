@@ -234,6 +234,7 @@
 
                                     <p:column headerText="Cash" 
                                               style="text-align: left;"
+                                              class="ui-message-info"
                                               rendered="#{financialTransactionController.bundle.hasCashTransaction}" >
                                         <h:outputText value="#{summary.cashValue}"  style="text-align: right;">
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
@@ -243,10 +244,32 @@
                                             title="Change Handover Value" 
                                             ajax="false" 
                                             styleClass="ui-button-warning m-1 mx-2" 
-                                            action="#{financialTransactionController.navigateToSelectPaymentsForHandoverCreate(summary, 'Card')}" >
+                                            action="#{financialTransactionController.navigateToSelectPaymentsForHandoverAccept(summary, 'Cash')}" >
                                         </p:commandButton>
                                         <f:facet name="footer" >
                                             <p:outputLabel value="#{financialTransactionController.bundle.cashValue}" >
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </p:outputLabel>
+                                        </f:facet>
+
+                                    </p:column>
+                                    
+                                    <p:column headerText="Cash Recording Value" 
+                                              class="ui-message-warn"
+                                              style="text-align: left;"
+                                              rendered="#{financialTransactionController.bundle.hasCashTransaction}" >
+                                        <h:outputText value="#{summary.cashHandoverValue}"  style="text-align: right;">
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputText>
+                                        <p:commandButton 
+                                            icon="pi pi-refresh" 
+                                            title="Change Handover Value" 
+                                            ajax="false" 
+                                            styleClass="ui-button-warning m-1 mx-2" 
+                                            action="#{financialTransactionController.navigateToSelectPaymentsForHandoverAccept(summary, 'Cash')}" >
+                                        </p:commandButton>
+                                        <f:facet name="footer" >
+                                            <p:outputLabel value="#{financialTransactionController.bundle.cashHandoverValue}" >
                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                             </p:outputLabel>
                                         </f:facet>
@@ -263,7 +286,7 @@
                                             title="Change Handover Value" 
                                             ajax="false" 
                                             styleClass="ui-button-warning m-1 mx-2" 
-                                            action="#{financialTransactionController.navigateToSelectPaymentsForHandoverCreate(summary, 'Card')}" >
+                                            action="#{financialTransactionController.navigateToSelectPaymentsForHandoverAccept(summary, 'Card')}" >
                                         </p:commandButton>
                                         <f:facet name="footer">
                                             <h:outputText value="#{financialTransactionController.bundle.cardValue}">
