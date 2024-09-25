@@ -168,6 +168,8 @@ public class Payment implements Serializable {
     private Date cancelledAt;
     @ManyToOne
     private Payment cancelledPayment;
+    @ManyToOne
+    private Bill cancelledBill;
 
     public Payment() {
         cashbookEntryStated = false;
@@ -510,14 +512,17 @@ public class Payment implements Serializable {
         }
     }
 
+    @Deprecated
     public String getCurrencyDenominationsJson() {
         return currencyDenominationsJson;
     }
 
+    @Deprecated
     public List<Denomination> getCurrencyDenominations() {
         return currencyDenominations;
     }
 
+    @Deprecated
     public void setCurrencyDenominations(List<Denomination> currencyDenominations) {
         this.currencyDenominations = currencyDenominations;
     }
@@ -753,6 +758,14 @@ public class Payment implements Serializable {
 
     public void setCancelledPayment(Payment cancelledPayment) {
         this.cancelledPayment = cancelledPayment;
+    }
+
+    public Bill getCancelledBill() {
+        return cancelledBill;
+    }
+
+    public void setCancelledBill(Bill cancelledBill) {
+        this.cancelledBill = cancelledBill;
     }
     
     

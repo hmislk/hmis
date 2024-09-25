@@ -5,6 +5,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.DrawerController;
+import com.divudi.bean.cashTransaction.PaymentController;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
@@ -75,11 +76,14 @@ public class IouBillController implements Serializable {
     PaymentSchemeController paymentSchemeController;
     @Inject
     private DrawerController drawerController;
+    @Inject
+    private PaymentController paymentController;
 
     private Bill current;
     private List<Payment> myIousToSettle;
     private List<Payment> settlingIuos;
     private List<Payment> paymentsForsettlingIuos;
+    private Payment currentPayment;
     private boolean printPreview = false;
     private Person newPerson;
     private PaymentMethodData paymentMethodData;
@@ -91,6 +95,9 @@ public class IouBillController implements Serializable {
     private boolean printPriview;
     private List<Bill> billList;
     private String tabId = "tabStaff";
+
+    private double settlingIouTotal = 0.0;
+    private double paymentTotal = 0.0;
 
     public PaymentMethodData getPaymentMethodData() {
         if (paymentMethodData == null) {
@@ -179,22 +186,44 @@ public class IouBillController implements Serializable {
             JsfUtil.addErrorMessage("No IOUs selected. ");
             return true;
         }
-        double settlingIouTotal = 0.0;
-        double paymentTotal = 0.0;
+        if (settlingIouTotal != paymentTotal) {
+            JsfUtil.addErrorMessage("Settling Total and Payment Totals does not match. Please check and retry");
+            return true;
+        }
+        return false;
+    }
+
+    private void calculateTotalsForSettlingIouBill() {
+
+        if (settlingIuos == null) {
+            JsfUtil.addErrorMessage("No IOUs selected. ");
+            return;
+        }
+        if (settlingIuos.isEmpty()) {
+            JsfUtil.addErrorMessage("No IOUs selected. ");
+            return;
+        }
+        if (paymentsForsettlingIuos == null) {
+            JsfUtil.addErrorMessage("No IOUs selected. ");
+            return;
+        }
+        if (paymentsForsettlingIuos.isEmpty()) {
+            JsfUtil.addErrorMessage("No IOUs selected. ");
+            return;
+        }
+        settlingIouTotal = 0.0;
+        paymentTotal = 0.0;
+
         for (Payment pout : settlingIuos) {
             settlingIouTotal += pout.getPaidValue();
         }
         for (Payment pin : paymentsForsettlingIuos) {
             paymentTotal += pin.getPaidValue();
         }
-        if (settlingIouTotal != paymentTotal) {
-            JsfUtil.addErrorMessage("Settling Total and Payment Totals does not match. Please check and retry");
-            return true;
-        }
+
         getCurrent().setTotal(paymentTotal);
         getCurrent().setNetTotal(paymentTotal);
 
-        return false;
     }
 
     private boolean checkInvoice() {
@@ -282,7 +311,7 @@ public class IouBillController implements Serializable {
         return "/cashier/settle_iou?faces-redirect=true";
     }
 
-    private void saveBill() {
+    private void saveIouCreateBill() {
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(),
                 BillTypeAtomic.IOU_CASH_ISSUE);
         getCurrent().setInsId(deptId);
@@ -301,59 +330,76 @@ public class IouBillController implements Serializable {
         getBillFacade().create(getCurrent());
     }
 
+    private void saveSettleIouBill() {
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(),
+                BillTypeAtomic.IOU_SETTLE);
+        getCurrent().setInsId(deptId);
+        getCurrent().setDeptId(deptId);
+        getCurrent().setBillType(BillType.IouSettle);
+        getCurrent().setBillTypeAtomic(BillTypeAtomic.IOU_SETTLE);
+        getCurrent().setDepartment(getSessionController().getDepartment());
+        getCurrent().setInstitution(getSessionController().getInstitution());
+        getCurrent().setBillDate(new Date());
+        getCurrent().setBillTime(new Date());
+        getCurrent().setCreatedAt(new Date());
+        getCurrent().setCreater(getSessionController().getLoggedUser());
+        getCurrent().setTotal(0 - getCurrent().getNetTotal());
+        getCurrent().setNetTotal(0 - getCurrent().getNetTotal());
+
+        getBillFacade().create(getCurrent());
+    }
+
     public String navigateToIouReturnBill() {
         return "";
+    }
+
+    public void addPaymentToSettlingIouBill() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Error");
+            return;
+        }
+        if (current.getBillType() != BillType.ShiftStartFundBill) {
+            JsfUtil.addErrorMessage("Error");
+            return;
+        }
+        if (currentPayment == null) {
+            JsfUtil.addErrorMessage("Error");
+            return;
+        }
+        if (currentPayment.getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Select a Payment Method");
+            return;
+        }
+        calculateTotalsForSettlingIouBill();
+        getPaymentsForsettlingIuos().add(currentPayment);
+        currentPayment = null;
+        getCurrentPayment();
     }
 
     public void settleIouSettlingBill() {
         if (errorInSettlingIouBill()) {
             return;
         }
-        switch (getTabId()) {
-            case "tabStaff":
-                if (current.getStaff() == null) {
-                    JsfUtil.addErrorMessage("Staff?");
-                    return;
-                }
-                break;
-            case "tabSearchPerson":
-                if (current.getPerson() == null) {
-                    JsfUtil.addErrorMessage("Person?");
-                    return;
-                }
-                break;
-            case "tabNew":
-                if (getNewPerson().getName().trim().equals("")) {
-                    JsfUtil.addErrorMessage("Person?");
-                    return;
-                }
-                break;
-            default:
-                JsfUtil.addErrorMessage(getTabId());
-                return;
+        saveIouCreateBill();
+
+        for (Payment pi : getPaymentsForsettlingIuos()) {
+            pi.setBill(current);
+            pi.setCreatedAt(new Date());
+            pi.setCreater(sessionController.getLoggedUser());
+            pi.setCurrentHolder(sessionController.getLoggedUser());
+            paymentController.save(pi);
+        }
+        for (Payment po : getSettlingIuos()) {
+            po.setCancelledBill(current);
+            po.setCancelled(true);
+            po.setCancelledBy(sessionController.getLoggedUser());
+            po.setCancelledAt(new Date());
+            paymentController.save(po);
         }
 
-        if (getTabId().equals("tabNew")) {
-            getPersonFacade().create(getNewPerson());
-            getCurrent().setPerson(getNewPerson());
-        }
-
-        getCurrent().setTotal(getCurrent().getNetTotal());
-        DecimalFormat df = new DecimalFormat("00000");
-        String s = df.format(getCurrent().getIntInvoiceNumber());
-        getCurrent().setInvoiceNumber(createInvoiceNumberSuffix() + s);
-        saveBill();
-        saveBillItem();
-        List<Payment> paymentOuts = getBillBean().createPaymentsForNonCreditOuts(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
-        PaymentMethodData pmd = new PaymentMethodData();
-        pmd.setPaymentMethod(PaymentMethod.IOU);
-        pmd.getIou().setReferenceNo(getCurrent().getReferenceNumber());
-        List<Payment> paymentsIn = getBillBean().createPaymentsForNonCreditIns(getCurrent(),
-                PaymentMethod.IOU,
-                pmd);
-        drawerController.updateDrawerForOuts(paymentOuts);
-        drawerController.updateDrawerForIns(paymentsIn);
-        JsfUtil.addSuccessMessage("IOU Created");
+        drawerController.updateDrawerForOuts(getSettlingIuos());
+        drawerController.updateDrawerForIns(getPaymentsForsettlingIuos());
+        JsfUtil.addSuccessMessage("IOU Settled Successfully");
         printPreview = true;
 
     }
@@ -395,7 +441,7 @@ public class IouBillController implements Serializable {
         DecimalFormat df = new DecimalFormat("00000");
         String s = df.format(getCurrent().getIntInvoiceNumber());
         getCurrent().setInvoiceNumber(createInvoiceNumberSuffix() + s);
-        saveBill();
+        saveIouCreateBill();
         saveBillItem();
         List<Payment> paymentOuts = getBillBean().createPaymentsForNonCreditOuts(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
         PaymentMethodData pmd = new PaymentMethodData();
@@ -754,11 +800,41 @@ public class IouBillController implements Serializable {
     }
 
     public List<Payment> getPaymentsForsettlingIuos() {
+        if (paymentsForsettlingIuos == null) {
+            paymentsForsettlingIuos = new ArrayList<>();
+        }
         return paymentsForsettlingIuos;
     }
 
     public void setPaymentsForsettlingIuos(List<Payment> paymentsForsettlingIuos) {
         this.paymentsForsettlingIuos = paymentsForsettlingIuos;
+    }
+
+    public Payment getCurrentPayment() {
+        if (currentPayment == null) {
+            currentPayment = new Payment();
+        }
+        return currentPayment;
+    }
+
+    public void setCurrentPayment(Payment currentPayment) {
+        this.currentPayment = currentPayment;
+    }
+
+    public double getSettlingIouTotal() {
+        return settlingIouTotal;
+    }
+
+    public void setSettlingIouTotal(double settlingIouTotal) {
+        this.settlingIouTotal = settlingIouTotal;
+    }
+
+    public double getPaymentTotal() {
+        return paymentTotal;
+    }
+
+    public void setPaymentTotal(double paymentTotal) {
+        this.paymentTotal = paymentTotal;
     }
 
 }
