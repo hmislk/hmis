@@ -1,0 +1,231 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body class="w-100 border">
+
+        <ui:composition template="/reports/index.xhtml" class="w-100 border">
+            <ui:define name="subcontent">
+                <h:form class="w-100">
+                    <p:panel header="Invoice and Receipt Report(serial wise)" class="w-100">
+                        <h:panelGrid columns="5" class="w-100 ">
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
+                                <p:outputLabel value="From Date"  class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:datePicker value="" 
+                                          pattern=""
+                                          class=" w-100" inputStyleClass="w-100" ></p:datePicker>
+
+
+                            <p:spacer width="20"></p:spacer>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
+                                <p:outputLabel value="To Date" class="mx-3" >
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:datePicker value=""
+                                          pattern=""
+                                          class="w-100" inputStyleClass="w-100"></p:datePicker>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf09d;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="Branch" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu 
+                                value="" 
+                                filter="true"
+                                class="w-100 ">
+                                <f:selectItem itemLabel="Select" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var=""
+                                               itemLabel=""
+                                               itemValue="" ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20"></p:spacer>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0c0;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="Service Group" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu 
+                                value="" 
+                                filter="true"
+                                class="w-100 ">
+                                <f:selectItem itemLabel="Select" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var=""
+                                               itemLabel=""
+                                               itemValue="" ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf007;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="Visit Type" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu 
+                                value="" 
+                                filter="true"
+                                class="w-100 ">
+                                <f:selectItem itemLabel="Select" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var=""
+                                               itemLabel=""
+                                               itemValue="" ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+                            <p:spacer width="20"></p:spacer>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf02b;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Type" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu 
+                                value="" 
+                                filter="true"
+                                class="w-100 ">
+                                <f:selectItem itemLabel="Select" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var=""
+                                               itemLabel=""
+                                               itemValue="" ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf09d;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="Pay Mode" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu 
+                                value="" 
+                                filter="true"
+                                class="w-100 ">
+                                <f:selectItem itemLabel="Select" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var=""
+                                               itemLabel=""
+                                               itemValue="" ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+                            <p:spacer width="20"></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf155;" styleClass="fa mr-2" /> <!-- FontAwesome dollar-sign icon for Professional Fee -->
+                                <h:outputLabel value="Professional Fee" for="cmbProfessionalFee" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu 
+                                value="" 
+                                filter="true"
+                                class="w-100 ">
+                                <f:selectItem itemLabel="Select" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var=""
+                                               itemLabel=""
+                                               itemValue="" ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf084;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="Admission Type" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu 
+                                value="" 
+                                filter="true"
+                                class="w-100 ">
+                                <f:selectItem itemLabel="Select" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var=""
+                                               itemLabel=""
+                                               itemValue="" ></f:selectItems>
+                            </p:selectOneMenu>
+
+                        </h:panelGrid><br />
+
+
+                        <div class="d-flex align-items-center">
+                            <p:commandButton class="ui-button-warning mx-1" ajax="false" value="Process" icon="fas fa-cogs" >
+                            </p:commandButton>
+                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-danger mx-1" icon= "fas fa-file-pdf" ajax="false" value="PDF">
+                            </p:commandButton>
+                        </div><br/>
+
+                        <p:dataTable id="dtaiarr1" value="" var="pc" rowIndexVar="rowIndex">
+                            
+                            <p:column headerText="No">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Invoice / Receipt created Date">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Invoice / Receipt settled Date">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Cancelled / Refund date">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Invoice / Receipt serial">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="OP/IP">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Admission type">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Status (Settled / pending / refund / cancel)">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Total Invoice / Receipt amount">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Due amount">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Settle amount">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Total payments">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Excess Amount">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                                                   
+                        </p:dataTable>
+
+
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>
