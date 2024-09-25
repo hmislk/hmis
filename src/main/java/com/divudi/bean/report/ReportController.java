@@ -1452,63 +1452,71 @@ public class ReportController implements Serializable {
             institutionController.fillItems();
         }
 
-        return "/reports/assets/asset_register";
+        return "/reports/assets/asset_register?faces-redirect=true";
     }
 
     public String navigateToLabReportsTestCount() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
-        return "/reports/lab/test_count";
+        return "/reports/lab/test_count?faces-redirect=true";
     }
 
     public String navigateToLabPeakHourStatistics() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
-        return "/reports/lab/peak_hour_statistics";
+        return "/reports/lab/peak_hour_statistics?faces-redirect=true";
     }
 
     public String navigateToLabInvetigationWiseReport() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
-        return "/reports/lab/investigation_wise_report";
+        return "/reports/lab/investigation_wise_report?faces-redirect=true";
     }
 
     public String navigateToExternalLaborataryWorkloadReport() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
-        return "/reports/lab/external_laboratary_workload";
+        return "/reports/lab/external_laboratary_workload?faces-redirect=true";
+    } 
+    
+    public String navigateToInvestigationMonthEndSummery(){
+        if (institutionController.getItems() == null) {
+            institutionController.fillItems();
+        }
+        return "/reports/lab/investigation_month_end_summery?faces-redirect=true";
+        
     }
 
     public String navigateToLabOrganismAntibioticSensitivityReport() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
-        return "/reports/lab/organism_antibiotic_sensitivity";
+        return "/reports/lab/organism_antibiotic_sensitivity?faces-redirect=true";
     }
 
     public String navigateToLabRegisterReport() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
-        return "/reports/lab/lab_register";
+        return "/reports/lab/lab_register?faces-redirect=true";
     }
 
     public String navigateToTurnAroundTimeDetails() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
-        return "/reports/lab/turn_around_time_details";
+        return "/reports/lab/turn_around_time_details?faces-redirect=true";
     }
 
     public String navigateToAnnualTestStatistics() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
-        return "/reports/lab/annual_test_statistics";
+        return "/reports/lab/annual_test_statistics?faces-redirect=true";
     }
 
     public String navigateToPoStatusReport() {
@@ -1516,42 +1524,42 @@ public class ReportController implements Serializable {
             institutionController.fillItems();
         }
 
-        return "/reports/assets/po_status_report";
+        return "/reports/assets/po_status_report?faces-redirect=true";
     }
 
     public String navigateToEmployeeAssetIssue() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
-        return "/reports/assets/employee_asset_issue";
+        return "/reports/assets/employee_asset_issue?faces-redirect=true";
     }
 
     public String navigateToFixedAssetIssue() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
-        return "/reports/assets/fixed_asset_issue";
+        return "/reports/assets/fixed_asset_issue?faces-redirect=true";
     }
 
     public String navigateToAssetWarentyExpireReport() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
-        return "/reports/assets/asset_warranty_expire_report";
+        return "/reports/assets/asset_warranty_expire_report?faces-redirect=true";
     }
 
     public String navigateToAssetGrnReport() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
-        return "/reports/assets/asset_grn_report";
+        return "/reports/assets/asset_grn_report?faces-redirect=true";
     }
 
     public String navigateToAssetTransferReport() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
-        return "/reports/assets/assest_transfer_report";
+        return "/reports/assets/assest_transfer_report?faces-redirect=true";
 
     }
 
@@ -1559,7 +1567,7 @@ public class ReportController implements Serializable {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
-        return "/reports/assets/assest_amc_expiry_report";
+        return "/reports/assets/assest_amc_expiry_report?faces-redirect=true";
 
     }
 
@@ -1567,7 +1575,7 @@ public class ReportController implements Serializable {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
-        return "/reports/assets/amc_report";
+        return "/reports/assets/amc_report?faces-redirect=true";
 
     }
 
@@ -1575,7 +1583,7 @@ public class ReportController implements Serializable {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
-        return "/reports/lab/turn_around_time_hourly";
+        return "/reports/lab/turn_around_time_hourly?faces-redirect=true";
 
     }
 
@@ -1583,152 +1591,152 @@ public class ReportController implements Serializable {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
-        return "/reports/lab/collection_center_statement";
+        return "/reports/lab/collection_center_statement?faces-redirect=true";
 
     }
 
     public String navigateToManagementAdmissionCountReport() {
 
-        return "/reports/managementReports/admission_count(consultant_wise)";
+        return "/reports/managementReports/admission_count(consultant_wise)?faces-redirect=true";
     }
 
     public String navigateToSurgeryWiseCount() {
 
-        return "/reports/managementReports/surgery_wise_count";
+        return "/reports/managementReports/surgery_wise_count?faces-redirect=true";
     }
 
     public String navigateToSurgeryCountDoctorWise() {
 
-        return "/reports/managementReports/surgery_count_doctor_wise";
+        return "/reports/managementReports/surgery_count_doctor_wise?faces-redirect=true";
     }
 
     public String navigateToLeaveReport() {
 
-        return "/reports/HRReports/leave_report";
+        return "/reports/HRReports/leave_report?faces-redirect=true";
     }
 
     public String navigateToLeaveReportSummery() {
 
-        return "/reports/HRReports/leave_report_summery";
+        return "/reports/HRReports/leave_report_summery?faces-redirect=true";
     }
 
     public String navigateToLateLeaveDetails() {
 
-        return "/reports/HRReports/late_leave_details";
+        return "/reports/HRReports/late_leave_details?faces-redirect=true";
     }
 
     public String navigateToLeaveSummeryReport() {
 
-        return "/reports/HRReports/leave_summery_report";
+        return "/reports/HRReports/leave_summery_report?faces-redirect=true";
     }
 
     public String navigateToDepartmentReports() {
 
-        return "/reports/HRReports/department_report";
+        return "/reports/HRReports/department_report?faces-redirect=true";
     }
 
     public String navigateToEmployeeDetails() {
 
-        return "/reports/HRReports/employee_details";
+        return "/reports/HRReports/employee_details?faces-redirect=true";
     }
 
     public String navigateToEmployeeToRetired() {
 
-        return "/reports/HRReports/employee_to_retired";
+        return "/reports/HRReports/employee_to_retired?faces-redirect=true";
     }
 
     public String navigateToStaffShiftReport() {
 
-        return "/reports/HRReports/staff_shift_report";
+        return "/reports/HRReports/staff_shift_report?faces-redirect=true";
     }
 
     public String navigateToRosterTimeAndVerifyTime() {
 
-        return "/reports/HRReports/rosterTabel_verify_time";
+        return "/reports/HRReports/rosterTabel_verify_time?faces-redirect=true";
     }
 
     public String navigateToEmployeeEndofProbation() {
 
-        return "/reports/HRReports/employee_end_of_probation";
+        return "/reports/HRReports/employee_end_of_probation?faces-redirect=true";
     }
 
     public String navigateToAttendanceReport() {
 
-        return "/reports/HRReports/attendance_report";
+        return "/reports/HRReports/attendance_report?faces-redirect=true";
     }
 
     public String navigateToLateInAndEarlyOut() {
 
-        return "/reports/HRReports/late_in_and_early_out";
+        return "/reports/HRReports/late_in_and_early_out?faces-redirect=true";
     }
 
     public String navigateToStaffShiftDetailsByStaff() {
 
-        return "/reports/HRReports/staff_shift_details_by_staff";
+        return "/reports/HRReports/staff_shift_details_by_staff?faces-redirect=true";
     }
 
     public String navigateToVerifiedReport() {
 
-        return "/reports/HRReports/verified_report";
+        return "/reports/HRReports/verified_report?faces-redirect=true";
     }
 
     public String navigateToHeadCountReport() {
 
-        return "/reports/HRReports/head_count";
+        return "/reports/HRReports/head_count?faces-redirect=true";
     }
 
     public String navigateToFingerPrintRecordByLogged() {
 
-        return "/reports/HRReports/fingerprint_record_by_logged";
+        return "/reports/HRReports/fingerprint_record_by_logged?faces-redirect=true";
     }
 
     public String navigateToFingerPrintRecordByVerified() {
 
-        return "/reports/HRReports/fingerprint_record_by_verified";
+        return "/reports/HRReports/fingerprint_record_by_verified?faces-redirect=true";
     }
 
     public String navigateToFingerPrintRecordNoShiftSettled() {
 
-        return "/reports/HRReports/fingerprint_record_no_shift_settled";
+        return "/reports/HRReports/fingerprint_record_no_shift_settled?faces-redirect=true";
     }
 
     public String navigateToEmployeeWorkedDayReport() {
 
-        return "/reports/HRReports/employee_worked_day_report";
+        return "/reports/HRReports/employee_worked_day_report?faces-redirect=true";
     }
 
     public String navigateToEmployeeWorkedDayReportSalaryCycle() {
 
-        return "/reports/HRReports/employee_worked_day_report_salary_cycle";
+        return "/reports/HRReports/employee_worked_day_report_salary_cycle?faces-redirect=true";
     }
 
     public String navigateToMonthendEmployeeWorkingTimeAndOvertime() {
 
-        return "/reports/HRReports/monthend_employee_working_Time_and_overtime";
+        return "/reports/HRReports/monthend_employee_working_Time_and_overtime?faces-redirect=true";
     }
 
     public String navigateToMonthEndEmployeeNoPayReportByMinutes() {
 
-        return "/reports/HRReports/month_end_employee_nopay_report_by_minutes";
+        return "/reports/HRReports/month_end_employee_nopay_report_by_minutes?faces-redirect=true";
     }
 
     public String navigateToMonthEndEmployeeSummery() {
 
-        return "/reports/HRReports/month_end_employee_summery";
+        return "/reports/HRReports/month_end_employee_summery?faces-redirect=true";
     }
 
     public String navigateToFingerAnalysisReportBySalaryCycle() {
 
-        return "/reports/HRReports/finger_analysis_report_by_salary_cycle";
+        return "/reports/HRReports/finger_analysis_report_by_salary_cycle?faces-redirect=true";
     }
 
     public String navigateToFingerPrintApprove() {
 
-        return "/reports/HRReports/fingerprint_approve";
+        return "/reports/HRReports/fingerprint_approve?faces-redirect=true";
     }
 
     public String navigateToStaffPayrollAccountant() {
-        return "/reports/salary_reports/staff_payroll_accountant?faces-redirect=true";
+        return "/reports/salary_reports/staff_payroll_accountant?faces-redirect=true?faces-redirect=true";
     }
 
     public String navigateToNopayandSalaryAllowanceReport() {
