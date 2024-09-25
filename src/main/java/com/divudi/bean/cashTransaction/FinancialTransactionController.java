@@ -216,8 +216,6 @@ public class FinancialTransactionController implements Serializable {
     private Department forDepartment;
     private Department toDepartment;
     private Date forDate;
-    
-    private int tabIndex;
 
     private int tabIndex;
 
@@ -1897,7 +1895,7 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setReferenceBill(null);
         return "/cashier/handover_start?faces-redirect=true";
     }
-  
+
     public String navigateToHandoverCreateBillForAllDaysAndDepartmentsForCurrentShift() {
         resetClassVariables();
         handoverValuesCreated = false;

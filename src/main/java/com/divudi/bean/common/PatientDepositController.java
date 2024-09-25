@@ -1262,10 +1262,12 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         }
         if (r.getNetTotal() != null) {
             netTotal = r.getNetTotal();
+
         }
         if (r.getDiscount() != null) {
             discount = r.getDiscount();
         }
+
         if (r.getVat() != null) {
             vat = r.getVat();
         }
@@ -1277,7 +1279,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
     public void getPharmacySaleBills() {
         Date startTime = new Date();
-
         BillType[] billTypes;
         if (billType == null) {
             billTypes = new BillType[]{BillType.PharmacySale, BillType.PharmacyWholeSale};

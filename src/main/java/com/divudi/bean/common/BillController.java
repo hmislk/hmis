@@ -2578,6 +2578,8 @@ public class BillController implements Serializable {
         return bt;
     }
 
+
+
     public List<Bill> listBills(
             List<BillType> billTypes,
             Institution ins,
