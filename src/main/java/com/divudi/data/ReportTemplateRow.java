@@ -144,6 +144,8 @@ public class ReportTemplateRow implements Serializable {
         this.id = UUID.randomUUID();
     }
 
+    
+    
     public ReportTemplateRow(Institution institution, Long itemCount, Double itemHospitalFee, Double itemCollectingCentreFee, Double itemProfessionalFee, Double itemNetTotal) {
         this.itemCount = itemCount;
         this.itemHospitalFee = itemHospitalFee;
