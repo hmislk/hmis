@@ -1966,7 +1966,6 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("A shift start fund bill is already available for closure.");
             return "";
         }
-
         billController.save(currentBill);
         for (Payment p : getCurrentBillPayments()) {
             p.setBill(currentBill);
