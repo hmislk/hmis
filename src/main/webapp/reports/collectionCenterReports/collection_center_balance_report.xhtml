@@ -4,6 +4,7 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
+      xmlns:pe="http://primefaces.org/ui/extensions"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
@@ -14,72 +15,73 @@
                     <div>
                         <p:panel header="Collection Center Balance Report" >
                             <h:panelGrid columns="4">
-                                <div >
+                                <div class="col-md-2 w-100">
                                     <h:panelGroup >
                                         <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
                                         <h:outputLabel value="Date"  class="mx-3"/>
                                     </h:panelGroup>
                                 </div>
-                                <div >
+                                <div class="col-md-4 mx-2">
                                     <p:datePicker value="#{reportController.toDate}"
-                                                  style=" width: 300px; overflow-x: auto; "                                       
+                                                  style=" max-width: 100%; overflow-x: auto; "
+                                                  class="w-100"
                                                   inputStyleClass="w-100"
                                                   pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
                                 </div>
-                                <div>
+                                <div class="col-md-3">
                                     <h:panelGroup >
                                         <h:outputText value="&#xf1ad;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
                                         <h:outputLabel value="Collection Center Name"  class="mx-3"/>
                                         <p:outputLabel  />
                                     </h:panelGroup>
                                 </div>
-                                <div >
-                                    <p:selectOneMenu value="#{reportController.collectingCentre}" filter="true" filterMatchMode="contains" style="width: 300px">
+                                <div class="col-md-4 w-50 " >
+                                    <p:selectOneMenu value="#{reportController.collectingCentre}" filter="true" filterMatchMode="contains">
                                         <f:selectItem itemLabel="All" itemValue="" />
                                         <f:selectItems var="r" itemLabel="#{r.name} - #{r.code}" value="#{collectingCentreController.items}" itemValue="#{r}" />
                                     </p:selectOneMenu>
 
                                 </div>
                             </h:panelGrid>
-                            <div class="d-flex p-2 align-items-center">
-                                <div>
+
+                            <div class="row mb-2">
+                                <div class="col-md-2">
                                     <p:commandButton ajax="false" 
                                                      value="Process" 
-                                                     style="width: 150px"
                                                      action="#{reportController.processCollectionCenterBalanceByAgentHistory()}" 
-                                                     class="ui-button-warning mx-2"
+                                                     class="w-50 ui-button-warning"
                                                      icon="fas fa-cogs">
                                     </p:commandButton>
                                 </div>
-                                <div  >
-                                    <p:commandButton id="btnPrint" class="mx-2 ui-button-info"
-                                                     style="width: 150px"
+                                <div  class="col-md-2">
+                                    <p:commandButton id="btnExcel" class="m-1 ui-button-success"
+                                                     icon="fas fa-file-excel"
+                                                     ajax="false" value="Export to Excel">
+
+                                    </p:commandButton>
+
+                                </div>
+                                <div  class="col-md-2">
+                                    <p:commandButton value="Export to PDF" icon="pi pi-file-pdf" ajax="false">
+                                        <p:dataExporter
+                                            type="pdf" target="agentHistoriesTable" fileName="agent_histories_report" />
+                                    </p:commandButton>
+
+                                    <pe:counter start="0" end="9000" duration="5" onstart="console.log('STARTED')" onend="console.log('ENDED')" autoStart="true">
+                                        <p:ajax event="start" listener="#{counterController.startListener}"/>
+                                        <p:ajax event="end" listener="#{counterController.endListener}"/>
+                                    </pe:counter>
+
+
+                                </div>
+                                <div  class="col-md-2">
+                                    <p:commandButton id="btnPrint" class="m-1 ui-button-success"
                                                      icon="fas fa-file-excel"
                                                      ajax="false" value="Print">
-                                        <p:printer target="tblExport" />
+                                        <p:printer target="agentHistoriesTable" />
                                     </p:commandButton>
 
                                 </div>
-                                <div >
-                                    <p:commandButton id="btnExcel" class="mx-2 ui-button-success"
-                                                     style="width: 150px"
-                                                     icon="fas fa-file-excel"
-                                                     ajax="false" value="Excel">
-
-                                    </p:commandButton>
-
-                                </div>
-                                
-                                <div>
-                                <p:commandButton 
-                                    class="m-2 ui-button-danger" 
-                                    icon="fa-solid fa-file-pdf"
-                                    style="width: 150px"
-                                    ajax="false" 
-                                    value="PDF">
-                                    <p:dataExporter type="pdf" target="tblExport"  fileName="ETF" ></p:dataExporter>
-                                </p:commandButton>
-                                    </div>
                             </div>
 
 
@@ -99,24 +101,24 @@
 
                             <p:spacer height="5"></p:spacer>
 
-                            <p:dataTable id="tblExport" value="#{reportController.agentHistories}"  var="ah" rowIndexVar="i">
-                                <p:column headerText="S. No" style="text-align: right">
+                            <p:dataTable id="agentHistoriesTable" value="#{reportController.agentHistories}"  var="ah" rowIndexVar="i">
+                                <p:column headerText="S. No">
                                     <h:outputText value="#{i+1}" />
                                 </p:column>
 
-                                <p:column headerText="CC Name" style="text-align: right" >
+                                <p:column headerText="CC Name" >
                                     <h:outputText value="#{ah.institution.name}" />
                                 </p:column>
 
-                                <p:column headerText="CC Route" style="text-align: right">
+                                <p:column headerText="CC Route">
                                     <h:outputText value="#{ah.institution.route}" />
                                 </p:column>
 
-                                <p:column headerText="CC Code" style="text-align: right" >
+                                <p:column headerText="CC Code" >
                                     <h:outputText value="#{ah.institution.code}" />
                                 </p:column>
 
-                                <p:column headerText="CC Phone No" style="text-align: right">
+                                <p:column headerText="CC Phone No">
                                     <h:outputText value="#{ah.institution.phone}" />
                                 </p:column>
 
