@@ -1,0 +1,252 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body class="w-100 border">
+        <ui:composition template="/reports/index.xhtml" class="w-100 border">
+            <ui:define name="subcontent">
+                <h:form class="w-100">
+                    <p:panel header="Withholding Tax Report" class="w-100">
+                        <h:panelGrid columns="5" class="w-100" >
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
+                                <p:outputLabel value="From Date"  class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:datePicker value="#{reportController.fromDate}" 
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                          class=" w-100" inputStyleClass="w-100" ></p:datePicker>
+
+
+                            <p:spacer width="20"></p:spacer>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
+                                <p:outputLabel value="To Date" class="mx-3" >
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:datePicker value="#{reportController.toDate}"
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                          class="w-100" inputStyleClass="w-100"></p:datePicker>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf09d;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="Branch (Payment Done)" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu 
+                                value="" 
+                                filter="true"
+                                class="w-100 ">
+                                <f:selectItem itemLabel="Select Branch" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="d"
+                                               itemLabel="#{d.name}"
+                                               itemValue="#{d}" ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+                            <p:spacer width="20"></p:spacer>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="Department Name" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu 
+                                value="" 
+                                filter="true"
+                                class="w-100 ">
+                                <f:selectItem itemLabel="Select Department" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="d"
+                                               itemLabel="#{d.name}"
+                                               itemValue="#{d}" ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf5f3;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="Speciality" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu value="" filter="true" class="w-100 ">
+                                <f:selectItem itemLabel="Select Specility" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+                            <p:spacer width="20"></p:spacer>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0f0;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="Consultant Name" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                                <f:selectItem itemLabel="Select Name" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>   
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf007;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="Visit Type" for="cmbVisitType" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+
+
+
+
+                        </h:panelGrid><br/>
+
+                        <div class="d-flex align-items-center">
+                            <p:commandButton class="ui-button-warning mx-1" ajax="false" value="Process" icon="fas fa-cogs" action="#{reportController.processLabTestCount()}" >
+                            </p:commandButton>
+                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download" action="#{reportController.downloadLabTestCount}">
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-danger mx-1" icon= "fas fa-file-pdf" ajax="false" value="PDF">
+                            </p:commandButton>
+                        </div>
+                        <br />
+
+
+                        <p:panel id="dtaPr" >
+
+
+                            <p:dataTable id="dtaPr0" value="" var="pc" rowIndexVar="rowIndex">
+                                <p:column headerText="Doc No">
+                                    <h:outputText value="" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Consultant">
+                                    <h:outputText value="" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Speciality" width="">
+                                    <h:outputText value="" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Total Amt" >
+                                    <h:outputText value="" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Holding Tax" >
+                                    <h:outputText value="" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Net Amt" >
+                                    <h:outputText value="" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Paid To" >
+                                    <h:outputText value="" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Remarks" >
+                                    <h:outputText value="" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Paid By" >
+                                    <h:outputText value="" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Paid Date" >
+                                    <h:outputText value="" ></h:outputText>
+                                </p:column>                       
+                            </p:dataTable><br />
+
+                            <p:panel id="dtaPr1" >
+                                <f:facet name="header">
+                                    <h:outputLabel value="Monthly Vice Sumary report" /><br/><br/>
+
+                                    <h:outputLabel value="From Date :"/>
+                                    <br/>
+                                    <h:outputLabel value="To Date :"/>      
+                                    <br/>
+                                    <h:outputLabel value="Branch(Payment Done) :"/>
+                                    <br/>
+                                    <h:outputLabel value="Consultant Name :"/>
+                                    <br/>
+                                </f:facet>
+                                <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print">
+                                </p:commandButton>
+
+
+                                <p:dataTable id="dtaPr2" value="" var="pc" rowIndexVar="rowIndex">
+                                    <p:column headerText="Month">
+                                        <h:outputText value="" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Total Amt">
+                                        <h:outputText value="" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Holding Tax" width="">
+                                        <h:outputText value="" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Net Amt" >
+                                        <h:outputText value="" ></h:outputText>
+                                    </p:column>                        
+                                </p:dataTable>
+                            </p:panel><br/>
+
+
+                            <p:panel id="dtaPr3" >
+                                <f:facet name="header">
+                                    <h:outputLabel value="Consultant Vice Sumary report" /><br/><br/>
+
+                                    <h:outputLabel value="From Date :"/>
+                                    <br/>
+                                    <h:outputLabel value="To Date :"/>      
+                                    <br/>
+                                    <h:outputLabel value="Branch(Payment Done) :"/>
+                                    <br/>
+                                    <h:outputLabel value="Speciality :"/>
+                                    <br/>
+                                    <h:outputLabel value="Consultant Name :"/>
+                                    <br/>
+                                </f:facet>
+                                <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print">
+                                </p:commandButton>
+
+                                <p:dataTable id="dtaPr4" value="" var="pc" rowIndexVar="rowIndex">  
+                                    <p:column headerText="Consultant Name">
+                                        <h:outputText value="" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Total Amt">
+                                        <h:outputText value="" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Holding Tax" width="">
+                                        <h:outputText value="" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Net Amt" >
+                                        <h:outputText value="" ></h:outputText>
+                                    </p:column>                        
+                                </p:dataTable>
+                            </p:panel>
+
+                        </p:panel>
+
+
+                        <p:spacer height="5"></p:spacer>
+
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>
