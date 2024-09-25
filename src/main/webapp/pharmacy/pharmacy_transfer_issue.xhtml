@@ -40,6 +40,14 @@
                                     <h:outputText id="item" value="#{bItm.item.name}" >                                   
                                     </h:outputText>
                                 </p:column>  
+                                
+                                <p:column headerText="Req. Qty" width="70px;">
+                                    <h:outputLabel value="#{bItm.referanceBillItem.qty}"/>                        
+                                </p:column>
+                                
+                                <p:column headerText="Issued Qty" width="80px;">
+                                    <h:outputLabel value="#{bItm.referanceBillItem.qty - bItm.pharmaceuticalBillItem.qty}"/>                        
+                                </p:column>
 
                                 <p:column headerText="Batch No" width="100px;">  
                                     <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.batchNo}"/>                        
