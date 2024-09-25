@@ -17,9 +17,12 @@
                             <h:outputLabel value="Collection Centre Wise Summary Report" />
                         </f:facet>
 
-                        <p:panelGrid layout="tabular" columns="5" class="my-2 w-100 mx-2">
-                            <p:outputLabel value="From Date" />
-                            
+                        <p:panelGrid  columns="4" class=" mx-2">
+                            <h:panelGroup>
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" />
+                                <p:outputLabel value="From Date" class="mx-3" />
+
+                            </h:panelGroup>
                             <p:datePicker
                                 value="#{reportController.fromDate}" 
                                 class="w-100"
@@ -30,10 +33,11 @@
                                 maxdate="#{commonFunctionsController.endOfDay}"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          ></p:datePicker>
 
-                            <p:spacer width="10" ></p:spacer>
+                            <h:panelGroup>
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" />
+                                <p:outputLabel value="To Date" class="mx-3" />
+                            </h:panelGroup>
 
-                            <p:outputLabel value="To Date" />
-                            
                             <p:datePicker 
                                 class="w-100"
                                 showTime="true"
@@ -44,8 +48,12 @@
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
                             </p:datePicker>
 
-                            <p:outputLabel value="Institution" />
-                            
+                            <h:panelGroup>
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Institution" class="mx-3" />
+
+                            </h:panelGroup>
+
                             <p:selectOneMenu
                                 id="cmdInstitution"
                                 value="#{reportController.institution}"
@@ -59,12 +67,12 @@
                                                itemValue="#{i}"></f:selectItems>
                             </p:selectOneMenu>
 
-                            <p:spacer width="10" ></p:spacer>
-                            <p:spacer width="10" ></p:spacer>
-                            <p:spacer width="10" ></p:spacer>
+                            <h:panelGroup>
+                                <h:outputText value="&#xf201;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Collecting Centre Route" class="mx-3"></p:outputLabel>
 
-                            <p:outputLabel value="Collecting Centre Route"></p:outputLabel>
-                            
+                            </h:panelGroup>
+
                             <p:selectOneMenu value="#{reportController.route}"
                                              style=" max-width: 100%; overflow-x: auto; "
                                              class="w-100"
@@ -77,10 +85,13 @@
                                                itemValue="#{r}"
                                                />
                             </p:selectOneMenu>
-                            
-                            <p:spacer ></p:spacer>
 
-                            <p:outputLabel value="Collecting Center"></p:outputLabel>
+                            <h:panelGroup>
+                                <h:outputText value="&#xf1ad;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Collecting Center" class="mx-3"></p:outputLabel>
+
+                            </h:panelGroup>
+
                             <p:autoComplete 
                                 id="creditCom" 
                                 forceSelection="true" 
@@ -107,28 +118,28 @@
 
                         </p:panelGrid>
 
-
-
                         <h:panelGrid columns="6" class="my-3">
                             <p:commandButton 
                                 ajax="false"
+                                style="width: 150px"
                                 action="#{reportController.ccSummaryReportByBill()}"
                                 value="Process by Bill"
-                                icon="fas fa-cogs" class="ui-button-warning" >
+                                icon="fas fa-cogs" class="ui-button-warning mx-2" >
                             </p:commandButton>
                             <p:commandButton 
                                 ajax="false"
+
                                 action="#{reportController.ccSummaryReportByItem()}"
                                 value="Process By Bill Items"
-                                icon="fas fa-cogs" class="ui-button-warning" >
+                                icon="fas fa-cogs" class="ui-button-warning mx-2" >
                             </p:commandButton>
-                            <p:commandButton ajax="false" value="Print" icon="fas fa-print" class="ui-button-info mx-1"  >
+                            <p:commandButton style="width: 150px" ajax="false" value="Print" icon="fas fa-print" class="ui-button-info mx-2"  >
                                 <p:printer target="dtaPr"/>
                             </p:commandButton>
-                            <p:commandButton ajax="false" value="Excel" icon="fas fa-file-excel" class="ui-button-success" >
+                            <p:commandButton style="width: 150px" ajax="false" value="Excel" icon="fas fa-file-excel" class="ui-button-success mx-2" >
                                 <p:dataExporter fileName="Collection Centre Wise Summary Report - #{webUserController.institution} (#{reportController.fromDate} - #{reportController.fromDate})" type="xlsx" target="dtaPr" />
                             </p:commandButton>
-                            <p:commandButton ajax="false" value="PDF" icon="fas fa-file-pdf" class="ui-button-danger mx-1" >
+                            <p:commandButton style="width: 150px" ajax="false" value="PDF" icon="fas fa-file-pdf" class="ui-button-danger mx-1" >
                                 <p:dataExporter fileName="Collection Centre Wise Summary Report - #{webUserController.institution} (#{reportController.fromDate} - #{reportController.fromDate})" type="pdf" target="dtaPr" />
                             </p:commandButton>
                         </h:panelGrid>

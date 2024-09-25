@@ -350,6 +350,15 @@
                             </div>
                             <div class="row mx-2" >
                                 <h:panelGroup id="gpDenominations" rendered="#{financialTransactionController.selectedPaymentMethod eq 'Cash'}">
+
+
+
+                                    <p:commandButton 
+                                        value="Update" 
+                                        class="m-1 ui-button-info" 
+                                        icon="pi pi-refresh" 
+                                        ajax="false"
+                                        action="#{financialTransactionController.updateForPaymentHandoverSelectionAtCreate()}" />
                                     <p:commandButton 
                                         value="Create Shortage Bill" 
                                         class="m-1 ui-button-danger"
@@ -392,19 +401,30 @@
                                 </h:panelGroup>
                             </div>
 
-                            <h:panelGroup rendered="#{financialTransactionController.selectedPaymentMethod eq 'Card'}" >
-
+                            <h:panelGroup rendered="#{financialTransactionController.selectedPaymentMethod ne 'Cash'}" >
 
                                 <p:commandButton 
+                                    value="Select All" 
+                                    class="m-1 ui-button-success" 
+                                    icon="pi pi-check" 
+                                    ajax="false"
+                                    action="#{financialTransactionController.selectAllForPaymentHandoverSelectionAtCreate()}" />
+                                <p:commandButton 
+                                    value="Update" 
+                                    class="m-1 ui-button-info" 
+                                    icon="pi pi-refresh" 
+                                    ajax="false"
+                                    action="#{financialTransactionController.updateForPaymentHandoverSelectionAtCreate()}" />
+                                <p:commandButton 
                                     value="Create Shortage Bill" 
-                                    class="m-1 ui-button-danger"
-                                    icon="pi pi-exclamation-triangle" 
-                                    onclick="return confirm('Are you sure you want to create a shortage bill?');"
-                                    action="#{financialTransactionController.navigateToMarkShortagesForShiftForHandover('Card')}">
-                                </p:commandButton>
+                                    class="m-1 ui-button-warning" 
+                                    icon="pi pi-exclamation-circle" 
+                                    onclick="return confirm('Are you sure you want to create a shortage bill?');" 
+                                    action="#{financialTransactionController.navigateToMarkShortagesForShiftForHandover('Cash')}" />
+
 
                                 <p:dataTable
-                                    value="#{financialTransactionController.selectedBundle.getPaymentRows('Card')}" var="cardPayment" >
+                                    value="#{financialTransactionController.selectedBundle.getPaymentRows(financialTransactionController.selectedPaymentMethod)}" var="cardPayment" >
                                     <p:column  headerText="ID">
                                         <h:outputText value="#{cardPayment.payment.id}" ></h:outputText>
                                     </p:column>
@@ -419,7 +439,7 @@
                                             <f:convertNumber pattern="#,#00.00" ></f:convertNumber>
                                         </h:outputText>
                                     </p:column>
-                                    <p:column  headerText="Ref No">
+                                    <p:column  headerText="Select to Handover">
                                         <p:selectBooleanCheckbox id="checkCardSelected" value="#{cardPayment.payment.selectedForHandover}" >
                                             <p:ajax update="checkCardSelected" ></p:ajax>
                                         </p:selectBooleanCheckbox>
