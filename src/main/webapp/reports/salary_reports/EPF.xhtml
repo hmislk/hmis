@@ -135,7 +135,12 @@
                                 <p:outputLabel value="Staff Roster" class="mx-2"/>
                             </div>
                             <div class="col-md-4">
-                                <p:inputText value="" class="w-100" />
+                                <p:selectCheckboxMenu id="rosters" 
+                                                      style="width:100%"
+                                                      label="Select Items" 
+                                                      multiple="true">
+                                    <f:selectItem itemLabel="Option 1" itemValue="1" />                                    
+                                </p:selectCheckboxMenu>
                             </div>
 
 
@@ -143,31 +148,53 @@
                         </div>
                     </div>
 
-                    
-                         <p:commandButton ajax="false" 
-                                         class="ui-button-warning mx-2"
-                                         icon="fas fa-cogs"
-                                         value="Process"
-                                         style="width: 150px"
-                                         action="#{reportController.listCcReportPrint()}" />
-                         <p:commandButton ajax="false" 
-                                         class="ui-button-help mx-2"
-                                         icon="fas fa-stop"
-                                         value="Hold"
-                                         style="width: 150px"
-                                         action="#{reportController.listCcReportPrint()}" />
-                         
-                         <p:commandButton ajax="false" 
-                                         class="ui-button-danger mx-2"
-                                         icon="fas fa-lock"
-                                         value="Blocked"
-                                         style="width: 150px"
-                                         action="#{reportController.listCcReportPrint()}" />
-                         
-                       
-                   
-                        
-               
+
+                    <p:commandButton ajax="false" 
+                                     class="ui-button-warning mx-2"
+                                     icon="fas fa-cogs"
+                                     value="Process"
+                                     style="width: 150px"
+                                     action="#{reportController.listCcReportPrint()}" />
+                    <p:commandButton ajax="false" 
+                                     class="ui-button-help mx-2"
+                                     icon="fas fa-stop"
+                                     value="Hold"
+                                     style="width: 150px"
+                                     action="#{reportController.listCcReportPrint()}" />
+
+                    <p:commandButton ajax="false" 
+                                     class="ui-button-danger mx-2"
+                                     icon="fas fa-lock"
+                                     value="Blocked"
+                                     style="width: 150px"
+                                     action="#{reportController.listCcReportPrint()}" />
+                    <p:commandButton 
+                        icon="fa-solid fa-print"
+                        class="mx-1 ui-button-info"
+                        style="width: 150px"
+                        ajax="false" 
+                        value="Print">
+                        <p:printer target="tblExport" />
+                    </p:commandButton>
+                    <p:commandButton id="btnExcel" class="m-1 ui-button-success"
+                                     icon="fas fa-file-excel"
+                                     style="width: 150px"
+                                     ajax="false" value="Excel">
+                        <p:dataExporter type="xlsx" target="tbl" fileName="EPF" />
+                    </p:commandButton>
+                    <p:commandButton 
+                        class="m-2 ui-button-danger" 
+                        icon="fa-solid fa-file-pdf"
+                        style="width: 150px"
+                        ajax="false" 
+                        value="PDF">
+                        <p:dataExporter type="pdf" target="tblExport"  fileName="EPF.pdf" ></p:dataExporter>
+                    </p:commandButton>
+
+
+
+
+
 
                     <p:dataTable value="#{reportController.bills}" var="bi" id="tblExport">
                         <!--                        //Mandatory filters

@@ -16,27 +16,35 @@
 
                         <div class="row mb-2">
                             <div class="col-md-2">
-                                <p:outputLabel value="From Date" >
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" />
+                                <p:outputLabel value="From Date" class="mx-3">
                                 </p:outputLabel>
                             </div>
                             <div class="col-md-4">
                                 <p:datePicker value="#{reportController.fromDate}" 
-                                              pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                                              pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                              inputStyleClass="w-100"
+                                              class="w-100"
+                                              ></p:datePicker>
                             </div>
 
                             <div class="col-md-2">
-                                <p:outputLabel value="To Date" >
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" />
+                                <p:outputLabel value="To Date" class="mx-3">
                                 </p:outputLabel>
                             </div>
                             <div class="col-md-4">
                                 <p:datePicker value="#{reportController.toDate}"
+                                              inputStyleClass="w-100"
+                                              class="w-100"
                                               pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
                             </div>
                         </div>
 
                         <div class="row mb-2">
                             <div class="col-md-2">
-                                <p:outputLabel value="Institution/Branch" >
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Institution/Branch" class="mx-3">
                                 </p:outputLabel>
                             </div>
                             <div class="col-md-4">
@@ -57,7 +65,8 @@
                             </div>
 
                             <div class="col-md-2">
-                                <p:outputLabel value="Service Group" />
+                                <i class="fa fa-object-group" aria-hidden="true"></i>
+                                <p:outputLabel value="Service Group" class="mx-3"/>
                             </div>
                             <div class="col-md-4">
                                 <p:selectOneMenu 
@@ -77,7 +86,8 @@
                         </div>
                         <div class="row mb-2">
                             <div class="col-md-2">
-                                <p:outputLabel value="Service Name" />
+                                <i class="fa fa-object-group" aria-hidden="true"></i>
+                                <p:outputLabel value="Service Name" class="mx-3"/>
                             </div>
                             <div class="col-md-4">
                                 <p:selectOneMenu 
@@ -113,10 +123,12 @@
                                 </p:selectOneMenu>
                             </div>
                             <div class="col-md-2">
-                                <p:outputLabel value="Visit Type"></p:outputLabel>
+                                <i class="fa fa-ambulance" aria-hidden="true"></i>
+                                <p:outputLabel value="Visit Type" class="mx-3"></p:outputLabel>
                             </div>
                             <div class="col-md-4">
-                                <p:selectOneMenu value="null">
+                                <p:selectOneMenu value="null" 
+                                                 class="w-100">
                                     <f:selectItem itemLabel="All visits"/>
                                 </p:selectOneMenu>
                             </div>
@@ -124,10 +136,11 @@
 
                         <div class="row mb-2">
                             <div class="col-md-2">
-                                <p:outputLabel value="Payment Mode"></p:outputLabel>
+                                <i class="fa fa-money-bill" aria-hidden="true"></i>
+                                <p:outputLabel value="Payment Mode" class="mx-3"></p:outputLabel>
                             </div>
                             <div class="col-md-4">
-                                <p:selectOneMenu value="#{reportController.paymentMethod}">
+                                <p:selectOneMenu value="#{reportController.paymentMethod}" class="w-100" >
                                     <f:selectItem itemLabel="All visits"/>
                                     <f:selectItem itemLabel="Select" />                           
                                     <f:selectItems value="#{enumController.paymentMethods}" />  
@@ -135,22 +148,51 @@
                             </div>
 
                             <div class="col-md-2">
-                                <p:outputLabel value="Service Type"></p:outputLabel>
+                                <i class="fa fa-object-group" aria-hidden="true"></i>
+                                <p:outputLabel value="Service Type" class="mx-3"></p:outputLabel>
                             </div>
                             <div class="col-md-4">
-                                <p:selectOneMenu value="null">
+                                <p:selectOneMenu value="null" class="w-100">
                                     <f:selectItem itemLabel="Select Type"/>
                                 </p:selectOneMenu>
                             </div>
                         </div>
 
                         <div class="row mb-2">
-                            <div class="col-md-2">
-                                <p:commandButton ajax="false" value="Process" action="#{reportController.processCollectingCentreBillWiseDetailReport}" >
+                            <div class="col-md-12">
+                                <p:commandButton ajax="false" 
+                                                 value="Process" 
+                                                 icon="fas fa-cogs"
+                                                 class="ui-button-warning"
+                                                 style="width: 150px"
+                                                 action="#{reportController.processCollectingCentreBillWiseDetailReport}" >
+                                </p:commandButton>
+
+                                <p:commandButton 
+                                    icon="fa-solid fa-print"
+                                    class="mx-1 ui-button-info mx-2"
+                                    ajax="false" 
+                                    style="width: 150px"
+                                    value="Print">
+                                    <p:printer target="tblExport" />
+                                </p:commandButton>
+                                <p:commandButton id="btnExcel" class="m-1 ui-button-success"
+                                                 icon="fas fa-file-excel"
+                                                 style="width: 150px"
+                                                 ajax="false" value="Excel">
+                                    <p:dataExporter type="xlsx" target="tblExport" fileName="collection_center_bill_wise_detail_report" />
+                                </p:commandButton>
+                                <p:commandButton 
+                                    class="m-2 ui-button-danger" 
+                                    icon="fa-solid fa-file-pdf"
+                                    ajax="false" 
+                                    style="width: 150px"
+                                    value="PDF">
+                                    <p:dataExporter type="pdf" target="tblExport"  fileName="collection_center_bill_wise_detail_report" ></p:dataExporter>
                                 </p:commandButton>
                             </div>
                         </div>
-                        
+
 
                         <!--                        <h:panelGrid columns="2">
                                                     <h:outputLabel value="Institution/Branch :  "/>
@@ -182,57 +224,57 @@
                                                 </h:panelGrid>-->
 
 
-                        <p:dataTable value="#{reportController.bills}" var="c" >
-                            <p:column headerText="MRN No" >
+                        <p:dataTable id="tblExport" value="#{reportController.bills}" var="c" >
+                            <p:column headerText="MRN No" width="5rem">
                                 <h:outputText value="#{c.patient.phn}" ></h:outputText>
                             </p:column>
-                            <p:column headerText="Patient Name" >
+                            <p:column headerText="Patient Name" width="5rem">
                                 <h:outputText value="#{c.patient.person.nameWithTitle}" ></h:outputText>
                             </p:column>
-                            <p:column headerText="Invoice No" >
+                            <p:column headerText="Invoice No" width="5rem">
                                 <h:outputText value="#{c.deptId}" ></h:outputText>
                             </p:column>
-                            <p:column headerText="Invoice Date" >
+                            <p:column headerText="Invoice Date" width="5rem">
                                 <h:outputText value="#{c.billDate}" ></h:outputText>
                             </p:column>
-                            <p:column headerText="BHT No" >
+                            <p:column headerText="BHT No" width="5rem">
                                 <h:outputText value="#{c.patientEncounter.bhtNo}" ></h:outputText>
                             </p:column>
-                            <p:column headerText="Consultant No" >
+                            <p:column headerText="Consultant No" width="5rem">
                                 <h:outputText value="#{c.referredInstituteOrDoctor.name}" ></h:outputText>
                             </p:column>
 
-                            <p:column headerText="Service Name" >
+                            <p:column headerText="Service Name" width="5rem">
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>
 
-                            <p:column headerText="Quantity" >
+                            <p:column headerText="Quantity" width="5rem">
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>
 
-                            <p:column headerText="Base Price" >
+                            <p:column headerText="Base Price" width="5rem">
                                 <h:outputText value="#{c.total}" ></h:outputText>
                             </p:column>
 
                             //Base price means total//
 
-                            <p:column headerText="Disc Amount" >
+                            <p:column headerText="Disc Amount" width="5rem">
                                 <h:outputText value="#{c.discount}" ></h:outputText>
                             </p:column>
 
-                            <p:column headerText="Hospital Fee" >
+                            <p:column headerText="Hospital Fee" width="5rem">
                                 <h:outputText value="#{c.hospitalFee}" ></h:outputText>
                             </p:column>
 
-                            <p:column headerText="Sponser Payable" >
+                            <p:column headerText="Sponser Payable" width="5rem">
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>
 
-                            <p:column headerText="Patient Payable" >
+                            <p:column headerText="Patient Payable" width="5rem">
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>
 
-                            <p:column headerText="Total Patient Pay" >
+                            <p:column headerText="Total Patient Pay" width="5rem">
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>
 

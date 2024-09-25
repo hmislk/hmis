@@ -160,10 +160,12 @@ public class ChannelReportController implements Serializable {
     SmsManagerEjb smsManagerEjb;
     @EJB
     SessionInstanceFacade sessionInstanceFacade;
-    
+
     private Speciality speciality;
 
     private List<SessionInstance> sessioninstances;
+    private PaymentMethod paymentMethod;
+    private List<PaymentMethod> paymentMethods;
 
     public Institution getInstitution() {
         return institution;
@@ -357,17 +359,17 @@ public class ChannelReportController implements Serializable {
 
         m.put("fromDate", fromDate);
         m.put("toDate", toDate);
-        
+
         if (speciality != null) {
             m.put("sp", speciality);
             sql += " and s.originatingSession.staff.speciality=:sp ";
         }
-        
+
         if (staff != null) {
             m.put("sf", staff);
             sql += " and s.originatingSession.staff=:sf ";
         }
-        
+
         sessioninstances = sessionInstanceFacade.findByJpql(sql, m);
 
         for (SessionInstance s : sessioninstances) {
@@ -2577,7 +2579,7 @@ public class ChannelReportController implements Serializable {
 
     public void createAbsentPatientTable() {
         channelBills = new ArrayList<>();
-        channelBills.addAll(getChannelBillsAbsentPatient(staff));
+        channelBills.addAll(getChannelBillsAbsentPatient(staff, paymentMethods));
     }
 
     public List<Bill> getChannelBillsAbsentPatient(Staff stf) {
@@ -2590,6 +2592,35 @@ public class ChannelReportController implements Serializable {
         if (stf != null) {
             sql += " and b.staff=:st";
             hm.put("st", stf);
+        }
+
+        sql += " order by b.insId ";
+
+        hm.put("fd", fromDate);
+        hm.put("td", toDate);
+
+        List<Bill> b = getBillFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
+
+        doctorFeeTotal = getStaffFeeTotal(b);
+
+        return b;
+    }
+
+    public List<Bill> getChannelBillsAbsentPatient(Staff stf, List<PaymentMethod> pms) {
+        HashMap hm = new HashMap();
+        String sql = " select b from Bill b "
+                + " where b.retired=false "
+                + " and b.singleBillSession.absent=true "
+                + " and b.createdAt between :fd and :td";
+
+        if (stf != null) {
+            sql += " and b.staff=:st";
+            hm.put("st", stf);
+        }
+
+        if (pms != null) {
+            sql += " and b.paymentMethod in :pm";
+            hm.put("pm", pms);
         }
 
         sql += " order by b.insId ";
@@ -4225,6 +4256,22 @@ public class ChannelReportController implements Serializable {
 
     public void setSpeciality(Speciality speciality) {
         this.speciality = speciality;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public List<PaymentMethod> getPaymentMethods() {
+        return paymentMethods;
+    }
+
+    public void setPaymentMethods(List<PaymentMethod> paymentMethods) {
+        this.paymentMethods = paymentMethods;
     }
 
     public class ChannelReportColumnModelBundle implements Serializable {
