@@ -136,12 +136,16 @@
                                 <p:outputLabel value="Staff Designation" class="mx-2"/>
                             </div>
                             <div class="col-md-4">
-                                <p:selectCheckboxMenu id="rosters" 
-                                                      style="width:100%"
-                                                      label="Select Items" 
-                                                      multiple="true">
-                                    <f:selectItem itemLabel="Option 1" itemValue="1" />                                    
-                                </p:selectCheckboxMenu>
+                                <p:selectOneMenu filter="true" id="designation" 
+                                                 style=" max-width: 100%; overflow-x: auto; "
+                                                 class="w-100"
+                                                 value="#{reportController.institution}">
+                                    <f:selectItem itemLabel="Select Designation" />
+                                    <f:selectItems value="#{institutionController.companies}"
+                                                   var="i"
+                                                   itemLabel="#{i.name}"
+                                                   itemValue="#{i}" />
+                                </p:selectOneMenu>
                             </div>
 
                             <div class="col-md-2">
@@ -149,7 +153,12 @@
                                 <p:outputLabel value="Staff Roster" class="mx-2"/>
                             </div>
                             <div class="col-md-4">
-                                <p:inputText value="" class="w-100" />
+                                <p:selectCheckboxMenu id="rosters" 
+                                                      style="width:100%"
+                                                      label="Select Items" 
+                                                      multiple="true">
+                                    <f:selectItem itemLabel="Option 1" itemValue="1" />                                    
+                                </p:selectCheckboxMenu>
                             </div>
 
 
@@ -183,6 +192,28 @@
                                      value="Blocked"
                                      style="width: 150px"
                                      action="#{reportController.listCcReportPrint()}" />
+                    <p:commandButton 
+                        icon="fa-solid fa-print"
+                        class="mx-1 ui-button-info"
+                        style="width: 150px"
+                        ajax="false" 
+                        value="Print">
+                        <p:printer target="tblExport" />
+                    </p:commandButton>
+                    <p:commandButton id="btnExcel" class="m-1 ui-button-success"
+                                     icon="fas fa-file-excel"
+                                     style="width: 150px"
+                                     ajax="false" value="Excel">
+                        <p:dataExporter type="xlsx" target="tbl" fileName="ETF" />
+                    </p:commandButton>
+                    <p:commandButton 
+                        class="m-2 ui-button-danger" 
+                        icon="fa-solid fa-file-pdf"
+                        style="width: 150px"
+                        ajax="false" 
+                        value="PDF">
+                        <p:dataExporter type="pdf" target="tblExport"  fileName="ETF" ></p:dataExporter>
+                    </p:commandButton>
 
 
 
@@ -229,7 +260,7 @@
                         <p:column headerText="EPF / ETF Deductable Salary " width="5rem">
                             <h:outputText value="" ></h:outputText>
                         </p:column>
-                        
+
 
                     </p:dataTable>
                 </h:form>
