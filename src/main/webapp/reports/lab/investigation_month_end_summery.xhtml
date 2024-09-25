@@ -1,0 +1,152 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form >
+                    <p:panel header="Investigation Month End Summary" >
+                        <h:panelGrid columns="4" class="w-100 my-3">
+
+                            <h:panelGroup>
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
+                                <h:outputLabel class="mx-3" value="From Date"/>
+                            </h:panelGroup>
+
+                            <p:datePicker 
+                                class="w-100"
+                                inputStyleClass="w-100" 
+                                id="fromDate" 
+                                showTime="true" 
+                                value="#{patientInvestigationController.fromDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+
+                            <h:panelGroup class="mx-2">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
+                                <h:outputLabel class="mx-3" value="To Date"/>
+                            </h:panelGroup>
+
+                            <p:datePicker 
+                                inputStyleClass="w-100" 
+                                id="toDate" 
+                                showTime="true" 
+                                value="#{patientInvestigationController.fromDate}" 
+                                class="w-100" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+
+                            <h:panelGroup >
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
+                                <h:outputLabel class="mx-3" value="Order Branch"/>
+                            </h:panelGroup>
+
+                            <p:selectOneMenu 
+                                id="orderBranch"
+                                value="#{reportController.fromInstitution}"
+                                filter="true"
+                                style="width: 100%"
+                                >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value="#{institutionController.collectingCentresAndManagedInstitutions}"
+                                               var="i"
+                                               itemLabel="#{i.name}"
+                                               itemValue="#{i}" ></f:selectItems>
+                                <p:ajax process="orderBranch" update="" ></p:ajax>
+                            </p:selectOneMenu>
+
+                            <h:panelGroup class="mx-2">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
+                                <h:outputLabel class="mx-3" value="Accept Branch"/>
+                            </h:panelGroup>
+
+                            <p:selectOneMenu 
+                                id="acceptBranch"
+                                style="width: 100%"
+                                value="#{reportController.fromInstitution}"
+                                filter="true"
+                                >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value="#{institutionController.collectingCentresAndManagedInstitutions}"
+                                               var="i"
+                                               itemLabel="#{i.name}"
+                                               itemValue="#{i}" ></f:selectItems>
+                                <p:ajax process="acceptBranch" update="" ></p:ajax>
+                            </p:selectOneMenu>
+
+                            <h:panelGroup>
+                                <i class="fa fa-bars" aria-hidden="true"></i>
+                                <h:outputLabel class="mx-3" value="Select Type"/>
+                            </h:panelGroup>
+
+                            <p:selectOneMenu 
+                                id="type"
+                                style="width: 100%"
+                                value="#{reportController.fromDepartment}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value="#{departmentController.getInsDepartments(reportController.fromInstitution)}"
+                                               var="d"
+                                               itemLabel="#{d.name}"
+                                               itemValue="#{d}" ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <h:panelGroup class="mx-2">
+                                <h:outputText value="&#xf46d;" styleClass="fa mr-2" />
+                                <h:outputLabel class="mx-3" value="Status"/>
+                            </h:panelGroup>
+
+                            <p:selectOneMenu 
+                                id="status"
+                                style="width: 100%"
+                                value="#{reportController.fromDepartment}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value="#{departmentController.getInsDepartments(reportController.fromInstitution)}"
+                                               var="d"
+                                               itemLabel="#{d.name}"
+                                               itemValue="#{d}" ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+
+                        </h:panelGrid>
+
+                        <h:panelGroup class="my-3">
+
+                            <h:outputLabel value="Show Payment"/>
+                            <br></br>
+                            <h:outputLabel value="Service Name"/>
+                        </h:panelGroup>
+
+                    </p:panel>
+
+                </h:form>
+
+
+                <p:dataTable id="tbl" value="" var="catReport"
+                             paginator="true"
+                             rows="10"
+                             paginatorPosition="bottom"
+                             class="my-3"
+
+                             >
+                    <p:column headerText="Test Name">
+                        <h:outputText value="#{item.testName}" />
+                    </p:column>
+
+                    <p:column headerText="Test Count">
+                        <h:outputText value="#{item.testCount}" />
+                    </p:column>
+
+
+
+                </p:dataTable>
+
+             
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>
