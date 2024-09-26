@@ -5,7 +5,9 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ControllerWithMultiplePayments;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
@@ -83,6 +85,10 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     SearchController searchController;
     @Inject
     TokenController tokenController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    FinancialTransactionController financialTransactionController;
 ////////////////////////
     @EJB
     private BillFacade billFacade;
@@ -142,8 +148,8 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     Double editingQty;
     private Token token;
     private PaymentMethod paymentMethod;
-    
-     public double calculatRemainForMultiplePaymentTotal() {
+
+    public double calculatRemainForMultiplePaymentTotal() {
 
         total = getPreBill().getNetTotal();
         netTotal = total;
@@ -162,7 +168,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         return total;
     }
 
-     public void recieveRemainAmountAutomatically() {
+    public void recieveRemainAmountAutomatically() {
         double remainAmount = calculatRemainForMultiplePaymentTotal();
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             int arrSize = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
@@ -185,7 +191,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
         }
     }
-     
+
     public String toSettleReturn(Bill args) {
         if (args.getBillType() == BillType.PharmacyPre && args.getBillClassType() == BillClassType.RefundBill) {
             String sql = "Select b from RefundBill b"
@@ -569,11 +575,11 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         }
         getBillFacade().edit(getSaleReturnBill());
     }
-    
+
     public List<Payment> createPaymentsForBill(Bill b) {
         return createMultiplePayments(b, b.getPaymentMethod());
     }
-    
+
     public List<Payment> createMultiplePayments(Bill bill, PaymentMethod pm) {
         List<Payment> ps = new ArrayList<>();
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
@@ -694,7 +700,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         getBillFacade().edit(getSaleReturnBill());
     }
 
-    public boolean errorCheckOnPaymentMethod(){
+    public boolean errorCheckOnPaymentMethod() {
         if (getPaymentSchemeController().checkPaymentMethodError(paymentMethod, getPaymentMethodData())) {
             return true;
         }
@@ -726,7 +732,6 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 //                return true;
 //            }
 //        }
-
         if (paymentMethod == PaymentMethod.Staff) {
             if (getPreBill().getToStaff() == null) {
                 JsfUtil.addErrorMessage("Please select Staff Member.");
@@ -787,8 +792,18 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         }
         return false;
     }
-    
+
     public void settleBillWithPay2() {
+        Boolean pharmacyBillingAfterShiftStart = configOptionApplicationController.getBooleanValueByKey("Pharmacy billing can be done after shift start", false);
+
+        if (pharmacyBillingAfterShiftStart) {
+            financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+            if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
+                JsfUtil.addErrorMessage("Start Your Shift First !");
+                financialTransactionController.navigateToFinancialTransactionIndex();
+            } 
+        }
+        
         editingQty = null;
         if (getPreBill().getBillType() == BillType.PharmacyPre
                 && getPreBill().getBillClassType() != BillClassType.PreBill) {
@@ -803,15 +818,15 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             JsfUtil.addErrorMessage("This Bill Can't Pay.Because this bill already added to stock in Pharmacy.");
             return;
         }
-        if (!getPreBill().getDepartment().equals(getSessionController().getLoggedUser().getDepartment())){
-            JsfUtil.addErrorMessage("Can't settle bills of "+getPreBill().getDepartment().getName());
+        if (!getPreBill().getDepartment().equals(getSessionController().getLoggedUser().getDepartment())) {
+            JsfUtil.addErrorMessage("Can't settle bills of " + getPreBill().getDepartment().getName());
             return;
         }
 
         if (errorCheckOnPaymentMethod()) {
             return;
         }
-        
+
         saveSaleBill();
 //        saveSaleBillItems();
 
@@ -830,6 +845,8 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         //    removeSettledToken();
         billPreview = true;
     }
+    
+    
 
     public void markToken() {
         Token t = tokenController.findPharmacyTokens(getPreBill());
@@ -1083,6 +1100,16 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     }
 
     public String toSettle(Bill args) {
+        Boolean pharmacyBillingAfterShiftStart = configOptionApplicationController.getBooleanValueByKey("Pharmacy billing can be done after shift start", false);
+
+        if (pharmacyBillingAfterShiftStart) {
+            financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+            if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
+                JsfUtil.addErrorMessage("Start Your Shift First !");
+                return "/cashier/index?faces-redirect=true";
+            } 
+        } 
+ 
         if (args.getBillType() == BillType.PharmacyPre && args.getBillClassType() == BillClassType.PreBill) {
             String sql = "Select b from BilledBill b"
                     + " where b.referenceBill=:bil"
