@@ -365,7 +365,7 @@ public class SearchController implements Serializable {
         billSummaryRows = null;
         return "/analytics/user_financial_transaction_summary_by_bill?faces-redirect=true";
     }
-    
+
     public String navigateToListPayments() {
         billSummaryRows = null;
         return "/analytics/payments?faces-redirect=true";
@@ -7442,6 +7442,28 @@ public class SearchController implements Serializable {
 
     }
 
+    @Deprecated
+    public void listPaymentsExtra() {
+        String jpql = "select p "
+                + " from Payment p "
+                + " where p.retired=:ret "
+                + " p.createdAt between :fd and :td ";
+        Map params = new HashMap<>();
+        params.put("ret", false);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+        if (institution != null) {
+            jpql = " and p.institution=:ins ";
+            params.put("ins", institution);
+        }
+        if (department != null) {
+            jpql = " and p.department=:dep ";
+            params.put("dep", department);
+        }
+        payments = paymentFacade.findByJpql(jpql, params);
+
+    }
+
     public void searchChannelBills() {
         Date startTime = new Date();
         List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
@@ -7666,7 +7688,7 @@ public class SearchController implements Serializable {
         //checkLabReportsApproved(bills);
 
     }
-    
+
     public void collectingCentreBillSearch() {
         createCcBillList(BillType.CollectingCentreBill, null, null);
     }
@@ -7800,7 +7822,7 @@ public class SearchController implements Serializable {
 
         billLights = getBillFacade().findLightsByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
-    
+
     public void createCcBillList(BillType billType, Institution ins, Department dep) {
         bills = null;
         String sql;
@@ -9618,7 +9640,8 @@ public class SearchController implements Serializable {
     public void listPayments() {
         payments = null;
         Map<String, Object> params = new HashMap<>();
-        StringBuilder jpql = new StringBuilder("select b from Payment p");
+        StringBuilder jpql = new StringBuilder("select p from Payment p where p.retired=:ret");
+        params.put("ret", false);
         if (toDate != null && fromDate != null) {
             jpql.append(" and p.createdAt between :fromDate and :toDate ");
             params.put("toDate", toDate);
@@ -9635,15 +9658,15 @@ public class SearchController implements Serializable {
             jpql.append(" and p.department = :dept ");
         }
 
-        if (site != null) {
-            params.put("site", site);
-            jpql.append(" and p.department.site = :site ");
-        }
-
-        if (webUser != null) {
-            jpql.append(" and b.creater=:wu ");
-            params.put("wu", webUser);
-        }
+//        if (site != null) {
+//            params.put("site", site);
+//            jpql.append(" and p.department.site = :site ");
+//        }
+//
+//        if (webUser != null) {
+//            jpql.append(" and p.creater=:wu ");
+//            params.put("wu", webUser);
+//        }
 
         // Order by bill ID
         jpql.append(" order by p.id ");
