@@ -145,16 +145,13 @@
                                                 value="Add Missing Refund Status to CC Bills" 
                                                 onclick="if (!confirm('Really want to do that?'))
                                                             return false"/>
-                                              
-                                              <p:commandButton 
+                                             <p:commandButton 
                                                 ajax="false"
-                                                action="#{billController.addMissingRefundStatusForCcRefunds()}"
+                                                action="#{billController.navigateTomissingBillsForCcCancellation()}"
                                                 rendered="true"
                                                 class="w-100 m-1"
-                                                value="To Correct Bill Item Fees for CC Cancellations" 
-                                                onclick="if (!confirm('Really want to do that?'))
-                                                            return false"/>
-                                            
+                                                value="Missing CC Cancellation Bills" 
+                                                />
                                             
                                             
                                         </div>
