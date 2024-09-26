@@ -154,6 +154,38 @@
                                                 </p:inputText>
 
                                             </h:panelGroup>
+                                            
+                                             <h:panelGroup
+                                                class="d-flex"
+                                                layout="block" 
+                                                id="iou"  
+                                                rendered="#{iouBillController.currentPayment.paymentMethod eq 'IOU'}" >
+                                                <p:outputLabel value="Value" class="mt-2"></p:outputLabel>
+                                                <p:inputText 
+                                                    class="mx-3"
+                                                    id="txtCardValue" 
+                                                    value="#{iouBillController.currentPayment.paidValue}" >
+                                                </p:inputText>
+
+                                            </h:panelGroup>
+                                            
+                                             <h:panelGroup
+                                                class="d-flex"
+                                                layout="block" 
+                                                id="voucher"  
+                                                rendered="#{iouBillController.currentPayment.paymentMethod eq 'Voucher'}" >
+                                                <p:outputLabel value="Value" class="mt-2"></p:outputLabel>
+                                                <p:inputText 
+                                                    class="mx-3"
+                                                    id="txtCardValue" 
+                                                    value="#{iouBillController.currentPayment.paidValue}" >
+                                                </p:inputText>
+
+                                            </h:panelGroup>
+                                            
+                                            
+                                            
+
 
 
                                         </h:panelGroup>
