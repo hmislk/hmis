@@ -365,6 +365,11 @@ public class SearchController implements Serializable {
         billSummaryRows = null;
         return "/analytics/user_financial_transaction_summary_by_bill?faces-redirect=true";
     }
+    
+    public String navigateToListPayments() {
+        billSummaryRows = null;
+        return "/analytics/payments?faces-redirect=true";
+    }
 
     public String navigateToAllFinancialTransactionSummaryCashier() {
         billSummaryRows = null;
