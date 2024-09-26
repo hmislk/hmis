@@ -245,7 +245,7 @@ public class TransferIssueController implements Serializable {
                 bItem.setSearialNo(getBillItems().size());
                 bItem.setItem(i.getItem());
                 bItem.setReferanceBillItem(i);
-
+                bItem.setQty(i.getQty());
                 bItem.setTmpQty(sq.getQty());
 
 //               s bItem.setTmpSuggession(getSuggession(i.getBillItem().getItem()));

@@ -1,0 +1,327 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form >
+
+                    <p:panel>
+                        <f:facet name="header">
+                            <h:outputLabel value="Bill Wise Item Movement Report" />
+                        </f:facet>
+
+                        <h:panelGrid columns="6" class="my-2 w-100">
+                            <h:panelGroup >
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="From Date"  class="mx-3"/>
+                            </h:panelGroup>
+                            <p:outputLabel value=" : " />
+                            <p:datePicker
+                                value="#{reportController.fromDate}"
+                                class="w-75"
+                                showTime="true"
+                                showButtonBar="true"
+                                timeInput="true"
+                                inputStyleClass="form-control"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
+                            </p:datePicker>
+
+                            <h:panelGroup >
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="To Date"  class="mx-3"/>
+                            </h:panelGroup>
+                            <p:outputLabel value=" : " />
+                            <p:datePicker
+                                value="#{reportController.toDate}"
+                                class="w-75"
+                                showTime="true"
+                                showButtonBar="true"
+                                timeInput="true"
+                                inputStyleClass="form-control"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
+                            </p:datePicker>
+
+
+                            <h:panelGroup >
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
+                                <h:outputLabel value="Institution/Branch" for="cmbIns" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:outputLabel value=" : " />
+                            <p:autoComplete
+                                value="#{reportController.institution}"
+                                completeMethod="#{institutionController.completeCompany}"
+                                var="ins"
+                                class="w-75 mt-1"
+                                inputStyleClass="form-control"
+                                itemLabel="#{ins.name}"
+                                itemValue="#{ins}">
+
+                            </p:autoComplete>
+
+                            <h:panelGroup >
+                                <h:outputText value="&#xf007;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Patient MRN" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:outputLabel value=" : " />
+                            <p:inputText value="#{reportController.phn}" class="w-75 mt-1" />
+
+
+                            <h:panelGroup >
+                                <h:outputText value="&#xf022;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <p:outputLabel value="Service Category" class="mx-3"></p:outputLabel>
+                            </h:panelGroup>
+                            <p:outputLabel value=" : " />
+                            <p:autoComplete 
+                                completeMethod="#{categoryController.completeCategory}" 
+                                var="pta" 
+                                itemLabel="#{pta.name}"
+                                itemValue="#{pta}" 
+                                value="#{itemController.current.category}"
+                                class="w-75 mt-1"
+                                inputStyleClass="form-control"
+                                >                                    
+                                <p:column>#{pta.name}</p:column>
+                                <p:column>#{pta.parentCategory}</p:column>                                        
+                            </p:autoComplete>
+
+                            <h:panelGroup >
+                                <h:outputText value="&#xf466;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <p:outputLabel value="Item" class="mx-3"></p:outputLabel>
+                            </h:panelGroup>
+                            <p:outputLabel value=" : " />
+                            <p:autoComplete
+                                value="#{reportController.item}"
+                                completeMethod="#{webUserController.completeUser}"
+                                var="w"
+                                class="w-75 mt-1"
+                                inputStyleClass="form-control"
+                                itemLabel="#{w.webUserPerson.name}"
+                                itemValue="#{w}">
+                            </p:autoComplete>
+                        </h:panelGrid>
+
+                        <h:panelGrid columns="6" class="my-2">
+                            <p:commandButton ajax="false" value="Process" icon="fas fa-cogs" class="ui-button-warning"  >
+                            </p:commandButton>
+                            <p:commandButton ajax="false" value="Excel" icon="fas fa-file-excel" class="ui-button-success mx-1" >
+                                <p:dataExporter fileName="Petty Cash Payment - #{webUserController.institution} (#{reportController.fromDate} - #{reportController.fromDate})" type="xlsx" target="dtaPr" />
+                            </p:commandButton>
+                            <p:commandButton ajax="false" value="Print" icon="fas fa-print" class="ui-button-info"  >
+                                <p:printer target="dtaPr"/>
+                            </p:commandButton>
+                            <p:commandButton 
+                            class="m-2 ui-button-danger" 
+                            icon="fa-solid fa-file-pdf"
+                            ajax="false" 
+                            value="PDF">
+                            <p:dataExporter type="pdf" target="dtaPr"  fileName="bill_wise_item_movement_report" ></p:dataExporter>
+                        </p:commandButton>
+                        </h:panelGrid>
+
+                        <p:dataTable id="dtaPr" value="#{reportController.bills}" var="pc" rowIndexVar="rowIndex"
+                                     rows="5" 
+
+                                     currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
+                            <f:facet name="header" >
+                                <h:outputLabel value="Vascular" class="font-bold"/><br/>
+                            </f:facet>
+
+                            <p:column headerText="MRN NO" width="5em">
+                                <h:outputText value="#{pc.mrnNo}" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Patient Name" width="5em">
+                                <h:outputText value="#{pc.patientName}" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Bill No" width="5em">
+                                <h:outputText value="#{pc.billNo}" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Remarks" width="5em">
+                                <h:outputText value="#{pc.remarks}" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="002 (Metrogyl Gel 30g)(219/A)">
+                                <h:outputText value="#{pc.metrogylGel}" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="009 (Xylocain 2% 5ml Injection)(219/A)">
+                                <h:outputText value="#{pc.xylocainInjection}" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="012 (D/Syringe 5 CC (Nipro)(219/A)">
+                                <h:outputText value="#{pc.syringe5cc}" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="013 (D/Syringe 10 CC (Nipro)(219/A)">
+                                <h:outputText value="#{pc.syringe10cc}" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="017 (D/Needle 24 #)(219/A)">
+                                <h:outputText value="#{pc.needle24}" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="024 (Atrauman Ag 10x10)(219/A)">
+                                <h:outputText value="#{pc.atrauman10x10}" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="028 (Surgical Gloves 7.5)(219/A)">
+                                <h:outputText value="#{pc.surgicalGloves75}" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="035 (Mapa Gloves 7 1/2)(219/A)">
+                                <h:outputText value="#{pc.mapaGloves712}" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="062 (Mapa Gloves 6 1/2)(219/A)">
+                                <h:outputText value="#{pc.mapaGloves612}" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="076 (Paraffin Gauze)(219/A)">
+                                <h:outputText value="#{pc.paraffinGauze}" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="086 (Atrauman Ag 10x20)(219/A)">
+                                <h:outputText value="#{pc.atrauman10x20}" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="093 (Gauze packet)(219/A)">
+                                <h:outputText value="#{pc.gauzePacket}" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="094 (Gauze Role)(219/A)">
+                                <h:outputText value="#{pc.gauzeRole}" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="103 (3 Way Tap)(219/A)">
+                                <h:outputText value="#{pc.threeWayTap}" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="104 (Scalp Vein 23#)(219/A)">
+                                <h:outputText value="#{pc.scalpVein23}" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="115 (Crepe Bandage (Softtex) 4)(219/A)">
+                                <h:outputText value="#{pc.crepeBandage}" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="116 (Fibrovein 3% Injection)(219/A)">
+                                <h:outputText value="#{pc.fibroveinInjection}" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="117 (Surgical Blade 23 #)(219/A)">
+                                <h:outputText value="#{pc.surgicalBlade23}" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="119 (Sufre Tulle Dressing)(219/A)">
+                                <h:outputText value="#{pc.sufreTulle}" ></h:outputText>
+                            </p:column>
+                        </p:dataTable>
+
+
+                        <p:spacer height="5"></p:spacer>
+
+
+                        <p:dataTable id="dtaCos" value="#{reportController.bills}" var="pc" rowIndexVar="rowIndex">
+                            <f:facet name="header" class="font-bold ">
+                                <h:outputLabel value="Cosmetic Center" class="font-bold"/><br/>
+                            </f:facet>
+
+                            <p:column headerText="MRN NO" width="5em">
+                                <h:outputText value="#{pc.mrnNo}" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Patient Name" width="5em">
+                                <h:outputText value="#{pc.patientName}" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Bill No" width="5em">
+                                <h:outputText value="#{pc.billNo}" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Remarks" width="5em">
+                                <h:outputText value="#{pc.remarks}" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="301 (Acticort Silcryst 10x10) (Plastic &amp; Recons.)">
+                                <h:outputText value="#{pc.acticortSilcryst}" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="304 (Atrauman Ag 10x10) (Plastic &amp; Recons.)">
+                                <h:outputText value="#{pc.atraumanAg}" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="310 (Biotain Ag 10x10) (Plastic &amp; Recons.)">
+                                <h:outputText value="#{pc.biotainAg}" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="314 (Crepe Bandage (Finetex) 3'') (Plastic &amp; Recons.)">
+                                <h:outputText value="#{pc.crepeBandage3}" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="315 (Crepe Bandage (Finetex) 4'') (Plastic &amp; Recons.)">
+                                <h:outputText value="#{pc.crepeBandage4}" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="319 (D/Needle 23 #) (Plastic &amp; Recons.)">
+                                <h:outputText value="#{pc.needle23}" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="332 (Fucidine Ointment 5g) (Plastic &amp; Recons.)">
+                                <h:outputText value="#{pc.fucidineOintment}" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="337 (Hypotonic) (Plastic &amp; Recons.)">
+                                <h:outputText value="#{pc.hypotonic}" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="349 (N/Saline 500ml) (Plastic &amp; Recons.)">
+                                <h:outputText value="#{pc.nSaline}" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="357 (Soft Roll 6'') (Plastic &amp; Recons.)">
+                                <h:outputText value="#{pc.softRoll}" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="358 (Sufre tulle) (Plastic &amp; Recons.)">
+                                <h:outputText value="#{pc.sufreTulle}" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="359 (Surgical Blade 11 #) (Plastic &amp; Recons.)">
+                                <h:outputText value="#{pc.surgicalBlade11}" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="362 (Surgical Blade 24) (Plastic &amp; Recons.)">
+                                <h:outputText value="#{pc.surgicalBlade24}" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="369 (Tegaderm + Pad 3582) (Plastic &amp; Recons.)">
+                                <h:outputText value="#{pc.tegadermPad}" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="371 (Triam Injection) (Plastic &amp; Recons.)">
+                                <h:outputText value="#{pc.triamInjection}" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Grand Total">
+                                <h:outputText value="#{pc.grandTotal}" ></h:outputText>
+                            </p:column>
+                        </p:dataTable>
+
+
+
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>
