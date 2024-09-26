@@ -2643,6 +2643,241 @@ public class BillBeanController implements Serializable {
 
     }
 
+    public List<Payment> createPaymentsForNonCreditIns(
+            Bill b,
+            PaymentMethod paymentMethod,
+            PaymentMethodData paymentMethodData) {
+
+        List<Payment> ps = new ArrayList<>();
+
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                Payment p = new Payment();
+                p.setBill(b);
+                p.setInstitution(b.getInstitution());
+                p.setDepartment(b.getDepartment());
+                p.setCreatedAt(new Date());
+                p.setCreater(sessionController.getLoggedUser());
+                p.setPaymentMethod(cd.getPaymentMethod());
+                switch (cd.getPaymentMethod()) {
+                    case Card:
+                        p.setBank(cd.getPaymentMethodData().getCreditCard().getInstitution());
+                        p.setCreditCardRefNo(cd.getPaymentMethodData().getCreditCard().getNo());
+                        p.setPaidValue(cd.getPaymentMethodData().getCreditCard().getTotalValue());
+                        break;
+                    case Cheque:
+                        p.setChequeDate(cd.getPaymentMethodData().getCheque().getDate());
+                        p.setChequeRefNo(cd.getPaymentMethodData().getCheque().getNo());
+                        p.setPaidValue(cd.getPaymentMethodData().getCheque().getTotalValue());
+                        b.setBank(paymentMethodData.getCheque().getInstitution());
+                        b.setChequeDate(paymentMethodData.getCheque().getDate());
+                        b.setComments(paymentMethodData.getCheque().getComment());
+                        p.setPaidValue(cd.getPaymentMethodData().getCheque().getTotalValue());
+                        break;
+                    case Cash:
+                        p.setPaidValue(cd.getPaymentMethodData().getCash().getTotalValue());
+                        break;
+                    case OnlineSettlement:
+                        b.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
+                        b.setBank(paymentMethodData.getCreditCard().getInstitution());
+                        p.setPaidValue(cd.getPaymentMethodData().getCreditCard().getTotalValue());
+                        break;
+                    case Slip:
+                        b.setBank(paymentMethodData.getSlip().getInstitution());
+                        b.setChequeDate(paymentMethodData.getSlip().getDate());
+                        b.setComments(paymentMethodData.getSlip().getComment());
+                        p.setPaidValue(cd.getPaymentMethodData().getSlip().getTotalValue());
+                        break;
+                    case IOU:
+                        p.setReferenceNo(cd.getReferenceNo());
+                        p.setPaidValue(cd.getTotalValue());
+                        break;
+                    case ewallet:
+                    case Agent:
+                    case Credit:
+                    case PatientDeposit:
+                    case OnCall:
+                    case Staff:
+                    case YouOweMe:
+                    case MultiplePaymentMethods:
+
+                }
+                paymentFacade.create(p);
+                ps.add(p);
+            }
+        } else {
+            Payment p = new Payment();
+            p.setBill(b);
+            p.setInstitution(b.getInstitution());
+            p.setDepartment(b.getDepartment());
+            p.setCreatedAt(new Date());
+            p.setCreater(sessionController.getLoggedUser());
+            p.setPaymentMethod(paymentMethod);
+            p.setPaidValue(b.getNetTotal());
+
+            switch (paymentMethod) {
+                case Card:
+                    p.setBank(paymentMethodData.getCreditCard().getInstitution());
+                    p.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
+                    b.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
+                    b.setComments(paymentMethodData.getCreditCard().getComment());
+                    break;
+                case Cheque:
+                    p.setChequeDate(paymentMethodData.getCheque().getDate());
+                    p.setChequeRefNo(paymentMethodData.getCheque().getNo());
+                    b.setBank(paymentMethodData.getCheque().getInstitution());
+                    b.setChequeDate(paymentMethodData.getCheque().getDate());
+                    b.setComments(paymentMethodData.getCheque().getComment());
+                    break;
+                case OnlineSettlement:
+                    b.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
+                    b.setBank(paymentMethodData.getCreditCard().getInstitution());
+                    break;
+                case Slip:
+                    b.setBank(paymentMethodData.getSlip().getInstitution());
+                    b.setChequeDate(paymentMethodData.getSlip().getDate());
+                    b.setComments(paymentMethodData.getSlip().getComment());
+                    break;
+                case IOU:
+                    p.setReferenceNo(paymentMethodData.getIou().getReferenceNo());
+                    break;
+                case Cash:
+                    break;
+                case ewallet:
+
+                case Agent:
+                case Credit:
+                case PatientDeposit:
+
+                case OnCall:
+
+                case Staff:
+                case YouOweMe:
+                case MultiplePaymentMethods:
+            }
+
+            p.setPaidValue(p.getBill().getNetTotal());
+            paymentFacade.create(p);
+            ps.add(p);
+        }
+
+        if (paymentMethod.getPaymentType() == PaymentType.CREDIT) {
+            b.setCreditBill(true);
+        }
+
+        return ps;
+
+    }
+
+    public List<Payment> createPaymentsForNonCreditOuts(
+            Bill b,
+            PaymentMethod paymentMethod,
+            PaymentMethodData paymentMethodData) {
+
+        List<Payment> ps = new ArrayList<>();
+
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                Payment p = new Payment();
+                p.setBill(b);
+                p.setInstitution(b.getInstitution());
+                p.setDepartment(b.getDepartment());
+                p.setCreatedAt(new Date());
+                p.setCreater(sessionController.getLoggedUser());
+                p.setCurrentHolder(sessionController.getLoggedUser());
+                p.setPaymentMethod(cd.getPaymentMethod());
+                double value;
+
+                switch (cd.getPaymentMethod()) {
+                    case Card:
+                        p.setBank(cd.getPaymentMethodData().getCreditCard().getInstitution());
+                        p.setCreditCardRefNo(cd.getPaymentMethodData().getCreditCard().getNo());
+                        value = Math.abs(cd.getPaymentMethodData().getCreditCard().getTotalValue());
+                        p.setPaidValue(-value);
+                        break;
+                    case Cheque:
+                        p.setChequeDate(cd.getPaymentMethodData().getCheque().getDate());
+                        p.setChequeRefNo(cd.getPaymentMethodData().getCheque().getNo());
+                        b.setBank(paymentMethodData.getCheque().getInstitution());
+                        b.setChequeDate(paymentMethodData.getCheque().getDate());
+                        b.setComments(paymentMethodData.getCheque().getComment());
+                        value = Math.abs(cd.getPaymentMethodData().getCheque().getTotalValue());
+                        p.setPaidValue(-value);
+                        break;
+                    case Cash:
+                        value = Math.abs(cd.getPaymentMethodData().getCash().getTotalValue());
+                        p.setPaidValue(-value);
+                        break;
+                    case OnlineSettlement:
+                        b.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
+                        b.setBank(paymentMethodData.getCreditCard().getInstitution());
+                        value = Math.abs(cd.getPaymentMethodData().getCreditCard().getTotalValue());
+                        p.setPaidValue(-value);
+                        break;
+                    case Slip:
+                        b.setBank(paymentMethodData.getSlip().getInstitution());
+                        b.setChequeDate(paymentMethodData.getSlip().getDate());
+                        b.setComments(paymentMethodData.getSlip().getComment());
+                        value = Math.abs(cd.getPaymentMethodData().getSlip().getTotalValue());
+                        p.setPaidValue(-value);
+                        break;
+                    // Ensure all cases that need a value to be set handle the negative absolute scenario
+                    case ewallet:
+                    case Agent:
+                    case Credit:
+                    case PatientDeposit:
+                    case OnCall:
+                    case Staff:
+                    case YouOweMe:
+                    case MultiplePaymentMethods:
+                        // Handle other payment types similarly
+                        break;
+                }
+                paymentFacade.create(p);
+                ps.add(p);
+            }
+        } else {
+            Payment p = new Payment();
+            p.setBill(b);
+            p.setInstitution(b.getInstitution());
+            p.setDepartment(b.getDepartment());
+            p.setCreatedAt(new Date());
+            p.setCreater(sessionController.getLoggedUser());
+            p.setPaymentMethod(paymentMethod);
+
+            switch (paymentMethod) {
+                case Card:
+                case Cheque:
+                case OnlineSettlement:
+                case Slip:
+                case Cash:
+                case ewallet:
+                case Agent:
+                case Credit:
+                case PatientDeposit:
+                case OnCall:
+                case Staff:
+                case YouOweMe:
+                case MultiplePaymentMethods:
+                    // Assuming `getNetTotal` is the method to retrieve the payment value for these payment types
+
+                    break;
+            }
+
+            Double value = Math.abs(b.getNetTotal());
+            p.setPaidValue(-value);
+            p.setCurrentHolder(sessionController.getLoggedUser());
+            paymentFacade.create(p);
+            ps.add(p);
+        }
+
+        if (paymentMethod.getPaymentType() == PaymentType.CREDIT) {
+            b.setCreditBill(true);
+        }
+
+        return ps;
+    }
+
     public List<Payment> createPayment(Bill bill, PaymentMethod pm, PaymentMethodData paymentMethodData) {
         List<Payment> ps = new ArrayList<>();
         if (bill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
@@ -3229,7 +3464,7 @@ public class BillBeanController implements Serializable {
         }
 
         saveBillComponentForOpdBill(e, b, wu);
-        saveBillFeeForOpdBill(e, b, wu,billFeeBundleEntries);
+        saveBillFeeForOpdBill(e, b, wu, billFeeBundleEntries);
 
         //System.out.println("BillItems().size() = " + b.getBillItems().size());
         for (BillItem bi : b.getBillItems()) {
@@ -3257,7 +3492,6 @@ public class BillBeanController implements Serializable {
     @Inject
     BillController billController;
 
-  
     public void calculateBillItems(Bill bill, List<BillEntry> billEntrys) {
         double staff = 0.0;
         double ins = 0.0;
@@ -3528,9 +3762,9 @@ public class BillBeanController implements Serializable {
         List<BillFee> list = new ArrayList<>();
         double ccfee = 0.0;
         double woccfee = 0.0;
-        double staffFee=0.0;
-        double collectingCentreFee=0.0;
-        double hospitalFee=0.0;
+        double staffFee = 0.0;
+        double collectingCentreFee = 0.0;
+        double hospitalFee = 0.0;
         for (BillFee bf : e.getLstBillFees()) {
 
             boolean needToAddBillFee = billFeeIsThereAsSelectedInBillFeeBundle(bf, billFeeBundleEntries);
@@ -3551,14 +3785,14 @@ public class BillBeanController implements Serializable {
             if (bf.getId() == null) {
                 getBillFeeFacade().create(bf);
             }
-            if(bf.getStaff()!=null){
-                staffFee +=bf.getFeeValue();
-            }else if(bf.getSpeciality()!=null){
-                staffFee +=bf.getFeeValue();
-            }else if(bf.getInstitution()!=null && bf.getInstitution().getInstitutionType()==InstitutionType.CollectingCentre){
-                collectingCentreFee+=bf.getFeeValue();
-            }else{
-                hospitalFee+=bf.getFeeValue();
+            if (bf.getStaff() != null) {
+                staffFee += bf.getFeeValue();
+            } else if (bf.getSpeciality() != null) {
+                staffFee += bf.getFeeValue();
+            } else if (bf.getInstitution() != null && bf.getInstitution().getInstitutionType() == InstitutionType.CollectingCentre) {
+                collectingCentreFee += bf.getFeeValue();
+            } else {
+                hospitalFee += bf.getFeeValue();
             }
             list.add(bf);
         }

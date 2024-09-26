@@ -42,7 +42,9 @@ import com.divudi.entity.WebUser;
 import com.divudi.entity.cashTransaction.CashBook;
 import com.divudi.entity.cashTransaction.DenominationTransaction;
 import com.divudi.entity.cashTransaction.DetailedFinancialBill;
+import com.divudi.entity.cashTransaction.Drawer;
 import com.divudi.facade.BillComponentFacade;
+import com.divudi.facade.DrawerFacade;
 import com.divudi.facade.PaymentMethodValueFacade;
 import com.divudi.java.CommonFunctions;
 import javax.inject.Named;
@@ -87,6 +89,8 @@ public class FinancialTransactionController implements Serializable {
     private PaymentMethodValueFacade paymentMethodValueFacade;
     @EJB
     BillNumberGenerator billNumberGenerator;
+    @EJB
+    DrawerFacade drawerFacade;
     // </editor-fold>  
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
@@ -237,6 +241,8 @@ public class FinancialTransactionController implements Serializable {
 
     private int tabIndex;
 
+    private Drawer loggedUserDrawer;
+
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Constructors">
     public FinancialTransactionController() {
@@ -248,6 +254,11 @@ public class FinancialTransactionController implements Serializable {
         resetClassVariables();
         fillFundTransferBillsForMeToReceive();
         return "/cashier/index?faces-redirect=true;";
+    }
+
+    public String navigateToMyDrawer() {
+        loggedUserDrawer = null;
+        return "/cashier/my_drawer?faces-redirect=true;";
     }
 
     public String navigateToCreateNewInitialFundBill() {
@@ -1584,7 +1595,7 @@ public class FinancialTransactionController implements Serializable {
         bundle = new ReportTemplateRowBundle();
         bundle.setUser(selectedBill.getFromWebUser());
         bundle.setStartBill(selectedBill.getReferenceBill());
-        if(selectedBill.getReferenceBill()!=null){
+        if (selectedBill.getReferenceBill() != null) {
             bundle.setEndBill(selectedBill.getReferenceBill().getReferenceBill());
         }
 
@@ -1956,16 +1967,16 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setDepartment(sessionController.getDepartment());
         currentBill.setInstitution(sessionController.getInstitution());
         currentBill.setStaff(sessionController.getLoggedUser().getStaff());
-
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.FUND_SHIFT_START_BILL);
         currentBill.setBillDate(new Date());
         currentBill.setBillTime(new Date());
-
+        currentBill.setDeptId(deptId);
+        currentBill.setInsId(deptId);
         findNonClosedShiftStartFundBillIsAvailable();
         if (nonClosedShiftStartFundBill != null) {
             JsfUtil.addErrorMessage("A shift start fund bill is already available for closure.");
             return "";
         }
-
         billController.save(currentBill);
         for (Payment p : getCurrentBillPayments()) {
             p.setBill(currentBill);
@@ -5052,6 +5063,21 @@ public class FinancialTransactionController implements Serializable {
         m.put("ret", false);
         m.put("b", b);
         return paymentFacade.findByJpql(jpql, m);
+    }
+
+    public Drawer getLoggedUserDrawer() {
+        if (loggedUserDrawer == null) {
+            if (sessionController.getLoggedUserDrawer() != null) {
+                loggedUserDrawer = drawerFacade.find(sessionController.getLoggedUserDrawer().getId());
+            } else {
+                loggedUserDrawer = null;
+            }
+        }
+        return loggedUserDrawer;
+    }
+
+    public void setLoggedUserDrawer(Drawer loggedUserDrawer) {
+        this.loggedUserDrawer = loggedUserDrawer;
     }
 
 }

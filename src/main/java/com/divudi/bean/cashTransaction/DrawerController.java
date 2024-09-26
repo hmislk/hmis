@@ -11,6 +11,7 @@ package com.divudi.bean.cashTransaction;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.entity.Payment;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.cashTransaction.Drawer;
 import com.divudi.facade.DrawerFacade;
@@ -29,13 +30,11 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 /**
- * 
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Consultant in Health Informatics
- * buddhika.ari@gmail.com
- * (+94) 71 5812399
- * (+94) 71 1569020
- * 
+ *
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Consultant
+ * in Health Informatics buddhika.ari@gmail.com (+94) 71 5812399 (+94) 71
+ * 1569020
+ *
  */
 @Named
 @SessionScoped
@@ -49,6 +48,128 @@ public class DrawerController implements Serializable {
     private Drawer current;
     private List<Drawer> items = null;
     List<Drawer> drawers;
+
+    public void updateDrawerForIns(List<Payment> payments) {
+        for (Payment payment : payments) {
+            updateDrawerForIns(payment);
+        }
+    }
+
+    public void updateDrawerForOuts(List<Payment> payments) {
+        for (Payment payment : payments) {
+            updateDrawerForOuts(payment);
+        }
+    }
+
+    public void updateDrawerForIns(Payment payment) {
+        updateDrawer(payment, Math.abs(payment.getPaidValue()));
+    }
+
+    public void updateDrawerForOuts(Payment payment) {
+        updateDrawer(payment, -Math.abs(payment.getPaidValue()));
+    }
+
+    public void updateDrawer(Payment payment, double paidValue) {
+        if (payment == null || payment.getCreater() == null) {
+            System.err.println("Payment or payment creator is null.");
+            return;
+        }
+
+        Drawer drawer = getUsersDrawer(payment.getCreater());
+        if (drawer == null) {
+            System.err.println("No drawer found for the user.");
+            return;
+        }
+
+        synchronized (drawer) {
+            switch (payment.getPaymentMethod()) {
+                case OnCall:
+                    drawer.setOnCallInHandValue(safeAdd(drawer.getOnCallInHandValue(), paidValue));
+                    drawer.setOnCallBalance(safeAdd(drawer.getOnCallBalance(), paidValue));
+                    break;
+                case Cash:
+                    drawer.setCashInHandValue(safeAdd(drawer.getCashInHandValue(), paidValue));
+                    drawer.setCashBalance(safeAdd(drawer.getCashBalance(), paidValue));
+                    break;
+                case Card:
+                    drawer.setCardInHandValue(safeAdd(drawer.getCardInHandValue(), paidValue));
+                    drawer.setCardBalance(safeAdd(drawer.getCardBalance(), paidValue));
+                    break;
+                case MultiplePaymentMethods:
+                    drawer.setMultiplePaymentMethodsInHandValue(safeAdd(drawer.getMultiplePaymentMethodsInHandValue(), paidValue));
+                    drawer.setMultiplePaymentMethodsBalance(safeAdd(drawer.getMultiplePaymentMethodsBalance(), paidValue));
+                    break;
+                case Staff:
+                    drawer.setStaffInHandValue(safeAdd(drawer.getStaffInHandValue(), paidValue));
+                    drawer.setStaffBalance(safeAdd(drawer.getStaffBalance(), paidValue));
+                    break;
+                case Credit:
+                    drawer.setCreditInHandValue(safeAdd(drawer.getCreditInHandValue(), paidValue));
+                    drawer.setCreditBalance(safeAdd(drawer.getCreditBalance(), paidValue));
+                    break;
+                case Staff_Welfare:
+                    drawer.setStaffWelfareInHandValue(safeAdd(drawer.getStaffWelfareInHandValue(), paidValue));
+                    drawer.setStaffWelfareBalance(safeAdd(drawer.getStaffWelfareBalance(), paidValue));
+                    break;
+                case Voucher:
+                    drawer.setVoucherInHandValue(safeAdd(drawer.getVoucherInHandValue(), paidValue));
+                    drawer.setVoucherBalance(safeAdd(drawer.getVoucherBalance(), paidValue));
+                    break;
+                case IOU:
+                    drawer.setIouInHandValue(safeAdd(drawer.getIouInHandValue(), paidValue));
+                    drawer.setIouBalance(safeAdd(drawer.getIouBalance(), paidValue));
+                    break;
+                case Agent:
+                    drawer.setAgentInHandValue(safeAdd(drawer.getAgentInHandValue(), paidValue));
+                    drawer.setAgentBalance(safeAdd(drawer.getAgentBalance(), paidValue));
+                    break;
+                case Cheque:
+                    drawer.setChequeInHandValue(safeAdd(drawer.getChequeInHandValue(), paidValue));
+                    drawer.setChequeBalance(safeAdd(drawer.getChequeBalance(), paidValue));
+                    break;
+                case Slip:
+                    drawer.setSlipInHandValue(safeAdd(drawer.getSlipInHandValue(), paidValue));
+                    drawer.setSlipBalance(safeAdd(drawer.getSlipBalance(), paidValue));
+                    break;
+                case ewallet:
+                    drawer.setEwalletInHandValue(safeAdd(drawer.getEwalletInHandValue(), paidValue));
+                    drawer.setEwalletBalance(safeAdd(drawer.getEwalletBalance(), paidValue));
+                    break;
+                case PatientDeposit:
+                    drawer.setPatientDepositInHandValue(safeAdd(drawer.getPatientDepositInHandValue(), paidValue));
+                    drawer.setPatientDepositBalance(safeAdd(drawer.getPatientDepositBalance(), paidValue));
+                    break;
+                case PatientPoints:
+                    drawer.setPatientPointsInHandValue(safeAdd(drawer.getPatientPointsInHandValue(), paidValue));
+                    drawer.setPatientPointsBalance(safeAdd(drawer.getPatientPointsBalance(), paidValue));
+                    break;
+                case OnlineSettlement:
+                    drawer.setOnlineSettlementInHandValue(safeAdd(drawer.getOnlineSettlementInHandValue(), paidValue));
+                    drawer.setOnlineSettlementBalance(safeAdd(drawer.getOnlineSettlementBalance(), paidValue));
+                    break;
+                case None:
+                    drawer.setNoneInHandValue(safeAdd(drawer.getNoneInHandValue(), paidValue));
+                    drawer.setNoneBalance(safeAdd(drawer.getNoneBalance(), paidValue));
+                    break;
+                case YouOweMe:
+                    drawer.setYouOweMeInHandValue(safeAdd(drawer.getYouOweMeInHandValue(), paidValue));
+                    drawer.setYouOweMeBalance(safeAdd(drawer.getYouOweMeBalance(), paidValue));
+                    break;
+                default:
+                    System.err.println("Unhandled payment method: " + payment.getPaymentMethod());
+                    break;
+            }
+
+            ejbFacade.editAndCommit(drawer);
+        }
+    }
+
+    public double safeAdd(Double currentValue, double addValue) {
+        if (currentValue == null) {
+            return addValue;
+        }
+        return currentValue + addValue;
+    }
 
     public void createDrawers() {
         String sql;
@@ -66,12 +187,12 @@ public class DrawerController implements Serializable {
         jpql = "select d from Drawer d "
                 + " where d.retired=false "
                 + " and d.drawerUser=:user";
-        
+
         m.put("user", webUser);
-        
+
         Drawer drawer;
         drawer = getFacade().findFirstByJpql(jpql, m);
-        
+
         if (drawer == null) {
             drawer = new Drawer();
             drawer.setDrawerUser(webUser);
@@ -124,12 +245,12 @@ public class DrawerController implements Serializable {
             JsfUtil.addSuccessMessage("Saved Successfully");
         }
     }
-    
+
     public void saveSelected() {
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Updated Successfully.");
-        } else {            
+        } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
