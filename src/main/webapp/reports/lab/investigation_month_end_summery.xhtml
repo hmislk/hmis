@@ -124,27 +124,303 @@
 
                 </h:form>
 
-
-                <p:dataTable id="tbl" value="" var="catReport"
-                             paginator="true"
-                             rows="10"
-                             paginatorPosition="bottom"
-                             class="my-3"
-
-                             >
-                    <p:column headerText="Test Name">
-                        <h:outputText value="#{item.testName}" />
-                    </p:column>
-
-                    <p:column headerText="Test Count">
-                        <h:outputText value="#{item.testCount}" />
-                    </p:column>
+                <h:panelGroup>
 
 
 
-                </p:dataTable>
 
-             
+                    <p:dataTable id="tbl" value="" var="catReport"
+                                 paginator="true"
+                                 rows="10"
+                                 paginatorPosition="bottom"
+                                 class="my-3"
+
+                                 >
+                        <p:column headerText="Result Status" width="10rem">
+                            <h:outputText value="#{item.testName}" />
+                        </p:column>
+
+                        <p:column headerText="OP Count" width="5rem">
+                            <h:outputText value="#{item.testCount}" />
+                        </p:column>
+
+                        <p:column headerText="IP Count" width="5rem">
+                            <h:outputText value="#{item.testCount}" />
+                        </p:column>
+
+                        <p:column headerText="CC Count" width="5rem">
+                            <h:outputText value="#{item.testCount}" />
+                        </p:column>
+
+                        <p:column headerText="Total Count" width="5rem">
+                            <h:outputText value="#{item.testCount}" />
+                        </p:column>
+
+                    </p:dataTable>
+
+                </h:panelGroup>
+
+                <h:panelGroup>
+
+                    <p:dataTable id="tbl2" value="" var="catReport"
+                                 paginator="true"
+                                 rows="10"
+                                 paginatorPosition="bottom"
+                                 class="my-3"
+
+                                 >
+                        <p:column headerText="Result Status" width="8rem">
+                            <h:outputText value="#{item.testName}" />
+                        </p:column>
+
+                        <p:column headerText="OP Count" width="5rem">
+                            <h:outputText value="#{item.testCount}" />
+                        </p:column>
+
+                        <p:column headerText="OP AMT" width="5rem">
+                            <h:outputText value="#{item.testCount}" />
+                        </p:column>
+
+                        <p:column headerText="OP Staff" width="5rem">
+                            <h:outputText value="#{item.testCount}" />
+                        </p:column>
+
+                        <p:column headerText="IP Count" width="5rem">
+                            <h:outputText value="#{item.testCount}" />
+                        </p:column>
+
+                        <p:column headerText="IP AMT" width="5rem">
+                            <h:outputText value="#{item.testCount}" />
+                        </p:column>
+
+                        <p:column headerText="IP Staff" width="5rem">
+                            <h:outputText value="#{item.testCount}" />
+                        </p:column>
+
+                        <p:column headerText="CC Count" width="5rem">
+                            <h:outputText value="#{item.testCount}" />
+                        </p:column>
+
+                        <p:column headerText="CC AMT" width="5rem">
+                            <h:outputText value="#{item.testCount}" />
+                        </p:column>
+
+                        <p:column headerText="CC Staff" width="5rem">
+                            <h:outputText value="#{item.testCount}" />
+                        </p:column>
+
+                        <p:column headerText="Total Count" width="5rem">
+                            <h:outputText value="#{item.testCount}" />
+                        </p:column>
+                        <p:column headerText="Total HOS Amount" width="5rem">
+                            <h:outputText value="#{item.testCount}" />
+                        </p:column>
+
+                        <p:column headerText="Total Staff Amount" width="5rem">
+                            <h:outputText value="#{item.testCount}" />
+                        </p:column>
+
+                    </p:dataTable>
+
+                </h:panelGroup>
+
+                <h:panelGroup>
+
+
+
+
+                    <p:dataTable id="tbl3" value="" var="catReport"
+                                 paginator="true"
+                                 rows="10"
+                                 paginatorPosition="bottom"
+                                 class="my-3"
+
+                                 >
+                        <p:column headerText="MR NO" width="5rem">
+                            <h:outputText value="#{item.testName}" />
+                        </p:column>
+
+                        <p:column headerText="BHT NO. / INVOICE NO." width="5rem">
+                            <h:outputText value="#{item.testCount}" />
+                        </p:column>
+
+                        <p:column headerText="Service Name" width="5rem">
+                            <h:outputText value="#{item.testCount}" />
+                        </p:column>
+
+                        <p:column headerText="Result Status" width="5rem">
+                            <h:outputText value="#{item.testCount}" />
+                        </p:column>
+
+
+
+                    </p:dataTable>
+
+                </h:panelGroup>
+                
+                
+                <h:panelGroup>
+
+                    <p:dataTable id="tbl4" value="" var="catReport"
+                                 paginator="true"
+                                 rows="10"
+                                 paginatorPosition="bottom"
+                                 class="my-3"
+
+                                 >
+                        <p:column headerText="MR NO" width="5rem">
+                            <h:outputText value="#{item.testName}" />
+                        </p:column>
+
+                        <p:column headerText="BHT NO. / INVOICE NO." width="5rem">
+                            <h:outputText value="#{item.testCount}" />
+                        </p:column>
+
+                        <p:column headerText="Service Name" width="5rem">
+                            <h:outputText value="#{item.testCount}" />
+                        </p:column>
+
+                        <p:column headerText="Result Status" width="5rem">
+                            <h:outputText value="#{item.testCount}" />
+                        </p:column>
+                        
+                        
+                        <p:column headerText="Hos Amount" width="5rem">
+                            <h:outputText value="#{item.testCount}" />
+                        </p:column>
+                        
+                        
+                        <p:column headerText="Staff Amount" width="5rem">
+                            <h:outputText value="#{item.testCount}" />
+                        </p:column>
+
+
+
+                    </p:dataTable>
+
+                </h:panelGroup>
+                
+                
+                 <h:panelGroup>
+
+                    <p:dataTable id="tbl5" value="" var="catReport"
+                                 paginator="true"
+                                 rows="10"
+                                 paginatorPosition="bottom"
+                                 class="my-3"
+
+                                 >
+                        <p:column headerText="Result Status" width="5rem">
+                            <h:outputText value="#{item.testName}" />
+                        </p:column>
+
+                        <p:column headerText="Service Name" width="5rem">
+                            <h:outputText value="#{item.testCount}" />
+                        </p:column>
+
+                        <p:column headerText="OP Count" width="5rem">
+                            <h:outputText value="#{item.testCount}" />
+                        </p:column>
+
+                        <p:column headerText="IP Count" width="5rem">
+                            <h:outputText value="#{item.testCount}" />
+                        </p:column>
+                        
+                        
+                        <p:column headerText="CC Count" width="5rem">
+                            <h:outputText value="#{item.testCount}" />
+                        </p:column>
+                        
+                        
+                        <p:column headerText="Total Count" width="5rem">
+                            <h:outputText value="#{item.testCount}" />
+                        </p:column>
+
+
+
+                    </p:dataTable>
+
+                </h:panelGroup>
+                
+                
+                <h:panelGroup>
+
+                    <p:dataTable id="tbl6" value="" var="catReport"
+                                 paginator="true"
+                                 rows="10"
+                                 paginatorPosition="bottom"
+                                 class="my-3"
+
+                                 >
+                        <p:column headerText="Result Status" width="5rem">
+                            <h:outputText value="#{item.testName}" />
+                        </p:column>
+
+                        <p:column headerText="Service Count" width="5rem">
+                            <h:outputText value="#{item.testCount}" />
+                        </p:column>
+
+                        <p:column headerText="OP Count" width="5rem">
+                            <h:outputText value="#{item.testCount}" />
+                        </p:column>
+
+                        <p:column headerText="IP Count" width="5rem">
+                            <h:outputText value="#{item.testCount}" />
+                        </p:column>
+                        
+                        
+                        <p:column headerText="CC Count" width="5rem">
+                            <h:outputText value="#{item.testCount}" />
+                        </p:column>
+                        
+                        
+                        <p:column headerText="Total Count" width="5rem">
+                            <h:outputText value="#{item.testCount}" />
+                        </p:column>
+                         <p:column headerText="OP AMT" width="5rem">
+                            <h:outputText value="#{item.testCount}" />
+                        </p:column>
+                        
+                         <p:column headerText="IP AMT" width="5rem">
+                            <h:outputText value="#{item.testCount}" />
+                        </p:column>
+                        
+                         <p:column headerText="CC AMT" width="5rem">
+                            <h:outputText value="#{item.testCount}" />
+                        </p:column>
+                        
+                         <p:column headerText="Total AMT" width="5rem">
+                            <h:outputText value="#{item.testCount}" />
+                        </p:column>
+                        
+                        <p:column headerText="OP Staff" width="5rem">
+                            <h:outputText value="#{item.testCount}" />
+                        </p:column>
+                        
+                        <p:column headerText="IP Staff" width="5rem">
+                            <h:outputText value="#{item.testCount}" />
+                        </p:column>
+                        
+                        <p:column headerText="CC Staff " width="5rem">
+                            <h:outputText value="#{item.testCount}" />
+                        </p:column>
+                        
+                         <p:column headerText="Total Staff" width="5rem">
+                            <h:outputText value="#{item.testCount}" />
+                        </p:column>
+                        
+
+
+
+                    </p:dataTable>
+
+                </h:panelGroup>
+
+
+
+
+
+
             </ui:define>
         </ui:composition>
 
