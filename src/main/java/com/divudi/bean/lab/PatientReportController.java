@@ -692,6 +692,7 @@ public class PatientReportController implements Serializable {
     }
 
     public void calculate() {
+        System.out.println("calculate");
         Date startTime = new Date();
         if (currentPatientReport == null) {
             JsfUtil.addErrorMessage("No Report to calculate");
@@ -731,6 +732,7 @@ public class PatientReportController implements Serializable {
                 m.put("iii", priv.getInvestigationItem());
                 List<IxCal> ixCals = getIxCalFacade().findByJpql(sql, m);
                 double result = 0;
+                String resultStr = "";
                 calString = "";
 
                 String baseJs = null;
@@ -795,7 +797,7 @@ public class PatientReportController implements Serializable {
                         calString = calString + currentPatientReport.getPatientInvestigation().getPatient().getAgeYears();
                     }
                 }
-
+                System.out.println("calString = " + calString);
                 System.out.println("baseJs = " + baseJs);
                 if (baseJs != null) {
                     calString = generateModifiedJavascriptFromBaseJavaScript(currentPatientReport, baseJs);
@@ -805,6 +807,7 @@ public class PatientReportController implements Serializable {
                 ScriptEngineManager mgr = new ScriptEngineManager();
                 ScriptEngine engine = mgr.getEngineByName("JavaScript");
                 try {
+                    resultStr= (String) engine.eval(calString);
                     result = (double) engine.eval(calString);
 
                 } catch (Exception ex) {
@@ -813,6 +816,7 @@ public class PatientReportController implements Serializable {
                     result = 0.0;
                 }
                 priv.setDoubleValue(result);
+                priv.setStrValue(resultStr);
 
             } else if (priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Flag) {
                 priv.setStrValue(findFlagValue(priv));

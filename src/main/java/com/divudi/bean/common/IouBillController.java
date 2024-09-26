@@ -186,10 +186,11 @@ public class IouBillController implements Serializable {
             JsfUtil.addErrorMessage("No IOUs selected. ");
             return true;
         }
-        if (settlingIouTotal != paymentTotal) {
-            JsfUtil.addErrorMessage("Settling Total and Payment Totals does not match. Please check and retry");
+        if (Math.abs(settlingIouTotal) != Math.abs(paymentTotal)) {
+            JsfUtil.addErrorMessage("Settling Total and Payment Totals do not match. Please check and retry");
             return true;
         }
+
         return false;
     }
 
