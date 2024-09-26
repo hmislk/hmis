@@ -300,7 +300,7 @@
                     </p:column>
 
                     <!-- Net Total Column -->
-                    <p:column headerText="Net Total">
+                    <p:column headerText="Net Total" sortBy="#{billItem.netValue}">
                         <h:outputLabel value="#{billItem.netValue}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>

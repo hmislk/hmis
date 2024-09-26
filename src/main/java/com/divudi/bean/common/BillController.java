@@ -2842,6 +2842,35 @@ public class BillController implements Serializable {
             System.out.println("4 originalBilItem.isRefunded() = " + originalBilItem.isRefunded());
         }
     }
+    public String navigateTomissingBillsForCcCancellation() {
+        return "/dataAdmin/missing_cc_cancellation_bills?faces-redirect=true";
+    }
+    public void missingBillsForCcCancellation() {
+        String jpql = "select bi "
+                + " from BillItem bi "
+                + " where bi.retired=false "
+                + " and bi.bill.billTypeAtomic=:bta";
+        Map m = new HashMap();
+        m.put("bta", BillTypeAtomic.CC_BILL_CANCELLATION);
+        List<BillItem> bis = billItemFacade.findByJpql(jpql, m, 1000);
+        System.out.println("bis = " + bis);
+        if (bis == null) {
+            return;
+        }
+        for (BillItem bi : bis) {
+            System.out.println("bi = " + bi);
+            BillItem originalBilItem = bi.getReferanceBillItem();
+            System.out.println("originalBilItem = " + originalBilItem);
+            System.out.println("1 originalBilItem.isRefunded() = " + originalBilItem.isRefunded());
+            originalBilItem.setRefunded(true);
+            System.out.println("2 originalBilItem.isRefunded() = " + originalBilItem.isRefunded());
+            billItemFacade.edit(originalBilItem);
+            System.out.println("3 originalBilItem.isRefunded() = " + originalBilItem.isRefunded());
+            billItemFacade.editAndCommit(originalBilItem);
+            System.out.println("4 originalBilItem.isRefunded() = " + originalBilItem.isRefunded());
+        }
+        
+    }
 
     public void calTotals() {
 //     //   ////// // System.out.println("calculating totals");
