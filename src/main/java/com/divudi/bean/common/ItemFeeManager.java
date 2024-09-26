@@ -98,7 +98,7 @@ public class ItemFeeManager implements Serializable {
     public String navigateItemFeeList() {
         return "/admin/pricing/item_fee_list?faces-redirect=true";
     }
-    
+
     public String navigateItemFeeValueList() {
         return "/admin/pricing/item_fee_value_list?faces-redirect=true";
     }
@@ -412,6 +412,21 @@ public class ItemFeeManager implements Serializable {
         JsfUtil.addSuccessMessage("Removed. Reload Items");
     }
 
+    public void removeFeeForSiteFees() {
+        if (removingFee == null) {
+            JsfUtil.addErrorMessage("Select a fee");
+            return;
+        }
+        removingFee.setRetired(true);
+        removingFee.setRetiredAt(new Date());
+        removingFee.setRetirer(sessionController.getLoggedUser());
+        itemFeeFacade.edit(removingFee);
+        itemFees = null;
+        updateTotal();
+        feeValueController.updateFeeValue(item, forSite, totalItemFee, totalItemFeeForForeigners);
+        JsfUtil.addSuccessMessage("Removed. Reload Items");
+    }
+
     public void fillDepartments() {
         ////// // System.out.println("fill dept");
         String jpql;
@@ -590,6 +605,10 @@ public class ItemFeeManager implements Serializable {
             return;
         }
         itemFees = fillFees(item, forSite);
+        calculateFeesForSitesByProvidingFees();
+    }
+
+    public void calculateFeesForSitesByProvidingFees() {
         totalItemFee = itemFees.stream()
                 .filter(Objects::nonNull)
                 .mapToDouble(ItemFee::getFee)
@@ -811,7 +830,7 @@ public class ItemFeeManager implements Serializable {
         jpql += " and (f.forInstitution.id=:ins or f.forCategory.id=:fl) ";
         m.put("ins", cc.getId());
         m.put("fl", cc.getFeeListType().getId());
-        
+
         jpql += " and f.fee > :tot ";
         jpql += " and f.item.retired=:ir ";
         m.put("tot", 0.0);
@@ -1072,6 +1091,12 @@ public class ItemFeeManager implements Serializable {
     public void updateFee(ItemFee f) {
         itemFeeFacade.edit(f);
         updateTotal();
+    }
+
+    public void updateFeeForSites(ItemFee f) {
+        itemFeeFacade.edit(f);
+        calculateFeesForSitesByProvidingFees();
+        feeValueController.updateFeeValue(item, forSite, totalItemFee, totalItemFeeForForeigners);
     }
 
     public void updateFee() {
