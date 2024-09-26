@@ -87,7 +87,7 @@
                                             id="cmdPayment" 
                                             value="#{iouBillController.currentPayment.paymentMethod}" >
                                             <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
-                                            <f:selectItems value="#{enumController.paymentMethodsForIou}" ></f:selectItems>
+                                            <f:selectItems value="#{enumController.paymentMethodsForIouSettle}" ></f:selectItems>
                                             <p:ajax process="cmdPayment" update="paymentDetails" ></p:ajax>
                                         </p:selectOneMenu>
                                     </div>
@@ -163,7 +163,7 @@
                                                 <p:outputLabel value="Value" class="mt-2"></p:outputLabel>
                                                 <p:inputText 
                                                     class="mx-3"
-                                                    id="txtCardValue" 
+                                                    id="txtIouValue" 
                                                     value="#{iouBillController.currentPayment.paidValue}" >
                                                 </p:inputText>
 
@@ -177,7 +177,7 @@
                                                 <p:outputLabel value="Value" class="mt-2"></p:outputLabel>
                                                 <p:inputText 
                                                     class="mx-3"
-                                                    id="txtCardValue" 
+                                                    id="txtVValue" 
                                                     value="#{iouBillController.currentPayment.paidValue}" >
                                                 </p:inputText>
 
