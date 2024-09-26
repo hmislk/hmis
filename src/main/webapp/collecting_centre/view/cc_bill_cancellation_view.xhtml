@@ -29,6 +29,28 @@
                                         <p:printer target="centerBillPriview" ></p:printer>
                                     </p:commandButton>
                                 </f:facet>
+                                
+                                <p:panel header="Bill Details" >
+                                    <p:panelGrid columns="2" >
+                                        <p:outputLabel value="Bill No" ></p:outputLabel>
+                                        <p:outputLabel value="#{billSearch.bill.deptId}" ></p:outputLabel>
+                                        
+                                    </p:panelGrid>
+                                    
+                                    <p:dataTable value="#{billSearch.viewingBillItems}" 
+                                                 var="bi">
+                                        <p:column title="id" >
+                                            <p:outputLabel value="#{bi.id}" ></p:outputLabel>
+                                        </p:column>
+                                        <p:column title="id" >
+                                            <p:outputLabel value="#{bi.netValue}" ></p:outputLabel>
+                                        </p:column>
+                                         <p:column title="id" >
+                                            <p:outputLabel value="#{bi.hospitalFee}" ></p:outputLabel>
+                                        </p:column>
+                                    </p:dataTable>
+                                    
+                                </p:panel>
 
                                 <h:panelGroup id="centerBillPriview">
 
