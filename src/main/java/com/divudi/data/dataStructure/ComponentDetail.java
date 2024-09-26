@@ -9,6 +9,7 @@ import com.divudi.bean.opd.OpdBillController;
 import com.divudi.data.PaymentMethod;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Patient;
+import com.divudi.entity.PatientDeposit;
 import com.divudi.entity.Staff;
 import java.util.ArrayList;
 import java.util.Date;
@@ -36,6 +37,7 @@ public class ComponentDetail {
     private Staff toStaff;
     private String referralNo;
     private String referenceNo;
+    private PatientDeposit patientDepost;
     
 
     public List<ComponentDetail> getMultiplePaymentMethodComponentDetails() {
@@ -158,6 +160,14 @@ public class ComponentDetail {
 
     public void setReferenceNo(String referenceNo) {
         this.referenceNo = referenceNo;
+    }
+
+    public PatientDeposit getPatientDepost() {
+        return patientDepost;
+    }
+
+    public void setPatientDepost(PatientDeposit patientDepost) {
+        this.patientDepost = patientDepost;
     }
 
 }

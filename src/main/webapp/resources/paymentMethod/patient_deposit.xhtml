@@ -18,11 +18,11 @@
             <div class="row" >
                 <div class="col mx-1" >
                     <h:outputText value="Balance : " ></h:outputText>
-                    <h:outputText value="#{cc.attrs.paymentMethodData.patient_deposit.patient.runningBalance}" >
+                    <h:outputText value="#{cc.attrs.paymentMethodData.patient_deposit.patientDepost.balance}" >
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputText>
                 </div>
-                <div class="col mx-1" >
+<!--                <div class="col mx-1" >
                     <h:outputText value="Credit Limit : " ></h:outputText>
                     <h:outputText value="#{cc.attrs.paymentMethodData.patient_deposit.patient.creditLimit}" >
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
@@ -33,7 +33,7 @@
                     <h:outputText value="#{cc.attrs.paymentMethodData.patient_deposit.patient.runningBalance + cc.attrs.paymentMethodData.patient_deposit.patient.creditLimit}" >
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputText>
-                </div>
+                </div>-->
                 <br/>
             </div>
             <div class="row" >
@@ -51,7 +51,7 @@
         <h:panelGroup rendered="#{!cc.attrs.paymentMethodData.patient_deposit.patient.hasAnAccount}" >
             <div class="row" >
                 <div class="col mx-1" >
-                    <h:outputText value="Patient has NO account." ></h:outputText>
+                    <h:outputText value="Patient has NO Patient Deposit." ></h:outputText>
                 </div>
             </div>
         </h:panelGroup>

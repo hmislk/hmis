@@ -135,7 +135,7 @@ public class InvestigationMonthSummeryController implements Serializable {
         //TODO: add method to resolve in packages
         for (BillItem b : temps) {
             if (b.getBill() != null && b.getBill().isCancelled() == false) {
-                if (b.isRefunded() == null || b.isRefunded() == false) {
+                if (!b.isRefunded()) {
 //                    if (b.getItem() instanceof Packege) {
 //                        sql = "Select i from PackageItem p join p.item i where p.packege.id = " + b.getId();
 //                        List<Item> packageItems = getItemFacade().findByJpql(sql);

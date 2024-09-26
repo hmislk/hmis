@@ -5,54 +5,55 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
-    <h:body>
-        <ui:composition template="/reports/index.xhtml">
+    <h:body class="w-100 border">
+
+        <ui:composition template="/reports/index.xhtml" class="w-100 border">
             <ui:define name="subcontent">
-                <h:form >
-                    <p:panel header="Outside Payment" >
+                <h:form class="w-100">
+                    <p:panel header="Outside Payment" class="w-100">
+                        <h:panelGrid columns="5" class="w-100 ">
 
 
-
-                        <p:panelGrid columns="4" class="w-100" >
-                            
-
-                            <p:outputLabel value="Admission From Date" >
-                            </p:outputLabel>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Admission From Date" class="mx-3"/>
+                            </h:panelGroup>
                             <p:datePicker value="#{reportController.fromDate}" 
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"
-                                          class=" w-100" ></p:datePicker>
+                                          class=" w-100" inputStyleClass="w-100" ></p:datePicker>
 
-                            <p:outputLabel value=" Admission To Date" >
-                            </p:outputLabel>
+                            <p:spacer width="20"></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf133;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="Admission To Date" class="mx-3"/>
+                            </h:panelGroup>
                             <p:datePicker value="#{reportController.toDate}"
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"
-                                          class=""></p:datePicker>
-                            
-                            <p:outputLabel value="Discharge From Date" >
-                            </p:outputLabel>
+                                          class="w-100" inputStyleClass="w-100" ></p:datePicker>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Discharge From Date" class="mx-3"/>
+                            </h:panelGroup>
                             <p:datePicker value="#{reportController.fromDate}" 
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"
-                                          class=" w-100" ></p:datePicker>
+                                          class=" w-100" inputStyleClass="w-100"></p:datePicker>
 
-                            <p:outputLabel value=" Discharge To Date" >
-                            </p:outputLabel>
+                            <p:spacer width="20"></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Discharge To Date" class="mx-3"/>
+                            </h:panelGroup>
                             <p:datePicker value="#{reportController.toDate}"
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"
-                                          class=""></p:datePicker>
+                                          class="w-100" inputStyleClass="w-100"></p:datePicker>
 
-                            <p:outputLabel value="Institution" >
-                            </p:outputLabel>
-                             <p:selectOneMenu value="" filter="true" class="w-100 ">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var="i"
-                                               itemLabel=""
-                                               itemValue=""
-                                               ></f:selectItems>
-                            </p:selectOneMenu>
-                            
-                            <p:outputLabel value="Branch" >
-                            </p:outputLabel>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Institution" class="mx-3"/>
+                            </h:panelGroup>
                             <p:selectOneMenu value="" filter="true" class="w-100 ">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems value=""
@@ -61,120 +62,174 @@
                                                itemValue=""
                                                ></f:selectItems>
                             </p:selectOneMenu>
-                            
-                            <p:outputLabel value="Invoice Approved From Date" >
-                            </p:outputLabel>
+
+                            <p:spacer width="20"></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="Branch" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu value="" filter="true" class="w-100 ">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf133;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="Invoice Approved From Date" class="mx-3"/>
+                            </h:panelGroup>
                             <p:datePicker value="#{reportController.fromDate}" 
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"
-                                          class=" w-100" ></p:datePicker>
+                                          class=" w-100" inputStyleClass="w-100"></p:datePicker>
 
-                            <p:outputLabel value="Invoice Approved To Date" >
-                            </p:outputLabel>
+
+                            <p:spacer width="20"></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Invoice Approved To Date" class="mx-3"/>
+                            </h:panelGroup>
                             <p:datePicker value="#{reportController.toDate}"
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"
-                                          class=""></p:datePicker>
-                            
+                                          class="w-100" inputStyleClass="w-100"></p:datePicker>
 
 
-                            
 
 
-                            <p:outputLabel value="Department" >
-                            </p:outputLabel>
-                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var="i"
-                                               itemLabel=""
-                                               itemValue=""
-                                               ></f:selectItems>
-                            </p:selectOneMenu>
-                            
-                            <p:outputLabel value="Consultant" >
-                            </p:outputLabel>
-                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var="i"
-                                               itemLabel=""
-                                               itemValue=""
-                                               ></f:selectItems>
-                            </p:selectOneMenu>
-                            
-                            <p:outputLabel value="Service Center" >
-                            </p:outputLabel>
-                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var="i"
-                                               itemLabel=""
-                                               itemValue=""
-                                               ></f:selectItems>
-                            </p:selectOneMenu>
-                            
-                            <p:outputLabel value="Discharge Type" >
-                            </p:outputLabel>
-                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var="i"
-                                               itemLabel=""
-                                               itemValue=""
-                                               ></f:selectItems>
-                            </p:selectOneMenu>
-                            
-                            <p:outputLabel value="Sponsor" >
-                            </p:outputLabel>
-                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var="i"
-                                               itemLabel=""
-                                               itemValue=""
-                                               ></f:selectItems>
-                            </p:selectOneMenu>
-                            
-                            <p:outputLabel value="Patient Category" >
-                            </p:outputLabel>
-                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var="i"
-                                               itemLabel=""
-                                               itemValue=""
-                                               ></f:selectItems>
-                            </p:selectOneMenu>
-                            
-                            <p:outputLabel value="Admission Status" >
-                            </p:outputLabel>
-                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var="i"
-                                               itemLabel=""
-                                               itemValue=""
-                                               ></f:selectItems>
-                            </p:selectOneMenu>
-                            
-                            <p:outputLabel value="Admission Type" >
-                            </p:outputLabel>
-                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var="i"
-                                               itemLabel=""
-                                               itemValue=""
-                                               ></f:selectItems>
-                            </p:selectOneMenu>
-                        </p:panelGrid>
 
-                        <div class="d-flex align-items-center">
-                            <p:commandButton class="m-2" ajax="false" value="Process" action="#{reportController.processLabTestCount()}" >
-                            </p:commandButton>
-                            <p:commandButton class="m-2" ajax="false" value="Download"
-                                             action="#{reportController.downloadLabTestCount}">
-                            </p:commandButton>
-                        </div>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Department" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20"></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0f0;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Consultant" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf1ad;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Service Center" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20"></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf084;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="Discharge Type" class="mx-3"/>
+                            </h:panelGroup>
+
+                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf51c;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Sponsor" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20"></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0f7;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Patient Category" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf071;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="Admission Status" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20"></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf084;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Admission Type" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
+
+                        </h:panelGrid><br/>
+
+
+
+                        <p:commandButton class="ui-button-warning mx-1" icon="fas fa-cogs" ajax="false" value="Process" action="#{reportController.processLabTestCount()}" >
+                        </p:commandButton>
+                        <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
+                        </p:commandButton>
+                        <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download" action="#{reportController.downloadLabTestCount}">
+                        </p:commandButton>
+                        <p:commandButton class="ui-button-danger mx-1" icon= "fas fa-file-pdf" ajax="false" value="PDF">
+                        </p:commandButton>
+
 
                         <p:dataTable id="tbl" value="" 
                                      paginator="true"
@@ -209,7 +264,7 @@
                             <p:column headerText="Due amount">
                                 <h:outputText value="" />
                             </p:column>
-                            
+
 
 
                         </p:dataTable>
