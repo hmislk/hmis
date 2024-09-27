@@ -118,8 +118,9 @@
                                     <p:outputLabel value="#{ii + 1}" ></p:outputLabel>
                                 </p:column>
                                 <p:column rendered="#{stockHistoryController.department eq null}" 
-                                          sortBy="department.name"
-                                          >
+                                          sortBy="#{item.department.name}"
+                                          filterBy="#{item.department.name}"
+                                          filterMatchMode="contains">
                                     <f:facet name="header">
                                         <p:outputLabel value="Department"/>
                                     </f:facet>
@@ -127,7 +128,9 @@
                                     <p:outputLabel value="#{item.department.name}"/>
 
                                 </p:column>
-                                <p:column sortBy="item.name">
+                                <p:column sortBy="item.name"
+                                          filterBy="#{item.item.name}"
+                                          filterMatchMode="contains">
                                     <f:facet name="header">
                                         <p:outputLabel value="Item"/>
                                     </f:facet>

@@ -58,14 +58,18 @@
 
                                 <p:column headerText="Code" 
                                           styleClass="averageNumericColumn"
-                                          width="50px;" sortBy="#{i.itemBatch.item.code}">
+                                          width="50px;" sortBy="#{i.itemBatch.item.code}"
+                                          filterBy="#{i.itemBatch.item.code}"
+                                          filterMatchMode="contains">
                                     <f:facet name="header">
                                         <h:outputLabel value="Code"/>
                                     </f:facet>
                                     <h:outputLabel value="#{i.itemBatch.item.code}" ></h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Item" sortBy="#{i.itemBatch.item.name}">
+                                <p:column headerText="Item" sortBy="#{i.itemBatch.item.name}"
+                                          filterBy="#{i.itemBatch.item.name}"
+                                          filterMatchMode="contains">
                                     <f:facet name="header">
                                         <h:outputLabel value="Item"/>
                                     </f:facet>
