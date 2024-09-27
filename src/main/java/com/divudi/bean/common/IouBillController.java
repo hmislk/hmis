@@ -371,6 +371,9 @@ public class IouBillController implements Serializable {
             JsfUtil.addErrorMessage("Select a Payment Method");
             return;
         }
+        currentPayment.setDepartment(sessionController.getDepartment());
+        currentPayment.setInstitution(sessionController.getInstitution());
+        currentPayment.setBill(current);
         getPaymentsForsettlingIuos().add(currentPayment);
         calculateTotalsForSettlingIouBill();
         currentPayment = null;
