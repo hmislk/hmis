@@ -2745,7 +2745,7 @@ public class FinancialTransactionController implements Serializable {
 
         Map<String, Object> m = new HashMap<>();
         m.put("btas", btas);
-        m.put("started", false);
+//        m.put("started", false);
         m.put("cr", paymentUser);
         m.put("ret", false);
         m.put("sid", startBill.getId());
@@ -2764,6 +2764,37 @@ public class FinancialTransactionController implements Serializable {
         String jpql = jpqlBuilder.toString();
 
         List<Payment> shiftPayments = paymentFacade.findByJpql(jpql, m);
+        List<Payment> shiftPaymentsToEnd = new ArrayList<>();
+        for(Payment p:shiftPayments){
+            WebUser u = p.getCurrentHolder();
+            if(u==null){
+                p.setCurrentHolder(paymentUser);
+                shiftPaymentsToEnd.add(p);
+            }else if(paymentUser.equals(u)){
+                shiftPaymentsToEnd.add(p);
+            }
+        }
+        
+        
+        
+        Map<String, Object> m1 = new HashMap<>();
+        m1.put("btas", btas);
+        m1.put("started", false);
+        m1.put("cr", paymentUser);
+        m1.put("ret", false);
+        m1.put("sid", startBill.getId());
+
+        StringBuilder jpqlBuilder1 = new StringBuilder("SELECT p FROM Payment p JOIN p.bill b WHERE p.currentHolder = :cr ")
+                .append("AND p.retired = :ret AND p.id > :sid ");
+
+        
+
+        jpqlBuilder1.append("AND b.billTypeAtomic IN :btas AND p.cashbookEntryStated = :started ")
+                .append("ORDER BY p.createdAt, b.department, p.creater");
+
+        String jpql1 = jpqlBuilder1.toString();
+        List<Payment> shiftPayments1 = paymentFacade.findByJpql(jpql1, m1);
+        
         System.out.println("shiftPayments = " + shiftPayments);
         return shiftPayments;
     }
@@ -2775,21 +2806,26 @@ public class FinancialTransactionController implements Serializable {
             PaymentSelectionMode selectionMode) {
 
         Map<String, ReportTemplateRowBundle> groupedBundles = new HashMap<>();
-
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
         if (shiftPayments != null) {
-
             for (Payment p : shiftPayments) {
-                String key = sdf.format(p.getCreatedAt()) + "-" + p.getDepartment().getId() + "-" + p.getCreater().getId();
+                // Generate key with fallback values
+                String dateKey = (p.getCreatedAt() != null) ? sdf.format(p.getCreatedAt()) : "No Date";
+                String deptKey = (p.getDepartment() != null && p.getDepartment().getId() != null) ? p.getDepartment().getId().toString() : "No Department";
+                String userKey = (p.getCreater() != null && p.getCreater().getId() != null) ? p.getCreater().getId().toString() : "No User";
+                String webUserKey = (p.getCurrentHolder() != null && p.getCurrentHolder().getId() != null) ? p.getCurrentHolder().getId().toString() : "No WebUser";
+
+                String key = dateKey + "-" + deptKey + "-" + userKey + "-" + webUserKey;
 
                 ReportTemplateRowBundle b = groupedBundles.getOrDefault(key, new ReportTemplateRowBundle());
                 if (b.getSessionController() == null) {
                     b.setSessionController(sessionController);
                 }
-                b.setUser(startBill.getCreater());
-                b.setDate(p.getCreatedAt());
-                b.setDepartment(p.getDepartment());
+
+                b.setDate(p.getCreatedAt() != null ? p.getCreatedAt() : new Date());
+                b.setDepartment(p.getDepartment() != null ? p.getDepartment() : new Department());
+                b.setUser(p.getCreater() != null ? p.getCreater() : new WebUser());
 
                 ReportTemplateRow r = new ReportTemplateRow();
                 r.setPayment(p);
@@ -2814,10 +2850,8 @@ public class FinancialTransactionController implements Serializable {
                     case SELECT_FOR_HANDOVER_RECORD_CONFIRMATION:
                         selected = p.isSelectedForRecordingConfirmation();
                         break;
-
                     case NONE:
                         break;
-
                 }
 
                 if (p.getPaymentMethod() == PaymentMethod.Cash) {
@@ -2829,15 +2863,14 @@ public class FinancialTransactionController implements Serializable {
                 }
                 b.getReportTemplateRows().add(r);
 
-                // Temporarily store the bundle
+                // Store the bundle in the map
                 groupedBundles.put(key, b);
             }
 
-            // Calculate totals once all payments have been grouped
+            // Calculate totals for each bundle
             for (ReportTemplateRowBundle tmpBundle : groupedBundles.values()) {
                 tmpBundle.calculateTotalsByPayments();
             }
-
         }
 
         ReportTemplateRowBundle bundleToHoldDeptUserDayBundle = new ReportTemplateRowBundle();
@@ -2845,6 +2878,7 @@ public class FinancialTransactionController implements Serializable {
         bundleToHoldDeptUserDayBundle.setStartBill(startBill);
         bundleToHoldDeptUserDayBundle.setEndBill(endBill);
         bundleToHoldDeptUserDayBundle.setUser(startBill.getCreater());
+
         return bundleToHoldDeptUserDayBundle;
     }
 
