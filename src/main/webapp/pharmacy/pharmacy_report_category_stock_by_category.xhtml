@@ -37,7 +37,9 @@
                                 </f:facet> 
 
                                 <p:column headerText="Category"
-                                          sortBy="#{i.category.name}">
+                                          sortBy="#{i.category.name}"
+                                          filterBy="#{i.category.name}"
+                                          filterMatchMode="contains">
                                     <f:facet name="header">
                                         <h:outputLabel value="Category" style="float: left"/>    
                                     </f:facet>

@@ -9,44 +9,135 @@
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
                 <h:form >
+                    <p:panel class="text-2">
+                        <f:facet name="header">
+                            <h:outputLabel value="Debtor Settlement" />
+                        </f:facet>
 
-                    <p:panel>
-                            <f:facet name="header">
-                                <h:outputLabel value="Debtor Settlement" />
-                            </f:facet>
 
-                        <h:panelGrid columns="6" class="my-2 w-100">
-                            <p:outputLabel value="From Date" />
-                            <p:outputLabel value=" : " />
-                            <p:datePicker value="#{reportController.fromDate}"
-                                          style=" max-width: 100%; overflow-x: auto; "
-                                          class="w-100"
-                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></p:datePicker>
+                        <div>
+                            <div class="row mb-2">
+                                <div class="col-md-2">
+                                    <h:panelGroup >
+                                        <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
+                                        <h:outputLabel value="From Date"  class="mx-3"/>
+                                    </h:panelGroup>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:datePicker
+                                        style=" max-width: 100%; overflow-x: auto; "
+                                        class="w-100"
+                                        inputStyleClass="w-100"
+                                        value="#{reportController.fromDate}" 
+                                        pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                </div>
+                                <div class="col-md-2">
+                                    <h:panelGroup >
+                                        <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
+                                        <h:outputLabel value="To Date"  class="mx-3"/>
+                                    </h:panelGroup>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:datePicker 
+                                        style=" max-width: 100%; overflow-x: auto; "
+                                        class="w-100"
+                                        inputStyleClass="w-100"
+                                        value="#{reportController.toDate}" 
+                                        pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                </div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-md-2">
+                                    <h:panelGroup >
+                                        <h:outputText value="&#xf328;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
+                                        <h:outputLabel value="Admission Type"  class="mx-3"/>
+                                    </h:panelGroup>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:selectOneMenu filter="true" id="cmdInstitution" 
+                                                     style=" max-width: 100%; overflow-x: auto; "
+                                                     class="w-100"
+                                                     value="#{reportController.institution}">
+                                        <f:selectItem itemLabel="All" />
+                                        <f:selectItems value="#{institutionController.companies}"
+                                                       var="i"
+                                                       itemLabel="#{i.name}"
+                                                       itemValue="#{i}" />
+                                    </p:selectOneMenu>
+                                </div>
+                                <div class="col-md-2">
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf477;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                        <h:outputLabel value="BHT Tyoe" for="cmbCCname" class="mx-3"/>
+                                        <p:outputLabel  />
+                                    </h:panelGroup>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:selectOneMenu 
+                                        style=" max-width: 100%; overflow-x: auto; "
+                                        class="w-100"
+                                        value="#{reportController.collectingCentre}"
+                                        filter="true"
+                                        filterMatchMode="contains">
+                                        <f:selectItem itemLabel="Select Collecting Centre"/>
+                                        <f:selectItems var="r" itemLabel="#{r.code} :  #{r.name}" 
+                                                       value="#{collectingCentreController.items}" 
+                                                       itemValue="#{r}" />
+                                    </p:selectOneMenu>
+                                </div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-md-2">
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf1ad;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                        <p:outputLabel value="Credit Company" class="mx-3"></p:outputLabel>
+                                        <p:outputLabel  />
+                                    </h:panelGroup>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:autoComplete
+                                        value="#{webUserController.institution}"
+                                        style=" max-width: 100%; overflow-x: auto; "
+                                        completeMethod="#{institutionController.completeIns}"
+                                        var="ins"
+                                        class="w-100 "
+                                        inputStyleClass="form-control"
+                                        itemLabel="#{ins.name}"
+                                        itemValue="#{ins}">
 
-                            <p:outputLabel value="To Date" />
-                            <p:outputLabel value=" : " />
-                            <p:datePicker value="#{reportController.toDate}"
-                                          style=" max-width: 80%; overflow-x: auto; "
-                                          class="w-100"
-                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></p:datePicker>
+                                    </p:autoComplete>
+                                </div>
+                                <div class="col-md-2">
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf571;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                        <p:outputLabel value="BHT No" class="mx-3"></p:outputLabel>
+                                        <p:outputLabel  />
+                                    </h:panelGroup>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:autoComplete
+                                        style=" max-width: 100%; overflow-x: auto; "
+                                        var="ins"
+                                        class="w-100 "
+                                        inputStyleClass="form-control"
+                                        >
 
-                                          <p:outputLabel value="Credit Company"></p:outputLabel>
-                                          <p:outputLabel value=" : " />
-                            <p:autoComplete
-                                value="#{webUserController.institution}"
+                                    </p:autoComplete>
+                                </div>
+                            </div>
 
-                                completeMethod="#{institutionController.completeIns}"
-                                var="ins"
-                                class="w-75 mt-1"
-                                inputStyleClass="form-control"
-                                itemLabel="#{ins.name}"
-                                itemValue="#{ins}">
+                        </div>
 
-                            </p:autoComplete>
-                            <p:outputLabel value="Settlement Status" />
-                            <p:outputLabel value=" : " />
-                            <p:selectOneMenu value="" />
-                        </h:panelGrid>
+                        <div class="row mb-2">
+                            <div class="col-md-2"></div>
+                            <div class="col-md-4"></div>
+
+                            <div class="col-md-2"></div>
+                            <div class="col-md-4"></div>
+                        </div>
+
+
+
 
                         <h:panelGrid columns="6" class="my-3">
                             <p:commandButton ajax="false" value="Process" icon="fas fa-cogs" class="ui-button-warning" action="#{reportController.processPettyCashPayment}" >
@@ -82,102 +173,128 @@
                                 <h:outputLabel value=""  />
                             </f:facet>
 
-                            <p:dataTable id="dtaPr0" value="#{reportController.bills}" var="pc" rowIndexVar="rowIndex">
-                                <p:column headerText="S" width="2em">
-                                    <h:outputText value="#{rowIndex+1}" ></h:outputText>
-                                </p:column>
-                                <p:column headerText="Credit C. Name"><h:outputText value="#{pc.creater.webUserPerson.name}" ></h:outputText></p:column>
-                                <p:column headerText="Voucher No" width="">
-                                    <h:outputText value="#{pc.id}" ></h:outputText>
-                                </p:column>
-                                <p:column headerText="Voucher Date" >
-                                    <h:outputText value="#{pc.billDate}" ></h:outputText>
-                                </p:column>
-                                <p:column headerText="Voucher Amount" >
-                                    <h:outputText value="#{pc.billedBill.referenceNumber}" ></h:outputText>
-                                </p:column>
-                                <p:column headerText="Adjusted Amount" >
-                                    <h:outputText value="#{pc.billDate}" >
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                                    </h:outputText>
-                                </p:column>
-                                <p:column headerText="Balance Amount" >
-                                    <h:outputText value="#{pc.billType.label}" ></h:outputText>
-                                </p:column>
-                                <p:column headerText="Payment Method" >
-                                    <h:outputText value="" ></h:outputText>
-                                </p:column>
-                                <p:column headerText="Narration" >
-                                    <h:outputText value="" ></h:outputText>
-                                </p:column>
-                                <p:column headerText="Voucher Status" >
-                                    <h:outputText value="#{pc.approveUser != null ? 'Approved': 'Not Approved'}" ></h:outputText>
-                                </p:column>
-                                <p:column headerText="Settlement Status" >
-                                    <h:outputText value="#{pc.total}" ></h:outputText>
-                                </p:column>
-                                <p:column headerText="Created By" >
-                                    <h:outputText value="#{pc.total}" ></h:outputText>
-                                </p:column>
-                                <p:column headerText="Approved By" >
-                                    <h:outputText value="#{pc.total}" ></h:outputText>
-                                </p:column>
-                            </p:dataTable>
-                            <p:dataTable id="dtaPr1" value="#{reportController.bills}" var="pc" rowIndexVar="rowIndex">
+
+
+                            <p:dataTable id="dtPr"  var="payment" rowIndexVar="rowIndex">
                                 <f:facet name="header">
-                                    <h:outputLabel value="Reversed Vouchers" /><br/>
+                                    <h:outputLabel value="Old Months Received Payment" />
                                 </f:facet>
-                                <p:column headerText="S" width="2em">
+
+                                <p:column headerText="No">
                                     <h:outputText value="#{rowIndex+1}" ></h:outputText>
                                 </p:column>
-                                <p:column headerText="Credit C. Name"><h:outputText value="#{pc.creater.webUserPerson.name}" ></h:outputText></p:column>
-                                <p:column headerText="Voucher No" width="">
-                                    <h:outputText value="#{pc.id}" ></h:outputText>
+
+                                <p:column headerText="Payment Receipt Bill no">
+                                    <h:outputText value="#{payment.receiptBillNo}" ></h:outputText>
                                 </p:column>
-                                <p:column headerText="Voucher Date" >
-                                    <h:outputText value="#{pc.billDate}" ></h:outputText>
-                                </p:column>
-                                <p:column headerText="Voucher Amount" >
-                                    <h:outputText value="#{pc.billedBill.referenceNumber}" ></h:outputText>
-                                </p:column>
-                                <p:column headerText="Adjusted Amount" >
-                                    <h:outputText value="#{pc.billDate}" >
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+
+                                <p:column headerText="Discharge Date">
+                                    <h:outputText value="#{payment.dischargeDate}" >
+                                        <f:convertDateTime pattern="yyyy-MM-dd" />
                                     </h:outputText>
                                 </p:column>
-                                <p:column headerText="Balance Amount" >
-                                    <h:outputText value="#{pc.billType.label}" ></h:outputText>
+
+                                <p:column headerText="BHT No">
+                                    <h:outputText value="#{payment.bhtNo}" ></h:outputText>
                                 </p:column>
-                                <p:column headerText="Payment Method" >
-                                    <h:outputText value="" ></h:outputText>
+
+                                <p:column headerText="MRN NO">
+                                    <h:outputText value="#{payment.mrnNo}" ></h:outputText>
                                 </p:column>
-                                <p:column headerText="Narration" >
-                                    <h:outputText value="" ></h:outputText>
+
+                                <p:column headerText="Invoice No">
+                                    <h:outputText value="#{payment.invoiceNo}" ></h:outputText>
                                 </p:column>
-                                <p:column headerText="Voucher Status" >
-                                    <h:outputText value="#{pc.approveUser != null ? 'Approved': 'Not Approved'}" ></h:outputText>
+
+                                <p:column headerText="Patient Name">
+                                    <h:outputText value="#{payment.patientName}" ></h:outputText>
                                 </p:column>
-                                <p:column headerText="Settlement Status" >
-                                    <h:outputText value="#{pc.total}" ></h:outputText>
+
+                                <p:column headerText="Credit Company Name">
+                                    <h:outputText value="#{payment.creditCompanyName}" ></h:outputText>
                                 </p:column>
-                                <p:column headerText="Created By" >
-                                    <h:outputText value="#{pc.total}" ></h:outputText>
+
+                                <p:column headerText="Payment Date">
+                                    <h:outputText value="#{payment.paymentDate}" >
+                                        <f:convertDateTime pattern="yyyy-MM-dd" />
+                                    </h:outputText>
                                 </p:column>
-                                <p:column headerText="Approved By" >
-                                    <h:outputText value="#{pc.total}" ></h:outputText>
+
+                                <p:column headerText="Payment Method">
+                                    <h:outputText value="#{payment.paymentMethod}" ></h:outputText>
                                 </p:column>
-                                <p:column headerText="Original Voucher" >
-                                    <h:outputText value="#{pc.total}" ></h:outputText>
+
+                                <!-- Cheques Section -->
+                                <p:column headerText="Ch No">
+                                    <h:outputText value="#{payment.chequeNo}" ></h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Bank">
+                                    <h:outputText value="#{payment.chequeBank}" ></h:outputText>
+                                </p:column>
+
+                                <p:column headerText="CH date">
+                                    <h:outputText value="#{payment.chequeDate}" >
+                                        <f:convertDateTime pattern="yyyy-MM-dd" />
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Bank deposit date">
+                                    <h:outputText value="#{payment.bankDepositDate}" >
+                                        <f:convertDateTime pattern="yyyy-MM-dd" />
+                                    </h:outputText>
+                                </p:column>
+
+                                <!-- Slips Section -->
+                                <p:column headerText="Bank">
+                                    <h:outputText value="#{payment.slipBank}" ></h:outputText>
+                                </p:column>
+
+                                <p:column headerText="CH date">
+                                    <h:outputText value="#{payment.slipDate}" >
+                                        <f:convertDateTime pattern="yyyy-MM-dd" />
+                                    </h:outputText>
+                                </p:column>
+
+                                <!-- Credit Cards Section -->
+                                <p:column headerText="Type">
+                                    <h:outputText value="#{payment.cardType}" ></h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Bank">
+                                    <h:outputText value="#{payment.cardBank}" ></h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Card no">
+                                    <h:outputText value="#{payment.cardNo}" ></h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Amount">
+                                    <h:outputText value="#{payment.amount}" ></h:outputText>
+                                </p:column>
+
+                                <p:column headerText="User">
+                                    <h:outputText value="#{payment.user}" ></h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Remarks">
+                                    <h:outputText value="#{payment.remarks}" ></h:outputText>
                                 </p:column>
                             </p:dataTable>
+
+
+
+
+
+                           
                         </p:panel>
 
 
-                            <p:spacer height="5"></p:spacer>
+                        <p:spacer height="5"></p:spacer>
 
 
 
-                        </p:panel>
+                    </p:panel>
 
                 </h:form>
 
