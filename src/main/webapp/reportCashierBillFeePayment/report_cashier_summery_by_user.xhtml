@@ -8,7 +8,7 @@
                 xmlns:p="http://primefaces.org/ui"       
                 xmlns:ca="http://xmlns.jcp.org/jsf/composite/cashier"
                 xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
-                
+
                 xmlns:au="http://xmlns.jcp.org/jsf/composite/autocomplete" >
 
 
@@ -36,49 +36,54 @@
                                         value="#{opdPreBillReportController.webUser}" ></p:autoComplete>
                     </h:panelGrid>
                     <h:panelGrid columns="6" class="my-2" >
-                        <p:commandButton id="btnRefresh" ajax="false" value="Process"
+                        <p:commandButton style="width: 150px" id="btnRefresh" ajax="false" value="Process"
                                          class="ui-button-warning" icon="fas fa-refresh"
                                          action="#{opdPreBillReportController.createCashierTableByUser()}" />  
                         <p:defaultCommand target="btnRefresh"/>
 
-                        <p:commandButton ajax="false" value="Print" class="ui-button-info mx-2" icon="fas fa-print" >
+                        <p:commandButton style="width: 150px" ajax="false" value="Print" class="ui-button-info mx-2" icon="fas fa-print" >
                             <p:printer target="reportPrint"  />
                         </p:commandButton>
-                    </h:panelGrid>
-                <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
-                <p:panel id="reportPrint" styleClass="noBorder summeryBorder">
 
-                    <p:panel>
-                        <f:facet name="header" >
-                            <h:outputLabel value="#{opdPreBillReportController.webUser.institution.name}"/>
-                            <br/>
-                            <h:outputLabel value="Casheir Summary :&nbsp;"/>
-                            <h:outputLabel value="#{opdPreBillReportController.webUser.webUserPerson.name}"/>
-                            <h:outputLabel value="&emsp;Department :&nbsp;"/>
-                            <h:outputLabel value="#{opdPreBillReportController.toDepartment.name}"/>
-                            <h:outputLabel value="&emsp;&emsp;&emsp;&emsp;From :&nbsp;"/>
-                            <h:outputLabel value="#{opdPreBillReportController.fromDate}">
-                                <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
-                            </h:outputLabel>
-                            <h:outputLabel value="&emsp;&emsp;To :&nbsp;"/>
-                            <h:outputLabel value="#{opdPreBillReportController.toDate}">
-                                <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
-                            </h:outputLabel>
-                            
-                            
-                        </f:facet>
+                        <p:commandButton 
+                            ajax="false" 
+                            value="Excel" 
+                            style="width: 150px"
+                            icon="fas fa-file-excel" 
+                            class="ui-button-success mx-2"
+                            >
+                            <p:dataExporter fileName="report_cashier_summery_by_user" target="" type="xlsx" ></p:dataExporter>
+                        </p:commandButton>
+                    </h:panelGrid>
+                    <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+                    <p:panel id="reportPrint">
+
+                        <h:outputLabel value="#{opdPreBillReportController.webUser.institution.name}"/>
+                        <br/>
+                        <h:outputLabel value="Casheir Summary :&nbsp;"/>
+                        <h:outputLabel value="#{opdPreBillReportController.webUser.webUserPerson.name}"/>
+                        <h:outputLabel value="&emsp;Department :&nbsp;"/>
+                        <h:outputLabel value="#{opdPreBillReportController.toDepartment.name}"/>
+                        <h:outputLabel value="&emsp;&emsp;&emsp;&emsp;From :&nbsp;"/>
+                        <h:outputLabel value="#{opdPreBillReportController.fromDate}">
+                            <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
+                        </h:outputLabel>
+                        <h:outputLabel value="&emsp;&emsp;To :&nbsp;"/>
+                        <h:outputLabel value="#{opdPreBillReportController.toDate}">
+                            <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
+                        </h:outputLabel>
                         <f:facet name="footer">
-                        <h:outputLabel style="float: right" value="Printed By : #{sessionController.loggedUser.webUserPerson.name} " />
-                    </f:facet>
+                            <h:outputLabel style="float: right" value="Printed By : #{sessionController.loggedUser.webUserPerson.name} " />
+                        </f:facet>
 
 
                         <h:panelGrid columns="6" styleClass="noPrintButton" >
-                            
+
 
                         </h:panelGrid>
 
                         <ca:opdBilledSummery data="#{opdPreBillReportController.userBilledBills}"/>
-                        
+
                         <p:spacer height="30"/>
 
                         <ca:opdCancelledSummery data="#{opdPreBillReportController.userCancellededBills}"/>
@@ -86,11 +91,11 @@
                         <p:spacer height="30"/>
 
                         <ca:opdRefundedSummery data="#{opdPreBillReportController.userRefundedBills}"/>
-                        
+
                         <p:spacer height="30"/>
-                        
+
                         <ca:pharmacyBilledSummery data="#{opdPreBillReportController.userBilledBillsPharmacy}"/>
-                        
+
                         <p:spacer height="30"/>
 
                         <ca:pharmacyCancelledSummery data="#{opdPreBillReportController.userCancellededBillsPharmacy}"  />
@@ -98,11 +103,11 @@
                         <p:spacer height="30"/>
 
                         <ca:phrmacyRefundedSummery data="#{opdPreBillReportController.userRefundedBillsPharmacy}"/>
-                        
+
                         <p:spacer height="30"/>
-                        
+
                         <ca:pharmacyPurchaseBilledSummery data="#{opdPreBillReportController.userBilledBillsPharmacyPurchase}"/>
-                        
+
                         <p:spacer height="30"/>
 
                         <ca:pharmacyPurchaseCancelledSummery data="#{opdPreBillReportController.userCancellededBillsPharmacyPurchase}"  />
@@ -110,11 +115,10 @@
                         <p:spacer height="30"/>
 
                         <ca:phrmacyPurchaseRefundedSummery data="#{opdPreBillReportController.userRefundedBillsPharmacyPurchase}"/>
-                        
-                    </p:panel>
 
+
+                    </p:panel>
                 </p:panel>
-               </p:panel>
             </h:form>
         </h:panelGroup>
     </ui:define>
