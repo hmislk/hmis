@@ -16,26 +16,46 @@
 
         <h:panelGroup rendered="true" >
             <h:form>
-                <p:panel  header="Cashier Summary">
-                    <h:panelGrid columns="2" class="my-2" >
-                        <h:outputLabel value="From Date"/>
-                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="frmDate" value="#{opdPreBillReportController.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                    maxdate="#{commonController.endOfDayOnCurrentDate}">
+                <p:panel header="Cashier Summery">
+                    <h:panelGrid columns="4" class="my-2 w-100" >
+                        <h:panelGroup>
+                            <h:outputText value="&#xf073;" styleClass="fa mr-2" />
+                            <h:outputLabel value="From Date" class="mx-2"/></h:panelGroup>
+
+                        <p:calendar  class=" mx-4 d-flex" inputStyleClass="w-100" id="frmDate" value="#{opdPreBillReportController.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                     maxdate="#{commonController.endOfDayOnCurrentDate}">
                         </p:calendar>
 
-                        <h:outputLabel value="To Date"/>
-                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="toDate" value="#{opdPreBillReportController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                        <h:panelGroup>  
+                            <h:outputText value="&#xf073;" styleClass="fa mr-2" />
+                            <h:outputLabel value="To Date" class="mx-2"/></h:panelGroup>
+
+                        <p:calendar class=" mx-4 d-flex" inputStyleClass="w-100"  id="toDate" value="#{opdPreBillReportController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                     maxdate="#{commonController.endOfDayOnCurrentDate}" >
                         </p:calendar>
-                        <h:outputLabel value="Department"/>
-                        <au:department value="#{opdPreBillReportController.toDepartment}" />
-                        <h:outputLabel styleClass="noPrintButton" value="User Name"/>
-                        <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" completeMethod="#{webUserController.completeUser}"
-                                        forceSelection="true"
-                                        var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
-                                        value="#{opdPreBillReportController.webUser}" ></p:autoComplete>
+                        <h:panelGroup>
+                            <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
+                            <h:outputLabel value="Department" class="mx-2"/>
+                        </h:panelGroup>
+
+                        <h:panelGroup style="width: 100%;" class="d-flex my-2">
+                            <au:department value="#{opdPreBillReportController.toDepartment}" />
+                        </h:panelGroup>
+
+
+                        <h:panelGroup>
+                            <i class="fa fa-user" aria-hidden="true"></i>
+                            <h:outputLabel styleClass="noPrintButton" value="User Name" class="mx-2"/>
+                        </h:panelGroup>
+
+                        <p:autoComplete
+                            class=" mx-4 d-flex" inputStyleClass="w-100"
+                            completeMethod="#{webUserController.completeUser}"
+                            forceSelection="true"
+                            var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
+                            value="#{opdPreBillReportController.webUser}" ></p:autoComplete>
                     </h:panelGrid>
-                    <h:panelGrid columns="6" class="my-2" >
+                    <h:panelGrid columns="6" class="my-3" >
                         <p:commandButton style="width: 150px" id="btnRefresh" ajax="false" value="Process"
                                          class="ui-button-warning" icon="fas fa-refresh"
                                          action="#{opdPreBillReportController.createCashierTableByUser()}" />  
