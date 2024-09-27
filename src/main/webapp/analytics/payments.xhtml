@@ -91,6 +91,10 @@
                             <p:column headerText="Bill Type Atomic" >
                                 <p:outputLabel value="#{payment.bill.billTypeAtomic.label}" />
                             </p:column>
+                            
+                             <p:column headerText="Status" >
+                                 <p:outputLabel value="#{payment.cancelled?'Cancelled':''}" />
+                            </p:column>
 
                             <p:column headerText="Value" class="text-end">
                                 <p:outputLabel value="#{payment.paidValue}" >
