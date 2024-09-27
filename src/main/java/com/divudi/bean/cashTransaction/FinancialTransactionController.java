@@ -2870,7 +2870,7 @@ public class FinancialTransactionController implements Serializable {
                 .append("AND p.currentHolder=:cr ")
                 .append("AND p.retired=:bret ")
                 .append("AND p.cancelled=:can ")
-                .append("AND b.handingOverStarted=:hs ")
+                .append("AND p.handingOverStarted=:hs ")
                 .append("ORDER BY p.createdAt, b.department, p.creater");
         Map<String, Object> params = new HashMap<>();
         params.put("cr", paymentUser);
