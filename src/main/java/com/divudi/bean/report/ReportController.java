@@ -1611,7 +1611,12 @@ public class ReportController implements Serializable {
 
     public String navigateToManagementAdmissionCountReport() {
 
-        return "/reports/managementReports/admission_count(consultant_wise)?faces-redirect=true";
+        return "/reports/managementReports/referring_doctor_wise_revenue?faces-redirect=true";
+    }
+    
+     public String navigateToReferringDoctorWiseRevenue() {
+
+        return "/reports/managementReports/re?faces-redirect=true";
     }
 
     public String navigateToSurgeryWiseCount() {
