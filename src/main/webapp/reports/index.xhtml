@@ -106,7 +106,7 @@
                                         <p:commandButton   class="w-100"  ajax="false" value="5. Professional Fees Payment" action="/reports/financialReports/professional_fee_payment"/>
                                         <p:commandButton   class="w-100"  ajax="false" value="6. Discount" action="#{reportController.navigateToDiscount()}" />
                                         <p:commandButton   class="w-100"  ajax="false" value="7. Outside Payments" action="#{reportController.navigateToOutsidePayment()}"/>
-                                        <p:commandButton   class="w-100"  ajax="false" value="8. Collection Center Wise Income" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="8. Collection Center Wise Income" action="/reports/financialReports/collection_center_wise_income?faces-redirect=true"/>
                                         <p:commandButton   class="w-100"  ajax="false" value="9. Invoice and Receipt Report (Serial Wise)" action="/reports/financialReports/invoice_and_recipt_report_serial_wise?faces-redirect=true" />
                                         <p:commandButton   class="w-100"  ajax="false" value="10. Pharmacy Sale (OP/IP)" />
                                         <p:commandButton   class="w-100"  ajax="false" value="11. Debtor Settlement" action="/reports/financialReports/debtor_settlement?faces-redirect=true" />
@@ -300,7 +300,7 @@
                                         <p:commandButton   class="w-100"  ajax="false" value="4. Surgery Cost Estimation" action="/reports/managementReports/surgery_cost_estimation"/>
                                         <p:commandButton   class="w-100"  ajax="false" value="5. Duration Service Report" action="/reports/managementReports/duration_service_report"/>
                                         <p:commandButton   class="w-100"  ajax="false" value="6. Pharmacy Department Wise Sale Report" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="7. Referring Doctor Wise Revenue" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="7. Referring Doctor Wise Revenue" action="#{reportController.navigateToManagementAdmissionCountReport()}"/>
                                         <p:commandButton   class="w-100"  ajax="false" value="8. OT Room Wise Sergery Count" />
                                         <p:commandButton   class="w-100"  ajax="false" value="9. Surgery Count(Surgery Wise)" action="#{reportController.navigateToSurgeryWiseCount()}"/>
                                         <p:commandButton   class="w-100"  ajax="false" value="10. Surgery Count(Doctor Wise)" action="#{reportController.navigateToSurgeryCountDoctorWise()}" />
