@@ -166,7 +166,7 @@
                             icon="fas fa-file-excel" 
                             class="ui-button-success mx-2"
                             >
-                            <p:dataExporter fileName="cc_bill_item_list" target="tbl" type="xlsx" ></p:dataExporter>
+                            <p:dataExporter fileName="investigation_month_end_summery" target="tbl" type="xlsx" ></p:dataExporter>
                         </p:commandButton>
 
                         <p:commandButton 
@@ -175,7 +175,7 @@
                             icon="fa-solid fa-file-pdf"
                             ajax="false" 
                             value="PDF">
-                            <p:dataExporter type="pdf" target="tbl"  fileName="cc_bill_item_list" ></p:dataExporter>
+                            <p:dataExporter type="pdf" target="tbl"  fileName="investigation_month_end_summery" ></p:dataExporter>
                         </p:commandButton>
 
                     </div>
@@ -230,7 +230,7 @@
                                      class="my-3"
 
                                      >
-                            <p:column headerText="Result Status" width="10rem">
+                            <p:column headerText="Result Status" width="5rem">
                                 <h:outputText value="#{item.testName}" />
                             </p:column>
 
