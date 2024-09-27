@@ -547,6 +547,9 @@ public class ReportController implements Serializable {
         combinedBundle.setCount(totalCount);
         combinedBundle.setTotal(totalNet);
         
+        combinedBundle.setHospitalTotal(totalHospitalFee);
+        combinedBundle.setCcTotal(totalCCFee);
+        combinedBundle.setStaffTotal(totalProfessionalFee);
         
         
         System.out.println("Final Totals - Count: " + totalCount + " | Hospital Fee: " + totalHospitalFee
