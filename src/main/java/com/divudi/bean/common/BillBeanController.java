@@ -2756,7 +2756,7 @@ public class BillBeanController implements Serializable {
                 case MultiplePaymentMethods:
             }
 
-            p.setPaidValue(p.getBill().getNetTotal());
+            p.setPaidValue( Math.abs(p.getBill().getNetTotal()));
             paymentFacade.create(p);
             ps.add(p);
         }
