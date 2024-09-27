@@ -1023,7 +1023,7 @@
                     </p:menuitem>
                 </p:submenu>
 
-                <p:submenu id="smOpdOptician"  icon="fa fa-eye" >
+                <p:submenu id="smOpdOptician"  icon="fa fa-eye" rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Optician Module')}"  >
                     <p:menuitem value="Patient Management" action="#{opticianController.navigateToOpticianPatientManagement()}" ajax="false" icon="fa fa-users" />
                     <p:menuitem value="Appointment Management" action="#{opticianController.navigateToOpticianAppointmentManagement()}" ajax="false" icon="fa fa-calendar-alt" />
                     <p:menuitem value="Retail Sale" action="#{opticianSaleController.navigateToPharmacyRetailSale()}" ajax="false" icon="fa fa-shopping-cart" />
