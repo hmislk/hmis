@@ -2688,6 +2688,10 @@ public class BillBeanController implements Serializable {
                         b.setComments(paymentMethodData.getSlip().getComment());
                         p.setPaidValue(cd.getPaymentMethodData().getSlip().getTotalValue());
                         break;
+                    case IOU:
+                        p.setReferenceNo(cd.getReferenceNo());
+                        p.setPaidValue(cd.getTotalValue());
+                        break;
                     case ewallet:
                     case Agent:
                     case Credit:
@@ -2734,7 +2738,9 @@ public class BillBeanController implements Serializable {
                     b.setChequeDate(paymentMethodData.getSlip().getDate());
                     b.setComments(paymentMethodData.getSlip().getComment());
                     break;
-
+                case IOU:
+                    p.setReferenceNo(paymentMethodData.getIou().getReferenceNo());
+                    break;
                 case Cash:
                     break;
                 case ewallet:
@@ -2778,6 +2784,7 @@ public class BillBeanController implements Serializable {
                 p.setDepartment(b.getDepartment());
                 p.setCreatedAt(new Date());
                 p.setCreater(sessionController.getLoggedUser());
+                p.setCurrentHolder(sessionController.getLoggedUser());
                 p.setPaymentMethod(cd.getPaymentMethod());
                 double value;
 
@@ -2859,6 +2866,7 @@ public class BillBeanController implements Serializable {
 
             Double value = Math.abs(b.getNetTotal());
             p.setPaidValue(-value);
+            p.setCurrentHolder(sessionController.getLoggedUser());
             paymentFacade.create(p);
             ps.add(p);
         }
