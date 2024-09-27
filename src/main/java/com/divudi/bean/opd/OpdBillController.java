@@ -1,6 +1,7 @@
 package com.divudi.bean.opd;
 
 import com.divudi.bean.cashTransaction.CashBookEntryController;
+import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.common.*;
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
@@ -198,6 +199,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     FeeValueController feeValueController;
     @Inject
     PatientDepositController patientDepositController;
+    @Inject
+    DrawerController drawerController;
     /**
      * Class Variables
      */
@@ -1828,8 +1831,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
         saveBatchBill();
         createPaymentsForBills(getBatchBill(), getLstBillEntries());
+        drawerController.updateDrawerForIns(payments);
         saveBillItemSessions();
-
         if (toStaff != null && getPaymentMethod() == PaymentMethod.Staff_Welfare) {
             staffBean.updateStaffWelfare(toStaff, netPlusVat);
             JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");

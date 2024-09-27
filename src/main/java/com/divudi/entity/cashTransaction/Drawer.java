@@ -18,13 +18,12 @@ public class Drawer implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     Long id;
-    String name;
+    private String name;
     private WebUser drawerUser;
     @ManyToOne
     private WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date createdAt;
-    //Retairing properties
     private boolean retired;
     @ManyToOne
     private WebUser retirer;
@@ -52,7 +51,7 @@ public class Drawer implements Serializable {
     private Double noneInHandValue;
     private Double youOweMeInHandValue;
 
-// Shortage/Excess for Each Payment Method
+    // Shortage/Excess for Each Payment Method
     private Double onCallShortageOrExcess;
     private Double cashShortageOrExcess;
     private Double cardShortageOrExcess;
@@ -72,7 +71,7 @@ public class Drawer implements Serializable {
     private Double noneShortageOrExcess;
     private Double youOweMeShortageOrExcess;
 
-// Balance for Each Payment Method
+    // Balance for Each Payment Method
     private Double onCallBalance;
     private Double cashBalance;
     private Double cardBalance;
@@ -92,12 +91,138 @@ public class Drawer implements Serializable {
     private Double noneBalance;
     private Double youOweMeBalance;
 
-    public String getName() {
-        return name;
+    @Transient
+    public boolean isOnCallPresent() {
+        return isValuePresent(onCallInHandValue, onCallShortageOrExcess, onCallBalance);
     }
 
-    public void setName(String name) {
-        this.name = name;
+    @Transient
+    public boolean isCashPresent() {
+        return isValuePresent(cashInHandValue, cashShortageOrExcess, cashBalance);
+    }
+
+    @Transient
+    public boolean isCardPresent() {
+        return isValuePresent(cardInHandValue, cardShortageOrExcess, cardBalance);
+    }
+
+    @Transient
+    public boolean isMultiplePaymentMethodsPresent() {
+        return isValuePresent(multiplePaymentMethodsInHandValue, multiplePaymentMethodsShortageOrExcess, multiplePaymentMethodsBalance);
+    }
+
+    @Transient
+    public boolean isStaffPresent() {
+        return isValuePresent(staffInHandValue, staffShortageOrExcess, staffBalance);
+    }
+
+    @Transient
+    public boolean isCreditPresent() {
+        return isValuePresent(creditInHandValue, creditShortageOrExcess, creditBalance);
+    }
+
+    @Transient
+    public boolean isStaffWelfarePresent() {
+        return isValuePresent(staffWelfareInHandValue, staffWelfareShortageOrExcess, staffWelfareBalance);
+    }
+
+    @Transient
+    public boolean isVoucherPresent() {
+        return isValuePresent(voucherInHandValue, voucherShortageOrExcess, voucherBalance);
+    }
+
+    @Transient
+    public boolean isIouPresent() {
+        return isValuePresent(iouInHandValue, iouShortageOrExcess, iouBalance);
+    }
+
+    @Transient
+    public boolean isAgentPresent() {
+        return isValuePresent(agentInHandValue, agentShortageOrExcess, agentBalance);
+    }
+
+    @Transient
+    public boolean isChequePresent() {
+        return isValuePresent(chequeInHandValue, chequeShortageOrExcess, chequeBalance);
+    }
+
+    @Transient
+    public boolean isSlipPresent() {
+        return isValuePresent(slipInHandValue, slipShortageOrExcess, slipBalance);
+    }
+
+    @Transient
+    public boolean isEwalletPresent() {
+        return isValuePresent(ewalletInHandValue, ewalletShortageOrExcess, ewalletBalance);
+    }
+
+    @Transient
+    public boolean isPatientDepositPresent() {
+        return isValuePresent(patientDepositInHandValue, patientDepositShortageOrExcess, patientDepositBalance);
+    }
+
+    @Transient
+    public boolean isPatientPointsPresent() {
+        return isValuePresent(patientPointsInHandValue, patientPointsShortageOrExcess, patientPointsBalance);
+    }
+
+    @Transient
+    public boolean isOnlineSettlementPresent() {
+        return isValuePresent(onlineSettlementInHandValue, onlineSettlementShortageOrExcess, onlineSettlementBalance);
+    }
+
+    @Transient
+    public boolean isNonePresent() {
+        return isValuePresent(noneInHandValue, noneShortageOrExcess, noneBalance);
+    }
+
+    @Transient
+    public boolean isYouOweMePresent() {
+        return isValuePresent(youOweMeInHandValue, youOweMeShortageOrExcess, youOweMeBalance);
+    }
+
+    @Transient
+    private boolean isValuePresent(Double inHandValue, Double shortageOrExcess, Double balance) {
+        return (inHandValue != null && inHandValue != 0.0)
+                || (shortageOrExcess != null && shortageOrExcess != 0.0)
+                || (balance != null && balance != 0.0);
+    }
+
+    @Transient
+    public Double getTotalInHand() {
+        return sumValues(onCallInHandValue, cashInHandValue, cardInHandValue, multiplePaymentMethodsInHandValue,
+                staffInHandValue, creditInHandValue, staffWelfareInHandValue, voucherInHandValue, iouInHandValue,
+                agentInHandValue, chequeInHandValue, slipInHandValue, ewalletInHandValue, patientDepositInHandValue,
+                patientPointsInHandValue, onlineSettlementInHandValue, noneInHandValue, youOweMeInHandValue);
+    }
+
+    @Transient
+    public Double getTotalShortageOrExcess() {
+        return sumValues(onCallShortageOrExcess, cashShortageOrExcess, cardShortageOrExcess,
+                multiplePaymentMethodsShortageOrExcess, staffShortageOrExcess, creditShortageOrExcess,
+                staffWelfareShortageOrExcess, voucherShortageOrExcess, iouShortageOrExcess, agentShortageOrExcess,
+                chequeShortageOrExcess, slipShortageOrExcess, ewalletShortageOrExcess, patientDepositShortageOrExcess,
+                patientPointsShortageOrExcess, onlineSettlementShortageOrExcess, noneShortageOrExcess,
+                youOweMeShortageOrExcess);
+    }
+
+    @Transient
+    public Double getTotalBalance() {
+        return sumValues(onCallBalance, cashBalance, cardBalance, multiplePaymentMethodsBalance, staffBalance,
+                creditBalance, staffWelfareBalance, voucherBalance, iouBalance, agentBalance, chequeBalance,
+                slipBalance, ewalletBalance, patientDepositBalance, patientPointsBalance, onlineSettlementBalance,
+                noneBalance, youOweMeBalance);
+    }
+
+    @Transient
+    private Double sumValues(Double... values) {
+        Double total = 0.0;
+        for (Double value : values) {
+            if (value != null) {
+                total += value;
+            }
+        }
+        return total;
     }
 
     public Long getId() {
@@ -131,6 +256,22 @@ public class Drawer implements Serializable {
     @Override
     public String toString() {
         return "com.divudi.entity.Drawer[ id=" + id + " ]";
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public WebUser getDrawerUser() {
+        return drawerUser;
+    }
+
+    public void setDrawerUser(WebUser drawerUser) {
+        this.drawerUser = drawerUser;
     }
 
     public WebUser getCreater() {
@@ -179,14 +320,6 @@ public class Drawer implements Serializable {
 
     public void setRetireComments(String retireComments) {
         this.retireComments = retireComments;
-    }
-
-    public WebUser getDrawerUser() {
-        return drawerUser;
-    }
-
-    public void setDrawerUser(WebUser drawerUser) {
-        this.drawerUser = drawerUser;
     }
 
     public Double getOnCallInHandValue() {
@@ -619,105 +752,6 @@ public class Drawer implements Serializable {
 
     public void setYouOweMeBalance(Double youOweMeBalance) {
         this.youOweMeBalance = youOweMeBalance;
-    }
-
-
-// Dynamic Boolean Methods using @Transient annotation
-    @Transient
-    public boolean isOnCallPresent() {
-        return isValuePresent(onCallInHandValue, onCallShortageOrExcess, onCallBalance);
-    }
-
-    @Transient
-    public boolean isCashPresent() {
-        return isValuePresent(cashInHandValue, cashShortageOrExcess, cashBalance);
-    }
-
-    @Transient
-    public boolean isCardPresent() {
-        return isValuePresent(cardInHandValue, cardShortageOrExcess, cardBalance);
-    }
-
-    @Transient
-    public boolean isMultiplePaymentMethodsPresent() {
-        return isValuePresent(multiplePaymentMethodsInHandValue, multiplePaymentMethodsShortageOrExcess, multiplePaymentMethodsBalance);
-    }
-
-    @Transient
-    public boolean isStaffPresent() {
-        return isValuePresent(staffInHandValue, staffShortageOrExcess, staffBalance);
-    }
-
-    @Transient
-    public boolean isCreditPresent() {
-        return isValuePresent(creditInHandValue, creditShortageOrExcess, creditBalance);
-    }
-
-    @Transient
-    public boolean isStaffWelfarePresent() {
-        return isValuePresent(staffWelfareInHandValue, staffWelfareShortageOrExcess, staffWelfareBalance);
-    }
-
-    @Transient
-    public boolean isVoucherPresent() {
-        return isValuePresent(voucherInHandValue, voucherShortageOrExcess, voucherBalance);
-    }
-
-    @Transient
-    public boolean isIouPresent() {
-        return isValuePresent(iouInHandValue, iouShortageOrExcess, iouBalance);
-    }
-
-    @Transient
-    public boolean isAgentPresent() {
-        return isValuePresent(agentInHandValue, agentShortageOrExcess, agentBalance);
-    }
-
-    @Transient
-    public boolean isChequePresent() {
-        return isValuePresent(chequeInHandValue, chequeShortageOrExcess, chequeBalance);
-    }
-
-    @Transient
-    public boolean isSlipPresent() {
-        return isValuePresent(slipInHandValue, slipShortageOrExcess, slipBalance);
-    }
-
-    @Transient
-    public boolean isEwalletPresent() {
-        return isValuePresent(ewalletInHandValue, ewalletShortageOrExcess, ewalletBalance);
-    }
-
-    @Transient
-    public boolean isPatientDepositPresent() {
-        return isValuePresent(patientDepositInHandValue, patientDepositShortageOrExcess, patientDepositBalance);
-    }
-
-    @Transient
-    public boolean isPatientPointsPresent() {
-        return isValuePresent(patientPointsInHandValue, patientPointsShortageOrExcess, patientPointsBalance);
-    }
-
-    @Transient
-    public boolean isOnlineSettlementPresent() {
-        return isValuePresent(onlineSettlementInHandValue, onlineSettlementShortageOrExcess, onlineSettlementBalance);
-    }
-
-    @Transient
-    public boolean isNonePresent() {
-        return isValuePresent(noneInHandValue, noneShortageOrExcess, noneBalance);
-    }
-
-    @Transient
-    public boolean isYouOweMePresent() {
-        return isValuePresent(youOweMeInHandValue, youOweMeShortageOrExcess, youOweMeBalance);
-    }
-
-    @Transient
-    private boolean isValuePresent(Double inHandValue, Double shortageOrExcess, Double balance) {
-        return (inHandValue != null && inHandValue != 0.0)
-                || (shortageOrExcess != null && shortageOrExcess != 0.0)
-                || (balance != null && balance != 0.0);
     }
 
 }
