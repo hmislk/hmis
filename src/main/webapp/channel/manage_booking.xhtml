@@ -759,13 +759,20 @@
                             <div class="d-flex justify-content-center mt-4">
                                 <h:panelGroup id="gpRefundBillPreview">
                                     <ui:repeat value="#{sessionController.departmentPreference.channellingBillCopiesList}" var="copy">
-                                        <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'PosPaper'}" >
+                                        
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Refund Bill is PosPaper',true)}">
                                             <ez:bmsChannelBill  bill="#{channelBillController.billSession.billItem.bill}" ref="true"/>
                                         </h:panelGroup>
-                                        <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePaper'}" >
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Refund Bill is FiveFivePaper',true)}">
                                             <ez:bms5x5ChannelBill bill="#{channelBillController.billSession.billItem.bill}" ref="true"/>
-        <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingController.printingBill}"/>  -->
                                         </h:panelGroup>
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Refund Bill is FiveFIvePaperCustom2',true)}">
+                                            <ez:fivefivePapaerCustom2  bill="#{channelBillController.billSession.billItem.bill}" ref="true"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Refund Bill is FiveFivePrintedPaper',true)}">
+                                            <ez:bms5x5WIthoutHeaderChannelBill bill="#{channelBillController.billSession.billItem.bill}" ref="true"/>
+                                        </h:panelGroup>
+                                        
                                     </ui:repeat>
                                 </h:panelGroup>
                             </div>
