@@ -371,8 +371,8 @@ public class IouBillController implements Serializable {
             JsfUtil.addErrorMessage("Select a Payment Method");
             return;
         }
-        calculateTotalsForSettlingIouBill();
         getPaymentsForsettlingIuos().add(currentPayment);
+        calculateTotalsForSettlingIouBill();
         currentPayment = null;
         getCurrentPayment();
     }
@@ -401,6 +401,8 @@ public class IouBillController implements Serializable {
         drawerController.updateDrawerForOuts(getSettlingIuos());
         drawerController.updateDrawerForIns(getPaymentsForsettlingIuos());
         JsfUtil.addSuccessMessage("IOU Settled Successfully");
+        settlingIuos=null;
+        myIousToSettle=null;
         printPreview = true;
 
     }
@@ -453,6 +455,9 @@ public class IouBillController implements Serializable {
                 pmd);
         drawerController.updateDrawerForOuts(paymentOuts);
         drawerController.updateDrawerForIns(paymentsIn);
+        paymentsForsettlingIuos=null;
+        myIousToSettle=null;
+        settlingIuos=null;
         JsfUtil.addSuccessMessage("IOU Created");
         printPreview = true;
 
@@ -603,12 +608,16 @@ public class IouBillController implements Serializable {
                 + " from Payment p "
                 + " where p.retired=:ret "
                 + " and p.currentHolder=:user "
+                + " and p.paymentMethod=:pm"
                 + " and p.cancelled=:can ";
         Map params = new HashMap();
         params.put("ret", false);
         params.put("can", false);
+        params.put("pm", PaymentMethod.IOU);
         params.put("user", sessionController.getLoggedUser());
         myIousToSettle = paymentFacade.findByJpql(jpql, params);
+        paymentsForsettlingIuos=new ArrayList<>();
+        settlingIuos = new ArrayList<>();
         if (myIousToSettle == null) {
             JsfUtil.addErrorMessage("You do not have any IOUs to settle");
             return false;
