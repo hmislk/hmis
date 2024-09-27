@@ -5,6 +5,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.CashBookEntryController;
+import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.membership.PaymentSchemeController;
@@ -66,7 +67,7 @@ public class AgentAndCcPaymentController implements Serializable {
 
     private Bill current;
     @EJB
-    private BillNumberGenerator billNumberGenerator;   
+    private BillNumberGenerator billNumberGenerator;
     private boolean printPreview = false;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
@@ -97,6 +98,8 @@ public class AgentAndCcPaymentController implements Serializable {
     private BillBeanController billBean;
     @Inject
     AgentAndCcApplicationController collectingCentreApplicationController;
+    @Inject
+    DrawerController drawerController;
     @Inject
     private PaymentSchemeController paymentSchemeController;
     @Inject
@@ -231,21 +234,20 @@ public class AgentAndCcPaymentController implements Serializable {
     public void setComment(String comment) {
         this.comment = comment;
     }
-    
-    
-    public String navigateToCcDeposit(){
-        ccDepositSettlingStarted=false;
+
+    public String navigateToCcDeposit() {
+        ccDepositSettlingStarted = false;
         return "/collecting_centre/collecting_centre_deposit_bill?faces-redirect=true";
     }
 
     public void collectingCentrePaymentRecieveSettleBill() {
-        if(ccDepositSettlingStarted){
+        if (ccDepositSettlingStarted) {
             JsfUtil.addErrorMessage("Already Started");
             return;
         }
-        ccDepositSettlingStarted=true;
+        ccDepositSettlingStarted = true;
         if (errorCheckForCcPaymentReceiptBill()) {
-            ccDepositSettlingStarted=false;
+            ccDepositSettlingStarted = false;
             return;
         }
         addPaymentMethordValueToTotal(current, getCurrent().getPaymentMethod());
@@ -291,7 +293,8 @@ public class AgentAndCcPaymentController implements Serializable {
             }
         }
 
-        createPayment(current, getCurrent().getPaymentMethod());
+        List<Payment> ps = createPayment(current, getCurrent().getPaymentMethod());
+        drawerController.updateDrawerForIns(ps);
         collectingCentreApplicationController.updateCcBalance(
                 current.getFromInstitution(),
                 0,
@@ -314,7 +317,7 @@ public class AgentAndCcPaymentController implements Serializable {
                     "Agent Payment Allowed Credit Limit Reset");
         }
         JsfUtil.addSuccessMessage("Bill Saved");
-        ccDepositSettlingStarted=false;
+        ccDepositSettlingStarted = false;
         printPreview = true;
     }
 
