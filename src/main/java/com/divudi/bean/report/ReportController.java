@@ -19,6 +19,8 @@ import com.divudi.data.ReportTemplateRow;
 import com.divudi.data.ReportTemplateRowBundle;
 import com.divudi.data.Sex;
 import com.divudi.data.TestWiseCountReport;
+import com.divudi.data.dataStructure.BillAndItemDataRow;
+import com.divudi.data.dataStructure.ItemDetailsCell;
 import com.divudi.data.lab.PatientInvestigationStatus;
 import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Bill;
@@ -54,12 +56,15 @@ import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeSet;
 import javax.ejb.EJB;
 import javax.inject.Inject;
 import org.apache.poi.ss.usermodel.Cell;
@@ -182,6 +187,90 @@ public class ReportController implements Serializable {
     private List<AgentReferenceBook> agentReferenceBooks;
 
     private boolean showPaymentData;
+
+    private List<BillAndItemDataRow> billAndItemDataRows;
+    private BillAndItemDataRow headerBillAndItemDataRow;
+
+    public void generateItemMovementByBillReport() {
+        billAndItemDataRows = new ArrayList<>();
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("SELECT bi FROM BillItem bi WHERE bi.retired=:bir AND bi.bill.retired=:br AND bi.bill.createdAt BETWEEN :fd AND :td");
+        params.put("bir", false);
+        params.put("br", false);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+
+        if (institution != null) {
+            jpql.append(" AND bi.bill.institution=:ins");
+            params.put("ins", institution);
+        }
+        if (department != null) {
+            jpql.append(" AND bi.bill.department=:dep");
+            params.put("dep", department);
+        }
+        if (site != null) {
+            jpql.append(" AND bi.bill.department.site=:site");
+            params.put("site", site);
+        }
+        if (category != null) {
+            jpql.append(" AND (bi.item.category=:cat OR bi.item.category.parentCategory=:cat)");
+            params.put("cat", category);
+        }
+        if (item != null) {
+            jpql.append(" AND bi.item=:item");
+            params.put("item", item);
+        }
+
+        List<BillItem> billItems = billItemFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+        if (billItems == null) {
+            return;
+        }
+
+        // Deduplicate and sort items for headers
+        Set<Item> items = new TreeSet<>(Comparator.comparing(Item::getName));
+        // Filter null items
+        billItems.stream().map(BillItem::getItem).filter(Objects::nonNull).forEach(items::add);
+        List<Item> sortedItems = new ArrayList<>(items);
+
+        // Map to hold rows, initialized with placeholders
+        Map<Bill, BillAndItemDataRow> billMap = new HashMap<>();
+        for (BillItem bi : billItems) {
+            if (bi.getItem() == null) {
+                continue; // Skip items that are null
+            }
+            Bill bill = bi.getBill();
+            BillAndItemDataRow row = billMap.getOrDefault(bill, new BillAndItemDataRow());
+            row.setBill(bill);
+
+            // Initialize placeholders for each item
+            List<ItemDetailsCell> detailsCells = new ArrayList<>();
+            for (int i = 0; i < sortedItems.size(); i++) {
+                detailsCells.add(new ItemDetailsCell());
+            }
+
+            // Place the quantity in the correct column based on the item
+            int itemIndex = sortedItems.indexOf(bi.getItem());
+            if (itemIndex != -1) {
+                ItemDetailsCell cell = detailsCells.get(itemIndex);
+                cell.setItem(bi.getItem());
+                cell.setQuentity(bi.getQty());
+                detailsCells.set(itemIndex, cell);
+            }
+
+            row.setItemDetailCells(detailsCells);
+            billMap.put(bill, row);
+        }
+
+        // Prepare the header row from sorted items
+        headerBillAndItemDataRow = new BillAndItemDataRow();
+        for (Item it : sortedItems) {
+            ItemDetailsCell cell = new ItemDetailsCell();
+            cell.setItem(it);
+            headerBillAndItemDataRow.getItemDetailCells().add(cell);
+        }
+
+        billAndItemDataRows = new ArrayList<>(billMap.values());
+    }
 
     public void ccSummaryReportByItem() {
 
@@ -1613,8 +1702,8 @@ public class ReportController implements Serializable {
 
         return "/reports/managementReports/referring_doctor_wise_revenue?faces-redirect=true";
     }
-    
-     public String navigateToReferringDoctorWiseRevenue() {
+
+    public String navigateToReferringDoctorWiseRevenue() {
 
         return "/reports/managementReports/re?faces-redirect=true";
     }
@@ -2468,14 +2557,33 @@ public class ReportController implements Serializable {
     public boolean isShowPaymentData() {
         boolean allowedToChange;
         allowedToChange = webUserController.hasPrivilege("LabSummeriesLevel3");
-        if(allowedToChange){
-            showPaymentData=false;
+        if (allowedToChange) {
+            showPaymentData = false;
         }
         return showPaymentData;
     }
 
     public void setShowPaymentData(boolean showPaymentData) {
         this.showPaymentData = showPaymentData;
+    }
+
+    public List<BillAndItemDataRow> getBillAndItemDataRows() {
+        if (billAndItemDataRows == null) {
+            billAndItemDataRows = new ArrayList<>();
+        }
+        return billAndItemDataRows;
+    }
+
+    public void setBillAndItemDataRows(List<BillAndItemDataRow> billAndItemDataRows) {
+        this.billAndItemDataRows = billAndItemDataRows;
+    }
+
+    public BillAndItemDataRow getHeaderBillAndItemDataRow() {
+        return headerBillAndItemDataRow;
+    }
+
+    public void setHeaderBillAndItemDataRow(BillAndItemDataRow headerBillAndItemDataRow) {
+        this.headerBillAndItemDataRow = headerBillAndItemDataRow;
     }
 
 }
