@@ -20,6 +20,8 @@
                                 </p:outputLabel>
                             </h:panelGroup>
                             <p:datePicker 
+                                class="w-100"
+                                inputStyleClass="w-100"
                                 pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>  
 
 
@@ -33,7 +35,10 @@
                                 <p:outputLabel value="Service Added Date" class="mx-3" >
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:datePicker value="#{reportController.toDate}"
+                            <p:datePicker
+                                class="w-100"
+                                inputStyleClass="w-100"
+                                value="#{reportController.toDate}"
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
 
 
@@ -43,6 +48,8 @@
                                 </p:outputLabel>
                             </h:panelGroup>
                             <p:datePicker
+                                class="w-100"
+                                inputStyleClass="w-100"
                                 pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
 
 
@@ -53,7 +60,7 @@
                                 <h:outputText value="&#xf084;" styleClass="fa mr-2" /> 
                                 <p:outputLabel value="Admission Type" for="institutionMenu" class="mx-3"></p:outputLabel>
                             </h:panelGroup>
-                            <p:selectOneMenu id="institutionMenu" required="true">
+                            <p:selectOneMenu id="institutionMenu" required="true" class="w-100">
                                 <f:selectItem itemLabel="Select Institution Type"/>
                                 <f:selectItems value="#{admissionController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
                                 <!--                               <p:ajax process="@this" update="cmdDepartment"></p:ajax>-->
@@ -64,7 +71,7 @@
                                 <h:outputText value="&#xf236;" styleClass="fa mr-2" />
                                 <p:outputLabel value="Room Category" for="institutionMenu" class="mx-3"></p:outputLabel>
                             </h:panelGroup>
-                            <p:selectOneMenu required="true">
+                            <p:selectOneMenu required="true" class="w-100" >
                                 <f:selectItem itemLabel="Select Room Category"/>
                                 <f:selectItems value="#{roomCategoryController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
                                 <!--                               <p:ajax process="@this" update="cmdDepartment"></p:ajax>-->
@@ -80,6 +87,7 @@
                                 </p:outputLabel>
                             </h:panelGroup>
                             <p:selectOneMenu 
+                                class="w-100"
                                 id="cmdDepartment"
                                 value="#{reportController.department}" 
                                 filter="true"
@@ -98,7 +106,7 @@
                                 </p:outputLabel>
                             </h:panelGroup>
                             <p:selectOneMenu 
-
+                                class="w-100"
                                 filter="true"
                                 >
                                 <f:selectItem itemLabel="All"></f:selectItem>
@@ -117,7 +125,7 @@
                                 <p:outputLabel value="Visit Type" class="mx-3">
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:selectOneMenu >
+                            <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="Select visit type"/>
                             </p:selectOneMenu>
 
@@ -127,7 +135,7 @@
                                 <p:outputLabel value="Service Group" class="mx-3" >
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:selectOneMenu >
+                            <p:selectOneMenu class="w-100" >
                                 <f:selectItem itemLabel="Select service group"/>
                             </p:selectOneMenu>
 
@@ -140,7 +148,7 @@
                                 <p:outputLabel value="Service Name" class="mx-3" >
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:selectOneMenu >
+                            <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="Select service name"/>
                             </p:selectOneMenu>
 
@@ -150,7 +158,7 @@
                                 <p:outputLabel value="Type" class="mx-3" >
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:selectOneMenu >
+                            <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="Select type"/>
                             </p:selectOneMenu>
 
