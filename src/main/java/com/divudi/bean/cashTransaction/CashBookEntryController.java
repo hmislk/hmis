@@ -11,6 +11,8 @@ import com.divudi.data.PaymentMethod;
 import static com.divudi.data.PaymentMethod.Card;
 import static com.divudi.data.PaymentMethod.OnCall;
 import static com.divudi.data.PaymentMethod.PatientDeposit;
+import com.divudi.data.ReportTemplateRowBundle;
+import com.divudi.entity.Bill;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Payment;
@@ -19,6 +21,7 @@ import com.divudi.entity.cashTransaction.CashBookEntry;
 import com.divudi.facade.CashBookEntryFacade;
 import com.divudi.facade.PaymentFacade;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -83,8 +86,104 @@ public class CashBookEntryController implements Serializable {
 
     }
 
+    public List<CashBookEntry> writeCashBookEntryAtHandover(ReportTemplateRowBundle bundle, Bill bill, CashBook bundleCb) {
+        System.out.println("writeCashBookEntryAtHandover by Bundle");
+
+        if (bundle == null) {
+            JsfUtil.addErrorMessage("Cashbook Entry Error !");
+            return null;
+        }
+
+        if (!chackPaymentMethodForCashBookEntryAtHandover(bundle.getPaymentMethod())) {
+            return null;
+        }
+
+         List<CashBookEntry> cashbookEntries = new ArrayList<>();
+        
+        for (PaymentMethod pm : PaymentMethod.asList()) {
+            Double value = 0.0;
+            switch (pm) {
+                case Cash:
+                    value = bundle.getCashValue();
+                    break;
+                case Card:
+                    value = bundle.getCardValue();
+                    break;
+                case Agent:
+                    value = bundle.getAgentValue();
+                    break;
+                case Cheque:
+                    value = bundle.getChequeValue();
+                    break;
+                case Credit:
+                    value = bundle.getCreditValue();
+                    break;
+                case IOU:
+                    value = bundle.getIouValue();
+                    break;
+                case MultiplePaymentMethods:
+                    value = bundle.getMultiplePaymentMethodsValue();
+                    break;
+                case OnCall:
+                    value = bundle.getOnCallValue();
+                    break;
+                case OnlineSettlement:
+                    value = bundle.getOnlineSettlementValue();
+                    break;
+                case PatientDeposit:
+                    value = bundle.getPatientDepositValue();
+                    break;
+                case PatientPoints:
+                    value = bundle.getPatientPointsValue();
+                    break;
+                case Slip:
+                    value = bundle.getSlipValue();
+                    break;
+                case Staff:
+                    value = bundle.getStaffValue();
+                    break;
+                case Staff_Welfare:
+                    value = bundle.getStaffWelfareValue();
+                    break;
+                case Voucher:
+                    value = bundle.getVoucherValue();
+                    break;
+                case ewallet:
+                    value = bundle.getEwalletValue();
+                    break;
+                default:
+                    continue; // Skip the rest if not applicable
+            }
+
+            if (value == 0.0) {
+                continue;
+            }
+
+            CashBookEntry newCbEntry = new CashBookEntry();
+
+            newCbEntry.setInstitution(bundle.getDepartment().getInstitution());
+            newCbEntry.setDepartment(bundle.getDepartment());
+            newCbEntry.setSite(bundle.getDepartment().getSite());
+            newCbEntry.setWebUser(bundle.getUser());
+
+            newCbEntry.setCreater(sessionController.getLoggedUser());
+            newCbEntry.setCreatedAt(new Date());
+
+            newCbEntry.setPaymentMethod(bundle.getPaymentMethod());
+            newCbEntry.setEntryValue(value);
+            newCbEntry.setBill(bill);
+            newCbEntry.setCashBook(bundleCb);
+            cashbookEntryFacade.create(newCbEntry);
+            cashbookEntries.add(newCbEntry);
+            updateBalances(bundle.getPaymentMethod(), value, newCbEntry);
+
+        }
+
+        return cashbookEntries;
+    }
+
     public void writeCashBookEntryAtHandover(Payment p, CashBook cb) {
-        System.out.println("writeCashBookEntryAtHandover" );
+        System.out.println("writeCashBookEntryAtHandover");
         System.out.println("p = " + p);
         System.out.println("cb = " + cb);
         if (p == null) {
@@ -107,7 +206,7 @@ public class CashBookEntryController implements Serializable {
         newCbEntry.setBill(p.getHandoverAcceptBill());
         newCbEntry.setCashBook(cb);
         updateBalances(p.getPaymentMethod(), p.getPaidValue(), newCbEntry);
-        
+
         p.setCashbook(cb);
         p.setCashbookEntry(newCbEntry);
         paymentFacade.edit(p);
