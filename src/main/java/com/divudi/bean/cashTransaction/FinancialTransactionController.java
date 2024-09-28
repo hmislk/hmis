@@ -3904,9 +3904,9 @@ public class FinancialTransactionController implements Serializable {
         billController.save(currentBill);
 
         for (ReportTemplateRowBundle shiftBundle : bundle.getBundles()) {
-
+            System.out.println("shiftBundle = " + shiftBundle);
             CashBook bundleCb = cashBookController.findAndSaveCashBookBySite(shiftBundle.getDepartment().getSite(), shiftBundle.getDepartment().getInstitution(), shiftBundle.getDepartment());
-
+            System.out.println("bundleCb = " + bundleCb);
             String id = billNumberGenerator.departmentBillNumberGeneratorYearly(department, BillTypeAtomic.FUND_SHIFT_COMPONANT_HANDOVER_CREATE);
             Bill shiftHandoverComponantAcceptBill = new Bill();
             shiftHandoverComponantAcceptBill.setDepartment(shiftBundle.getDepartment());
@@ -3927,7 +3927,7 @@ public class FinancialTransactionController implements Serializable {
             System.out.println("shiftBundle.getStartBill() = " + shiftBundle.getStartBill());
 
             List<CashBookEntry> cbEntries = cashBookEntryController.writeCashBookEntryAtHandover(shiftBundle, shiftHandoverComponantAcceptBill, bundleCb);
-
+            System.out.println("cbEntries = " + cbEntries);
             for (ReportTemplateRow row : shiftBundle.getReportTemplateRows()) {
                 System.out.println("row = " + row);
                 if (row.getPayment() == null) {

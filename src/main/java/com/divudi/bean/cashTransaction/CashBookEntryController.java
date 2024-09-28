@@ -94,12 +94,8 @@ public class CashBookEntryController implements Serializable {
             return null;
         }
 
-        if (!chackPaymentMethodForCashBookEntryAtHandover(bundle.getPaymentMethod())) {
-            return null;
-        }
+        List<CashBookEntry> cashbookEntries = new ArrayList<>();
 
-         List<CashBookEntry> cashbookEntries = new ArrayList<>();
-        
         for (PaymentMethod pm : PaymentMethod.asList()) {
             Double value = 0.0;
             switch (pm) {
@@ -169,12 +165,13 @@ public class CashBookEntryController implements Serializable {
             newCbEntry.setCreater(sessionController.getLoggedUser());
             newCbEntry.setCreatedAt(new Date());
 
-            newCbEntry.setPaymentMethod(bundle.getPaymentMethod());
+            newCbEntry.setPaymentMethod(pm);
             newCbEntry.setEntryValue(value);
             newCbEntry.setBill(bill);
             newCbEntry.setCashBook(bundleCb);
             cashbookEntryFacade.create(newCbEntry);
             cashbookEntries.add(newCbEntry);
+            System.out.println("newCbEntry = " + newCbEntry);
             updateBalances(bundle.getPaymentMethod(), value, newCbEntry);
 
         }
