@@ -14,32 +14,35 @@
             <h:form  >
                 <p:panel rendered="#{!iouBillController.printPreview}" >
                     <f:facet name="header">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h:outputText value="New IOU Settle" style="margin-right: 20px; font-size: 1.25rem;" />
-                            <h:outputText value="Payment Details" style="margin-right: 20px;" />
-                            <p:commandButton  
-                                value="Settle"
-                                styleClass="ui-button-success"
-                                icon="pi pi-check"  
+                        <div class="d-flex align-items-center">
+                            <h:outputText value="Settle IOU" style="margin-right: 20px; " />
+                            
+                            <div class="d-flex" style="margin-left: auto">
+                                <p:commandButton  
+                                value="Settle"                               
+                                icon="pi pi-check"
+                                class="mx-3 ui-button-success"
                                 action="#{iouBillController.settleIouSettlingBill()}" 
                                 ajax="false"  
-                                style="min-width: 150px; padding: 10px; margin-right: 10px;">
+                                style="min-width: 150px; ">
                             </p:commandButton>
                             <p:commandButton 
                                 value="Clear &amp; Create New IOU Settle Bill" 
-                                ajax="false" 
+                                ajax="false"                             
                                 styleClass="ui-button-warning"
                                 icon="pi pi-plus"  
                                 action="#{iouBillController.prepareNewIouSettleBill()}" 
-                                style="min-width: 200px; padding: 10px;">
+                                style="min-width: 200px; ">
                             </p:commandButton>
+                            </div>
+                            
                         </div>
                     </f:facet>
 
 
 
                     <div class="row">
-                        <div class="col-5">
+                        <div class="col-6">
                             <p:panel header="Available IOUs">
 
                                 <p:dataTable 
@@ -49,26 +52,26 @@
                                     selection="#{iouBillController.settlingIuos}"
                                     var="mi" >
                                     <p:column selectionBox="true" width="30" ></p:column>
-                                    <p:column headerText="Reference No" >
+                                    <p:column headerText="Ref. No" width="4rem" >
                                         <h:outputLabel value="#{mi.bill.referenceNumber}" ></h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Bll Type" >
+                                    <p:column headerText="Bll Type" width="4rem">
                                         <h:outputLabel value="#{mi.bill.billTypeAtomic.label}" ></h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Payment Method" >
+                                    <p:column headerText="Payment Method" width="4rem">
                                         <h:outputLabel value="#{mi.paymentMethod}" ></h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Debttor" >
+                                    <p:column headerText="Debtor" width="4rem">
                                         <h:outputLabel value="#{mi.bill.staff.person.nameWithTitle}" ></h:outputLabel>
                                         <h:outputLabel value="#{mi.bill.person.nameWithTitle}" ></h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Created at" >
+                                    <p:column headerText="Created at" width="4rem">
                                         <h:outputLabel value="#{mi.bill.createdAt}" >
                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" >
                                             </f:convertDateTime>
                                         </h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Value" >
+                                    <p:column headerText="Value" width="4rem">
                                         <h:outputLabel value="#{mi.paidValue}" >
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputLabel>
@@ -80,7 +83,7 @@
 
 
 
-                        <div class="col-7"  >
+                        <div class="col-6"  >
 
 
                             <p:panel header="Add Funds" >
@@ -90,7 +93,7 @@
                                         <p:outputLabel value="Payment Method" ></p:outputLabel>
                                         <p:selectOneMenu 
                                             class="mx-2"
-                                            style="width: 16em"
+                                            style="width: 8em"
                                             id="cmdPayment" 
                                             value="#{iouBillController.currentPayment.paymentMethod}" >
                                             <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
@@ -135,19 +138,11 @@
                                             </h:panelGroup>
 
                                             <h:panelGroup class="d-flex" layout="block" id="cash" rendered="#{iouBillController.currentPayment.paymentMethod eq 'Cash'}">
-                                                <p:panelGrid columns="2" layout="tabular" class="w-100">
+                                                <p:panelGrid columns="1" layout="tabular" class="w-50">
                                                     <p:outputLabel value="Total Value" ></p:outputLabel>
                                                     <p:inputText id="txtCashPaidValue" value="#{iouBillController.currentPayment.paidValue}"  />
                                                 </p:panelGrid>
                                             </h:panelGroup>
-
-
-
-
-
-
-
-
 
 
                                             <h:panelGroup
@@ -238,11 +233,11 @@
                                 </f:facet>
 
                                 <p:dataTable id="tblPayments" value="#{iouBillController.paymentsForsettlingIuos}" var="bp" >
-                                    <p:column headerText="Payment Method" width="20%">
+                                    <p:column headerText="Payment Method" width="5rem">
                                         <h:outputText value="#{bp.paymentMethod}" ></h:outputText>
                                     </p:column>
 
-                                    <p:column headerText="Details"  >
+                                    <p:column headerText="Details" width="5rem" >
                                         <h:panelGroup rendered="#{bp.paymentMethod eq 'Cheque'}">
                                             <h:outputLabel value="Bank Name : #{bp.bank.name}" ></h:outputLabel>
                                             <h:outputLabel value="Cheque No : #{bp.chequeRefNo}" ></h:outputLabel>
@@ -252,11 +247,11 @@
                                             ෆ                                    </h:panelGroup>
                                     </p:column>
 
-                                    <p:column headerText="Value" width="20%">
+                                    <p:column headerText="Value" width="5rem">
                                         <h:outputText value="#{bp.paidValue}" ></h:outputText>
                                     </p:column>
 
-                                    <p:column headerText="Action" width="20%">
+                                    <p:column headerText="Action" width="5rem">
                                         <p:commandButton 
                                             class="ui-button-danger"
                                             icon=" fa-solid fa-trash"
