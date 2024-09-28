@@ -190,8 +190,7 @@ public enum BillTypeAtomic {
     FUND_SHIFT_EXCESS_BILL_CANCELLED("Shift Excess Bill - Cancelled", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.CASH_OUT, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
     TRANSFER_PAYMENT_METHOD_BILL("Transfer Payment Method Bill", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.CASH_IN, CountedServiceType.OTHER, PaymentCategory.NO_PAYMENT),
     TRANSFER_PAYMENT_METHOD_BILL_CANCELLED("Transfer Payment Method Bill - Cancelled", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.CASH_IN, CountedServiceType.OTHER, PaymentCategory.NO_PAYMENT),
-
-// PROFESSIONAL PAYMENTS
+    // PROFESSIONAL PAYMENTS
     PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE("Inward Payment for Staff", BillCategory.PAYMENTS, ServiceType.INWARD, BillFinanceType.CASH_IN, CountedServiceType.INWARD_PROFESSIONAL_PAYMENT, PaymentCategory.NON_CREDIT_SPEND),
     PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE("Channelling Payment for Staff", BillCategory.PAYMENTS, ServiceType.CHANNELLING, BillFinanceType.CASH_OUT, CountedServiceType.CHANNELLING_PROFESSIONAL_PAYMENT, PaymentCategory.NON_CREDIT_SPEND),
     PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION("Channelling session Payment for Staff", BillCategory.PAYMENTS, ServiceType.CHANNELLING, BillFinanceType.CASH_OUT, CountedServiceType.CHANNELLING_PROFESSIONAL_PAYMENT, PaymentCategory.NON_CREDIT_SPEND),
@@ -242,7 +241,13 @@ public enum BillTypeAtomic {
     FUND_DEPOSIT_BILL("Deposit Fund Bill", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.BANK_OUT, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
     FUND_DEPOSIT_BILL_CANCELLED("Deposit Fund Bill - Cancelled", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.BANK_IN, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
     FUND_WITHDRAWAL_BILL("Withdrawal Fund Bill", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.BANK_IN, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
-    FUND_WITHDRAWAL_BILL_CANCELLED("Withdrawal Fund Bill - Cancelled", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.BANK_OUT, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),;
+    FUND_WITHDRAWAL_BILL_CANCELLED("Withdrawal Fund Bill - Cancelled", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.BANK_OUT, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
+    // Additional Income
+    SUPPLEMENTARY_INCOME("Supplementary Income", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.CASH_IN, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_COLLECTION),
+    SUPPLEMENTARY_INCOME_CANCELLED("Supplementary Income - Cancelled", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.CASH_OUT, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_COLLECTION),
+    // Operational Expenses
+    OPERATIONAL_EXPENSES("Operational Expenses", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.CASH_OUT, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
+    OPERATIONAL_EXPENSES_CANCELLED("Operational Expenses - Cancelled", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.CASH_IN, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND);
 
     private final String label;
     private final BillCategory billCategory;
@@ -299,7 +304,16 @@ public enum BillTypeAtomic {
         return null;
     }
 
-    BillTypeAtomic(String label, BillCategory billCategory, ServiceType serviceType, BillFinanceType billFinanceType, CountedServiceType countedServiceType, PaymentCategory paymentCategory) {
+     BillTypeAtomic(String 
+    label, BillCategory
+    billCategory, ServiceType
+    serviceType, BillFinanceType
+    billFinanceType, CountedServiceType
+    countedServiceType, PaymentCategory
+    paymentCategory
+
+    
+        ) {
         this.label = label;
         this.billCategory = billCategory;
         this.serviceType = serviceType;
