@@ -1723,7 +1723,7 @@ public class FinancialTransactionController implements Serializable {
                 }
             }
         }
-        return navigateToH;
+        return navigateToReceiveHandoverBillsForMe();
     }
 
     @Deprecated
