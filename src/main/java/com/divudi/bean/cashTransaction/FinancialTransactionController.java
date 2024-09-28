@@ -3934,6 +3934,7 @@ public class FinancialTransactionController implements Serializable {
                     System.out.println("row.getPayment() = " + row.getPayment());
                     continue;
                 }
+
                 if (!row.getPayment().isSelectedForCashbookEntry()) {
                     continue;
                 }
@@ -3943,11 +3944,13 @@ public class FinancialTransactionController implements Serializable {
                 cashBookEntryController.writeCashBookEntryAtHandover(p, bundleCb);
 
                 p.setCashbook(bundleCb);
-                p.setCashbookEntry(findCashbookEntry(p,cbEntries));
+                p.setCashbookEntry(findCashbookEntry(p, cbEntries));
                 p.setCashbookEntryCompleted(true);
                 p.setHandoverAcceptBill(currentBill);
                 p.setHandoverAcceptComponantBill(shiftHandoverComponantAcceptBill);
-
+                p.setCurrentHolder(sessionController.getLoggedUser());
+                p.setHandingOverCompleted(true);
+                p.setHandingOverStarted(false);
                 p.setCashbookEntryStated(true);
                 p.setCashbookEntryCompleted(true);
 
