@@ -30,7 +30,7 @@
                                              class="ui-button-danger mx-1"
                                              rendered="#{bookingControllerViewScope.selectedSessionInstance.completed}">
                             </p:commandButton>
-                             <p:commandButton 
+                            <p:commandButton 
                                 value="Mark To Absent"
                                 ajax="false" 
                                 action="#{bookingControllerViewScope.markBillSessionForAbsent}" 
@@ -204,11 +204,13 @@
                                             <p:column>
                                                 <p:commandButton 
                                                     rendered="#{bs.absent}"
+                                                    disabled="#{!(bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall')}"
                                                     value="Change Patient"
                                                     ajax="false" 
                                                     action="#{bookingControllerViewScope.navigateToManageBooking(bs)}" 
-                                                    class="ui-button-secondary ">
+                                                    class="ui-button-secondary">
                                                 </p:commandButton>
+
                                             </p:column>
 
 
@@ -724,7 +726,7 @@
 
                                                 <p:outputLabel value="Exclude From Patient Portal"/>
                                                 <p:selectBooleanCheckbox value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.excludeFromPatientPortal}"/>
-                                                
+
                                                 <h:outputLabel value="Special Notice For Session" />
                                                 <p:inputTextarea class="mx-2 w-100"  rows="4" value="#{bookingControllerViewScope.selectedSessionInstance.specialNoticeSessionInstance}"/>
 

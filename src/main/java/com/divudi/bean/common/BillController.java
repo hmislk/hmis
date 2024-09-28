@@ -2842,6 +2842,44 @@ public class BillController implements Serializable {
             System.out.println("4 originalBilItem.isRefunded() = " + originalBilItem.isRefunded());
         }
     }
+    public String navigateTomissingBillsForCcCancellation() {
+        return "/dataAdmin/missing_cc_cancellation_bills?faces-redirect=true";
+    }
+    public void addMissingValuesForCcCancellationBillItems() {
+        String jpql = "select bi "
+                + " from BillItem bi "
+                + " where bi.retired=false "
+                + " and bi.bill.billTypeAtomic=:bta";
+        Map m = new HashMap();
+        m.put("bta", BillTypeAtomic.CC_BILL_CANCELLATION);
+        List<BillItem> bis = billItemFacade.findByJpql(jpql, m, 10000);
+        System.out.println("bis = " + bis);
+        if (bis == null) {
+            return;
+        }
+        for (BillItem bi : bis) {
+            System.out.println("bi = " + bi);
+            Institution cc = bi.getBill().getCollectingCentre();
+            Double collectingCentreMargin = cc.getPercentage();
+            Double netTotal = bi.getNetValue();
+            System.out.println("netTotal = " + netTotal);
+            Double ccFee = netTotal * collectingCentreMargin / 100;
+            System.out.println("ccFee = " + ccFee);
+            Double hosFee = netTotal - ccFee;
+            System.out.println("hosFee = " + hosFee);
+            if(bi.getHospitalFee()==0.0){
+                bi.setHospitalFee(hosFee);
+                billItemFacade.edit(bi);
+            }
+            if(bi.getCollectingCentreFee()==0.0){
+                bi.setCollectingCentreFee(ccFee);
+                billItemFacade.edit(bi);
+            }
+            
+            
+        }
+        
+    }
 
     public void calTotals() {
 //     //   ////// // System.out.println("calculating totals");

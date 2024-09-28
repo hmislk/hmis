@@ -79,6 +79,9 @@ public class Payment implements Serializable {
     @ManyToOne
     WebUser retirer;
 
+    @ManyToOne
+    private WebUser currentHolder;
+
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date retiredAt;
 
@@ -119,29 +122,31 @@ public class Payment implements Serializable {
     private boolean cashbookEntryCompleted;
     private boolean paymentRecordStated;
     private boolean paymentRecordCompleted;
-    
+
     private boolean selectedForHandover;
     private boolean selectedForCashbookEntry;
     private boolean selectedForRecording;
     private boolean selectedForRecordingConfirmation;
+    private boolean handingOverStarted;
+    private boolean handingOverCompleted;
 
     @ManyToOne
     private Bill handoverShiftBill;
     @ManyToOne
     private Bill handoverShiftComponantBill;
-    
+
     //Handover Creation
     @ManyToOne
     private Bill handoverCreatedBill;
     @ManyToOne
     private Bill handoverCreatedComponantBill;
-    
+
     //Handover Accept
     @ManyToOne
     private Bill handoverAcceptBill;
     @ManyToOne
     private Bill handoverAcceptComponantBill;
-    
+
     //Payment Record Creation
     @ManyToOne
     private Bill paymentRecordCreateBill;
@@ -150,7 +155,7 @@ public class Payment implements Serializable {
     //Payment Record Accept
     @ManyToOne
     private Bill paymentRecordCompleteBill;
-     @ManyToOne
+    @ManyToOne
     private Bill paymentRecordCompleteComponantBill;
     //Cash Book
     @ManyToOne
@@ -158,12 +163,22 @@ public class Payment implements Serializable {
     @ManyToOne
     private CashBook cashbook;
 
+    private boolean cancelled;
+    @ManyToOne
+    private WebUser cancelledBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date cancelledAt;
+    @ManyToOne
+    private Payment cancelledPayment;
+    @ManyToOne
+    private Bill cancelledBill;
+
     public Payment() {
         cashbookEntryStated = false;
         cashbookEntryCompleted = false;
         paymentRecordStated = false;
         paymentRecordCompleted = false;
-        paymentDate=new Date();
+        paymentDate = new Date();
     }
 
     public Long getId() {
@@ -499,14 +514,17 @@ public class Payment implements Serializable {
         }
     }
 
+    @Deprecated
     public String getCurrencyDenominationsJson() {
         return currencyDenominationsJson;
     }
 
+    @Deprecated
     public List<Denomination> getCurrencyDenominations() {
         return currencyDenominations;
     }
 
+    @Deprecated
     public void setCurrencyDenominations(List<Denomination> currencyDenominations) {
         this.currencyDenominations = currencyDenominations;
     }
@@ -625,8 +643,8 @@ public class Payment implements Serializable {
     }
 
     public Date getPaymentDate() {
-        if(paymentDate==null){
-            if(this.getBill()!=null){
+        if (paymentDate == null) {
+            if (this.getBill() != null) {
                 paymentDate = this.getBill().getCreatedAt();
             }
         }
@@ -699,6 +717,73 @@ public class Payment implements Serializable {
 
     public void setSelectedForRecordingConfirmation(boolean selectedForRecordingConfirmation) {
         this.selectedForRecordingConfirmation = selectedForRecordingConfirmation;
+    }
+
+    public WebUser getCurrentHolder() {
+//        if (currentHolder == null) {
+//            currentHolder = creater;
+//        }
+        return currentHolder;
+    }
+
+    public void setCurrentHolder(WebUser currentHolder) {
+        this.currentHolder = currentHolder;
+    }
+
+    public boolean isCancelled() {
+        return cancelled;
+    }
+
+    public void setCancelled(boolean cancelled) {
+        this.cancelled = cancelled;
+    }
+
+    public WebUser getCancelledBy() {
+        return cancelledBy;
+    }
+
+    public void setCancelledBy(WebUser cancelledBy) {
+        this.cancelledBy = cancelledBy;
+    }
+
+    public Date getCancelledAt() {
+        return cancelledAt;
+    }
+
+    public void setCancelledAt(Date cancelledAt) {
+        this.cancelledAt = cancelledAt;
+    }
+
+    public Payment getCancelledPayment() {
+        return cancelledPayment;
+    }
+
+    public void setCancelledPayment(Payment cancelledPayment) {
+        this.cancelledPayment = cancelledPayment;
+    }
+
+    public Bill getCancelledBill() {
+        return cancelledBill;
+    }
+
+    public void setCancelledBill(Bill cancelledBill) {
+        this.cancelledBill = cancelledBill;
+    }
+
+    public boolean isHandingOverStarted() {
+        return handingOverStarted;
+    }
+
+    public void setHandingOverStarted(boolean handingOverStarted) {
+        this.handingOverStarted = handingOverStarted;
+    }
+
+    public boolean isHandingOverCompleted() {
+        return handingOverCompleted;
+    }
+
+    public void setHandingOverCompleted(boolean handingOverCompleted) {
+        this.handingOverCompleted = handingOverCompleted;
     }
     
     

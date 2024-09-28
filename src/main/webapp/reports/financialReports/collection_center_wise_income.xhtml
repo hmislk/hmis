@@ -1,0 +1,133 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body class="w-100 border">
+        <ui:composition template="/reports/index.xhtml" class="w-100 border">
+            <ui:define name="subcontent">
+                <h:form class="w-100">
+                    <p:panel header="Collection Center Wise Income" class="w-100">
+                        <h:panelGrid columns="5" class="w-100" >
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
+                                <p:outputLabel value="From Date"  class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:datePicker value="#{reportController.fromDate}" 
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                          class=" w-100" inputStyleClass="w-100" ></p:datePicker>
+
+
+                            <p:spacer width="20"></p:spacer>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
+                                <p:outputLabel value="To Date" class="mx-3" >
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:datePicker value="#{reportController.toDate}"
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                          class="w-100" inputStyleClass="w-100"></p:datePicker>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf1ad;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="Site" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu value="" filter="true" class="w-100 ">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+                            <p:spacer width="20"></p:spacer>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0f7;" styleClass="fa mr-2" /> <!-- FontAwesome user-injured icon for Collection Center Name -->
+                                <h:outputLabel value="Collection Center Name" for="cmbCollectionCenterName" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>   
+
+
+
+
+
+                        </h:panelGrid><br/>
+
+                        <div class="d-flex align-items-center">
+                            <p:commandButton class="ui-button-warning mx-1" ajax="false" value="Process" icon="fas fa-cogs" action="#{reportController.processLabTestCount()}" >
+                            </p:commandButton>
+                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download" action="#{reportController.downloadLabTestCount}">
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-danger mx-1" icon= "fas fa-file-pdf" ajax="false" value="PDF">
+                            </p:commandButton>
+                        </div><br/><br/>
+
+                        <p:panel>
+                            <f:facet name="header">
+                                <h:outputLabel value="Collection Center Wise Summary Report" /><br/><br/>
+
+                                <h:outputLabel value="From Date :"/>
+                                <br/>
+                                <h:outputLabel value="To Date :"/>      
+                                <br/>     
+                            </f:facet>
+
+
+                            <p:dataTable>  
+                                <p:column headerText="S.No">
+                                    <h:outputText value="" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="CC Code">
+                                    <h:outputText value="" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="CC Name" width="">
+                                    <h:outputText value="" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Count" >
+                                    <h:outputText value="" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Hos Fee" >
+                                    <h:outputText value="" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="CC Fee" >
+                                    <h:outputText value="" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Staff" >
+                                    <h:outputText value="" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Net Total" >
+                                    <h:outputText value="" ></h:outputText>
+                                </p:column>
+                            </p:dataTable>
+                        </p:panel>
+
+
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

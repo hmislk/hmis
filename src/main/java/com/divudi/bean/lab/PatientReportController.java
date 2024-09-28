@@ -692,6 +692,7 @@ public class PatientReportController implements Serializable {
     }
 
     public void calculate() {
+        System.out.println("calculate");
         Date startTime = new Date();
         if (currentPatientReport == null) {
             JsfUtil.addErrorMessage("No Report to calculate");
@@ -731,6 +732,7 @@ public class PatientReportController implements Serializable {
                 m.put("iii", priv.getInvestigationItem());
                 List<IxCal> ixCals = getIxCalFacade().findByJpql(sql, m);
                 double result = 0;
+                String resultStr = "";
                 calString = "";
 
                 String baseJs = null;
@@ -795,7 +797,7 @@ public class PatientReportController implements Serializable {
                         calString = calString + currentPatientReport.getPatientInvestigation().getPatient().getAgeYears();
                     }
                 }
-
+                System.out.println("calString = " + calString);
                 System.out.println("baseJs = " + baseJs);
                 if (baseJs != null) {
                     calString = generateModifiedJavascriptFromBaseJavaScript(currentPatientReport, baseJs);
@@ -804,8 +806,26 @@ public class PatientReportController implements Serializable {
 
                 ScriptEngineManager mgr = new ScriptEngineManager();
                 ScriptEngine engine = mgr.getEngineByName("JavaScript");
+                Object resultObj;
                 try {
-                    result = (double) engine.eval(calString);
+                    resultObj = engine.eval(calString);
+                    if(resultObj== null){
+                        System.out.println("resultObj Null = ");
+                        result = 0.0;
+                        resultStr = "";
+                    }
+                    else if(resultObj instanceof String){
+                        resultStr= (String) resultObj;
+                        System.out.println("resultStr = " + resultObj);
+                    }else if(resultObj instanceof Double){
+                        result = (double) resultObj;
+                        System.out.println("result = " + result);
+                    }else{
+                        System.out.println("Else = ");
+                        result = 0.0;
+                        resultStr = "";
+                    }
+                    
 
                 } catch (Exception ex) {
                     Logger.getLogger(PatientReportController.class
@@ -813,6 +833,7 @@ public class PatientReportController implements Serializable {
                     result = 0.0;
                 }
                 priv.setDoubleValue(result);
+                priv.setStrValue(resultStr);
 
             } else if (priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Flag) {
                 priv.setStrValue(findFlagValue(priv));

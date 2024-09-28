@@ -13,8 +13,6 @@
                 </style>
             </h:head>
 
-
-
             <p:panel header="Collecting Centre Bill Items" style="overflow-x: scroll;">
                 <h:form>
 
@@ -147,7 +145,7 @@
                             value="Excel" 
                             style="width: 150px"
                             icon="fas fa-file-excel" 
-                            class="ui-button-info mx-2"
+                            class="ui-button-success mx-2"
                             >
                             <p:dataExporter fileName="cc_bill_item_list" target="tbl" type="xlsx" ></p:dataExporter>
                         </p:commandButton>
@@ -161,9 +159,7 @@
                             <p:dataExporter type="pdf" target="tbl"  fileName="cc_bill_item_list" ></p:dataExporter>
                         </p:commandButton>
 
-
                     </div>
-
                 </h:form>
 
             </p:panel>
@@ -214,8 +210,6 @@
                     <p:column headerText="Patient Name" filterBy="#{billItem.bill.patient.person.nameWithTitle}" sortBy="#{billItem.bill.patient.person.nameWithTitle}">
                         <h:outputLabel value="#{billItem.bill.patient.person.nameWithTitle}" />
                     </p:column>
-
-
 
                     <!-- Investigation Name Column -->
                     <p:column headerText="Investigation" filterBy="#{billItem.patientInvestigation.investigation.name}" 
@@ -270,7 +264,7 @@
                     </p:column>
 
                     <!-- Hospital Fee Column -->
-                    <p:column headerText="Hospital Fee">
+                    <p:column headerText="Staff Fee">
                         <h:outputLabel value="#{billItem.staffFee}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
@@ -306,7 +300,7 @@
                     </p:column>
 
                     <!-- Net Total Column -->
-                    <p:column headerText="Net Total">
+                    <p:column headerText="Net Total" sortBy="#{billItem.netValue}">
                         <h:outputLabel value="#{billItem.netValue}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
@@ -358,17 +352,7 @@
                     </p:column>
 
                 </p:dataTable>
-
-
-
-
-            </h:form>
-
-
-
-
-
-
+          </h:form>
 
         </ui:define>
     </ui:composition>

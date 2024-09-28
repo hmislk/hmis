@@ -6,6 +6,7 @@ import com.divudi.bean.common.ItemApplicationController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.PatientController;
 import com.divudi.bean.common.PersonController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillItemStatus;
 import com.divudi.data.BillType;
@@ -18,6 +19,8 @@ import com.divudi.data.ReportTemplateRow;
 import com.divudi.data.ReportTemplateRowBundle;
 import com.divudi.data.Sex;
 import com.divudi.data.TestWiseCountReport;
+import com.divudi.data.dataStructure.BillAndItemDataRow;
+import com.divudi.data.dataStructure.ItemDetailsCell;
 import com.divudi.data.lab.PatientInvestigationStatus;
 import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Bill;
@@ -53,12 +56,15 @@ import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeSet;
 import javax.ejb.EJB;
 import javax.inject.Inject;
 import org.apache.poi.ss.usermodel.Cell;
@@ -104,6 +110,8 @@ public class ReportController implements Serializable {
     ItemController itemController;
     @Inject
     PatientController patientController;
+    @Inject
+    WebUserController webUserController;
 
     private int reportIndex;
     private Institution institution;
@@ -172,12 +180,103 @@ public class ReportController implements Serializable {
 
     private List<PatientDepositHistory> patientDepositHistories;
 
-    CommonFunctions commonFunctions;
+    private CommonFunctions commonFunctions;
     private List<PatientInvestigation> patientInvestigations;
-    PatientInvestigationStatus patientInvestigationStatus;
+    private PatientInvestigationStatus patientInvestigationStatus;
 
     private List<AgentReferenceBook> agentReferenceBooks;
-    
+
+    private boolean showPaymentData;
+
+    private List<BillAndItemDataRow> billAndItemDataRows;
+    private BillAndItemDataRow headerBillAndItemDataRow;
+
+    public void generateItemMovementByBillReport() {
+        billAndItemDataRows = new ArrayList<>();
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("SELECT bi FROM BillItem bi WHERE bi.retired=:bir AND bi.bill.cancelled=:bc AND bi.refunded=:birf AND bi.bill.retired=:br AND bi.bill.createdAt BETWEEN :fd AND :td");
+        params.put("bir", false);
+        params.put("br", false);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+        params.put("birf", false);
+        params.put("bc", false);
+
+        if (institution != null) {
+            jpql.append(" AND bi.bill.institution=:ins");
+            params.put("ins", institution);
+        }
+        if (department != null) {
+            jpql.append(" AND bi.bill.department=:dep");
+            params.put("dep", department);
+        }
+        if (site != null) {
+            jpql.append(" AND bi.bill.department.site=:site");
+            params.put("site", site);
+        }
+        if (category != null) {
+            jpql.append(" AND (bi.item.category=:cat OR bi.item.category.parentCategory=:cat)");
+            params.put("cat", category);
+        }
+        if (item != null) {
+            jpql.append(" AND bi.item=:item");
+            params.put("item", item);
+        }
+
+        List<BillItem> billItems = billItemFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+        if (billItems == null) {
+            return;
+        }
+
+        // Deduplicate and sort items for headers
+        Set<Item> items = new TreeSet<>(Comparator.comparing(Item::getName));
+        billItems.stream().map(BillItem::getItem).filter(Objects::nonNull).forEach(items::add);
+        List<Item> sortedItems = new ArrayList<>(items);
+
+        // Initialize header row with items and placeholders for totals
+        headerBillAndItemDataRow = new BillAndItemDataRow();
+        for (Item it : sortedItems) {
+            ItemDetailsCell cell = new ItemDetailsCell();
+            cell.setItem(it);
+            cell.setQuentity(0.0);  // Initialize with zero for totals
+            headerBillAndItemDataRow.getItemDetailCells().add(cell);
+        }
+
+        // Map to hold rows, mapped by Bill
+        Map<Bill, BillAndItemDataRow> billMap = new HashMap<>();
+        for (BillItem bi : billItems) {
+            if (bi.getItem() == null) {
+                continue;
+            }
+
+            Bill bill = bi.getBill();
+            BillAndItemDataRow row = billMap.getOrDefault(bill, new BillAndItemDataRow());
+            row.setBill(bill);
+
+            if (row.getItemDetailCells().isEmpty()) {
+                for (int i = 0; i < sortedItems.size(); i++) {
+                    row.getItemDetailCells().add(new ItemDetailsCell());
+                }
+            }
+
+            int itemIndex = sortedItems.indexOf(bi.getItem());
+            if (itemIndex != -1) {
+                ItemDetailsCell cell = row.getItemDetailCells().get(itemIndex);
+                cell.setItem(bi.getItem());
+                cell.setQuentity(bi.getQty());
+                row.getItemDetailCells().set(itemIndex, cell);
+
+                // Accumulate totals directly in the header row
+                ItemDetailsCell totalCell = headerBillAndItemDataRow.getItemDetailCells().get(itemIndex);
+                totalCell.setQuentity(totalCell.getQuentity() + bi.getQty());
+            }
+
+            billMap.put(bill, row);
+        }
+
+        billAndItemDataRows = new ArrayList<>(billMap.values());
+    }
+
     public void ccSummaryReportByItem() {
 
         ReportTemplateRowBundle billedBundle = new ReportTemplateRowBundle();
@@ -543,12 +642,13 @@ public class ReportController implements Serializable {
         double totalProfessionalFee = combinedResults.values().stream().mapToDouble(ReportTemplateRow::getItemProfessionalFee).sum();
         double totalNet = combinedResults.values().stream().mapToDouble(ReportTemplateRow::getItemNetTotal).sum();
 
-        
         combinedBundle.setCount(totalCount);
         combinedBundle.setTotal(totalNet);
-        
-        
-        
+
+        combinedBundle.setHospitalTotal(totalHospitalFee);
+        combinedBundle.setCcTotal(totalCCFee);
+        combinedBundle.setStaffTotal(totalProfessionalFee);
+
         System.out.println("Final Totals - Count: " + totalCount + " | Hospital Fee: " + totalHospitalFee
                 + " | CC Fee: " + totalCCFee + " | Professional Fee: " + totalProfessionalFee + " | Net Total: " + totalNet);
 
@@ -1481,14 +1581,22 @@ public class ReportController implements Serializable {
             institutionController.fillItems();
         }
         return "/reports/lab/external_laboratary_workload?faces-redirect=true";
-    } 
-    
-    public String navigateToInvestigationMonthEndSummery(){
+    }
+
+    public String navigateToInvestigationMonthEndSummery() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
         return "/reports/lab/investigation_month_end_summery?faces-redirect=true";
-        
+
+    }
+
+    public String navigateToInvestigationMonthEndDetails() {
+        if (institutionController.getItems() == null) {
+            institutionController.fillItems();
+        }
+        return "/reports/lab/investigation_month_end_detailed?faces-redirect=true";
+
     }
 
     public String navigateToLabOrganismAntibioticSensitivityReport() {
@@ -1597,7 +1705,12 @@ public class ReportController implements Serializable {
 
     public String navigateToManagementAdmissionCountReport() {
 
-        return "/reports/managementReports/admission_count(consultant_wise)?faces-redirect=true";
+        return "/reports/managementReports/referring_doctor_wise_revenue?faces-redirect=true";
+    }
+
+    public String navigateToReferringDoctorWiseRevenue() {
+
+        return "/reports/managementReports/re?faces-redirect=true";
     }
 
     public String navigateToSurgeryWiseCount() {
@@ -2444,6 +2557,38 @@ public class ReportController implements Serializable {
 
     public void setAgentReferenceBooks(List<AgentReferenceBook> agentReferenceBooks) {
         this.agentReferenceBooks = agentReferenceBooks;
+    }
+
+    public boolean isShowPaymentData() {
+        boolean allowedToChange;
+        allowedToChange = webUserController.hasPrivilege("LabSummeriesLevel3");
+        if (allowedToChange) {
+            showPaymentData = false;
+        }
+        return showPaymentData;
+    }
+
+    public void setShowPaymentData(boolean showPaymentData) {
+        this.showPaymentData = showPaymentData;
+    }
+
+    public List<BillAndItemDataRow> getBillAndItemDataRows() {
+        if (billAndItemDataRows == null) {
+            billAndItemDataRows = new ArrayList<>();
+        }
+        return billAndItemDataRows;
+    }
+
+    public void setBillAndItemDataRows(List<BillAndItemDataRow> billAndItemDataRows) {
+        this.billAndItemDataRows = billAndItemDataRows;
+    }
+
+    public BillAndItemDataRow getHeaderBillAndItemDataRow() {
+        return headerBillAndItemDataRow;
+    }
+
+    public void setHeaderBillAndItemDataRow(BillAndItemDataRow headerBillAndItemDataRow) {
+        this.headerBillAndItemDataRow = headerBillAndItemDataRow;
     }
 
 }

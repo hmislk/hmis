@@ -95,14 +95,14 @@
                                         rowsPerPageTemplate="20,50,100"
                                         >
 
-                                        
+
                                         <p:column 
                                             style="padding: 6px;"
                                             headerText="S. No" 
                                             width="2">
                                             <h:outputLabel value="#{i+1}"/>
                                         </p:column>
-                                        
+
                                         <p:column 
                                             headerText="Book No" style="padding: 6px;"
                                             filterBy="#{refBook.strbookNumber}" 
@@ -164,9 +164,8 @@
                                             </f:facet>
                                             <div class="d-flex justify-content-center">
                                                 <p:badge rendered="#{refBook.retired}" value="Deleted" severity="danger" size="large" styleClass="mr-2"></p:badge>
-                                                <p:badge rendered="#{refBook.deactivate eq false and refBook.retired eq false}" size="large" value="Active" severity="info" styleClass="mr-2"></p:badge>
-                                                <p:badge rendered="false" value="Deactive" size="large" severity="warning" styleClass="mr-2"></p:badge>
-                                                <p:badge rendered="false" value="Ongoing" severity="success" size="large" styleClass="mr-2"></p:badge>
+                                                <p:badge rendered="#{refBook.active eq true and refBook.retired eq false }" size="large" value="Active" severity="info" styleClass="mr-2"></p:badge>
+                                                <p:badge rendered="#{refBook.active eq  false and refBook.retired eq false}" value="Deactivate" size="large" severity="warning" styleClass="mr-2"></p:badge>
                                             </div>
                                         </p:column>
 
@@ -177,10 +176,8 @@
                                                     icon="fas fa-edit"
                                                     title="To Update"
                                                     disabled="#{refBook.retired}"
-                                                    onclick="#{agentReferenceBookController.switchValue(refBook.deactivate)}"
                                                     process="@this" 
-                                                    update="edit" 
-                                                    rendered="false"
+                                                    update="edit"
                                                     oncomplete="PF('edit').show()"
                                                     >
                                                 </p:commandButton>
@@ -195,7 +192,7 @@
                                                     >
                                                 </p:commandButton>
                                             </div>
- 
+
                                             <p:dialog id="dlg" closeOnEscape="true" modal="true" widgetVar="dlg" header="Agent Reference Book Remove Comment" width="700" height="50">
                                                 <div>
                                                     <div class="d-flex gap-2">
@@ -215,7 +212,7 @@
                                                 </div>
                                             </p:dialog>
 
-                                            <p:dialog id="edit" closeOnEscape="true" modal="true" widgetVar="edit" header="Agent Reference Book Details Update" width="700" height="250">
+                                            <p:dialog id="edit" closeOnEscape="true" modal="true" widgetVar="edit" header="Agent Reference Book Details Update" width="700" height="280">
                                                 <div>
                                                     <div class="row">
                                                         <div class="col-7">
@@ -223,20 +220,20 @@
                                                         </div>
                                                         <div class="col-5">
                                                             <p:autoComplete 
-                                                            converter="deal" 
-                                                            styleClass="w-100"
-                                                            inputStyleClass="w-100"
-                                                            placeholder="Collecting Centre Name"
-                                                            value="#{refBook.institution}" 
-                                                            forceSelection="true"
-                                                            completeMethod="#{institutionController.completeCollectingCenter}" 
-                                                            var="vt" itemLabel="#{vt.name}" itemValue="#{vt}">
-                                                            <p:column style="padding: 6px;"><i class="pi pi-tag"></i> #{vt.code}</p:column>
-                                                            <p:column style="padding: 6px;"><i class="pi pi-user"></i> #{vt.name}</p:column>
-                                                        </p:autoComplete>
+                                                                converter="deal" 
+                                                                styleClass="w-100"
+                                                                inputStyleClass="w-100"
+                                                                placeholder="Collecting Centre Name"
+                                                                value="#{refBook.institution}" 
+                                                                forceSelection="true"
+                                                                completeMethod="#{institutionController.completeCollectingCenter}" 
+                                                                var="vt" itemLabel="#{vt.name}" itemValue="#{vt}">
+                                                                <p:column style="padding: 6px;"><i class="pi pi-tag"></i> #{vt.code}</p:column>
+                                                                <p:column style="padding: 6px;"><i class="pi pi-user"></i> #{vt.name}</p:column>
+                                                            </p:autoComplete>
                                                         </div>
                                                     </div>
-                                                    
+
                                                     <div class="row mt-2">
                                                         <div class="col-7">
                                                             <h:outputText value="Book Number"  class="w-100"></h:outputText>
@@ -245,41 +242,39 @@
                                                             <p:inputText value="#{refBook.strbookNumber}"  class="w-100"></p:inputText>
                                                         </div>
                                                     </div>
-                                                    
+
                                                     <div class="row mt-2">
                                                         <div class="col-7">
                                                             <p:outputLabel value="Starting Reference Number (Minimum 01)" />
                                                         </div>
                                                         <div class="col-5">
                                                             <p:inputText styleClass="w-100" value="#{refBook.startingReferenceNumber}">
-                                                            <f:convertNumber pattern="0" />
-                                                        </p:inputText>
+                                                                <f:convertNumber pattern="0" />
+                                                            </p:inputText>
                                                         </div>
                                                     </div>
-                                                    
+
                                                     <div class="row mt-2">
                                                         <div class="col-7">
                                                             <p:outputLabel value="Ending Reference Number (Maximum 99)" />
                                                         </div>
                                                         <div class="col-5">
                                                             <p:inputText styleClass="w-100" value="#{refBook.endingReferenceNumber}">
-                                                            <f:convertNumber pattern="0" />
-                                                        </p:inputText>
+                                                                <f:convertNumber pattern="0" />
+                                                            </p:inputText>
                                                         </div>
                                                     </div>
-                                                    
+
                                                     <div class="row mt-2">
                                                         <div class="col-7">
                                                             <h:outputText value="Active"  class="w-100"></h:outputText>
                                                         </div>
                                                         <div class="col-5">
-                                                            <p:toggleSwitch value="#{agentReferenceBookController.bookActive}" ></p:toggleSwitch>
+                                                            <p:selectBooleanButton onLabel="Yes" offLabel="No" value="#{refBook.active}" style="width:6rem"/>
+
                                                         </div>
                                                     </div>
-                                                    
-                                                    #{agentReferenceBookController.bookActive}
-                                                   #{refBook.deactivate}
-                                                    
+
                                                     <div class="d-flex justify-content-end mt-2">
                                                         <p:commandButton 
                                                             id="btnupdate" 
@@ -289,9 +284,8 @@
                                                             class="ui-button-warning"
                                                             onclick="if (!confirm('Are You Sure You Want to Update this Reference Book?'))
                                                                         return false;"
-                                                            action="#{agentReferenceBookController.updateAgentBook()}" 
+                                                            action="#{agentReferenceBookController.updateAgentBook(refBook)}" 
                                                             oncomplete="PF('edit').hide();" >
-                                                            <f:setPropertyActionListener value="#{refBook}" target="#{agentReferenceBookController.current}" />
                                                         </p:commandButton>
                                                     </div>
                                                 </div>

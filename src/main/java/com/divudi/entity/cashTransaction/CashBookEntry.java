@@ -48,6 +48,10 @@ public class CashBookEntry implements Serializable {
     private Institution site;
     @ManyToOne
     private Department department;
+    @ManyToOne
+    private WebUser webUser;
+    @Temporal(javax.persistence.TemporalType.DATE)
+    private Date cashbookDate;
     
     
     //Created Properties
@@ -262,5 +266,23 @@ public class CashBookEntry implements Serializable {
     public void setSiteBalance(Double siteBalance) {
         this.siteBalance = siteBalance;
     }
+
+    public WebUser getWebUser() {
+        return webUser;
+    }
+
+    public void setWebUser(WebUser webUser) {
+        this.webUser = webUser;
+    }
+
+    public Date getCashbookDate() {
+        return cashbookDate;
+    }
+
+    public void setCashbookDate(Date cashbookDate) {
+        this.cashbookDate = cashbookDate;
+    }
+    
+    
     
 }

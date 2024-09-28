@@ -121,14 +121,12 @@
                         <h:panelGrid columns="6" class="my-3">
                             <p:commandButton 
                                 ajax="false"
-                                style="width: 150px"
                                 action="#{reportController.ccSummaryReportByBill()}"
                                 value="Process by Bill"
                                 icon="fas fa-cogs" class="ui-button-warning mx-2" >
                             </p:commandButton>
                             <p:commandButton 
                                 ajax="false"
-
                                 action="#{reportController.ccSummaryReportByItem()}"
                                 value="Process By Bill Items"
                                 icon="fas fa-cogs" class="ui-button-warning mx-2" >
@@ -173,6 +171,9 @@
                             </p:column>
                             <p:column headerText="CC Name" >
                                 <h:outputText value="#{c.institution.name}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="CC Route" >
+                                <h:outputText value="#{c.institution.route.name}" ></h:outputText>
                             </p:column>
                             <p:column headerText="Count" >
                                 <h:outputText value="#{c.itemCount}" ></h:outputText>
