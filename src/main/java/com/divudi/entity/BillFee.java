@@ -93,8 +93,8 @@ public class BillFee implements Serializable {
     double paidValue = 0.0;
     //This records the value paid out of the total from the customer
     double settleValue = 0.0;
-    
-        // Indicates if the bill is fully settled by the client
+
+    // Indicates if the bill is fully settled by the client
     private Boolean fullySettled;
 
     // Indicates if the payment has been completed to the professional or institution
@@ -683,8 +683,8 @@ public class BillFee implements Serializable {
     }
 
     public Boolean getFullySettled() {
-        if(fullySettled==null){
-            fullySettled = (feeValue - settleValue)  < 1;
+        if (fullySettled == null) {
+            fullySettled = (feeValue - settleValue) < 1;
         }
         return fullySettled;
     }
@@ -694,13 +694,17 @@ public class BillFee implements Serializable {
     }
 
     public Boolean getCompletedPayment() {
+        if (completedPayment == null) {
+            double absolutePaidValue = Math.abs(paidValue);
+            double absoluteFeeValue = Math.abs(feeValue);
+            double difference = Math.abs(absolutePaidValue - absoluteFeeValue);
+            completedPayment = difference < 1;
+        }
         return completedPayment;
     }
 
     public void setCompletedPayment(Boolean completedPayment) {
         this.completedPayment = completedPayment;
     }
-    
-    
 
 }
