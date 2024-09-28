@@ -6,6 +6,7 @@ import com.divudi.bean.common.ItemApplicationController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.PatientController;
 import com.divudi.bean.common.PersonController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillItemStatus;
 import com.divudi.data.BillType;
@@ -104,6 +105,8 @@ public class ReportController implements Serializable {
     ItemController itemController;
     @Inject
     PatientController patientController;
+    @Inject
+    WebUserController webUserController;
 
     private int reportIndex;
     private Institution institution;
@@ -172,12 +175,14 @@ public class ReportController implements Serializable {
 
     private List<PatientDepositHistory> patientDepositHistories;
 
-    CommonFunctions commonFunctions;
+    private CommonFunctions commonFunctions;
     private List<PatientInvestigation> patientInvestigations;
-    PatientInvestigationStatus patientInvestigationStatus;
+    private PatientInvestigationStatus patientInvestigationStatus;
 
     private List<AgentReferenceBook> agentReferenceBooks;
-    
+
+    private boolean showPaymentData;
+
     public void ccSummaryReportByItem() {
 
         ReportTemplateRowBundle billedBundle = new ReportTemplateRowBundle();
@@ -543,15 +548,13 @@ public class ReportController implements Serializable {
         double totalProfessionalFee = combinedResults.values().stream().mapToDouble(ReportTemplateRow::getItemProfessionalFee).sum();
         double totalNet = combinedResults.values().stream().mapToDouble(ReportTemplateRow::getItemNetTotal).sum();
 
-        
         combinedBundle.setCount(totalCount);
         combinedBundle.setTotal(totalNet);
-        
+
         combinedBundle.setHospitalTotal(totalHospitalFee);
         combinedBundle.setCcTotal(totalCCFee);
         combinedBundle.setStaffTotal(totalProfessionalFee);
-        
-        
+
         System.out.println("Final Totals - Count: " + totalCount + " | Hospital Fee: " + totalHospitalFee
                 + " | CC Fee: " + totalCCFee + " | Professional Fee: " + totalProfessionalFee + " | Net Total: " + totalNet);
 
@@ -1484,14 +1487,22 @@ public class ReportController implements Serializable {
             institutionController.fillItems();
         }
         return "/reports/lab/external_laboratary_workload?faces-redirect=true";
-    } 
-    
-    public String navigateToInvestigationMonthEndSummery(){
+    }
+
+    public String navigateToInvestigationMonthEndSummery() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
         return "/reports/lab/investigation_month_end_summery?faces-redirect=true";
-        
+
+    }
+
+    public String navigateToInvestigationMonthEndDetails() {
+        if (institutionController.getItems() == null) {
+            institutionController.fillItems();
+        }
+        return "/reports/lab/investigation_month_end_detailed?faces-redirect=true";
+
     }
 
     public String navigateToLabOrganismAntibioticSensitivityReport() {
@@ -2452,6 +2463,19 @@ public class ReportController implements Serializable {
 
     public void setAgentReferenceBooks(List<AgentReferenceBook> agentReferenceBooks) {
         this.agentReferenceBooks = agentReferenceBooks;
+    }
+
+    public boolean isShowPaymentData() {
+        boolean allowedToChange;
+        allowedToChange = webUserController.hasPrivilege("LabSummeriesLevel3");
+        if(allowedToChange){
+            showPaymentData=false;
+        }
+        return showPaymentData;
+    }
+
+    public void setShowPaymentData(boolean showPaymentData) {
+        this.showPaymentData = showPaymentData;
     }
 
 }
