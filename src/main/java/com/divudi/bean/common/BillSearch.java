@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.channel.ChannelSearchController;
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.bean.lab.PatientInvestigationController;
@@ -196,6 +197,8 @@ public class BillSearch implements Serializable {
     ChannelSearchController channelSearchController;
     @Inject
     AgentAndCcApplicationController collectingCentreApplicationController;
+    @Inject
+    DrawerController drawerController;
     /**
      * Class Variables
      */
@@ -2362,6 +2365,8 @@ public class BillSearch implements Serializable {
                 bill.getNetTotal(),
                 HistoryType.CollectingCentreBillingCancel,
                 cancellationBill);
+        
+        drawerController.updateDrawerForOuts(p);
 
         bill = billFacade.find(bill.getId());
         printPreview = true;
