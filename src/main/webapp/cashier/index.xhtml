@@ -54,15 +54,14 @@
                                         action="#{financialTransactionController.navigateToMyDrawer()}">
                                     </p:commandButton>
 
-
                                     <p:commandButton 
                                         class="my-1 w-100 ui-button-primary"
-                                        value="Handover"
+                                        value="Handover Shift"
                                         icon="pi pi-forward"
                                         ajax="false" 
-                                        action="#{financialTransactionController.navigateToHandoverCreateBillForAllDaysAndDepartmentsForCurrentShift}" >
+                                        action="#{financialTransactionController.navigateToHandoverCreateBillForCurrentShift()}" >
                                     </p:commandButton>
-
+                                    
                                     <p:commandButton 
                                         class="my-1 w-100 ui-button-info"
                                         value="My Shifts"

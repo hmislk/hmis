@@ -266,9 +266,9 @@
 
                             <p:column class="text-end">
                                 <f:facet name="header">
-                                    <h:outputText value="Base Fee Value" />
+                                    <h:outputText value="Professional Payment Due" />
                                 </f:facet>
-                                <h:outputText value="#{row.billFee.fee.fee}">
+                                <h:outputText value="#{row.billFee.feeValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer">
@@ -280,9 +280,23 @@
 
                             <p:column class="text-end">
                                 <f:facet name="header">
-                                    <h:outputText value="Net Amount" />
+                                    <h:outputText value="Paid Value" />
                                 </f:facet>
-                                <h:outputText value="#{row.billFee.feeValue}">
+                                <h:outputText value="#{row.billFee.paidValue}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{searchController.bundle.total}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+                            
+                            <p:column class="text-end">
+                                <f:facet name="header">
+                                    <h:outputText value="Payment Status" />
+                                </f:facet>
+                                <h:outputText value="#{row.billFee.settleValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer">
