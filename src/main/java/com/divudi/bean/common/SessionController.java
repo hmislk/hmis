@@ -975,25 +975,26 @@ public class SessionController implements Serializable, HttpSessionListener {
         return false;
     }
 
-    public void decryptAllUsers() {
-        String temSQL;
-        temSQL = "SELECT u FROM WebUser u";
-        List<WebUser> allUsers = getFacede().findByJpql(temSQL);
-        int i = 1;
-        for (WebUser u : allUsers) {
-            try {
-                u.setName(getSecurityController().decrypt(u.getName()));
-            } catch (Exception e) {
-                if (u.getName().trim().equals("")) {
-                    u.setName("" + i);
-                }
-            }
-            if (u.getName() != null && !u.getName().trim().equals("")) {
-                getFacede().edit(u);
-            }
-            i++;
-        }
-    }
+//    
+//    public void decryptAllUsers() {
+//        String temSQL;
+//        temSQL = "SELECT u FROM WebUser u";
+//        List<WebUser> allUsers = getFacede().findByJpql(temSQL);
+//        int i = 1;
+//        for (WebUser u : allUsers) {
+//            try {
+//                u.setName(getSecurityController().decrypt(u.getName()));
+//            } catch (Exception e) {
+//                if (u.getName().trim().equals("")) {
+//                    u.setName("" + i);
+//                }
+//            }
+//            if (u.getName() != null && !u.getName().trim().equals("")) {
+//                getFacede().edit(u);
+//            }
+//            i++;
+//        }
+//    }
 
     public boolean loginForRequests() {
         return loginForRequests(userName, password);
