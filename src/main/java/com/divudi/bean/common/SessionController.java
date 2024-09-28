@@ -2241,9 +2241,10 @@ public class SessionController implements Serializable, HttpSessionListener {
         this.loggedSite = loggedSite;
     }
 
-    public List<Denomination> findDefaultDenominations() {
-        return denominationController.getDenominations();
-    }
+//    
+//    public List<Denomination> findDefaultDenominations() {
+//        return denominationController.getDenominations();
+//    }
 
     public Drawer getLoggedUserDrawer() {
         return loggedUserDrawer;
