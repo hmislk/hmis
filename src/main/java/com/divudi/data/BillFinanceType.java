@@ -22,7 +22,8 @@ public enum BillFinanceType {
     FLOAT_STARTING_BALANCE("Float Starting Balance"),
     FLOAT_CLOSING_BALANCE("Float Closing Balance"),
     FLOAT_INCREASE("Float Increase"),
-    FLOAT_DECREASE("Float Decrease");
+    FLOAT_DECREASE("Float Decrease"),
+    FLOAT_CHANGE("Float Change");
 
     private final String label;
 

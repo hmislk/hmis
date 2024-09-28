@@ -194,11 +194,13 @@ public class ReportController implements Serializable {
     public void generateItemMovementByBillReport() {
         billAndItemDataRows = new ArrayList<>();
         Map<String, Object> params = new HashMap<>();
-        StringBuilder jpql = new StringBuilder("SELECT bi FROM BillItem bi WHERE bi.retired=:bir AND bi.bill.retired=:br AND bi.bill.createdAt BETWEEN :fd AND :td");
+        StringBuilder jpql = new StringBuilder("SELECT bi FROM BillItem bi WHERE bi.retired=:bir AND bi.bill.cancelled=:bc AND bi.refunded=:birf AND bi.bill.retired=:br AND bi.bill.createdAt BETWEEN :fd AND :td");
         params.put("bir", false);
         params.put("br", false);
         params.put("fd", fromDate);
         params.put("td", toDate);
+        params.put("birf", false);
+        params.put("bc", false);
 
         if (institution != null) {
             jpql.append(" AND bi.bill.institution=:ins");
@@ -228,45 +230,48 @@ public class ReportController implements Serializable {
 
         // Deduplicate and sort items for headers
         Set<Item> items = new TreeSet<>(Comparator.comparing(Item::getName));
-        // Filter null items
         billItems.stream().map(BillItem::getItem).filter(Objects::nonNull).forEach(items::add);
         List<Item> sortedItems = new ArrayList<>(items);
 
-        // Map to hold rows, initialized with placeholders
-        Map<Bill, BillAndItemDataRow> billMap = new HashMap<>();
-        for (BillItem bi : billItems) {
-            if (bi.getItem() == null) {
-                continue; // Skip items that are null
-            }
-            Bill bill = bi.getBill();
-            BillAndItemDataRow row = billMap.getOrDefault(bill, new BillAndItemDataRow());
-            row.setBill(bill);
-
-            // Initialize placeholders for each item
-            List<ItemDetailsCell> detailsCells = new ArrayList<>();
-            for (int i = 0; i < sortedItems.size(); i++) {
-                detailsCells.add(new ItemDetailsCell());
-            }
-
-            // Place the quantity in the correct column based on the item
-            int itemIndex = sortedItems.indexOf(bi.getItem());
-            if (itemIndex != -1) {
-                ItemDetailsCell cell = detailsCells.get(itemIndex);
-                cell.setItem(bi.getItem());
-                cell.setQuentity(bi.getQty());
-                detailsCells.set(itemIndex, cell);
-            }
-
-            row.setItemDetailCells(detailsCells);
-            billMap.put(bill, row);
-        }
-
-        // Prepare the header row from sorted items
+        // Initialize header row with items and placeholders for totals
         headerBillAndItemDataRow = new BillAndItemDataRow();
         for (Item it : sortedItems) {
             ItemDetailsCell cell = new ItemDetailsCell();
             cell.setItem(it);
+            cell.setQuentity(0.0);  // Initialize with zero for totals
             headerBillAndItemDataRow.getItemDetailCells().add(cell);
+        }
+
+        // Map to hold rows, mapped by Bill
+        Map<Bill, BillAndItemDataRow> billMap = new HashMap<>();
+        for (BillItem bi : billItems) {
+            if (bi.getItem() == null) {
+                continue;
+            }
+
+            Bill bill = bi.getBill();
+            BillAndItemDataRow row = billMap.getOrDefault(bill, new BillAndItemDataRow());
+            row.setBill(bill);
+
+            if (row.getItemDetailCells().isEmpty()) {
+                for (int i = 0; i < sortedItems.size(); i++) {
+                    row.getItemDetailCells().add(new ItemDetailsCell());
+                }
+            }
+
+            int itemIndex = sortedItems.indexOf(bi.getItem());
+            if (itemIndex != -1) {
+                ItemDetailsCell cell = row.getItemDetailCells().get(itemIndex);
+                cell.setItem(bi.getItem());
+                cell.setQuentity(bi.getQty());
+                row.getItemDetailCells().set(itemIndex, cell);
+
+                // Accumulate totals directly in the header row
+                ItemDetailsCell totalCell = headerBillAndItemDataRow.getItemDetailCells().get(itemIndex);
+                totalCell.setQuentity(totalCell.getQuentity() + bi.getQty());
+            }
+
+            billMap.put(bill, row);
         }
 
         billAndItemDataRows = new ArrayList<>(billMap.values());
