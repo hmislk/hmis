@@ -1,0 +1,173 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body class="w-100 border">
+
+        <ui:composition template="/reports/index.xhtml" class="w-100 border">
+            <ui:define name="subcontent">
+                <h:form class="w-100">
+                    <p:panel header="Debtor Balance Report" class="w-100">
+                        <h:panelGrid columns="5" class="w-100 ">
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
+                                <p:outputLabel value="From Date"  class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:datePicker value="" 
+                                          pattern=""
+                                          class=" w-100" inputStyleClass="w-100" ></p:datePicker>
+
+
+                            <p:spacer width="20"></p:spacer>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
+                                <p:outputLabel value="To Date" class="mx-3" >
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:datePicker value=""
+                                          pattern=""
+                                          class="w-100" inputStyleClass="w-100"></p:datePicker>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf084;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Admission Type" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu 
+                                value="" 
+                                filter="true"
+                                class="w-100 ">
+                                <f:selectItem itemLabel="Select" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var=""
+                                               itemLabel=""
+                                               itemValue="" ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20"></p:spacer>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf236;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="Room Category" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu 
+                                value="" 
+                                filter="true"
+                                class="w-100 ">
+                                <f:selectItem itemLabel="Select" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var=""
+                                               itemLabel=""
+                                               itemValue="" ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf007;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="Visit Type" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu 
+                                value="" 
+                                filter="true"
+                                class="w-100 ">
+                                <f:selectItem itemLabel="Select" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var=""
+                                               itemLabel=""
+                                               itemValue="" ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+                            <p:spacer width="20"></p:spacer>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf09d;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Payment Type" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu 
+                                value="" 
+                                filter="true"
+                                class="w-100 ">
+                                <f:selectItem itemLabel="Select" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var=""
+                                               itemLabel=""
+                                               itemValue="" ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+
+
+
+
+
+                        </h:panelGrid><br />
+
+
+                        <div class="d-flex align-items-center">
+                            <p:commandButton class="ui-button-warning mx-1" ajax="false" value="Process" icon="fas fa-cogs" >
+                            </p:commandButton>
+                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-danger mx-1" icon= "fas fa-file-pdf" ajax="false" value="PDF">
+                            </p:commandButton>
+                        </div><br/>
+
+                        <p:dataTable>
+
+                            <p:column headerText="Discharge Date">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="BHT No">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Credit Company Name">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Phone">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Patient Name">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Admitted Date">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Final Bill Total">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Paid By Patient">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Credit Paid Amount">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Due amount">
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            
+                        </p:dataTable>
+
+
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>
