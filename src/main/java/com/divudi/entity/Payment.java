@@ -718,9 +718,9 @@ public class Payment implements Serializable {
     }
 
     public WebUser getCurrentHolder() {
-        if (currentHolder == null) {
-            currentHolder = creater;
-        }
+//        if (currentHolder == null) {
+//            currentHolder = creater;
+//        }
         return currentHolder;
     }
 
