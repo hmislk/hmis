@@ -30,12 +30,12 @@ public class AgentReferenceBook implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    private double startingReferenceNumber=0.0;
-    private double endingReferenceNumber=0.0;
-    private double bookNumber=0.0;
+    private double startingReferenceNumber = 0.0;
+    private double endingReferenceNumber = 0.0;
+    private double bookNumber = 0.0;
     private String strbookNumber;
-    private boolean deactivate=false;
-    private boolean fullyUtilized=false;
+    private boolean deactivate = false;
+    private boolean fullyUtilized = false;
 
     @ManyToOne
     private Institution institution;
@@ -45,19 +45,19 @@ public class AgentReferenceBook implements Serializable {
     private WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date createdAt;
-    
+
     //Edited Properties
     @ManyToOne
     private WebUser editor;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date editedAt;
-    
+
 //Checking Property
     @ManyToOne
     private WebUser checkedBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date checkeAt;
-    
+
 //Retairing properties
     private boolean retired;
     @ManyToOne
@@ -65,10 +65,12 @@ public class AgentReferenceBook implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date retiredAt;
     private String retireComments;
-    
+
     @Enumerated(EnumType.STRING)
     ReferenceBookEnum referenceBookEnum;
     ////////////////
+
+    private boolean active = true;
 
     public Long getId() {
         return id;
@@ -126,8 +128,6 @@ public class AgentReferenceBook implements Serializable {
     public void setBookNumber(double bookNumber) {
         this.bookNumber = bookNumber;
     }
-    
-    
 
     public boolean isDeactivate() {
         return deactivate;
@@ -249,4 +249,11 @@ public class AgentReferenceBook implements Serializable {
         this.fullyUtilized = fullyUtilized;
     }
 
+    public boolean getActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
 }

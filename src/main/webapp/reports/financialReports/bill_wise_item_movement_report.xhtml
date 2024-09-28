@@ -106,213 +106,75 @@
                         </h:panelGrid>
 
                         <h:panelGrid columns="6" class="my-2">
-                            <p:commandButton ajax="false" value="Process" icon="fas fa-cogs" class="ui-button-warning"  >
-                            </p:commandButton>
-                            <p:commandButton ajax="false" value="Excel" icon="fas fa-file-excel" class="ui-button-success mx-1" >
-                                <p:dataExporter fileName="Petty Cash Payment - #{webUserController.institution} (#{reportController.fromDate} - #{reportController.fromDate})" type="xlsx" target="dtaPr" />
-                            </p:commandButton>
-                            <p:commandButton ajax="false" value="Print" icon="fas fa-print" class="ui-button-info"  >
-                                <p:printer target="dtaPr"/>
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Process" 
+                                icon="fas fa-cogs" 
+                                class="ui-button-warning"
+                                action="#{reportController.generateItemMovementByBillReport}"
+                                >
                             </p:commandButton>
                             <p:commandButton 
-                            class="m-2 ui-button-danger" 
-                            icon="fa-solid fa-file-pdf"
-                            ajax="false" 
-                            value="PDF">
-                            <p:dataExporter type="pdf" target="dtaPr"  fileName="bill_wise_item_movement_report" ></p:dataExporter>
-                        </p:commandButton>
+                                ajax="false" value="Excel" icon="fas fa-file-excel" class="ui-button-success mx-1" >
+                                <p:dataExporter fileName="item_movement_by_bill" target="tbl" type="xlsx"></p:dataExporter>
+                            </p:commandButton>
+                            <p:commandButton ajax="false" value="Print" icon="fas fa-print" class="ui-button-info"  >
+                                <p:printer target="tbl" ></p:printer>
+                            </p:commandButton>
+                            <p:commandButton 
+                                class="m-2 ui-button-danger" 
+                                icon="fa-solid fa-file-pdf"
+                                ajax="false" 
+                                value="PDF">
+                                <p:dataExporter fileName="item_movement_by_bill" target="tbl" type="pdf"></p:dataExporter>
+                            </p:commandButton>
                         </h:panelGrid>
 
-                        <p:dataTable id="dtaPr" value="#{reportController.bills}" var="pc" rowIndexVar="rowIndex"
-                                     rows="5" 
+                        <p:dataTable
+                            id="tbl"
+                            var="pc" 
+                            rows="10"
+                            paginator="true" 
+                            paginatorPosition="both"
+                            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                            rowsPerPageTemplate="5,10,{ShowAll|'All'}"
+                            value="#{reportController.billAndItemDataRows}" 
+                            widgetVar="billDataTable">
 
-                                     currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
-                            <f:facet name="header" >
-                                <h:outputLabel value="Vascular" class="font-bold"/><br/>
-                            </f:facet>
-
-                            <p:column headerText="MRN NO" width="5em">
-                                <h:outputText value="#{pc.mrnNo}" ></h:outputText>
+                            <p:column headerText="MRN" width="5em">
+                                <h:outputText value="#{pc.bill.patient.phn}" />
+                                <f:facet name="footer">
+                                    <h:outputText value="Total" />
+                                </f:facet>
                             </p:column>
 
-                            <p:column headerText="Patient Name" width="5em">
-                                <h:outputText value="#{pc.patientName}" ></h:outputText>
+                            <p:column headerText="Name" width="12em">
+                                <h:outputText value="#{pc.bill.patient.person.nameWithTitle}" />
                             </p:column>
 
-                            <p:column headerText="Bill No" width="5em">
-                                <h:outputText value="#{pc.billNo}" ></h:outputText>
+                            <p:column headerText="Bill ID" width="9em">
+                                <h:outputText value="#{pc.bill.deptId}" />
                             </p:column>
 
-                            <p:column headerText="Remarks" width="5em">
-                                <h:outputText value="#{pc.remarks}" ></h:outputText>
-                            </p:column>
+                            <p:columns 
+                                width="5em"
+                                value="#{reportController.headerBillAndItemDataRow.itemDetailCells}" var="hr" columnIndexVar="colIndex">
+                                <f:facet name="header">
+                                    <h:outputText value="#{hr.item.name}" />
+                                </f:facet>
+                                <h:outputText value="#{pc.itemDetailCells[colIndex].quentity}">
+                                    <f:convertNumber integerOnly="true" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{hr.quentity}">
+                                        <f:convertNumber integerOnly="true" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:columns>
 
-                            <p:column headerText="002 (Metrogyl Gel 30g)(219/A)">
-                                <h:outputText value="#{pc.metrogylGel}" ></h:outputText>
-                            </p:column>
-
-                            <p:column headerText="009 (Xylocain 2% 5ml Injection)(219/A)">
-                                <h:outputText value="#{pc.xylocainInjection}" ></h:outputText>
-                            </p:column>
-
-                            <p:column headerText="012 (D/Syringe 5 CC (Nipro)(219/A)">
-                                <h:outputText value="#{pc.syringe5cc}" ></h:outputText>
-                            </p:column>
-
-                            <p:column headerText="013 (D/Syringe 10 CC (Nipro)(219/A)">
-                                <h:outputText value="#{pc.syringe10cc}" ></h:outputText>
-                            </p:column>
-
-                            <p:column headerText="017 (D/Needle 24 #)(219/A)">
-                                <h:outputText value="#{pc.needle24}" ></h:outputText>
-                            </p:column>
-
-                            <p:column headerText="024 (Atrauman Ag 10x10)(219/A)">
-                                <h:outputText value="#{pc.atrauman10x10}" ></h:outputText>
-                            </p:column>
-
-                            <p:column headerText="028 (Surgical Gloves 7.5)(219/A)">
-                                <h:outputText value="#{pc.surgicalGloves75}" ></h:outputText>
-                            </p:column>
-
-                            <p:column headerText="035 (Mapa Gloves 7 1/2)(219/A)">
-                                <h:outputText value="#{pc.mapaGloves712}" ></h:outputText>
-                            </p:column>
-
-                            <p:column headerText="062 (Mapa Gloves 6 1/2)(219/A)">
-                                <h:outputText value="#{pc.mapaGloves612}" ></h:outputText>
-                            </p:column>
-
-                            <p:column headerText="076 (Paraffin Gauze)(219/A)">
-                                <h:outputText value="#{pc.paraffinGauze}" ></h:outputText>
-                            </p:column>
-
-                            <p:column headerText="086 (Atrauman Ag 10x20)(219/A)">
-                                <h:outputText value="#{pc.atrauman10x20}" ></h:outputText>
-                            </p:column>
-
-                            <p:column headerText="093 (Gauze packet)(219/A)">
-                                <h:outputText value="#{pc.gauzePacket}" ></h:outputText>
-                            </p:column>
-
-                            <p:column headerText="094 (Gauze Role)(219/A)">
-                                <h:outputText value="#{pc.gauzeRole}" ></h:outputText>
-                            </p:column>
-
-                            <p:column headerText="103 (3 Way Tap)(219/A)">
-                                <h:outputText value="#{pc.threeWayTap}" ></h:outputText>
-                            </p:column>
-
-                            <p:column headerText="104 (Scalp Vein 23#)(219/A)">
-                                <h:outputText value="#{pc.scalpVein23}" ></h:outputText>
-                            </p:column>
-
-                            <p:column headerText="115 (Crepe Bandage (Softtex) 4)(219/A)">
-                                <h:outputText value="#{pc.crepeBandage}" ></h:outputText>
-                            </p:column>
-
-                            <p:column headerText="116 (Fibrovein 3% Injection)(219/A)">
-                                <h:outputText value="#{pc.fibroveinInjection}" ></h:outputText>
-                            </p:column>
-
-                            <p:column headerText="117 (Surgical Blade 23 #)(219/A)">
-                                <h:outputText value="#{pc.surgicalBlade23}" ></h:outputText>
-                            </p:column>
-
-                            <p:column headerText="119 (Sufre Tulle Dressing)(219/A)">
-                                <h:outputText value="#{pc.sufreTulle}" ></h:outputText>
-                            </p:column>
                         </p:dataTable>
 
-
-                        <p:spacer height="5"></p:spacer>
-
-
-                        <p:dataTable id="dtaCos" value="#{reportController.bills}" var="pc" rowIndexVar="rowIndex">
-                            <f:facet name="header" class="font-bold ">
-                                <h:outputLabel value="Cosmetic Center" class="font-bold"/><br/>
-                            </f:facet>
-
-                            <p:column headerText="MRN NO" width="5em">
-                                <h:outputText value="#{pc.mrnNo}" ></h:outputText>
-                            </p:column>
-
-                            <p:column headerText="Patient Name" width="5em">
-                                <h:outputText value="#{pc.patientName}" ></h:outputText>
-                            </p:column>
-
-                            <p:column headerText="Bill No" width="5em">
-                                <h:outputText value="#{pc.billNo}" ></h:outputText>
-                            </p:column>
-
-                            <p:column headerText="Remarks" width="5em">
-                                <h:outputText value="#{pc.remarks}" ></h:outputText>
-                            </p:column>
-
-                            <p:column headerText="301 (Acticort Silcryst 10x10) (Plastic &amp; Recons.)">
-                                <h:outputText value="#{pc.acticortSilcryst}" ></h:outputText>
-                            </p:column>
-
-                            <p:column headerText="304 (Atrauman Ag 10x10) (Plastic &amp; Recons.)">
-                                <h:outputText value="#{pc.atraumanAg}" ></h:outputText>
-                            </p:column>
-
-                            <p:column headerText="310 (Biotain Ag 10x10) (Plastic &amp; Recons.)">
-                                <h:outputText value="#{pc.biotainAg}" ></h:outputText>
-                            </p:column>
-
-                            <p:column headerText="314 (Crepe Bandage (Finetex) 3'') (Plastic &amp; Recons.)">
-                                <h:outputText value="#{pc.crepeBandage3}" ></h:outputText>
-                            </p:column>
-
-                            <p:column headerText="315 (Crepe Bandage (Finetex) 4'') (Plastic &amp; Recons.)">
-                                <h:outputText value="#{pc.crepeBandage4}" ></h:outputText>
-                            </p:column>
-
-                            <p:column headerText="319 (D/Needle 23 #) (Plastic &amp; Recons.)">
-                                <h:outputText value="#{pc.needle23}" ></h:outputText>
-                            </p:column>
-
-                            <p:column headerText="332 (Fucidine Ointment 5g) (Plastic &amp; Recons.)">
-                                <h:outputText value="#{pc.fucidineOintment}" ></h:outputText>
-                            </p:column>
-
-                            <p:column headerText="337 (Hypotonic) (Plastic &amp; Recons.)">
-                                <h:outputText value="#{pc.hypotonic}" ></h:outputText>
-                            </p:column>
-
-                            <p:column headerText="349 (N/Saline 500ml) (Plastic &amp; Recons.)">
-                                <h:outputText value="#{pc.nSaline}" ></h:outputText>
-                            </p:column>
-
-                            <p:column headerText="357 (Soft Roll 6'') (Plastic &amp; Recons.)">
-                                <h:outputText value="#{pc.softRoll}" ></h:outputText>
-                            </p:column>
-
-                            <p:column headerText="358 (Sufre tulle) (Plastic &amp; Recons.)">
-                                <h:outputText value="#{pc.sufreTulle}" ></h:outputText>
-                            </p:column>
-
-                            <p:column headerText="359 (Surgical Blade 11 #) (Plastic &amp; Recons.)">
-                                <h:outputText value="#{pc.surgicalBlade11}" ></h:outputText>
-                            </p:column>
-
-                            <p:column headerText="362 (Surgical Blade 24) (Plastic &amp; Recons.)">
-                                <h:outputText value="#{pc.surgicalBlade24}" ></h:outputText>
-                            </p:column>
-
-                            <p:column headerText="369 (Tegaderm + Pad 3582) (Plastic &amp; Recons.)">
-                                <h:outputText value="#{pc.tegadermPad}" ></h:outputText>
-                            </p:column>
-
-                            <p:column headerText="371 (Triam Injection) (Plastic &amp; Recons.)">
-                                <h:outputText value="#{pc.triamInjection}" ></h:outputText>
-                            </p:column>
-
-                            <p:column headerText="Grand Total">
-                                <h:outputText value="#{pc.grandTotal}" ></h:outputText>
-                            </p:column>
-                        </p:dataTable>
 
 
 
