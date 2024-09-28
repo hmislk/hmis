@@ -2712,6 +2712,7 @@ public class BillBeanController implements Serializable {
             p.setDepartment(b.getDepartment());
             p.setCreatedAt(new Date());
             p.setCreater(sessionController.getLoggedUser());
+            p.setCurrentHolder(sessionController.getLoggedUser());
             p.setPaymentMethod(paymentMethod);
             p.setPaidValue(b.getNetTotal());
 

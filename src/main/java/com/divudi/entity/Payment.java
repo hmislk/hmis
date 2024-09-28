@@ -127,6 +127,8 @@ public class Payment implements Serializable {
     private boolean selectedForCashbookEntry;
     private boolean selectedForRecording;
     private boolean selectedForRecordingConfirmation;
+    private boolean handingOverStarted;
+    private boolean handingOverCompleted;
 
     @ManyToOne
     private Bill handoverShiftBill;
@@ -718,9 +720,9 @@ public class Payment implements Serializable {
     }
 
     public WebUser getCurrentHolder() {
-        if (currentHolder == null) {
-            currentHolder = creater;
-        }
+//        if (currentHolder == null) {
+//            currentHolder = creater;
+//        }
         return currentHolder;
     }
 
@@ -766,6 +768,22 @@ public class Payment implements Serializable {
 
     public void setCancelledBill(Bill cancelledBill) {
         this.cancelledBill = cancelledBill;
+    }
+
+    public boolean isHandingOverStarted() {
+        return handingOverStarted;
+    }
+
+    public void setHandingOverStarted(boolean handingOverStarted) {
+        this.handingOverStarted = handingOverStarted;
+    }
+
+    public boolean isHandingOverCompleted() {
+        return handingOverCompleted;
+    }
+
+    public void setHandingOverCompleted(boolean handingOverCompleted) {
+        this.handingOverCompleted = handingOverCompleted;
     }
     
     
