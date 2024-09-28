@@ -806,9 +806,28 @@ public class PatientReportController implements Serializable {
 
                 ScriptEngineManager mgr = new ScriptEngineManager();
                 ScriptEngine engine = mgr.getEngineByName("JavaScript");
+                Object resultObj;
                 try {
-                    resultStr= (String) engine.eval(calString);
-                    result = (double) engine.eval(calString);
+
+                    resultObj = engine.eval(calString);
+                    if(resultObj== null){
+                        System.out.println("resultObj Null = ");
+                        result = 0.0;
+                        resultStr = "";
+                    }
+                    else if(resultObj instanceof String){
+                        resultStr= (String) resultObj;
+                        System.out.println("resultStr = " + resultObj);
+                    }else if(resultObj instanceof Double){
+                        result = (double) resultObj;
+                        System.out.println("result = " + result);
+                    }else{
+                        System.out.println("Else = ");
+                        result = 0.0;
+                        resultStr = "";
+                    }
+                    
+
 
                 } catch (Exception ex) {
                     Logger.getLogger(PatientReportController.class
