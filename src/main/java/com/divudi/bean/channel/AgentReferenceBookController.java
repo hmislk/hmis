@@ -215,15 +215,19 @@ public class AgentReferenceBookController implements Serializable {
         createAllBookTable();
     }
 
-    public void updateAgentBook() {
-        if (current.getId() == null) {
+    public void updateAgentBook(AgentReferenceBook book) {
+        if (book == null) {
+            JsfUtil.addSuccessMessage("No Book Selected");
+            return;
+        }
+        if (book.getId() == null) {
             JsfUtil.addSuccessMessage("No Reference Book Selected");
             return;
         }
-        current.setDeactivate(!bookActive);
-        current.setEditedAt(new Date());
-        current.setEditor(sessionController.getLoggedUser());
-        getAgentReferenceBookFacade().edit(current);
+
+        book.setEditedAt(new Date());
+        book.setEditor(sessionController.getLoggedUser());
+        getAgentReferenceBookFacade().edit(book);
         JsfUtil.addSuccessMessage("Agent Reference Book was Successfully Updated");
     }
 
@@ -238,15 +242,6 @@ public class AgentReferenceBookController implements Serializable {
         agentReferenceBook.setRetireComments(comment);
         getAgentReferenceBookFacade().edit(agentReferenceBook);
         JsfUtil.addSuccessMessage("Agent Reference Book was Successfully Deleted");
-    }
-
-    public boolean switchValue(boolean value) {
-        if (value) {
-            bookActive = false;
-        } else {
-            bookActive = true;
-        }
-        return bookActive;
     }
 
     public void createAllBookTable() {

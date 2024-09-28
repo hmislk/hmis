@@ -97,9 +97,6 @@ public class Payment implements Serializable {
     double paidValue;
 
     private int creditDurationInDays;
-    
-    private boolean transferStarted;
-    private boolean transferCompleted;
 
     @Lob
     @Deprecated
@@ -130,6 +127,8 @@ public class Payment implements Serializable {
     private boolean selectedForCashbookEntry;
     private boolean selectedForRecording;
     private boolean selectedForRecordingConfirmation;
+    private boolean handingOverStarted;
+    private boolean handingOverCompleted;
 
     @ManyToOne
     private Bill handoverShiftBill;
@@ -190,8 +189,6 @@ public class Payment implements Serializable {
         this.id = id;
     }
 
-    
-    
     @Deprecated
     public List<String> getHumanReadableDenominations() {
         List<String> humanReadableList = new ArrayList<>();
@@ -773,20 +770,20 @@ public class Payment implements Serializable {
         this.cancelledBill = cancelledBill;
     }
 
-    public boolean isTransferStarted() {
-        return transferStarted;
+    public boolean isHandingOverStarted() {
+        return handingOverStarted;
     }
 
-    public void setTransferStarted(boolean transferStarted) {
-        this.transferStarted = transferStarted;
+    public void setHandingOverStarted(boolean handingOverStarted) {
+        this.handingOverStarted = handingOverStarted;
     }
 
-    public boolean isTransferCompleted() {
-        return transferCompleted;
+    public boolean isHandingOverCompleted() {
+        return handingOverCompleted;
     }
 
-    public void setTransferCompleted(boolean transferCompleted) {
-        this.transferCompleted = transferCompleted;
+    public void setHandingOverCompleted(boolean handingOverCompleted) {
+        this.handingOverCompleted = handingOverCompleted;
     }
     
     
