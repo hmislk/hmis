@@ -362,7 +362,6 @@ public class StaffPaymentBillController implements Serializable {
         if (currentStaff == null || currentStaff.getId() == null) {
             dueBillFees = new ArrayList<>();
         } else {
-            System.out.print(speciality.getName()+ currentStaff.getName());
             List<BillTypeAtomic> btcs = new ArrayList<>();
             btcs.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
             btcs.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
