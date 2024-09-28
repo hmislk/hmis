@@ -2688,6 +2688,10 @@ public class BillSearch implements Serializable {
             } else {
                 b.setReferanceBillItem(nB.getReferanceBillItem());
             }
+            
+            b.setHospitalFee(0 - nB.getHospitalFee());
+            b.setCollectingCentreFee(0 - nB.getCollectingCentreFee());
+            b.setStaffFee(0 - nB.getStaffFee());
 
             b.setNetValue(0 - nB.getNetValue());
             b.setGrossValue(0 - nB.getGrossValue());
