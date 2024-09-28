@@ -55,6 +55,14 @@
                                     </p:commandButton>
 
                                     <p:commandButton 
+                                        class="my-1 w-100 ui-button-primary"
+                                        value="Handover Shift"
+                                        icon="pi pi-forward"
+                                        ajax="false" 
+                                        action="#{financialTransactionController.navigateToHandoverCreateBillForCurrentShift()}" >
+                                    </p:commandButton>
+                                    
+                                    <p:commandButton 
                                         class="my-1 w-100 ui-button-info"
                                         value="My Shifts"
                                         icon="pi pi-map-marker"
