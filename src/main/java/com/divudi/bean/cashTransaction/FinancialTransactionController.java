@@ -2739,62 +2739,70 @@ public class FinancialTransactionController implements Serializable {
 
         WebUser paymentUser = startBill.getCreater();
 
-        List<BillTypeAtomic> btas = new ArrayList<>();
-        btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_IN));
-        btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_OUT));
+        List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+        billTypeAtomics.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_IN));
+        billTypeAtomics.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_OUT));
 
-        Map<String, Object> m = new HashMap<>();
-        m.put("btas", btas);
-//        m.put("started", false);
-        m.put("cr", paymentUser);
-        m.put("ret", false);
-        m.put("sid", startBill.getId());
+        Map<String, Object> ownPaymentsParams = new HashMap<>();
+        ownPaymentsParams.put("billTypes", billTypeAtomics);
+        ownPaymentsParams.put("createdBy", paymentUser);
+        ownPaymentsParams.put("isRetired", false);
+        ownPaymentsParams.put("startBillId", startBill.getId());
+        ownPaymentsParams.put("isTransferStarted", false);
 
-        StringBuilder jpqlBuilder = new StringBuilder("SELECT p FROM Payment p JOIN p.bill b WHERE p.creater = :cr ")
-                .append("AND p.retired = :ret AND p.id > :sid ");
+        StringBuilder ownPaymentsQueryBuilder = new StringBuilder("SELECT p FROM Payment p JOIN p.bill b ")
+                .append("WHERE p.creater = :createdBy ")
+                .append("AND p.retired = :isRetired ")
+                .append("AND p.id > :startBillId ")
+                .append("AND p.transferStarted = :isTransferStarted ");
 
         if (endBill != null && endBill.getId() != null) {
-            jpqlBuilder.append("AND p.id < :eid ");
-            m.put("eid", endBill.getId());
+            ownPaymentsQueryBuilder.append("AND p.id < :endBillId ");
+            ownPaymentsParams.put("endBillId", endBill.getId());
         }
 
-        jpqlBuilder.append("AND b.billTypeAtomic IN :btas AND p.cashbookEntryStated = :started ")
+        ownPaymentsQueryBuilder.append("AND b.billTypeAtomic IN :billTypes ")
                 .append("ORDER BY p.createdAt, b.department, p.creater");
 
-        String jpql = jpqlBuilder.toString();
+        String ownPaymentsJpql = ownPaymentsQueryBuilder.toString();
 
-        List<Payment> shiftPayments = paymentFacade.findByJpql(jpql, m);
-        List<Payment> shiftPaymentsToEnd = new ArrayList<>();
-        for(Payment p:shiftPayments){
-            WebUser u = p.getCurrentHolder();
-            if(u==null){
-                p.setCurrentHolder(paymentUser);
-                shiftPaymentsToEnd.add(p);
-            }else if(paymentUser.equals(u)){
-                shiftPaymentsToEnd.add(p);
+        Set<Payment> uniquePayments = new HashSet<>();
+
+        // Fetching payments created by the user
+        List<Payment> userPaymentsTemp = paymentFacade.findByJpql(ownPaymentsJpql, ownPaymentsParams);
+        for (Payment payment : userPaymentsTemp) {
+            WebUser currentHolder = payment.getCurrentHolder();
+            if (currentHolder == null) {
+                payment.setCurrentHolder(paymentUser);
+                uniquePayments.add(payment);
+            } else if (paymentUser.equals(currentHolder)) {
+                uniquePayments.add(payment);
             }
         }
-        
-        
-        
-        Map<String, Object> m1 = new HashMap<>();
-        m1.put("btas", btas);
-        m1.put("started", false);
-        m1.put("cr", paymentUser);
-        m1.put("ret", false);
-        m1.put("sid", startBill.getId());
 
-        StringBuilder jpqlBuilder1 = new StringBuilder("SELECT p FROM Payment p JOIN p.bill b WHERE p.currentHolder = :cr ")
-                .append("AND p.retired = :ret AND p.id > :sid ");
+        // Parameters for payments currently held by the user
+        Map<String, Object> currentHolderParams = new HashMap<>();
+        currentHolderParams.put("billTypes", billTypeAtomics);
+        currentHolderParams.put("currentHolder", paymentUser);
+        currentHolderParams.put("isRetired", false);
+        currentHolderParams.put("isTransferStarted", false);
 
-        
-
-        jpqlBuilder1.append("AND b.billTypeAtomic IN :btas AND p.cashbookEntryStated = :started ")
+        StringBuilder currentHolderQueryBuilder = new StringBuilder("SELECT p FROM Payment p JOIN p.bill b ")
+                .append("WHERE p.currentHolder = :currentHolder ")
+                .append("AND p.retired = :isRetired ")
+                .append("AND p.transferStarted = :isTransferStarted ")
+                .append("AND b.billTypeAtomic IN :billTypes ")
                 .append("ORDER BY p.createdAt, b.department, p.creater");
 
-        String jpql1 = jpqlBuilder1.toString();
-        List<Payment> shiftPayments1 = paymentFacade.findByJpql(jpql1, m1);
-        
+        String currentHolderJpql = currentHolderQueryBuilder.toString();
+        List<Payment> currentHolderPayments = paymentFacade.findByJpql(currentHolderJpql, currentHolderParams);
+
+        // Adding current holder payments to the unique set
+        uniquePayments.addAll(currentHolderPayments);
+
+        // Convert Set back to List to remove duplicates
+        List<Payment> shiftPayments = new ArrayList<>(uniquePayments);
+
         System.out.println("shiftPayments = " + shiftPayments);
         return shiftPayments;
     }
