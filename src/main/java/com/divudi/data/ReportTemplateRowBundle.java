@@ -670,11 +670,18 @@ public class ReportTemplateRowBundle implements Serializable {
                 Double amount = safeDouble(row.getPayment().getPaidValue());  // Ensure amounts are not null
                 Double amountHandingOver = 0.0;
 
+                
+                PaymentMethod method = row.getPayment().getPaymentMethod(); 
+                
                 if (row.isSelected()) {
                     amountHandingOver = amount;
+                }else{
+                    if(method==Cash){
+                        amountHandingOver = amount;
+                    }
                 }
 
-                PaymentMethod method = row.getPayment().getPaymentMethod();  // Using the enum type directly
+                
                 total += amount;
 
                 switch (method) {
@@ -689,11 +696,8 @@ public class ReportTemplateRowBundle implements Serializable {
                         this.hasCardTransaction = true;
                         break;
                     case Cash:
-//                        if (denominationTransactions == null) {
-//                            denominationTransactions = createDefaultDenominationTransaction(PaymentMethod.Cash);
-//                        }
                         this.cashValue += amount;
-//                        this.cashHandoverValue += amountHandingOver;
+                        this.cashHandoverValue += amountHandingOver;
                         this.hasCashTransaction = true;
                         break;
                     case Cheque:

@@ -102,6 +102,7 @@ public class DenominationTransactionController implements Serializable {
                 + " and dt.bill=:b";
         Map m = new HashMap();
         m.put("b", b);
+        m.put("ret", false);
         return denominationTransactionFacade.findByJpql(jpql, m);
     }
 

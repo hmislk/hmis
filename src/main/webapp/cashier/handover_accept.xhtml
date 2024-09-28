@@ -22,7 +22,7 @@
 
                         <h:panelGroup id="gpPrint" >
                             <div class="row mx-2" >
-                                <div class="col-6">
+                                <div class="col-7">
                                     <p:panelGrid layout="tabular" columns="2" class="w-100" >
                                         <f:facet name="header" >
                                             <p:outputLabel value="Shift" class="font-weight-bold" ></p:outputLabel>
@@ -97,35 +97,25 @@
                                             <f:convertNumber pattern="#,##0.00" />
                                         </p:outputLabel>
                                     </p:panelGrid>
-                                </div>
-
-
-                                <div class="col-6" >
-
-
-
-
-
-
-
-
-
-
-
                                     <p:panel class="w-100 m-1" >
                                         <f:facet name="header" >
-
                                             <div class="row align-items-center my-2">
                                                 <!-- Header Label -->
-                                                <div class="col-md-6">
+                                                <div class="col-md-4">
                                                     <span class="font-weight-bold">Accept</span>
                                                 </div>
-
-                                                <!-- Handover Button -->
-                                                <div class="col-md-6 text-right">
+                                                <div class="col-md-8 text-right">
                                                     <p:commandButton 
                                                         value="Accept Handover" 
                                                         styleClass="ui-button-success mx-1" 
+                                                        icon="pi pi-check" 
+                                                        ajax="false" 
+                                                        onclick="return confirm('Are you sure you want to proceed with the handover?');" 
+                                                        action="#{financialTransactionController.acceptHandoverBill()}">
+                                                    </p:commandButton>
+                                                    <p:commandButton 
+                                                        value="Reject Handover" 
+                                                        styleClass="ui-button-danger mx-1" 
                                                         icon="pi pi-check" 
                                                         ajax="false" 
                                                         onclick="return confirm('Are you sure you want to proceed with the handover?');" 
@@ -199,7 +189,31 @@
 
                                     </p:panel>
                                 </div>
-
+                                <div class="col-5" >
+                                    <h:panelGroup id="gpDenominations" >
+                                        <p:dataTable   value="#{financialTransactionController.bundle.denominationTransactions}" var="deno"  >
+                                            <p:column title="Denomination">
+                                                <p:outputLabel value="#{deno.denomination.displayName}" ></p:outputLabel>
+                                            </p:column>
+                                            <p:column  title="Denomination">
+                                                <p:outputLabel 
+                                                    class="text-end w-100" 
+                                                    id="txtDenoQtyHandover"
+                                                    value="#{deno.denominationQty}" 
+                                                    style="width: 100%;">
+                                                    <f:convertNumber integerOnly="true" />
+                                                </p:outputLabel>  
+                                            </p:column>
+                                            <p:column >
+                                                <p:outputLabel
+                                                    class="text-end w-100"
+                                                    id="txtDenoVal" value="#{deno.denominationValue}" >
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </p:outputLabel>
+                                            </p:column>
+                                        </p:dataTable>
+                                    </h:panelGroup>
+                                </div>
                             </div>
                             <div class="row mx-2" >
                                 <p:dataTable 
@@ -233,19 +247,11 @@
                                     </p:column>
 
                                     <p:column headerText="Cash" 
-                                              style="text-align: left;"
-                                              class="ui-message-info"
+                                              class="text-end"
                                               rendered="#{financialTransactionController.bundle.hasCashTransaction}" >
                                         <h:outputText value="#{summary.cashValue}"  style="text-align: right;">
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputText>
-                                        <p:commandButton 
-                                            icon="pi pi-refresh" 
-                                            title="Change Handover Value" 
-                                            ajax="false" 
-                                            styleClass="ui-button-warning m-1 mx-2" 
-                                            action="#{financialTransactionController.navigateToSelectPaymentsForHandoverAccept(summary, 'Cash')}" >
-                                        </p:commandButton>
                                         <f:facet name="footer" >
                                             <p:outputLabel value="#{financialTransactionController.bundle.cashValue}" >
                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
@@ -253,31 +259,11 @@
                                         </f:facet>
 
                                     </p:column>
-                                    
-                                    <p:column headerText="Cash Recording Value" 
-                                              class="ui-message-warn"
-                                              style="text-align: left;"
-                                              rendered="#{financialTransactionController.bundle.hasCashTransaction}" >
-                                        <h:outputText value="#{summary.cashHandoverValue}"  style="text-align: right;">
-                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                        </h:outputText>
-                                        <p:commandButton 
-                                            icon="pi pi-refresh" 
-                                            title="Change Handover Value" 
-                                            ajax="false" 
-                                            styleClass="ui-button-warning m-1 mx-2" 
-                                            action="#{financialTransactionController.navigateToSelectPaymentsForHandoverAccept(summary, 'Cash')}" >
-                                        </p:commandButton>
-                                        <f:facet name="footer" >
-                                            <p:outputLabel value="#{financialTransactionController.bundle.cashHandoverValue}" >
-                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                            </p:outputLabel>
-                                        </f:facet>
 
-                                    </p:column>
-
-                                    <p:column headerText="Card" 
-                                              rendered="#{financialTransactionController.bundle.hasCardTransaction}" >
+                                    <p:column 
+                                        class="text-end"
+                                        headerText="Card" 
+                                        rendered="#{financialTransactionController.bundle.hasCardTransaction}" >
                                         <h:outputText value="#{summary.cardValue}" >
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputText>
@@ -308,6 +294,7 @@
                                     </p:column>
 
                                     <p:column headerText="Credit" 
+                                              class="text-end"
                                               rendered="#{financialTransactionController.bundle.hasCreditTransaction}" >
                                         <h:outputText value="#{summary.creditValue}" >
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
@@ -322,6 +309,7 @@
                                     <!-- Continuing from Credit -->
                                     <p:column 
                                         headerText="Staff Welfare" 
+                                        class="text-end"
                                         rendered="#{financialTransactionController.bundle.hasStaffWelfareTransaction}" >
                                         <h:outputText value="#{summary.staffWelfareValue}" >
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
@@ -335,6 +323,7 @@
 
                                     <p:column 
                                         headerText="Staff" 
+                                        class="text-end"
                                         rendered="#{financialTransactionController.bundle.hasStaffTransaction}" >
                                         <h:outputText value="#{summary.staffValue}" >
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
@@ -348,6 +337,7 @@
 
                                     <p:column 
                                         headerText="Voucher" 
+                                        class="text-end"
                                         rendered="#{financialTransactionController.bundle.hasVoucherTransaction}" >
                                         <h:outputText value="#{summary.voucherValue}" >
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
@@ -361,6 +351,7 @@
 
                                     <p:column 
                                         headerText="IOU" 
+                                        class="text-end"
                                         rendered="#{financialTransactionController.bundle.hasIouTransaction}" >
                                         <h:outputText value="#{summary.iouValue}" >
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
@@ -373,7 +364,8 @@
                                     </p:column>
 
                                     <p:column 
-                                        headerText="Agent" 
+                                        headerText="Agent"
+                                        class="text-end"
                                         rendered="#{financialTransactionController.bundle.hasAgentTransaction}" >
                                         <h:outputText value="#{summary.agentValue}" >
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
@@ -387,6 +379,7 @@
 
                                     <p:column 
                                         headerText="Cheque" 
+                                        class="text-end"
                                         rendered="#{financialTransactionController.bundle.hasChequeTransaction}" >
                                         <h:outputText value="#{summary.chequeValue}" >
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
@@ -400,6 +393,7 @@
 
                                     <p:column 
                                         headerText="Slip"
+                                        class="text-end"
                                         rendered="#{financialTransactionController.bundle.hasSlipTransaction}" >
                                         <h:outputText value="#{summary.slipValue}" >
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
@@ -413,6 +407,7 @@
 
                                     <p:column 
                                         headerText="eWallet" 
+                                        class="text-end"
                                         rendered="#{financialTransactionController.bundle.hasEWalletTransaction}" >
                                         <h:outputText value="#{summary.ewalletValue}" >
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
@@ -426,6 +421,7 @@
 
                                     <p:column 
                                         headerText="Patient Deposit" 
+                                        class="text-end"
                                         rendered="#{financialTransactionController.bundle.hasPatientDepositTransaction}" >
                                         <h:outputText value="#{summary.patientDepositValue}" >
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
@@ -439,6 +435,7 @@
 
                                     <p:column 
                                         headerText="Patient Points" 
+                                        class="text-end"
                                         rendered="#{financialTransactionController.bundle.hasPatientPointsTransaction}" >
                                         <h:outputText value="#{summary.patientPointsValue}" >
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
@@ -452,6 +449,7 @@
 
                                     <p:column 
                                         headerText="Online Settlement" 
+                                        class="text-end"
                                         rendered="#{financialTransactionController.bundle.hasOnCallTransaction}" >
                                         <h:outputText value="#{summary.onlineSettlementValue}" >
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
@@ -463,7 +461,8 @@
                                         </f:facet>
                                     </p:column>
 
-                                    <p:column headerText="Total">
+                                    <p:column headerText="Total"
+                                              class="text-end">
                                         <h:outputText value="#{summary.total}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
@@ -478,7 +477,7 @@
                                         </f:facet>
                                     </p:column>
 
-                                    <p:column headerText="Grand Total" width="28em">
+                                    <p:column headerText="Actions" class="text-center">
                                         <p:commandButton 
                                             class="m-1 ui-button-success" 
                                             value="View Details" 
@@ -492,7 +491,6 @@
 
 
                                 </p:dataTable>
-
                             </div>
                         </h:panelGroup>
 
