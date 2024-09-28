@@ -808,7 +808,6 @@ public class PatientReportController implements Serializable {
                 ScriptEngine engine = mgr.getEngineByName("JavaScript");
                 Object resultObj;
                 try {
-
                     resultObj = engine.eval(calString);
                     if(resultObj== null){
                         System.out.println("resultObj Null = ");
@@ -827,8 +826,6 @@ public class PatientReportController implements Serializable {
                         resultStr = "";
                     }
                     
-
-
                 } catch (Exception ex) {
                     Logger.getLogger(PatientReportController.class
                             .getName()).log(Level.SEVERE, null, ex);
