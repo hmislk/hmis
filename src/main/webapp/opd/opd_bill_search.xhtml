@@ -211,33 +211,33 @@
                                     </p:column>
                                     <p:column headerText="Bill No*" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}" filterMatchMode="contains">                                
                                         <div>
-                                        <p:commandLink 
-                                            id="billNo" 
-                                            ajax="false" 
-                                            value="#{bill.deptId}" 
-                                            action="#{billSearch.navigateToViewSingleOpdBill()}">
-                                            <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
-                                        </p:commandLink>
+                                            <p:commandLink 
+                                                id="billNo" 
+                                                ajax="false" 
+                                                value="#{bill.deptId}" 
+                                                action="#{billSearch.navigateToViewSingleOpdBill()}">
+                                                <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
+                                            </p:commandLink>
                                         </div>
                                         <div>
                                             <p:commandLink
-                                            id="CancelBillNo"
-                                            ajax="false"
-                                            value="#{bill.cancelledBill.deptId}"
-                                            action="#{billSearch.navigateToViewSingleOpdBill()}"
-                                            rendered="#{bill.cancelled}" style="color: red">
-                                                 <f:setPropertyActionListener value="#{bill.cancelledBill}" target="#{billSearch.bill}"/>
-                                        </p:commandLink>
-                                             <p:commandLink
-                                            id="RefundBillNo"
-                                            ajax="false"
-                                            value="#{bill.refundedBill.deptId}"
-                                            action="#{billSearch.navigateToViewSingleOpdBill()}"
-                                            rendered="#{bill.refunded}" style="color: orange">
-                                                 <f:setPropertyActionListener value="#{bill.refundedBill}" target="#{billSearch.bill}"/>
-                                        </p:commandLink>
+                                                id="CancelBillNo"
+                                                ajax="false"
+                                                value="#{bill.cancelledBill.deptId}"
+                                                action="#{billSearch.navigateToViewSingleOpdBill()}"
+                                                rendered="#{bill.cancelled}" style="color: red">
+                                                <f:setPropertyActionListener value="#{bill.cancelledBill}" target="#{billSearch.bill}"/>
+                                            </p:commandLink>
+                                            <p:commandLink
+                                                id="RefundBillNo"
+                                                ajax="false"
+                                                value="#{bill.refundedBill.deptId}"
+                                                action="#{billSearch.navigateToViewSingleOpdBill()}"
+                                                rendered="#{bill.refunded}" style="color: orange">
+                                                <f:setPropertyActionListener value="#{bill.refundedBill}" target="#{billSearch.bill}"/>
+                                            </p:commandLink>
                                         </div>
-                                        
+
                                     </p:column>
                                     <p:column headerText="Batch Bill" sortBy="#{bill.backwardReferenceBill.deptId}" 
                                               filterMatchMode="contains"
@@ -306,7 +306,7 @@
 
                                     <p:column 
                                         headerText="Client"
-                                         filterMatchMode="contains"
+                                        filterMatchMode="contains"
                                         sortBy="#{bill.patient.person.name}" 
                                         filterBy="#{bill.patient.person.name}" >                               
                                         <h:panelGroup id="pt">
@@ -374,15 +374,33 @@
                                     <p:column headerText="Actions">                                
                                         <p:commandLink 
                                             ajax="false" 
-                                            value="View Bill" 
-                                            action="#{billSearch.navigateToManageOpdBill()}">
+                                            value="Manage Bill" 
+                                            action="#{billSearch.navigateToManageBillByAtomicBillType()}">
                                             <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                         </p:commandLink>
                                         <p:spacer width="5" ></p:spacer>
                                         |
                                         <p:spacer width="5" ></p:spacer>
-                                        <h:commandLink action="#{opdBillController.navigateToViewOpdBatchBill}" value="View Batch Bill">
+                                        <h:commandLink action="#{billSearch.navigateToManageBillByAtomicBillType}" value="Manage Batch Bill">
+                                            <f:setPropertyActionListener value="#{bill.backwardReferenceBill}" target="#{billSearch.bill}"/>
+                                        </h:commandLink>  
+                                        <p:spacer width="5" ></p:spacer>
+                                        |
+                                        <p:spacer width="5" ></p:spacer>
+                                        <h:commandLink action="#{opdBillController.navigateToViewOpdBatchBill}" value="View Batch Bill - OLD">
                                             <f:setPropertyActionListener value="#{bill}" target="#{opdBillController.bill}"/>
+                                        </h:commandLink>  
+                                        <p:commandLink 
+                                            ajax="false" 
+                                            value="View Bill" 
+                                            action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                                            <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
+                                        </p:commandLink>
+                                        <p:spacer width="5" ></p:spacer>
+                                        |
+                                        <p:spacer width="5" ></p:spacer>
+                                        <h:commandLink action="#{billSearch.navigateToViewBillByAtomicBillType}" value="View Batch Bill">
+                                            <f:setPropertyActionListener value="#{bill.backwardReferenceBill}" target="#{billSearch.bill}"/>
                                         </h:commandLink>  
                                     </p:column>
 

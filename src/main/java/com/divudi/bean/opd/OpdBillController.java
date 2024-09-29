@@ -605,6 +605,40 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         duplicatePrint = true;
         return "/opd/opd_batch_bill_print?faces-redirect=true;";
     }
+    
+    
+    public String navigateToViewOpdBatchBill(Bill bb) {
+        if (bb == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return null;
+        }
+        if (bb.getId() == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return null;
+        }
+
+        if (bb.getBillType() == null) {
+            JsfUtil.addErrorMessage("No bill type");
+            return null;
+        }
+        batchBill = bb;
+        Long batchBillId = bb.getId();
+
+        batchBill = billFacade.find(batchBillId);
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select b "
+                + " from Bill b"
+                + " where b.backwardReferenceBill.id=:id";
+        m.put("id", batchBillId);
+        bills = getFacade().findByJpql(jpql, m);
+
+        for (Bill b : bills) {
+            getBillBean().checkBillItemFeesInitiated(b);
+        }
+        duplicatePrint = true;
+        return "/opd/opd_batch_bill_print?faces-redirect=true;";
+    }
 
     /**
      *
