@@ -866,18 +866,22 @@ public class SearchController implements Serializable {
     }
 
     public String navigatToTotalCashierSummary() {
+        bundle=new ReportTemplateRowBundle();
         return "/reports/cashier_reports/total_cashier_summary?faces-redirect=true";
     }
 
     public String navigatToAllCashierSummary() {
+        bundle=new ReportTemplateRowBundle();
         return "/reports/cashier_reports/all_cashier_summary?faces-redirect=true";
     }
 
     public String navigatToShiftStartAndEnds() {
+        bundle=new ReportTemplateRowBundle();
         return "/reports/cashier_reports/shift_start_and_ends?faces-redirect=true";
     }
 
     public String navigatToCashierSummary() {
+        bundle=new ReportTemplateRowBundle();
         return "/reports/cashier_reports/cashier_summary?faces-redirect=true";
     }
 
