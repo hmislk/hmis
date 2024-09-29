@@ -2793,91 +2793,51 @@ public class FinancialTransactionController implements Serializable {
         return dbl;
     }
 
-    public void navigateToMarkShortagesForShiftForHandover(PaymentMethod pm) {
-        if (pm == null) {
-            JsfUtil.addErrorMessage("No Payment Method");
-            return;
+    public String navigateToMarkShortagesForShiftForHandover() {
+        if (bundle == null) {
+            JsfUtil.addErrorMessage("No Bundle available for processing.");
+            return null;
         }
-        if (selectedBundle == null) {
-            JsfUtil.addErrorMessage("No Bundle");
-            return;
+
+        prepareToAddNewShiftShortageRecord();
+        currentBillPayments = new ArrayList<>();
+        boolean hasShortages = false;
+        double valueCollected = bundle.getCardValue();
+        double valueAvailable = bundle.getCashHandoverValue();
+        double difference = valueCollected - valueAvailable;
+
+        // Handle cash shortage/surplus initially if there's a difference.
+        if (Math.abs(difference) > 0) {
+            Payment pc = new Payment();
+            pc.setPaymentMethod(PaymentMethod.Cash);
+            pc.setBill(currentBill);
+            pc.setPaidValue(0 - Math.abs(difference));
+            pc.setCreatedAt(new Date());
+            currentBillPayments.add(pc);
         }
-        Bill tmpBill;
-        Payment tmpPayment;
-        List<Payment> tmpBillPayments = new ArrayList<>();
-        switch (pm) {
-            case Cash:
-                tmpPayment = new Payment();
-                tmpPayment.setPaymentMethod(pm);
-                tmpPayment.setPaymentDate(selectedBundle.getDate());
-                tmpPayment.setInstitution(selectedBundle.getDepartment().getInstitution());
-                tmpPayment.setDepartment(selectedBundle.getDepartment());
-                tmpPayment.setPaidValue(selectedBundle.getCashValue() - selectedBundle.getCashHandoverValue());
-                tmpPayment.setCreatedAt(new Date()); // Set payment date to now
-                tmpBillPayments.add(tmpPayment); // Add to the current bill's payments list
-            case Card:
-            case Agent:
-            case Cheque:
-            case Credit:
-            case IOU:
-            case OnCall:
-            case MultiplePaymentMethods:
-            case None:
-            case OnlineSettlement:
-            case PatientDeposit:
-            case PatientPoints:
-            case Slip:
-            case Staff:
-            case Staff_Welfare:
-            case Voucher:
-            case YouOweMe:
-            case ewallet:
-                for (ReportTemplateRow r : selectedBundle.getPaymentRows(pm)) {
-                    if (!r.isSelected()) {
-                        tmpPayment = r.getPayment().clonePaymentForNewBill();
-                        tmpPayment.setPaymentDate(selectedBundle.getDate());
-                        tmpPayment.setPaidValue(0 - Math.abs(tmpPayment.getPaidValue()));
-                        if (tmpPayment.getId() == null) {
-                            paymentFacade.create(tmpPayment);
-                        } else {
-                            paymentFacade.edit(tmpPayment);
-                        }
+
+        // Process non-cash payments while avoiding null pointers and using the built-in clone method for payment.
+        for (ReportTemplateRowBundle cb : bundle.getBundles()) {
+            if (cb == null || cb.getPaymentMethod() == null || cb.getPaymentMethod() == PaymentMethod.Cash) {
+                continue; // Skip null bundles or cash payments as it's already processed.
+            }
+
+            if (cb.getReportTemplateRows() != null) {
+                for (ReportTemplateRow r : cb.getReportTemplateRows()) {
+                    if (r == null || r.getPayment() == null || r.getPayment().isSelectedForHandover()) {
+                        continue; // Skip null rows, payments, or those already selected for handover.
                     }
+                    hasShortages = true;
+                    Payment newPaymentForShortageBill = r.getPayment().clonePaymentForNewBill();
+                    newPaymentForShortageBill.setPaidValue(0 - Math.abs(newPaymentForShortageBill.getPaidValue()));
+                    newPaymentForShortageBill.setCreatedAt(new Date());
+                    currentBillPayments.add(newPaymentForShortageBill);
                 }
+            }
         }
 
-        double total = 0.0;
-        for (Payment p : getCurrentBillPayments()) {
-            total += p.getPaidValue();
-        }
-
-        tmpBill = new Bill();
-        tmpBill.setBillType(BillType.ShiftShortage);
-        tmpBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL);
-        tmpBill.setBillDate(new Date());
-        tmpBill.setBillTime(new Date());
-
-        tmpBill.setDepartment(selectedBundle.getDepartment());
-        tmpBill.setInstitution(selectedBundle.getDepartment().getInstitution());
-        tmpBill.setStaff(selectedBundle.getUser().getStaff());
-        tmpBill.setWebUser(selectedBundle.getUser());
-
-        tmpBill.setCreater(sessionController.getLoggedUser());
-        tmpBill.setCreatedAt(new Date());
-
-        billController.save(tmpBill);  // Save the bill
-        for (Payment p : tmpBillPayments) {
-            total += p.getPaidValue();
-            p.setBill(tmpBill);
-            paymentController.save(p);
-        }
-
-        tmpBill.setTotal(total);
-        tmpBill.setNetTotal(total);
-        billController.save(tmpBill);  // Save the bill
-
-        JsfUtil.addSuccessMessage("Shortage recorded successfully.");
-
+        calculateShortageBillTotal();
+        return "/cashier/record_shift_shortage"; // Navigation case
     }
 
     public List<Payment> fetchPaymentsFromShiftStartToEndByDateAndDepartment(
@@ -3781,40 +3741,42 @@ public class FinancialTransactionController implements Serializable {
         }
         bundle.setFromUser(sessionController.getLoggedUser());
         bundle.setToUser(user);
-        
+
         currentBill = new Bill();
-        
+
+        String cbDeptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE);
+
+        currentBill.setDeptId(cbDeptId);
+        currentBill.setInsId(cbDeptId);
+
         currentBill.setBillType(BillType.CashHandoverCreateBill);
         currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE);
         currentBill.setBillClassType(BillClassType.PreBill);
-        
+
         currentBill.setReferenceBill(bundle.getStartBill());
-        
+
         currentBill.setInstitution(sessionController.getInstitution());
         currentBill.setFromDate(cashbookDate);
-        
+
         currentBill.setDepartment(sessionController.getDepartment());
         currentBill.setFromDepartment(cashbookDepartment);
-        
+
         currentBill.setStaff(sessionController.getLoggedUser().getStaff());
         currentBill.setFromStaff(sessionController.getLoggedUser().getStaff());
         currentBill.setToStaff(user.getStaff());
-        
-        
+
         currentBill.setToWebUser(user);
         currentBill.setFromWebUser(sessionController.getLoggedUser());
         currentBill.setWebUser(sessionController.getLoggedUser());
-        
-        
-        
+
         currentBill.setBillDate(new Date());
         currentBill.setBillTime(new Date());
         currentBill.setTotal(bundle.getTotal());
         currentBill.setNetTotal(bundle.getTotal());
-        
+
         currentBill.setCreatedAt(new Date());
         currentBill.setCreater(sessionController.getLoggedUser());
-        
+
         billController.save(currentBill);
 
         Bill denos = new Bill();
@@ -3849,20 +3811,31 @@ public class FinancialTransactionController implements Serializable {
         for (ReportTemplateRowBundle shiftBundle : bundle.getBundles()) {
             String id = billNumberGenerator.departmentBillNumberGeneratorYearly(department, BillTypeAtomic.FUND_SHIFT_COMPONANT_HANDOVER_CREATE);
             Bill shiftHandoverComponantBill = new Bill();
+            System.out.println("1");
+            shiftHandoverComponantBill.setDeptId(id);
+            shiftHandoverComponantBill.setInsId(id);
+            System.out.println("2");
+            billController.save(shiftHandoverComponantBill);
+            System.out.println("shiftHandoverComponantBill = " + shiftHandoverComponantBill);
+            System.out.println("3" );
             shiftHandoverComponantBill.setDepartment(shiftBundle.getDepartment());
             shiftHandoverComponantBill.setInstitution(shiftBundle.getDepartment().getInstitution());
             shiftHandoverComponantBill.setCreater(sessionController.getLoggedUser());
             shiftHandoverComponantBill.setBillDate(shiftBundle.getDate());
+            billController.save(shiftHandoverComponantBill);
             shiftHandoverComponantBill.setStaff(shiftBundle.getUser().getStaff());
             shiftHandoverComponantBill.setBillType(BillType.FUND_SHIFT_COMPONANT_HANDOVER_CREATE);
             shiftHandoverComponantBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_COMPONANT_HANDOVER_CREATE);
+            billController.save(shiftHandoverComponantBill);
             shiftHandoverComponantBill.setDeptId(id);
             shiftHandoverComponantBill.setInsId(id);
             shiftHandoverComponantBill.setFromWebUser(sessionController.getLoggedUser());
             shiftHandoverComponantBill.setToWebUser(user);
+            billController.save(shiftHandoverComponantBill);
             shiftHandoverComponantBill.setReferenceBill(currentBill);
+            billController.save(shiftHandoverComponantBill);
             shiftHandoverComponantBill.setCreatedAt(new Date());
-            billFacade.create(shiftHandoverComponantBill);
+            billController.save(shiftHandoverComponantBill);
 
             Double componantTotal = 0.0;
 
@@ -4050,18 +4023,17 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_HANDOVER_ACCEPT);
         currentBill.setBillClassType(BillClassType.PreBill);
         currentBill.setReferenceBill(selectedBill);
-        
+
         currentBill.setDepartment(sessionController.getDepartment());
         currentBill.setFromDepartment(cashbookDepartment);
         currentBill.setToDepartment(sessionController.getDepartment());
-        
+
         currentBill.setInstitution(sessionController.getInstitution());
         currentBill.setFromInstitution(sessionController.getInstitution());
         currentBill.setToInstitution(sessionController.getInstitution());
-        
-        
+
         currentBill.setFromDate(cashbookDate);
-        
+
         currentBill.setStaff(sessionController.getLoggedUser().getStaff());
         currentBill.setToWebUser(user);
         currentBill.setFromWebUser(sessionController.getLoggedUser());
@@ -4356,6 +4328,7 @@ public class FinancialTransactionController implements Serializable {
                 p.setBill(currentBill);
                 p.setDepartment(null);
                 p.setInstitution(null);
+                p.setCurrentHolder(sessionController.getLoggedUser());
                 paymentController.save(p);
             }
 
@@ -5432,30 +5405,7 @@ public class FinancialTransactionController implements Serializable {
     public void setLoggedUserDrawer(Drawer loggedUserDrawer) {
         this.loggedUserDrawer = loggedUserDrawer;
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    // <editor-fold defaultstate="collapsed" desc="Damitha's Edit">
-    
-    
-    
-     // </editor-fold>
-    
-    
-    
-    
-    
-    
-    
-    
-    
 
+    // <editor-fold defaultstate="collapsed" desc="Damitha's Edit">
+    // </editor-fold>
 }
