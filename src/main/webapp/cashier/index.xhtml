@@ -58,7 +58,7 @@
                                         ajax="false" 
                                         action="#{financialTransactionController.navigateToHandoverCreateBillForCurrentShift()}" >
                                     </p:commandButton>
-                                    
+
                                     <p:commandButton 
                                         class="my-1 w-100 ui-button-info"
                                         value="My Shifts"
@@ -116,6 +116,32 @@
                                     </p:commandButton>
                                 </p:tab>
 
+
+                                <p:tab title="Income &amp; Expense Management">
+                                    <p:commandButton 
+                                        class="my-1 w-100 ui-button-success" 
+                                        value="Add Supplementary Income"
+                                        icon="fa fa-plus-circle"  
+                                        ajax="false" 
+                                        action="#{financialTransactionController.navigateToNewIncomeBill()}" >
+                                    </p:commandButton>
+
+                                    <p:commandButton 
+                                        class="my-1 w-100 ui-button-danger"  
+                                        value="Add Operational Expense"
+                                        icon="fa fa-minus-circle" 
+                                        ajax="false" 
+                                        action="#{financialTransactionController.navigateToNewExpenseBill()}" >
+                                    </p:commandButton>
+
+                                    <p:commandButton 
+                                        class="my-1 w-100 ui-button-info"  
+                                        value="Track Income &amp; Expenses"
+                                        icon="fa fa-search" 
+                                        ajax="false" 
+                                        action="#{financialTransactionController.navigateToTraceIncomeExpenseBills()}" >
+                                    </p:commandButton>
+                                </p:tab>
 
 
 

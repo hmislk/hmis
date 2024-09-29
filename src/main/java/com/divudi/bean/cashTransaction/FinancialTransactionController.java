@@ -33,6 +33,7 @@ import com.divudi.data.analytics.ReportTemplateType;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.entity.BillComponent;
+import com.divudi.entity.BillItem;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
@@ -150,6 +151,8 @@ public class FinancialTransactionController implements Serializable {
     private PaymentMethodData paymentMethodData;
     private Payment removingPayment;
     private List<Payment> currentBillPayments;
+    private List<BillItem> billItems;
+    private BillItem removingBillItem;
     private List<Bill> currentBills;
     private List<Bill> shiaftStartBills;
     private List<Bill> fundTransferBillsToReceive;
@@ -1164,6 +1167,23 @@ public class FinancialTransactionController implements Serializable {
         return "/cashier/fund_transfer_bill?faces-redirect=true";
     }
 
+    public String navigateToNewIncomeBill() {
+        prepareToAddNewIncomeBill();
+        return "/cashier/income_bill?faces-redirect=true";
+    }
+
+    public String navigateToNewExpenseBill() {
+        resetClassVariables();
+        prepareToAddNewExpenseBill();
+        return "/cashier/fund_transfer_bill?faces-redirect=true";
+    }
+
+    public String navigateToTraceIncomeExpenseBills() {
+        resetClassVariables();
+        prepareToAddNewFundTransferBill();
+        return "/cashier/fund_transfer_bill?faces-redirect=true";
+    }
+
     public String navigateToFundDepositBill() {
         resetClassVariables();
         prepareToAddNewFundDepositBill();
@@ -1736,6 +1756,20 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setStaff(sessionController.getLoggedUser().getStaff());
     }
 
+    private void prepareToAddNewIncomeBill() {
+        currentBill = new Bill();
+        currentBill.setBillType(BillType.SUPPLEMENTARY_INCOME);
+        currentBill.setBillTypeAtomic(BillTypeAtomic.SUPPLEMENTARY_INCOME);
+        currentBill.setBillClassType(BillClassType.Bill);
+    }
+    
+    private void prepareToAddNewExpenseBill() {
+        currentBill = new Bill();
+        currentBill.setBillType(BillType.OPERATIONAL_EXPENSES);
+        currentBill.setBillTypeAtomic(BillTypeAtomic.OPERATIONAL_EXPENSES);
+        currentBill.setBillClassType(BillClassType.Bill);
+    }
+
     private void prepareToAddNewFundTransferBill() {
         currentBill = new Bill();
         currentBill.setBillType(BillType.FundTransferBill);
@@ -2167,9 +2201,6 @@ public class FinancialTransactionController implements Serializable {
 //        return "/cashier/handover_start_all?faces-redirect=true";
 //    }
 //
-    
-    
-    
     public String navigateToHandoverCreateBillForCurrentShift() {
         resetClassVariables();
         findNonClosedShiftStartFundBillIsAvailable();
@@ -2219,8 +2250,7 @@ public class FinancialTransactionController implements Serializable {
 //        currentBill.setReferenceBill(null);
         return "/cashier/handover_start_all?faces-redirect=true";
     }
-    
-    
+
     public String navigateToHandoverCreateBillForSelectedShift(Bill startBill) {
         resetClassVariables();
         handoverValuesCreated = false;
@@ -4228,8 +4258,7 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setInstitution(null);
         currentBill.setStaff(null);
         currentBill.setWebUser(null);
-        
-        
+
         currentBill.setFromDepartment(sessionController.getDepartment());
         currentBill.setFromInstitution(sessionController.getInstitution());
         currentBill.setFromStaff(sessionController.getLoggedUser().getStaff());
@@ -5318,5 +5347,23 @@ public class FinancialTransactionController implements Serializable {
     public void setLoggedUserDrawer(Drawer loggedUserDrawer) {
         this.loggedUserDrawer = loggedUserDrawer;
     }
+
+    public List<BillItem> getBillItems() {
+        return billItems;
+    }
+
+    public void setBillItems(List<BillItem> billItems) {
+        this.billItems = billItems;
+    }
+
+    public BillItem getRemovingBillItem() {
+        return removingBillItem;
+    }
+
+    public void setRemovingBillItem(BillItem removingBillItem) {
+        this.removingBillItem = removingBillItem;
+    }
+    
+    
 
 }
