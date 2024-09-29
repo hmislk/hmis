@@ -4048,10 +4048,18 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_HANDOVER_ACCEPT);
         currentBill.setBillClassType(BillClassType.PreBill);
         currentBill.setReferenceBill(selectedBill);
+        
         currentBill.setDepartment(sessionController.getDepartment());
-        currentBill.setInstitution(sessionController.getInstitution());
-        currentBill.setFromDate(cashbookDate);
         currentBill.setFromDepartment(cashbookDepartment);
+        currentBill.setToDepartment(sessionController.getDepartment());
+        
+        currentBill.setInstitution(sessionController.getInstitution());
+        currentBill.setFromInstitution(sessionController.getInstitution());
+        currentBill.setToInstitution(sessionController.getInstitution());
+        
+        
+        currentBill.setFromDate(cashbookDate);
+        
         currentBill.setStaff(sessionController.getLoggedUser().getStaff());
         currentBill.setToWebUser(user);
         currentBill.setFromWebUser(sessionController.getLoggedUser());
@@ -5422,5 +5430,30 @@ public class FinancialTransactionController implements Serializable {
     public void setLoggedUserDrawer(Drawer loggedUserDrawer) {
         this.loggedUserDrawer = loggedUserDrawer;
     }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    // <editor-fold defaultstate="collapsed" desc="Damitha's Edit">
+    
+    
+    
+     // </editor-fold>
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
 }
