@@ -15,13 +15,15 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
 
-        <p:dataTable value="#{cc.attrs.bundle.reportTemplateRows}" 
-                     var="summary"
-                     paginatorAlwaysVisible="false"
-                     paginator="true" rows="10" id="tblCashier"
-                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
-                     currentPageReportTemplate="(Page {currentPage} of {totalPages})"
-                     paginatorPosition="top">
+        <p:dataTable 
+            class="w-100 m-2"
+            value="#{cc.attrs.bundle.reportTemplateRows}" 
+            var="summary"
+            paginatorAlwaysVisible="false"
+            paginator="true" rows="10" id="tblCashier"
+            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+            currentPageReportTemplate="(Page {currentPage} of {totalPages})"
+            paginatorPosition="top">
             <f:facet name="header" >
                 <h:outputText value="OPD Collection" />
             </f:facet>
