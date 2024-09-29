@@ -153,9 +153,21 @@
                                     </p:column>
 
                                     <p:column headerText="Bill No"  sortBy="#{pi.billItem.bill.deptId}" filterBy="#{pi.billItem.bill.deptId}" filterMatchMode="contains">
-                                        <h:commandLink action="#{billSearch.navigateToViewBillByAtomicBillType()}" value="#{pi.billItem.bill.deptId}">
-                                            <f:setPropertyActionListener value="#{pi.billItem.bill}" target="#{billSearch.billSearch}"/>
-                                        </h:commandLink>   
+                                        <h:outputLabel value="#{pi.billItem.bill.deptId}">
+                                        </h:outputLabel>  
+                                        <p:commandButton icon="pi pi-wallet" styleClass="m-1" ajax="false" title="Manage Bill" action="#{billSearch.navigateToManageBillByAtomicBillType()}">
+                                            <f:setPropertyActionListener value="#{pi.billItem.bill}" target="#{billSearch.bill}"/>
+                                        </p:commandButton>
+                                        <p:commandButton icon="pi pi-list" styleClass="m-1" ajax="false" title="Manage Batch Bill" action="#{billSearch.navigateToManageBillByAtomicBillType}">
+                                            <f:setPropertyActionListener value="#{pi.billItem.bill.backwardReferenceBill}" target="#{billSearch.bill}"/>
+                                        </p:commandButton>
+                                        <p:commandButton icon="pi pi-search" styleClass="m-1" ajax="false" title="View Bill" action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                                            <f:setPropertyActionListener value="#{pi.billItem.bill}" target="#{billSearch.bill}"/>
+                                        </p:commandButton>
+                                        <p:commandButton icon="pi pi-search-plus" styleClass="m-1" ajax="false" title="View Batch Bill" action="#{billSearch.navigateToViewBillByAtomicBillType}">
+                                            <f:setPropertyActionListener value="#{pi.billItem.bill.backwardReferenceBill}" target="#{billSearch.bill}"/>
+                                        </p:commandButton>
+                                        
                                     </p:column>
 
                                     <p:column headerText="Institution Name"  sortBy="#{pi.billItem.bill.toInstitution.name}" filterBy="#{pi.billItem.bill.toInstitution.name}" filterMatchMode="contains">
