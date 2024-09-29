@@ -5430,5 +5430,30 @@ public class FinancialTransactionController implements Serializable {
     public void setLoggedUserDrawer(Drawer loggedUserDrawer) {
         this.loggedUserDrawer = loggedUserDrawer;
     }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    // <editor-fold defaultstate="collapsed" desc="Damitha's Edit">
+    
+    
+    
+     // </editor-fold>
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
 }
