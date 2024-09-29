@@ -133,6 +133,8 @@ public class ReportTemplateRowBundle implements Serializable {
     private boolean hasOnlineSettlementTransaction;
 
     private WebUser user;
+    private WebUser fromUser;
+    private WebUser toUser;
     private Date date;
     private Department department;
     private List<Department> departments;
@@ -1634,4 +1636,22 @@ public class ReportTemplateRowBundle implements Serializable {
         this.paymentMethod = paymentMethod;
     }
 
+    public WebUser getFromUser() {
+        return fromUser;
+    }
+
+    public void setFromUser(WebUser fromUser) {
+        this.fromUser = fromUser;
+    }
+
+    public WebUser getToUser() {
+        return toUser;
+    }
+
+    public void setToUser(WebUser toUser) {
+        this.toUser = toUser;
+    }
+
+    
+    
 }

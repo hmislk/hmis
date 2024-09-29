@@ -3777,24 +3777,42 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Cash Value Collected and the cash value Handing over are differernt. Can not handover.");
             return null;
         }
+        bundle.setFromUser(sessionController.getLoggedUser());
+        bundle.setToUser(user);
+        
         currentBill = new Bill();
+        
         currentBill.setBillType(BillType.CashHandoverCreateBill);
         currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE);
         currentBill.setBillClassType(BillClassType.PreBill);
+        
         currentBill.setReferenceBill(bundle.getStartBill());
-        currentBill.setDepartment(sessionController.getDepartment());
+        
         currentBill.setInstitution(sessionController.getInstitution());
         currentBill.setFromDate(cashbookDate);
+        
+        currentBill.setDepartment(sessionController.getDepartment());
         currentBill.setFromDepartment(cashbookDepartment);
+        
         currentBill.setStaff(sessionController.getLoggedUser().getStaff());
+        currentBill.setFromStaff(sessionController.getLoggedUser().getStaff());
+        currentBill.setToStaff(user.getStaff());
+        
+        
         currentBill.setToWebUser(user);
         currentBill.setFromWebUser(sessionController.getLoggedUser());
-        currentBill.setCreatedAt(new Date());
-        currentBill.setCreater(sessionController.getLoggedUser());
+        currentBill.setWebUser(sessionController.getLoggedUser());
+        
+        
+        
         currentBill.setBillDate(new Date());
         currentBill.setBillTime(new Date());
         currentBill.setTotal(bundle.getTotal());
         currentBill.setNetTotal(bundle.getTotal());
+        
+        currentBill.setCreatedAt(new Date());
+        currentBill.setCreater(sessionController.getLoggedUser());
+        
         billController.save(currentBill);
 
         Bill denos = new Bill();
