@@ -1,29 +1,12 @@
 package com.divudi.data;
 
-import static com.divudi.data.BillClassType.Bill;
-import static com.divudi.data.BillClassType.BilledBill;
-import static com.divudi.data.BillClassType.CancelledBill;
-import static com.divudi.data.BillClassType.OtherBill;
-import static com.divudi.data.BillClassType.PreBill;
-import static com.divudi.data.BillClassType.RefundBill;
-import static com.divudi.data.BillType.PharmacyAddtoStock;
-import static com.divudi.data.BillType.PharmacyAdjustment;
-import static com.divudi.data.BillType.PharmacyAdjustmentDepartmentSingleStock;
-import static com.divudi.data.BillType.PharmacyAdjustmentDepartmentStock;
 import static com.divudi.data.BillType.PharmacyGrnBill;
-import static com.divudi.data.BillType.PharmacyOrderApprove;
-import static com.divudi.data.BillType.PharmacyPre;
 import static com.divudi.data.BillType.PharmacyPurchaseBill;
-import static com.divudi.data.BillType.PharmacyTransferIssue;
-import static com.divudi.data.BillType.PharmacyTransferReceive;
 import static com.divudi.data.BillType.PharmacyWholeSale;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Enumerates types of bills for atomic billing purposes. Includes
- */
 public enum BillTypeAtomic {
     INWARD_PHARMACY_REQUEST("Inward Request Medicines From Pharmacy", BillCategory.BILL, ServiceType.INWARD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.CREDIT_SPEND),
     INWARD_SERVICE_BATCH_BILL("Inward Service Batch Bill", BillCategory.BILL, ServiceType.INWARD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.CREDIT_SPEND),
@@ -183,14 +166,24 @@ public enum BillTypeAtomic {
     FUND_SHIFT_START_BILL("Shift Start Fund Bill", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.FLOAT_STARTING_BALANCE, CountedServiceType.OTHER, PaymentCategory.CREDIT_SPEND),
     FUND_SHIFT_START_BILL_CANCELLED("Shift Start Fund Bill - Cancelled", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.FLOAT_STARTING_BALANCE, CountedServiceType.OTHER, PaymentCategory.CREDIT_SPEND),
     FUND_SHIFT_END_BILL("Shift End Fund Bill", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.FLOAT_CLOSING_BALANCE, CountedServiceType.OTHER, PaymentCategory.CREDIT_SPEND),
-    FUND_SHIFT_HANDOVER_CREATE("Shift Handover Create Bill", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.FLOAT_DECREASE, CountedServiceType.OTHER, PaymentCategory.CREDIT_SPEND),
-    FUND_SHIFT_HANDOVER_ACCEPT("Shift Handover Accept", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.FLOAT_INCREASE, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
+    FUND_SHIFT_HANDOVER_CREATE("Shift Handover Create Bill", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.FLOAT_DECREASE, CountedServiceType.OTHER, PaymentCategory.OTHER),
+    FUND_SHIFT_COMPONANT_HANDOVER_CREATE("Shift Handover Componant Bill", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.FLOAT_CHANGE, CountedServiceType.OTHER, PaymentCategory.OTHER),
+    FUND_SHIFT_DENOMINATION_HANDOVER_CREATE("Shift Handover Denomination Bill", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.FLOAT_CHANGE, CountedServiceType.OTHER, PaymentCategory.OTHER),
+    FUND_SHIFT_HANDOVER_ACCEPT("Shift Handover Accept", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.FLOAT_INCREASE, CountedServiceType.OTHER, PaymentCategory.OTHER),
+    FUND_SHIFT_COMPONANT_HANDOVER_ACCEPT("Shift Handover Accept Componant Bill", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.FLOAT_CLOSING_BALANCE, CountedServiceType.OTHER, PaymentCategory.OTHER),
     FUND_SHIFT_END_BILL_CANCELLED("Shift End Fund Bill - Cancelled", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.FLOAT_CLOSING_BALANCE, CountedServiceType.OTHER, PaymentCategory.CREDIT_SPEND),
     FUND_TRANSFER_BILL("Fund Transfer Bill", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.FLOAT_DECREASE, CountedServiceType.OTHER, PaymentCategory.CREDIT_SPEND),
     FUND_TRANSFER_BILL_CANCELLED("Fund Transfer Bill - Cancelled", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.FLOAT_INCREASE, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
     FUND_TRANSFER_RECEIVED_BILL("Fund Transfer Received Bill", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.FLOAT_INCREASE, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
     FUND_TRANSFER_RECEIVED_BILL_CANCELLED("Fund Transfer Received Bill - Cancelled", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.FLOAT_DECREASE, CountedServiceType.OTHER, PaymentCategory.CREDIT_SPEND),
-    // PROFESSIONAL PAYMENTS
+    // Shortage Bill
+    FUND_SHIFT_SHORTAGE_BILL("Shift Shortage Bill", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.FLOAT_INCREASE, CountedServiceType.OTHER, PaymentCategory.NO_PAYMENT),
+    FUND_SHIFT_SHORTAGE_BILL_CANCELLED("Shift Shortage Bill - Cancelled", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.FLOAT_DECREASE, CountedServiceType.OTHER, PaymentCategory.NO_PAYMENT),
+    FUND_SHIFT_EXCESS_BILL("Shift Excess Bill", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.CASH_IN, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_COLLECTION),
+    FUND_SHIFT_EXCESS_BILL_CANCELLED("Shift Excess Bill - Cancelled", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.CASH_OUT, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
+    TRANSFER_PAYMENT_METHOD_BILL("Transfer Payment Method Bill", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.CASH_IN, CountedServiceType.OTHER, PaymentCategory.NO_PAYMENT),
+    TRANSFER_PAYMENT_METHOD_BILL_CANCELLED("Transfer Payment Method Bill - Cancelled", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.CASH_IN, CountedServiceType.OTHER, PaymentCategory.NO_PAYMENT),
+// PROFESSIONAL PAYMENTS
     PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE("Inward Payment for Staff", BillCategory.PAYMENTS, ServiceType.INWARD, BillFinanceType.CASH_IN, CountedServiceType.INWARD_PROFESSIONAL_PAYMENT, PaymentCategory.NON_CREDIT_SPEND),
     PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE("Channelling Payment for Staff", BillCategory.PAYMENTS, ServiceType.CHANNELLING, BillFinanceType.CASH_OUT, CountedServiceType.CHANNELLING_PROFESSIONAL_PAYMENT, PaymentCategory.NON_CREDIT_SPEND),
     PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION("Channelling session Payment for Staff", BillCategory.PAYMENTS, ServiceType.CHANNELLING, BillFinanceType.CASH_OUT, CountedServiceType.CHANNELLING_PROFESSIONAL_PAYMENT, PaymentCategory.NON_CREDIT_SPEND),
@@ -204,8 +197,8 @@ public enum BillTypeAtomic {
     PETTY_CASH_ISSUE("Petty Cash Issue", BillCategory.PAYMENTS, ServiceType.OTHER, BillFinanceType.CASH_OUT, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
     PETTY_CASH_RETURN("Petty Cash Return", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.CASH_IN, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
     PETTY_CASH_BILL_CANCELLATION("Petty Cash Bill Cancellation", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.CASH_IN, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
-    IOU_CASH_ISSUE("Iou Cash Issue", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.CASH_OUT, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
-    IOU_CASH_RETURN("Iou Cash Return", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.CASH_IN, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
+    IOU_CASH_ISSUE("Iou Cash Issue", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.FLOAT_CHANGE, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
+    IOU_SETTLE("Iou Cash Settle", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.FLOAT_CHANGE, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_COLLECTION),
     STAFF_CREDIT_SETTLE("Staff Credit Settle", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.CASH_IN, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
     PATIENT_DEPOSIT("Patient Deposit Settle", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.CASH_IN, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
     PATIENT_DEPOSIT_REFUND("Patient Deposit - Refund", BillCategory.REFUND, ServiceType.OTHER, BillFinanceType.CASH_OUT, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
@@ -251,81 +244,50 @@ public enum BillTypeAtomic {
     private final PaymentCategory paymentCategory;
 
     public static BillTypeAtomic getBillTypeAtomic(BillType billType, BillClassType billClassType) {
-        if (billClassType == null) {
-            switch (billType) {
-                case PharmacyPre:
-                    return BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE;
-                case PharmacySale:
-                    return BillTypeAtomic.PHARMACY_RETAIL_SALE;
-                case PharmacyTransferIssue:
-                    return BillTypeAtomic.PHARMACY_ISSUE;
-                case PharmacyAdjustment:
-                    return BillTypeAtomic.PHARMACY_ADJUSTMENT;
-                case PharmacyOrder:
-                    return BillTypeAtomic.PHARMACY_ORDER;
-                case PharmacyOrderApprove:
-                    return BillTypeAtomic.PHARMACY_ORDER_APPROVAL;
-                case PharmacyPurchaseBill:
-                    return BillTypeAtomic.PHARMACY_DIRECT_PURCHASE;
-                case PharmacyTransferRequest:
-                    return BillTypeAtomic.PHARMACY_TRANSFER_REQUEST;
-                case PharmacyTransferReceive:
-                    return BillTypeAtomic.PHARMACY_RECEIVE;
-                case PharmacyAdjustmentDepartmentStock:
-                    return BillTypeAtomic.PHARMACY_ADJUSTMENT;
-                case PharmacyAdjustmentExpiryDate:
-                    return BillTypeAtomic.PHARMACY_ADJUSTMENT;
-                case PharmacyAdjustmentSaleRate:
-                    return BillTypeAtomic.PHARMACY_ADJUSTMENT;
+        switch (billClassType) {
+            case Bill:
+                switch (billType) {
+                    case PharmacyWholeSale:
+                        return BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL;
+                    case PharmacyPurchaseBill:
+                        return BillTypeAtomic.PHARMACY_DIRECT_PURCHASE;
+                }
+                break;
+            case BilledBill:
+                switch (billType) {
+                    case PharmacyGrnBill:
+                        return BillTypeAtomic.PHARMACY_GRN;
+                    case PharmacyWholeSale:
+                        return BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL;
+                    case PharmacyPurchaseBill:
+                        return BillTypeAtomic.PHARMACY_DIRECT_PURCHASE;
+                }
+            case CancelledBill:
+                switch (billType) {
+                    case PharmacyGrnBill:
+                        return BillTypeAtomic.PHARMACY_GRN_CANCELLED;
+                    case PharmacyWholeSale:
+                        return BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL_CANCELLED;
+                    case PharmacyPurchaseBill:
+                        return BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED;
+                }
+            case OtherBill:
+                return null;
+            case PreBill:
+                return null;
+            case RefundBill:
+                switch (billType) {
+                    case PharmacyGrnBill:
+                        return BillTypeAtomic.PHARMACY_GRN_REFUND;
+                    case PharmacyWholeSale:
+                        return BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL_REFUND;
+                    case PharmacyPurchaseBill:
+                        return BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED;
+                }
 
-            }
-        } else {
-            switch (billClassType) {
-                case Bill:
-                    switch (billType) {
-                        case PharmacyWholeSale:
-                            return BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL;
-                        case PharmacyPurchaseBill:
-                            return BillTypeAtomic.PHARMACY_DIRECT_PURCHASE;
-                    }
-                    break;
-                case BilledBill:
-                    switch (billType) {
-                        case PharmacyGrnBill:
-                            return BillTypeAtomic.PHARMACY_GRN;
-                        case PharmacyWholeSale:
-                            return BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL;
-                        case PharmacyPurchaseBill:
-                            return BillTypeAtomic.PHARMACY_DIRECT_PURCHASE;
-                    }
-                case CancelledBill:
-                    switch (billType) {
-                        case PharmacyGrnBill:
-                            return BillTypeAtomic.PHARMACY_GRN_CANCELLED;
-                        case PharmacyWholeSale:
-                            return BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL_CANCELLED;
-                        case PharmacyPurchaseBill:
-                            return BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED;
-                    }
-                case OtherBill:
-                    return null;
-                case PreBill:
-                    return null;
-                case RefundBill:
-                    switch (billType) {
-                        case PharmacyGrnBill:
-                            return BillTypeAtomic.PHARMACY_GRN_REFUND;
-                        case PharmacyWholeSale:
-                            return BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL_REFUND;
-                        case PharmacyPurchaseBill:
-                            return BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED;
-                    }
-
-                default:
-                    return null;
-            }
+            default:
+                return null;
         }
-
         return null;
     }
 
