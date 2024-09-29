@@ -211,33 +211,33 @@
                                     </p:column>
                                     <p:column headerText="Bill No*" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}" filterMatchMode="contains">                                
                                         <div>
-                                        <p:commandLink 
-                                            id="billNo" 
-                                            ajax="false" 
-                                            value="#{bill.deptId}" 
-                                            action="#{billSearch.navigateToViewSingleOpdBill()}">
-                                            <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
-                                        </p:commandLink>
+                                            <p:commandLink 
+                                                id="billNo" 
+                                                ajax="false" 
+                                                value="#{bill.deptId}" 
+                                                action="#{billSearch.navigateToViewSingleOpdBill()}">
+                                                <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
+                                            </p:commandLink>
                                         </div>
                                         <div>
                                             <p:commandLink
-                                            id="CancelBillNo"
-                                            ajax="false"
-                                            value="#{bill.cancelledBill.deptId}"
-                                            action="#{billSearch.navigateToViewSingleOpdBill()}"
-                                            rendered="#{bill.cancelled}" style="color: red">
-                                                 <f:setPropertyActionListener value="#{bill.cancelledBill}" target="#{billSearch.bill}"/>
-                                        </p:commandLink>
-                                             <p:commandLink
-                                            id="RefundBillNo"
-                                            ajax="false"
-                                            value="#{bill.refundedBill.deptId}"
-                                            action="#{billSearch.navigateToViewSingleOpdBill()}"
-                                            rendered="#{bill.refunded}" style="color: orange">
-                                                 <f:setPropertyActionListener value="#{bill.refundedBill}" target="#{billSearch.bill}"/>
-                                        </p:commandLink>
+                                                id="CancelBillNo"
+                                                ajax="false"
+                                                value="#{bill.cancelledBill.deptId}"
+                                                action="#{billSearch.navigateToViewSingleOpdBill()}"
+                                                rendered="#{bill.cancelled}" style="color: red">
+                                                <f:setPropertyActionListener value="#{bill.cancelledBill}" target="#{billSearch.bill}"/>
+                                            </p:commandLink>
+                                            <p:commandLink
+                                                id="RefundBillNo"
+                                                ajax="false"
+                                                value="#{bill.refundedBill.deptId}"
+                                                action="#{billSearch.navigateToViewSingleOpdBill()}"
+                                                rendered="#{bill.refunded}" style="color: orange">
+                                                <f:setPropertyActionListener value="#{bill.refundedBill}" target="#{billSearch.bill}"/>
+                                            </p:commandLink>
                                         </div>
-                                        
+
                                     </p:column>
                                     <p:column headerText="Batch Bill" sortBy="#{bill.backwardReferenceBill.deptId}" 
                                               filterMatchMode="contains"
@@ -306,7 +306,7 @@
 
                                     <p:column 
                                         headerText="Client"
-                                         filterMatchMode="contains"
+                                        filterMatchMode="contains"
                                         sortBy="#{bill.patient.person.name}" 
                                         filterBy="#{bill.patient.person.name}" >                               
                                         <h:panelGroup id="pt">
@@ -322,6 +322,8 @@
                                         <h:panelGroup id="remark">
                                             <p:badge rendered="#{bill.cancelled}" value="Cancelled" severity="danger" styleClass="mr-2"></p:badge>
                                             <p:badge rendered="#{bill.refunded}" value="Refunded" severity="warning" styleClass="mr-2"></p:badge>
+                                            <p:badge rendered="#{bill.billTypeAtomic eq 'PACKAGE_OPD_BILL_WITH_PAYMENT'}" value="Package Bill"></p:badge>
+                                            <!--<p:badge rendered="#{bill.billTypeAtomic eq 'PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT'}" value="Package Batch Bill"></p:badge>-->
                                         </h:panelGroup>
 
                                         <p:tooltip for="remark" value="df" rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD - Display Bill Details in Tooltip')}" >
