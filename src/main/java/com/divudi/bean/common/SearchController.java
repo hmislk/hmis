@@ -12152,22 +12152,8 @@ public class SearchController implements Serializable {
         bundle.getBundles().add(netCashForTheDayBundle);
     }
 
-    public ReportTemplateRowBundle generateOpdSummaryForCashierSummary() {
+    public ReportTemplateRowBundle generatePaymentColumnForCollections(List<BillTypeAtomic> bts, List<PaymentMethod> pms) {
         ReportTemplateRowBundle b = new ReportTemplateRowBundle();
-
-        List<BillTypeAtomic> bts = new ArrayList<>();
-        bts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
-        bts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-        bts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
-
-        bts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
-        bts.add(BillTypeAtomic.OPD_BILL_REFUND);
-
-        bts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
-        bts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-        bts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
-        bts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
-        bts.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
 
         Map<String, Object> parameters = new HashMap<>();
         String jpql = "SELECT new com.divudi.data.ReportTemplateRow("
@@ -12191,11 +12177,13 @@ public class SearchController implements Serializable {
                 + "JOIN p.bill bill "
                 + "WHERE p.retired <> :bfr "
                 + "AND bill.retired <> :br "
-                + "AND bill.billTypeAtomic in :bts ";
+                + "AND bill.billTypeAtomic in :bts "
+                + "AND p.paymentMethod in :pms ";
 
         parameters.put("bfr", true);
         parameters.put("br", true);
         parameters.put("bts", bts);
+        parameters.put("pms", pms);
 
         if (institution != null) {
             jpql += "AND bill.department.institution = :ins ";
@@ -12241,33 +12229,281 @@ public class SearchController implements Serializable {
         double collectionForTheDay = 0.0;
         double netCashCollection = 0.0;
 
+        List<PaymentMethod> creditPaymentMethods = PaymentMethod.getMethodsByType(PaymentType.CREDIT);
+        List<PaymentMethod> nonCreditPaymentMethods = PaymentMethod.getMethodsByType(PaymentType.NON_CREDIT);
+
         // Generate OPD service collection and add to the main bundle
-        ReportTemplateRowBundle opdServiceCollection = generateOpdSummaryForCashierSummary();
+        List<BillTypeAtomic> opdBts = new ArrayList<>();
+        opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+        opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
+
+        opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+        opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
+
+        opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
+        opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
+        opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+        opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
+
+        ReportTemplateRowBundle opdServiceCollection = generatePaymentColumnForCollections(opdBts, nonCreditPaymentMethods);
         opdServiceCollection.setBundleType("cashierSummaryOpd");
+        opdServiceCollection.setName("OPD Collection");
         bundle.getBundles().add(opdServiceCollection);
         collectionForTheDay += getSafeTotal(opdServiceCollection);
 
         // Generate OPD service collection and add to the main bundle
-        ReportTemplateRowBundle opdServiceCancellations = generateOpdCancellationsByPayment();
+        List<BillTypeAtomic> opdCancellations = new ArrayList<>();
+        opdCancellations.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
+        opdCancellations.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+        ReportTemplateRowBundle opdServiceCancellations = generatePaymentMethodColumnsByBills(opdCancellations);
         opdServiceCancellations.setBundleType("opdServiceCancellations");
+        opdServiceCancellations.setName("OPD Service Cancellations");
         bundle.getBundles().add(opdServiceCancellations);
         collectionForTheDay += getSafeTotal(opdServiceCancellations);
-        
-         // Generate OPD service Refunds and add to the main bundle
-        ReportTemplateRowBundle opdServiceRefunds = generateOpdRefundsByPayment();
+
+        // Generate OPD service Refunds and add to the main bundle
+        List<BillTypeAtomic> opdRefunds = new ArrayList<>();
+        opdRefunds.add(BillTypeAtomic.OPD_BILL_REFUND);
+        ReportTemplateRowBundle opdServiceRefunds = generatePaymentMethodColumnsByBills(opdRefunds);
         opdServiceRefunds.setBundleType("opdServiceRefunds");
+        opdServiceRefunds.setName("OPD Service Refunds");
         bundle.getBundles().add(opdServiceRefunds);
         collectionForTheDay += getSafeTotal(opdServiceRefunds);
+
+        // Generate Pharmacy Collection and add to the main bundle
+        List<BillTypeAtomic> pharmacyCollectionBillTypes = BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.PHARMACY, BillFinanceType.CASH_IN);
+        ReportTemplateRowBundle pharmacyCollection = generatePaymentColumnForCollections(pharmacyCollectionBillTypes, nonCreditPaymentMethods);
+        pharmacyCollection.setBundleType("pharmacyCollection");
+        pharmacyCollection.setName("Pharmacy Collection");
+        bundle.getBundles().add(pharmacyCollection);
+        collectionForTheDay += getSafeTotal(pharmacyCollection);
+
+        // Generate Pharmacy service collection and add to the main bundle
+        List<BillTypeAtomic> pharmacyCancellations = new ArrayList<>();
+        pharmacyCancellations.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+        pharmacyCancellations.add(BillTypeAtomic.PHARMACY_WHOLESALE_CANCELLED);
+        ReportTemplateRowBundle pharmacyServiceCancellations = generatePaymentMethodColumnsByBills(pharmacyCancellations);
+        pharmacyServiceCancellations.setBundleType("pharmacyServiceCancellations");
+        bundle.getBundles().add(pharmacyServiceCancellations);
+        collectionForTheDay += getSafeTotal(pharmacyServiceCancellations);
+
+        // Generate Pharmacy service Refunds and add to the main bundle
+        List<BillTypeAtomic> pharmacyRefunds = new ArrayList<>();
+        pharmacyRefunds.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
+        pharmacyRefunds.add(BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL_REFUND);
+        ReportTemplateRowBundle pharmacyServiceRefunds = generatePaymentMethodColumnsByBills(pharmacyRefunds);
+        pharmacyServiceRefunds.setBundleType("pharmacyServiceRefunds");
+        bundle.getBundles().add(pharmacyServiceRefunds);
+        collectionForTheDay += getSafeTotal(pharmacyServiceRefunds);
+
+        // Generate Professional Payments OPD and add to the main bundle
+        List<BillTypeAtomic> professionalPaymentsOpd = new ArrayList<>();
+        professionalPaymentsOpd.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES);
+        professionalPaymentsOpd.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL);
+        ReportTemplateRowBundle professionalPaymentsOpdBundle = generatePaymentMethodColumnsByBills(professionalPaymentsOpd);
+        professionalPaymentsOpdBundle.setBundleType("ProfessionalPaymentsOPD");
+        bundle.getBundles().add(professionalPaymentsOpdBundle);
+        collectionForTheDay += getSafeTotal(professionalPaymentsOpdBundle);
+
+// Generate Professional Payments OPD - Cancel and add to the main bundle
+        List<BillTypeAtomic> professionalPaymentsOpdCancel = new ArrayList<>();
+        professionalPaymentsOpdCancel.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN);
+        professionalPaymentsOpdCancel.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL_RETURN);
+        ReportTemplateRowBundle professionalPaymentsOpdCancelBundle = generatePaymentMethodColumnsByBills(professionalPaymentsOpdCancel);
+        professionalPaymentsOpdCancelBundle.setBundleType("ProfessionalPaymentsOPDCancel");
+        bundle.getBundles().add(professionalPaymentsOpdCancelBundle);
+        collectionForTheDay += getSafeTotal(professionalPaymentsOpdCancelBundle);
+
+        // Generate Professional Payments Inward and add to the main bundle
+        List<BillTypeAtomic> professionalPaymentsInward = new ArrayList<>();
+        professionalPaymentsInward.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE);
+        ReportTemplateRowBundle professionalPaymentsInwardBundle = generatePaymentMethodColumnsByBills(professionalPaymentsInward);
+        professionalPaymentsInwardBundle.setBundleType("ProfessionalPaymentsInward");
+        bundle.getBundles().add(professionalPaymentsInwardBundle);
+        collectionForTheDay += getSafeTotal(professionalPaymentsInwardBundle);
+
+// Generate Professional Payments Inward - Cancel and add to the main bundle
+        List<BillTypeAtomic> professionalPaymentsInwardCancel = new ArrayList<>();
+        professionalPaymentsInwardCancel.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN);
+        ReportTemplateRowBundle professionalPaymentsInwardCancelBundle = generatePaymentMethodColumnsByBills(professionalPaymentsInwardCancel);
+        professionalPaymentsInwardCancelBundle.setBundleType("ProfessionalPaymentsInwardCancel");
+        bundle.getBundles().add(professionalPaymentsInwardCancelBundle);
+        collectionForTheDay += getSafeTotal(professionalPaymentsInwardCancelBundle);
+
+// Generate Petty Cash Payment and add to the main bundle
+        List<BillTypeAtomic> pettyCashPayment = new ArrayList<>();
+        pettyCashPayment.add(BillTypeAtomic.PETTY_CASH_ISSUE);
+        ReportTemplateRowBundle pettyCashPaymentBundle = generatePaymentMethodColumnsByBills(pettyCashPayment);
+        pettyCashPaymentBundle.setBundleType("PettyCashPayment");
+        bundle.getBundles().add(pettyCashPaymentBundle);
+        collectionForTheDay += getSafeTotal(pettyCashPaymentBundle);
+
+// Generate Petty Cash Payment Cancel and add to the main bundle
+        List<BillTypeAtomic> pettyCashPaymentCancel = new ArrayList<>();
+        pettyCashPaymentCancel.add(BillTypeAtomic.PETTY_CASH_RETURN);
+        pettyCashPaymentCancel.add(BillTypeAtomic.PETTY_CASH_BILL_CANCELLATION);
+        ReportTemplateRowBundle pettyCashPaymentCancelBundle = generatePaymentMethodColumnsByBills(pettyCashPaymentCancel);
+        pettyCashPaymentCancelBundle.setBundleType("PettyCashPaymentCancel");
+        bundle.getBundles().add(pettyCashPaymentCancelBundle);
+        collectionForTheDay += getSafeTotal(pettyCashPaymentCancelBundle);
+
+// Generate Inward Payments and add to the main bundle
+        List<BillTypeAtomic> inwardPayments = new ArrayList<>();
+        inwardPayments.add(BillTypeAtomic.INWARD_DEPOSIT);
+        ReportTemplateRowBundle inwardPaymentsBundle = generatePaymentMethodColumnsByBills(inwardPayments);
+        inwardPaymentsBundle.setBundleType("InwardPayments");
+        bundle.getBundles().add(inwardPaymentsBundle);
+        collectionForTheDay += getSafeTotal(inwardPaymentsBundle);
+
+// Generate Inward Payments Cancel and add to the main bundle
+        List<BillTypeAtomic> inwardPaymentsCancel = new ArrayList<>();
+        inwardPaymentsCancel.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
+        ReportTemplateRowBundle inwardPaymentsCancelBundle = generatePaymentMethodColumnsByBills(inwardPaymentsCancel);
+        inwardPaymentsCancelBundle.setBundleType("InwardPaymentsCancel");
+        bundle.getBundles().add(inwardPaymentsCancelBundle);
+        collectionForTheDay += getSafeTotal(inwardPaymentsCancelBundle);
+
+// Generate Inward Payments Refund and add to the main bundle
+        List<BillTypeAtomic> inwardPaymentsRefund = new ArrayList<>();
+        inwardPaymentsRefund.add(BillTypeAtomic.INWARD_DEPOSIT_REFUND);
+        ReportTemplateRowBundle inwardPaymentsRefundBundle = generatePaymentMethodColumnsByBills(inwardPaymentsRefund);
+        inwardPaymentsRefundBundle.setBundleType("InwardPaymentsRefund");
+        bundle.getBundles().add(inwardPaymentsRefundBundle);
+        collectionForTheDay += getSafeTotal(inwardPaymentsRefundBundle);
+
+// Generate Credit Company Payment OP - Receive and add to the main bundle
+        List<BillTypeAtomic> creditCompanyPaymentOpReceive = new ArrayList<>();
+        creditCompanyPaymentOpReceive.add(BillTypeAtomic.CREDIT_COMPANY_OPD_PATIENT_PAYMENT);
+        ReportTemplateRowBundle creditCompanyPaymentOpReceiveBundle = generatePaymentMethodColumnsByBills(creditCompanyPaymentOpReceive);
+        creditCompanyPaymentOpReceiveBundle.setBundleType("CreditCompanyPaymentOPReceive");
+        bundle.getBundles().add(creditCompanyPaymentOpReceiveBundle);
+        collectionForTheDay += getSafeTotal(creditCompanyPaymentOpReceiveBundle);
+
+// Generate Credit Company Payment OP - Cancel and add to the main bundle
+        List<BillTypeAtomic> creditCompanyPaymentOpCancel = new ArrayList<>();
+        creditCompanyPaymentOpCancel.add(BillTypeAtomic.CREDIT_COMPANY_OPD_PATIENT_PAYMENT_CANCELLATION);
+        creditCompanyPaymentOpCancel.add(BillTypeAtomic.CREDIT_COMPANY_OPD_PATIENT_PAYMENT_REFUND);
+        ReportTemplateRowBundle creditCompanyPaymentOpCancelBundle = generatePaymentMethodColumnsByBills(creditCompanyPaymentOpCancel);
+        creditCompanyPaymentOpCancelBundle.setBundleType("CreditCompanyPaymentOPCancel");
+        bundle.getBundles().add(creditCompanyPaymentOpCancelBundle);
+        collectionForTheDay += getSafeTotal(creditCompanyPaymentOpCancelBundle);
+
+        // Generate Credit Company Payment IP - Receive and add to the main bundle
+        List<BillTypeAtomic> creditCompanyPaymentIpReceive = new ArrayList<>();
+        creditCompanyPaymentIpReceive.add(BillTypeAtomic.CREDIT_COMPANY_INPATIENT_PAYMENT);
+        creditCompanyPaymentIpReceive.add(BillTypeAtomic.CREDIT_COMPANY_OPD_PATIENT_PAYMENT);
+        ReportTemplateRowBundle creditCompanyPaymentIpReceiveBundle = generatePaymentMethodColumnsByBills(creditCompanyPaymentIpReceive);
+        creditCompanyPaymentIpReceiveBundle.setBundleType("CreditCompanyPaymentIPReceive");
+        bundle.getBundles().add(creditCompanyPaymentIpReceiveBundle);
+        collectionForTheDay += getSafeTotal(creditCompanyPaymentIpReceiveBundle);
+
+        // Generate Credit Company Payment IP - Cancellation and Refunds and add to the main bundle
+        List<BillTypeAtomic> creditCompanyPaymentIpCancellation = new ArrayList<>();
+        creditCompanyPaymentIpCancellation.add(BillTypeAtomic.CREDIT_COMPANY_INPATIENT_PAYMENT_CANCELLATION);
+        creditCompanyPaymentIpCancellation.add(BillTypeAtomic.CREDIT_COMPANY_INPATIENT_PAYMENT_REFUND);
+        ReportTemplateRowBundle creditCompanyPaymentIpCancellationBundle = generatePaymentMethodColumnsByBills(creditCompanyPaymentIpCancellation);
+        creditCompanyPaymentIpCancellationBundle.setBundleType("CreditCompanyPaymentIPReceive");
+        bundle.getBundles().add(creditCompanyPaymentIpCancellationBundle);
+        collectionForTheDay += getSafeTotal(creditCompanyPaymentIpCancellationBundle);
+
+// Generate Patient Deposit and add to the main bundle
+        List<BillTypeAtomic> patientDeposit = new ArrayList<>();
+        patientDeposit.add(BillTypeAtomic.PATIENT_DEPOSIT);
+        ReportTemplateRowBundle patientDepositBundle = generatePaymentMethodColumnsByBills(patientDeposit);
+        patientDepositBundle.setBundleType("PatientDeposit");
+        bundle.getBundles().add(patientDepositBundle);
+        collectionForTheDay += getSafeTotal(patientDepositBundle);
+
+// Generate Patient Deposit Cancellation and add to the main bundle
+        List<BillTypeAtomic> patientDepositCancel = new ArrayList<>();
+        patientDepositCancel.add(BillTypeAtomic.PATIENT_DEPOSIT_CANCELLED);
+        ReportTemplateRowBundle patientDepositCancelBundle = generatePaymentMethodColumnsByBills(patientDepositCancel);
+        patientDepositCancelBundle.setBundleType("PatientDepositCancel");
+        bundle.getBundles().add(patientDepositCancelBundle);
+        collectionForTheDay += getSafeTotal(patientDepositCancelBundle);
+
+// Generate Patient Deposit Refund and add to the main bundle
+        List<BillTypeAtomic> patientDepositRefund = new ArrayList<>();
+        patientDepositRefund.add(BillTypeAtomic.PATIENT_DEPOSIT_REFUND);
+        ReportTemplateRowBundle patientDepositRefundBundle = generatePaymentMethodColumnsByBills(patientDepositRefund);
+        patientDepositRefundBundle.setBundleType("PatientDepositRefund");
+        bundle.getBundles().add(patientDepositRefundBundle);
+        collectionForTheDay += getSafeTotal(patientDepositRefundBundle);
+
+// Generate Collecting Centre Payment Receive and add to the main bundle
+        List<BillTypeAtomic> collectingCentrePaymentReceive = new ArrayList<>();
+        collectingCentrePaymentReceive.add(BillTypeAtomic.CC_PAYMENT_RECEIVED_BILL);
+        ReportTemplateRowBundle collectingCentrePaymentReceiveBundle = generatePaymentMethodColumnsByBills(collectingCentrePaymentReceive);
+        collectingCentrePaymentReceiveBundle.setBundleType("CollectingCentrePaymentReceive");
+        bundle.getBundles().add(collectingCentrePaymentReceiveBundle);
+        collectionForTheDay += getSafeTotal(collectingCentrePaymentReceiveBundle);
+
+// Generate Collecting Centre Payment Cancel and add to the main bundle
+        List<BillTypeAtomic> collectingCentrePaymentCancel = new ArrayList<>();
+        collectingCentrePaymentCancel.add(BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL);
+        ReportTemplateRowBundle collectingCentrePaymentCancelBundle = generatePaymentMethodColumnsByBills(collectingCentrePaymentCancel);
+        collectingCentrePaymentCancelBundle.setBundleType("CollectingCentrePaymentCancel");
+        bundle.getBundles().add(collectingCentrePaymentCancelBundle);
+        collectionForTheDay += getSafeTotal(collectingCentrePaymentCancelBundle);
+
+// Generate OPD Credit, Cancellation, and Refund and add to the main bundle
+        List<BillTypeAtomic> opdCredit = new ArrayList<>();
+        opdCredit.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
+        ReportTemplateRowBundle opdCreditBundle = generatePaymentMethodColumnsByBills(opdCredit);
+        opdCreditBundle.setBundleType("OpdCredit");
+        bundle.getBundles().add(opdCreditBundle);
+        collectionForTheDay += getSafeTotal(opdCreditBundle);
+
+        List<BillTypeAtomic> opdCreditCancel = new ArrayList<>();
+        opdCreditCancel.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+        ReportTemplateRowBundle opdCreditCancelBundle = generatePaymentMethodColumnsByBills(opdCreditCancel);
+        opdCreditCancelBundle.setBundleType("OpdCreditCancelled");
+        bundle.getBundles().add(opdCreditCancelBundle);
+        collectionForTheDay += getSafeTotal(opdCreditCancelBundle);
+
+        List<BillTypeAtomic> opdCreditRefund = new ArrayList<>();
+        opdCreditRefund.add(BillTypeAtomic.OPD_CREDIT_COMPANY_CREDIT_NOTE);
+        ReportTemplateRowBundle opdCreditRefundBundle = generatePaymentMethodColumnsByBills(opdCreditRefund);
+        opdCreditRefundBundle.setBundleType("OpdCreditRefund");
+        bundle.getBundles().add(opdCreditRefundBundle);
+        collectionForTheDay += getSafeTotal(opdCreditRefundBundle);
+
+// Generate Pharmacy Credit Bills, Cancellation, and Refund and add to the main bundle
+        List<BillTypeAtomic> pharmacyCreditBills = new ArrayList<>();
+        pharmacyCreditBills.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_RECEIVED);
+        ReportTemplateRowBundle pharmacyCreditBillsBundle = generatePaymentMethodColumnsByBills(pharmacyCreditBills);
+        pharmacyCreditBillsBundle.setBundleType("PharmacyCreditBills");
+        bundle.getBundles().add(pharmacyCreditBillsBundle);
+        collectionForTheDay += getSafeTotal(pharmacyCreditBillsBundle);
+
+        List<BillTypeAtomic> pharmacyCreditCancel = new ArrayList<>();
+        pharmacyCreditCancel.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+        ReportTemplateRowBundle pharmacyCreditCancelBundle = generatePaymentMethodColumnsByBills(pharmacyCreditCancel);
+        pharmacyCreditCancelBundle.setBundleType("PharmacyCreditCancel");
+        bundle.getBundles().add(pharmacyCreditCancelBundle);
+        collectionForTheDay += getSafeTotal(pharmacyCreditCancelBundle);
+
+        List<BillTypeAtomic> pharmacyCreditRefund = new ArrayList<>();
+        pharmacyCreditRefund.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_CREDIT_NOTE);
+        ReportTemplateRowBundle pharmacyCreditRefundBundle = generatePaymentMethodColumnsByBills(pharmacyCreditRefund);
+        pharmacyCreditRefundBundle.setBundleType("PharmacyCreditRefund");
+        bundle.getBundles().add(pharmacyCreditRefundBundle);
+        collectionForTheDay += getSafeTotal(pharmacyCreditRefundBundle);
 
         // Final net cash for the day
         ReportTemplateRowBundle netCashForTheDayBundle = new ReportTemplateRowBundle();
         netCashForTheDayBundle.setName("Net Cash");
         netCashForTheDayBundle.setBundleType("netCash");
         netCashForTheDayBundle.setTotal(netCashCollection);
+
         bundle.getBundles().add(netCashForTheDayBundle);
+        bundle.calculateTotalsByChildBundles();
+
     }
 
-    public ReportTemplateRowBundle generateOpdCancellationsByPayment() {
+    public ReportTemplateRowBundle generatePaymentMethodColumnsByBills(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
         String jpql = "SELECT new com.divudi.data.ReportTemplateRow("
                 + "bill, "
@@ -12292,78 +12528,6 @@ public class SearchController implements Serializable {
 
         parameters.put("bfr", true);
         parameters.put("br", true);
-
-        List<BillTypeAtomic> bts = new ArrayList<>();
-        bts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
-        bts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
-
-        jpql += "AND bill.billTypeAtomic in :bts ";
-        parameters.put("bts", bts);
-
-        if (institution != null) {
-            jpql += "AND bill.department.institution = :ins ";
-            parameters.put("ins", institution);
-        }
-        if (department != null) {
-            jpql += "AND bill.department = :dep ";
-            parameters.put("dep", department);
-        }
-        if (site != null) {
-            jpql += "AND bill.department.site = :site ";
-            parameters.put("site", site);
-        }
-        if (webUser != null) {
-            jpql += "AND p.creater = :wu ";
-            parameters.put("wu", webUser);
-        }
-        if (paymentMethod != null) {
-            jpql += "AND p.paymentMethod = :pm ";
-            parameters.put("pm", paymentMethod);
-        }
-
-        jpql += "AND p.createdAt BETWEEN :fd AND :td ";
-        parameters.put("fd", fromDate);
-        parameters.put("td", toDate);
-
-        jpql += "GROUP BY bill";
-
-        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
-
-        ReportTemplateRowBundle b = new ReportTemplateRowBundle();
-        b.setReportTemplateRows(rs);
-        b.createRowValuesFromBill();
-        b.calculateTotals();
-        return b;
-    }
-
-    public ReportTemplateRowBundle generateOpdRefundsByPayment() {
-        Map<String, Object> parameters = new HashMap<>();
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow("
-                + "bill, "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Cash THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Card THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.MultiplePaymentMethods THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Staff THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Credit THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Staff_Welfare THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Voucher THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.IOU THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Agent THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Cheque THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Slip THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.ewallet THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.PatientDeposit THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.PatientPoints THEN p.paidValue ELSE 0 END), "
-                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.OnlineSettlement THEN p.paidValue ELSE 0 END)) "
-                + "FROM Payment p "
-                + "JOIN p.bill bill "
-                + "WHERE p.retired <> :bfr AND bill.retired <> :br ";
-
-        parameters.put("bfr", true);
-        parameters.put("br", true);
-
-        List<BillTypeAtomic> bts = new ArrayList<>();
-        bts.add(BillTypeAtomic.OPD_BILL_REFUND);
 
         jpql += "AND bill.billTypeAtomic in :bts ";
         parameters.put("bts", bts);
