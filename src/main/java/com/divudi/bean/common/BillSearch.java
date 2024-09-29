@@ -49,6 +49,7 @@ import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.WebUserFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.bean.opd.OpdBillController;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
 import com.divudi.data.BillTypeAtomic;
 import static com.divudi.data.BillTypeAtomic.CC_BILL;
@@ -201,6 +202,8 @@ public class BillSearch implements Serializable {
     PharmacyBillSearch pharmacyBillSearch;
     @Inject
     PatientDepositController patientDepositController;
+    @Inject
+    OpdBillController opdBillController;
 
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
@@ -3243,8 +3246,7 @@ public class BillSearch implements Serializable {
             case OPD_BILL_WITH_PAYMENT:
                 return navigateToManageOpdBill();
             case OPD_BATCH_BILL_WITH_PAYMENT:
-                return navigateToViewOpdBatchBill();
-
+                return opdBillController.navigateToViewOpdBatchBill(bill);
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES:
                 return navigateToViewOpdProfessionalPaymentBill();
             case CHANNEL_BOOKING_WITH_PAYMENT:
