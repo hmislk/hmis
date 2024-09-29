@@ -1,11 +1,21 @@
 package com.divudi.data;
 
+import static com.divudi.data.BillClassType.Bill;
+import static com.divudi.data.BillClassType.BilledBill;
+import static com.divudi.data.BillClassType.CancelledBill;
+import static com.divudi.data.BillClassType.OtherBill;
+import static com.divudi.data.BillClassType.PreBill;
+import static com.divudi.data.BillClassType.RefundBill;
 import static com.divudi.data.BillType.PharmacyAddtoStock;
 import static com.divudi.data.BillType.PharmacyAdjustment;
 import static com.divudi.data.BillType.PharmacyAdjustmentDepartmentSingleStock;
+import static com.divudi.data.BillType.PharmacyAdjustmentDepartmentStock;
 import static com.divudi.data.BillType.PharmacyGrnBill;
+import static com.divudi.data.BillType.PharmacyOrderApprove;
 import static com.divudi.data.BillType.PharmacyPre;
 import static com.divudi.data.BillType.PharmacyPurchaseBill;
+import static com.divudi.data.BillType.PharmacyTransferIssue;
+import static com.divudi.data.BillType.PharmacyTransferReceive;
 import static com.divudi.data.BillType.PharmacyWholeSale;
 import java.util.Arrays;
 import java.util.List;
@@ -242,50 +252,81 @@ public enum BillTypeAtomic {
     private final PaymentCategory paymentCategory;
 
     public static BillTypeAtomic getBillTypeAtomic(BillType billType, BillClassType billClassType) {
-        switch (billClassType) {
-            case Bill:
-                switch (billType) {
-                    case PharmacyWholeSale:
-                        return BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL;
-                    case PharmacyPurchaseBill:
-                        return BillTypeAtomic.PHARMACY_DIRECT_PURCHASE;
-                }
-                break;
-            case BilledBill:
-                switch (billType) {
-                    case PharmacyGrnBill:
-                        return BillTypeAtomic.PHARMACY_GRN;
-                    case PharmacyWholeSale:
-                        return BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL;
-                    case PharmacyPurchaseBill:
-                        return BillTypeAtomic.PHARMACY_DIRECT_PURCHASE;
-                }
-            case CancelledBill:
-                switch (billType) {
-                    case PharmacyGrnBill:
-                        return BillTypeAtomic.PHARMACY_GRN_CANCELLED;
-                    case PharmacyWholeSale:
-                        return BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL_CANCELLED;
-                    case PharmacyPurchaseBill:
-                        return BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED;
-                }
-            case OtherBill:
-                return null;
-            case PreBill:
-                return null;
-            case RefundBill:
-                switch (billType) {
-                    case PharmacyGrnBill:
-                        return BillTypeAtomic.PHARMACY_GRN_REFUND;
-                    case PharmacyWholeSale:
-                        return BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL_REFUND;
-                    case PharmacyPurchaseBill:
-                        return BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED;
-                }
+        if (billClassType == null) {
+            switch (billType) {
+                case PharmacyPre:
+                    return BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE;
+                case PharmacySale:
+                    return BillTypeAtomic.PHARMACY_RETAIL_SALE;
+                case PharmacyTransferIssue:
+                    return BillTypeAtomic.PHARMACY_ISSUE;
+                case PharmacyAdjustment:
+                    return BillTypeAtomic.PHARMACY_ADJUSTMENT;
+                case PharmacyOrder:
+                    return BillTypeAtomic.PHARMACY_ORDER;
+                case PharmacyOrderApprove:
+                    return BillTypeAtomic.PHARMACY_ORDER_APPROVAL;
+                case PharmacyPurchaseBill:
+                    return BillTypeAtomic.PHARMACY_DIRECT_PURCHASE;
+                case PharmacyTransferRequest:
+                    return BillTypeAtomic.PHARMACY_TRANSFER_REQUEST;
+                case PharmacyTransferReceive:
+                    return BillTypeAtomic.PHARMACY_RECEIVE;
+                case PharmacyAdjustmentDepartmentStock:
+                    return BillTypeAtomic.PHARMACY_ADJUSTMENT;
+                case PharmacyAdjustmentExpiryDate:
+                    return BillTypeAtomic.PHARMACY_ADJUSTMENT;
+                case PharmacyAdjustmentSaleRate:
+                    return BillTypeAtomic.PHARMACY_ADJUSTMENT;
 
-            default:
-                return null;
+            }
+        } else {
+            switch (billClassType) {
+                case Bill:
+                    switch (billType) {
+                        case PharmacyWholeSale:
+                            return BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL;
+                        case PharmacyPurchaseBill:
+                            return BillTypeAtomic.PHARMACY_DIRECT_PURCHASE;
+                    }
+                    break;
+                case BilledBill:
+                    switch (billType) {
+                        case PharmacyGrnBill:
+                            return BillTypeAtomic.PHARMACY_GRN;
+                        case PharmacyWholeSale:
+                            return BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL;
+                        case PharmacyPurchaseBill:
+                            return BillTypeAtomic.PHARMACY_DIRECT_PURCHASE;
+                    }
+                case CancelledBill:
+                    switch (billType) {
+                        case PharmacyGrnBill:
+                            return BillTypeAtomic.PHARMACY_GRN_CANCELLED;
+                        case PharmacyWholeSale:
+                            return BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL_CANCELLED;
+                        case PharmacyPurchaseBill:
+                            return BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED;
+                    }
+                case OtherBill:
+                    return null;
+                case PreBill:
+                    return null;
+                case RefundBill:
+                    switch (billType) {
+                        case PharmacyGrnBill:
+                            return BillTypeAtomic.PHARMACY_GRN_REFUND;
+                        case PharmacyWholeSale:
+                            return BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL_REFUND;
+                        case PharmacyPurchaseBill:
+                            return BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED;
+                    }
+
+                default:
+                    return null;
+            }
         }
+
         return null;
     }
 
