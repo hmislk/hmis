@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 
 /**
  * Enumerates types of bills for atomic billing purposes. Includes
- * categorization by service type, finance type, and payment category.
  */
 public enum BillTypeAtomic {
     INWARD_PHARMACY_REQUEST("Inward Request Medicines From Pharmacy", BillCategory.BILL, ServiceType.INWARD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.CREDIT_SPEND),
