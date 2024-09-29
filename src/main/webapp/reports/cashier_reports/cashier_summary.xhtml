@@ -64,6 +64,7 @@
 
                         <ui:repeat value="#{searchController.bundle.bundles}" var="myBundle">
                             <ez:cashierSummaryOpd bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'cashierSummaryOpd'}"/>
+                            <ez:opdServiceCancellations bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'opdServiceCancellations'}"/>
                             
                         </ui:repeat>
 
