@@ -1,10 +1,6 @@
 package com.divudi.data;
 
-import static com.divudi.data.BillType.PharmacyAddtoStock;
-import static com.divudi.data.BillType.PharmacyAdjustment;
-import static com.divudi.data.BillType.PharmacyAdjustmentDepartmentSingleStock;
 import static com.divudi.data.BillType.PharmacyGrnBill;
-import static com.divudi.data.BillType.PharmacyPre;
 import static com.divudi.data.BillType.PharmacyPurchaseBill;
 import static com.divudi.data.BillType.PharmacyWholeSale;
 import java.util.Arrays;
@@ -175,7 +171,8 @@ public enum BillTypeAtomic {
     FUND_SHIFT_START_BILL_CANCELLED("Shift Start Fund Bill - Cancelled", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.FLOAT_STARTING_BALANCE, CountedServiceType.OTHER, PaymentCategory.CREDIT_SPEND),
     FUND_SHIFT_END_BILL("Shift End Fund Bill", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.FLOAT_CLOSING_BALANCE, CountedServiceType.OTHER, PaymentCategory.CREDIT_SPEND),
     FUND_SHIFT_HANDOVER_CREATE("Shift Handover Create Bill", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.FLOAT_DECREASE, CountedServiceType.OTHER, PaymentCategory.OTHER),
-    FUND_SHIFT_COMPONANT_HANDOVER_CREATE("Shift Handover Componant Bill", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.FLOAT_CLOSING_BALANCE, CountedServiceType.OTHER, PaymentCategory.OTHER),
+    FUND_SHIFT_COMPONANT_HANDOVER_CREATE("Shift Handover Componant Bill", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.FLOAT_CHANGE, CountedServiceType.OTHER, PaymentCategory.OTHER),
+    FUND_SHIFT_DENOMINATION_HANDOVER_CREATE("Shift Handover Denomination Bill", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.FLOAT_CHANGE, CountedServiceType.OTHER, PaymentCategory.OTHER),
     FUND_SHIFT_HANDOVER_ACCEPT("Shift Handover Accept", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.FLOAT_INCREASE, CountedServiceType.OTHER, PaymentCategory.OTHER),
     FUND_SHIFT_COMPONANT_HANDOVER_ACCEPT("Shift Handover Accept Componant Bill", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.FLOAT_CLOSING_BALANCE, CountedServiceType.OTHER, PaymentCategory.OTHER),
     FUND_SHIFT_END_BILL_CANCELLED("Shift End Fund Bill - Cancelled", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.FLOAT_CLOSING_BALANCE, CountedServiceType.OTHER, PaymentCategory.CREDIT_SPEND),
