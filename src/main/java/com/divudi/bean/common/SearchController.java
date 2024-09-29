@@ -12280,30 +12280,33 @@ public class SearchController implements Serializable {
         bundle.getBundles().add(pharmacyCollection);
         collectionForTheDay += getSafeTotal(pharmacyCollection);
 
-        // Generate Pharmacy service collection and add to the main bundle
+// Generate Pharmacy service cancellations and add to the main bundle
         List<BillTypeAtomic> pharmacyCancellations = new ArrayList<>();
         pharmacyCancellations.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
         pharmacyCancellations.add(BillTypeAtomic.PHARMACY_WHOLESALE_CANCELLED);
         ReportTemplateRowBundle pharmacyServiceCancellations = generatePaymentMethodColumnsByBills(pharmacyCancellations);
         pharmacyServiceCancellations.setBundleType("pharmacyServiceCancellations");
+        pharmacyServiceCancellations.setName("Pharmacy Service Cancellations");
         bundle.getBundles().add(pharmacyServiceCancellations);
         collectionForTheDay += getSafeTotal(pharmacyServiceCancellations);
 
-        // Generate Pharmacy service Refunds and add to the main bundle
+// Generate Pharmacy service refunds and add to the main bundle
         List<BillTypeAtomic> pharmacyRefunds = new ArrayList<>();
         pharmacyRefunds.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
         pharmacyRefunds.add(BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL_REFUND);
         ReportTemplateRowBundle pharmacyServiceRefunds = generatePaymentMethodColumnsByBills(pharmacyRefunds);
         pharmacyServiceRefunds.setBundleType("pharmacyServiceRefunds");
+        pharmacyServiceRefunds.setName("Pharmacy Service Refunds");
         bundle.getBundles().add(pharmacyServiceRefunds);
         collectionForTheDay += getSafeTotal(pharmacyServiceRefunds);
 
-        // Generate Professional Payments OPD and add to the main bundle
+// Generate Professional Payments OPD and add to the main bundle
         List<BillTypeAtomic> professionalPaymentsOpd = new ArrayList<>();
         professionalPaymentsOpd.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES);
         professionalPaymentsOpd.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL);
         ReportTemplateRowBundle professionalPaymentsOpdBundle = generatePaymentMethodColumnsByBills(professionalPaymentsOpd);
         professionalPaymentsOpdBundle.setBundleType("ProfessionalPaymentsOPD");
+        professionalPaymentsOpdBundle.setName("Professional Payments OPD");
         bundle.getBundles().add(professionalPaymentsOpdBundle);
         collectionForTheDay += getSafeTotal(professionalPaymentsOpdBundle);
 
@@ -12313,14 +12316,16 @@ public class SearchController implements Serializable {
         professionalPaymentsOpdCancel.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL_RETURN);
         ReportTemplateRowBundle professionalPaymentsOpdCancelBundle = generatePaymentMethodColumnsByBills(professionalPaymentsOpdCancel);
         professionalPaymentsOpdCancelBundle.setBundleType("ProfessionalPaymentsOPDCancel");
+        professionalPaymentsOpdCancelBundle.setName("Professional Payments OPD - Cancel");
         bundle.getBundles().add(professionalPaymentsOpdCancelBundle);
         collectionForTheDay += getSafeTotal(professionalPaymentsOpdCancelBundle);
 
-        // Generate Professional Payments Inward and add to the main bundle
+// Generate Professional Payments Inward and add to the main bundle
         List<BillTypeAtomic> professionalPaymentsInward = new ArrayList<>();
         professionalPaymentsInward.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE);
         ReportTemplateRowBundle professionalPaymentsInwardBundle = generatePaymentMethodColumnsByBills(professionalPaymentsInward);
         professionalPaymentsInwardBundle.setBundleType("ProfessionalPaymentsInward");
+        professionalPaymentsInwardBundle.setName("Professional Payments Inward");
         bundle.getBundles().add(professionalPaymentsInwardBundle);
         collectionForTheDay += getSafeTotal(professionalPaymentsInwardBundle);
 
@@ -12329,6 +12334,7 @@ public class SearchController implements Serializable {
         professionalPaymentsInwardCancel.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN);
         ReportTemplateRowBundle professionalPaymentsInwardCancelBundle = generatePaymentMethodColumnsByBills(professionalPaymentsInwardCancel);
         professionalPaymentsInwardCancelBundle.setBundleType("ProfessionalPaymentsInwardCancel");
+        professionalPaymentsInwardCancelBundle.setName("Professional Payments Inward - Cancel");
         bundle.getBundles().add(professionalPaymentsInwardCancelBundle);
         collectionForTheDay += getSafeTotal(professionalPaymentsInwardCancelBundle);
 
@@ -12337,6 +12343,7 @@ public class SearchController implements Serializable {
         pettyCashPayment.add(BillTypeAtomic.PETTY_CASH_ISSUE);
         ReportTemplateRowBundle pettyCashPaymentBundle = generatePaymentMethodColumnsByBills(pettyCashPayment);
         pettyCashPaymentBundle.setBundleType("PettyCashPayment");
+        pettyCashPaymentBundle.setName("Petty Cash Payments");
         bundle.getBundles().add(pettyCashPaymentBundle);
         collectionForTheDay += getSafeTotal(pettyCashPaymentBundle);
 
@@ -12346,6 +12353,7 @@ public class SearchController implements Serializable {
         pettyCashPaymentCancel.add(BillTypeAtomic.PETTY_CASH_BILL_CANCELLATION);
         ReportTemplateRowBundle pettyCashPaymentCancelBundle = generatePaymentMethodColumnsByBills(pettyCashPaymentCancel);
         pettyCashPaymentCancelBundle.setBundleType("PettyCashPaymentCancel");
+        pettyCashPaymentCancelBundle.setName("Petty Cash Payment Cancellations");
         bundle.getBundles().add(pettyCashPaymentCancelBundle);
         collectionForTheDay += getSafeTotal(pettyCashPaymentCancelBundle);
 
@@ -12354,6 +12362,7 @@ public class SearchController implements Serializable {
         inwardPayments.add(BillTypeAtomic.INWARD_DEPOSIT);
         ReportTemplateRowBundle inwardPaymentsBundle = generatePaymentMethodColumnsByBills(inwardPayments);
         inwardPaymentsBundle.setBundleType("InwardPayments");
+        inwardPaymentsBundle.setName("Inward Payments");
         bundle.getBundles().add(inwardPaymentsBundle);
         collectionForTheDay += getSafeTotal(inwardPaymentsBundle);
 
@@ -12362,6 +12371,7 @@ public class SearchController implements Serializable {
         inwardPaymentsCancel.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
         ReportTemplateRowBundle inwardPaymentsCancelBundle = generatePaymentMethodColumnsByBills(inwardPaymentsCancel);
         inwardPaymentsCancelBundle.setBundleType("InwardPaymentsCancel");
+        inwardPaymentsCancelBundle.setName("Inward Payment Cancellations");
         bundle.getBundles().add(inwardPaymentsCancelBundle);
         collectionForTheDay += getSafeTotal(inwardPaymentsCancelBundle);
 
@@ -12370,6 +12380,7 @@ public class SearchController implements Serializable {
         inwardPaymentsRefund.add(BillTypeAtomic.INWARD_DEPOSIT_REFUND);
         ReportTemplateRowBundle inwardPaymentsRefundBundle = generatePaymentMethodColumnsByBills(inwardPaymentsRefund);
         inwardPaymentsRefundBundle.setBundleType("InwardPaymentsRefund");
+        inwardPaymentsRefundBundle.setName("Inward Payment Refunds");
         bundle.getBundles().add(inwardPaymentsRefundBundle);
         collectionForTheDay += getSafeTotal(inwardPaymentsRefundBundle);
 
@@ -12378,6 +12389,7 @@ public class SearchController implements Serializable {
         creditCompanyPaymentOpReceive.add(BillTypeAtomic.CREDIT_COMPANY_OPD_PATIENT_PAYMENT);
         ReportTemplateRowBundle creditCompanyPaymentOpReceiveBundle = generatePaymentMethodColumnsByBills(creditCompanyPaymentOpReceive);
         creditCompanyPaymentOpReceiveBundle.setBundleType("CreditCompanyPaymentOPReceive");
+        creditCompanyPaymentOpReceiveBundle.setName("Credit Company OP Payment Reception");
         bundle.getBundles().add(creditCompanyPaymentOpReceiveBundle);
         collectionForTheDay += getSafeTotal(creditCompanyPaymentOpReceiveBundle);
 
@@ -12387,24 +12399,27 @@ public class SearchController implements Serializable {
         creditCompanyPaymentOpCancel.add(BillTypeAtomic.CREDIT_COMPANY_OPD_PATIENT_PAYMENT_REFUND);
         ReportTemplateRowBundle creditCompanyPaymentOpCancelBundle = generatePaymentMethodColumnsByBills(creditCompanyPaymentOpCancel);
         creditCompanyPaymentOpCancelBundle.setBundleType("CreditCompanyPaymentOPCancel");
+        creditCompanyPaymentOpCancelBundle.setName("Credit Company OP Payment Cancellations and Refunds");
         bundle.getBundles().add(creditCompanyPaymentOpCancelBundle);
         collectionForTheDay += getSafeTotal(creditCompanyPaymentOpCancelBundle);
 
-        // Generate Credit Company Payment IP - Receive and add to the main bundle
+// Generate Credit Company Payment IP - Receive and add to the main bundle
         List<BillTypeAtomic> creditCompanyPaymentIpReceive = new ArrayList<>();
         creditCompanyPaymentIpReceive.add(BillTypeAtomic.CREDIT_COMPANY_INPATIENT_PAYMENT);
         creditCompanyPaymentIpReceive.add(BillTypeAtomic.CREDIT_COMPANY_OPD_PATIENT_PAYMENT);
         ReportTemplateRowBundle creditCompanyPaymentIpReceiveBundle = generatePaymentMethodColumnsByBills(creditCompanyPaymentIpReceive);
         creditCompanyPaymentIpReceiveBundle.setBundleType("CreditCompanyPaymentIPReceive");
+        creditCompanyPaymentIpReceiveBundle.setName("Credit Company IP Payment Reception");
         bundle.getBundles().add(creditCompanyPaymentIpReceiveBundle);
         collectionForTheDay += getSafeTotal(creditCompanyPaymentIpReceiveBundle);
 
-        // Generate Credit Company Payment IP - Cancellation and Refunds and add to the main bundle
+// Generate Credit Company Payment IP - Cancellation and Refunds and add to the main bundle
         List<BillTypeAtomic> creditCompanyPaymentIpCancellation = new ArrayList<>();
         creditCompanyPaymentIpCancellation.add(BillTypeAtomic.CREDIT_COMPANY_INPATIENT_PAYMENT_CANCELLATION);
         creditCompanyPaymentIpCancellation.add(BillTypeAtomic.CREDIT_COMPANY_INPATIENT_PAYMENT_REFUND);
         ReportTemplateRowBundle creditCompanyPaymentIpCancellationBundle = generatePaymentMethodColumnsByBills(creditCompanyPaymentIpCancellation);
-        creditCompanyPaymentIpCancellationBundle.setBundleType("CreditCompanyPaymentIPReceive");
+        creditCompanyPaymentIpCancellationBundle.setBundleType("CreditCompanyPaymentIPCancellation");
+        creditCompanyPaymentIpCancellationBundle.setName("Credit Company IP Payment Cancellations and Refunds");
         bundle.getBundles().add(creditCompanyPaymentIpCancellationBundle);
         collectionForTheDay += getSafeTotal(creditCompanyPaymentIpCancellationBundle);
 
@@ -12413,6 +12428,7 @@ public class SearchController implements Serializable {
         patientDeposit.add(BillTypeAtomic.PATIENT_DEPOSIT);
         ReportTemplateRowBundle patientDepositBundle = generatePaymentMethodColumnsByBills(patientDeposit);
         patientDepositBundle.setBundleType("PatientDeposit");
+        patientDepositBundle.setName("Patient Deposits");
         bundle.getBundles().add(patientDepositBundle);
         collectionForTheDay += getSafeTotal(patientDepositBundle);
 
@@ -12421,6 +12437,7 @@ public class SearchController implements Serializable {
         patientDepositCancel.add(BillTypeAtomic.PATIENT_DEPOSIT_CANCELLED);
         ReportTemplateRowBundle patientDepositCancelBundle = generatePaymentMethodColumnsByBills(patientDepositCancel);
         patientDepositCancelBundle.setBundleType("PatientDepositCancel");
+        patientDepositCancelBundle.setName("Patient Deposit Cancellations");
         bundle.getBundles().add(patientDepositCancelBundle);
         collectionForTheDay += getSafeTotal(patientDepositCancelBundle);
 
@@ -12429,6 +12446,7 @@ public class SearchController implements Serializable {
         patientDepositRefund.add(BillTypeAtomic.PATIENT_DEPOSIT_REFUND);
         ReportTemplateRowBundle patientDepositRefundBundle = generatePaymentMethodColumnsByBills(patientDepositRefund);
         patientDepositRefundBundle.setBundleType("PatientDepositRefund");
+        patientDepositRefundBundle.setName("Patient Deposit Refunds");
         bundle.getBundles().add(patientDepositRefundBundle);
         collectionForTheDay += getSafeTotal(patientDepositRefundBundle);
 
@@ -12437,6 +12455,7 @@ public class SearchController implements Serializable {
         collectingCentrePaymentReceive.add(BillTypeAtomic.CC_PAYMENT_RECEIVED_BILL);
         ReportTemplateRowBundle collectingCentrePaymentReceiveBundle = generatePaymentMethodColumnsByBills(collectingCentrePaymentReceive);
         collectingCentrePaymentReceiveBundle.setBundleType("CollectingCentrePaymentReceive");
+        collectingCentrePaymentReceiveBundle.setName("Collecting Centre Payment Receives");
         bundle.getBundles().add(collectingCentrePaymentReceiveBundle);
         collectionForTheDay += getSafeTotal(collectingCentrePaymentReceiveBundle);
 
@@ -12445,6 +12464,7 @@ public class SearchController implements Serializable {
         collectingCentrePaymentCancel.add(BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL);
         ReportTemplateRowBundle collectingCentrePaymentCancelBundle = generatePaymentMethodColumnsByBills(collectingCentrePaymentCancel);
         collectingCentrePaymentCancelBundle.setBundleType("CollectingCentrePaymentCancel");
+        collectingCentrePaymentCancelBundle.setName("Collecting Centre Payment Cancellations");
         bundle.getBundles().add(collectingCentrePaymentCancelBundle);
         collectionForTheDay += getSafeTotal(collectingCentrePaymentCancelBundle);
 
@@ -12453,6 +12473,7 @@ public class SearchController implements Serializable {
         opdCredit.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
         ReportTemplateRowBundle opdCreditBundle = generatePaymentMethodColumnsByBills(opdCredit);
         opdCreditBundle.setBundleType("OpdCredit");
+        opdCreditBundle.setName("OPD Credit Payments");
         bundle.getBundles().add(opdCreditBundle);
         collectionForTheDay += getSafeTotal(opdCreditBundle);
 
@@ -12460,6 +12481,7 @@ public class SearchController implements Serializable {
         opdCreditCancel.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION);
         ReportTemplateRowBundle opdCreditCancelBundle = generatePaymentMethodColumnsByBills(opdCreditCancel);
         opdCreditCancelBundle.setBundleType("OpdCreditCancelled");
+        opdCreditCancelBundle.setName("OPD Credit Cancellations");
         bundle.getBundles().add(opdCreditCancelBundle);
         collectionForTheDay += getSafeTotal(opdCreditCancelBundle);
 
@@ -12467,6 +12489,7 @@ public class SearchController implements Serializable {
         opdCreditRefund.add(BillTypeAtomic.OPD_CREDIT_COMPANY_CREDIT_NOTE);
         ReportTemplateRowBundle opdCreditRefundBundle = generatePaymentMethodColumnsByBills(opdCreditRefund);
         opdCreditRefundBundle.setBundleType("OpdCreditRefund");
+        opdCreditRefundBundle.setName("OPD Credit Refunds");
         bundle.getBundles().add(opdCreditRefundBundle);
         collectionForTheDay += getSafeTotal(opdCreditRefundBundle);
 
@@ -12475,6 +12498,7 @@ public class SearchController implements Serializable {
         pharmacyCreditBills.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_RECEIVED);
         ReportTemplateRowBundle pharmacyCreditBillsBundle = generatePaymentMethodColumnsByBills(pharmacyCreditBills);
         pharmacyCreditBillsBundle.setBundleType("PharmacyCreditBills");
+        pharmacyCreditBillsBundle.setName("Pharmacy Credit Bills");
         bundle.getBundles().add(pharmacyCreditBillsBundle);
         collectionForTheDay += getSafeTotal(pharmacyCreditBillsBundle);
 
@@ -12482,6 +12506,7 @@ public class SearchController implements Serializable {
         pharmacyCreditCancel.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_CANCELLATION);
         ReportTemplateRowBundle pharmacyCreditCancelBundle = generatePaymentMethodColumnsByBills(pharmacyCreditCancel);
         pharmacyCreditCancelBundle.setBundleType("PharmacyCreditCancel");
+        pharmacyCreditCancelBundle.setName("Pharmacy Credit Cancellations");
         bundle.getBundles().add(pharmacyCreditCancelBundle);
         collectionForTheDay += getSafeTotal(pharmacyCreditCancelBundle);
 
@@ -12489,6 +12514,7 @@ public class SearchController implements Serializable {
         pharmacyCreditRefund.add(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_CREDIT_NOTE);
         ReportTemplateRowBundle pharmacyCreditRefundBundle = generatePaymentMethodColumnsByBills(pharmacyCreditRefund);
         pharmacyCreditRefundBundle.setBundleType("PharmacyCreditRefund");
+        pharmacyCreditRefundBundle.setName("Pharmacy Credit Refunds");
         bundle.getBundles().add(pharmacyCreditRefundBundle);
         collectionForTheDay += getSafeTotal(pharmacyCreditRefundBundle);
 

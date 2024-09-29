@@ -117,8 +117,10 @@
                             <ez:pharmacyCreditCancel bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'PharmacyCreditCancel'}"/>
                             <ez:pharmacyCreditRefund bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'PharmacyCreditRefund'}"/>
 
+                            
+                            
                             <!-- Net Cash Summary -->
-                            <ez:netCash bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'netCash'}"/>
+                            <ez:netCash bundle="#{searchController.bundle}" rendered="#{myBundle.bundleType eq 'netCash'}"/>
                         </ui:repeat>
 
 
