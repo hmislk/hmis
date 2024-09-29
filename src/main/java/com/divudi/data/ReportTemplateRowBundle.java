@@ -519,7 +519,7 @@ public class ReportTemplateRowBundle implements Serializable {
                 addValueAndUpdateFlag("hospitalTotal", safeDouble(childBundle.getHospitalTotal()));
                 addValueAndUpdateFlag("staffTotal", safeDouble(childBundle.getStaffTotal()));
                 addValueAndUpdateFlag("ccTotal", safeDouble(childBundle.getCcTotal()));
-                total = safeDouble(childBundle.getTotal());
+                total += safeDouble(childBundle.getTotal());
             }
         }
     }

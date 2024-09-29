@@ -15,88 +15,36 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
 
-        <!--<p:dataTable value="#{cc.attrs.bundle.reportTemplateRows}" var="row" ></p:dataTable>-->
-        <!--<p:dataTable value="#{cc.attrs.bundle.reportTemplateRows}" var="row" >-->
 
-
-        <h:panelGroup rendered="#{empty cc.attrs.bundle.reportTemplateRows}">
-            <table class="table w-100">
-                <thead>
-                    <tr class="text-light bg-dark">
-                        <th class="text-light bg-dark">
-                                                No Pharmacy Collection
-                        </th>
-                    </tr>
-
-                </thead>
-            </table>
-        </h:panelGroup>
-
-        <h:panelGroup rendered="#{not empty cc.attrs.bundle.reportTemplateRows}">
-            <table class="table w-100">
-                <thead>
-                    <tr class="text-light bg-dark">
-                        <th class="text-light bg-dark">
-                            Pharmacy Collection
-                        </th>
-                        <th class="text-end text-light bg-dark">
-                            <h:outputText value="#{cc.attrs.bundle.total}">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputText>
-                        </th>
-                    </tr>
-                    <tr>
-                        <th>Department</th>
-                        <th class="text-end">Collection</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <ui:repeat value="#{cc.attrs.bundle.reportTemplateRows}" var="row" rendered="#{not empty cc.attrs.bundle.reportTemplateRows}">
-                        <tr class="#{row.department ne null ? 'table-primary' : 'table-light'}">
-                            <td>
-                                <h:outputText value="#{row.department.name}" />
-                            </td>
-                            <td class="text-end">
-                                <h:outputText value="#{row.rowValue}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                            </td>
-                        </tr>
-                    </ui:repeat>
-
-                </tbody>
-            </table>
-        </h:panelGroup>
-
-
-
-
-        <!--        
-                <p:dataTable value="#{cc.attrs.bundle.reportTemplateRows}" var="row" >
-                    <f:facet name="header" >
-                        <h:outputText value="#{cc.attrs.bundle.name}" ></h:outputText>
-                    </f:facet>
-                    <f:facet name="footer" >
-                        <h:outputText value="Pharmacy Collection" ></h:outputText>
-                        <p:spacer width="50" ></p:spacer>
-                        <h:outputText value="#{cc.attrs.bundle.total}" ></h:outputText>
-                    </f:facet>
-        
-                    <p:column>
-                        <f:facet name="header">
-                            <h:outputText value="Department" />
-                        </f:facet>
-                        <h:outputText value="#{row.department.name}"  />
-                    </p:column>
-                    <p:column>
-                        <f:facet name="header">
-                            <h:outputText value="Collection" />
-                        </f:facet>
-                        <h:outputText value="#{row.rowValue}">
+        <p:dataTable 
+            emptyMessage="No #{cc.attrs.bundle.name}"
+            var="row" value="#{cc.attrs.bundle.reportTemplateRows}" styleClass="w-100" rowStyleClass="#{row.department ne null ? 'table-primary' : 'table-light'}">
+            <f:facet name="header">
+                <p:row>
+                    <p:column colspan="2" styleClass="bg-dark text-light">
+                        <h:outputText value="Pharmacy Collection" />
+                        <h:outputText styleClass="text-end" value="#{cc.attrs.bundle.total}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputText>
                     </p:column>
-                </p:dataTable>-->
+                </p:row>
+                <p:row>
+                    <p:column headerText="Department" />
+                    <p:column headerText="Collection" styleClass="text-end" />
+                </p:row>
+            </f:facet>
+
+            <p:column>
+                <h:outputText value="#{row.department.name}" />
+            </p:column>
+            <p:column styleClass="text-end">
+                <h:outputText value="#{row.rowValue}">
+                    <f:convertNumber pattern="#,##0.00" />
+                </h:outputText>
+            </p:column>
+        </p:dataTable>
+
+
 
 
 
