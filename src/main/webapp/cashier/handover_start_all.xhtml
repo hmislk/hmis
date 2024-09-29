@@ -293,37 +293,68 @@
 
 
 
-                                    <p:column 
-                                        class="text-end"
-                                        headerText="Cash Collected ***" 
-                                        rendered="#{financialTransactionController.bundle.hasCashTransaction}">
+                                    <p:column class="text-end" headerText="Cash Collected ***" rendered="#{financialTransactionController.bundle.hasCashTransaction}">
                                         <h:outputText value="#{summary.cashValue}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
-                                        
-                                        <p:panel
-                                            header="Details"
-                                            collapsed="true" toggleable="true" style="width: 10em;" >
-                                            <p:dataTable value="#{summary.reportTemplateRows}" var="cashRow" >
-                                                <p:column width="">
-                                                    <h:outputText value="#{cashRow.payment.bill.billTypeAtomic.label}" ></h:outputText>
-                                                </p:column>
-                                                <p:column >
-                                                    <h:outputText value="#{cashRow.payment.paidValue}" >
-                                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                    </h:outputText>
-                                                </p:column>
-                                            </p:dataTable>
-                                            
-                                        </p:panel>
-                                        
-                                        
+
+                                        <!-- Icon-Only Link to Open Dialog -->
+                                        <p:commandLink 
+
+                                            oncomplete="PF('detailsDialog').show();"
+                                            styleClass="ui-icon ui-icon-info mx-3"
+                                            title="View Details">
+                                            <span class="pi pi-info-circle" aria-hidden="true"></span>
+                                        </p:commandLink>
+
+
+
                                         <f:facet name="footer">
                                             <h:outputText value="#{financialTransactionController.bundle.cashValue}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputText>
                                         </f:facet>
+                                        <!-- Separate Dialog Component -->
+                                        <p:dialog 
+                                            widgetVar="detailsDialog" 
+                                            header="Cash Transaction Details" 
+                                            modal="true" 
+                                            class="w-75"
+                                            style="min-height: 60vh;"
+                                            draggable="true"
+                                            resizable="false">
+                                            <p:ajax event="open" update="cashDetailsTable" />
+
+                                            <!-- DataTable inside Dialog -->
+                                            <p:dataTable id="cashDetailsTable" 
+                                                         value="#{summary.reportTemplateRows}" 
+                                                         var="cashRow"
+                                                         rowIndexVar="n"
+                                                         rowKey="#{cashRow.id}"
+                                                         paginator="true"
+                                                         rows="10"
+                                                         paginatorPosition="bottom"
+                                                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                                         rowsPerPageTemplate="5,10,15">
+
+                                                <p:column headerText="Bill Type">
+                                                    <h:outputText value="#{cashRow.payment.bill.billTypeAtomic.label}" />
+                                                </p:column>
+
+                                                <p:column headerText="Value" class="text-end">
+                                                    <h:outputText value="#{cashRow.payment.paidValue}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </p:column>
+                                            </p:dataTable>
+
+
+                                        </p:dialog>
+
+
                                     </p:column>
+
+
                                     <p:column 
                                         headerText="Cash Handover" 
                                         class="text-end"
