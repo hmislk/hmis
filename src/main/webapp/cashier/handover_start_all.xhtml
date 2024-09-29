@@ -295,11 +295,29 @@
 
                                     <p:column 
                                         class="text-end"
-                                        headerText="Cash Collected" 
+                                        headerText="Cash Collected ***" 
                                         rendered="#{financialTransactionController.bundle.hasCashTransaction}">
                                         <h:outputText value="#{summary.cashValue}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
+                                        
+                                        <p:panel
+                                            header="Details"
+                                            collapsed="true" toggleable="true" style="width: 10em;" >
+                                            <p:dataTable value="#{summary.reportTemplateRows}" var="cashRow" >
+                                                <p:column width="">
+                                                    <h:outputText value="#{cashRow.payment.bill.billTypeAtomic.label}" ></h:outputText>
+                                                </p:column>
+                                                <p:column >
+                                                    <h:outputText value="#{cashRow.payment.paidValue}" >
+                                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                    </h:outputText>
+                                                </p:column>
+                                            </p:dataTable>
+                                            
+                                        </p:panel>
+                                        
+                                        
                                         <f:facet name="footer">
                                             <h:outputText value="#{financialTransactionController.bundle.cashValue}">
                                                 <f:convertNumber pattern="#,##0.00" />
