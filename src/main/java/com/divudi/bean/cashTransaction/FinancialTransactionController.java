@@ -2072,8 +2072,10 @@ public class FinancialTransactionController implements Serializable {
         billController.save(currentBill);
         for (Payment p : getCurrentBillPayments()) {
             p.setBill(currentBill);
-            p.setDepartment(sessionController.getDepartment());
-            p.setInstitution(sessionController.getInstitution());
+            p.setCreatedAt(new Date());
+            p.setCreater(sessionController.getLoggedUser());
+            p.setInstitution(null);
+            p.setDepartment(null);
             paymentController.save(p);
         }
         currentBill.getPayments().addAll(currentBillPayments);
@@ -4020,8 +4022,8 @@ public class FinancialTransactionController implements Serializable {
         for (Payment p : currentBillPayments) {
             p.setBill(currentBill);
             p.setCurrentHolder(sessionController.getLoggedUser());
-            p.setDepartment(sessionController.getDepartment());
-            p.setInstitution(sessionController.getInstitution());
+            p.setDepartment(null);
+            p.setInstitution(null);
             paymentController.save(p);
         }
         currentBill.getReferenceBill().setReferenceBill(currentBill);
