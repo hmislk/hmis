@@ -46,6 +46,10 @@
                                                              action="#{collectingCentreController.navigateToPayToCollectingCentre()}"
                                                              class="w-100 m-1"/>
 
+                                            <p:commandButton class="w-100" ajax="false" value="Collecting Centre Payment" action="#{agentAndCcPaymentController.navigateToCcDeposit}" actionListener="#{agentAndCcPaymentController.prepareNewBill()}" />
+                                            <p:commandButton class="w-100" ajax="false" value="Collecting Centre Bill Search" action="/collecting_centre/collecting_centre_bill_search_own?faces-redirect=true" actionListener="#{searchController.makeListNull}" />
+
+
                                         </h:panelGrid>
                                     </p:tab>
 

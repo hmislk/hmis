@@ -41,8 +41,24 @@
                             </p:calendar>
 
                             <p:spacer ></p:spacer>
-                            <p:spacer ></p:spacer>
-                            <p:spacer ></p:spacer>
+                            <h:outputLabel value="User"/> 
+                            <p:autoComplete
+                                completeMethod="#{webUserController.completeUser}"
+                                class="w-100"
+                                id="acStaff" 
+                                inputStyleClass="w-100"
+                                value="#{searchController.webUser}" 
+                                var="user"
+                                scrollHeight="450"
+                                itemLabel="#{user.webUserPerson.name}" 
+                                itemValue="#{user}" >
+                                <p:column headerText="Username" >
+                                    <h:outputText value="#{user.name}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Name" >
+                                    <h:outputText value="#{user.webUserPerson.name}" ></h:outputText>
+                                </p:column>
+                            </p:autoComplete>
 
                             <h:outputLabel value="Institution"/>                                
                             <p:selectOneMenu class="w-100 " value="#{searchController.institution}" filter="true" >
