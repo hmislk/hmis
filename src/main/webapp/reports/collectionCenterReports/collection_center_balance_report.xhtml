@@ -22,7 +22,7 @@
                                     </h:panelGroup>
                                 </div>
                                 <div class="col-md-4 mx-2">
-                                    <p:datePicker value="#{reportController.toDate}"
+                                    <p:datePicker value="#{reportController.fromDate}"
                                                   style=" max-width: 100%; overflow-x: auto; "
                                                   class="w-100"
                                                   inputStyleClass="w-100"
@@ -49,7 +49,7 @@
                                     <p:commandButton ajax="false" 
                                                      value="Process" 
                                                      style="width: 150px"
-                                                     action="#{reportController.processCollectionCenterBalanceByAgentHistory()}" 
+                                                     action="#{reportController.processCollectionCenterBalance()}" 
                                                      class="mx-2 ui-button-warning"
                                                      icon="fas fa-cogs">
                                     </p:commandButton>
@@ -79,10 +79,6 @@
                                             type="pdf" target="agentHistoriesTable" fileName="agent_histories_report" />
                                     </p:commandButton>
 
-                                    <pe:counter start="0" end="9000" duration="5" onstart="console.log('STARTED')" onend="console.log('ENDED')" autoStart="true">
-                                        <p:ajax event="start" listener="#{counterController.startListener}"/>
-                                        <p:ajax event="end" listener="#{counterController.endListener}"/>
-                                    </pe:counter>
 
 
                                 </div>
@@ -106,7 +102,7 @@
 
                             <p:spacer height="5"></p:spacer>
 
-                            <p:dataTable id="agentHistoriesTable" value="#{reportController.agentHistories}"  var="ah" rowIndexVar="i">
+                            <p:dataTable id="agentHistoriesTable" value="#{reportController.bundle.reportTemplateRows}"  var="ah" rowIndexVar="i">
                                 <p:column headerText="S. No">
                                     <h:outputText value="#{i+1}" />
                                 </p:column>
@@ -140,7 +136,7 @@
                                 </p:column>
 
                                 <p:column headerText="CC Balance" style="text-align: right">
-                                    <h:outputText value="#{ah.balanceAfterTransaction}">
+                                    <h:outputText value="#{ah.itemTotal}">
                                         <f:convertNumber groupingUsed="true" maxFractionDigits="2" minFractionDigits="2" />
                                     </h:outputText>
                                 </p:column>
