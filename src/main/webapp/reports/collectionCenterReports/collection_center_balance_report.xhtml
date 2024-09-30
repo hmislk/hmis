@@ -36,10 +36,29 @@
                                     </h:panelGroup>
                                 </div>
                                 <div class="col-md-4 w-50 " >
-                                    <p:selectOneMenu value="#{reportController.collectingCentre}" filter="true" filterMatchMode="contains">
-                                        <f:selectItem itemLabel="All" itemValue="" />
-                                        <f:selectItems var="r" itemLabel="#{r.name} - #{r.code}" value="#{collectingCentreController.items}" itemValue="#{r}" />
-                                    </p:selectOneMenu>
+                                    
+                                     <p:autoComplete 
+                                        id="creditCom" 
+                                        forceSelection="true" 
+                                        value="#{reportController.collectingCentre}" 
+                                        completeMethod="#{institutionController.completeCollectingCenter}" 
+                                        var="ix" 
+                                        class="w-100"
+                                        inputStyleClass="form-control"
+                                        itemLabel="#{ix.name}" 
+                                        itemValue="#{ix}" 
+                                        size="30" 
+                                        maxResults="20"                                
+                                        >
+                                        <f:ajax  event="itemSelect" execute="creditCom"  />
+                                        <p:column headerText="Code" style="padding: 5px; width: 150px;">#{ix.institutionCode}</p:column>
+                                        <p:column headerText="Collecting Centre Name" style="padding: 5px;">#{ix.name}</p:column>
+                                        <p:column headerText="Balance" style="padding: 5px; width: 150px; text-align: right;">
+                                            <p:outputLabel value="#{ix.ballance}" >
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </p:outputLabel>
+                                        </p:column>
+                                    </p:autoComplete>
 
                                 </div>
                             </h:panelGrid>
