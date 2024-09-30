@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
@@ -54,6 +55,9 @@ public class PettyCashBillController implements Serializable {
     BillController billController;
     @Inject
     WebUserController webUserController;
+    @Inject
+    DrawerController drawerController;
+    
     private Bill current;
     private boolean printPreview = false;
     @EJB
@@ -330,7 +334,8 @@ public class PettyCashBillController implements Serializable {
 
         saveBill();
         saveBillItem();
-        createPaymentForPettyCashBill(getCurrent(),getCurrent().getPaymentMethod());
+        List<Payment> payments = createPaymentForPettyCashBill(getCurrent(),getCurrent().getPaymentMethod());
+        drawerController.updateDrawerForOuts(payments);
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(getCurrent(), getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
         JsfUtil.addSuccessMessage("Bill Saved");
@@ -371,11 +376,14 @@ public class PettyCashBillController implements Serializable {
         return p;
     }
     
-    public void createPaymentForPettyCashBill(Bill b, PaymentMethod pm) {
+    public List<Payment> createPaymentForPettyCashBill(Bill b, PaymentMethod pm) {
+        List<Payment> payments = new ArrayList<>();
         Payment p = new Payment();
         p.setBill(b);
         p.setPaidValue(0 - Math.abs(b.getNetTotal()));
         setPaymentMethodData(p, pm);
+        payments.add(p);
+        return payments;
         
     }
 
