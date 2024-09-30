@@ -4062,11 +4062,6 @@ public class FinancialTransactionController implements Serializable {
             System.out.println("shiftBundle = " + shiftBundle);
             System.out.println("shiftBundle.getStartBill() = " + shiftBundle.getStartBill());
 
-            List<CashBookEntry> cbEntries = new ArrayList<>();
-            if (shiftBundle.getDepartment() != null) {
-                cbEntries = cashBookEntryController.writeCashBookEntryAtHandover(shiftBundle, shiftHandoverComponantAcceptBill, bundleCb);
-            }
-
             for (ReportTemplateRow row : shiftBundle.getReportTemplateRows()) {
                 System.out.println("row = " + row);
                 if (row.getPayment() == null) {
