@@ -12,6 +12,7 @@ import com.divudi.data.BillItemStatus;
 import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.CategoryCount;
+import com.divudi.data.InstitutionType;
 import com.divudi.data.ItemCount;
 import com.divudi.data.ItemLight;
 import com.divudi.data.PaymentMethod;
@@ -778,7 +779,10 @@ public class ReportController implements Serializable {
                 + " and subAh.createdAt < :hxDate)";
 
         parameters.put("ret", true);
-        parameters.put("hxDate", fromDate);  
+        parameters.put("hxDate", fromDate);
+
+        jpql += " and ah.agency.institutionType=:insType ";
+        parameters.put("insType", InstitutionType.CollectingCentre);
 
         if (collectingCentre != null) {
             jpql += " and ah.agency = :cc";

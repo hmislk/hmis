@@ -103,40 +103,40 @@
                             <p:spacer height="5"></p:spacer>
 
                             <p:dataTable id="agentHistoriesTable" value="#{reportController.bundle.reportTemplateRows}"  var="ah" rowIndexVar="i">
-                                <p:column headerText="S. No">
+                                <p:column headerText="S. No" width="10">
                                     <h:outputText value="#{i+1}" />
                                 </p:column>
 
                                 <p:column headerText="CC Name" >
-                                    <h:outputText value="#{ah.institution.name}" />
+                                    <h:outputText value="#{ah.agentHistory.institution.name}" />
                                 </p:column>
 
                                 <p:column headerText="CC Route">
-                                    <h:outputText value="#{ah.institution.route}" />
+                                    <h:outputText value="#{ah.agentHistory.institution.route.name}" />
                                 </p:column>
 
                                 <p:column headerText="CC Code" >
-                                    <h:outputText value="#{ah.institution.code}" />
+                                    <h:outputText value="#{ah.agentHistory.institution.code}" />
                                 </p:column>
 
                                 <p:column headerText="CC Phone No">
-                                    <h:outputText value="#{ah.institution.phone}" />
+                                    <h:outputText value="#{ah.agentHistory.institution.phone}" />
                                 </p:column>
 
                                 <p:column headerText="CC Credit Limit" style="text-align: right">
-                                    <h:outputText value="#{ah.institution.maxCreditLimit}">
+                                    <h:outputText value="#{ah.agentHistory.institution.maxCreditLimit}">
                                         <f:convertNumber groupingUsed="true" maxFractionDigits="2" minFractionDigits="2" />
                                     </h:outputText>
                                 </p:column>
 
                                 <p:column headerText="Max Credit Limit" style="text-align: right">
-                                    <h:outputText value="#{ah.institution.maxCreditLimit}">
+                                    <h:outputText value="#{ah.agentHistory.institution.maxCreditLimit}">
                                         <f:convertNumber groupingUsed="true" maxFractionDigits="2" minFractionDigits="2" />
                                     </h:outputText>
                                 </p:column>
 
                                 <p:column headerText="CC Balance" style="text-align: right">
-                                    <h:outputText value="#{ah.itemTotal}">
+                                    <h:outputText value="#{ah.agentHistory.balanceAfterTransaction}">
                                         <f:convertNumber groupingUsed="true" maxFractionDigits="2" minFractionDigits="2" />
                                     </h:outputText>
                                 </p:column>
