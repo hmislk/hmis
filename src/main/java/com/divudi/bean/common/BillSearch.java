@@ -1703,7 +1703,7 @@ public class BillSearch implements Serializable {
             PatientDeposit pd = patientDepositController.getDepositOfThePatient(getRefundingBill().getPatient(), sessionController.getDepartment());
             patientDepositController.updateBalance(getRefundingBill(), pd);
         }
-
+        drawerController.updateDrawerForOuts(p);
         printPreview = true;
         return "";
     }
