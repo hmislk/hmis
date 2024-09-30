@@ -96,7 +96,7 @@
                                             style="width: 8em"
                                             id="cmdPayment" 
                                             value="#{iouBillController.currentPayment.paymentMethod}" >
-                                            <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
+                                            <f:selectItem itemLabel="Select" ></f:selectItem>
                                             <f:selectItems value="#{enumController.paymentMethodsForIouSettle}" ></f:selectItems>
                                             <p:ajax process="cmdPayment" update="paymentDetails" ></p:ajax>
                                         </p:selectOneMenu>
