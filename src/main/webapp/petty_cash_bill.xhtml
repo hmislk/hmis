@@ -190,40 +190,49 @@
                             </p:panel>
                         </div>
                         <div class="col-7">
-                            <p:panel header="Payment Details">
+                            <p:panel header="">
+                                <f:facet name="header">
+                                    <div class="d-flex justify-content-between">
+                                        <h:outputLabel value="Payment Details" class="mt-2"/>
+                                        <p:commandButton  
+                                            value="Settle"
+                                            class="ui-button-success "
+                                            icon="fa fa-check"
+                                            action="#{pettyCashBillController.settleBill()}" 
+                                            ajax="false"  
+                                            style="width: 150px; ">
+                                        </p:commandButton>
+                                    </div>
+                                </f:facet>
 
                                 <div class="my-2">
-                                    <div class="row my-1">
-                                        <div class="col-9">
-                                            <p:selectOneMenu   id="cmbPs" value="#{pettyCashBillController.current.paymentMethod}">                                                                     
+
+
+                                    <div class="row">
+                                        <div class="col-3"><p:outputLabel value="Payment Method" /></div>
+                                        <div class="col-9"><p:selectOneMenu   id="cmbPs" value="#{pettyCashBillController.current.paymentMethod}">                                                                     
                                                 <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"  />
                                                 <p:ajax process="cmbPs" update="creditCard cheque slip" event="change" />
-                                            </p:selectOneMenu>
-                                        </div>
-                                        <div  class="col-3 " style="float: right;">
-                                            <p:commandButton  
-                                                value="Settle"
-                                                class=" ui-button-success "
-                                                icon="fa fa-check"
-                                                action="#{pettyCashBillController.settleBill()}" 
-                                                ajax="false"  
-                                                style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
-                                            </p:commandButton>
-                                        </div>
-                                        <!--<p:inputText value="#{pettyCashBillController.comment}" id="comment"/>-->
+                                            </p:selectOneMenu></div>
                                     </div>
-                                    <div>
-                                        <h:panelGroup id="creditCard" style="display: #{pettyCashBillController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
-                                            <pa:creditCard paymentMethodData="#{pettyCashBillController.paymentMethodData}"/>
-                                        </h:panelGroup>
+                                        <!--<p:inputText value="#{pettyCashBillController.comment}" id="comment"/>-->
 
-                                        <h:panelGroup id="cheque" style="display: #{pettyCashBillController.current.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
-                                            <pa:cheque paymentMethodData="#{pettyCashBillController.paymentMethodData}"/>
-                                        </h:panelGroup>
+                                    <div class="row">
+                                        <div class="col-3"></div>
+                                        <div class="col-9">
+                                            
+                                            <h:panelGroup id="creditCard" style="display: #{pettyCashBillController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; " >
+                                                <pa:creditCard paymentMethodData="#{pettyCashBillController.paymentMethodData}"/>
+                                            </h:panelGroup>
 
-                                        <h:panelGroup id="slip" style="display: #{pettyCashBillController.current.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
-                                            <pa:slip paymentMethodData="#{pettyCashBillController.paymentMethodData}"/>
-                                        </h:panelGroup>
+                                            <h:panelGroup id="cheque" style="display: #{pettyCashBillController.current.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
+                                                <pa:cheque paymentMethodData="#{pettyCashBillController.paymentMethodData}"/>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup id="slip" style="display: #{pettyCashBillController.current.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
+                                                <pa:slip paymentMethodData="#{pettyCashBillController.paymentMethodData}"/>
+                                            </h:panelGroup>
+                                        </div>
                                     </div>
                                 </div>
 

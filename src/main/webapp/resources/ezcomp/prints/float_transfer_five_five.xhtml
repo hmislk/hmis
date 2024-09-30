@@ -35,7 +35,7 @@
             </div>
 
             <div class="headingBillFiveFive" style="text-align: center;font-weight: bold;">
-                <h:outputLabel value="SHIFT START BILL"/>
+                <h:outputLabel value="Float Transfer Note"/>
                 <h:outputLabel value="**Duplicate**" rendered="#{cc.attrs.duplicate eq true}"/>
                 <h:outputLabel value="**Cancelled**" rendered="#{cc.attrs.bill.cancelled eq true}"/>
             </div>
@@ -53,7 +53,7 @@
                 <table style="width: 99%!important;">
                     <tr>
                         <td style="text-align: left;">
-                            <h:outputLabel value="Name" class="billDetailsFiveFive"></h:outputLabel>
+                            <h:outputLabel value="From" class="billDetailsFiveFive"></h:outputLabel>
                         </td>
                         <td style="width: 10px;"></td>
                         <td>:</td>
@@ -63,34 +63,32 @@
                         </td>
                         <td style="width: 50px;"></td>
                         <td>
-                            <h:outputLabel value="Shift Start Date" class="billDetailsFiveFive"></h:outputLabel>
+                            <h:outputLabel value="Date / Time " class="billDetailsFiveFive"></h:outputLabel>
                         </td>
                         <td>:</td>
                         <td>
                             <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetailsFiveFive">
-                                <f:convertDateTime pattern="dd/MMM/yyyy"></f:convertDateTime>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
                             </h:outputLabel>
                         </td>
                     </tr>
                     <tr>
                         <td style="text-align: left;">
-                            <h:outputLabel value="Shift No" class="billDetailsFiveFive"></h:outputLabel>
+                            <h:outputLabel value="To Staff" class="billDetailsFiveFive"></h:outputLabel>
                         </td>
                         <td style="width: 10px;"></td>
                         <td>:</td>
                         <td style="width: 5px;"></td>
                         <td>
-                            <h:outputLabel value="#{cc.attrs.bill.deptId}" class="billDetailsFiveFive"></h:outputLabel>
+                            <h:outputLabel value="#{cc.attrs.bill.toWebUser.webUserPerson.nameWithTitle}" class="billDetailsFiveFive"></h:outputLabel>
                         </td>
                         <td style="width: 50px;"></td>
                         <td>
-                            <h:outputLabel value="Shift Start Time" class="billDetailsFiveFive"></h:outputLabel>
+                            <h:outputLabel value="Comments" class="billDetailsFiveFive"></h:outputLabel>
                         </td>
                         <td>:</td>
                         <td>
-                            <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetailsFiveFive">
-                                <f:convertDateTime timeZone="Asia/Colombo" pattern="hh:mm a"></f:convertDateTime>
-                            </h:outputLabel>
+                            <h:outputLabel value="#{cc.attrs.bill.comments}" class="billDetailsFiveFive"></h:outputLabel>
                         </td>
                     </tr>
                 </table>
