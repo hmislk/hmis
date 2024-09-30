@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.report.ReportController;
 import com.divudi.data.BillNumberSuffix;
@@ -21,6 +22,7 @@ import com.divudi.entity.Department;
 import com.divudi.entity.Patient;
 import com.divudi.entity.PatientDeposit;
 import com.divudi.entity.PatientDepositHistory;
+import com.divudi.entity.Payment;
 import com.divudi.facade.PatientDepositFacade;
 import com.divudi.facade.PatientDepositHistoryFacade;
 import java.io.Serializable;
@@ -56,6 +58,8 @@ public class PatientDepositController implements Serializable, ControllerWithPat
     BillBeanController billBeanController;
     @Inject
     ReportController reportController;
+    @Inject
+    DrawerController drawerController;
     @EJB
     private PatientDepositFacade patientDepositFacade;
     @EJB
@@ -159,9 +163,10 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         }
 
         updateBalance(patientController.getBill(), current);
-        billBeanController.createPayment(patientController.getBill(),
+        List<Payment> payments = billBeanController.createPayment(patientController.getBill(),
                 patientController.getBill().getPaymentMethod(),
                 patientController.getPaymentMethodData());
+        drawerController.updateDrawerForIns(payments);
     }
 
     public void settlePatientDepositCancel() {

@@ -193,7 +193,7 @@
                                 <p:commandLink 
                                     ajax="false"
                                     rendered="#{row.billItem ne null}"
-                                    action="#{billSearch.navigateViewBillByBillTypeAtomic()}">
+                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}">
                                     <h:outputText title="View Bill" styleClass="fa fa-eye" />
                                     <f:setPropertyActionListener 
                                         value="#{row.billItem.bill}" 

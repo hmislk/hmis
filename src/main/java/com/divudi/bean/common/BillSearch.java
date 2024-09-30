@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.channel.ChannelSearchController;
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.bean.lab.PatientInvestigationController;
@@ -48,8 +49,20 @@ import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.WebUserFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.bean.opd.OpdBillController;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
 import com.divudi.data.BillTypeAtomic;
+import static com.divudi.data.BillTypeAtomic.CC_BILL;
+import static com.divudi.data.BillTypeAtomic.CC_BILL_CANCELLATION;
+import static com.divudi.data.BillTypeAtomic.CC_BILL_REFUND;
+import static com.divudi.data.BillTypeAtomic.CC_CREDIT_NOTE;
+import static com.divudi.data.BillTypeAtomic.CC_CREDIT_NOTE_CANCELLATION;
+import static com.divudi.data.BillTypeAtomic.CC_DEBIT_NOTE;
+import static com.divudi.data.BillTypeAtomic.CC_DEBIT_NOTE_CANCELLATION;
+import static com.divudi.data.BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL;
+import static com.divudi.data.BillTypeAtomic.CC_PAYMENT_MADE_BILL;
+import static com.divudi.data.BillTypeAtomic.CC_PAYMENT_MADE_CANCELLATION_BILL;
+import static com.divudi.data.BillTypeAtomic.CC_PAYMENT_RECEIVED_BILL;
 import static com.divudi.data.BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT;
 import static com.divudi.data.BillTypeAtomic.CHANNEL_PAYMENT_FOR_BOOKING_BILL;
 import static com.divudi.data.BillTypeAtomic.CHANNEL_REFUND;
@@ -189,6 +202,8 @@ public class BillSearch implements Serializable {
     PharmacyBillSearch pharmacyBillSearch;
     @Inject
     PatientDepositController patientDepositController;
+    @Inject
+    OpdBillController opdBillController;
 
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
@@ -196,6 +211,8 @@ public class BillSearch implements Serializable {
     ChannelSearchController channelSearchController;
     @Inject
     AgentAndCcApplicationController collectingCentreApplicationController;
+    @Inject
+    DrawerController drawerController;
     /**
      * Class Variables
      */
@@ -1549,6 +1566,8 @@ public class BillSearch implements Serializable {
         getBill().setRefundedBill(rb);
         getBillFacade().editAndCommit(getBill());
         double feeTotalExceptCcfs = 0.0;
+        Payment p = collectingCentreBillController.createPaymentForRefunds(rb, paymentMethod);
+        drawerController.updateDrawerForOuts(p);
 
 //            for (BillItem bi : refundingItems) {
 //                String sql = "select c from BillFee c where c.billItem.id = " + bi.getId();
@@ -2291,6 +2310,7 @@ public class BillSearch implements Serializable {
         getBill().setCancelledBill(cancellationBill);
 
         billController.save(getBill());
+        drawerController.updateDrawerForOuts(p);
         JsfUtil.addSuccessMessage("Cancelled");
 
         if (getBill().getPaymentMethod() == PaymentMethod.Credit) {
@@ -2362,6 +2382,8 @@ public class BillSearch implements Serializable {
                 bill.getNetTotal(),
                 HistoryType.CollectingCentreBillingCancel,
                 cancellationBill);
+        
+        drawerController.updateDrawerForOuts(p);
 
         bill = billFacade.find(bill.getId());
         printPreview = true;
@@ -3114,7 +3136,7 @@ public class BillSearch implements Serializable {
         return "/admin/data/edit_payment?faces-redirect=true";
     }
 
-    public String navigateViewBillByBillTypeAtomic() {
+    public String navigateToViewBillByAtomicBillType() {
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill is Selected");
             return null;
@@ -3144,6 +3166,87 @@ public class BillSearch implements Serializable {
             case OPD_BATCH_BILL_WITH_PAYMENT:
                 return navigateToViewOpdBatchBill();
 
+            case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES:
+                return navigateToViewOpdProfessionalPaymentBill();
+            case CHANNEL_BOOKING_WITH_PAYMENT:
+                return "";
+            case CC_BILL:
+                return navigateToViewCcBill(bill);
+
+            case CC_BILL_CANCELLATION:
+                return navigateToViewCcBillCancellation(bill);
+
+            case CC_BILL_REFUND:
+                return navigateToViewCcBillRefund(bill);
+
+            case CC_CREDIT_NOTE:
+                return navigateToViewCcCreditNote(bill);
+
+            case CC_DEBIT_NOTE:
+                return navigateToViewCcDebitNote(bill);
+
+            case CC_CREDIT_NOTE_CANCELLATION:
+                return navigateToViewCcCreditNoteCancellation(bill);
+
+            case CC_DEBIT_NOTE_CANCELLATION:
+                return navigateToViewCcDebitNoteCancellation(bill);
+
+            case CC_PAYMENT_CANCELLATION_BILL:
+                return navigateToViewCcPaymentCancellationBill(bill);
+
+            case CC_PAYMENT_MADE_BILL:
+                return navigateToViewCcPaymentMadeBill(bill);
+
+            case CC_PAYMENT_MADE_CANCELLATION_BILL:
+                return navigateToViewCcPaymentMadeCancellationBill(bill);
+
+            case CC_PAYMENT_RECEIVED_BILL:
+                return navigateToViewCcPaymentReceivedBill(bill);
+
+            case CHANNEL_REFUND:
+                return "";
+            case CHANNEL_PAYMENT_FOR_BOOKING_BILL:
+            case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE:
+            case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES:
+            case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES_RETURN:
+            case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN:
+            case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION:
+                return navigateToViewChannelingProfessionalPaymentBill();
+
+        }
+
+        return "";
+    }
+    
+    public String navigateToManageBillByAtomicBillType() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill is Selected");
+            return null;
+        }
+        if (bill.getBillTypeAtomic() == null) {
+            JsfUtil.addErrorMessage("No Bill type");
+            return null;
+        }
+        BillTypeAtomic billTypeAtomic = bill.getBillTypeAtomic();
+        loadBillDetails(bill);
+        switch (billTypeAtomic) {
+            case PHARMACY_RETAIL_SALE_CANCELLED:
+                pharmacyBillSearch.setBill(bill);
+                return pharmacyBillSearch.navigateToViewPharmacyGrn();
+            case OPD_BILL_REFUND:
+                return navigateToManageOpdBill();
+            case OPD_BILL_CANCELLATION:
+                return navigateToManageOpdBill();
+            case OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER:
+                return navigateToManageOpdBill();
+            case OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION:
+                return navigateToManageOpdBill();
+            case OPD_PROFESSIONAL_PAYMENT_BILL:
+                return navigateToManageOpdBill();
+            case OPD_BILL_WITH_PAYMENT:
+                return navigateToManageOpdBill();
+            case OPD_BATCH_BILL_WITH_PAYMENT:
+                return opdBillController.navigateToViewOpdBatchBill(bill);
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES:
                 return navigateToViewOpdProfessionalPaymentBill();
             case CHANNEL_BOOKING_WITH_PAYMENT:
@@ -3998,7 +4101,7 @@ public class BillSearch implements Serializable {
         return bfs;
     }
 
-    public List<Bill> fetchBills(BillTypeAtomic billTypeAtomic, Bill rb) {
+    public List<Bill> fetchReferredBills(BillTypeAtomic billTypeAtomic, Bill rb) {
         Map m = new HashMap();
         String j;
         j = "select b "
@@ -4010,6 +4113,20 @@ public class BillSearch implements Serializable {
         m.put("rb", rb);
         m.put("bta", billTypeAtomic);
         return billFacade.findByJpql(j, m);
+    }
+    
+    public Bill fetchReferredBill(BillTypeAtomic billTypeAtomic, Bill rb) {
+        Map m = new HashMap();
+        String j;
+        j = "select b "
+                + " from Bill b "
+                + " where b.retired=:ret "
+                + " and b.referenceBill=:rb "
+                + " and b.billTypeAtomic=:bta";
+        m.put("ret", false);
+        m.put("rb", rb);
+        m.put("bta", billTypeAtomic);
+        return billFacade.findFirstByJpql(j, m);
     }
 
     public AgentHistory fetchCCHistory(Bill b) {

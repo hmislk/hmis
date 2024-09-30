@@ -203,7 +203,7 @@
                                 <p:outputLabel value="#{billFee.bill.billTypeAtomic}" />
                                 <p:commandLink 
                                     ajax="false"
-                                    action="#{billSearch.navigateViewBillByBillTypeAtomic()}">
+                                    action="#{billSearch.navigateToViewBillByBillTypeAtomic()}">
                                     <h:outputText title="View Bill" styleClass="fa fa-eye" />
                                     <f:setPropertyActionListener 
                                         value="#{billFee.bill}" 
@@ -223,7 +223,7 @@
                                 </p:outputLabel>
                                 <p:commandLink 
                                     ajax="false"
-                                    action="#{billSearch.navigateViewBillByBillTypeAtomic()}">
+                                    action="#{billSearch.navigateToViewBillByBillTypeAtomic()}">
                                     <h:outputText title="View Bill" styleClass="fa fa-eye" />
                                     <f:setPropertyActionListener 
                                         value="#{billFee.billItem.referanceBillItem.bill}" 
