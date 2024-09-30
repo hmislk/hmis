@@ -25,6 +25,7 @@ import com.divudi.data.lab.PatientInvestigationStatus;
 import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
+import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Doctor;
@@ -33,6 +34,7 @@ import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
 import com.divudi.entity.PatientDepositHistory;
 import com.divudi.entity.Person;
+import com.divudi.entity.RefundBill;
 import com.divudi.entity.Route;
 import com.divudi.entity.Service;
 import com.divudi.entity.Speciality;
@@ -194,6 +196,109 @@ public class ReportController implements Serializable {
     public void generateItemMovementByBillReport() {
         billAndItemDataRows = new ArrayList<>();
         Map<String, Object> params = new HashMap<>();
+
+        // Update JPQL to include all bills, regardless of their status
+        StringBuilder jpql = new StringBuilder("SELECT bi FROM BillItem bi WHERE bi.retired=:bir AND bi.bill.retired=:br AND bi.bill.createdAt BETWEEN :fd AND :td");
+        params.put("bir", false);
+        params.put("br", false);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+
+        if (institution != null) {
+            jpql.append(" AND bi.bill.institution=:ins");
+            params.put("ins", institution);
+        }
+        if (department != null) {
+            jpql.append(" AND bi.bill.department=:dep");
+            params.put("dep", department);
+        }
+        if (site != null) {
+            jpql.append(" AND bi.bill.department.site=:site");
+            params.put("site", site);
+        }
+        if (category != null) {
+            jpql.append(" AND (bi.item.category=:cat OR bi.item.category.parentCategory=:cat)");
+            params.put("cat", category);
+        }
+        if (item != null) {
+            jpql.append(" AND bi.item=:item");
+            params.put("item", item);
+        }
+        if (phn != null && !phn.trim().equals("")) {
+            jpql.append(" AND bi.bill.patient.phn=:phn");
+            params.put("phn", phn);
+        }
+        System.out.println("jpql.toString() = " + jpql.toString());
+        System.out.println("params = " + params);
+        List<BillItem> tmpBillItems = billItemFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+        System.out.println("tmpBillItems = " + tmpBillItems);
+        if (tmpBillItems == null) {
+            return;
+        }
+
+        // Deduplicate and sort items for headers
+        Set<Item> items = new TreeSet<>(Comparator.comparing(Item::getName));
+        tmpBillItems.stream().map(BillItem::getItem).filter(Objects::nonNull).forEach(items::add);
+        List<Item> sortedItems = new ArrayList<>(items);
+
+        // Initialize header row with items and placeholders for totals
+        headerBillAndItemDataRow = new BillAndItemDataRow();
+        for (Item it : sortedItems) {
+            ItemDetailsCell cell = new ItemDetailsCell();
+            cell.setItem(it);
+            cell.setQuentity(0.0);  // Initialize with zero for totals
+            headerBillAndItemDataRow.getItemDetailCells().add(cell);
+        }
+
+        // Map to hold rows, mapped by Bill
+        Map<Bill, BillAndItemDataRow> billMap = new HashMap<>();
+        for (BillItem bi : tmpBillItems) {
+            System.out.println("bi = " + bi);
+            System.out.println("bi.getItem() = " + bi.getItem());
+            if (bi.getItem() == null) {
+                continue;
+            }
+
+            Bill bill = bi.getBill();
+            System.out.println("bill = " + bill);
+            BillAndItemDataRow row = billMap.getOrDefault(bill, new BillAndItemDataRow());
+            row.setBill(bill);
+
+            if (row.getItemDetailCells().isEmpty()) {
+                for (int i = 0; i < sortedItems.size(); i++) {
+                    row.getItemDetailCells().add(new ItemDetailsCell());
+                }
+            }
+
+            int itemIndex = sortedItems.indexOf(bi.getItem());
+            if (itemIndex != -1) {
+                ItemDetailsCell cell = row.getItemDetailCells().get(itemIndex);
+                // Adjust the quantity for cancelled/refunded items
+                boolean cancelledBill = bill instanceof CancelledBill;
+                boolean refundedBill = bill instanceof RefundBill;
+                if(cell.getQuentity()==null) cell.setQuentity(0.0);
+                if (cancelledBill || refundedBill) {
+                    cell.setQuentity(cell.getQuentity() - bi.getQty());
+                } else {
+                    cell.setQuentity(cell.getQuentity() + bi.getQty());
+                }
+                row.getItemDetailCells().set(itemIndex, cell);
+
+                // Accumulate totals directly in the header row
+                ItemDetailsCell totalCell = headerBillAndItemDataRow.getItemDetailCells().get(itemIndex);
+                totalCell.setQuentity(totalCell.getQuentity() + (bill.isCancelled() || bill.isRefunded() ? -bi.getQty() : bi.getQty()));
+            }
+
+            billMap.put(bill, row);
+        }
+
+        billAndItemDataRows = new ArrayList<>(billMap.values());
+    }
+
+    @Deprecated
+    public void generateItemMovementByBillReportOld() {
+        billAndItemDataRows = new ArrayList<>();
+        Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder("SELECT bi FROM BillItem bi WHERE bi.retired=:bir AND bi.bill.cancelled=:bc AND bi.refunded=:birf AND bi.bill.retired=:br AND bi.bill.createdAt BETWEEN :fd AND :td");
         params.put("bir", false);
         params.put("br", false);
@@ -221,6 +326,10 @@ public class ReportController implements Serializable {
         if (item != null) {
             jpql.append(" AND bi.item=:item");
             params.put("item", item);
+        }
+        if (phn != null && phn.trim().equals("")) {
+            jpql.append(" AND bi.bill.patient.phn=:phn");
+            params.put("phn", phn);
         }
 
         List<BillItem> billItems = billItemFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);

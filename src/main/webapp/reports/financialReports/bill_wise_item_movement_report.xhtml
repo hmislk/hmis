@@ -18,7 +18,7 @@
                         <h:panelGrid columns="8" class="my-2 w-100">
                             <h:panelGroup >
                                 <h:outputText value="&#xf073;" styleClass="fa ml-5" />
-                                <h:outputLabel value="From Date"  class="mx-3"/>
+                                <h:outputLabel value="From Date"  />
                             </h:panelGroup>
                             <p:datePicker
                                 value="#{reportController.fromDate}"
@@ -34,7 +34,7 @@
 
                             <h:panelGroup >
                                 <h:outputText value="&#xf073;" styleClass="fa mr-2" /> 
-                                <h:outputLabel value="To Date"  class="mx-3"/>
+                                <h:outputLabel value="To Date"  />
                             </h:panelGroup>
                             <p:datePicker
                                 value="#{reportController.toDate}"
@@ -54,13 +54,13 @@
 
                             <h:panelGroup >
                                 <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
-                                <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                                <h:outputLabel value="Institution" for="cmbIns" />
                             </h:panelGroup>
                             <p:autoComplete
                                 value="#{reportController.institution}"
                                 completeMethod="#{institutionController.completeCompany}"
                                 var="ins"
-                                class="w-100 mt-1"
+                                class="w-100 "
                                 inputStyleClass="form-control"
                                 itemLabel="#{ins.name}"
                                 itemValue="#{ins}">
@@ -70,12 +70,12 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
-                                <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
+                                <h:outputLabel value="Site" for="siteMenu" />
                             </h:panelGroup>
                             <p:selectOneMenu
                                 id="siteMenu"
                                 class="w-100"
-                                value="#{searchController.site}" 
+                                value="#{reportController.site}" 
                                 filter="true">
                                 <f:selectItem itemLabel="All Sites" />
                                 <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
@@ -85,31 +85,28 @@
                             
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
-                                <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                                <h:outputLabel value="Department" for="cmbDept" />
                             </h:panelGroup>
                             <p:selectOneMenu
                                 id="cmbDept"
                                 styleClass="w-100 form-control"  
-                                value="#{searchController.department}" 
+                                value="#{reportController.department}" 
                                 filter="true">
                                 <f:selectItem itemLabel="All Departments" />
                                 <f:selectItems value="#{departmentController.getInsDepartments(searchController.institution)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
                             </p:selectOneMenu>
 
-
-
-
                             <h:panelGroup >
                                 <h:outputText value="&#xf022;" styleClass="fa mr-2" />
-                                <p:outputLabel value="Service Category" class="mx-3"></p:outputLabel>
+                                <p:outputLabel value="Service Category" ></p:outputLabel>
                             </h:panelGroup>
                             <p:autoComplete 
                                 completeMethod="#{categoryController.completeCategory}" 
                                 var="pta" 
                                 itemLabel="#{pta.name}"
                                 itemValue="#{pta}" 
-                                value="#{itemController.current.category}"
-                                class="w-100 mt-1"
+                                value="#{reportController.category}"
+                                class="w-100 "
                                 inputStyleClass="form-control"
                                 >                                    
                                 <p:column>#{pta.name}</p:column>
@@ -118,23 +115,23 @@
                             <p:spacer width="10"></p:spacer>
                             <h:panelGroup >
                                 <h:outputText value="&#xf466;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
-                                <p:outputLabel value="Item" class="mx-3"></p:outputLabel>
+                                <p:outputLabel value="Item" ></p:outputLabel>
                             </h:panelGroup>
                             <p:autoComplete
                                 value="#{reportController.item}"
-                                completeMethod="#{webUserController.completeUser}"
+                                completeMethod="#{itemController.completeOpdItemsByNamesAndCode}"
                                 var="w"
-                                class="w-100 mt-1"
+                                class="w-100 "
                                 inputStyleClass="form-control"
-                                itemLabel="#{w.webUserPerson.name}"
+                                itemLabel="#{w.name}"
                                 itemValue="#{w}">
                             </p:autoComplete>
                             <p:spacer width="10"></p:spacer>
                             <h:panelGroup >
                                 <h:outputText value="&#xf007;" styleClass="fa mr-2" /> 
-                                <h:outputLabel value="Patient MRN" class="mx-3"/>
+                                <h:outputLabel value="Patient MRN" />
                             </h:panelGroup>
-                            <p:inputText value="#{reportController.phn}" class="w-100 mt-1" />
+                            <p:inputText value="#{reportController.phn}" class="w-100 " />
 
                         </h:panelGrid>
 
