@@ -217,6 +217,10 @@ public class ReportController implements Serializable {
         if (category != null) {
             jpql.append(" AND (bi.item.category=:cat OR bi.item.category.parentCategory=:cat)");
             params.put("cat", category);
+        }            
+        if(phn != null && !phn.isEmpty()){
+            jpql.append(" AND bi.bill.patient.phn=:mrn");
+            params.put("mrn", phn);
         }
         if (item != null) {
             jpql.append(" AND bi.item=:item");
