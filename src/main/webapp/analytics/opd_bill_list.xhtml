@@ -69,8 +69,8 @@
                             rowsPerPageTemplate="20,50,{ShowAll|'All'}"
                             scrollable="true"
                             scrollWidth="100%">
-                            
-                            
+
+
 
                             <p:column headerText="ID" width="60" style="text-align: right;">
                                 <p:outputLabel value="#{bill.id}" />
@@ -94,10 +94,21 @@
                                 </p:commandLink>
                             </p:column>
 
-                            <p:column headerText="Dept ID" width="100" style="text-align: right;">
-                                <p:commandLink id="deptNo" ajax="false" value="#{bill.deptId}" action="#{searchController.viewOPD(bill)}">
-                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.billSearch}"/>
-                                </p:commandLink>
+                            <p:column headerText="Dept ID" width="200" style="text-align: right;">
+                                <p:outputLabel id="deptNo" value="#{bill.deptId}">
+                                </p:outputLabel>
+                                <p:commandButton icon="pi pi-wallet" styleClass="m-1" ajax="false" title="Manage Bill" action="#{billSearch.navigateToManageBillByAtomicBillType()}">
+                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
+                                </p:commandButton>
+                                <p:commandButton icon="pi pi-list" styleClass="m-1" ajax="false" title="Manage Batch Bill" action="#{billSearch.navigateToManageBillByAtomicBillType}">
+                                    <f:setPropertyActionListener value="#{bill.backwardReferenceBill}" target="#{billSearch.bill}"/>
+                                </p:commandButton>
+                                <p:commandButton icon="pi pi-search" styleClass="m-1" ajax="false" title="View Bill" action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
+                                </p:commandButton>
+                                <p:commandButton icon="pi pi-search-plus" styleClass="m-1" ajax="false" title="View Batch Bill" action="#{billSearch.navigateToViewBillByAtomicBillType}">
+                                    <f:setPropertyActionListener value="#{bill.backwardReferenceBill}" target="#{billSearch.bill}"/>
+                                </p:commandButton>
                             </p:column>
 
                             <p:column 
@@ -132,7 +143,7 @@
                                 <p:outputLabel value="#{bill.creater.webUserPerson.name}" />
                             </p:column>
 
-                            <p:column headerText="Status" width="400">
+                            <p:column headerText="Status" width="350">
                                 <f:facet name="header">
                                     <h:outputLabel value="Status" class="w-100 d-flex justify-content-center" />
                                 </f:facet>
@@ -142,7 +153,7 @@
                                         <h:outputLabel value="By " />
                                         <h:outputLabel 
                                             style="color: red;"
-                                                       value="#{bill.cancelledBill.creater.webUserPerson.name}" >                                       
+                                            value="#{bill.cancelledBill.creater.webUserPerson.name}" >                                       
                                         </h:outputLabel>
                                         <h:outputLabel value="At " />
                                         <h:outputLabel 
@@ -202,7 +213,7 @@
                                 </p:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Comments" width="300">
+                            <p:column headerText="Comments" width="250">
                                 <h:outputLabel  value="#{bill.comments}" >
                                 </h:outputLabel>
                                 <h:outputLabel rendered="#{bill.refundedBill ne null}" value="#{bill.refundedBill.comments}" >
@@ -370,7 +381,7 @@
 
                     <div class="printBlock">
                         <p:dataTable style="display: none;" rowIndexVar="i" id="tblBillsExport" value="#{searchController.bills}" rowKey="#{bill1.id}"
-                                      var="bill1" paginator="false">
+                                     var="bill1" paginator="false">
                             <p:column headerText="No" >
                                 <h:outputLabel value="#{i+1}"/>
                             </p:column>
