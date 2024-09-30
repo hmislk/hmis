@@ -207,7 +207,6 @@ public class AmpController implements Serializable {
 //            p.setSupplier(itemDistributorsController.getDistributor(p.getAmp()));
 //        }
 
-        
     }
 
     public void fillPricesForItemSupplierPrices() {
@@ -232,7 +231,6 @@ public class AmpController implements Serializable {
 //            p.setSupplier(itemDistributorsController.getDistributor(p.getAmp()));
 //        }
 
-        
     }
 
     public void fillSuppliersForItemSupplierPrices() {
@@ -244,7 +242,6 @@ public class AmpController implements Serializable {
             p.setSupplier(itemDistributorsController.getDistributor(p.getAmp()));
         }
 
-        
     }
 
     public List<Amp> getListToRemove() {
@@ -339,7 +336,6 @@ public class AmpController implements Serializable {
 
         items = getFacade().findByJpql(sql, m);
 
-        
     }
 
     public void createItemList() {
@@ -357,7 +353,6 @@ public class AmpController implements Serializable {
 
         items = getFacade().findByJpql(sql, m);
 
-        
     }
 
     public void createItemListPharmacy() {
@@ -407,7 +402,6 @@ public class AmpController implements Serializable {
         Date toDate = null;
         itemList = deleteOrNotItem(false, DepartmentType.Store);
 
-        
     }
 
     public void pharmacyNoDeleteItem() {
@@ -416,7 +410,6 @@ public class AmpController implements Serializable {
         Date toDate = null;
         itemList = deleteOrNotItem(true, DepartmentType.Store);
 
-        
     }
 
     public void storeDeleteItem() {
@@ -425,7 +418,6 @@ public class AmpController implements Serializable {
         Date toDate = null;
         itemList = deleteOrNotStoreItem(false, DepartmentType.Store);
 
-        
     }
 
     public void storeNoDeleteItem() {
@@ -434,7 +426,6 @@ public class AmpController implements Serializable {
         Date toDate = null;
         itemList = deleteOrNotStoreItem(true, DepartmentType.Store);
 
-        
     }
 
     public void onTabChange(TabChangeEvent event) {
@@ -749,9 +740,9 @@ public class AmpController implements Serializable {
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
             JsfUtil.addSuccessMessage("Saved Successfully");
+            recreateModel();
+            getItems();
         }
-        recreateModel();
-        // getItems();
     }
 
     public void saveSelected() {

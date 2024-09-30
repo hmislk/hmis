@@ -90,15 +90,20 @@
                         <div class="col-12" >
                             <h:panelGroup id="printAfterChannelBillSettling" style="display: block;">
                                 <ui:repeat value="#{sessionController.departmentPreference.channellingBillCopiesList}" var="copy">
-                                    <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'PosPaper'}">
-                                        <ez:bmsChannelBill bill="#{bookingControllerViewScopeMonth.selectedBillSession.billItem.bill}"/>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePaper'}">
-                                        <ez:bms5x5ChannelBill bill="#{bookingControllerViewScopeMonth.selectedBillSession.billItem.bill}"/>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePrintedPaper'}">
-                                        <ez:bms5x5WIthoutHeaderChannelBill controller="#{bookingControllerViewScopeMonth}" bill="#{bookingControllerViewScopeMonth.selectedBillSession.billItem.bill}"/>
-                                    </h:panelGroup>
+                                    
+                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Month Settling Bill is PosPaper',true)}">
+                                            <ez:bmsChannelBill bill="#{bookingControllerViewScopeMonth.selectedBillSession.billItem.bill}"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Month Settling Bill is FiveFivePaper',true)}">
+                                            <ez:bms5x5ChannelBill bill="#{bookingControllerViewScopeMonth.selectedBillSession.billItem.bill}"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Month Settling Bill is FiveFIvePaperCustom2',true)}">
+                                            <ez:fivefivePapaerCustom2  bill="#{bookingControllerViewScopeMonth.selectedBillSession.billItem.bill}"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Month Settling Bill is FiveFivePrintedPaper',true)}">
+                                            <ez:bms5x5WIthoutHeaderChannelBill bill="#{bookingControllerViewScopeMonth.selectedBillSession.billItem.bill}"/>
+                                        </h:panelGroup>
+                                    
                                 </ui:repeat>
                             </h:panelGroup>
                         </div>
