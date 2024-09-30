@@ -227,246 +227,188 @@
                                 <div class="col-3"><p:outputLabel value="Difference"></p:outputLabel></div>
                             </div>
 
-                            <div class="row my-3" rendred="#{cc.attrs.bundle.hasCashTransaction}">
-                                <div class="col-3" >
-                                    <p:outputLabel value="Cash"></p:outputLabel>
-                                </div>
-                                <div class="col-3">
-                                    <h:outputText value="#{cc.attrs.bundle.cashValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </div>
-                                <div class="col-3">
-                                    <h:outputText value="#{cc.attrs.bundle.cashHandoverValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </div>
-                                <div class="col-3">
-                                    <h:outputText value="#{cc.attrs.bundle.cashValue - cc.attrs.bundle.cashHandoverValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </div>
+                            <h:panelGroup rendered="#{cc.attrs.bundle.hasCashTransaction}">
+                                <div class="row my-3" >
+                                    <div class="col-3" >
+                                        <p:outputLabel value="Cash"></p:outputLabel>
+                                    </div>
+                                    <div class="col-3">
+                                        <h:outputText value="#{cc.attrs.bundle.cashValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </div>
+                                    <div class="col-3">
+                                        <h:outputText value="#{cc.attrs.bundle.cashHandoverValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </div>
+                                    <div class="col-3">
+                                        <h:outputText value="#{cc.attrs.bundle.cashValue - cc.attrs.bundle.cashHandoverValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </div>
 
-                            </div>
-
-                            <div class="row my-3" rendered="#{cc.attrs.bundle.hasCardTransaction}">
-                                <div class="col-3" >
-                                    <p:outputLabel value="Card"></p:outputLabel>
                                 </div>
-                                <div class="col-3">
-                                    <h:outputText value="#{cc.attrs.bundle.cardValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </div>
-                                <div class="col-3">
-                                    <h:outputText value="#{cc.attrs.bundle.cardHandoverValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </div>
-                                <div class="col-3">
-                                    <h:outputText value="#{cc.attrs.bundle.cardValue - cc.attrs.bundle.cardHandoverValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </div>
-
-                            </div>
-
-                            <div class="row my-3" rendered="#{cc.attrs.bundle.hasChequeTransaction}">
-                                <div class="col-3" >
-                                    <p:outputLabel value="Cheque"></p:outputLabel>
-                                </div>
-                                <div class="col-3">
-                                    <h:outputText value="#{cc.attrs.bundle.chequeValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </div>
-                                <div class="col-3">
-                                    <h:outputText value="#{cc.attrs.bundle.chequeHandoverValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </div>
-                                <div class="col-3">
-                                    <h:outputText value="#{cc.attrs.bundle.chequeValue - cc.attrs.bundle.chequeHandoverValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </div>
-
-                            </div>
-
-                            <div class="row my-3" rendered="#{cc.attrs.bundle.hasVoucherTransaction}">
-                                <div class="col-3" >
-                                    <p:outputLabel value="Voucher"></p:outputLabel>
-                                </div>
-                                <div class="col-3">
-                                    <h:outputText value="#{cc.attrs.bundle.voucherValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </div>
-                                <div class="col-3">
-                                    <h:outputText value="#{cc.attrs.bundle.voucherHandoverValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </div>
-                                <div class="col-3">
-                                    <h:outputText value="#{cc.attrs.bundle.voucherValue - cc.attrs.bundle.voucherHandoverValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </div>
-
-                            </div>
-
-                            <div class="row my-3" rendered="#{cc.attrs.bundle.hasVoucherTransaction}">
-                                <div class="col-3" >
-                                    <p:outputLabel value="IOU"></p:outputLabel>
-                                </div>
-                                <div class="col-3">
-                                    <h:outputText value="#{cc.attrs.bundle.voucherValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </div>
-                                <div class="col-3">
-                                    <h:outputText value="#{cc.attrs.bundle.voucherHandoverValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </div>
-                                <div class="col-3">
-                                    <h:outputText value="#{cc.attrs.bundle.voucherValue - cc.attrs.bundle.voucherHandoverValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </div>
-
-                            </div>
-
-                            <div class="row my-3" rendered="#{cc.attrs.bundle.hasVoucherTransaction}">
-                                <div class="col-3" >
-                                    <p:outputLabel value="eWallet"></p:outputLabel>
-                                </div>
-                                <div class="col-3">
-                                    <h:outputText value="#{cc.attrs.bundle.voucherValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </div>
-                                <div class="col-3">
-                                    <h:outputText value="#{cc.attrs.bundle.voucherHandoverValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </div>
-                                <div class="col-3">
-                                    <h:outputText value="#{cc.attrs.bundle.voucherValue - cc.attrs.bundle.voucherHandoverValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </div>
-
-                            </div>
+                            </h:panelGroup>
 
 
+                            <h:panelGroup rendered="#{cc.attrs.bundle.hasCardTransaction}">
+
+                                <div class="row my-3" >
+                                    <div class="col-3" >
+                                        <p:outputLabel value="Card"></p:outputLabel>
+                                    </div>
+                                    <div class="col-3">
+                                        <h:outputText value="#{cc.attrs.bundle.cardValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </div>
+                                    <div class="col-3">
+                                        <h:outputText value="#{cc.attrs.bundle.cardHandoverValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </div>
+                                    <div class="col-3">
+                                        <h:outputText value="#{cc.attrs.bundle.cardValue - cc.attrs.bundle.cardHandoverValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </div>
+
+                                </div>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{cc.attrs.bundle.hasChequeTransaction}">
+                                <div class="row my-3" >
+                                    <div class="col-3" >
+                                        <p:outputLabel value="Cheque"></p:outputLabel>
+                                    </div>
+                                    <div class="col-3">
+                                        <h:outputText value="#{cc.attrs.bundle.chequeValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </div>
+                                    <div class="col-3">
+                                        <h:outputText value="#{cc.attrs.bundle.chequeHandoverValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </div>
+                                    <div class="col-3">
+                                        <h:outputText value="#{cc.attrs.bundle.chequeValue - cc.attrs.bundle.chequeHandoverValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </div>
+
+                                </div>
+
+
+                            </h:panelGroup>
+
+
+                            <h:panelGroup rendered="#{cc.attrs.bundle.hasVoucherTransaction}">
+                                <div class="row my-3">
+                                    <div class="col-3" >
+                                        <p:outputLabel value="Voucher"></p:outputLabel>
+                                    </div>
+                                    <div class="col-3">
+                                        <h:outputText value="#{cc.attrs.bundle.voucherValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </div>
+                                    <div class="col-3">
+                                        <h:outputText value="#{cc.attrs.bundle.voucherHandoverValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </div>
+                                    <div class="col-3">
+                                        <h:outputText value="#{cc.attrs.bundle.voucherValue - cc.attrs.bundle.voucherHandoverValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </div>
+
+                                </div>
+
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{cc.attrs.bundle.hasIouTransaction}">
+                                <div class="row my-3">
+                                    <div class="col-3" >
+                                        <p:outputLabel value="IOU"></p:outputLabel>
+                                    </div>
+                                    <div class="col-3">
+                                        <h:outputText value="#{cc.attrs.bundle.iouValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </div>
+                                    <div class="col-3">
+                                        <h:outputText value="#{cc.attrs.bundle.iouHandoverValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </div>
+                                    <div class="col-3">
+                                        <h:outputText value="#{cc.attrs.bundle.iouValue - cc.attrs.bundle.iouHandoverValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </div>
+
+                                </div>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{cc.attrs.bundle.hasEWalletTransaction}">
+                                <div class="row my-3" >
+                                    <div class="col-3" >
+                                        <p:outputLabel value="eWallet"></p:outputLabel>
+                                    </div>
+                                    <div class="col-3">
+                                        <h:outputText value="#{cc.attrs.bundle.ewalletValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </div>
+                                    <div class="col-3">
+                                        <h:outputText value="#{cc.attrs.bundle.eWalletHandoverValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </div>
+                                    <div class="col-3">
+                                        <h:outputText value="#{cc.attrs.bundle.voucherValue - cc.attrs.bundle.eWalletHandoverValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </div>
+
+                                </div>
+                            </h:panelGroup>
+                            
+                            <h:panelGroup rendered="#{cc.attrs.bundle.hasStaffWelfareTransaction}">
+                                <div class="row my-3" >
+                                    <div class="col-3" >
+                                        <p:outputLabel value="Staff Welfare"></p:outputLabel>
+                                    </div>
+                                    <div class="col-3">
+                                        <h:outputText value="#{cc.attrs.bundle.staffWelfareValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </div>
+                                    <div class="col-3">
+                                        <h:outputText value="#{cc.attrs.bundle.staffWelfareHandoverValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </div>
+                                    <div class="col-3">
+                                        <h:outputText value="#{cc.attrs.bundle.staffWelfareValue - cc.attrs.bundle.staffWelfareHandoverValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </div>
+
+                                </div>
+                            </h:panelGroup>
 
                         </div>
 
-
-                        <!--                        <table class="ui-datatable ui-widget ui-datatable-tablewrapper w-100 m-1">
-                                                    <thead class="ui-datatable-thead ui-widget-header">
-                                                        <tr>
-                                                            <th class="ui-state-default ui-sortable-column text-center">Payment Method</th>
-                                                            <th class="ui-state-default ui-sortable-column text-center">Collected</th>
-                                                            <th class="ui-state-default ui-sortable-column text-center">Handing Over</th>
-                                                            <th class="ui-state-default ui-sortable-column text-center">Difference</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody class="ui-datatable-data ui-widget-content">
-                                                         Cash Row 
-                                                        <tr class="ui-widget-content" rendered="#{cc.attrs.bundle.hasCashTransaction}">
-                                                            <td>Cash</td>
-                                                            <td class="text-end">
-                                                                <h:outputText value="#{cc.attrs.bundle.cashValue}">
-                                                                    <f:convertNumber pattern="#,##0.00" />
-                                                                </h:outputText>
-                                                            </td>
-                                                            <td class="text-end">
-                                                                <h:outputText value="#{cc.attrs.bundle.cashHandoverValue}">
-                                                                    <f:convertNumber pattern="#,##0.00" />
-                                                                </h:outputText>
-                                                            </td>
-                                                            <td class="text-end">
-                                                                <h:outputText value="#{cc.attrs.bundle.cashValue - cc.attrs.bundle.cashHandoverValue}">
-                                                                    <f:convertNumber pattern="#,##0.00" />
-                                                                </h:outputText>
-                                                            </td>
-                                                        </tr>
-                        
-                                                         Card Row 
-                                                        <tr class="ui-widget-content" rendered="#{cc.attrs.bundle.hasCardTransaction}">
-                                                            <td>Card</td>
-                                                            <td class="text-end">
-                                                                <h:outputText value="#{cc.attrs.bundle.cardValue}">
-                                                                    <f:convertNumber pattern="#,##0.00" />
-                                                                </h:outputText>
-                                                            </td>
-                                                            <td class="text-end">
-                                                                <h:outputText value="#{cc.attrs.bundle.cardHandoverValue}">
-                                                                    <f:convertNumber pattern="#,##0.00" />
-                                                                </h:outputText>
-                                                            </td>
-                                                            <td class="text-end">
-                                                                <h:outputText value="#{cc.attrs.bundle.cardValue - cc.attrs.bundle.cardHandoverValue}">
-                                                                    <f:convertNumber pattern="#,##0.00" />
-                                                                </h:outputText>
-                                                            </td>
-                                                        </tr>
-                        
-                                                         Cheque Row 
-                                                        <tr class="ui-widget-content" rendered="#{cc.attrs.bundle.hasChequeTransaction}">
-                                                            <td>Cheque</td>
-                                                            <td class="text-end">
-                                                                <h:outputText value="#{cc.attrs.bundle.chequeValue}">
-                                                                    <f:convertNumber pattern="#,##0.00" />
-                                                                </h:outputText>
-                                                            </td>
-                                                            <td class="text-end">
-                                                                <h:outputText value="#{cc.attrs.bundle.chequeHandoverValue}">
-                                                                    <f:convertNumber pattern="#,##0.00" />
-                                                                </h:outputText>
-                                                            </td>
-                                                            <td class="text-end">
-                                                                <h:outputText value="#{cc.attrs.bundle.chequeValue - cc.attrs.bundle.chequeHandoverValue}">
-                                                                    <f:convertNumber pattern="#,##0.00" />
-                                                                </h:outputText>
-                                                            </td>
-                                                        </tr>
-                        
-                                                         Voucher Row 
-                                                        <tr class="ui-widget-content" rendered="#{cc.attrs.bundle.hasVoucherTransaction}">
-                                                            <td>Voucher</td>
-                                                            <td class="text-end">
-                                                                <h:outputText value="#{cc.attrs.bundle.voucherValue}">
-                                                                    <f:convertNumber pattern="#,##0.00" />
-                                                                </h:outputText>
-                                                            </td>
-                                                            <td class="text-end">
-                                                                <h:outputText value="#{cc.attrs.bundle.voucherHandoverValue}">
-                                                                    <f:convertNumber pattern="#,##0.00" />
-                                                                </h:outputText>
-                                                            </td>
-                                                            <td class="text-end">
-                                                                <h:outputText value="#{cc.attrs.bundle.voucherValue - cc.attrs.bundle.voucherHandoverValue}">
-                                                                    <f:convertNumber pattern="#,##0.00" />
-                                                                </h:outputText>
-                                                            </td>
-                                                        </tr>
-                        
-                        
-                                                    </tbody>
-                        
-                                                </table>-->
                     </h:panelGroup>
 
                     <!-- Additional contents ... -->
                 </div>
 
                 <hr></hr>
-
-
-
 
 
                 <p:dataTable 
