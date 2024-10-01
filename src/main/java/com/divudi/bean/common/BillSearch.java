@@ -4098,7 +4098,7 @@ public class BillSearch implements Serializable {
         return bfs;
     }
 
-    public List<Bill> fetchBills(BillTypeAtomic billTypeAtomic, Bill rb) {
+    public List<Bill> fetchReferredBills(BillTypeAtomic billTypeAtomic, Bill rb) {
         Map m = new HashMap();
         String j;
         j = "select b "
@@ -4110,6 +4110,20 @@ public class BillSearch implements Serializable {
         m.put("rb", rb);
         m.put("bta", billTypeAtomic);
         return billFacade.findByJpql(j, m);
+    }
+    
+    public Bill fetchReferredBill(BillTypeAtomic billTypeAtomic, Bill rb) {
+        Map m = new HashMap();
+        String j;
+        j = "select b "
+                + " from Bill b "
+                + " where b.retired=:ret "
+                + " and b.referenceBill=:rb "
+                + " and b.billTypeAtomic=:bta";
+        m.put("ret", false);
+        m.put("rb", rb);
+        m.put("bta", billTypeAtomic);
+        return billFacade.findFirstByJpql(j, m);
     }
 
     public AgentHistory fetchCCHistory(Bill b) {
