@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.CommonController;
@@ -128,6 +129,8 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     @Inject
     TokenController tokenController;
+    @Inject
+    DrawerController drawerController;
 ////////////////////////
     @EJB
     private BillFacade billFacade;
@@ -2123,7 +2126,8 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         savePreBillItemsFinally(tmpBillItems);
 
         saveSaleBill();
-        createPaymentsForBill(getSaleBill());
+        List<Payment> payments = createPaymentsForBill(getSaleBill());
+        drawerController.updateDrawerForIns(payments);
         saveSaleBillItems(tmpBillItems);
 
 //        getPreBill().getCashBillsPre().add(getSaleBill());
@@ -2147,7 +2151,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             }
 
         }
-
+        
         resetAll();
 
         billPreview = true;
