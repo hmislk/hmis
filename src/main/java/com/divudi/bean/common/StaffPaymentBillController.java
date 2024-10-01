@@ -1,5 +1,6 @@
 package com.divudi.bean.common;
 
+import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -86,6 +87,8 @@ public class StaffPaymentBillController implements Serializable {
     SessionController sessionController;
     @Inject
     private BillBeanController billBean;
+    @Inject
+    DrawerController drawerController;
 
     private List<BillComponent> billComponents;
     private List<BillItem> billItems;
@@ -256,7 +259,6 @@ public class StaffPaymentBillController implements Serializable {
         this.totalPaying = totalPaying;
     }
 
-
     public void calculateDueFeesForOpdForSelectedPeriod() {
         if (currentStaff == null || currentStaff.getId() == null) {
             dueBillFees = new ArrayList<>();
@@ -380,8 +382,6 @@ public class StaffPaymentBillController implements Serializable {
             params.put("fd", fromDate);
             params.put("td", toDate);
             params.put("staff", currentStaff);
-            
-          
 
             dueBillFees = getBillFeeFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
@@ -575,6 +575,7 @@ public class StaffPaymentBillController implements Serializable {
         current = newlyCreatedPaymentBill;
         getBillFacade().create(newlyCreatedPaymentBill);
         Payment newlyCreatedPayment = createPayment(newlyCreatedPaymentBill, paymentMethod);
+        drawerController.updateDrawerForOuts(newlyCreatedPayment);
         saveBillCompo(newlyCreatedPaymentBill, newlyCreatedPayment);
         printPreview = true;
         JsfUtil.addSuccessMessage("Successfully Paid");
@@ -622,14 +623,16 @@ public class StaffPaymentBillController implements Serializable {
         newlyCreatedPayingBillItem.setCreater(getSessionController().getLoggedUser());
         newlyCreatedPayingBillItem.setDiscount(0.0);
         newlyCreatedPayingBillItem.setGrossValue(originalBillFee.getFeeValue());
-//        if (bf.getBillItem() != null && bf.getBillItem().getItem() != null) {
-//            i.setItem(bf.getBillItem().getItem());
-//        }
         newlyCreatedPayingBillItem.setNetValue(originalBillFee.getFeeValue());
         newlyCreatedPayingBillItem.setQty(1.0);
         newlyCreatedPayingBillItem.setRate(originalBillFee.getFeeValue());
         getBillItemFacade().create(newlyCreatedPayingBillItem);
-        saveBillFee(newlyCreatedPayingBillItem, p);
+        
+        BillFee newlyCreatedBillFee = saveBillFee(newlyCreatedPayingBillItem, p);
+        
+        originalBillFee.setReferenceBillFee(newlyCreatedBillFee);
+        getBillFeeFacade().edit(originalBillFee);
+        
         newPaymentBill.getBillItems().add(newlyCreatedPayingBillItem);
     }
 
@@ -725,7 +728,7 @@ public class StaffPaymentBillController implements Serializable {
         getBillFeePaymentFacade().create(bfp);
     }
 
-    public void saveBillFee(BillItem bi, Payment p) {
+    public BillFee saveBillFee(BillItem bi, Payment p) {
         BillFee bf = new BillFee();
         bf.setCreatedAt(Calendar.getInstance().getTime());
         bf.setCreater(getSessionController().getLoggedUser());
@@ -746,6 +749,7 @@ public class StaffPaymentBillController implements Serializable {
             getBillFeeFacade().create(bf);
         }
         createBillFeePaymentAndPayment(bf, p);
+        return bf;
     }
 
     //for bill fee payments

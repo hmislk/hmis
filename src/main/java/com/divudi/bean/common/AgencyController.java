@@ -46,6 +46,8 @@ public class AgencyController implements Serializable {
     private Institution current;
     private List<Institution> items = null;
     String selectText = "";
+    
+    private int tabIndex = 0;
 
     
     
@@ -268,5 +270,15 @@ public class AgencyController implements Serializable {
         }
         return items;
     }
+
+    public int getTabIndex() {
+        return tabIndex;
+    }
+
+    public void setTabIndex(int tabIndex) {
+        this.tabIndex = tabIndex;
+    }
+    
+    
 
 }
