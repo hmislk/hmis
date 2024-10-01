@@ -166,16 +166,16 @@
                             <p:column headerText="S. No" >
                                 <h:outputText value="#{count+1}" ></h:outputText>
                             </p:column>
-                            <p:column headerText="CC Code" >
+                            <p:column headerText="CC Code" filterMatchMode="contains" sortBy="#{c.institution.code}" filterBy="#{c.institution.code}" >
                                 <h:outputText value="#{c.institution.code}" ></h:outputText>
                             </p:column>
-                            <p:column headerText="CC Name" >
+                            <p:column headerText="CC Name" filterMatchMode="contains" sortBy="#{c.institution.name}" filterBy="#{c.institution.name}">
                                 <h:outputText value="#{c.institution.name}" ></h:outputText>
                             </p:column>
-                            <p:column headerText="CC Route" >
+                            <p:column headerText="CC Route" filterMatchMode="contains" sortBy="#{c.institution.route.name}" filterBy="#{c.institution.route.name}">
                                 <h:outputText value="#{c.institution.route.name}" ></h:outputText>
                             </p:column>
-                            <p:column headerText="Count" >
+                            <p:column headerText="Count" filterMatchMode="contains" sortBy="#{c.itemCount}" filterBy="#{c.itemCount}">
                                 <h:outputText value="#{c.itemCount}" ></h:outputText>
                                 <f:facet name="footer" >
                                     <h:outputLabel value="#{reportController.bundle.count}" >
