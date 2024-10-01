@@ -34,7 +34,8 @@
                             <p:datePicker value="#{reportController.toDate}"
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"
                                           class="w-100" inputStyleClass="w-100"></p:datePicker>
-
+                                          
+                                          
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf1ad;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Company Name / Sponsor" class="mx-3"/>
@@ -67,8 +68,8 @@
 
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> 
-                                <h:outputLabel value="Branch" class="mx-3"/>
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Institution" class="mx-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu value="" filter="true"  class="w-100 " >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
@@ -79,12 +80,13 @@
                                                ></f:selectItems>
                             </p:selectOneMenu>
 
-
+                            
                             <p:spacer width="20"></p:spacer>
 
+                            
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf1ad;" styleClass="fa mr-2" /> 
-                                <h:outputLabel value="Company" class="mx-3"/>
+                                <h:outputText value="&#xf1ad;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Site" class="mx-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu value="" filter="true"  class="w-100 " >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
@@ -95,6 +97,7 @@
                                                ></f:selectItems>
                             </p:selectOneMenu>
 
+                            
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf02b;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Type" class="mx-3"/>
@@ -111,6 +114,7 @@
 
                             <p:spacer width="20"></p:spacer>
 
+                            
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf09d;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Payment Mode" class="mx-3"/>
@@ -124,6 +128,7 @@
                                                ></f:selectItems>
                             </p:selectOneMenu>
 
+                            
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf0ae;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Status" class="mx-3"/>
@@ -140,9 +145,9 @@
 
 
                         </h:panelGrid><br/>
-                        
-                        
-                        
+
+
+
 
                         <div class="d-flex align-items-center">
                             <p:commandButton class="ui-button-warning mx-1" ajax="false" value="Process" icon="fas fa-cogs" action="#{reportController.processLabTestCount()}" >
@@ -154,7 +159,7 @@
                             <p:commandButton class="ui-button-danger mx-1" icon= "fas fa-file-pdf" ajax="false" value="PDF">
                             </p:commandButton>
                         </div><br/><br/>
-                        
+
 
                         <p:panel>
                             <f:facet name="header">
