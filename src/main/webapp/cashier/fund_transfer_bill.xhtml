@@ -18,31 +18,39 @@
                     <p:panel >
                         <f:facet name="header">
                             <i class="fa fa-money-bill-wave mt-2"/>
-                            <p:outputLabel value="Iniaitl Fund Bill" class="mx-2 mt-2"></p:outputLabel>
-
-
-                            <p:outputLabel value="Transfer to Staff" ></p:outputLabel>
-
+                            <p:outputLabel value="Transfer Float" class="mx-2 mt-2"></p:outputLabel>
+                        </f:facet>
+                        
+                        <p:panelGrid columns="2" class="w-100" >
+                            <p:outputLabel value="Transfer To User" ></p:outputLabel>
                             <p:autoComplete
                                 completeMethod="#{webUserController.completeUser}"
-                                class="mx-2"
+                                class="mx-2 w-100"
                                 id="acStaff" 
                                 value="#{financialTransactionController.currentBill.toWebUser}" 
                                 var="s"
                                 scrollHeight="450"
+                                inputStyleClass="w-100"
                                 itemLabel="#{s.webUserPerson.nameWithTitle}" 
                                 itemValue="#{s}" >
                             </p:autoComplete>
 
+                            <p:outputLabel value="Comments" ></p:outputLabel>
+                            <p:inputTextarea
+                                class="mx-2 w-100"
+                                value="#{financialTransactionController.currentBill.comments}" ></p:inputTextarea>
+                            
+                            <p:spacer ></p:spacer>
                             <p:commandButton 
                                 icon="fa-solid fa-check"
                                 class="ui-button-success"
-                                style="float: right;"
                                 value="Settle" 
                                 ajax="false" 
                                 action="#{financialTransactionController.settleFundTransferBill()}" >
                             </p:commandButton>
-                        </f:facet>
+                            
+                        </p:panelGrid>
+                        
                         <p:panel header="Add Funds" >
 
                             <div class="row">
