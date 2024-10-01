@@ -15,6 +15,7 @@ import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.BillNumberGenerator;
@@ -173,13 +174,13 @@ public class InwardPaymentController implements Serializable {
         Person person = patient.getPerson();
 
         DecimalFormat decimalFormat = new DecimalFormat("#,##0.00");
-        
-        String finalBillInsId ="";
+
+        String finalBillInsId = "";
         String finalBillDeptId = "";
-        
-        if(pe.getFinalBill()!=null){
-            finalBillInsId=pe.getFinalBill().getInsId();
-            finalBillDeptId=pe.getFinalBill().getDeptId();
+
+        if (pe.getFinalBill() != null) {
+            finalBillInsId = pe.getFinalBill().getInsId();
+            finalBillDeptId = pe.getFinalBill().getDeptId();
         }
 
         String output;
@@ -317,6 +318,8 @@ public class InwardPaymentController implements Serializable {
         getCurrent().setInstitution(getSessionController().getInstitution());
         getCurrent().setDepartment(getSessionController().getDepartment());
         getCurrent().setBillType(BillType.InwardPaymentBill);
+        getCurrent().setBillTypeAtomic(BillTypeAtomic.INWARD_DEPOSIT);
+
         getCurrent().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getCurrent().getBillType(), BillClassType.BilledBill, BillNumberSuffix.INWPAY));
         getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getCurrent().getBillType(), BillClassType.BilledBill, BillNumberSuffix.INWPAY));
 
