@@ -35,9 +35,10 @@
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"
                                           class="w-100" inputStyleClass="w-100"></p:datePicker>
 
+
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
-                                <h:outputLabel value="Branch" class="mx-3"/>
+                                <h:outputLabel value="Institution" class="mx-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu value="" filter="true" class="w-100 ">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
@@ -53,6 +54,20 @@
 
 
                             <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf1ad;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Site" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu value="" filter="true" class="w-100 ">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf54e;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Store" class="mx-3"/>
                             </h:panelGroup>
@@ -64,6 +79,9 @@
                                                itemValue=""
                                                ></f:selectItems>
                             </p:selectOneMenu>
+
+
+                            <p:spacer width="20"></p:spacer>
 
 
                             <h:panelGroup layout="block" styleClass="form-group">
