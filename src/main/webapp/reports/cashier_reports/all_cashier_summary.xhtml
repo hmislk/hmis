@@ -111,7 +111,7 @@
                             <p:column headerText="Cashier" 
                                       sortBy="#{summary.user.webUserPerson.name}" 
                                       filterBy="#{summary.user.webUserPerson.name}">
-                                <h:outputText value="#{summary.user.webUserPerson.name}" />
+                                <h:outputText value="#{summary.user.webUserPerson.name} (#{summary.user.name})" />
                             </p:column>
 
                             <p:column headerText="Institution" sortBy="#{summary.department.institution.name}" filterBy="#{summary.department.institution.name}">
