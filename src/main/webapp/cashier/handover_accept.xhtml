@@ -108,20 +108,31 @@
                                                     <p:commandButton 
                                                         value="Accept Handover" 
                                                         styleClass="ui-button-success mx-1" 
-                                                        icon="pi pi-check" 
+                                                        icon="pi pi-check-circle" 
                                                         ajax="false" 
                                                         onclick="return confirm('Are you sure you want to proceed with the handover?');" 
                                                         action="#{financialTransactionController.acceptHandoverBill()}">
                                                     </p:commandButton>
+
+                                                    <p:commandButton 
+                                                        value="Accept Handover &amp; Write to Cash Book" 
+                                                        styleClass="ui-button-info mx-1" 
+                                                        icon="pi pi-save" 
+                                                        ajax="false" 
+                                                        onclick="return confirm('Are you sure you want to proceed with the handover?');" 
+                                                        action="#{financialTransactionController.acceptHandoverBillAndWriteToCashbook()}">
+                                                    </p:commandButton>
+
                                                     <p:commandButton 
                                                         value="Reject Handover" 
                                                         styleClass="ui-button-danger mx-1" 
-                                                        icon="pi pi-check" 
+                                                        icon="pi pi-times-circle" 
                                                         ajax="false" 
-                                                        onclick="return confirm('Are you sure you want to proceed with the handover?');" 
-                                                        action="#{financialTransactionController.acceptHandoverBill()}">
+                                                        onclick="return confirm('Are you sure you want to reject the handover?');" 
+                                                        action="#{financialTransactionController.rejectHandoverBill()}">
                                                     </p:commandButton>
                                                 </div>
+
                                             </div>
 
                                         </f:facet>
