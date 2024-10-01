@@ -763,37 +763,38 @@ public class ReportController implements Serializable {
     }
 
     public void processCollectionCenterBalance() {
-        bundle = new ReportTemplateRowBundle();
-        String jpql;
-        Map<String, Object> parameters = new HashMap<>();
+    bundle = new ReportTemplateRowBundle();
+    String jpql;
+    Map<String, Object> parameters = new HashMap<>();
 
-        // JPQL to fetch the last AgentHistory for each collecting centre (agency)
-        jpql = "select new com.divudi.data.ReportTemplateRow(ah)"
-                + " from AgentHistory ah "
-                + " where ah.retired <> :ret "
-                + " and ah.createdAt < :hxDate "
-                + " and ah.createdAt = (select max(subAh.createdAt) "
-                + " from AgentHistory subAh "
-                + " where subAh.retired <> :ret "
-                + " and subAh.agency = ah.agency "
-                + " and subAh.createdAt < :hxDate)";
+    // JPQL query to fetch the last unique AgentHistory for each collecting centre (agency)
+    jpql = "select new com.divudi.data.ReportTemplateRow(ah) "
+            + " from AgentHistory ah "
+            + " where ah.retired <> :ret "
+            + " and ah.createdAt < :hxDate "
+            + " and ah.agency.institutionType=:insType "
+            + " and ah.createdAt = (select max(subAh.createdAt) "
+            + " from AgentHistory subAh "
+            + " where subAh.retired <> :ret "
+            + " and subAh.agency = ah.agency "
+            + " and subAh.agency.institutionType=:insType  "
+            + " and subAh.createdAt < :hxDate)";
 
-        parameters.put("ret", true);
-        parameters.put("hxDate", fromDate);
+    parameters.put("ret", true);
+    parameters.put("hxDate", fromDate);  // Ensure this is the first millisecond of the next day
+    parameters.put("insType", InstitutionType.CollectingCentre);  // Ensure correct type is passed
 
-        jpql += " and ah.agency.institutionType=:insType ";
-        parameters.put("insType", InstitutionType.CollectingCentre);
-
-        if (collectingCentre != null) {
-            jpql += " and ah.agency = :cc";
-            parameters.put("cc", collectingCentre);
-        }
-
-        List<ReportTemplateRow> results = (List<ReportTemplateRow>) institutionFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
-
-        bundle.setReportTemplateRows(results);
-
+    if (collectingCentre != null) {
+        jpql += " and ah.agency = :cc";
+        parameters.put("cc", collectingCentre);
     }
+
+    // Fetch the results and convert to ReportTemplateRow
+    List<ReportTemplateRow> results = (List<ReportTemplateRow>) institutionFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+    bundle.setReportTemplateRows(results);
+}
+
 
     public void processCollectingCentreBook() {
         String sql;
