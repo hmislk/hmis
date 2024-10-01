@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
@@ -87,6 +88,8 @@ public class AgentPaymentReceiveSearchController implements Serializable {
     AgentAndCcPaymentController agentAndCcPaymentController;
     @Inject
     AgentAndCcApplicationController agentAndCcApplicationController;
+    @Inject
+    DrawerController drawerController;
     @EJB
     EjbApplication ejbApplication;
     @EJB
@@ -373,8 +376,8 @@ public class AgentPaymentReceiveSearchController implements Serializable {
         origianlBil.setCancelledBill(newlyCreatedCancelBill);
         getBillFacade().editAndCommit(origianlBil);
 
-        createPayment(newlyCreatedCancelBill, paymentMethod);
-
+        Payment payments = createPayment(newlyCreatedCancelBill, paymentMethod);
+        drawerController.updateDrawerForOuts(payments);
         agentAndCcApplicationController.updateCcBalance(
                 newlyCreatedCancelBill.getFromInstitution(),
                 0,
