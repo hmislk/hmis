@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.CommonFunctionsController;
@@ -100,7 +101,8 @@ public class PharmacySaleWithoutStockController implements Serializable, Control
     SessionController sessionController;
     @Inject
     SearchController searchController;
-
+    @Inject
+    DrawerController drawerController;
     @Inject
     CommonController commonController;
 ////////////////////////
@@ -1241,6 +1243,7 @@ public class PharmacySaleWithoutStockController implements Serializable, Control
         savePreBillItemsFinally(tmpBillItems);
         saveSaleBill();
         Payment p = createPayment(getSaleBill(), paymentMethod);
+        drawerController.updateDrawerForIns(p);
         saveSaleBillItems(tmpBillItems, p);
         getBillFacade().edit(getPreBill());
         setPrintBill(getBillFacade().find(getSaleBill().getId()));
