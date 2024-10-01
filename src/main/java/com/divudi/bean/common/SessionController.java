@@ -1471,6 +1471,28 @@ public class SessionController implements Serializable, HttpSessionListener {
                 + " order by wd.department.name";
         return departmentFacade.findByJpql(sql, m);
     }
+    
+    public List<Department> fillLoggableDepts(Institution site) {
+        WebUser e = getLoggedUser();
+        if (e == null) {
+            return new ArrayList<>();
+        }
+        String sql;
+        Map m = new HashMap();
+        m.put("wu", e);
+        sql = "select distinct wd.department "
+                + " from WebUserDepartment wd "
+                + " where wd.retired=false ";
+        if(site != null){
+            sql += "and wd.department.site=:site ";
+            m.put("site", site);
+        }    
+        sql+=  " and wd.department.retired=false "
+                + " and wd.webUser=:wu "
+                + " order by wd.department.name";
+        return departmentFacade.findByJpql(sql, m);
+    }
+
 
     private List<Department> fillLoggableSubDepts(Department loggableDept) {
         List<Department> ds = new ArrayList<>();

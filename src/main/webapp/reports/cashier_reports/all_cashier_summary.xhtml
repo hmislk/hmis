@@ -72,14 +72,15 @@
                             <p:selectOneMenu class="w-100 "  value="#{searchController.site}" filter="true">
                                 <f:selectItem itemLabel="All Sites" ></f:selectItem>
                                 <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" ></f:selectItems>
+                                <p:ajax event="itemSelect" process="@this" update="dept"/>
                             </p:selectOneMenu>
                             
                             <p:spacer width="20" ></p:spacer>
                             
                             <h:outputLabel value="Department"/>                                
-                            <p:selectOneMenu class="w-100 "  value="#{searchController.department}" filter="true">
+                            <p:selectOneMenu class="w-100 "  value="#{searchController.department}" filter="true" id="dept">
                                 <f:selectItem itemLabel="All Departments" ></f:selectItem>
-                                <f:selectItems value="#{sessionController.loggableDepartments}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
+                                <f:selectItems value="#{sessionController.fillLoggableDepts(searchController.site)}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
                             </p:selectOneMenu>
 
 
