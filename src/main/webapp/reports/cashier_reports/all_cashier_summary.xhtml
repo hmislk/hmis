@@ -68,32 +68,54 @@
 
                             <p:spacer width="20" ></p:spacer>
 
+                            <h:outputLabel value="Site*"/>   
+                            <p:selectOneMenu class="w-100 "  value="#{searchController.site}" filter="true">
+                                <f:selectItem itemLabel="All Sites" ></f:selectItem>
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" ></f:selectItems>
+                            </p:selectOneMenu>
+                            
+                            <p:spacer width="20" ></p:spacer>
+                            
                             <h:outputLabel value="Department"/>                                
                             <p:selectOneMenu class="w-100 "  value="#{searchController.department}" filter="true">
                                 <f:selectItem itemLabel="All Departments" ></f:selectItem>
                                 <f:selectItems value="#{sessionController.loggableDepartments}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
                             </p:selectOneMenu>
 
-                            <p:spacer width="20" ></p:spacer>
-
-                            <h:outputLabel value="Site*"/>   
-                            <p:selectOneMenu class="w-100 "  value="#{searchController.site}" filter="true">
-                                <f:selectItem itemLabel="All Departments" ></f:selectItem>
-                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" ></f:selectItems>
-                            </p:selectOneMenu>
 
 
 
                         </h:panelGrid>
 
 
-                        <h:panelGrid columns="3" class="my-2" >
+                        <h:panelGrid columns="6" class="my-2" >
 
                             <p:commandButton  
                                 value="Process" 
                                 ajax="false"
                                 action="#{searchController.generateAllCashierSummary}" 
                                 class="ui-button-warning" icon="fas fa-cogs">
+                            </p:commandButton>
+                            
+                             <p:commandButton  
+                                value="Print" 
+                                ajax="false"
+                                class="ui-button-info mx-1" icon="fas fa-print">
+                                 <p:printer target="printdata" />
+                            </p:commandButton>
+                            
+                             <p:commandButton  
+                                value="Excel" 
+                                ajax="false"
+                                class="ui-button-success" icon="fas fa-file-excel">
+                                 <p:dataExporter type="xlsx" target="printdata" fileName="All Cashier Summury Report #{sessionController.currentDate} - #{sessionController.institution.name} #{sessionController.department.name}" />
+                            </p:commandButton>
+                            
+                             <p:commandButton  
+                                value="PDF" 
+                                ajax="false"
+                                class="ui-button-danger mx-1" icon="fas fa-file-pdf">
+                                 <p:dataExporter type="pdf" target="printdata" fileName="All Cashier Summury Report #{sessionController.currentDate} - #{sessionController.institution.name} #{sessionController.department.name}" />
                             </p:commandButton>
 
                         </h:panelGrid>
@@ -102,6 +124,7 @@
 
                         <p:dataTable value="#{searchController.bundle.reportTemplateRows}" var="summary"
                                      paginator="true" rows="10"
+                                     id="printdata"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
                                      currentPageReportTemplate="(Page {currentPage} of {totalPages})"
                                      paginatorPosition="bottom">
@@ -110,7 +133,7 @@
                             <p:column headerText="Cashier" 
                                       sortBy="#{summary.user.webUserPerson.name}" 
                                       filterBy="#{summary.user.webUserPerson.name}">
-                                <h:outputText value="#{summary.user.webUserPerson.name}" />
+                                <h:outputText value="#{summary.user.webUserPerson.name} (#{summary.user.name})" />
                             </p:column>
 
                             <p:column headerText="Institution" sortBy="#{summary.department.institution.name}" filterBy="#{summary.department.institution.name}">
@@ -129,6 +152,16 @@
                                 <h:outputText value="#{summary.date}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                 </h:outputText>
+                            </p:column>
+                            
+                            <p:column headerText="HandOvered Date" sortBy="#{summary.date}" filterBy="#{summary.date}">
+                                <h:outputText value="#{summary.date}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                </h:outputText>
+                            </p:column>
+                            
+                             <p:column headerText="Checked By" >
+                                 
                             </p:column>
 
                             <p:column headerText="Cash" 
