@@ -599,11 +599,18 @@ public class BillItem implements Serializable {
         }
         return qty;
     }
+    
+    @Transient
+    public Double getQtyAbsolute() {
+        return Math.abs(getQty());
+    }
 
     public void setQty(Double Qty) {
         this.qty = Qty;
 
     }
+    
+    
 
     public double getRemainingQty() {
         return remainingQty;

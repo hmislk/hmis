@@ -278,15 +278,15 @@ public class ReportController implements Serializable {
                     bi.setQty(1.0);
                 }
                 if (cancelledBill || refundedBill) {
-                    cell.setQuentity(cell.getQuentity() - Math.abs(bi.getQty()));
+                    cell.setQuentity(cell.getQuentity() - bi.getQtyAbsolute());
                 } else {
-                    cell.setQuentity(cell.getQuentity() +  Math.abs(bi.getQty()));
+                    cell.setQuentity(cell.getQuentity() +  bi.getQtyAbsolute());
                 }
                 row.getItemDetailCells().set(itemIndex, cell);
 
                 // Accumulate totals directly in the header row
                 ItemDetailsCell totalCell = headerBillAndItemDataRow.getItemDetailCells().get(itemIndex);
-                totalCell.setQuentity(totalCell.getQuentity() + (bill.isCancelled() || bill.isRefunded() ? -bi.getQty() : bi.getQty()));
+                totalCell.setQuentity(totalCell.getQuentity() + (bill.isCancelled() || bill.isRefunded() ? -bi.getQtyAbsolute() : bi.getQtyAbsolute()));
             }
 
             billMap.put(bill, row);
