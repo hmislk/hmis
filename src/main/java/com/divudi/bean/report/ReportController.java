@@ -12,6 +12,7 @@ import com.divudi.data.BillItemStatus;
 import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.CategoryCount;
+import com.divudi.data.InstitutionType;
 import com.divudi.data.ItemCount;
 import com.divudi.data.ItemLight;
 import com.divudi.data.PaymentMethod;
@@ -270,7 +271,9 @@ public class ReportController implements Serializable {
                 // Adjust the quantity for cancelled/refunded items
                 boolean cancelledBill = bill instanceof CancelledBill;
                 boolean refundedBill = bill instanceof RefundBill;
-                if(cell.getQuentity()==null) cell.setQuentity(0.0);
+                if (cell.getQuentity() == null) {
+                    cell.setQuentity(0.0);
+                }
                 if (cancelledBill || refundedBill) {
                     cell.setQuentity(cell.getQuentity() - bi.getQty());
                 } else {
@@ -742,7 +745,6 @@ public class ReportController implements Serializable {
         combinedBundle.setCcTotal(totalCCFee);
         combinedBundle.setStaffTotal(totalProfessionalFee);
 
-
         return combinedBundle;
     }
 
@@ -765,20 +767,38 @@ public class ReportController implements Serializable {
     }
 
     public void processCollectionCenterBalance() {
-        String jpql = "select cc"
-                + " from Institution cc"
-                + " where cc.retired=:ret";
+    bundle = new ReportTemplateRowBundle();
+    String jpql;
+    Map<String, Object> parameters = new HashMap<>();
 
-        Map<String, Object> m = new HashMap<>();
-        m.put("ret", false);
+    // JPQL query to fetch the last unique AgentHistory for each collecting centre (agency)
+    jpql = "select new com.divudi.data.ReportTemplateRow(ah) "
+            + " from AgentHistory ah "
+            + " where ah.retired <> :ret "
+            + " and ah.createdAt < :hxDate "
+            + " and ah.agency.institutionType=:insType "
+            + " and ah.createdAt = (select max(subAh.createdAt) "
+            + " from AgentHistory subAh "
+            + " where subAh.retired <> :ret "
+            + " and subAh.agency = ah.agency "
+            + " and subAh.agency.institutionType=:insType  "
+            + " and subAh.createdAt < :hxDate)";
 
-        if (collectingCentre != null) {
-            jpql += " and cc = :i";
-            m.put("i", collectingCentre);
-        }
+    parameters.put("ret", true);
+    parameters.put("hxDate", fromDate);  // Ensure this is the first millisecond of the next day
+    parameters.put("insType", InstitutionType.CollectingCentre);  // Ensure correct type is passed
 
-        collectionCenters = institutionFacade.findByJpql(jpql, m);
+    if (collectingCentre != null) {
+        jpql += " and ah.agency = :cc";
+        parameters.put("cc", collectingCentre);
     }
+
+    // Fetch the results and convert to ReportTemplateRow
+    List<ReportTemplateRow> results = (List<ReportTemplateRow>) institutionFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+    bundle.setReportTemplateRows(results);
+}
+
 
     public void processCollectingCentreBook() {
         String sql;
