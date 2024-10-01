@@ -131,6 +131,16 @@
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                 </h:outputText>
                             </p:column>
+                            
+                            <p:column headerText="HandOvered Date" sortBy="#{summary.date}" filterBy="#{summary.date}">
+                                <h:outputText value="#{summary.date}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                </h:outputText>
+                            </p:column>
+                            
+                             <p:column headerText="Checked By" >
+                                 
+                            </p:column>
 
                             <p:column headerText="Cash" 
                                       style="text-align: right;"
