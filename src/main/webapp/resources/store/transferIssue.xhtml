@@ -15,7 +15,7 @@
     <cc:implementation>
         
         <h:outputStylesheet library="css" name="pharmacyA4.css"/>
-        <div class="posbill noBorder summeryBorder">
+        <div class="a4bill">
 
             <div class="institutionName">
                 <h:outputLabel value="#{cc.attrs.bill.creater.department.printingName}"/>
@@ -37,7 +37,9 @@
             </div>
 
             <div class="headingBill">
-                <h:outputLabel value="Transfer Issue Note"   />                           
+                <h:outputLabel value="Transfer Issue Note"   />      
+                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
+                <h:outputLabel value="**Cancelled**" rendered="#{cc.attrs.bill.billedBill.cancelled eq true}" />
             </div>
 
 
@@ -46,8 +48,8 @@
                 <h:panelGrid columns="2" class="poDetail" >
                     <h:outputLabel value="Location From : #{cc.attrs.bill.department.name}"/>
                     <h:outputLabel value="Location To : #{cc.attrs.bill.toDepartment.name}"/>
-                    <h:outputLabel value="Requested Person : #{cc.attrs.bill.backwardReferenceBill.creater.staff.code}"/>
-                    <h:outputLabel value="Issued Person : #{cc.attrs.bill.creater.staff.code}"/>
+                    <h:outputLabel value="Requested Person : #{cc.attrs.bill.backwardReferenceBill.creater.webUserPerson.name} - #{cc.attrs.bill.backwardReferenceBill.creater.staff.code}"/>
+                    <h:outputLabel value="Issued Person : #{cc.attrs.bill.creater.webUserPerson.name} - #{cc.attrs.bill.creater.staff.code}"/>
                     <h:outputLabel value="Issue No : #{cc.attrs.bill.deptId}"/>
                     <h:outputLabel value="Request No : #{cc.attrs.bill.backwardReferenceBill.deptId}"/>
                     <h:panelGroup >
@@ -78,6 +80,13 @@
                         </f:facet>
                         <h:outputLabel value="#{bip.item.name}"/>
                     </p:column>
+                    
+                    <p:column>
+                        <f:facet name="header">
+                            <h:outputLabel value="Item Code"/>
+                        </f:facet>
+                        <h:outputLabel value="#{bip.item.code}"/>
+                    </p:column>
 
                     <p:column>
                         <f:facet name="header">
@@ -104,14 +113,14 @@
                         </h:outputLabel>
                     </p:column>
 
-                    <p:column style="text-align: right;">
+<!--                    <p:column style="text-align: right;">
                         <f:facet name="header">
                             <h:outputLabel value="Sale Price"/>
                         </f:facet>                           
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.itemBatch.retailsaleRate}">
                             <f:convertNumber pattern="#0.00" />
                         </h:outputLabel>
-                    </p:column>
+                    </p:column>-->
 
                     <p:column style="text-align: right;">
                         <f:facet name="header">
@@ -124,14 +133,14 @@
                         <f:facet name="header">
                             <h:outputLabel value="D O E"/>
                         </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.doe}">
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.stock.itemBatch.dateOfExpire}">
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                         </h:outputLabel>
                     </p:column>
 
                     <p:columnGroup type="footer">
                         <p:row>
-                            <p:column colspan="4">
+                            <p:column colspan="5">
                                 <f:facet name="footer">
                                     <h:outputLabel value="Total"/>
                                 </f:facet>
@@ -141,6 +150,11 @@
                                     <h:outputLabel value="#{-cc.attrs.bill.netTotal}">
                                         <f:convertNumber pattern="#0.00" />
                                     </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column colspan="2">
+                                <f:facet name="footer">
+                                    <h:outputLabel value=""/>
                                 </f:facet>
                             </p:column>
                         </p:row>

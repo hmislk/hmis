@@ -7,6 +7,7 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
+
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.ApiKeyType;
 import com.divudi.entity.ApiKey;
@@ -30,8 +31,8 @@ import javax.persistence.TemporalType;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -68,7 +69,34 @@ public class ApiKeyController implements Serializable {
         m.put("ed", new Date());
         items = getFacade().findByJpql(j, m, TemporalType.DATE);
     }
-    
+
+    public boolean isValidKey(String key) {
+        if (key == null || key.trim().equals("")) {
+            return false;
+        }
+        ApiKey k = findApiKey(key);
+        if (k == null) {
+            return false;
+        }
+        if (k.getDateOfExpiary().before(new Date())) {
+            return false;
+        }
+        if (k.getKeyType() == ApiKeyType.Config) {
+            return true;
+        }
+        if (k.getWebUser() == null) {
+            return false;
+        }
+        if (k.getWebUser().isRetired()) {
+            return false;
+        }
+        if (!k.getWebUser().isActivated()) {
+            return false;
+        }
+
+        return true;
+    }
+
     public ApiKey findApiKey(String keyValue) {
         String j;
         j = "select a "
@@ -224,5 +252,4 @@ public class ApiKeyController implements Serializable {
         }
     }
 
-    
 }

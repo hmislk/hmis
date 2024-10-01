@@ -46,8 +46,7 @@
                             </p:column>
 
                         </p:autoComplete>
-                        <p:watermark for="acPt" value="Item"/>
-                        <h:panelGroup >
+                                                <h:panelGroup >
                             <p:commandButton ajax="false"  value="Process"  
                                              action="#{investigationMonthSummeryOwnControllerSession.createInvestigationTurnoverTimeByBills}"
                                              icon="fa-solid fa-arrows-rotate"
@@ -75,7 +74,7 @@
                                      paginatorPosition="bottom">
                                     
                             <p:column headerText="Ins Id" >
-                                <p:outputLabel value="#{pi.billItem.bill.insId}" ></p:outputLabel>
+                                <p:outputLabel value="#{pi.billItem.bill.deptId}" ></p:outputLabel>
                             </p:column>
                             <p:column headerText="Dept Id" >
                                 <p:outputLabel value="#{pi.billItem.bill.deptId}" ></p:outputLabel>

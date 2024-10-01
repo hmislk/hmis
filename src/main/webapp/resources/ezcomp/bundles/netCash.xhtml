@@ -1,0 +1,155 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bundle" type="com.divudi.data.ReportTemplateRowBundle" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+
+
+
+
+
+
+        <p:panelGrid columns="2" layout="tabular" styleClass="w-100" columnClasses="text-start,text-end">
+
+            <f:facet name="header">
+                <h:outputText value="Net Collection" />
+            </f:facet>
+
+            <p:outputLabel value="Cash" rendered="#{cc.attrs.bundle.hasCashTransaction}" />
+            <p:outputLabel rendered="#{cc.attrs.bundle.hasCashTransaction}" >
+                <h:outputText value="#{cc.attrs.bundle.cashValue}">
+                    <f:convertNumber pattern="#,##0.00" />
+                </h:outputText>
+            </p:outputLabel>
+
+            <p:outputLabel value="Credit" rendered="#{cc.attrs.bundle.hasCreditTransaction}" />
+            <p:outputLabel rendered="#{cc.attrs.bundle.hasCreditTransaction}">
+                <h:outputText value="#{cc.attrs.bundle.creditValue}">
+                    <f:convertNumber pattern="#,##0.00" />
+                </h:outputText>
+            </p:outputLabel>
+
+            <p:outputLabel value="Staff Welfare" rendered="#{cc.attrs.bundle.hasStaffWelfareTransaction}" />
+            <p:outputLabel rendered="#{cc.attrs.bundle.hasStaffWelfareTransaction}">
+                <h:outputText value="#{cc.attrs.bundle.staffWelfareValue}">
+                    <f:convertNumber pattern="#,##0.00" />
+                </h:outputText>
+            </p:outputLabel>
+
+            <p:outputLabel value="Voucher" rendered="#{cc.attrs.bundle.hasVoucherTransaction}" />
+            <p:outputLabel rendered="#{cc.attrs.bundle.hasVoucherTransaction}">
+                <h:outputText value="#{cc.attrs.bundle.voucherValue}">
+                    <f:convertNumber pattern="#,##0.00" />
+                </h:outputText>
+            </p:outputLabel>
+
+            <p:outputLabel value="IOU" rendered="#{cc.attrs.bundle.hasIouTransaction}" />
+            <p:outputLabel rendered="#{cc.attrs.bundle.hasIouTransaction}">
+                <h:outputText value="#{cc.attrs.bundle.iouValue}">
+                    <f:convertNumber pattern="#,##0.00" />
+                </h:outputText>
+            </p:outputLabel>
+
+            <p:outputLabel value="Agent" rendered="#{cc.attrs.bundle.hasAgentTransaction}" />
+            <p:outputLabel rendered="#{cc.attrs.bundle.hasAgentTransaction}">
+                <h:outputText value="#{cc.attrs.bundle.agentValue}">
+                    <f:convertNumber pattern="#,##0.00" />
+                </h:outputText>
+            </p:outputLabel>
+
+            <p:outputLabel value="Cheque" rendered="#{cc.attrs.bundle.hasChequeTransaction}" />
+            <p:outputLabel rendered="#{cc.attrs.bundle.hasChequeTransaction}">
+                <h:outputText value="#{cc.attrs.bundle.chequeValue}">
+                    <f:convertNumber pattern="#,##0.00" />
+                </h:outputText>
+            </p:outputLabel>
+
+            <p:outputLabel value="Slip" rendered="#{cc.attrs.bundle.hasSlipTransaction}" />
+            <p:outputLabel rendered="#{cc.attrs.bundle.hasSlipTransaction}">
+                <h:outputText value="#{cc.attrs.bundle.slipValue}">
+                    <f:convertNumber pattern="#,##0.00" />
+                </h:outputText>
+            </p:outputLabel>
+
+            <p:outputLabel value="E-Wallet" rendered="#{cc.attrs.bundle.hasEWalletTransaction}" />
+            <p:outputLabel rendered="#{cc.attrs.bundle.hasEWalletTransaction}">
+                <h:outputText value="#{cc.attrs.bundle.eWalletValue}">
+                    <f:convertNumber pattern="#,##0.00" />
+                </h:outputText>
+            </p:outputLabel>
+
+            <p:outputLabel value="Patient Deposit" rendered="#{cc.attrs.bundle.hasPatientDepositTransaction}" />
+            <p:outputLabel rendered="#{cc.attrs.bundle.hasPatientDepositTransaction}">
+                <h:outputText value="#{cc.attrs.bundle.patientDepositValue}">
+                    <f:convertNumber pattern="#,##0.00" />
+                </h:outputText>
+            </p:outputLabel>
+
+            <p:outputLabel value="Patient Points" rendered="#{cc.attrs.bundle.hasPatientPointsTransaction}" />
+            <p:outputLabel rendered="#{cc.attrs.bundle.hasPatientPointsTransaction}">
+                <h:outputText value="#{cc.attrs.bundle.patientPointsValue}">
+                    <f:convertNumber pattern="#,##0.00" />
+                </h:outputText>
+            </p:outputLabel>
+
+            <p:outputLabel value="Online Settlement" rendered="#{cc.attrs.bundle.hasOnlineSettlementTransaction}" />
+            <p:outputLabel rendered="#{cc.attrs.bundle.hasOnlineSettlementTransaction}">
+                <h:outputText value="#{cc.attrs.bundle.onlineSettlementValue}">
+                    <f:convertNumber pattern="#,##0.00" />
+                </h:outputText>
+            </p:outputLabel>
+
+
+            <p:outputLabel value="On Call" rendered="#{cc.attrs.bundle.hasOnCallTransaction}" />
+            <p:outputLabel rendered="#{cc.attrs.bundle.hasOnCallTransaction}">
+                <h:outputText value="#{cc.attrs.bundle.onCallValue}">
+                    <f:convertNumber pattern="#,##0.00" />
+                </h:outputText>
+            </p:outputLabel>
+
+            <p:outputLabel value="Card" rendered="#{cc.attrs.bundle.hasCardTransaction}" />
+            <p:outputLabel rendered="#{cc.attrs.bundle.hasCardTransaction}">
+                <h:outputText value="#{cc.attrs.bundle.cardValue}">
+                    <f:convertNumber pattern="#,##0.00" />
+                </h:outputText>
+            </p:outputLabel>
+
+            <p:outputLabel value="Multiple Payment Methods" rendered="#{cc.attrs.bundle.hasMultiplePaymentMethodsTransaction}" />
+            <p:outputLabel rendered="#{cc.attrs.bundle.hasMultiplePaymentMethodsTransaction}">
+                <h:outputText value="#{cc.attrs.bundle.multiplePaymentMethodsValue}">
+                    <f:convertNumber pattern="#,##0.00" />
+                </h:outputText>
+            </p:outputLabel>
+
+            <p:outputLabel value="Staff" rendered="#{cc.attrs.bundle.hasStaffTransaction}" />
+            <p:outputLabel rendered="#{cc.attrs.bundle.hasStaffTransaction}">
+                <h:outputText value="#{cc.attrs.bundle.staffValue}">
+                    <f:convertNumber pattern="#,##0.00" />
+                </h:outputText>
+            </p:outputLabel>
+
+            <p:outputLabel value="Total" />
+            <p:outputLabel>
+                <h:outputText value="#{cc.attrs.bundle.total}">
+                    <f:convertNumber pattern="#,##0.00" />
+                </h:outputText>
+            </p:outputLabel>
+
+        </p:panelGrid>
+
+
+
+
+    </cc:implementation>
+</html>

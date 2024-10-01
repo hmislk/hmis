@@ -41,6 +41,11 @@ public class Family implements Serializable {
     private MembershipScheme membershipScheme;
     @Lob
     private String comments;
+    
+    @ManyToOne
+    private Institution createdInstitution;
+    @ManyToOne
+    private Department createdDepartment;
 
     //Created Properties
     @ManyToOne
@@ -200,6 +205,22 @@ public class Family implements Serializable {
 
     public void setPhoneNo(String phoneNo) {
         this.phoneNo = phoneNo;
+    }
+
+    public Institution getCreatedInstitution() {
+        return createdInstitution;
+    }
+
+    public void setCreatedInstitution(Institution createdInstitution) {
+        this.createdInstitution = createdInstitution;
+    }
+
+    public Department getCreatedDepartment() {
+        return createdDepartment;
+    }
+
+    public void setCreatedDepartment(Department createdDepartment) {
+        this.createdDepartment = createdDepartment;
     }
 
     

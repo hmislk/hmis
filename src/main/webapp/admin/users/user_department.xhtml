@@ -20,82 +20,87 @@
                         <h:outputLabel class="mx-2" value="Departments User Can Log"/>
                     </f:facet>
 
-                        <h:panelGrid columns="3">
-                            <h:outputLabel value="User"/>
-                            <h:outputLabel value=":" style="width: 40px; text-align: center;"/>
-                            <p:autoComplete 
-                                id="user" forceSelection="true"
-                                            completeMethod="#{webUserController.completeUser}" var="us"
-                                            itemLabel="#{us.webUserPerson.name}" itemValue="#{us}"
-                                            value="#{userDepartmentController.selectedUser}" 
-                                            class="w-100" inputStyleClass="w-100" style="width: 500px;"
-                                            >
-                                <f:ajax event="itemSelect" execute="user" render="ins2" />
-                            </p:autoComplete>
+                    <h:panelGrid columns="3">
+                        <h:outputLabel value="User"/>
+                        <h:outputLabel value=":" style="width: 40px; text-align: center;"/>
+                        <p:autoComplete 
+                            id="user" forceSelection="true"
+                            completeMethod="#{webUserController.completeUser}" var="us"
+                            itemLabel="#{us.webUserPerson.name}" itemValue="#{us}"
+                            value="#{userDepartmentController.selectedUser}" 
+                            class="w-100" inputStyleClass="w-100" style="width: 500px;"
+                            >
+                            <f:ajax event="itemSelect" execute="user" render="ins2" />
+                        </p:autoComplete>
 
-                            <h:outputText value="Institution" />
-                            <h:outputLabel value=":" style="width: 40px; text-align: center;"/>
-                            <p:autoComplete 
-                                forceSelection="true"
-                                            value="#{userDepartmentController.currentInstituion}"
-                                            completeMethod="#{institutionController.completeIns}" id="ins2"
-                                            var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" 
-                                            class="w-100" inputStyleClass="w-100"
-                                            style="width: 500px;">
-                                <p:ajax event="itemSelect" process="@this" update="somDept" />
-                            </p:autoComplete>
+                        <h:outputText value="Institution" />
+                        <h:outputLabel value=":" style="width: 40px; text-align: center;"/>
+                        <p:autoComplete 
+                            forceSelection="true"
+                            value="#{userDepartmentController.currentInstituion}"
+                            completeMethod="#{institutionController.completeIns}" id="ins2"
+                            var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" 
+                            class="w-100" inputStyleClass="w-100"
+                            style="width: 500px;">
+                            <p:ajax event="itemSelect" process="@this" update="somDept" />
+                        </p:autoComplete>
 
-                            <h:outputText value="Department" />
-                            <h:outputLabel value=":" style="width: 40px; text-align: center;"/>
-                            <p:selectOneMenu id="somDept" value="#{userDepartmentController.currentDepartment}" class="" 
-                                            style="width: 500px;">
-                                <f:selectItem  itemLabel="Please select a Department"/>
-                                <f:selectItems 
-                                    value="#{departmentController.getInsDepartments(userDepartmentController.currentInstituion)}" 
-                                               var="d" 
-                                               itemLabel="#{d.name}" itemValue="#{d}" 
-                                               />
-                            </p:selectOneMenu>
+                        <h:outputText value="Department" />
+                        <h:outputLabel value=":" style="width: 40px; text-align: center;"/>
+                        <p:selectOneMenu
+                            id="somDept" 
+                            value="#{userDepartmentController.currentDepartment}" 
+                            class="w-100" 
+                            filter="true"
+                            filterMatchMode="contains"
+                            >
+                            <f:selectItem  itemLabel="Please select a Department"/>
+                            <f:selectItems 
+                                value="#{departmentController.getInsDepartments(userDepartmentController.currentInstituion)}" 
+                                var="d" 
+                                itemLabel="#{d.name}" itemValue="#{d}" 
+                                />
+                        </p:selectOneMenu>
 
-                            <p:commandButton id="btnAddDepartments"
-                                             value="Add"
-                                             process="btnAddDepartments somDept"
-                                             update="tblUserDepartment msg somDept"
-                                             icon="fa fa-plus"
-                                             action="#{userDepartmentController.addDepartmentForUser()}"
-                                             class="w-100 my-2 ui-button-warning"
-                                             
-                                             />
-                            <p:defaultCommand target="btnAddDepartments" />
-                            
-                            
+                        <p:commandButton id="btnAddDepartments"
+                                         value="Add"
+                                         process="btnAddDepartments somDept"
+                                         update="tblUserDepartment msg somDept"
+                                         icon="fa fa-plus"
+                                         action="#{userDepartmentController.addDepartmentForUser()}"
+                                         class="w-100 my-2 ui-button-warning"
 
-                            <p:growl id="msg" ></p:growl>
-                        </h:panelGrid>
+                                         />
+                        <p:defaultCommand target="btnAddDepartments" />
 
-                        <h:panelGrid id="tblUserDepartment"> 
-                            <p:dataTable value="#{userDepartmentController.items}" var="i">
-                                <p:column headerText="Institution">
-                                    <h:outputLabel value="#{i.department.institution.name}"/>                              
-                                </p:column>
-                                <p:column headerText="Department">
-                                    <h:outputLabel value="#{i.department.name}"/>                              
-                                </p:column>
-                                <p:column headerText="Action" width="50px">
-                                    <p:commandButton 
-                                        id="btnRemove"
-                                        process="btnRemove :#{p:resolveFirstComponentWithId('tblUserDepartment',view).clientId}"
-                                        update=":#{p:resolveFirstComponentWithId('tblUserDepartment',view).clientId}"
-                                        icon="fa fa-trash"
-                                        class="ui-button-danger"
-                                        action="#{userDepartmentController.delete()}">
-                                        <f:setPropertyActionListener value="#{i}" target="#{userDepartmentController.current}"/>
-                                    </p:commandButton>
-                                    <p:tooltip for="btnRemove" value="Remove" showDelay="0" hideDelay="0"></p:tooltip>
-                                </p:column>
-                                
-                            </p:dataTable>  
-                        </h:panelGrid>
+
+
+                        <p:growl id="msg" ></p:growl>
+                    </h:panelGrid>
+
+                    <h:panelGrid id="tblUserDepartment"> 
+                        <p:dataTable value="#{userDepartmentController.items}" var="i">
+                            <p:column headerText="Institution">
+                                <h:outputLabel value="#{i.department.institution.name}"/>                              
+                            </p:column>
+                            <p:column headerText="Department">
+                                <h:outputLabel value="#{i.department.name}"/>                              
+                            </p:column>
+                            <p:column headerText="Action" width="50px">
+                                <p:commandButton 
+                                    id="btnRemove"
+                                    process="btnRemove :#{p:resolveFirstComponentWithId('tblUserDepartment',view).clientId}"
+                                    update=":#{p:resolveFirstComponentWithId('tblUserDepartment',view).clientId}"
+                                    icon="fa fa-trash"
+                                    class="ui-button-danger"
+                                    action="#{userDepartmentController.delete()}">
+                                    <f:setPropertyActionListener value="#{i}" target="#{userDepartmentController.current}"/>
+                                </p:commandButton>
+                                <p:tooltip for="btnRemove" value="Remove" showDelay="0" hideDelay="0"></p:tooltip>
+                            </p:column>
+
+                        </p:dataTable>  
+                    </h:panelGrid>
                 </p:panel>
             </ui:define>
         </ui:composition>

@@ -15,9 +15,7 @@ import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.facade.BillFacade;
 import com.divudi.java.CommonFunctions;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import org.apache.commons.codec.binary.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -43,7 +41,6 @@ import org.json.JSONObject;
 @Path("finance")
 @RequestScoped
 public class Finance {
-
 
     @EJB
     private BillFacade billFacade;
@@ -405,9 +402,9 @@ public class Finance {
                     if (bi.getRate() != 0.0) {
                         joBi.put("Rate", bi.getRate());
                     }
-                    if (bi.getRefunded() != null) {
-                        joBi.put("Refunded", bi.getRefunded());
-                    }
+
+                    joBi.put("Refunded", bi.isRefunded());
+
                     if (bi.getSearialNo() != 0.0) {
                         joBi.put("SearialNo", bi.getSearialNo());
                     }
@@ -500,20 +497,6 @@ public class Finance {
             array.put(jSONObject);
         }
         return array;
-    }
-
-    private boolean isUserAuthenticated(String authString) {
-        try {
-            byte[] decoded = Base64.decodeBase64(authString);
-            String decodedAuth = new String(decoded, "UTF-8") + "\n";
-
-            String[] authParts = decodedAuth.split("\\s+");
-            String username = authParts[0];
-            String password = authParts[1];
-            return authenticateController.userAuthenticated(username, password);
-        } catch (UnsupportedEncodingException ex) {
-            return false;
-        }
     }
 
     private boolean isValidKey(String key) {

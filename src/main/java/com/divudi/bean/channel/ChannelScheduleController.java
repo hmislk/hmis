@@ -14,7 +14,6 @@ import com.divudi.bean.common.SessionController;
 
 import com.divudi.data.FeeChangeType;
 import com.divudi.data.FeeType;
-import com.divudi.data.PersonInstitutionType;
 import com.divudi.entity.BillSession;
 import com.divudi.entity.Department;
 import com.divudi.entity.FeeChange;
@@ -34,7 +33,6 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillType;
 import com.divudi.data.MessageType;
 import com.divudi.data.OptionScope;
-import com.divudi.data.SmsSentResponse;
 import com.divudi.data.channel.ChannelScheduleEvent;
 import com.divudi.ejb.ChannelBean;
 import com.divudi.ejb.SmsManagerEjb;
@@ -42,14 +40,12 @@ import com.divudi.entity.Bill;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.DoctorSpeciality;
 import com.divudi.entity.Item;
-import com.divudi.entity.ServiceSessionInstance;
 import com.divudi.entity.Sms;
 import com.divudi.entity.channel.SessionInstance;
 import com.divudi.entity.lab.ItemForItem;
 import com.divudi.facade.BillSessionFacade;
 import com.divudi.facade.DoctorSpecialityFacade;
 import com.divudi.facade.ItemForItemFacade;
-import com.divudi.facade.ServiceSessionInstanceFacade;
 import com.divudi.facade.SessionInstanceFacade;
 import com.divudi.facade.SmsFacade;
 import com.divudi.java.CommonFunctions;
@@ -58,17 +54,18 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
-import javax.faces.annotation.FacesConfig;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.mail.Session;
 import javax.persistence.TemporalType;
+import static org.apache.commons.lang3.StringUtils.isNumeric;
 import org.primefaces.model.DefaultScheduleModel;
 import org.primefaces.model.ScheduleModel;
 
@@ -169,6 +166,25 @@ public class ChannelScheduleController implements Serializable {
         }
         generateSessions(stf);
 
+    }
+
+    public void updateSessionEndTime() {
+        String sessionDuration = configOptionApplicationController.getShortTextValueByKey("Default Channel Session Duration", "2");
+        int duration = 0;
+        if (isNumeric(sessionDuration)) {
+            duration = Integer.parseInt(sessionDuration);
+        } else {
+            duration = 2;
+        }
+
+        if (getCurrent().getStartingTime() == null) {
+            getCurrent().setEndingTime(null);
+        } else {
+            Calendar e = Calendar.getInstance();
+            e.setTime(getCurrent().getStartingTime());
+            e.add(Calendar.HOUR, duration);
+            getCurrent().setEndingTime(e.getTime());
+        }
     }
 
     public void generateSessions(Staff st) {
@@ -583,17 +599,19 @@ public class ChannelScheduleController implements Serializable {
 
     public List<Staff> getSpecialityStaff() {
         List<Staff> suggestions = new ArrayList<>();
-        if (getSpeciality() == null) {
-            return suggestions;
-        }
         String jpql;
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
         jpql = "select p "
                 + " from Staff p "
-                + " where p.retired=false "
-                + " and p.speciality =:sp "
-                + " order by p.person.name";
-        params.put("sp", speciality);
+                + " where p.retired=false ";
+
+        if (getSpeciality() != null) {
+            jpql += " and p.speciality = :sp ";
+            params.put("sp", getSpeciality());
+        }
+
+        jpql += " order by p.person.name";
+
         suggestions = getStaffFacade().findByJpql(jpql, params);
         return suggestions;
     }
@@ -803,8 +821,8 @@ public class ChannelScheduleController implements Serializable {
         itemFees = null;
         createFees();
     }
-    
-    public void assignOlddateAndOldTimFromCurrentSessionInstance(){
+
+    public void assignOlddateAndOldTimFromCurrentSessionInstance() {
         setSessionInstanceOldTime(currentSessionInstance.getStartingTime());
         setSessionInstanceOldDayMonth(currentSessionInstance.getSessionDate());
     }
@@ -872,6 +890,12 @@ public class ChannelScheduleController implements Serializable {
     }
 
     private boolean checkError() {
+        if (configOptionApplicationController.getBooleanValueByKey("The Session Category is mandatory in Channel Schedule Management")) {
+            if (current.getCategory() == null) {
+                JsfUtil.addErrorMessage("Please add the Session Category");
+                return true;
+            }
+        }
         if (current.getStartingTime() == null) {
             JsfUtil.addErrorMessage("Starting time Must be Filled");
             return true;
@@ -991,6 +1015,29 @@ public class ChannelScheduleController implements Serializable {
         if (getCurrent().getSessionNumberGenerator() == null) {
             SessionNumberGenerator ss = saveSessionNumber();
             current.setSessionNumberGenerator(ss);
+        }
+
+        if (current.getEndingTime() == null) {
+            JsfUtil.addErrorMessage("Can't save session without session endtime !");
+            return;
+        }
+
+        if (current.getSessionStartingNumber() != null) {
+            if (!current.getSessionStartingNumber().trim().equals("")) {
+                int[] resnumbers = Arrays.stream(current.getReserveNumbers().split(","))
+                        .filter(s -> !s.isEmpty())
+                        .mapToInt(Integer::parseInt)
+                        .toArray();
+                if (resnumbers.length != 0) {
+                    int sessStartnumber = Integer.valueOf(current.getSessionStartingNumber());
+                    boolean allLower = IntStream.of(resnumbers).allMatch(n -> n < sessStartnumber);
+                    if (allLower) {
+                        JsfUtil.addErrorMessage("All reserveNumbers are lower than session starting number");
+                        return;
+                    }
+                }
+
+            }
         }
 
         getCurrent().setStaff(currentStaff);

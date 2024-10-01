@@ -112,7 +112,7 @@
                         <td>:</td>
                         <td style="width: 30%;" >
                             <h:outputLabel 
-                                value="#{cc.attrs.bill.insId}"  
+                                value="#{cc.attrs.bill.deptId}"  
                                 style="text-align: center!important;
                                 font-size: 12px!important;
                                 font-family:Arial, Helvetica, sans-serif!important;">
@@ -269,7 +269,7 @@
                             <h:outputLabel value="Value"  styleClass="itemHeadings"  ></h:outputLabel>
                         </td>
                     </tr>
-
+ 
                     <tr>
                         <td colspan="2" class="billline">
                             <hr/>                       
@@ -279,7 +279,7 @@
                     <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip" >
                         <tr>
                             <td style="text-align: left">
-                                <h:outputLabel value="#{bip.item.printName}"  styleClass="itemsBlock" style="text-transform: capitalize!important;"  >
+                                <h:outputLabel value="#{bip.item.name}"  styleClass="itemsBlock" style="text-transform: capitalize!important;"  >
                                 </h:outputLabel>
                             </td>
                             <td  styleClass="itemsBlockRight" style="text-align: right;" >

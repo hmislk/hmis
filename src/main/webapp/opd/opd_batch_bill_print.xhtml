@@ -24,7 +24,18 @@
                             <h:outputText value="Batch Bill" class="my-3"></h:outputText>
                             <!-- Command Buttons -->
                             <div class="d-flex" style="float: right;">
-
+                                <p:commandButton 
+                                    value="To Refund Patient Balance" 
+                                    rendered="#{opdBillController.batchBill.paymentMethod eq 'PatientDeposit'}"
+                                    class="ui-button-group mx-1"
+                                    icon="fa fa-money-bill-alt"
+                                    action="#{patientDepositController.navigateToPatientDepositRefundFromOPDBill(opdBillController.batchBill.patient)}"
+                                    ajax="false">
+                                    <f:setPropertyActionListener 
+                                        value="#{opdBillController.batchBill.patient}" 
+                                        target="#{patientController.current}" >
+                                    </f:setPropertyActionListener>
+                                </p:commandButton>
                                 <p:commandButton value="New OPD Bill" 
                                                  class="ui-button-primary mx-1"
                                                  icon="fa fa-plus"
@@ -67,7 +78,7 @@
 
                         <div class="row" >
 
-                            <div class="col-4" >
+                            <div class="col-3" >
                                 <div class="d-flex justify-content-center">
                                     <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
                                     <p:selectOneMenu value="#{sessionController.departmentPreference.opdBillPaperType}" class="m-1" style="width: 13em;">
@@ -95,6 +106,11 @@
                                         <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
                                             <ui:repeat value="#{opdBillController.bills}" var="ffb" >
                                                 <prints:five_five_paper_with_headings bill="#{ffb}" duplicate="#{opdBillController.duplicatePrint}" payments="#{opdBillController.payments}"/>                        
+                                            </ui:repeat>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}" >
+                                            <ui:repeat value="#{opdBillController.bills}" var="ffb" >
+                                                <prints:five_five_paper_coustom_1 bill="#{ffb}" duplicate="#{opdBillController.duplicatePrint}" payments="#{opdBillController.payments}"/>                        
                                             </ui:repeat>
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >
@@ -126,17 +142,18 @@
                                             </ui:repeat>
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosBatchPaper'}" >
-                                            <prints:pos_opd_bill_batch_with_bill_items billController="#{opdBillController}" duplicate="#{opdBillController.duplicatePrint}"/>                        
+                                            <prints:pos_opd_bill_batch_with_bill_items billController="#{opdBillController}" payments="#{opdBillController.payments}" duplicate="#{opdBillController.duplicatePrint}"/>                        
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperBatchBill'}" >
-                                            <prints:five_five_paper_with_headings_badge_bill_with_bill_items billController="#{opdBillController}" duplicate="#{opdBillController.duplicatePrint}"/>                        
+                                            <prints:five_five_paper_with_headings_badge_bill_with_bill_items billController="#{opdBillController}" payments="#{opdBillController.payments}" duplicate="#{opdBillController.duplicatePrint}"/>                        
                                         </h:panelGroup>
                                     </ui:repeat>
                                 </h:panelGroup>
                             </div>
 
-                            <div class="col-4" >
-                                <p:commandButton value="Print" 
+                            <div class="col-3" >
+                                <p:commandButton 
+                                    value="Print" 
                                                  class="ui-button-info m-1"
                                                  icon="fa fa-print"
                                                  ajax="false">
@@ -160,7 +177,7 @@
                                 </h:panelGroup>
                             </div>
 
-                            <div class="col-4" >
+                            <div class="col-6" >
                                 <p:dataTable 
                                     value="#{opdBillController.bills}" 
                                     var="b" 
@@ -175,7 +192,7 @@
                                         <p:inputText value="#{b.id}" ></p:inputText>
                                     </p:column>
                                     <p:column headerText="Ins No" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
-                                        <p:inputText readonly="true" value="#{b.insId}" ></p:inputText>
+                                        <p:inputText readonly="true" value="#{b.deptId}" ></p:inputText>
                                     </p:column>
                                     <p:column headerText="Dep No" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
                                         <p:inputText value="#{b.deptId}" ></p:inputText>
@@ -241,9 +258,8 @@
                                 <table class="ui-datatable ui-widget w-100 m-1">
                                     <thead>
                                         <tr  class="ui-widget-header">
-                                            <th colspan="2" class="d-flex justify-content-between align-items-center">
+                                            <th colspan="2" class="w-100 d-flex justify-content-between align-items-center">
                                                 <span>Batch Bill Details</span>
-
                                                 <p:commandButton 
                                                     ajax="false" 
                                                     icon="fa fa-ban" 
@@ -273,7 +289,7 @@
                                         </tr>
                                         <tr class="ui-widget-content #{opdBillController.batchBill.refunded ? 'row-warning' : opdBillController.batchBill.cancelled ? 'row-danger' : ''}">
                                             <td>Batch Bill Ins ID</td>
-                                            <td>#{opdBillController.batchBill.insId}</td>
+                                            <td>#{opdBillController.batchBill.deptId}</td>
                                         </tr>
                                         <tr class="ui-widget-content #{opdBillController.batchBill.refunded ? 'row-warning' : opdBillController.batchBill.cancelled ? 'row-danger' : ''}">
                                             <td>Batch Bill Dept ID</td>

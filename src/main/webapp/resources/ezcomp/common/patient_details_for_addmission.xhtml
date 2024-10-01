@@ -5,7 +5,8 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:c="http://java.sun.com/jsp/jstl/core">
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -197,13 +198,15 @@
                                             </div>
                                             <div class="col-md-6">
                                                 <p:datePicker 
-
                                                     value="#{cc.attrs.controller.patient.person.dob}"
                                                     id="dpDob" 
                                                     class="w-100"
                                                     inputStyleClass="form-control"
-                                                    pattern="#{sessionController.applicationPreference.longDateFormat}"
-                                                    placeholder="Date of Birth (dd/mm/yyyy)"
+                                                    pattern="dd/MMM/yyyy - hh:mm:ss a"
+                                                    showTime="true"
+                                                    showButtonBar="true"
+                                                    timeInput="true"
+                                                    placeholder="Date of Birth (dd/mm/yyyy - hh:mm:ss a)"
                                                     >
                                                     <f:ajax event="dateSelect" execute="@this" render="year month day" />
                                                 </p:datePicker>
@@ -451,7 +454,7 @@
                     <div class="row" >                                    
                         <div class="col-12" >
                             <h:panelGroup id="ptAl" >
-                                <p:repeat value="#{cc.attrs.controller.patientAllergies}" var="al">
+                                <ui:repeat value="#{cc.attrs.controller.patientAllergies}" var="al">
                                     <div class="card my-1 w-100">
                                         <div class="d-flex justify-content-between align-items-center p-2">
                                             <div>
@@ -471,7 +474,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                </p:repeat>
+                                </ui:repeat>
                             </h:panelGroup>
 
 

@@ -76,6 +76,23 @@ public class MachineController implements Serializable {
         items = null;
     }
 
+    public Machine findMachine(Long id) {
+        return ejbFacade.find(id);
+    }
+
+    public Machine findMachine(String strId) {
+        if (strId == null) {
+            return null;
+        }
+        Long id;
+        try {
+            id = Long.valueOf(strId);
+        } catch (Exception e) {
+            return null;
+        }
+        return ejbFacade.find(id);
+    }
+
     public void saveSelected() {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
@@ -103,7 +120,7 @@ public class MachineController implements Serializable {
         m.put("ret", false);
         m.put("name", qry);
         ma = ejbFacade.findFirstByJpql(jpql, m);
-        if(ma==null){
+        if (ma == null) {
             ma = new Machine();
             ma.setName(qry);
             ma.setCreatedAt(new Date());
@@ -111,6 +128,7 @@ public class MachineController implements Serializable {
         }
         return ma;
     }
+
     public MachineFacade getEjbFacade() {
         return ejbFacade;
     }
@@ -142,6 +160,7 @@ public class MachineController implements Serializable {
         this.current = current;
     }
 
+    @Deprecated
     public List<Machine> getInstitutionMachines() {
         if (sessionController.getLoggedUser().getInstitution() != institution) {
             institutionMachines = null;

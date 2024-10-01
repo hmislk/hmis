@@ -9,7 +9,6 @@
 package com.divudi.bean.common;
 
 import com.divudi.entity.DoctorSpeciality;
-import com.divudi.entity.Vocabulary;
 import com.divudi.facade.DoctorSpecialityFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import java.io.Serializable;
@@ -120,6 +119,16 @@ public class DoctorSpecialityController implements Serializable {
     }
 
     public void saveSelected() {
+        
+        if(getCurrent().getName() == null || getCurrent().getName().isEmpty()){
+            JsfUtil.addErrorMessage("Name is required");
+            return;
+        }
+        
+//        if(getCurrent().getDescription()== null || getCurrent().getDescription().isEmpty() ){
+//            JsfUtil.addErrorMessage("Description is required");
+//            return;  
+//        }
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);

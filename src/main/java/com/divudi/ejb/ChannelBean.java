@@ -7,7 +7,6 @@ package com.divudi.ejb;
 import com.divudi.bean.channel.BookingController;
 import com.divudi.bean.channel.ChannelBillController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.dataStructure.ChannelFee;
@@ -34,7 +33,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -675,6 +673,114 @@ public class ChannelBean {
         return sessionInstances;
     }
 
+    public List<SessionInstance> generateSesionInstancesFromServiceSessions(List<ServiceSession> inputSessions) {
+        int sessionDayCount = 0;
+        List<SessionInstance> sessionInstances = new ArrayList<>();
+        if (inputSessions == null || inputSessions.isEmpty()) {
+            return sessionInstances;
+        }
+
+        for (ServiceSession ss : inputSessions) {
+            Date startDate = new Date();
+            Calendar cToDate = Calendar.getInstance();
+            int numberOfDaysInAdvance;
+            if (ss.getNumberOfDaysForAutomaticInstanceCreation() == null) {
+                numberOfDaysInAdvance = 30;
+            } else {
+                numberOfDaysInAdvance = ss.getNumberOfDaysForAutomaticInstanceCreation();
+            }
+            cToDate.add(Calendar.DATE, numberOfDaysInAdvance);
+            Date endDate = cToDate.getTime();
+
+            Calendar cWorkingDate = Calendar.getInstance();
+            cWorkingDate.setTime(startDate);
+
+            // Reset time components for startDate
+            cWorkingDate.set(Calendar.HOUR_OF_DAY, 0);
+            cWorkingDate.set(Calendar.MINUTE, 0);
+            cWorkingDate.set(Calendar.SECOND, 0);
+            cWorkingDate.set(Calendar.MILLISECOND, 0);
+
+            int rowIndex = 0;
+
+            while (cWorkingDate.getTime().before(endDate) || cWorkingDate.getTime().equals(endDate)) {
+                Date workingDate = cWorkingDate.getTime();
+                boolean eligibleDate = false;
+                // Reset time components for sessionDate
+
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(workingDate);
+
+                if (ss.getSessionDate() == null) {
+                    int workingDateWeekday = calendar.get(Calendar.DAY_OF_WEEK);
+                    if (ss.getSessionWeekday() != null) {
+                        if (workingDateWeekday == ss.getSessionWeekday()) {
+                            eligibleDate = true;
+                        }
+                    }
+
+                } else {
+                    Calendar cSessionDate = Calendar.getInstance();
+                    cSessionDate.setTime(ss.getSessionDate());
+                    cSessionDate.set(Calendar.HOUR_OF_DAY, 0);
+                    cSessionDate.set(Calendar.MINUTE, 0);
+                    cSessionDate.set(Calendar.SECOND, 0);
+                    cSessionDate.set(Calendar.MILLISECOND, 0);
+                    if (cSessionDate.getTime().equals(workingDate)) {
+                        eligibleDate = true;
+                    }
+                }
+
+                if (eligibleDate) {
+                    String jpql = "select i "
+                            + " from SessionInstance i "
+                            + " where i.originatingSession=:os "
+                            + " and i.retired=:ret "
+                            + " and i.sessionDate=:sd";
+
+                    Map m = new HashMap();
+                    m.put("ret", false);
+                    m.put("os", ss);
+                    m.put("sd", workingDate);
+
+                    SessionInstance si = sessionInstanceFacade.findFirstByJpql(jpql, m, TemporalType.DATE);
+
+                    if (si == null) {
+                        si = createSessionInstancesForServiceSession(ss, workingDate);
+                        if (si.getId() == null) {
+                            sessionInstanceFacade.create(si);
+                        } else {
+                            sessionInstanceFacade.edit(si);
+                        }
+                    }
+
+//                    si.setDisplayCount(getBillSessionsCount(si));
+//                    si.setTransDisplayCountWithoutCancelRefund(getBillSessionsCountWithOutCancelRefund(si));
+//                    si.setTransCreditBillCount(getBillSessionsCountCrditBill(si));
+                    si.setStaff(ss.getStaff());
+                    si.setTransRowNumber(rowIndex++);
+
+                    sessionInstances.add(si);
+                }
+
+                cWorkingDate.add(Calendar.DATE, 1); // Increment the date
+            }
+        }
+        Collections.sort(sessionInstances, new Comparator<SessionInstance>() {
+            @Override
+            public int compare(SessionInstance s1, SessionInstance s2) {
+                int dateCompare = s1.getSessionDate().compareTo(s2.getSessionDate());
+                if (dateCompare != 0) {
+                    return dateCompare;
+                } else {
+                    // Assuming ServiceSession has a method to get a navigateToSessionView identifier or name for comparison
+                    return s1.getOriginatingSession().getName().compareTo(s2.getOriginatingSession().getName());
+                }
+            }
+        });
+        return sessionInstances;
+    }
+
     public List<SessionInstance> listTodaysSesionInstances() {
         return listTodaysSessionInstances(null, null, null);
     }
@@ -706,6 +812,65 @@ public class ChannelBean {
         }
 
         sessionInstances = sessionInstanceFacade.findByJpql(jpql.toString(), params, TemporalType.DATE);
+
+        // Sorting logic remains unchanged
+//        Collections.sort(sessionInstances, new Comparator<SessionInstance>() {
+//            @Override
+//            public int compare(SessionInstance s1, SessionInstance s2) {
+//                int dateCompare = s1.getSessionDate().compareTo(s2.getSessionDate());
+//                if (dateCompare != 0) {
+//                    return dateCompare;
+//                } else {
+//                    return s1.getOriginatingSession().getName().compareTo(s2.getOriginatingSession().getName());
+//                }
+//            }
+//        });
+        return sessionInstances;
+    }
+
+    public List<SessionInstance> listSessionInstancesByDate(Date sessionDate, Boolean ongoing, Boolean completed, Boolean pending) {
+        List<SessionInstance> sessionInstances = new ArrayList<>();
+        StringBuilder jpql = new StringBuilder("select i from SessionInstance i where i.retired=:ret and i.sessionDate between :startOfDay and :endOfDay");
+
+        // Initializing the parameters map
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(sessionDate);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        Date startOfDay = cal.getTime();
+
+        cal.set(Calendar.HOUR_OF_DAY, 23);
+        cal.set(Calendar.MINUTE, 59);
+        cal.set(Calendar.SECOND, 59);
+        cal.set(Calendar.MILLISECOND, 999);
+        Date endOfDay = cal.getTime();
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("startOfDay", startOfDay);
+        params.put("endOfDay", endOfDay);
+
+        // Dynamically appending conditions based on parameters
+        List<String> conditions = new ArrayList<>();
+        if (ongoing != null && ongoing) {
+            conditions.add("(i.started = true and i.completed = false)");
+        }
+        if (completed != null && completed) {
+            conditions.add("i.completed = true");
+        }
+        if (pending != null && pending) {
+            conditions.add("(i.started = false and i.completed = false)");
+        }
+
+        // Adding the conditions to the JPQL query
+        if (!conditions.isEmpty()) {
+            jpql.append(" and (").append(String.join(" or ", conditions)).append(")");
+        }
+
+        // Fetching the session instances based on the constructed JPQL query and parameters
+        sessionInstances = sessionInstanceFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
         // Sorting logic remains unchanged
         Collections.sort(sessionInstances, new Comparator<SessionInstance>() {
@@ -770,58 +935,60 @@ public class ChannelBean {
             jpql.append(" and (").append(String.join(" or ", conditions)).append(")");
         }
 
+        // Adding sorting to JPQL with custom order
+        jpql.append(" order by case when i.completed = true then 1 else 0 end, i.completed asc, i.started desc, i.sessionDate asc, i.startingTime asc");
+
         sessionInstances = sessionInstanceFacade.findByJpql(jpql.toString(), params, TemporalType.DATE);
 
-        Collections.sort(sessionInstances, new Comparator<SessionInstance>() {
-            @Override
-            public int compare(SessionInstance s1, SessionInstance s2) {
-                // Check if the session dates are null
-                Date d1 = s1.getSessionDate();
-                Date d2 = s2.getSessionDate();
-                if (d1 == null && d2 == null) {
-                    return 0;
-                }
-                if (d1 == null) {
-                    return -1;
-                }
-                if (d2 == null) {
-                    return 1;
-                }
-
-                int dateCompare = d1.compareTo(d2);
-                if (dateCompare != 0) {
-                    return dateCompare;
-                }
-
-                // Check if the originating sessions or their names are null
-                ServiceSession session1 = s1.getOriginatingSession();
-                ServiceSession session2 = s2.getOriginatingSession();
-                if (session1 == null && session2 == null) {
-                    return 0;
-                }
-                if (session1 == null) {
-                    return -1;
-                }
-                if (session2 == null) {
-                    return 1;
-                }
-
-                String name1 = session1.getName();
-                String name2 = session2.getName();
-                if (name1 == null && name2 == null) {
-                    return 0;
-                }
-                if (name1 == null) {
-                    return -1;
-                }
-                if (name2 == null) {
-                    return 1;
-                }
-
-                return name1.compareTo(name2);
-            }
-        });
-
+//        Collections.sort(sessionInstances, new Comparator<SessionInstance>() {
+//            @Override
+//            public int compare(SessionInstance s1, SessionInstance s2) {
+//                // Check if the session dates are null
+//                Date d1 = s1.getSessionDate();
+//                Date d2 = s2.getSessionDate();
+//                if (d1 == null && d2 == null) {
+//                    return 0;
+//                }
+//                if (d1 == null) {
+//                    return -1;
+//                }
+//                if (d2 == null) {
+//                    return 1;
+//                }
+//
+//                int dateCompare = d1.compareTo(d2);
+//                if (dateCompare != 0) {
+//                    return dateCompare;
+//                }
+//
+//                // Check if the originating sessions or their names are null
+//                ServiceSession session1 = s1.getOriginatingSession();
+//                ServiceSession session2 = s2.getOriginatingSession();
+//                if (session1 == null && session2 == null) {
+//                    return 0;
+//                }
+//                if (session1 == null) {
+//                    return -1;
+//                }
+//                if (session2 == null) {
+//                    return 1;
+//                }
+//
+//                String name1 = session1.getName();
+//                String name2 = session2.getName();
+//                if (name1 == null && name2 == null) {
+//                    return 0;
+//                }
+//                if (name1 == null) {
+//                    return -1;
+//                }
+//                if (name2 == null) {
+//                    return 1;
+//                }
+//
+//                return name1.compareTo(name2);
+//            }
+//        });
         return sessionInstances;
     }
 

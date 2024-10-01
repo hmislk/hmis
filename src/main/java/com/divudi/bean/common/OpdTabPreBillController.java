@@ -16,7 +16,6 @@ import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
-import com.divudi.data.InstitutionType;
 import com.divudi.data.ItemLight;
 import static com.divudi.data.ItemListingStrategy.ALL_ITEMS;
 import static com.divudi.data.ItemListingStrategy.ITEMS_MAPPED_TO_LOGGED_DEPARTMENT;
@@ -56,7 +55,6 @@ import com.divudi.entity.Staff;
 import com.divudi.entity.UserPreference;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.hr.WorkingTime;
-import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
@@ -952,7 +950,7 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
         tmp.setPaymentScheme(paymentScheme);
         tmp.setPaymentMethod(paymentMethod);
         tmp.setCreatedAt(new Date());
-        tmp.setCreater(getSessionController().getLoggedUser());
+        tmp.setCreater(getToken().getCreatedBy());
         //Institution ID (INS ID)
         String insId = getBillNumberGenerator().institutionBillNumberGenerator(getSessionController().getInstitution(), getSessionController().getDepartment(), tmp.getBillType(), tmp.getBillClassType(), BillNumberSuffix.NONE);
         tmp.setInsId(insId);
@@ -1050,12 +1048,12 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
         updatingPreBill.setBillTime(new Date());
         updatingPreBill.setPatient(getPatient());
 
-        updatingPreBill.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(getPatient(), getSessionController().getApplicationPreference().isMembershipExpires()));
+//        updatingPreBill.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(getPatient(), getSessionController().getApplicationPreference().isMembershipExpires()));
 
         updatingPreBill.setPaymentScheme(getPaymentScheme());
         updatingPreBill.setPaymentMethod(paymentMethod);
         updatingPreBill.setCreatedAt(new Date());
-        updatingPreBill.setCreater(getSessionController().getLoggedUser());
+        updatingPreBill.setCreater(getToken().getCreatedBy());
 
         //SETTING INS ID
         recurseCount = 0;
@@ -1271,7 +1269,7 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
         BillEntry addingEntry = new BillEntry();
         addingEntry.setBillItem(getCurrentBillItem());
         addingEntry.setLstBillComponents(getBillBean().billComponentsFromBillItem(getCurrentBillItem()));
-        addingEntry.setLstBillFees(getBillBean().billFeefromBillItem(getCurrentBillItem()));
+        addingEntry.setLstBillFees(getBillBean().baseBillFeefromBillItem(getCurrentBillItem()));
 
         addStaffToBillFees(addingEntry.getLstBillFees());
 
@@ -1366,8 +1364,7 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
         double billDiscount = 0.0;
         double billGross = 0.0;
         double billNet = 0.0;
-        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
-
+        
         for (BillEntry be : getLstBillEntries()) {
             //////// // System.out.println("bill item entry");
             double entryGross = 0.0;
@@ -1387,17 +1384,8 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
                     item = bf.getBillItem().getItem();
                 }
 
-                //Membership Scheme
-                if (membershipScheme != null) {
-                    priceMatrix = getPriceMatrixController().getOpdMemberDisCount(paymentMethod, membershipScheme, department, category);
-                    getBillBean().setBillFees(bf, isForeigner(), paymentMethod, membershipScheme, bi.getItem(), priceMatrix);
-                    ////// // System.out.println("priceMetrix = " + priceMatrix);
-
-                } else {
-                    //Payment  Scheme && Credit Company
-                    priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(paymentMethod, paymentScheme, department, item);
-                    getBillBean().setBillFees(bf, isForeigner(), paymentMethod, paymentScheme, getCreditCompany(), priceMatrix);
-                }
+                priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(paymentMethod, paymentScheme, department, item);
+                getBillBean().setBillFees(bf, isForeigner(), paymentMethod, paymentScheme, getCreditCompany(), priceMatrix);
 
                 entryGross += bf.getFeeGrossValue();
                 entryNet += bf.getFeeValue();

@@ -28,7 +28,7 @@
                                           showTime="true"
                                           pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                                                                              
                             </p:datePicker>
-                            <h:outputLabel value="To Date"/>
+                            <h:outputLabel value="User"/>
                             <p:selectOneMenu class="w-100 mx-4" filter="true" value="#{searchController.webUser}" id="acIx">
                                 <f:selectItem itemLabel="Select a user"/>
                                 <f:selectItems value="#{webUserController.items}" var="st" itemLabel="#{st.name}" itemValue="#{st}"/>

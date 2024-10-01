@@ -1,12 +1,17 @@
 /*
-* Dr M H B Ariyaratne
+ * Dr M H B Ariyaratne
  * buddhika.ari@gmail.com
  */
 package com.divudi.entity;
 
+import com.divudi.data.Denomination;
 import com.divudi.data.PaymentMethod;
+import com.divudi.entity.cashTransaction.CashBook;
+import com.divudi.entity.cashTransaction.CashBookEntry;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -16,15 +21,15 @@ import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
+import javax.persistence.Transient;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
-/**
- *
- * @author Buddhika
- */
 @Entity
 public class Payment implements Serializable {
 
     static final long serialVersionUID = 1L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     Long id;
@@ -33,19 +38,27 @@ public class Payment implements Serializable {
     Bill bill;
 
     @Temporal(javax.persistence.TemporalType.DATE)
+    private Date paymentDate;
+
+    @Temporal(javax.persistence.TemporalType.DATE)
     Date writtenAt;
+
     @Temporal(javax.persistence.TemporalType.DATE)
     Date toRealizeAt;
 
     @Enumerated(EnumType.STRING)
     PaymentMethod paymentMethod;
 
-    //Realization Properties
     boolean realized;
+    @ManyToOne
+    private Payment referancePayment;
+
     @Temporal(javax.persistence.TemporalType.DATE)
     Date realizedAt;
+
     @ManyToOne
-    WebUser realiazer;
+    WebUser realizer;
+
     @Lob
     String realizeComments;
 
@@ -55,44 +68,143 @@ public class Payment implements Serializable {
     @Lob
     String comments;
 
-    //Created Properties
     @ManyToOne
     WebUser creater;
+
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date createdAt;
-    //Retairing properties
+
     boolean retired;
+
     @ManyToOne
     WebUser retirer;
+
+    @ManyToOne
+    private WebUser currentHolder;
+
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date retiredAt;
-    String retireComments;
-    //
 
-    //paymentMethord Details
-    // Can be use as a reference number for any payment method
+    String retireComments;
+
     private String chequeRefNo;
+
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date chequeDate;
+
     private String creditCardRefNo;
 
     double paidValue;
-    
+
     private int creditDurationInDays;
+
+    @Lob
+    @Deprecated
+    private String currencyDenominationsJson;
 
     @ManyToOne
     Institution institution;
+
     @ManyToOne
     Department department;
 
-    
-    
+    @Transient
+    @Deprecated
+    private List<Denomination> currencyDenominations;
+
+    @Transient
+    @Deprecated
+    private List<String> humanReadableDenominations;
+
+    private String referenceNo;
+
+    private boolean cashbookEntryStated;
+    private boolean cashbookEntryCompleted;
+    private boolean paymentRecordStated;
+    private boolean paymentRecordCompleted;
+
+    private boolean selectedForHandover;
+    private boolean selectedForCashbookEntry;
+    private boolean selectedForRecording;
+    private boolean selectedForRecordingConfirmation;
+    private boolean handingOverStarted;
+    private boolean handingOverCompleted;
+
+    @ManyToOne
+    private Bill handoverShiftBill;
+    @ManyToOne
+    private Bill handoverShiftComponantBill;
+
+    //Handover Creation
+    @ManyToOne
+    private Bill handoverCreatedBill;
+    @ManyToOne
+    private Bill handoverCreatedComponantBill;
+
+    //Handover Accept
+    @ManyToOne
+    private Bill handoverAcceptBill;
+    @ManyToOne
+    private Bill handoverAcceptComponantBill;
+
+    //Payment Record Creation
+    @ManyToOne
+    private Bill paymentRecordCreateBill;
+    @ManyToOne
+    private Bill paymentRecordCreateComponantBill;
+    //Payment Record Accept
+    @ManyToOne
+    private Bill paymentRecordCompleteBill;
+    @ManyToOne
+    private Bill paymentRecordCompleteComponantBill;
+    //Cash Book
+    @ManyToOne
+    private CashBookEntry cashbookEntry;
+    @ManyToOne
+    private CashBook cashbook;
+
+    private boolean cancelled;
+    @ManyToOne
+    private WebUser cancelledBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date cancelledAt;
+    @ManyToOne
+    private Payment cancelledPayment;
+    @ManyToOne
+    private Bill cancelledBill;
+
+    public Payment() {
+        cashbookEntryStated = false;
+        cashbookEntryCompleted = false;
+        paymentRecordStated = false;
+        paymentRecordCompleted = false;
+        paymentDate = new Date();
+    }
+
     public Long getId() {
         return id;
     }
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    @Deprecated
+    public List<String> getHumanReadableDenominations() {
+        List<String> humanReadableList = new ArrayList<>();
+        deserializeDenominations();
+        if (this.currencyDenominations != null) {
+            for (Denomination denomination : this.currencyDenominations) {
+                if (denomination.getCount() > 0) {
+                    String valueFormatted = String.format("%.2f", denomination.getValue());
+                    String countFormatted = String.format("%d", denomination.getCount());
+                    String totalFormatted = String.format("%.2f", denomination.getValue() * denomination.getCount());
+                    String humanReadable = "(" + valueFormatted + "x" + countFormatted + "=" + totalFormatted + ")";
+                    humanReadableList.add(humanReadable);
+                }
+            }
+        }
+        return humanReadableList;
     }
 
     public Bill getBill() {
@@ -143,12 +255,12 @@ public class Payment implements Serializable {
         this.realizedAt = realizedAt;
     }
 
-    public WebUser getRealiazer() {
-        return realiazer;
+    public WebUser getRealizer() {
+        return realizer;
     }
 
-    public void setRealiazer(WebUser realiazer) {
-        this.realiazer = realiazer;
+    public void setRealizer(WebUser realizer) {
+        this.realizer = realizer;
     }
 
     public String getRealizeComments() {
@@ -247,7 +359,7 @@ public class Payment implements Serializable {
     public String toString() {
         return "com.divudi.entity.Payment[ id=" + id + " ]";
     }
-    
+
     // Can be use as a reference number for any payment method
     public String getChequeRefNo() {
         return chequeRefNo;
@@ -281,6 +393,14 @@ public class Payment implements Serializable {
         this.paidValue = paidValue;
     }
 
+    public int getCreditDurationInDays() {
+        return creditDurationInDays;
+    }
+
+    public void setCreditDurationInDays(int creditDurationInDays) {
+        this.creditDurationInDays = creditDurationInDays;
+    }
+
     public Institution getInstitution() {
         return institution;
     }
@@ -299,18 +419,17 @@ public class Payment implements Serializable {
 
     public Payment copyAttributes() {
         Payment newPayment = new Payment();
-
-        // Copying attributes
         newPayment.setBill(this.bill);
         newPayment.setWrittenAt(this.writtenAt);
         newPayment.setToRealizeAt(this.toRealizeAt);
         newPayment.setPaymentMethod(this.paymentMethod);
         newPayment.setRealized(this.realized);
         newPayment.setRealizedAt(this.realizedAt);
-        newPayment.setRealiazer(this.realiazer);
+        newPayment.setRealizer(this.realizer);
         newPayment.setRealizeComments(this.realizeComments);
         newPayment.setBank(this.bank);
         newPayment.setComments(this.comments);
+        newPayment.setCurrencyDenominationsJson(this.currencyDenominationsJson);
         newPayment.setCreater(this.creater);
         newPayment.setCreatedAt(this.createdAt);
         newPayment.setRetired(this.retired);
@@ -323,18 +442,350 @@ public class Payment implements Serializable {
         newPayment.setPaidValue(this.paidValue);
         newPayment.setInstitution(this.institution);
         newPayment.setDepartment(this.department);
-
         // Note: ID is not copied to ensure the uniqueness of each entity
         // newPayment.setId(this.id); // This line is intentionally commented out
         return newPayment;
     }
 
-    public int getCreditDurationInDays() {
-        return creditDurationInDays;
+    public Payment clonePaymentForNewBill() {
+        Payment newPayment = new Payment();
+        newPayment.setWrittenAt(this.writtenAt);
+        newPayment.setToRealizeAt(this.toRealizeAt);
+        newPayment.setPaymentMethod(this.paymentMethod);
+        newPayment.setRealized(this.realized);
+        newPayment.setRealizedAt(this.realizedAt);
+        newPayment.setRealizer(this.realizer);
+        newPayment.setRealizeComments(this.realizeComments);
+        newPayment.setBank(this.bank);
+        newPayment.setComments(this.comments);
+        newPayment.setChequeRefNo(this.chequeRefNo);
+        newPayment.setChequeDate(this.chequeDate);
+        newPayment.setCreditCardRefNo(this.creditCardRefNo);
+        newPayment.setPaidValue(this.paidValue);
+        newPayment.setInstitution(this.institution);
+        newPayment.setDepartment(this.department);
+        newPayment.setReferancePayment(this);
+        // Note: ID is not copied to ensure the uniqueness of each entity
+        // newPayment.setId(this.id); // This line is intentionally commented out
+        return newPayment;
     }
 
-    public void setCreditDurationInDays(int creditDurationInDays) {
-        this.creditDurationInDays = creditDurationInDays;
+    @Deprecated
+    public void setCurrencyDenominationsJson(String currencyDenominationsJson) {
+        this.currencyDenominationsJson = currencyDenominationsJson;
     }
+
+    public void serializeDenominations() {
+        if (this.currencyDenominations != null) {
+            JSONArray jsonArray = new JSONArray();
+            for (Denomination denomination : this.currencyDenominations) {
+                if (denomination != null) {
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("value", denomination.getValue());
+                    jsonObject.put("count", denomination.getCount());
+                    jsonArray.put(jsonObject);
+                }
+            }
+            this.currencyDenominationsJson = jsonArray.toString();
+        } else {
+            this.currencyDenominationsJson = "[]"; // Empty JSON array if currencyDenominations is null
+        }
+    }
+
+    @Deprecated
+    public void deserializeDenominations() {
+        if (this.currencyDenominationsJson != null && !this.currencyDenominationsJson.isEmpty()) {
+            try {
+                JSONArray jsonArray = new JSONArray(this.currencyDenominationsJson);
+                this.currencyDenominations = new ArrayList<>();
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    JSONObject jsonObject = jsonArray.getJSONObject(i);
+                    if (jsonObject.has("value") && jsonObject.has("count")) {
+                        int value = jsonObject.getInt("value");
+                        int count = jsonObject.getInt("count");
+                        this.currencyDenominations.add(new Denomination(value, count));
+                    }
+                }
+            } catch (Exception e) {
+                this.currencyDenominations = new ArrayList<>(); // Initialize to an empty list on error
+            }
+        } else {
+            this.currencyDenominations = new ArrayList<>(); // Initialize to an empty list if JSON is null or empty
+        }
+    }
+
+    @Deprecated
+    public String getCurrencyDenominationsJson() {
+        return currencyDenominationsJson;
+    }
+
+    @Deprecated
+    public List<Denomination> getCurrencyDenominations() {
+        return currencyDenominations;
+    }
+
+    @Deprecated
+    public void setCurrencyDenominations(List<Denomination> currencyDenominations) {
+        this.currencyDenominations = currencyDenominations;
+    }
+
+    public String getReferenceNo() {
+
+        return referenceNo;
+    }
+
+    public void setReferenceNo(String referenceNo) {
+        this.referenceNo = referenceNo;
+    }
+
+    public boolean getCashbookEntryCompleted() {
+        return cashbookEntryCompleted;
+    }
+
+    public void setCashbookEntryCompleted(boolean cashbookEntryCompleted) {
+        this.cashbookEntryCompleted = cashbookEntryCompleted;
+    }
+
+    public Bill getHandoverCreatedBill() {
+        return handoverCreatedBill;
+    }
+
+    public void setHandoverCreatedBill(Bill handoverCreatedBill) {
+        this.handoverCreatedBill = handoverCreatedBill;
+    }
+
+    public Bill getHandoverAcceptBill() {
+        return handoverAcceptBill;
+    }
+
+    public void setHandoverAcceptBill(Bill handoverAcceptBill) {
+        this.handoverAcceptBill = handoverAcceptBill;
+    }
+
+    public CashBookEntry getCashbookEntry() {
+        return cashbookEntry;
+    }
+
+    public void setCashbookEntry(CashBookEntry cashbookEntry) {
+        this.cashbookEntry = cashbookEntry;
+    }
+
+    public CashBook getCashbook() {
+        return cashbook;
+    }
+
+    public void setCashbook(CashBook cashbook) {
+        this.cashbook = cashbook;
+    }
+
+    public boolean getCashbookEntryStated() {
+        return cashbookEntryStated;
+    }
+
+    public void setCashbookEntryStated(boolean cashbookEntryStated) {
+        this.cashbookEntryStated = cashbookEntryStated;
+    }
+
+    public Bill getPaymentRecordCreateBill() {
+        return paymentRecordCreateBill;
+    }
+
+    public void setPaymentRecordCreateBill(Bill paymentRecordCreateBill) {
+        this.paymentRecordCreateBill = paymentRecordCreateBill;
+    }
+
+    public Bill getPaymentRecordCompleteBill() {
+        return paymentRecordCompleteBill;
+    }
+
+    public void setPaymentRecordCompleteBill(Bill paymentRecordCompleteBill) {
+        this.paymentRecordCompleteBill = paymentRecordCompleteBill;
+    }
+
+    public boolean isPaymentRecordStated() {
+        return paymentRecordStated;
+    }
+
+    public void setPaymentRecordStated(boolean paymentRecordStated) {
+        this.paymentRecordStated = paymentRecordStated;
+    }
+
+    public boolean isPaymentRecordCompleted() {
+        return paymentRecordCompleted;
+    }
+
+    public void setPaymentRecordCompleted(boolean paymentRecordCompleted) {
+        this.paymentRecordCompleted = paymentRecordCompleted;
+    }
+
+    public Bill getHandoverShiftBill() {
+        return handoverShiftBill;
+    }
+
+    public void setHandoverShiftBill(Bill handoverShiftBill) {
+        this.handoverShiftBill = handoverShiftBill;
+    }
+
+    public Bill getHandoverShiftComponantBill() {
+        return handoverShiftComponantBill;
+    }
+
+    public void setHandoverShiftComponantBill(Bill handoverShiftComponantBill) {
+        this.handoverShiftComponantBill = handoverShiftComponantBill;
+    }
+
+    public Payment getReferancePayment() {
+        return referancePayment;
+    }
+
+    public void setReferancePayment(Payment referancePayment) {
+        this.referancePayment = referancePayment;
+    }
+
+    public Date getPaymentDate() {
+        if (paymentDate == null) {
+            if (this.getBill() != null) {
+                paymentDate = this.getBill().getCreatedAt();
+            }
+        }
+        return paymentDate;
+    }
+
+    public void setPaymentDate(Date paymentDate) {
+        this.paymentDate = paymentDate;
+    }
+
+    public Bill getHandoverCreatedComponantBill() {
+        return handoverCreatedComponantBill;
+    }
+
+    public void setHandoverCreatedComponantBill(Bill handoverCreatedComponantBill) {
+        this.handoverCreatedComponantBill = handoverCreatedComponantBill;
+    }
+
+    public Bill getHandoverAcceptComponantBill() {
+        return handoverAcceptComponantBill;
+    }
+
+    public void setHandoverAcceptComponantBill(Bill handoverAcceptComponantBill) {
+        this.handoverAcceptComponantBill = handoverAcceptComponantBill;
+    }
+
+    public Bill getPaymentRecordCreateComponantBill() {
+        return paymentRecordCreateComponantBill;
+    }
+
+    public void setPaymentRecordCreateComponantBill(Bill paymentRecordCreateComponantBill) {
+        this.paymentRecordCreateComponantBill = paymentRecordCreateComponantBill;
+    }
+
+    public Bill getPaymentRecordCompleteComponantBill() {
+        return paymentRecordCompleteComponantBill;
+    }
+
+    public void setPaymentRecordCompleteComponantBill(Bill paymentRecordCompleteComponantBill) {
+        this.paymentRecordCompleteComponantBill = paymentRecordCompleteComponantBill;
+    }
+
+    public boolean isSelectedForHandover() {
+        return selectedForHandover;
+    }
+
+    public void setSelectedForHandover(boolean selectedForHandover) {
+        this.selectedForHandover = selectedForHandover;
+    }
+
+    public boolean isSelectedForRecording() {
+        return selectedForRecording;
+    }
+
+    public void setSelectedForRecording(boolean selectedForRecording) {
+        this.selectedForRecording = selectedForRecording;
+    }
+
+    public boolean isSelectedForCashbookEntry() {
+        return selectedForCashbookEntry;
+    }
+
+    public void setSelectedForCashbookEntry(boolean selectedForCashbookEntry) {
+        this.selectedForCashbookEntry = selectedForCashbookEntry;
+    }
+
+    public boolean isSelectedForRecordingConfirmation() {
+        return selectedForRecordingConfirmation;
+    }
+
+    public void setSelectedForRecordingConfirmation(boolean selectedForRecordingConfirmation) {
+        this.selectedForRecordingConfirmation = selectedForRecordingConfirmation;
+    }
+
+    public WebUser getCurrentHolder() {
+//        if (currentHolder == null) {
+//            currentHolder = creater;
+//        }
+        return currentHolder;
+    }
+
+    public void setCurrentHolder(WebUser currentHolder) {
+        this.currentHolder = currentHolder;
+    }
+
+    public boolean isCancelled() {
+        return cancelled;
+    }
+
+    public void setCancelled(boolean cancelled) {
+        this.cancelled = cancelled;
+    }
+
+    public WebUser getCancelledBy() {
+        return cancelledBy;
+    }
+
+    public void setCancelledBy(WebUser cancelledBy) {
+        this.cancelledBy = cancelledBy;
+    }
+
+    public Date getCancelledAt() {
+        return cancelledAt;
+    }
+
+    public void setCancelledAt(Date cancelledAt) {
+        this.cancelledAt = cancelledAt;
+    }
+
+    public Payment getCancelledPayment() {
+        return cancelledPayment;
+    }
+
+    public void setCancelledPayment(Payment cancelledPayment) {
+        this.cancelledPayment = cancelledPayment;
+    }
+
+    public Bill getCancelledBill() {
+        return cancelledBill;
+    }
+
+    public void setCancelledBill(Bill cancelledBill) {
+        this.cancelledBill = cancelledBill;
+    }
+
+    public boolean isHandingOverStarted() {
+        return handingOverStarted;
+    }
+
+    public void setHandingOverStarted(boolean handingOverStarted) {
+        this.handingOverStarted = handingOverStarted;
+    }
+
+    public boolean isHandingOverCompleted() {
+        return handingOverCompleted;
+    }
+
+    public void setHandingOverCompleted(boolean handingOverCompleted) {
+        this.handingOverCompleted = handingOverCompleted;
+    }
+    
+    
 
 }

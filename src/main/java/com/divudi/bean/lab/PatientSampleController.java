@@ -8,17 +8,15 @@
  */
 package com.divudi.bean.lab;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.entity.Category;
-import com.divudi.entity.lab.Sample;
-import com.divudi.facade.SampleFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.entity.lab.PatientSample;
 import com.divudi.facade.PatientSampleFacade;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -48,7 +46,7 @@ public class PatientSampleController implements Serializable {
     private PatientSampleFacade ejbFacade;
     private PatientSample current;
     private List<PatientSample> items = null;
-    
+
     private Date fromDate;
     private Date toDate;
 
@@ -59,7 +57,7 @@ public class PatientSampleController implements Serializable {
                 + " order by s.name";
         Map m = new HashMap();
         m.put("ret", false);
-        return getFacade().findByJpql(j,m);
+        return getFacade().findByJpql(j, m);
     }
 
     public void prepareAdd() {
@@ -70,6 +68,11 @@ public class PatientSampleController implements Serializable {
         items = null;
     }
 
+    public String navigateToPrintBarcodes(PatientSample pts){
+        items = new ArrayList<>();
+        return "/lab/patient_sample_print?faces-rediret=true;";
+    }
+    
     public void saveSelected() {
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
@@ -84,6 +87,21 @@ public class PatientSampleController implements Serializable {
         getItems();
     }
     
+    public void savePatientSample(PatientSample pts) {
+        if(pts==null){
+            return;
+        }
+        if (pts.getId() != null) {
+            getFacade().edit(pts);
+            JsfUtil.addSuccessMessage("Updated Successfully.");
+        } else {
+            pts.setCreatedAt(new Date());
+            pts.setCreater(getSessionController().getLoggedUser());
+            getFacade().create(pts);
+            JsfUtil.addSuccessMessage("Saved Successfully");
+        }
+    }
+
     public PatientSample findAndCreatePatientSampleByName(String qry) {
         PatientSample s;
         String jpql;
@@ -96,7 +114,7 @@ public class PatientSampleController implements Serializable {
         m.put("ret", false);
         m.put("name", qry);
         s = getFacade().findFirstByJpql(jpql, m);
-        if(s==null){
+        if (s == null) {
             s = new PatientSample();
             s.setCreatedAt(new Date());
             getFacade().create(s);
@@ -116,10 +134,29 @@ public class PatientSampleController implements Serializable {
     }
 
     public PatientSample getCurrent() {
-        if(current == null){
+        if (current == null) {
             current = new PatientSample();
         }
         return current;
+    }
+
+    public String navigateToViewPatientSample(PatientSample ps) {
+        if (ps == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return null;
+        }
+        current = ps;
+        return "/lab/patient_sample?faces-redirect=true;";
+
+    }
+
+    public String navigateToEditPatientSample(PatientSample ps) {
+        if (ps == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return null;
+        }
+        current = ps;
+        return "/lab/patient_sample_edit?faces-redirect=true;";
     }
 
     public PatientSample getAnyPatientSample() {
@@ -149,8 +186,6 @@ public class PatientSampleController implements Serializable {
 //        prepareAdd();
         return "/lab/patient_samples?faces-redirect=true";
     }
-    
-   
 
     private PatientSampleFacade getFacade() {
         return ejbFacade;
@@ -161,13 +196,13 @@ public class PatientSampleController implements Serializable {
     }
 
     public Date getFromDate() {
-        if(fromDate==null){
+        if (fromDate == null) {
             fromDate = CommonFunctions.getStartOfDay();
         }
         return fromDate;
     }
 
-    public void listPatientSamples(){
+    public void listPatientSamples() {
         PatientSample s = new PatientSample();
         String jpql;
         jpql = "select s from "
@@ -178,20 +213,31 @@ public class PatientSampleController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
         items = getFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP);
-        if(s==null){
+        if (s == null) {
             s = new PatientSample();
             s.setCreatedAt(new Date());
             getFacade().create(s);
         }
-       
+
     }
     
+    public List<PatientSample> listPatientSamples(PatientInvestigation pi) {
+        String jpql;
+        jpql = "select s from "
+                + " PatientSample s "
+                + " where patientInvestigation=:pi "
+                + " order by s.id";
+        Map m = new HashMap();
+        m.put("pi",pi);
+        return getFacade().findByJpql(jpql, m);
+    }
+
     public void setFromDate(Date fromDate) {
         this.fromDate = fromDate;
     }
 
     public Date getToDate() {
-        if(toDate==null){
+        if (toDate == null) {
             toDate = CommonFunctions.getEndOfDay();
         }
         return toDate;
@@ -200,18 +246,13 @@ public class PatientSampleController implements Serializable {
     public void setToDate(Date toDate) {
         this.toDate = toDate;
     }
-    
-    
 
-    /**
-     *
-     */
     @FacesConverter(forClass = PatientSample.class)
     public static class SampleControllerConverter implements Converter {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             PatientSampleController controller = (PatientSampleController) facesContext.getApplication().getELResolver().
@@ -220,15 +261,11 @@ public class PatientSampleController implements Serializable {
         }
 
         java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
+            return Long.valueOf(value);
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            return value.toString();
         }
 
         @Override
@@ -236,8 +273,8 @@ public class PatientSampleController implements Serializable {
             if (object == null) {
                 return null;
             }
-            if (object instanceof Sample) {
-                Sample o = (Sample) object;
+            if (object instanceof PatientSample) {
+                PatientSample o = (PatientSample) object;
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
@@ -245,4 +282,5 @@ public class PatientSampleController implements Serializable {
             }
         }
     }
+
 }

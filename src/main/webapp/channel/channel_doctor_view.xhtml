@@ -49,9 +49,10 @@
                     </p:commandButton>
                 </div>
 
+                <h1>Doc View</h1>
                 <p:dataTable 
                     id="doctorView" 
-                    value="#{channelReportController.doctorViewSessions}" 
+                    value="#{bookingControllerViewScope.billSessions}" 
                     style="margin-left: 1%; margin-right: 1%;"
                     var="bs" 
                     sortBy="#{bs.bill.billClass}">
@@ -113,7 +114,9 @@
                         <p:outputLabel value="PRESENT"  rendered="#{!bs.absent and(!bs.bill.cancelled and !bs.bill.refunded)}" style="color: green;font-size: 10pt;font-weight: bold"/>
                         <p:outputLabel value="-"  rendered="#{bs.bill.cancelled or bs.bill.refunded}"/>
                     </p:column>
-
+                    <p:column headerText="Payment Method">
+                        <p:outputLabel value="#{bs.bill.paymentMethod}"/>
+                    </p:column>
                     <p:column headerText="Bill Type" rendered="false">
                         <p:outputLabel value="#{bs.bill.billType}"/>
                     </p:column>

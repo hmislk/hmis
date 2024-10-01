@@ -12,6 +12,10 @@
             <ui:define name="content">
                 <h:form>
                     <p:panel header="OPD Search Professional Payments Done" >
+                        <f:facet name="header">
+                            <h:outputLabel value="OPD Search Professional Payments Done"/>
+                            <p:commandButton value="Back" icon="fas fa-arrow-left" class="ui-button-warning" style="float: right;" action="/payments/pay_index?faces-redirect=true" ajax="false"/>     
+                        </f:facet>
                         <div class="row">
                             <div class="col-2">
                                 <h:outputLabel value="From Date"/>
@@ -35,7 +39,9 @@
                                 <h:outputLabel value="OPD Bill No"/>
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="w-100 my-1"/>
                                 <h:outputLabel value="Payment Bill No"/>
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.insId}" class="w-100 my-1"/>
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.deptId}" class="w-100 my-1"/>
+                                <h:outputLabel value="Bht No"/>
+                                <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.bhtNo}" />
                                 <h:outputLabel value="Patient Name"/>
                                 <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" class="w-100 my-1"/>
                                 <h:outputLabel value="Speciality"/> 
@@ -72,14 +78,22 @@
                                              rowsPerPageTemplate="5,10,25,50"
                                              rowIndexVar="i" >
                                     
-                                    <p:column headerText="OPD Bill No" filterBy="#{bi.paidForBillFee.bill.insId}">
-                                        <h:outputLabel value="#{bi.paidForBillFee.bill.insId}" ></h:outputLabel>
+                                    <p:column headerText="OPD Bill No" filterBy="#{bi.paidForBillFee.bill.deptId}">
+                                        <h:outputLabel value="#{bi.paidForBillFee.bill.deptId}" ></h:outputLabel>
                                     </p:column>
+                                    <p:column headerText="Billed At"  >
+                                        <h:outputLabel value="#{bi.paidForBillFee.bill.createdAt}" >
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputLabel>
+                                    </p:column> 
                                     <p:column headerText="Credit Company" filterBy="#{bi.paidForBillFee.bill.creditCompany.name}" >
                                         <h:outputLabel value="#{bi.paidForBillFee.bill.creditCompany.name}" ></h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Payment Bill No" filterBy="#{bi.bill.insId}">
-                                        <h:outputLabel value="#{bi.bill.insId}" ></h:outputLabel>
+                                    <p:column headerText="Client"  filterBy="#{bi.paidForBillFee.bill.patient.person.name}">
+                                        <h:outputLabel value="#{bi.paidForBillFee.bill.patient.person.name}" ></h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Payment Bill No" filterBy="#{bi.bill.deptId}">
+                                        <h:outputLabel value="#{bi.bill.deptId}" ></h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Payment Method" rendered="#{searchController.searchKeyword.paymentMethod ne null}" >
                                         <h:outputLabel value="#{bi.paidForBillFee.bill.paymentMethod}" ></h:outputLabel>
@@ -109,11 +123,7 @@
                                             </h:outputLabel>
                                         </h:panelGroup>
                                     </p:column>  
-                                    <p:column headerText="Bill At"  >
-                                        <h:outputLabel value="#{bi.paidForBillFee.bill.createdAt}" >
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                        </h:outputLabel>
-                                    </p:column>  
+                                     
                                     <p:column headerText="Paid By" >
 
                                         <h:outputLabel value="#{bi.bill.creater.webUserPerson.name}" >                                      
@@ -144,7 +154,7 @@
                                     </p:column>
                                     <p:column headerText="Action">
                                         <p:commandButton class="ui-button-primary" icon="fas fa-eye" ajax="false" value="View Bill" action="payment_bill_reprint">
-                                            <f:setPropertyActionListener value="#{bi.bill}" target="#{billSearch.bill}"/>
+                                            <f:setPropertyActionListener value="#{bi.bill}" target="#{billSearch.bill}"/>                   
                                         </p:commandButton>
                                     </p:column>
 

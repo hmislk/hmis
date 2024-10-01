@@ -12,6 +12,7 @@
     <cc:interface>
         <cc:attribute name="billController" type="com.divudi.bean.opd.OpdBillController" />
         <cc:attribute name="duplicate" type="java.lang.Boolean"/>
+        <cc:attribute name="payments" ></cc:attribute>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -425,6 +426,26 @@
                     <h:outputLabel value="Cashier : #{cc.attrs.billController.batchBill.creater.webUserPerson.name}"/>
                 </div>
 
+                <h:panelGroup rendered="#{cc.attrs.billController.batchBill.paymentMethod eq 'Card'}" style="font-size: 8pt">
+                    <h:outputLabel value="Payments : #{cc.attrs.billController.batchBill.paymentMethod.label}" class="mx-3"/>
+                    <ui:repeat value="#{cc.attrs.payments}" var="p">
+                        <div class="d-flex align-items-center mx-3">
+                            <div>#{p.paymentMethod}</div>
+                            <div>&nbsp;&nbsp;(#{p.creditCardRefNo})</div>
+                            <div class="mx-2">#{p.paidValue}</div>
+                        </div>
+                    </ui:repeat>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{cc.attrs.billController.batchBill.paymentMethod eq 'MultiplePaymentMethods'}" style="font-size: 8pt">
+                    <h:outputLabel value="Payments : #{cc.attrs.billController.batchBill.paymentMethod.label}" class="mx-3"/>
+                    <ui:repeat value="#{cc.attrs.payments}" var="p">
+                        <div class="d-flex align-items-center mx-3">
+                            <div>#{p.paymentMethod}</div>
+                            <div class="mx-2">#{p.paidValue}</div>
+                        </div>
+                    </ui:repeat>
+                </h:panelGroup>
 
                 <h:panelGroup rendered="#{cc.attrs.duplicate and configOptionApplicationController.getBooleanValueByKey('OPD View Duplicate Bill Printing Details',false)}">
                     <div class="d-flex gap-2 justify-content-center" style="font-size: 11px;">
@@ -631,7 +652,7 @@
                                                 </div>-->
                     </div>
                 </h:panelGroup>
-                
+
                 <div>
 
                     <table width="100%" class="itemHeadingsFiveFive" >
@@ -836,6 +857,27 @@
                 <div style="text-decoration: overline; margin-top: 20px;">
                     <h:outputLabel value="Cashier : #{cc.attrs.billController.batchBill.creater.webUserPerson.name}"/>
                 </div>
+
+                <h:panelGroup rendered="#{cc.attrs.billController.batchBill.paymentMethod eq 'Card'}" style="font-size: 8pt">
+                    <h:outputLabel value="Payments : #{cc.attrs.billController.batchBill.paymentMethod.label}" class="mx-3"/>
+                    <ui:repeat value="#{cc.attrs.payments}" var="p">
+                        <div class="d-flex align-items-center mx-3">
+                            <div>#{p.paymentMethod}</div>
+                            <div>&nbsp;&nbsp;(#{p.creditCardRefNo})</div>
+                            <div class="mx-2">#{p.paidValue}</div>
+                        </div>
+                    </ui:repeat>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{cc.attrs.billController.batchBill.paymentMethod eq 'MultiplePaymentMethods'}" style="font-size: 8pt">
+                    <h:outputLabel value="Payments : #{cc.attrs.billController.batchBill.paymentMethod.label}" class="mx-3"/>
+                    <ui:repeat value="#{cc.attrs.payments}" var="p">
+                        <div class="d-flex align-items-center mx-3">
+                            <div>#{p.paymentMethod}</div>
+                            <div class="mx-2">#{p.paidValue}</div>
+                        </div>
+                    </ui:repeat>
+                </h:panelGroup>
 
 
                 <h:panelGroup rendered="#{cc.attrs.duplicate and configOptionApplicationController.getBooleanValueByKey('OPD View Duplicate Bill Printing Details',false)}">

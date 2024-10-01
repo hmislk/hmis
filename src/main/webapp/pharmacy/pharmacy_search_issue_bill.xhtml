@@ -66,12 +66,19 @@
                                     paginator="true"
                                     paginatorPosition="bottom"
                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                    rowsPerPageTemplate="10,20,30"
+                                    rowsPerPageTemplate="20,30,50,100"
                                     >
 
                                     <p:column headerText="Bill No" >                                
-                                        <h:outputLabel  value="#{bill.deptId}"  />
+                                        <p:commandLink
+                                            value="#{bill.deptId}"
+                                            ajax="false"
+                                            action="/pharmacy/pharmacy_reprint_bill_unit_issue">
+                                            <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/> 
+                                        </p:commandLink>
                                     </p:column>
+
+
 
                                     <p:column headerText="From Department"  >                                
                                         <h:outputLabel value="#{bill.department.name}" />                                    
@@ -167,10 +174,6 @@
                                         </h:panelGroup>                               
                                     </p:column>                      
 
-<!--                                    <p:column headerText="Client" >
-                                        <h:outputLabel value="#{bill.patient.person.nameWithTitle}" />
-                                    </p:column>-->
-
                                     <p:column headerText="Payment method">
                                         <h:outputLabel value="#{bill.paymentMethod}" /><br/>
                                         <h:outputLabel value="#{bill.paymentScheme.name}" />
@@ -200,13 +203,7 @@
                                         <h:outputLabel  rendered="#{bill.cancelledBill ne null}" value="#{bill.cancelledBill.comments}" >
                                         </h:outputLabel>
                                     </p:column>
-                                    
-                                    <p:column headerText="View">
-                                        <p:commandButton ajax="false" value="View Bill"
-                                                         action="/pharmacy/pharmacy_reprint_bill_unit_issue">
-                                            <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>   
-                                        </p:commandButton>
-                                    </p:column>
+
                                 </p:dataTable>
                             </div>
                         </div>

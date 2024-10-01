@@ -50,6 +50,10 @@ public  class PackageNameController implements Serializable {
         }
         return suggestions;
     }
+     
+     public String navigateToPackageNames(){
+         return "/admin/pricing/package_name?faces-redirect=true";
+     }
     
     /**
      *
@@ -156,6 +160,7 @@ public  class PackageNameController implements Serializable {
     private void recreateModel() {
         itemList = null;
         items = null;
+        current = null;
     }
 
     /**

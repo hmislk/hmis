@@ -1,13 +1,5 @@
-/*
- * Dr M H B Ariyaratne
- * buddhika.ari@gmail.com
- */
 package com.divudi.data.inward;
 
-/**
- *
- * @author Buddhika
- */
 public enum InwardChargeType {
 
     AdmissionFee("Admission Fee"),
@@ -17,7 +9,7 @@ public enum InwardChargeType {
     CT("CT Scan"),
     DressingCharges("Dressing Charges"),
     Equipment("Equipment Charges"),
-    ECG_EEG("ECG/EEG"),//"ECG/EEG/ECHO/EXECG" request by piumini
+    ECG_EEG("ECG/EEG"),//"ECG/EEG/ECHO/EXECG" 
     ETUCharges("ETU Charges"),
     GeneralIssuing("General Issuing"),
     HomeVisiting("Home Visiting"),
@@ -49,11 +41,10 @@ public enum InwardChargeType {
     Nebulisation("Nebulisation"),
     Echo("Echo"),
     SyringePump("Syringe Pump"),
-    ExerciseECG("Exercise E.C.G"),
     OperationTheatreNursingCharges("Operation Theatre Nursing Charges"),
     OperationTheatreMachineryCharges("Operation Theatre Machinery Charges"),
     TheaterConsumbale("Theater Consumables & Drugs"),
-    VAT("VAT (15%)"),
+    VAT("VAT (18%)"),
     AccessoryCharges("Endoscopy Charges"),
     EyeLence("Opthalmic Technician & Lense Fee"),
     HospitalSupportService("Hospital Support Service"),
@@ -64,11 +55,32 @@ public enum InwardChargeType {
     @Deprecated
     Investigations("Investigations"),
     @Deprecated
-    MedicalCare("MedicalCare")
-    
-    
-    
-    ;
+    MedicalCare("MedicalCare"),
+    BabyCare("BabyCare Charges"),
+    LabourCharges("Labour Charges"),
+
+    // New enum values
+    Andrology("Andrology"),
+    AudiogramTest("Audiogram Test"),
+    CathLabEOMachine("Cath Lab EO Machine"),
+    Channel("Channel"),
+    CSSDCharges("CSSD Charges"),
+    Dialysis("Dialysis"),
+    ECG("ECG"),
+    EEG("EEG"),
+    ExerciseECG("Exercise ECG"),
+    Fertility("Fertility"),
+    HolterMoniteringCharges("Holter Monitering Charges"),
+    LaboratoryInvestigation("Laboratory Investigation"),
+    MedicalService("Medical Service"),
+    MedicalServiceOPD("Medical Service OPD"),
+    MRIUnit("MRI Unit"),
+    OPD("OPD"),
+    Others("Others"),
+    Procedure("Procedure"),
+    Radiology("Radiology"),
+    ReportingCharges("Reporting Charges"),
+    WardProcedure("Ward Procedure");
 
     private final String nameAsString;
 

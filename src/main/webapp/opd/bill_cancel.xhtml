@@ -40,14 +40,15 @@
                                         value="Cancel Bill" 
                                         icon="fa fa-cancel"
                                         style="float: right"
-                                        class="ui-button-danger" action="#{billSearch.cancelOpdBill()}">
+                                        class="ui-button-danger" 
+                                        action="#{billSearch.cancelOpdBill()}">
                                     </p:commandButton>
                                     <p:commandButton  
                                         class="ui-button-secondary d-flex justify-content-end mx-2"
                                         style="float: right"
                                         value="Back To Search"
                                         icon="fa-solid fa-arrow-left"
-                                        action="/opd/opd_bill_search"
+                                        action="/opd/opd_bill_search?faces-redirect=true"
                                         ajax="false">
                                     </p:commandButton>
                                 </h:panelGrid>
@@ -59,11 +60,12 @@
                                     <h:outputText styleClass="fas fa-money-bill"></h:outputText>
                                     <h:outputLabel value="Payment Mode" class="mx-2"></h:outputLabel>
                                 </f:facet>
-                                <p:selectOneMenu id="cmbPs" value="#{billSearch.paymentMethod}"  
-                                                 disabled="#{billSearch.bill.paymentMethod eq 'Cash'}"
-                                                 rendered="#{billSearch.bill.billType eq 'OpdBill'}">
+                                <p:selectOneMenu 
+                                    id="cmbPs" 
+                                    value="#{billSearch.paymentMethod}" 
+                                    rendered="#{billSearch.bill.billType eq 'OpdBill'}">
                                     <f:selectItem itemLabel="Select paymentMethod"/>
-                                    <f:selectItems value="#{inwardPaymentController.paymentMethods}"/>
+                                    <f:selectItems value="#{enumController.paymentMethodsForOpdBillCanceling}"/>
                                 </p:selectOneMenu>
 
                                 <p:selectOneMenu id="cmbPs2" value="#{billSearch.paymentMethod}"  
@@ -93,7 +95,7 @@
                                         </f:facet>
                                         <p:panelGrid columns="2">
                                             <h:outputLabel value="Bill No :" ></h:outputLabel>
-                                            <h:outputLabel value="#{billSearch.bill.insId}" ></h:outputLabel>
+                                            <h:outputLabel value="#{billSearch.bill.deptId}" ></h:outputLabel>
                                             <h:outputLabel value="Total :" ></h:outputLabel>
                                             <h:outputLabel value="#{billSearch.bill.total}" ></h:outputLabel>
                                             <h:outputLabel value="Discount :" ></h:outputLabel>
@@ -141,7 +143,7 @@
                                             style="float: right"
                                             value="Back To Search"
                                             icon="fa-solid fa-arrow-left"
-                                            action="/opd/opd_bill_search"
+                                            action="/opd/opd_bill_search?faces-redirect=true"
                                             ajax="false">
                                         </p:commandButton>
                                     </h:panelGroup> 
@@ -170,35 +172,38 @@
                                              class="ui-button-info m-1"
                                              icon="fa fa-print"
                                              ajax="false">
+                                <p:printer target="groupPrint" />
                             </p:commandButton> 
 
                         </div>
                         <h:panelGroup id="groupPrint" >
                             <!-- Bill Print Templates -->
                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >       
-                                <prints:five_five_paper_with_headings bill="#{billSearch.bill.cancelledBill}"/>
+                                <prints:five_five_paper_with_headings bill="#{billSearch.bill}"/>
                             </h:panelGroup>
-
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}" >       
+                                <prints:five_five_paper_coustom_1  bill="#{billSearch.bill}"/>
+                            </h:panelGroup>
                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >
                                 <prints:five_five_paper_without_headings 
-                                    bill="#{billSearch.bill.cancelledBill}" 
+                                    bill="#{billSearch.bill}" 
                                     duplicate="#{opdBillController.duplicatePrint}" 
                                     payments="#{opdBillController.payments}"/>
                             </h:panelGroup>
 
                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPrintedPaper'}" >     
-                                <prints:posOpdBillWithoutLogo bill="#{billSearch.bill.cancelledBill}" duplicate="#{opdBillController.duplicatePrint}"/>         
+                                <prints:posOpdBillWithoutLogo bill="#{billSearch.bill}" duplicate="#{opdBillController.duplicatePrint}"/>         
                             </h:panelGroup>
 
                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" >
-                                <prints:posOpdBill bill="#{billSearch.bill.cancelledBill}" duplicate="#{opdBillController.duplicatePrint}"/>
+                                <prints:posOpdBill bill="#{billSearch.bill}" duplicate="#{opdBillController.duplicatePrint}"/>
                             </h:panelGroup>
 
                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'A4Paper'}" >   
-                                <prints:A4_paper_with_headings bill="#{billSearch.bill.cancelledBill}" duplicate="#{opdBillController.duplicatePrint}"/>
+                                <prints:A4_paper_with_headings bill="#{billSearch.bill}" duplicate="#{opdBillController.duplicatePrint}"/>
                             </h:panelGroup>
                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'A4PrintedPaper'}" >
-                                <prints:A4_paper_without_headings bill="#{billSearch.bill.cancelledBill}" duplicate="#{opdBillController.duplicatePrint}"/>
+                                <prints:A4_paper_without_headings bill="#{billSearch.bill}" duplicate="#{opdBillController.duplicatePrint}"/>
                             </h:panelGroup>
 
                         </h:panelGroup>

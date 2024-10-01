@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
@@ -23,7 +24,6 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
-import com.divudi.entity.BillFee;
 import com.divudi.entity.Payment;
 import com.divudi.entity.RefundBill;
 import com.divudi.facade.PaymentFacade;
@@ -53,6 +53,11 @@ public class PettyCashBillController implements Serializable {
     CommonController commonController;
     @Inject
     BillController billController;
+    @Inject
+    WebUserController webUserController;
+    @Inject
+    DrawerController drawerController;
+    
     private Bill current;
     private boolean printPreview = false;
     @EJB
@@ -75,6 +80,17 @@ public class PettyCashBillController implements Serializable {
     private boolean printPriview;
     private List<Bill> billList;
     
+    
+    public void pettyCashCancelBillApprove(){
+        if (current==null) {
+            JsfUtil.addErrorMessage("Approved Bill Error");
+        }
+        Bill b=current.getReferenceBill();
+        b.setApproveAt(new Date());
+        b.setApproveUser(sessionController.getLoggedUser());
+        billController.save(b);
+    }
+    
     public String NavigatePettyAndIouReprint(){
         if (current.getBillType()==BillType.PettyCash) {
             return "petty_cash_bill_reprint";
@@ -82,6 +98,10 @@ public class PettyCashBillController implements Serializable {
         if (current.getBillType()==BillType.IouIssue) {
             return "iou_bill_reprint";
         }
+        if (current.getBillType()==BillType.PettyCashCancelApprove) {
+            return "petty_cash_bill_reprint";
+        }
+        
         return "";
     }
 
@@ -234,7 +254,7 @@ public class PettyCashBillController implements Serializable {
 
         getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PettyCash, BillClassType.BilledBill, BillNumberSuffix.PTYPAY));
         getCurrent().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PettyCash, BillClassType.BilledBill, BillNumberSuffix.PTYPAY));
-
+        getCurrent().setBillTypeAtomic(BillTypeAtomic.PETTY_CASH_ISSUE);
         getCurrent().setBillType(BillType.PettyCash);
 
         getCurrent().setDepartment(getSessionController().getDepartment());
@@ -291,6 +311,12 @@ public class PettyCashBillController implements Serializable {
                     return;
                 }
                 break;
+            case "tabDepartment":
+                if (getCurrent().getToDepartment().getId().equals(null)) {
+                    JsfUtil.addErrorMessage("Department?");
+                    return;
+                }
+                break;
             default:
                 JsfUtil.addErrorMessage(getTabId());
                 return;
@@ -308,7 +334,8 @@ public class PettyCashBillController implements Serializable {
 
         saveBill();
         saveBillItem();
-
+        List<Payment> payments = createPaymentForPettyCashBill(getCurrent(),getCurrent().getPaymentMethod());
+        drawerController.updateDrawerForOuts(payments);
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(getCurrent(), getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
         JsfUtil.addSuccessMessage("Bill Saved");
@@ -340,6 +367,25 @@ public class PettyCashBillController implements Serializable {
         setPaymentMethodData(p, pm);
         return p;
     }
+    
+    public Payment createPaymentForPettyCashBillCancellation(Bill cb, PaymentMethod pm) {
+        Payment p = new Payment();
+        p.setBill(cb);
+        p.setPaidValue(0 - Math.abs(cb.getNetTotal()));
+        setPaymentMethodData(p, pm);
+        return p;
+    }
+    
+    public List<Payment> createPaymentForPettyCashBill(Bill b, PaymentMethod pm) {
+        List<Payment> payments = new ArrayList<>();
+        Payment p = new Payment();
+        p.setBill(b);
+        p.setPaidValue(0 - Math.abs(b.getNetTotal()));
+        setPaymentMethodData(p, pm);
+        payments.add(p);
+        return payments;
+        
+    }
 
     public void setPaymentMethodData(Payment p, PaymentMethod pm) {
         p.setInstitution(getSessionController().getInstitution());
@@ -347,19 +393,19 @@ public class PettyCashBillController implements Serializable {
         p.setCreatedAt(new Date());
         p.setCreater(getSessionController().getLoggedUser());
         p.setPaymentMethod(pm);
-
-        if (p.getBill().getBillType() == BillType.PaymentBill) {
+        if (p.getBill().getBillType() == BillType.PettyCash) {
             p.setPaidValue(p.getBill().getNetTotal());
         } else {
             p.setPaidValue(p.getBill().getCashPaid());
         }
-
         if (p.getId() == null) {
             paymentFacade.create(p);
         }
 
     }
 
+
+    
     private Bill createPettyCashReturnBill() {
         Bill rb = new RefundBill();
         rb.copy(getCurrent());

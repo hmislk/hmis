@@ -195,6 +195,10 @@
                                         <h:outputLabel value="#{bill.toInstitution.name}" />
                                     </p:column>
 
+                                    <p:column headerText="Referring Doctor" >
+                                        <h:outputLabel value="#{bill.referredBy.person.nameWithTitle}" />
+                                    </p:column>
+
                                     <p:column headerText="Payment Method">
                                         <h:outputLabel value="#{bill.paymentMethod}" /><br/>
                                         <h:outputLabel value="#{bill.paymentScheme.name}" />
@@ -219,6 +223,8 @@
                                     </p:column>
 
                                     <p:column headerText="Comments" >
+                                        <h:outputLabel value="#{bill.comments}"/>
+                                        <br/>
                                         <h:outputLabel rendered="#{bill.refundedBill ne null}" value="#{bill.refundedBill.comments}" >
                                         </h:outputLabel>
                                         <h:outputLabel  rendered="#{bill.cancelledBill ne null}" value="#{bill.cancelledBill.comments}" >

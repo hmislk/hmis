@@ -50,7 +50,11 @@
                                                 filter="true"
                                                 filterMatchMode="contains"
                                                 class="form-control h-100">
-                                                <f:selectItems  value="#{serviceController.selectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" >
+                                                <f:selectItems  
+                                                    value="#{serviceController.selectedItems}" 
+                                                    var="myItem" 
+                                                    itemValue="#{myItem != null ? myItem : ''}" 
+                                                    itemLabel="#{myItem.name != null ? myItem.name : 'Unnamed'}">
                                                 </f:selectItems>
                                                 <f:ajax render="gpDetail" execute="lstSelect" >
                                                 </f:ajax>
@@ -133,7 +137,7 @@
                                                     value="#{serviceController.current.inwardChargeType}" 
                                                     class="form-control mx-2">
                                                     <f:selectItem itemLabel="Please select Charge"/>
-                                                    <f:selectItems value="#{enumController.inwardChargeTypesForSetting}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
+                                                    <f:selectItems value="#{enumController.inwardChargeTypes}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
                                                 </p:selectOneMenu>
 
                                                 <p:outputLabel value="Item Code"/>
@@ -164,6 +168,9 @@
 
                                                 <h:outputText value="" ></h:outputText>
                                                 <p:selectBooleanCheckbox value="#{serviceController.current.requestForQuentity}" itemLabel="Request for Quentity"/>
+
+                                                <h:outputText value="" ></h:outputText>
+                                                <p:selectBooleanCheckbox value="#{serviceController.current.printSessionNumber}" itemLabel="Print Session Number"/>
 
 
                                                 <h:outputText value="" ></h:outputText>

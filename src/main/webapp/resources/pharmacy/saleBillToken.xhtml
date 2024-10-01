@@ -17,7 +17,7 @@
     <cc:implementation>
 
         <h:outputStylesheet library="css" name="pharmacytoken.css" ></h:outputStylesheet>
-        <div class="posbill">
+        <div class="posbill" style="page-break-after:always!important;">
 
             <div class="institutionName mb-3" style="text-align: center!important;
                  font-weight: bold!important;
@@ -130,28 +130,31 @@
             </div>
 
 
-            <div class="billline">
-                <h:outputLabel value="-----------------------------------------------"   />                           
-            </div>
+            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Total Ammount On Pharmacy Token')}">
 
-            <div class="mx-5" >
-                <table style="width: 100%;">
-                    <tr>
-                        <td class="totalsBlock" style="text-align: left; width: 60%;">
-                            <h:outputLabel value="Total" />
-                        </td>
-                        <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
-                            <h:outputLabel value="#{cc.attrs.bill.total}" >
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </td>
-                    </tr>
-                </table>
-            </div>
+                <div class="billline">
+                    <h:outputLabel value="-----------------------------------------------"   />
+                </div>
 
-            <div class="billline">
-                <h:outputLabel value="-----------------------------------------------"   />                           
-            </div>
+                <div class="mx-5" >
+                    <table style="width: 100%;">
+                        <tr>
+                            <td class="totalsBlock" style="text-align: left; width: 60%;">
+                                <h:outputLabel value="Total" />
+                            </td>
+                            <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
+                                <h:outputLabel value="#{cc.attrs.bill.total}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="billline">
+                    <h:outputLabel value="-----------------------------------------------"   />
+                </div>
+            </h:panelGroup>
 
 
 

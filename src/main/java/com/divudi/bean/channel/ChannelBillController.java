@@ -290,6 +290,9 @@ public class ChannelBillController implements Serializable {
         b.setSingleBillItem(bi);
         b.setSingleBillSession(bs);
         getBillFacade().edit(b);
+        
+        getBillSession().getBill().setBillPaymentCompletelySettled(true);
+        getBillFacade().edit(getBillSession().getBill());
 
         createPayment(b, settlePaymentMethod);
 
@@ -467,6 +470,7 @@ public class ChannelBillController implements Serializable {
         bookingBillSession.getBill().setPaidAmount(newSettleBill.getPaidAmount());
         bookingBillSession.getBill().setBalance(0.0);
         bookingBillSession.getBill().setPaidBill(newSettleBill);
+        bookingBillSession.setRetired(false);
         bookingBillSession.setPaidBillSession(newlyCreatedSettlingBillSession);
         getBillFacade().edit(bookingBillSession.getBill());
 
@@ -607,7 +611,7 @@ public class ChannelBillController implements Serializable {
         temp.setBillTime(new Date());
         temp.setCreatedAt(new Date());
         temp.setCreater(getSessionController().getLoggedUser());
-
+        temp.setBillPaymentCompletelySettled(true);
         getBillFacade().create(temp);
 
         return temp;
@@ -1640,7 +1644,7 @@ public class ChannelBillController implements Serializable {
         rbi.setReferanceBillItem(bi);
         getBillItemFacade().create(rbi);
 
-        bi.setRefunded(Boolean.TRUE);
+        bi.setRefunded(true);
         getBillItemFacade().edit(bi);
 
         return rbi;
@@ -1940,7 +1944,7 @@ public class ChannelBillController implements Serializable {
         agentHistory.setBill(bill);
         agentHistory.setBillItem(billItem);
         agentHistory.setBillSession(billSession);
-        agentHistory.setBeforeBallance(ins.getBallance());
+        agentHistory.setBalanceBeforeTransaction(ins.getBallance());
         agentHistory.setTransactionValue(transactionValue);
         agentHistory.setReferenceNumber(refNo);
         agentHistory.setHistoryType(historyType);
@@ -2282,7 +2286,9 @@ public class ChannelBillController implements Serializable {
             e.setInstitution(getSessionController().getLoggedUser().getInstitution());
             e.setSmsType(MessageType.ChannelBooking);
             getSmsFacade().create(e);
-            boolean suc = smsManagerEjb.sendSms(e);
+            boolean sent = smsManagerEjb.sendSms(e);
+            e.setSentSuccessfully(sent);
+            getSmsFacade().edit(e);
         } catch (Exception e) {
         }
     }

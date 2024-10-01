@@ -8,14 +8,12 @@ import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.UserNotificationController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.StockQty;
-import com.divudi.data.inward.InwardChargeType;
 import com.divudi.ejb.BillNumberGenerator;
 
 import com.divudi.ejb.PharmacyBean;
@@ -247,7 +245,7 @@ public class TransferIssueController implements Serializable {
                 bItem.setSearialNo(getBillItems().size());
                 bItem.setItem(i.getItem());
                 bItem.setReferanceBillItem(i);
-
+                bItem.setQty(i.getQty());
                 bItem.setTmpQty(sq.getQty());
 
 //               s bItem.setTmpSuggession(getSuggession(i.getBillItem().getItem()));

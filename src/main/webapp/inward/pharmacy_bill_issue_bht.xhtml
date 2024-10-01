@@ -309,7 +309,7 @@
                                         <h:panelGrid columns="7">
                                             <p:commandButton id="nullButton3" value="No Action" action="#" style="display: none;"   ></p:commandButton>
                                             <p:defaultCommand  target="btnPrint" />  
-                                            <p:commandButton accesskey="p" id="btnPrint" icon="fa-solid fa-print" class="ui-button-info w-100" value="Print" ajax="false" action="#" >
+                                            <p:commandButton accesskey="p" id="btnPrint" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Bill Support for Native Printers')}" icon="fa-solid fa-print" class="ui-button-info w-100" value="Print" ajax="false" action="#" >
                                                 <p:printer target="gpBillPreview" ></p:printer>
                                             </p:commandButton>
                                             <p:commandButton accesskey="n" value="New Bill" ajax="false"
@@ -361,7 +361,7 @@
                                 </div>
                             </div>
                         </f:facet>
-                        <div class="d-flex m-2">
+                        <div class="d-flex m-2" style="float: right">
                             <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
                             <p:selectOneMenu value="#{sessionController.departmentPreference.pharmacyBillPaperType}" class="m-1" style="width: 13em;">
                                 <f:selectItem itemLabel="Please Select Paper Type" />
@@ -417,6 +417,14 @@
                                 <div >
                                     <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq false}" > 
                                         <phe:A4_paper_with_headings bill="#{pharmacySaleBhtController.printBill}"/>
+                                    </h:panelGroup>
+                                </div>
+                            </h:panelGroup>
+                            
+                            <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosHeaderPaper'}"> 
+                                <div >
+                                    <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
+                                        <phi:saleBill_Header bill="#{pharmacySaleBhtController.printBill}"></phi:saleBill_Header>
                                     </h:panelGroup>
                                 </div>
                             </h:panelGroup>

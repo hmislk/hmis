@@ -3,6 +3,7 @@ package com.divudi.bean.common;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
+import javax.inject.Inject;
 
 /**
  *
@@ -16,6 +17,9 @@ public class NavigationController implements Serializable {
      * Creates a new instance of NavigationController
      */
     private int adminStaffMenuIndex;
+    
+    @Inject
+    InstitutionController institutionController;
 
     public NavigationController() {
     }
@@ -26,6 +30,12 @@ public class NavigationController implements Serializable {
 
     public String navigateToManageDepartment() {
         return "/admin/institutions/department_management?faces-redirect=true";
+    }
+    
+    public String navigateToManageSite(){
+        institutionController.fillAllSites();
+        institutionController.prepareAddSite();
+        return "/admin/institutions/site_management?faces-redirect=true";
     }
 
     public String navigateToManageInstitution() {
@@ -104,9 +114,7 @@ public class NavigationController implements Serializable {
         return "/admin/staff/admin_staff_signature?faces-redirect=true";
     }
 
-    public String navigateToMembershipScheme() {
-        return "/admin/pricing/membership_scheme?faces-redirect=true";
-    }
+    
 
     public String navigateToMembershipPaymentMethodAllowed() {
         return "/admin/pricing/membership_scheme_payment_method_allowed?faces-redirect=true";
@@ -132,9 +140,6 @@ public class NavigationController implements Serializable {
         return "/admin/pricing/membership_scheme_discount_channelling_by_department?faces-redirect=true";
     }
 
-    public String navigateToPaymentScheme() {
-        return "/admin/pricing/payment_scheme?faces-redirect=true";
-    }
 
     public String navigateToPaymentSchemeDiscountChannel() {
         return "/admin/pricing/payment_scheme_discount_channel?faces-redirect=true";
@@ -146,6 +151,10 @@ public class NavigationController implements Serializable {
 
     public String navigateToPaymentSchemeDiscountOpdByDepartment() {
         return "/admin/pricing/payment_scheme_discount_opd_by_department?faces-redirect=true";
+    }
+    
+    public String navigateToPaymentSchemeDiscountOpdBySite() {
+        return "/admin/pricing/payment_scheme_discount_opd_by_site?faces-redirect=true";
     }
 
     public String navigateToPaymentSchemeDiscountOpdByItem() {

@@ -363,6 +363,16 @@ public class FinancialReport {
         }
         return billTypesForCollectedCash;
     }
+    
+    public List<BillTypeAtomic> getBillTypesForChannelCollected() {
+        List<BillTypeAtomic> cc = new ArrayList<>();
+        BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_IN);
+        if (billTypesForCollectedCash == null) {
+            billTypesForCollectedCash = new ArrayList<>();
+            billTypesForCollectedCash = BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_IN);
+        }
+        return billTypesForCollectedCash;
+    }
 
     public List<PaymentMethod> getPaymentMethodsForRefundedCash() {
         if (paymentMethodsForRefundedCash == null) {
@@ -919,5 +929,7 @@ public class FinancialReport {
         }
         return billTypesForShortExcess;
     }
+    
+    
 
 }

@@ -93,10 +93,7 @@
                                 <p:ajax event="itemSelect" process="acIx ct" update="@all" />
                                 <p:ajax event="focus" process="ct"/>
                             </p:autoComplete>
-                            <p:watermark for="ct" value="Category"/>
-                            <p:watermark for="acIx" value="Item"/>
-                            <p:watermark for="dept" value="Department"/>
-                            <p:watermark for="ins" value="Institution"/>
+                            
                         </h:panelGrid>
                     </h:panelGrid>              
                     <h:panelGrid columns="12" class="my-4" >
@@ -163,7 +160,7 @@
                         </p:columnGroup>
                         <p:subTable value="#{bwf.billFees}" var="i" >
                             <f:facet name="header">
-                                <h:outputLabel value="Bill - #{bwf.bill.insId}"/>
+                                <h:outputLabel value="Bill - #{bwf.bill.deptId}"/>
                                 <h:outputLabel value="Bill Total - #{bwf.hosTotal}" style="float: right;"/>
                             </f:facet>
                             <p:column headerText="BHT No" >

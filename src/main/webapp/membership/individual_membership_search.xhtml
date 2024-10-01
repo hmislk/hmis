@@ -1,0 +1,86 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+
+
+    <h:head>
+
+    </h:head>
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+
+                <h:panelGroup >
+                    <h:form  >
+                        <p:growl />
+                        <p:panel header="Search and Edit Families" >
+                            <h:panelGrid columns="3" >
+                                <p:outputLabel value="Membership Card No / Phone No of CHH" ></p:outputLabel>
+                                <p:inputText value="#{patientController.searchText}" autocomplete="off"></p:inputText>
+                                <p:commandButton ajax="false" action="#{patientController.searchFamilyMember()}" value="Search" >
+                                </p:commandButton>
+                            </h:panelGrid>
+                        </p:panel>
+
+
+                        <p:dataTable value="#{patientController.familyMembers}" var="f" rowIndexVar="n" rowKey="#{f.id}" >
+                            <p:column headerText="Membership" >
+                                <p:outputLabel value="#{f.family.membershipScheme.name}" ></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Card No" >
+                                <p:outputLabel value="#{f.family.membershipCardNo}" ></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Phone No" >
+                                <p:outputLabel value="#{f.family.phoneNo}" ></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Name" >
+                                <p:outputLabel value="#{f.patient.person.name}" ></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Sex" >
+                                <p:outputLabel value="#{f.patient.person.sex}" ></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Age" >
+                                <p:outputLabel value="#{f.patient.age}" ></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Actions" >
+                                <p:commandButton 
+                                    action="#{opdBillController.navigateToNewOpdBillWithPaymentScheme(f.patient, f.family.membershipScheme.paymentScheme)}" 
+                                    ajax="false"
+                                    class="mx-2"
+                                    icon="fa fa-fw fa-file-medical"
+                                    title="OPD Billing">
+                                </p:commandButton>
+
+                                <p:commandButton 
+                                    action="#{opdPreBillController.navigateToBillingForCashierFromMembership(f.patient, f.family.membershipScheme.paymentScheme)}" 
+                                    ajax="false"
+                                    class="mx-2"
+                                    icon="fa fa-fw fa-cash-register"
+                                    title="OPD Billing for Cashier">
+                                </p:commandButton>
+
+                                <p:commandButton 
+                                    ajax="false"
+                                    action="#{bookingControllerViewScope.navigateToChannelBookingFromMembershipByDate(f.patient, f.family.membershipScheme.paymentScheme)}" 
+                                    icon="fa fa-fw fa-calendar-check" 
+                                    class="mx-1"
+                                    title="Channelling"
+                                    disabled="#{!webUserController.hasPrivilege('ChannellingChannelBooking')}">
+                                </p:commandButton>
+                            </p:column>
+                        </p:dataTable>
+
+
+
+                    </h:form>
+                </h:panelGroup>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

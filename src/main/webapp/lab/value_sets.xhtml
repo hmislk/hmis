@@ -35,7 +35,13 @@
 
 
                                 <h:outputLabel value="Investigation" ></h:outputLabel>
-                                <p:autoComplete forceSelection="true" id="acIx"  value="#{investigationItemController.currentInvestigation}" completeMethod="#{investigationController.completeItem}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" >
+                                <p:autoComplete forceSelection="true" id="acIx"  value="#{investigationItemController.currentInvestigation}" completeMethod="#{investigationController.completeItem}" var="ix" itemValue="#{ix}" >
+                                    <p:column headerText="Name">
+                                        <h:outputText value="#{ix.name}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Code">
+                                        <h:outputText value="#{ix.code}" ></h:outputText>
+                                    </p:column>
                                     <p:ajax event="itemSelect" process="acIx" update="lstIi acIiv" />
                                 </p:autoComplete>
                                 <h:outputLabel value="Field" ></h:outputLabel>
@@ -57,18 +63,20 @@
                             </p:panelGrid>
 
                             <p:dataTable id="lstIi" value="#{investigationItemController.current.investigationItemValues}" var="iivt" >
-                                <p:column  headerText="Code">
+                                <p:column  headerText="Code" width="5em">
 
                                     <p:inputText autocomplete="off" value="#{iivt.code}" style="width: 70px;">
                                         <p:ajax event="blur" process="lstIi" listener="#{investigationItemController.saveSelected()}" />
                                     </p:inputText>
                                 </p:column>
                                 <p:column headerText="Value" >
-                                    <p:inputText autocomplete="off" value="#{iivt.name}" style="width: 300px;">
+                                    <p:inputText 
+                                        class="w-100"
+                                        autocomplete="off" value="#{iivt.name}" style="width: 300px;">
                                         <p:ajax event="blur" process="lstIi" listener="#{investigationItemController.saveSelected()}" />
                                     </p:inputText>
                                 </p:column>
-                                <p:column >
+                                <p:column width="8em" >
                                     <p:commandButton ajax="false" value="Remove" action="#{investigationItemController.removeInvestigationItemValue }"   >
                                         <f:setPropertyActionListener value="#{iivt}" target="#{investigationItemController.removingItem}" />
                                     </p:commandButton>

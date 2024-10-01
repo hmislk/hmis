@@ -16,11 +16,6 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
 
-
-        <p:commandButton value="Print" class="ui-button-info mx-2 mt-2" style="float: right" icon="fas fa-print" ajax="false" action="#" >
-            <p:printer target="gpBillPreview" ></p:printer>
-        </p:commandButton>
-
         <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
        
             <h:panelGroup id="gpBillPreview" >
@@ -29,9 +24,9 @@
                     <tr >
                         <td colspan="3" style="text-align: center;">
                             <b><h:outputLabel value="PAYMENT VOUCHER" style="font-size: 1.6em"  /><br/></b>
-                            <h:outputLabel value="**Cancelled**" style="font-size: 1.5em" rendered="#{cc.attrs.bill.cancelledBill.insId ne null}"  />
+                            <h:outputLabel value="**Cancelled**" style="font-size: 1.5em" rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}"  />
                             <h:outputLabel value="  **Duplicate**" 
-                                           rendered="#{cc.attrs.bill.cancelledBill.insId eq null and cc.attrs.dup eq true }" style="font-size: 1.5em" />
+                                           rendered="#{cc.attrs.bill.cancelledBill.deptId eq null and cc.attrs.dup eq true }" style="font-size: 1.5em" />
                             <p:spacer width="100%" height="2" />
                         </td>
                     </tr>
@@ -43,10 +38,10 @@
                             <h:outputLabel value=":"/>
                         </td>
                         <td colspan="3" >
-                            <h:outputLabel value="#{cc.attrs.bill.cancelledBill.insId}"  
-                                           rendered="#{cc.attrs.bill.cancelledBill.insId ne null}"/> 
-                            <h:outputLabel value="#{cc.attrs.bill.insId}" 
-                                           rendered="#{cc.attrs.bill.cancelledBill.insId eq null}"/>
+                            <h:outputLabel value="#{cc.attrs.bill.cancelledBill.deptId}"  
+                                           rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}"/> 
+                            <h:outputLabel value="#{cc.attrs.bill.deptId}" 
+                                           rendered="#{cc.attrs.bill.cancelledBill.deptId eq null}"/>
                         </td>
                     </tr>
                     <tr>
@@ -58,11 +53,11 @@
                         </td>
                         <td>
                             <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billDate}"
-                                           rendered="#{cc.attrs.bill.cancelledBill.insId ne null}"  >
+                                           rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}"  >
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                             </h:outputLabel>                      
                             <h:outputLabel value="#{cc.attrs.bill.billDate}"
-                                           rendered="#{cc.attrs.bill.cancelledBill.insId eq null }">
+                                           rendered="#{cc.attrs.bill.cancelledBill.deptId eq null }">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                             </h:outputLabel>
                         </td>
@@ -76,9 +71,9 @@
                         </td>
                         <td>
                             <h:outputLabel value="#{cc.attrs.bill.cancelledBill.paymentMethod}" 
-                                           rendered="#{cc.attrs.bill.cancelledBill.insId ne null}" />                        
+                                           rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}" />                        
                             <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" 
-                                           rendered="#{cc.attrs.bill.cancelledBill.insId eq null }"/>
+                                           rendered="#{cc.attrs.bill.cancelledBill.deptId eq null }"/>
                         </td>
                     </tr>
                     <tr>
@@ -90,11 +85,11 @@
                         </td>
                         <td>
                             <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billTime}"  
-                                           rendered="#{cc.attrs.bill.cancelledBill.insId ne null}">
+                                           rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}">
                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                             </h:outputLabel>                        
                             <h:outputLabel value="#{cc.attrs.bill.billTime}" 
-                                           rendered="#{cc.attrs.bill.cancelledBill.insId eq null }">
+                                           rendered="#{cc.attrs.bill.cancelledBill.deptId eq null }">
                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                             </h:outputLabel>
                         </td>
@@ -108,7 +103,7 @@
                         </td>
                         <td>
                             <h:outputLabel value="#{cc.attrs.bill.singleBillSession.staff.person.nameWithTitle}" style="text-transform: capitalize; "  />
-
+                            <h:outputLabel value="#{cc.attrs.bill.staff.person.nameWithTitle}" style="text-transform: capitalize; "  />
                         </td>
                     </tr>
                     <tr>
@@ -120,7 +115,15 @@
                                     <f:facet name="header" >
                                         <h:outputLabel value="No" ></h:outputLabel>
                                     </f:facet>
-                                    <h:outputLabel value="#{bip.referanceBillItem.bill.insId}" 
+                                    <h:outputLabel value="#{bip.referanceBillItem.bill.deptId}" 
+                                                   />
+                                </h:column>
+                                
+                                <h:column  >
+                                    <f:facet name="header" >
+                                        <h:outputLabel value="Bill Date" ></h:outputLabel>
+                                    </f:facet>
+                                    <h:outputLabel value="#{bip.referanceBillItem.bill.createdAt}" 
                                                    />
                                 </h:column>
                                 <h:column   >

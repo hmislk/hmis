@@ -6,6 +6,7 @@ package com.divudi.entity;
 
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
+import com.divudi.data.ItemBarcodeGenerationStrategy;
 import com.divudi.data.ItemType;
 import com.divudi.data.SessionNumberType;
 import com.divudi.data.SymanticType;
@@ -58,10 +59,10 @@ import javax.persistence.Transient;
 @DiscriminatorColumn(name = "DTYPE")
 public class Item implements Serializable, Comparable<Item> {
 
-    @OneToMany(mappedBy = "item", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "item", fetch = FetchType.EAGER)
     List<InvestigationItem> reportItems;
 
-    @OneToMany(mappedBy = "item", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "item", fetch = FetchType.EAGER)
     List<WorksheetItem> worksheetItems;
 
     @OneToMany(mappedBy = "item", fetch = FetchType.EAGER)
@@ -71,18 +72,22 @@ public class Item implements Serializable, Comparable<Item> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-
     Long id;
     int orderNo;
+    
+    private boolean canSechduleForOtherDays;
 
     private Long itemId;
 
     private boolean isMasterItem;
     private boolean hasReportFormat;
     private int numberOfDaysToMarkAsShortExpiary;
+    
 
     @ManyToOne
     Category category;
+    @ManyToOne
+    private Category financialCategory;
     Double total = 0.0;
     private Double totalForForeigner = 0.0;
     Boolean discountAllowed = false;
@@ -114,7 +119,9 @@ public class Item implements Serializable, Comparable<Item> {
     String sname;
     String tname;
     String code;
+    private String codeSystem;
     String barcode;
+    private Long lastBarcode;
     String printName;
     String shortName;
     String fullName;
@@ -161,6 +168,7 @@ public class Item implements Serializable, Comparable<Item> {
     boolean chargesVisibleForInward;
     boolean requestForQuentity;
     boolean marginNotAllowed;
+    private boolean printSessionNumber;
     @Column
     boolean inactive = false;
     @ManyToOne
@@ -187,6 +195,8 @@ public class Item implements Serializable, Comparable<Item> {
     Date effectiveFrom;
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date effectiveTo;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date expiryDate;
     private boolean scanFee;
     double profitMargin;
 
@@ -210,6 +220,8 @@ public class Item implements Serializable, Comparable<Item> {
     private ItemType itemType;
     @Enumerated(EnumType.STRING)
     private Priority priority;
+    @Enumerated
+    private ItemBarcodeGenerationStrategy itemBarcodeGenerationStrategy;
 
     private boolean hasMoreThanOneComponant;
 
@@ -234,16 +246,26 @@ public class Item implements Serializable, Comparable<Item> {
     double channelAgentFee;
     @Transient
     double channelOnCallFee;
+    
+    @Transient
+    private double totalStockQty;
 
     @Transient
     String transName;
 
     @Transient
     private String transCodeFromName;
+    
+    private boolean multipleReportsAllowed;
+    
+    @Lob
+    private String forGender;
 
     @Column(name = "DTYPE", insertable = false, updatable = false)
     private String clazz;
-
+    
+     private boolean canRemoveItemfromPackage;
+ 
     public double getVatPercentage() {
         return 0;
     }
@@ -805,6 +827,9 @@ public class Item implements Serializable, Comparable<Item> {
     }
 
     public SessionNumberType getSessionNumberType() {
+        if(sessionNumberType==null){
+            sessionNumberType=SessionNumberType.ByBill;
+        }
         return sessionNumberType;
     }
 
@@ -1080,6 +1105,8 @@ public class Item implements Serializable, Comparable<Item> {
 
         return this.name.compareTo(o.name);
     }
+    
+    
 
     public ItemType getItemType() {
         if (itemType == null) {
@@ -1235,6 +1262,8 @@ public class Item implements Serializable, Comparable<Item> {
     public void setPackUnit(MeasurementUnit packUnit) {
         this.packUnit = packUnit;
     }
+    
+    
 
     public MeasurementUnit getBaseUnit() {
         return baseUnit;
@@ -1310,9 +1339,105 @@ public class Item implements Serializable, Comparable<Item> {
     public void setNumberOfDaysToMarkAsShortExpiary(int numberOfDaysToMarkAsShortExpiary) {
         this.numberOfDaysToMarkAsShortExpiary = numberOfDaysToMarkAsShortExpiary;
     }
+
+    public Category getFinancialCategory() {
+        return financialCategory;
+    }
+
+    public void setFinancialCategory(Category financialCategory) {
+        this.financialCategory = financialCategory;
+    }
+
+    public double getTotalStockQty() {
+        return totalStockQty;
+    }
+
+    public void setTotalStockQty(double totalStockQty) {
+        this.totalStockQty = totalStockQty;
+    }
+
+    public ItemBarcodeGenerationStrategy getItemBarcodeGenerationStrategy() {
+        if(itemBarcodeGenerationStrategy==null){
+            itemBarcodeGenerationStrategy=ItemBarcodeGenerationStrategy.BY_ITEM;
+        }
+        return itemBarcodeGenerationStrategy;
+    }
+
+    public void setItemBarcodeGenerationStrategy(ItemBarcodeGenerationStrategy itemBarcodeGenerationStrategy) {
+        this.itemBarcodeGenerationStrategy = itemBarcodeGenerationStrategy;
+    }
+
+    public Long getLastBarcode() {
+        if(lastBarcode==null){
+            lastBarcode=0l;
+        }
+        return lastBarcode;
+    }
+
+    public void setLastBarcode(Long lastBarcode) {
+        this.lastBarcode = lastBarcode;
+    }
+
+    public boolean isPrintSessionNumber() {
+        return printSessionNumber;
+    }
+
+    public void setPrintSessionNumber(boolean printSessionNumber) {
+        this.printSessionNumber = printSessionNumber;
+    }
+
+    public boolean isCanSechduleForOtherDays() {
+        return canSechduleForOtherDays;
+    }
+
+    public void setCanSechduleForOtherDays(boolean canSechduleForOtherDays) {
+        this.canSechduleForOtherDays = canSechduleForOtherDays;
+    }
+
+    public boolean isCanRemoveItemfromPackage() {
+        return canRemoveItemfromPackage;
+    }
+
+    public void setCanRemoveItemfromPackage(boolean canRemoveItemfromPackage) {
+        this.canRemoveItemfromPackage = canRemoveItemfromPackage;
+    }
+
+    public String getForGender() {
+        if(forGender==null||forGender.trim().equals("")){
+            forGender = "Both";
+        }
+        return forGender;
+    }
+
     
     
-    
+    public void setForGender(String forGender) {
+        this.forGender = forGender;
+    }
+
+    public Date getExpiryDate() {
+        return expiryDate;
+    }
+
+    public void setExpiryDate(Date expiryDate) {
+        this.expiryDate = expiryDate;
+    }
+
+    public String getCodeSystem() {
+        return codeSystem;
+    }
+
+    public void setCodeSystem(String codeSystem) {
+        this.codeSystem = codeSystem;
+    }
+
+    public boolean isMultipleReportsAllowed() {
+        return multipleReportsAllowed;
+    }
+
+    public void setMultipleReportsAllowed(boolean multipleReportsAllowed) {
+        this.multipleReportsAllowed = multipleReportsAllowed;
+    }
 
     static class ReportItemComparator implements Comparator<ReportItem> {
 

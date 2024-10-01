@@ -108,11 +108,32 @@
                             </p:tab>
                             <p:tab title="Bulk Transactions*">
                                 <div class="d-grid gap-2">
+                                    
+                                    <p:commandButton   
+                                        class="w-100"  
+                                        ajax="false" 
+                                        value="Download, Change &amp; Upload Items" 
+                                        action="/admin/items/download_items?faces-redirect=true" />
+                                    
+                                    <p:commandButton   
+                                        class="w-100"  
+                                        ajax="false" 
+                                        value="Collecting Center Special Fee Upload" 
+                                        action="#{dataUploadController.navigateToCollectingCentreSpecialFeeUpload()}" />
+                                    
                                     <p:commandButton   
                                         class="w-100"  
                                         ajax="false" 
                                         value="Item &amp; Hospital Fee Upload" 
-                                        action="#{dataUploadController.navigateToUploadOpdItemsAndFees()}" />
+                                        action="#{dataUploadController.navigateToUploadOpdItemsAndHospitalFees()}" />
+                                    
+                                    <p:commandButton   
+                                        class="w-100"  
+                                        ajax="false" 
+                                        value="Item &amp; Doctor Fee Upload" 
+                                        action="#{dataUploadController.navigateToUploadOpdItemsAndDoctorFees()}" />
+                                    
+                                    
                                     <p:commandButton   
                                         class="w-100"  
                                         ajax="false" 

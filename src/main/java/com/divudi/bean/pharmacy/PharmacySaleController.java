@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.CommonFunctionsController;
@@ -23,10 +24,10 @@ import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.OptionScope;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
+import com.divudi.data.TokenType;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.YearMonthDay;
@@ -40,17 +41,16 @@ import com.divudi.entity.BillFee;
 import com.divudi.entity.BillFeePayment;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
+import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
 import com.divudi.entity.Payment;
 import com.divudi.entity.PaymentScheme;
-import com.divudi.entity.Person;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.Staff;
 import com.divudi.entity.Token;
-import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.ItemBatch;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
@@ -116,7 +116,8 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     ConfigOptionController configOptionController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
-
+    @Inject
+    FinancialTransactionController financialTransactionController;
     @Inject
     SessionController sessionController;
     @Inject
@@ -209,6 +210,16 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     private UserStockContainer userStockContainer;
     PaymentMethodData paymentMethodData;
     private boolean patientDetailsEditable;
+    private Department counter;
+    Token currentToken;
+
+    public Token getCurrentToken() {
+        return currentToken;
+    }
+
+    public void setCurrentToken(Token currentToken) {
+        this.currentToken = currentToken;
+    }
 
     public String navigateToPharmacySaleWithoutStocks() {
         prepareForPharmacySaleWithoutStock();
@@ -646,8 +657,23 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     public String navigateToPharmacyRetailSale() {
-        resetAll();
-        return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true";
+        Boolean pharmacyBillingAfterShiftStart = configOptionApplicationController.getBooleanValueByKey("Pharmacy billing can be done after shift start", false);
+
+        if (pharmacyBillingAfterShiftStart) {
+            financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+            if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
+                resetAll();
+                return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true";
+            } else {
+                JsfUtil.addErrorMessage("Start Your Shift First !");
+                return "/cashier/index?faces-redirect=true";
+            }
+        } 
+        else {
+            resetAll();
+            return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true";
+        }
+
     }
 
     public void resetAll() {
@@ -1370,7 +1396,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         getPreBill().setCreater(getSessionController().getLoggedUser());
 
         getPreBill().setPatient(pt);
-        getPreBill().setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(pt, getSessionController().getApplicationPreference().isMembershipExpires()));
+//        getPreBill().setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(pt, getSessionController().getApplicationPreference().isMembershipExpires()));
         getPreBill().setToStaff(toStaff);
         getPreBill().setToInstitution(toInstitution);
 
@@ -1408,7 +1434,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         getPreBill().setCreater(getSessionController().getLoggedUser());
 
         getPreBill().setPatient(pt);
-        getPreBill().setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(pt, getSessionController().getApplicationPreference().isMembershipExpires()));
+//        getPreBill().setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(pt, getSessionController().getApplicationPreference().isMembershipExpires()));
         getPreBill().setToStaff(toStaff);
         getPreBill().setToInstitution(toInstitution);
 
@@ -1629,6 +1655,56 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     }
 
+    public void settlePharmacyToken() {
+        currentToken = new Token();
+        currentToken.setTokenType(TokenType.PHARMACY_TOKEN);
+        currentToken.setDepartment(sessionController.getDepartment());
+        currentToken.setFromDepartment(sessionController.getDepartment());
+        currentToken.setPatient(getPatient());
+        currentToken.setInstitution(sessionController.getInstitution());
+        currentToken.setFromInstitution(sessionController.getInstitution());
+        if (getCounter() == null) {
+            if (sessionController.getLoggableSubDepartments() != null
+                    && !sessionController.getLoggableSubDepartments().isEmpty()) {
+                counter = sessionController.getLoggableSubDepartments().get(0);
+            }
+        }
+        currentToken.setCounter(getCounter());
+        if (counter != null) {
+            currentToken.setToDepartment(counter.getSuperDepartment());
+            if (counter.getSuperDepartment() != null) {
+                currentToken.setToInstitution(counter.getSuperDepartment().getInstitution());
+            }
+        }
+        if (getPatient().getId() == null) {
+            JsfUtil.addErrorMessage("Please select a patient");
+            return;
+        } else if (getPatient().getPerson().getName() == null) {
+            JsfUtil.addErrorMessage("Please select a patient");
+            return;
+        } else if (getPatient().getPerson().getName().trim().equals("")) {
+            JsfUtil.addErrorMessage("Please select a patient");
+            return;
+        } else {
+            Patient pt = savePatient();
+            currentToken.setPatient(pt);
+        }
+        if (currentToken.getToDepartment() == null) {
+            currentToken.setToDepartment(sessionController.getDepartment());
+        }
+        if (currentToken.getToInstitution() == null) {
+            currentToken.setToInstitution(sessionController.getInstitution());
+        }
+        tokenFacade.create(currentToken);
+        currentToken.setTokenNumber(billNumberBean.generateDailyTokenNumber(currentToken.getFromDepartment(), null, null, TokenType.PHARMACY_TOKEN));
+        currentToken.setCounter(counter);
+        currentToken.setTokenDate(new Date());
+        currentToken.setTokenAt(new Date());
+        currentToken.setBill(getPreBill());
+        tokenFacade.edit(currentToken);
+        setToken(currentToken);
+    }
+
     public void settlePreBill() {
         editingQty = null;
 
@@ -1677,10 +1753,18 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         savePreBillFinallyForRetailSaleForCashier(pt);
         savePreBillItemsFinally(tmpBillItems);
         setPrintBill(getBillFacade().find(getPreBill().getId()));
+        if (configOptionApplicationController.getBooleanValueByKey("Create Token At Pharmacy Sale For Cashier")) {
+            if (getPatient() != null) {
+                Token t = tokenController.findPharmacyTokens(getPreBill());
+                if (t == null) {
+                    settlePharmacyToken();
+                }
+            }
 
-        if (getToken() != null) {
-            getToken().setBill(getPreBill());
-            tokenFacade.edit(getToken());
+        }
+        if (getCurrentToken() != null) {
+            getCurrentToken().setBill(getPreBill());
+            tokenFacade.edit(getCurrentToken());
         }
 
         markToken();
@@ -2338,23 +2422,22 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         double discountRate = 0;
         boolean discountAllowed = bi.getItem().isDiscountAllowed();
 
-        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
-
+//        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
         //MEMBERSHIPSCHEME DISCOUNT
-        if (membershipScheme != null && discountAllowed) {
-            PaymentMethod tpm = getPaymentMethod();
-            if (tpm == null) {
-                tpm = PaymentMethod.Cash;
-            }
-            PriceMatrix priceMatrix = getPriceMatrixController().getPharmacyMemberDisCount(tpm, membershipScheme, getSessionController().getDepartment(), bi.getItem().getCategory());
-            if (priceMatrix == null) {
-                return 0;
-            } else {
-                bi.setPriceMatrix(priceMatrix);
-                return (retailRate * priceMatrix.getDiscountPercent()) / 100;
-            }
-        }
-
+//        if (membershipScheme != null && discountAllowed) {
+//            PaymentMethod tpm = getPaymentMethod();
+//            if (tpm == null) {
+//                tpm = PaymentMethod.Cash;
+//            }
+//            PriceMatrix priceMatrix = getPriceMatrixController().getPharmacyMemberDisCount(tpm, membershipScheme, getSessionController().getDepartment(), bi.getItem().getCategory());
+//            if (priceMatrix == null) {
+//                return 0;
+//            } else {
+//                bi.setPriceMatrix(priceMatrix);
+//                return (retailRate * priceMatrix.getDiscountPercent()) / 100;
+//            }
+//        }
+//
         //PAYMENTSCHEME DISCOUNT
         if (getPaymentScheme() != null && discountAllowed) {
             PriceMatrix priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(getPaymentMethod(), getPaymentScheme(), getSessionController().getDepartment(), bi.getItem());
@@ -2900,6 +2983,14 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     public void setSelectedBillItems(List<BillItem> selectedBillItems) {
         this.selectedBillItems = selectedBillItems;
+    }
+
+    public Department getCounter() {
+        return counter;
+    }
+
+    public void setCounter(Department counter) {
+        this.counter = counter;
     }
 
 }

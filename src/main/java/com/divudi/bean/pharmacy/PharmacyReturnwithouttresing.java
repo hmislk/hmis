@@ -530,6 +530,14 @@ public class PharmacyReturnwithouttresing implements Serializable {
         //   ////System.out.println("editingQty = " + editingQty);
         errorMessage = null;
         //   ////System.out.println("errorMessage = " + errorMessage);
+        if (toInstitution == null) {
+            JsfUtil.addErrorMessage("Select Dealor");
+            return;
+        }
+        if (getPreBill().getComments() == null || getPreBill().getComments().trim().equals("")) {
+            JsfUtil.addErrorMessage("Please enter a comment");
+            return;
+        }
         if (checkAllBillItem()) {
             //   ////System.out.println("Check all bill Ietems");
             return;
@@ -843,6 +851,7 @@ public class PharmacyReturnwithouttresing implements Serializable {
         balance = 0;
         userStockContainer = null;
         toDepartment = null;
+        toInstitution = null;
     }
 
     private void clearBillItem() {

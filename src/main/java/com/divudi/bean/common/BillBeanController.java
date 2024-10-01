@@ -8,19 +8,34 @@ package com.divudi.bean.common;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.bean.inward.InwardBeanController;
+import com.divudi.data.BillFeeBundleEntry;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.FeeType;
+import com.divudi.data.InstitutionType;
 import com.divudi.data.OpdBillingStrategy;
-import com.divudi.data.OpdTokenNumberGenerationStrategy;
 import com.divudi.data.PaymentMethod;
+import static com.divudi.data.PaymentMethod.Agent;
 import static com.divudi.data.PaymentMethod.Card;
+import static com.divudi.data.PaymentMethod.Cash;
 import static com.divudi.data.PaymentMethod.Cheque;
 import static com.divudi.data.PaymentMethod.Credit;
+import static com.divudi.data.PaymentMethod.MultiplePaymentMethods;
+import static com.divudi.data.PaymentMethod.OnCall;
+import static com.divudi.data.PaymentMethod.OnlineSettlement;
+import static com.divudi.data.PaymentMethod.PatientDeposit;
 import static com.divudi.data.PaymentMethod.Slip;
+import static com.divudi.data.PaymentMethod.Staff;
+import static com.divudi.data.PaymentMethod.YouOweMe;
+import static com.divudi.data.PaymentMethod.ewallet;
+import com.divudi.data.PaymentType;
+import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.data.inward.SurgeryBillType;
+import com.divudi.data.lab.PatientInvestigationStatus;
 import com.divudi.ejb.ServiceSessionBean;
+import com.divudi.ejb.StaffBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillEntry;
@@ -50,7 +65,6 @@ import com.divudi.entity.inward.EncounterComponent;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.entity.membership.AllowedPaymentMethod;
-import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.entity.membership.PaymentSchemeDiscount;
 import com.divudi.facade.AllowedPaymentMethodFacade;
 import com.divudi.facade.BillComponentFacade;
@@ -68,6 +82,7 @@ import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.PackageFeeFacade;
 import com.divudi.facade.PackegeFacade;
 import com.divudi.facade.PatientInvestigationFacade;
+import com.divudi.facade.PaymentFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -83,6 +98,7 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import org.apache.commons.collections.map.HashedMap;
 
 /**
  *
@@ -123,11 +139,19 @@ public class BillBeanController implements Serializable {
     @EJB
     CategoryFacade categoryFacade;
     @EJB
+    PaymentFacade paymentFacade;
+    @EJB
     AllowedPaymentMethodFacade allowedPaymentMethodFacade;
     @Inject
     DepartmentController departmentController;
     @Inject
     CollectingCentreBillController collectingCentreBillController;
+    @Inject
+    ItemFeeManager itemFeeManager;
+    @Inject
+    SessionController sessionController;
+    @EJB
+    StaffBean staffBean;
 
     public boolean checkAllowedPaymentMethod(PaymentScheme paymentScheme, PaymentMethod paymentMethod) {
         String sql = "Select s From AllowedPaymentMethod s"
@@ -1214,6 +1238,19 @@ public class BillBeanController implements Serializable {
         return getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
 
+    public List<BillItem> fetchBillItems(Bill b) {
+        String jpql;
+        HashMap params = new HashMap();
+
+        jpql = "SELECT bi "
+                + " FROM BillItem bi "
+                + " WHERE bi.bill=:bl "
+                + " order by bi.id";
+
+        params.put("bl", b);
+        return getBillItemFacade().findByJpql(jpql, params);
+    }
+
     public List<Category> fetchBilledOpdCategory(Date fromDate, Date toDate, Institution institution) {
         String sql;
         Map temMap = new HashMap();
@@ -2185,6 +2222,60 @@ public class BillBeanController implements Serializable {
         return bill;
     }
 
+    public Bill fetchBill(String billId) {
+        // Assuming that the String billId needs to be converted to Long
+        // This conversion may need additional validation or error handling if the String is not a valid Long
+        Long longBillId;
+        try {
+            longBillId = Long.parseLong(billId);
+        } catch (NumberFormatException e) {
+            // Handle the case where billId is not a valid Long
+            //System.err.println("Invalid bill ID format.");
+            return null;
+        }
+        return fetchBill(longBillId);
+    }
+
+    public Bill fetchBillWithItemsAndFees(Long billId) {
+        //System.out.println("fetchBillWithItemsAndFees called with billId: " + billId);
+        if (billId == null) {
+            //System.out.println("billId is null, returning null.");
+            return null;
+        }
+        Bill fb = fetchBill(billId);
+        //ystem.out.println("Fetched bill: " + fb);
+        if (fb == null) {
+            //System.out.println("Fetched bill is null, returning null.");
+            return null;
+        }
+        List<BillItem> billItems = fillBillItems(fb);
+        //System.out.println("Fetched bill items: " + billItems);
+        if (billItems == null) {
+            //System.out.println("Bill items are null, returning fetched bill without items.");
+            return fb;
+        }
+        for (BillItem fbi : billItems) {
+            //System.out.println("Processing bill item: " + fbi);
+            List<BillFee> fbfs = findSavedBillFeefromBillItem(fbi);
+            //System.out.println("Fetched bill fees for item: " + fbfs);
+            if (fbfs != null) {
+                fbi.setBillFees(fbfs);
+                fb.getBillFees().addAll(fbfs);
+                //System.out.println("Added bill fees to bill item and bill: " + fbfs);
+            }
+        }
+        //System.out.println("Returning final bill: " + fb);
+        return fb;
+    }
+
+    public Bill fetchBill(Long billId) {
+        String sql = "SELECT b FROM Bill b WHERE b.id = :billId";
+        HashMap<String, Object> hm = new HashMap<>();
+        hm.put("billId", billId);
+        Bill bill = getBillFacade().findFirstByJpql(sql, hm);
+        return bill;
+    }
+
     public double getTotalByBillFee(BillItem billItem) {
         String sql = "Select sum(bf.feeValue) from BillFee bf where "
                 + " bf.retired=false and bf.billItem=:bItm";
@@ -2265,7 +2356,7 @@ public class BillBeanController implements Serializable {
 
     }
 
-    public void setBillFees(BillFee bf, boolean foreign, PaymentMethod paymentMethod, MembershipScheme membershipScheme, Item item, PriceMatrix priceMatrix) {
+    public void setBillFees(BillFee bf, boolean foreign, PaymentMethod paymentMethod, Item item, PriceMatrix priceMatrix) {
 
         boolean discountAllowed = item.isDiscountAllowed();
 
@@ -2428,6 +2519,75 @@ public class BillBeanController implements Serializable {
         return dbl;
     }
 
+    public List<Bill> validBillsOfBatchBill(Bill batchBill) {
+        String j = "Select b "
+                + " from Bill b "
+                + " where b.backwardReferenceBill=:bb "
+                + " and b.cancelled=false";
+        Map m = new HashMap();
+        m.put("bb", batchBill);
+        List<Bill> tbs = billFacade.findByJpql(j, m);
+        return tbs;
+    }
+
+    public List<Bill> fetchIndividualBillsOfBatchBill(Bill batchBill) {
+        System.out.println("batchBill = " + batchBill);
+        String j = "Select b "
+                + " from Bill b "
+                + " where b.backwardReferenceBill=:bb ";
+        Map m = new HashMap();
+        m.put("bb", batchBill);
+        System.out.println("m = " + m);
+        System.out.println("j = " + j);
+        List<Bill> tbs = billFacade.findByJpql(j, m);
+        return tbs;
+    }
+
+    public List<Bill> fetchRefundBillsOfBilledBill(Bill billedBill) {
+        System.out.println("billedBill = " + billedBill);
+        String j = "Select b "
+                + " from Bill b "
+                + " where b.billedBill=:bb ";
+        Map m = new HashMap();
+        m.put("bb", billedBill);
+        List<Bill> tbs = billFacade.findByJpql(j, m);
+        return tbs;
+    }
+
+    public List<Bill> findValidBillsForSampleCollection(Long bill) {
+        Bill b = billFacade.find(bill);
+
+        if (b == null) {
+            return null;
+        }
+        return findValidBillsForSampleCollection(b);
+    }
+
+    public List<Bill> findValidBillsForSampleCollection(Bill b) {
+
+        if (b == null) {
+            return null;
+        }
+        List<Bill> bs = new ArrayList<>();
+        if (b.getBillTypeAtomic() != null) {
+            if (b.getBillTypeAtomic() == BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT
+                    || b.getBillTypeAtomic() == BillTypeAtomic.OPD_BATCH_BILL_TO_COLLECT_PAYMENT_AT_CASHIER) {
+                bs.addAll(validBillsOfBatchBill(b));
+                return bs;
+            } else {
+                bs.add(b);
+                return bs;
+            }
+        }
+        if (b.getBillType() == BillType.OpdBathcBill) {
+            bs.addAll(validBillsOfBatchBill(b));
+            return bs;
+        } else {
+            bs.add(b);
+            return bs;
+        }
+    }
+
     public Double[] fetchBillFeeValues(Bill b) {
         String sql = "Select sum(bf.feeGrossValue),sum(bf.feeDiscount),sum(bf.feeValue),sum(bf.feeVat) "
                 + " from BillFee bf where "
@@ -2457,16 +2617,19 @@ public class BillBeanController implements Serializable {
             b.setBank(paymentMethodData.getCheque().getInstitution());
             b.setChequeRefNo(paymentMethodData.getCheque().getNo());
             b.setChequeDate(paymentMethodData.getCheque().getDate());
+            b.setComments(paymentMethodData.getCheque().getComment());
         }
+
         if (paymentMethod.equals(PaymentMethod.Slip)) {
             b.setBank(paymentMethodData.getSlip().getInstitution());
             b.setChequeDate(paymentMethodData.getSlip().getDate());
-            //   b.setComments(paymentMethodData.getSlip().getComment());
+            b.setComments(paymentMethodData.getSlip().getComment());
         }
 
         if (paymentMethod.equals(PaymentMethod.Card)) {
             b.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
             b.setBank(paymentMethodData.getCreditCard().getInstitution());
+            b.setComments(paymentMethodData.getSlip().getComment());
         }
 
         if (paymentMethod.equals(PaymentMethod.OnlineSettlement)) {
@@ -2474,6 +2637,355 @@ public class BillBeanController implements Serializable {
             b.setBank(paymentMethodData.getCreditCard().getInstitution());
         }
 
+        if (paymentMethod.getPaymentType() == PaymentType.CREDIT) {
+            b.setCreditBill(true);
+        }
+
+    }
+
+    public List<Payment> createPaymentsForNonCreditIns(
+            Bill b,
+            PaymentMethod paymentMethod,
+            PaymentMethodData paymentMethodData) {
+
+        List<Payment> ps = new ArrayList<>();
+
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                Payment p = new Payment();
+                p.setBill(b);
+                p.setInstitution(b.getInstitution());
+                p.setDepartment(b.getDepartment());
+                p.setCreatedAt(new Date());
+                p.setCreater(sessionController.getLoggedUser());
+                p.setPaymentMethod(cd.getPaymentMethod());
+                switch (cd.getPaymentMethod()) {
+                    case Card:
+                        p.setBank(cd.getPaymentMethodData().getCreditCard().getInstitution());
+                        p.setCreditCardRefNo(cd.getPaymentMethodData().getCreditCard().getNo());
+                        p.setPaidValue(cd.getPaymentMethodData().getCreditCard().getTotalValue());
+                        break;
+                    case Cheque:
+                        p.setChequeDate(cd.getPaymentMethodData().getCheque().getDate());
+                        p.setChequeRefNo(cd.getPaymentMethodData().getCheque().getNo());
+                        p.setPaidValue(cd.getPaymentMethodData().getCheque().getTotalValue());
+                        b.setBank(paymentMethodData.getCheque().getInstitution());
+                        b.setChequeDate(paymentMethodData.getCheque().getDate());
+                        b.setComments(paymentMethodData.getCheque().getComment());
+                        p.setPaidValue(cd.getPaymentMethodData().getCheque().getTotalValue());
+                        break;
+                    case Cash:
+                        p.setPaidValue(cd.getPaymentMethodData().getCash().getTotalValue());
+                        break;
+                    case OnlineSettlement:
+                        b.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
+                        b.setBank(paymentMethodData.getCreditCard().getInstitution());
+                        p.setPaidValue(cd.getPaymentMethodData().getCreditCard().getTotalValue());
+                        break;
+                    case Slip:
+                        b.setBank(paymentMethodData.getSlip().getInstitution());
+                        b.setChequeDate(paymentMethodData.getSlip().getDate());
+                        b.setComments(paymentMethodData.getSlip().getComment());
+                        p.setPaidValue(cd.getPaymentMethodData().getSlip().getTotalValue());
+                        break;
+                    case IOU:
+                        p.setReferenceNo(cd.getReferenceNo());
+                        p.setPaidValue(cd.getTotalValue());
+                        break;
+                    case ewallet:
+                    case Agent:
+                    case Credit:
+                    case PatientDeposit:
+                    case OnCall:
+                    case Staff:
+                    case YouOweMe:
+                    case MultiplePaymentMethods:
+
+                }
+                paymentFacade.create(p);
+                ps.add(p);
+            }
+        } else {
+            Payment p = new Payment();
+            p.setBill(b);
+            p.setInstitution(b.getInstitution());
+            p.setDepartment(b.getDepartment());
+            p.setCreatedAt(new Date());
+            p.setCreater(sessionController.getLoggedUser());
+            p.setCurrentHolder(sessionController.getLoggedUser());
+            p.setPaymentMethod(paymentMethod);
+            p.setPaidValue(b.getNetTotal());
+
+            switch (paymentMethod) {
+                case Card:
+                    p.setBank(paymentMethodData.getCreditCard().getInstitution());
+                    p.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
+                    b.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
+                    b.setComments(paymentMethodData.getCreditCard().getComment());
+                    break;
+                case Cheque:
+                    p.setChequeDate(paymentMethodData.getCheque().getDate());
+                    p.setChequeRefNo(paymentMethodData.getCheque().getNo());
+                    b.setBank(paymentMethodData.getCheque().getInstitution());
+                    b.setChequeDate(paymentMethodData.getCheque().getDate());
+                    b.setComments(paymentMethodData.getCheque().getComment());
+                    break;
+                case OnlineSettlement:
+                    b.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
+                    b.setBank(paymentMethodData.getCreditCard().getInstitution());
+                    break;
+                case Slip:
+                    b.setBank(paymentMethodData.getSlip().getInstitution());
+                    b.setChequeDate(paymentMethodData.getSlip().getDate());
+                    b.setComments(paymentMethodData.getSlip().getComment());
+                    break;
+                case IOU:
+                    p.setReferenceNo(paymentMethodData.getIou().getReferenceNo());
+                    break;
+                case Cash:
+                    break;
+                case ewallet:
+
+                case Agent:
+                case Credit:
+                case PatientDeposit:
+
+                case OnCall:
+
+                case Staff:
+                case YouOweMe:
+                case MultiplePaymentMethods:
+            }
+
+            p.setPaidValue( Math.abs(p.getBill().getNetTotal()));
+            paymentFacade.create(p);
+            ps.add(p);
+        }
+
+        if (paymentMethod.getPaymentType() == PaymentType.CREDIT) {
+            b.setCreditBill(true);
+        }
+
+        return ps;
+
+    }
+
+    public List<Payment> createPaymentsForNonCreditOuts(
+            Bill b,
+            PaymentMethod paymentMethod,
+            PaymentMethodData paymentMethodData) {
+
+        List<Payment> ps = new ArrayList<>();
+
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                Payment p = new Payment();
+                p.setBill(b);
+                p.setInstitution(b.getInstitution());
+                p.setDepartment(b.getDepartment());
+                p.setCreatedAt(new Date());
+                p.setCreater(sessionController.getLoggedUser());
+                p.setCurrentHolder(sessionController.getLoggedUser());
+                p.setPaymentMethod(cd.getPaymentMethod());
+                double value;
+
+                switch (cd.getPaymentMethod()) {
+                    case Card:
+                        p.setBank(cd.getPaymentMethodData().getCreditCard().getInstitution());
+                        p.setCreditCardRefNo(cd.getPaymentMethodData().getCreditCard().getNo());
+                        value = Math.abs(cd.getPaymentMethodData().getCreditCard().getTotalValue());
+                        p.setPaidValue(-value);
+                        break;
+                    case Cheque:
+                        p.setChequeDate(cd.getPaymentMethodData().getCheque().getDate());
+                        p.setChequeRefNo(cd.getPaymentMethodData().getCheque().getNo());
+                        b.setBank(paymentMethodData.getCheque().getInstitution());
+                        b.setChequeDate(paymentMethodData.getCheque().getDate());
+                        b.setComments(paymentMethodData.getCheque().getComment());
+                        value = Math.abs(cd.getPaymentMethodData().getCheque().getTotalValue());
+                        p.setPaidValue(-value);
+                        break;
+                    case Cash:
+                        value = Math.abs(cd.getPaymentMethodData().getCash().getTotalValue());
+                        p.setPaidValue(-value);
+                        break;
+                    case OnlineSettlement:
+                        b.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
+                        b.setBank(paymentMethodData.getCreditCard().getInstitution());
+                        value = Math.abs(cd.getPaymentMethodData().getCreditCard().getTotalValue());
+                        p.setPaidValue(-value);
+                        break;
+                    case Slip:
+                        b.setBank(paymentMethodData.getSlip().getInstitution());
+                        b.setChequeDate(paymentMethodData.getSlip().getDate());
+                        b.setComments(paymentMethodData.getSlip().getComment());
+                        value = Math.abs(cd.getPaymentMethodData().getSlip().getTotalValue());
+                        p.setPaidValue(-value);
+                        break;
+                    // Ensure all cases that need a value to be set handle the negative absolute scenario
+                    case ewallet:
+                    case Agent:
+                    case Credit:
+                    case PatientDeposit:
+                    case OnCall:
+                    case Staff:
+                    case YouOweMe:
+                    case MultiplePaymentMethods:
+                        // Handle other payment types similarly
+                        break;
+                }
+                paymentFacade.create(p);
+                ps.add(p);
+            }
+        } else {
+            Payment p = new Payment();
+            p.setBill(b);
+            p.setInstitution(b.getInstitution());
+            p.setDepartment(b.getDepartment());
+            p.setCreatedAt(new Date());
+            p.setCreater(sessionController.getLoggedUser());
+            p.setPaymentMethod(paymentMethod);
+
+            switch (paymentMethod) {
+                case Card:
+                case Cheque:
+                case OnlineSettlement:
+                case Slip:
+                case Cash:
+                case ewallet:
+                case Agent:
+                case Credit:
+                case PatientDeposit:
+                case OnCall:
+                case Staff:
+                case YouOweMe:
+                case MultiplePaymentMethods:
+                    // Assuming `getNetTotal` is the method to retrieve the payment value for these payment types
+
+                    break;
+            }
+
+            Double value = Math.abs(b.getNetTotal());
+            p.setPaidValue(-value);
+            p.setCurrentHolder(sessionController.getLoggedUser());
+            paymentFacade.create(p);
+            ps.add(p);
+        }
+
+        if (paymentMethod.getPaymentType() == PaymentType.CREDIT) {
+            b.setCreditBill(true);
+        }
+
+        return ps;
+    }
+
+    public List<Payment> createPayment(Bill bill, PaymentMethod pm, PaymentMethodData paymentMethodData) {
+        List<Payment> ps = new ArrayList<>();
+        if (bill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                Payment p = new Payment();
+                p.setBill(bill);
+                p.setInstitution(sessionController.getInstitution());
+                p.setDepartment(sessionController.getDepartment());
+                p.setCreatedAt(new Date());
+                p.setCreater(sessionController.getLoggedUser());
+                p.setPaymentMethod(cd.getPaymentMethod());
+
+                switch (cd.getPaymentMethod()) {
+                    case Card:
+                        p.setBank(cd.getPaymentMethodData().getCreditCard().getInstitution());
+                        p.setCreditCardRefNo(cd.getPaymentMethodData().getCreditCard().getNo());
+                        p.setPaidValue(cd.getPaymentMethodData().getCreditCard().getTotalValue());
+                        break;
+                    case Cheque:
+                        p.setChequeDate(cd.getPaymentMethodData().getCheque().getDate());
+                        p.setChequeRefNo(cd.getPaymentMethodData().getCheque().getNo());
+                        p.setPaidValue(cd.getPaymentMethodData().getCheque().getTotalValue());
+                        break;
+                    case Cash:
+                        p.setPaidValue(cd.getPaymentMethodData().getCash().getTotalValue());
+                        break;
+                    case ewallet:
+                        break;
+                    case Agent:
+                        break;
+                    case Credit:
+                        break;
+                    case PatientDeposit:
+                        break;
+                    case Slip:
+                        p.setPaidValue(cd.getPaymentMethodData().getSlip().getTotalValue());
+                        p.setBank(cd.getPaymentMethodData().getSlip().getInstitution());
+                        p.setRealizedAt(cd.getPaymentMethodData().getSlip().getDate());
+                        break;
+                    case OnCall:
+                        break;
+                    case OnlineSettlement:
+                        break;
+                    case Staff:
+                        p.setPaidValue(cd.getPaymentMethodData().getStaffCredit().getTotalValue());
+                        if (cd.getPaymentMethodData().getStaffCredit().getToStaff() != null) {
+                            staffBean.updateStaffCredit(cd.getPaymentMethodData().getStaffCredit().getToStaff(), cd.getPaymentMethodData().getStaffCredit().getTotalValue());
+                            JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
+                        }
+                        break;
+                    case YouOweMe:
+                        break;
+                    case MultiplePaymentMethods:
+                        break;
+                }
+
+                paymentFacade.create(p);
+                ps.add(p);
+            }
+        } else {
+            Payment p = new Payment();
+            p.setBill(bill);
+            p.setInstitution(sessionController.getInstitution());
+            p.setDepartment(sessionController.getDepartment());
+            p.setCreatedAt(new Date());
+            p.setCreater(sessionController.getLoggedUser());
+            p.setPaymentMethod(pm);
+
+            switch (pm) {
+                case Card:
+                    p.setBank(paymentMethodData.getCreditCard().getInstitution());
+                    p.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
+                    break;
+                case Cheque:
+                    p.setChequeDate(paymentMethodData.getCheque().getDate());
+                    p.setChequeRefNo(paymentMethodData.getCheque().getNo());
+                    break;
+                case Cash:
+                    break;
+                case ewallet:
+                    break;
+                case Agent:
+                    break;
+                case Credit:
+                    break;
+                case PatientDeposit:
+                    break;
+                case Slip:
+                    p.setBank(paymentMethodData.getSlip().getInstitution());
+                    p.setRealizedAt(paymentMethodData.getSlip().getDate());
+                case OnCall:
+                    break;
+                case OnlineSettlement:
+                    break;
+                case Staff:
+                    break;
+                case YouOweMe:
+                    break;
+                case MultiplePaymentMethods:
+                    break;
+            }
+
+            p.setPaidValue(p.getBill().getNetTotal());
+            paymentFacade.create(p);
+            ps.add(p);
+        }
+        return ps;
     }
 
     public ServiceSessionBean getServiceSessionBean() {
@@ -2817,11 +3329,14 @@ public class BillBeanController implements Serializable {
     }
 
     public int calculateNumberOfBillsPerOrder(List<BillEntry> billEntrys) {
-        Set<Department> deptSet = new HashSet();
+        Set<Long> deptIdSet = new HashSet<>(); // Use Set to store department IDs
         for (BillEntry be : billEntrys) {
-            deptSet.add(be.getBillItem().getItem().getDepartment());
+            Department dept = be.getBillItem().getItem().getDepartment();
+            if (dept != null) {
+                deptIdSet.add(dept.getId()); // Add department ID to the set
+            }
         }
-        return deptSet.size();
+        return deptIdSet.size();
     }
 
     public int checkDepartment(List<BillEntry> billEntries) {
@@ -2909,6 +3424,54 @@ public class BillBeanController implements Serializable {
         saveBillComponent(e, b, wu);
         saveBillFee(e, b, wu);
 
+        //System.out.println("BillItems().size() = " + b.getBillItems().size());
+        for (BillItem bi : b.getBillItems()) {
+            //System.out.println("bif = " + bi.getBillFees().size());
+        }
+
+        return e.getBillItem();
+    }
+
+    private boolean billFeeIsThereAsSelectedInBillFeeBundle(BillFee bf, List<BillFeeBundleEntry> billFeeBundleEntries) {
+        if (bf == null) {
+            return false;
+        }
+        if (bf.getFee() == null) {
+            return false;
+        }
+        if (billFeeBundleEntries == null) {
+            return false;
+        }
+        if (billFeeBundleEntries.isEmpty()) {
+            return false;
+        }
+        boolean found = false;
+        for (BillFeeBundleEntry bfbe : billFeeBundleEntries) {
+            if (bfbe.getSelectedBillFee().equals(bf)) {
+                found = true;
+            }
+        }
+        return found;
+    }
+
+    public BillItem saveBillItemForOpdBill(Bill b, BillEntry e, WebUser wu, List<BillFeeBundleEntry> billFeeBundleEntries) {
+
+        e.getBillItem().setCreatedAt(new Date());
+        e.getBillItem().setCreater(wu);
+        e.getBillItem().setBill(b);
+
+        if (e.getBillItem().getId() == null) {
+            getBillItemFacade().create(e.getBillItem());
+        }
+
+        saveBillComponentForOpdBill(e, b, wu);
+        saveBillFeeForOpdBill(e, b, wu, billFeeBundleEntries);
+
+        //System.out.println("BillItems().size() = " + b.getBillItems().size());
+        for (BillItem bi : b.getBillItems()) {
+            //System.out.println("bif = " + bi.getBillFees().size());
+        }
+
         return e.getBillItem();
     }
 
@@ -2929,8 +3492,6 @@ public class BillBeanController implements Serializable {
 
     @Inject
     BillController billController;
-    @Inject
-    SessionController sessionController;
 
     public void calculateBillItems(Bill bill, List<BillEntry> billEntrys) {
         double staff = 0.0;
@@ -2942,6 +3503,7 @@ public class BillBeanController implements Serializable {
 
         for (BillEntry e : billEntrys) {
             for (BillFee bf : e.getLstBillFees()) {
+
                 tot += bf.getFeeGrossValue();
                 net += bf.getFeeValue();
                 dis += bf.getFeeDiscount();
@@ -2956,6 +3518,88 @@ public class BillBeanController implements Serializable {
                     getBillFeeFacade().create(bf);
                 } else {
                     getBillFeeFacade().edit(bf);
+                }
+
+            }
+        }
+
+        bill.setStaffFee(staff);
+        bill.setPerformInstitutionFee(ins);
+
+//        bill.setTotal(tot);
+//        bill.setNetTotal(net);
+//        bill.setDiscount(dis);
+        if (sessionController.getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
+            ////System.out.println("cashRemain" + billController.getCashRemain());
+            if (billController.getCashRemain() != 0) {
+                if (tot > billController.getCashRemain()) {
+                    bill.setBalance(tot - billController.getCashRemain());
+                    bill.setTotal(tot);
+                    bill.setNetTotal(billController.getCashRemain());
+                    bill.setDiscount(dis);
+                    bill.setCashPaid(billController.getCashRemain());
+                    billController.setCashRemain(0.0);
+                } else {
+                    bill.setBalance(0.0);
+                    bill.setTotal(tot);
+                    bill.setNetTotal(net);
+                    bill.setDiscount(dis);
+                    bill.setCashPaid(tot);
+                    billController.setCashRemain(billController.getCashRemain() - tot);
+                }
+
+            } else {
+                bill.setBalance(tot);
+                bill.setTotal(tot);
+                bill.setNetTotal(0.0);
+                bill.setCashPaid(0.0);
+                bill.setDiscount(dis);
+            }
+            ////System.out.println(".................");
+
+        } else {
+            bill.setGrantTotal(tot);
+            bill.setTotal(tot);
+            bill.setNetTotal(net);
+            bill.setBillTotal(net);
+            bill.setDiscount(dis);
+        }
+
+        bill.setVat(vat);
+        bill.setVatPlusNetTotal(vat + bill.getNetTotal());
+
+        getBillFacade().edit(bill);
+    }
+
+    public void calculateBillItemsForOpdBill(Bill bill, List<BillEntry> billEntrys, List<BillFeeBundleEntry> bundleFeeEntries) {
+        double staff = 0.0;
+        double ins = 0.0;
+        double tot = 0.0;
+        double dis = 0;
+        double net = 0;
+        double vat = 0.0;
+
+        for (BillEntry e : billEntrys) {
+            for (BillFee bf : e.getLstBillFees()) {
+
+                boolean needToAdd = billFeeIsThereAsSelectedInBillFeeBundle(bf, bundleFeeEntries);
+                if (needToAdd) {
+
+                    tot += bf.getFeeGrossValue();
+                    net += bf.getFeeValue();
+                    dis += bf.getFeeDiscount();
+                    vat += bf.getFeeVat();
+
+                    if (bf.getFee().getFeeType() != FeeType.Staff) {
+                        ins += bf.getFeeValue();
+                    } else {
+                        staff += bf.getFeeValue();
+                    }
+                    if (bf.getId() == null || bf.getId() == 0) {
+                        getBillFeeFacade().create(bf);
+                    } else {
+                        getBillFeeFacade().edit(bf);
+                    }
                 }
             }
         }
@@ -3115,10 +3759,60 @@ public class BillBeanController implements Serializable {
 
     }
 
+    public List<BillFee> saveBillFeeForOpdBill(BillEntry e, Bill b, WebUser wu, List<BillFeeBundleEntry> billFeeBundleEntries) {
+        List<BillFee> list = new ArrayList<>();
+        double ccfee = 0.0;
+        double woccfee = 0.0;
+        double staffFee = 0.0;
+        double collectingCentreFee = 0.0;
+        double hospitalFee = 0.0;
+        for (BillFee bf : e.getLstBillFees()) {
+
+            boolean needToAddBillFee = billFeeIsThereAsSelectedInBillFeeBundle(bf, billFeeBundleEntries);
+
+            if (!needToAddBillFee) {
+                continue;
+            }
+
+//            asdadas;
+            bf.setCreatedAt(Calendar.getInstance().getTime());
+            bf.setCreater(wu);
+            bf.setBillItem(e.getBillItem());
+            bf.setPatienEncounter(b.getPatientEncounter());
+            bf.setPatient(b.getPatient());
+
+            bf.setBill(b);
+
+            if (bf.getId() == null) {
+                getBillFeeFacade().create(bf);
+            }
+            if (bf.getStaff() != null) {
+                staffFee += bf.getFeeValue();
+            } else if (bf.getSpeciality() != null) {
+                staffFee += bf.getFeeValue();
+            } else if (bf.getInstitution() != null && bf.getInstitution().getInstitutionType() == InstitutionType.CollectingCentre) {
+                collectingCentreFee += bf.getFeeValue();
+            } else {
+                hospitalFee += bf.getFeeValue();
+            }
+            list.add(bf);
+        }
+        e.getBillItem().setTransCCFee(ccfee);
+        e.getBillItem().setTransWithOutCCFee(woccfee);
+        e.getBillItem().setHospitalFee(hospitalFee);
+        e.getBillItem().setStaffFee(staffFee);
+        e.getBillItem().setCollectingCentreFee(collectingCentreFee);
+        return list;
+    }
+
     public List<BillFee> saveBillFee(BillEntry e, Bill b, WebUser wu) {
         List<BillFee> list = new ArrayList<>();
         double ccfee = 0.0;
         double woccfee = 0.0;
+        double staffFee;
+        double collectingCentreFee;
+        double hospitalFee;
+        double otherFee;
         for (BillFee bf : e.getLstBillFees()) {
             bf.setCreatedAt(Calendar.getInstance().getTime());
             bf.setCreater(wu);
@@ -3137,6 +3831,7 @@ public class BillBeanController implements Serializable {
                 woccfee += bf.getFeeValue();
             }
             list.add(bf);
+
         }
         e.getBillItem().setTransCCFee(ccfee);
         e.getBillItem().setTransWithOutCCFee(woccfee);
@@ -3183,26 +3878,13 @@ public class BillBeanController implements Serializable {
                 bf.setFeeGrossValue(f.getFee());
             }
 
-            if (f.getFeeType() == FeeType.OwnInstitution && paymentSchemeDiscount != null) {
+            if (paymentSchemeDiscount != null) {
                 d = bf.getFeeValue() * (paymentSchemeDiscount.getDiscountPercent() / 100);
                 bf.setFeeDiscount(d);
                 bf.setFeeGrossValue(bf.getFeeGrossValue());
                 bf.setFeeValue(bf.getFeeGrossValue() - bf.getFeeDiscount());
 
-            } else if (billItemToAddFees.getBill().getPatient().getPerson().getMembershipScheme() != null && f.getFeeType() == FeeType.OwnInstitution) {
-
-                MembershipScheme membershipScheme = billItemToAddFees.getBill().getPatient().getPerson().getMembershipScheme();
-
-                if (priceMatrix != null) {
-
-                    d = bf.getFeeValue() * (priceMatrix.getDiscountPercent() / 100);
-                    bf.setFeeDiscount(d);
-                    bf.setFeeGrossValue(bf.getFeeGrossValue());
-                    bf.setFeeValue(bf.getFeeGrossValue() - bf.getFeeDiscount());
-
-                }
             }
-
             billFeeFacade.create(bf);
             newlyCreatedFees.add(bf);
         }
@@ -3295,6 +3977,8 @@ public class BillBeanController implements Serializable {
         ptIx.setCreatedAt(Calendar.getInstance().getTime());
         ptIx.setCreater(wu);
 
+        ptIx.setStatus(PatientInvestigationStatus.ORDERED);
+
         ptIx.setBillItem(e.getBillItem());
         ptIx.setBillComponent(bc);
         ptIx.setPackege(bc.getPackege());
@@ -3340,6 +4024,28 @@ public class BillBeanController implements Serializable {
     }
 
     public void saveBillComponent(BillEntry e, Bill b, WebUser wu) {
+        for (BillComponent bc : e.getLstBillComponents()) {
+
+            bc.setCreatedAt(Calendar.getInstance().getTime());
+            bc.setCreater(wu);
+
+            bc.setDepartment(b.getDepartment());
+            bc.setInstitution(b.getDepartment().getInstitution());
+
+            bc.setBill(b);
+
+            if (bc.getId() == null) {
+                getBillComponentFacade().create(bc);
+            }
+
+            if (bc.getItem() instanceof Investigation) {
+                savePatientInvestigation(e, bc, wu);
+            }
+
+        }
+    }
+
+    public void saveBillComponentForOpdBill(BillEntry e, Bill b, WebUser wu) {
         for (BillComponent bc : e.getLstBillComponents()) {
 
             bc.setCreatedAt(Calendar.getInstance().getTime());
@@ -3496,16 +4202,88 @@ public class BillBeanController implements Serializable {
         return t;
     }
 
+    public List<BillFeeBundleEntry> bundleFeesByName(List<BillFee> fs) {
+        Map<String, BillFeeBundleEntry> map = new HashMap<>();
+        for (BillFee f : fs) {
+            String name = f.getFee().getName().toLowerCase();
+            if (!map.containsKey(name)) {
+                BillFeeBundleEntry entry = new BillFeeBundleEntry();
+                entry.setSelectedBillFee(f);
+                entry.setAvailableBillFees(new ArrayList<>());
+                map.put(name, entry);
+            }
+            map.get(name).getAvailableBillFees().add(f);
+        }
+        return new ArrayList<>(map.values());
+    }
+
+    public List<BillFee> billFeesSelected(List<BillFeeBundleEntry> bundledBillFees) {
+        List<BillFee> selectedFees = new ArrayList<>();
+        for (BillFeeBundleEntry entry : bundledBillFees) {
+            if (entry.getSelectedBillFee() != null) {
+                selectedFees.add(entry.getSelectedBillFee());
+            }
+        }
+        return selectedFees;
+    }
+
     public List<BillFee> billFeefromBillItem(BillItem billItem) {
+        return baseBillFeefromBillItem(billItem);
+    }
+
+    public List<BillFee> findSavedBillFeefromBillItem(BillItem billItem) {
+        String jpql = "select bf "
+                + "from BillFee bf "
+                + " where bf.retired=:ret "
+                + " and bf.billItem=:bi";
+        Map m = new HashMap();
+        m.put("bi", billItem);
+        m.put("ret", false);
+        return billFeeFacade.findByJpql(jpql, m);
+    }
+
+    public List<BillFee> BillFeefromBillItemByForInstitution(BillItem billItem) {
+        return forInstitutionBillFeefromBillItem(billItem, sessionController.getInstitution());
+    }
+
+    public List<BillFee> billFeefromBillItem(BillItem billItem, Institution forInstitution, Category forCategory) {
+        List<BillFee> billFees = billFeefromBillItem(billItem, forInstitution);
+
+        if (billFees == null || billFees.isEmpty()) {
+            billFees = billFeefromBillItem(billItem, forCategory);
+        }
+        if (billFees == null || billFees.isEmpty()) {
+            billFees = baseBillFeefromBillItem(billItem);
+        }
+
+        return billFees;
+    }
+
+    public List<BillFee> billFeefromBillItem(BillItem billItem, Category forCategory) {
         List<BillFee> t = new ArrayList<>();
         BillFee f;
-        String sql;
+        String jpql;
+        Map params = new HashMap();
         if (billItem.getItem() instanceof Packege) {
-            sql = "Select i from PackageItem p join p.item i where p.retired=false and p.packege.id = " + billItem.getItem().getId();
-            List<Item> packageItems = getItemFacade().findByJpql(sql);
+            jpql = "Select i from PackageItem p join p.item i where p.retired=false and p.packege.id = " + billItem.getItem().getId();
+            List<Item> packageItems = getItemFacade().findByJpql(jpql);
             for (Item pi : packageItems) {
-                sql = "Select f from PackageFee f where f.retired=false and f.packege.id = " + billItem.getItem().getId() + " and f.item.id = " + pi.getId();
-                List<PackageFee> packFee = getPackageFeeFacade().findByJpql(sql);
+                jpql = "Select f "
+                        + " from PackageFee f "
+                        + " where f.retired=:ret"
+                        + " and f.packege=:packege"
+                        + " and f.item=:item ";
+                if (forCategory != null) {
+                    jpql += " and f.forCategory=:fc ";
+                    params.put("fc", forCategory);
+                } else {
+                    jpql += " and f.forCategory is null ";
+                }
+                jpql += " and f.forInstitution is null ";
+                params.put("ret", false);
+                params.put("packege", billItem.getItem());
+                params.put("item", billItem.getItem());
+                List<PackageFee> packFee = getPackageFeeFacade().findByJpql(jpql, params);
                 for (Fee i : packFee) {
                     f = new BillFee();
                     f.setFee(i);
@@ -3555,8 +4333,596 @@ public class BillBeanController implements Serializable {
                 }
             }
         } else {
-            sql = "Select f from ItemFee f where f.retired=false and f.item.id = " + billItem.getItem().getId();
-            List<ItemFee> itemFee = getItemFeeFacade().findByJpql(sql);
+            jpql = "Select f "
+                    + " from ItemFee f "
+                    + " where f.retired=:ret "
+                    + " and f.item=:item ";
+            if (forCategory != null) {
+                jpql += " and f.forCategory=:fc ";
+                params.put("fc", forCategory);
+            } else {
+                jpql += " and f.forCategory is null ";
+            }
+            jpql += " and f.forInstitution is null ";
+            params.put("ret", false);
+            params.put("item", billItem.getItem());
+
+            List<ItemFee> itemFee = getItemFeeFacade().findByJpql(jpql, params);
+            for (Fee i : itemFee) {
+                f = new BillFee();
+                f.setFee(i);
+                f.setFeeValue(i.getFee() * billItem.getQty());
+                f.setFeeGrossValue(i.getFee() * billItem.getQty());
+                //////System.out.println("Fee Value is " + f.getFeeValue());
+                // f.setBill(billItem.getBill());
+                f.setBillItem(billItem);
+                f.setCreatedAt(new Date());
+                if (billItem.getItem().getDepartment() != null) {
+                    if (i.getFeeType() == FeeType.CollectingCentre && collectingCentreBillController.getCollectingCentre() != null) {
+                        f.setDepartment(departmentController.getDefaultDepatrment(collectingCentreBillController.getCollectingCentre()));
+                    } else {
+                        f.setDepartment(billItem.getItem().getDepartment());
+                    }
+                } else {
+                    //  f.setDepartment(billItem.getBill().getDepartment());
+                }
+                if (billItem.getItem().getInstitution() != null) {
+                    if (i.getFeeType() == FeeType.CollectingCentre && collectingCentreBillController.getCollectingCentre() != null) {
+                        f.setInstitution(collectingCentreBillController.getCollectingCentre());
+                    } else {
+                        f.setInstitution(billItem.getItem().getInstitution());
+                    }
+                } else {
+                    //   f.setInstitution(billItem.getBill().getDepartment().getInstitution());
+                }
+                if (i.getStaff() != null) {
+                    f.setStaff(i.getStaff());
+                } else {
+                    f.setStaff(null);
+                }
+                f.setSpeciality(i.getSpeciality());
+
+                if (f.getBillItem().getItem().isVatable()) {
+                    if (!(f.getFee().getFeeType() == FeeType.CollectingCentre && collectingCentreBillController.getCollectingCentre() != null)) {
+                        f.setFeeVat(f.getFeeValue() * f.getBillItem().getItem().getVatPercentage() / 100);
+                    }
+                }
+
+                f.setFeeVatPlusValue(f.getFeeValue() + f.getFeeVat());
+
+                t.add(f);
+            }
+        }
+        return t;
+    }
+
+    public List<BillFee> billFeefromBillItem(BillItem billItem, Institution forInstitution) {
+        List<BillFee> t = new ArrayList<>();
+        BillFee f;
+        String jpql;
+        Map params = new HashMap();
+        if (billItem.getItem() instanceof Packege) {
+            jpql = "Select i from PackageItem p join p.item i where p.retired=false and p.packege.id = " + billItem.getItem().getId();
+            List<Item> packageItems = getItemFacade().findByJpql(jpql);
+            for (Item pi : packageItems) {
+                jpql = "Select f "
+                        + " from PackageFee f "
+                        + " where f.retired=:ret"
+                        + " and f.packege=:packege"
+                        + " and f.item=:item ";
+                if (forInstitution != null) {
+                    jpql += " and f.forInstitution=:fi ";
+                    params.put("fi", forInstitution);
+                } else {
+                    jpql += " and f.forInstitution is null ";
+                }
+                jpql += " and f.forCategory is null ";
+                params.put("ret", false);
+                params.put("packege", billItem.getItem());
+                params.put("item", billItem.getItem());
+                List<PackageFee> packFee = getPackageFeeFacade().findByJpql(jpql, params);
+                for (Fee i : packFee) {
+                    f = new BillFee();
+                    f.setFee(i);
+                    f.setFeeValue(i.getFee());
+                    f.setFeeGrossValue(i.getFee());
+                    //  f.setBill(billItem.getBill());
+                    f.setBillItem(billItem);
+                    f.setCreatedAt(new Date());
+                    if (pi.getDepartment() != null) {
+                        if (i.getFeeType() == FeeType.CollectingCentre && collectingCentreBillController.getCollectingCentre() != null) {
+                            f.setDepartment(departmentController.getDefaultDepatrment(collectingCentreBillController.getCollectingCentre()));
+                        } else {
+                            f.setDepartment(pi.getDepartment());
+                        }
+
+                    } else {
+                        // f.setDepartment(billItem.getBill().getDepartment());
+                    }
+                    if (pi.getInstitution() != null) {
+                        if (i.getFeeType() == FeeType.CollectingCentre && collectingCentreBillController.getCollectingCentre() != null) {
+                            f.setInstitution(collectingCentreBillController.getCollectingCentre());
+                        } else {
+                            f.setInstitution(pi.getInstitution());
+                        }
+
+                    } else {
+                        // f.setInstitution(billItem.getBill().getDepartment().getInstitution());
+                    }
+                    if (i.getStaff() != null) {
+                        f.setStaff(i.getStaff());
+                    } else {
+                        f.setStaff(null);
+                    }
+                    f.setSpeciality(i.getSpeciality());
+                    f.setStaff(i.getStaff());
+
+                    if (f.getBillItem().getItem().isVatable()) {
+                        if (!(f.getFee().getFeeType() == FeeType.CollectingCentre && collectingCentreBillController.getCollectingCentre() != null)) {
+                            f.setFeeVat(f.getFeeValue() * f.getBillItem().getItem().getVatPercentage() / 100);
+                        }
+                    }
+
+                    f.setFeeVatPlusValue(f.getFeeValue() + f.getFeeVat());
+
+                    t.add(f);
+
+                }
+            }
+        } else {
+            jpql = "Select f "
+                    + " from ItemFee f "
+                    + " where f.retired=:ret "
+                    + " and f.item=:item ";
+            if (forInstitution != null) {
+                jpql += " and f.forInstitution=:fi ";
+                params.put("fi", forInstitution);
+            } else {
+                jpql += " and f.forInstitution is null ";
+            }
+            jpql += " and f.forCategory is null ";
+            params.put("ret", false);
+            params.put("item", billItem.getItem());
+
+            List<ItemFee> itemFee = getItemFeeFacade().findByJpql(jpql, params);
+            for (Fee i : itemFee) {
+                f = new BillFee();
+                f.setFee(i);
+                f.setFeeValue(i.getFee() * billItem.getQty());
+                f.setFeeGrossValue(i.getFee() * billItem.getQty());
+                //////System.out.println("Fee Value is " + f.getFeeValue());
+                // f.setBill(billItem.getBill());
+                f.setBillItem(billItem);
+                f.setCreatedAt(new Date());
+                if (billItem.getItem().getDepartment() != null) {
+                    if (i.getFeeType() == FeeType.CollectingCentre && collectingCentreBillController.getCollectingCentre() != null) {
+                        f.setDepartment(departmentController.getDefaultDepatrment(collectingCentreBillController.getCollectingCentre()));
+                    } else {
+                        f.setDepartment(billItem.getItem().getDepartment());
+                    }
+                } else {
+                    //  f.setDepartment(billItem.getBill().getDepartment());
+                }
+                if (billItem.getItem().getInstitution() != null) {
+                    if (i.getFeeType() == FeeType.CollectingCentre && collectingCentreBillController.getCollectingCentre() != null) {
+                        f.setInstitution(collectingCentreBillController.getCollectingCentre());
+                    } else {
+                        f.setInstitution(billItem.getItem().getInstitution());
+                    }
+                } else {
+                    //   f.setInstitution(billItem.getBill().getDepartment().getInstitution());
+                }
+                if (i.getStaff() != null) {
+                    f.setStaff(i.getStaff());
+                } else {
+                    f.setStaff(null);
+                }
+                f.setSpeciality(i.getSpeciality());
+
+                if (f.getBillItem().getItem().isVatable()) {
+                    if (!(f.getFee().getFeeType() == FeeType.CollectingCentre && collectingCentreBillController.getCollectingCentre() != null)) {
+                        f.setFeeVat(f.getFeeValue() * f.getBillItem().getItem().getVatPercentage() / 100);
+                    }
+                }
+
+                f.setFeeVatPlusValue(f.getFeeValue() + f.getFeeVat());
+
+                t.add(f);
+            }
+        }
+        return t;
+    }
+
+    public List<BillFee> billFeefromBillItemForCollectingCenter(BillItem billItem, Institution collectingCenter) {
+        System.out.println("billFeefromBillItemForCollectingCenter");
+        System.out.println("collectingCenter = " + collectingCenter);
+        List<BillFee> t = new ArrayList<>();
+        BillFee feeForCollectingCenter;
+        BillFee feeForInstitution;
+        String jpql;
+
+        Map params = new HashMap();
+        if (billItem.getItem() instanceof Packege) {
+            jpql = "Select i from PackageItem p join p.item i where p.retired=false and p.packege.id = " + billItem.getItem().getId();
+            List<Item> packageItems = getItemFacade().findByJpql(jpql);
+            for (Item pi : packageItems) {
+                jpql = "Select f "
+                        + " from PackageFee f "
+                        + " where f.retired=:ret"
+                        + " and f.packege=:packege"
+                        + " and f.item=:item ";
+                if (collectingCenter != null) {
+                    jpql += " and f.forInstitution=:fi ";
+                    params.put("fi", collectingCenter);
+                } else {
+                    jpql += " and f.forInstitution is null ";
+                }
+                jpql += " and f.forCategory is null ";
+                params.put("ret", false);
+                params.put("packege", billItem.getItem());
+                params.put("item", billItem.getItem());
+                List<PackageFee> packFee = getPackageFeeFacade().findByJpql(jpql, params);
+                //System.out.println("packFee jpql = " + jpql);
+                //System.out.println("packFee m = " + params);
+                for (Fee i : packFee) {
+                    double originalFeeValue;
+                    double institutionFeeValue;
+                    double collectingCenterFeeValue;
+                    originalFeeValue = i.getFee();
+                    collectingCenterFeeValue = originalFeeValue * collectingCenter.getPercentage() / 100;
+                    institutionFeeValue = originalFeeValue - collectingCenterFeeValue;
+
+                    feeForCollectingCenter = new BillFee();
+                    feeForCollectingCenter.setFee(i);
+                    feeForCollectingCenter.setFeeValue(collectingCenterFeeValue);
+                    feeForCollectingCenter.setFeeGrossValue(collectingCenterFeeValue);
+                    feeForCollectingCenter.setInstitution(collectingCenter);
+                    feeForCollectingCenter.setBillItem(billItem);
+                    feeForCollectingCenter.setCreatedAt(new Date());
+                    feeForCollectingCenter.setDepartment(departmentController.getDefaultDepatrment(collectingCenter));
+                    feeForCollectingCenter.setSpeciality(i.getSpeciality());
+                    feeForCollectingCenter.setStaff(i.getStaff());
+                    if (feeForCollectingCenter.getBillItem().getItem().isVatable()) {
+                        if (!(feeForCollectingCenter.getFee().getFeeType() == FeeType.CollectingCentre && collectingCentreBillController.getCollectingCentre() != null)) {
+                            feeForCollectingCenter.setFeeVat(feeForCollectingCenter.getFeeValue() * feeForCollectingCenter.getBillItem().getItem().getVatPercentage() / 100);
+                        }
+                    }
+
+                    feeForCollectingCenter.setFeeVatPlusValue(feeForCollectingCenter.getFeeValue() + feeForCollectingCenter.getFeeVat());
+
+                    t.add(feeForCollectingCenter);
+
+                }
+            }
+        } else {
+            System.out.println("else ");
+            jpql = "Select f "
+                    + " from ItemFee f "
+                    + " where f.retired=:ret "
+                    + " and f.item=:item ";
+
+            jpql += " and f.forInstitution=:fi ";
+            params.put("fi", collectingCenter);
+            jpql += " and f.forCategory is null ";
+            params.put("ret", false);
+            params.put("item", billItem.getItem());
+            System.out.println("jpql = " + jpql);
+            System.out.println("params = " + params);
+            List<ItemFee> itemFees = getItemFeeFacade().findByJpql(jpql, params);
+            System.out.println("1. CC itemFee from jpql= " + itemFees);
+
+            itemFees = itemFeeManager.fillFees(billItem.getItem(), collectingCenter);
+
+            if (itemFees == null || itemFees.isEmpty()) {
+                params = new HashedMap();
+                jpql = "Select f "
+                        + " from ItemFee f "
+                        + " where f.retired=:ret "
+                        + " and f.item=:item "
+                        + " and f.forCategory=:cat ";
+                jpql += " and f.forInstitution is null ";
+                params.put("ret", false);
+                params.put("cat", collectingCenter.getFeeListType());
+                params.put("item", billItem.getItem());
+                System.out.println("jpql = " + jpql);
+                System.out.println("params = " + params);
+                itemFees = getItemFeeFacade().findByJpql(jpql, params);
+                System.out.println("3. CC itemFee Fees= " + itemFees);
+                itemFees = itemFeeManager.fillFees(billItem.getItem(), collectingCenter.getFeeListType());
+            }
+
+            for (Fee i : itemFees) {
+                System.out.println("i = " + i);
+                double originalFeeValue;
+                double institutionFeeValue;
+                double collectingCenterFeeValue;
+                originalFeeValue = i.getFee();
+                collectingCenterFeeValue = originalFeeValue * collectingCenter.getPercentage() / 100;
+                institutionFeeValue = originalFeeValue - collectingCenterFeeValue;
+
+                System.out.println("originalFeeValue = " + originalFeeValue);
+                System.out.println("institutionFeeValue = " + institutionFeeValue);
+
+                feeForCollectingCenter = new BillFee();
+                feeForCollectingCenter.setFee(i);
+                feeForCollectingCenter.setFeeValue(collectingCenterFeeValue * billItem.getQty());
+                feeForCollectingCenter.setFeeGrossValue(collectingCenterFeeValue * billItem.getQty());
+                feeForCollectingCenter.setInstitution(collectingCenter);
+                feeForCollectingCenter.setBillItem(billItem);
+                feeForCollectingCenter.setCreatedAt(new Date());
+                feeForCollectingCenter.setStaff(i.getStaff());
+                feeForCollectingCenter.setSpeciality(i.getSpeciality());
+
+                feeForInstitution = new BillFee();
+                feeForInstitution.setFee(i);
+                feeForInstitution.setFeeValue(i.getFee() - collectingCenterFeeValue);
+                feeForInstitution.setFeeGrossValue(i.getFee() - collectingCenterFeeValue);
+                feeForInstitution.setInstitution(i.getInstitution());
+                feeForInstitution.setDepartment(i.getDepartment());
+                feeForInstitution.setBillItem(billItem);
+                feeForInstitution.setCreatedAt(new Date());
+                feeForInstitution.setStaff(i.getStaff());
+                feeForInstitution.setSpeciality(i.getSpeciality());
+
+                t.add(feeForCollectingCenter);
+                t.add(feeForInstitution);
+            }
+        }
+        return t;
+    }
+
+    public List<BillFee> baseBillFeefromBillItem(BillItem billItem) {
+        List<BillFee> t = new ArrayList<>();
+        BillFee f;
+        String jpql;
+        Map params = new HashMap();
+        if (billItem.getItem() instanceof Packege) {
+            jpql = "Select i from PackageItem p join p.item i where p.retired=false and p.packege.id = " + billItem.getItem().getId();
+            List<Item> packageItems = getItemFacade().findByJpql(jpql);
+            for (Item pi : packageItems) {
+                jpql = "Select f "
+                        + " from PackageFee f "
+                        + " where f.retired=:ret"
+                        + " and f.packege=:packege"
+                        + " and f.item=:item "
+                        + " and f.forCategory is null "
+                        + " and f.forInstitution is null ";
+                params.put("ret", false);
+                params.put("packege", billItem.getItem());
+                params.put("item", billItem.getItem());
+                List<PackageFee> packFee = getPackageFeeFacade().findByJpql(jpql, params);
+                for (Fee i : packFee) {
+                    f = new BillFee();
+                    f.setFee(i);
+                    f.setFeeValue(i.getFee());
+                    f.setFeeGrossValue(i.getFee());
+                    //  f.setBill(billItem.getBill());
+                    f.setBillItem(billItem);
+                    f.setCreatedAt(new Date());
+                    if (pi.getDepartment() != null) {
+                        if (i.getFeeType() == FeeType.CollectingCentre && collectingCentreBillController.getCollectingCentre() != null) {
+                            f.setDepartment(departmentController.getDefaultDepatrment(collectingCentreBillController.getCollectingCentre()));
+                        } else {
+                            f.setDepartment(pi.getDepartment());
+                        }
+
+                    } else {
+                        // f.setDepartment(billItem.getBill().getDepartment());
+                    }
+                    if (pi.getInstitution() != null) {
+                        if (i.getFeeType() == FeeType.CollectingCentre && collectingCentreBillController.getCollectingCentre() != null) {
+                            f.setInstitution(collectingCentreBillController.getCollectingCentre());
+                        } else {
+                            f.setInstitution(pi.getInstitution());
+                        }
+
+                    } else {
+                        // f.setInstitution(billItem.getBill().getDepartment().getInstitution());
+                    }
+                    if (i.getStaff() != null) {
+                        f.setStaff(i.getStaff());
+                    } else {
+                        f.setStaff(null);
+                    }
+                    f.setSpeciality(i.getSpeciality());
+                    f.setStaff(i.getStaff());
+
+                    if (f.getBillItem().getItem().isVatable()) {
+                        if (!(f.getFee().getFeeType() == FeeType.CollectingCentre && collectingCentreBillController.getCollectingCentre() != null)) {
+                            f.setFeeVat(f.getFeeValue() * f.getBillItem().getItem().getVatPercentage() / 100);
+                        }
+                    }
+
+                    f.setFeeVatPlusValue(f.getFeeValue() + f.getFeeVat());
+
+                    t.add(f);
+
+                }
+            }
+        } else {
+            jpql = "Select f "
+                    + " from ItemFee f "
+                    + " where f.retired=:ret "
+                    + " and f.item=:item "
+                    + " and f.forCategory is null "
+                    + " and f.forInstitution is null ";
+            params.put("ret", false);
+            params.put("item", billItem.getItem());
+
+            List<ItemFee> itemFee = getItemFeeFacade().findByJpql(jpql, params);
+            for (Fee i : itemFee) {
+                f = new BillFee();
+                f.setFee(i);
+                f.setFeeValue(i.getFee() * billItem.getQty());
+                f.setFeeGrossValue(i.getFee() * billItem.getQty());
+                //////System.out.println("Fee Value is " + f.getFeeValue());
+                // f.setBill(billItem.getBill());
+                f.setBillItem(billItem);
+                f.setCreatedAt(new Date());
+                if (billItem.getItem().getDepartment() != null) {
+                    if (i.getFeeType() == FeeType.CollectingCentre && collectingCentreBillController.getCollectingCentre() != null) {
+                        f.setDepartment(departmentController.getDefaultDepatrment(collectingCentreBillController.getCollectingCentre()));
+                    } else {
+                        f.setDepartment(billItem.getItem().getDepartment());
+                    }
+                } else {
+                    //  f.setDepartment(billItem.getBill().getDepartment());
+                }
+                if (billItem.getItem().getInstitution() != null) {
+                    if (i.getFeeType() == FeeType.CollectingCentre && collectingCentreBillController.getCollectingCentre() != null) {
+                        f.setInstitution(collectingCentreBillController.getCollectingCentre());
+                    } else {
+                        f.setInstitution(billItem.getItem().getInstitution());
+                    }
+                } else {
+                    //   f.setInstitution(billItem.getBill().getDepartment().getInstitution());
+                }
+                if (i.getStaff() != null) {
+                    f.setStaff(i.getStaff());
+                } else {
+                    f.setStaff(null);
+                }
+                f.setSpeciality(i.getSpeciality());
+
+                if (f.getBillItem().getItem().isVatable()) {
+                    if (!(f.getFee().getFeeType() == FeeType.CollectingCentre && collectingCentreBillController.getCollectingCentre() != null)) {
+                        f.setFeeVat(f.getFeeValue() * f.getBillItem().getItem().getVatPercentage() / 100);
+                    }
+                }
+
+                f.setFeeVatPlusValue(f.getFeeValue() + f.getFeeVat());
+
+                t.add(f);
+            }
+        }
+        return t;
+    }
+
+    public List<BillFee> fetchBillFees(Bill bill) {
+        List<BillFee> fetchingBillFees;
+        String jpql;
+        Map params = new HashMap();
+        jpql = "Select bf "
+                + " from BillFee bf "
+                + "where bf.bill=:bill "
+                + "order by bf.billItem.id";
+        params.put("bill", bill);
+        fetchingBillFees = billFeeFacade.findByJpql(jpql, params);
+        return fetchingBillFees;
+    }
+
+    public List<BillComponent> fetchBillComponents(Bill bill) {
+        System.out.println("bill = " + bill);
+        List<BillComponent> fetchingBillComponents;
+        String jpql;
+        Map params = new HashMap();
+        jpql = "Select bc "
+                + " from BillComponent bc "
+                + "where bc.bill=:bill "
+                + "order by bc.id";
+        params.put("bill", bill);
+        fetchingBillComponents = billComponentFacade.findByJpql(jpql, params);
+        return fetchingBillComponents;
+    }
+
+    public List<Payment> fetchBillPayments(Bill bill) {
+        System.out.println("bill = " + bill);
+        List<Payment> fetchingBillComponents;
+        String jpql;
+        Map params = new HashMap();
+        jpql = "Select p "
+                + " from Payment p "
+                + "where p.bill=:bill "
+                + "order by p.id";
+        params.put("bill", bill);
+        fetchingBillComponents = paymentFacade.findByJpql(jpql, params);
+        return fetchingBillComponents;
+    }
+
+    public List<BillFee> forInstitutionBillFeefromBillItem(BillItem billItem, Institution forIns) {
+        List<BillFee> t = new ArrayList<>();
+        BillFee f;
+        String jpql;
+        Map params = new HashMap();
+        if (billItem.getItem() instanceof Packege) {
+            jpql = "Select i from PackageItem p join p.item i where p.retired=false and p.packege.id = " + billItem.getItem().getId();
+            List<Item> packageItems = getItemFacade().findByJpql(jpql);
+            for (Item pi : packageItems) {
+                jpql = "Select f "
+                        + " from PackageFee f "
+                        + " where f.retired=:ret"
+                        + " and f.packege=:packege"
+                        + " and f.item=:item "
+                        + " and f.forCategory is null "
+                        + " and f.forInstitution is null ";
+                params.put("ret", false);
+                params.put("packege", billItem.getItem());
+                params.put("item", billItem.getItem());
+                List<PackageFee> packFee = getPackageFeeFacade().findByJpql(jpql, params);
+                for (Fee i : packFee) {
+                    f = new BillFee();
+                    f.setFee(i);
+                    f.setFeeValue(i.getFee());
+                    f.setFeeGrossValue(i.getFee());
+                    //  f.setBill(billItem.getBill());
+                    f.setBillItem(billItem);
+                    f.setCreatedAt(new Date());
+                    if (pi.getDepartment() != null) {
+                        if (i.getFeeType() == FeeType.CollectingCentre && collectingCentreBillController.getCollectingCentre() != null) {
+                            f.setDepartment(departmentController.getDefaultDepatrment(collectingCentreBillController.getCollectingCentre()));
+                        } else {
+                            f.setDepartment(pi.getDepartment());
+                        }
+
+                    } else {
+                        // f.setDepartment(billItem.getBill().getDepartment());
+                    }
+                    if (pi.getInstitution() != null) {
+                        if (i.getFeeType() == FeeType.CollectingCentre && collectingCentreBillController.getCollectingCentre() != null) {
+                            f.setInstitution(collectingCentreBillController.getCollectingCentre());
+                        } else {
+                            f.setInstitution(pi.getInstitution());
+                        }
+
+                    } else {
+                        // f.setInstitution(billItem.getBill().getDepartment().getInstitution());
+                    }
+                    if (i.getStaff() != null) {
+                        f.setStaff(i.getStaff());
+                    } else {
+                        f.setStaff(null);
+                    }
+                    f.setSpeciality(i.getSpeciality());
+                    f.setStaff(i.getStaff());
+
+                    if (f.getBillItem().getItem().isVatable()) {
+                        if (!(f.getFee().getFeeType() == FeeType.CollectingCentre && collectingCentreBillController.getCollectingCentre() != null)) {
+                            f.setFeeVat(f.getFeeValue() * f.getBillItem().getItem().getVatPercentage() / 100);
+                        }
+                    }
+
+                    f.setFeeVatPlusValue(f.getFeeValue() + f.getFeeVat());
+
+                    t.add(f);
+
+                }
+            }
+        } else {
+            jpql = "Select f "
+                    + " from ItemFee f "
+                    + " where f.retired=:ret "
+                    + " and f.item=:item "
+                    + " and f.forCategory is null "
+                    + " and f.forInstitution=:forIns ";
+            params.put("ret", false);
+            params.put("item", billItem.getItem());
+            params.put("forIns", forIns);
+
+            System.out.println("params = " + params);
+            System.out.println("jpql = " + jpql);
+
+            List<ItemFee> itemFee = getItemFeeFacade().findByJpql(jpql, params);
+
             for (Fee i : itemFee) {
                 f = new BillFee();
                 f.setFee(i);

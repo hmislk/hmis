@@ -8,94 +8,223 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
-                <h:form>
-                    <div class="row" >
-                        <div class="col-2">
-                            <p:panel header="Financial Transaction Manager" rendered="true">
-                                <div class="d-grid gap-2">
+                <div class="row" >
+                    <div class="col-2">
+                        <h:form>
+                            <p:accordionPanel 
+                                widgetVar="basic"
+                                id="accordion"
+                                activeIndex="#{financialTransactionController.tabIndex}"
+                                scrollIntoView="center">
+                                <p:ajax process="accordion" ></p:ajax>
+                                <p:tab title="Shift Management">
                                     <p:commandButton 
-                                        value="Shift Start Funds"
-                                        icon=""
+                                        class="my-1 w-100 ui-button-success" 
+                                        value="Start Shift"
+                                        icon="pi pi-play"
                                         ajax="false" 
                                         action="#{financialTransactionController.navigateToCreateNewInitialFundBill()}" >
                                     </p:commandButton>
 
                                     <p:commandButton 
-                                        value="Shift End Funds"
-                                        icon=""
+                                        class="my-1 w-100 ui-button-danger"
+                                        value="End Shift"
+                                        icon="pi pi-power-off" 
+                                        ajax="false" 
+                                        action="#{financialTransactionController.navigateToCreateShiftEndSummaryBillForHandover()}" >
+                                    </p:commandButton>
+
+                                    <p:commandButton 
+                                        class="my-1 w-100 ui-button-danger"
+                                        value="End Shift - OLD"
+                                        icon="pi pi-power-off" 
                                         ajax="false" 
                                         action="#{financialTransactionController.navigateToCreateShiftEndSummaryBill()}" >
                                     </p:commandButton>
+
+                                    <p:commandButton 
+                                        class="my-1 w-100 ui-button-primary" 
+                                        value="My Drawer" 
+                                        icon="pi pi-folder-open" 
+                                        style="background-color: #987bff; color: #ffffff;" 
+                                        ajax="false" 
+                                        action="#{financialTransactionController.navigateToMyDrawer()}">
+                                    </p:commandButton>
+
+                                    <p:commandButton 
+                                        class="my-1 w-100 ui-button-primary"
+                                        value="Handover Shift"
+                                        icon="pi pi-forward"
+                                        ajax="false" 
+                                        action="#{financialTransactionController.navigateToHandoverCreateBillForCurrentShift()}" >
+                                    </p:commandButton>
                                     
                                     <p:commandButton 
-                                        value="Shift End Funds By Bills (Temporarily)"
-                                        icon=""
+                                        class="my-1 w-100 ui-button-info"
+                                        value="My Shifts"
+                                        icon="pi pi-map-marker"
                                         ajax="false" 
-                                        action="#{financialTransactionController.navigateToCreateShiftEndSummaryBillByBills()}" >
+                                        action="#{financialTransactionController.navigateToMyShifts}">
+                                    </p:commandButton>
+
+                                    <p:commandButton 
+                                        class="my-1 w-100 ui-button-danger"
+                                        value="Record Shift Shortage"
+                                        icon="pi pi-minus"
+                                        ajax="false" 
+                                        action="#{financialTransactionController.navigateToRecordShiftShortage()}" >
+                                    </p:commandButton>
+
+                                    <p:commandButton 
+                                        class="my-1 w-100 ui-button-info"
+                                        value="Record Shift Excess"
+                                        icon="pi pi-plus"
+                                        ajax="false" 
+                                        action="#{financialTransactionController.navigateToRecordShiftExcess()}" >
                                     </p:commandButton>
 
 
+
+
+                                </p:tab>
+
+                                <p:tab title="Float Management">
                                     <p:commandButton 
-                                        value="Fund Transfer"
-                                        icon=""
+                                        class="my-1 w-100 ui-button-primary" 
+                                        value="Float Transfer"
+                                        icon="pi pi-directions"  
                                         ajax="false" 
                                         action="#{financialTransactionController.navigateToFundTransferBill()}" >
                                     </p:commandButton>
+
                                     <p:badge severity="danger" value="#{financialTransactionController.fundTransferBillsToReceiveCount}">
                                         <p:commandButton 
-                                            value=" Fund Transfers for me to Receive"
-                                            icon=""
+                                            class="my-1 w-100 ui-button-warning"  
+                                            value="Float Transfers for me to Receive"
+                                            icon="pi pi-inbox" 
                                             ajax="false" 
                                             action="#{financialTransactionController.navigateToReceiveFundTransferBillsForMe()}" >
                                         </p:commandButton>
                                     </p:badge>
 
+                                    <p:commandButton 
+                                        class="my-1 w-100 ui-button-success"  
+                                        value="Transfer Bill Payment Method"
+                                        icon="pi pi-refresh" 
+                                        ajax="false" 
+                                        action="#{financialTransactionController.navigateToTransferPaymentMethod()}" >
+                                    </p:commandButton>
+                                </p:tab>
+
+
+
+
+
+                                <p:tab title="Handover Management">
+
+
+
 
                                     <p:commandButton 
-                                        value="Fund Withdrawal"
-                                        icon=""
+                                        class="my-1 w-100 ui-button-primary"
+                                        value="Handover Shift - Old one to cross cheque"
+                                        icon="pi pi-forward"
+                                        ajax="false" 
+                                        rendered="false"
+                                        action="#{financialTransactionController.navigateToHandoverCreateBill}" >
+                                    </p:commandButton>
+
+                                    <p:commandButton 
+                                        class="my-1 w-100 ui-button-danger"
+                                        value="Shift Handovers to Accept"
+                                        icon="pi pi-sign-in"
+                                        ajax="false" 
+                                        action="#{financialTransactionController.navigateToReceiveHandoverBillsForMe()}" >
+                                    </p:commandButton>
+
+                                    <p:commandButton 
+                                        class="my-1 w-100 ui-button-info"
+                                        value="Payment Recording"
+                                        icon="pi pi-file"
+                                        ajax="false" 
+                                        action="#{financialTransactionController.navigateToPaymentRecording()}" >
+                                    </p:commandButton>
+
+                                    <p:commandButton 
+                                        class="my-1 w-100 ui-button-warning"
+                                        value="Withdrawals"
+                                        icon="pi pi-upload"
                                         ajax="false" 
                                         action="#{financialTransactionController.navigateToCreateNewFundWithdrawalBill()}" >
                                     </p:commandButton>
+
                                     <p:commandButton 
-                                        value="Fund Deposit to Safe/Bank"
-                                        icon=""
+                                        class="my-1 w-100 ui-button-success"
+                                        value="Deposit to Safe/Bank"
+                                        icon="pi pi-save"
                                         ajax="false" 
                                         action="#{financialTransactionController.navigateToFundDepositBill()}" >
                                     </p:commandButton>
 
                                     <p:commandButton 
-                                        value="Cashier Summary"
-                                        icon=""
+                                        class="my-1 w-100 ui-button-success"
+                                        value="Realize Cheques"
+                                        icon="pi pi-check-square"
                                         ajax="false" 
-                                        action="#{financialTransactionController.navigateToCashierSummary()}" >
+                                        action="#{financialTransactionController.navigateToFundDepositBill()}" >
                                     </p:commandButton>
+                                </p:tab>
 
+
+                                <p:tab title="Cash Book">
                                     <p:commandButton 
-                                        value="Cashier Summary Breakdown"
+                                        class="my-1 w-100"
+                                        value="Cash Book Entries"
                                         icon=""
                                         ajax="false" 
-                                        action="#{financialTransactionController.navigateToCashierSummaryBreakdown()}" >
+                                        action="#{searchController.navigateToListCashBookEntry()}" >
                                     </p:commandButton>
-                                    
-                                     <p:commandButton 
-                                        value="Cashier Bill List"
-                                        icon=""
-                                        ajax="false" 
-                                        action="#{searchController.navigateToListSingleUserBills()}" >
-                                    </p:commandButton>
+                                </p:tab>
 
-                                </div>
-                            </p:panel>
+                                <p:tab title="Reports">
+                                    <p class="m-0">
+                                        <p:commandButton 
+                                            class="my-1 w-100"
+                                            value="Cashier Summary"
+                                            icon=""
+                                            ajax="false" 
+                                            action="#{financialTransactionController.navigateToCashierSummary()}" >
+                                        </p:commandButton>
 
-                        </div>
-                        <div class="col-10" >
-                            <ui:insert name="subcontent" >
-                            </ui:insert>
-                        </div>
+                                        <p:commandButton 
+                                            class="my-1 w-100"
+                                            value="Cashier Summary Breakdown"
+                                            icon=""
+                                            ajax="false" 
+                                            action="#{financialTransactionController.navigateToCashierSummaryBreakdown()}" >
+                                        </p:commandButton>
+
+                                        <p:commandButton 
+                                            class="my-1 w-100"
+                                            value="Cashier Bill List"
+                                            icon=""
+                                            ajax="false" 
+                                            action="#{searchController.navigateToListSingleUserBills()}" >
+                                        </p:commandButton>
+                                    </p>
+                                </p:tab>
+                            </p:accordionPanel>
+
+                        </h:form>
                     </div>
-                </h:form>
+                    <div class="col-10" >
+                        <ui:insert name="subcontent" >
+                        </ui:insert>
+                    </div>
+                </div>
+
             </ui:define>
+
         </ui:composition>
     </h:body>
 </html>

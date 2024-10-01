@@ -8,7 +8,7 @@
       >
 
     <h:body>
-        <ui:composition template="/analytics/opd/index.xhtml">
+        <ui:composition template="/opd/analytics/index.xhtml">
             <ui:define name="subcontent">
                 <h:form>
 <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>                 
@@ -27,8 +27,7 @@
                                 </p:commandButton>
                             </h:panelGrid>
                             
-                            <p:watermark value="Search by Bill Id (with or without letters), Patient Name or Phone Number" for="txtSearch" />
-
+                            
                             <h:panelGrid columns="5">
 
                                 <h:panelGrid columns="2" >
@@ -74,7 +73,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Bill No"/>
                                 </f:facet>
-                                <h:commandLink action="/opd/bill_reprint?faces-redirect=true" value="#{bill.insId}">
+                                <h:commandLink action="/opd/bill_reprint?faces-redirect=true" value="#{bill.deptId}">
                                     <h:outputLabel  ></h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                 </h:commandLink>

@@ -41,7 +41,7 @@
                                             class="w-100 m-1 ui-button-danger"
                                             onclick="if (!confirm('Are you sure you want to delete this record?'))
                                                         return false;" 
-                                                        action="#{itemController.deleteWithItemLight()}"
+                                            action="#{itemController.deleteWithItemLight()}"
                                             value="Delete"
                                             update="lstSelect gpDetail selectFocus msg"
                                             process="btnDelete">
@@ -109,7 +109,9 @@
                                                 <p:inputText autocomplete="off" id="txtFullName"   value="#{itemController.current.fullName}" class="w-100 mx-1" ></p:inputText>
                                                 <h:outputText value="Service Category/Sub Category" ></h:outputText>
                                                 <p:autoComplete 
-                                                    completeMethod="#{categoryController.completeServiceCategory}" 
+                                                    required="true"
+                                                    requiredMessage="Must Enter a Category"
+                                                    completeMethod="#{categoryController.completeCategory}" 
                                                     var="pta" 
                                                     itemLabel="#{pta.name}"
                                                     itemValue="#{pta}" 
@@ -127,28 +129,28 @@
                                                     <f:selectItem itemLabel="Please select a Institution"/>
                                                     <f:selectItems value="#{institutionController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
                                                     <f:ajax execute="cmbIns" render="cmbDep" event="change"/>  
-                                                    
+
                                                 </p:selectOneMenu>
                                                 <h:outputText value="Department" ></h:outputText>
                                                 <p:selectOneMenu  id="cmbDep" value="#{itemController.current.department}" filterMatchMode="contains" filter="true" class="form-control mx-1">
                                                     <f:selectItem itemLabel="Please select a Department"/>
                                                     <f:selectItems value="#{itemController.fillInstitutionDepatrments()}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
                                                 </p:selectOneMenu>
-                                                <h:outputText value="Charge Category" ></h:outputText>
-                                                 <p:selectOneMenu
-                                                        filter="true"
-                                                        filterMatchMode="contains"
-                                                        id="cmbInward" 
-                                                        value="#{itemController.current.inwardChargeType}" 
-                                                        class="w-75 mx-1  ">
-                                                        <f:selectItem itemLabel="Please select Charge"/>
-                                                        <f:selectItems value="#{enumController.inwardChargeTypesForSetting}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
-                                                    </p:selectOneMenu>
-                                                 <p:outputLabel value="Item Code"/>
-                                                 <p:inputText id="ServiceCode" value="#{itemController.current.code}" class="w-100 mx-1"/>
+                                                <h:outputText value="Inward Category" ></h:outputText>
+                                                <p:selectOneMenu
+                                                    filter="true"
+                                                    filterMatchMode="contains"
+                                                    id="cmbInward" 
+                                                    value="#{itemController.current.inwardChargeType}" 
+                                                    class="w-75 mx-1  ">
+                                                    <f:selectItem itemLabel="Please select Charge"/>
+                                                    <f:selectItems value="#{enumController.inwardChargeTypesForSetting}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
+                                                </p:selectOneMenu>
+                                                <p:outputLabel value="Item Code"/>
+                                                <p:inputText id="ServiceCode" value="#{itemController.current.code}" class="w-100 mx-1"/>
                                             </h:panelGrid>
-                                            
-                                          
+
+
                                         </p:tab>
                                         <p:tab title="Additional Details" >
                                             <h:panelGrid columns="2" >

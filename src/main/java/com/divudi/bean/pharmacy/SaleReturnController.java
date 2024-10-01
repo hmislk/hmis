@@ -405,6 +405,11 @@ public class SaleReturnController implements Serializable {
             JsfUtil.addErrorMessage("Total is Zero cant' return");
             return;
         }
+        
+        if (getReturnBill().getComments() == null || getReturnBill().getComments().trim().equals("")) {
+            JsfUtil.addErrorMessage("Please enter a comment");
+            return;
+        }
 
         savePreReturnBill();
         savePreComponent();

@@ -114,6 +114,7 @@ public class ChannelReportTempController implements Serializable {
     boolean sessoinDate;
     boolean paid;
     boolean scan;
+    
 
     /**
      * Creates a new instance of ChannelReportTempController

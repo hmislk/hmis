@@ -169,20 +169,20 @@ th.align-right-header .ui-column-title {
 .compact-listbox .ui-selectlistbox-item {
     padding: 0px !important;  /* Minimal padding to tighten the layout */
     margin: 0px !important;
-    /*line-height: 0.8;*/  
+    /*line-height: 0.8;*/
 }
 
 .compact-listbox .ui-selectlistbox-listcontainer {
     padding: 0!important;
     margin: 0!important;
-    /*height: 200px;*/ 
+    /*height: 200px;*/
 }
 
 .compact-listbox .ui-selectlistbox-list {
     width: 100%!important;
     margin: 0!important;
     padding: 0!important;
-    border-collapse: collapse!important; 
+    border-collapse: collapse!important;
 }
 
 .compact-listbox .ui-selectlistbox-item {
@@ -192,9 +192,9 @@ th.align-right-header .ui-column-title {
 }
 
 .compact-listbox .ui-selectlistbox-item td {
-    padding: 0!important; 
-    margin: 0!important; 
-    border: none!important; 
+    padding: 0!important;
+    margin: 0!important;
+    border: none!important;
 }
 
 .compact-listbox .ui-selectlistbox-item span {
@@ -216,13 +216,30 @@ th.align-right-header .ui-column-title {
 .compact-listbox th,
 .compact-listbox td,
 .compact-listbox span {
-    margin: 3px!important;  
-    padding: 3px!important; 
-    border: none!important; 
-    line-height: 1.2; 
+    margin: 3px!important;
+    padding: 3px!important;
+    border: none!important;
+    line-height: 1.2;
 }
 
 .compact-listbox .ui-selectlistbox-item {
     background: none; /* Optional: remove any background styles */
+}
+
+.custom-col-40 {
+    width: 40%;
+}
+
+.custom-col-60 {
+    width: 60%;
+}
+
+
+
+
+@media print {
+    .no-print {
+        display: none !important;
+    }
 }
 

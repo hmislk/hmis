@@ -46,7 +46,66 @@ public class AgencyController implements Serializable {
     private Institution current;
     private List<Institution> items = null;
     String selectText = "";
+    
+    private int tabIndex = 0;
 
+    
+    
+  public Institution findAgencyByName(String name) {
+        if (name == null) {
+            return null;
+        }
+        if (name.trim().equals("")) {
+            return null;
+        }
+        String jpql = "select c "
+                + " from Institution c "
+                + " where c.retired=:ret "
+                + " and c.institutionType=:t "
+                + " and c.name=:name";
+        Map m = new HashMap<>();
+        m.put("ret", false);
+        m.put("t", InstitutionType.Agency);
+        m.put("name", name);
+        return getFacade().findFirstByJpql(jpql, m);
+    }
+
+  public Institution findAgencyByCode(String code) {
+        if (code == null) {
+            return null;
+        }
+        if (code.trim().equals("")) {
+            return null;
+        }
+        String jpql = "select c "
+                + " from Institution c "
+                + " where c.retired=:ret "
+                + " and c.institutionType=:t "
+                + " and c.code=:code";
+        Map m = new HashMap<>();
+        m.put("ret", false);
+        m.put("t", InstitutionType.Agency);
+        m.put("code", code);
+        
+        return getFacade().findFirstByJpql(jpql, m);
+    }
+  
+  
+    
+  public void save(Institution ins) {
+        if (ins == null) {
+            return;
+        }
+        if (ins.getId() != null) {
+            getFacade().edit(ins);
+            JsfUtil.addSuccessMessage("Updated Successfully.");
+        } else {
+            ins.setCreatedAt(new Date());
+            ins.setCreater(getSessionController().getLoggedUser());
+            getFacade().create(ins);
+            JsfUtil.addSuccessMessage("Saved Successfully");
+        }
+    }
     public void randomlySetAgencyBalances() {
         List<Institution> suggestions;
         String sql;
@@ -70,7 +129,7 @@ public class AgencyController implements Serializable {
             agentHistory.setCreatedAt(new Date());
             agentHistory.setCreater(getSessionController().getLoggedUser());
             agentHistory.setBill(null);
-            agentHistory.setBeforeBallance(pb);
+            agentHistory.setBalanceBeforeTransaction(pb);
             agentHistory.setTransactionValue(b1);
             agentHistory.setHistoryType(HistoryType.ChannelBalanceReset);
             agentHistoryFacade.create(agentHistory);
@@ -84,7 +143,7 @@ public class AgencyController implements Serializable {
             agentHistory.setCreatedAt(new Date());
             agentHistory.setCreater(getSessionController().getLoggedUser());
             agentHistory.setBill(null);
-            agentHistory.setBeforeBallance(pb);
+            agentHistory.setBalanceBeforeTransaction(pb);
             agentHistory.setTransactionValue(b2);
             agentHistory.setHistoryType(HistoryType.ChannelBalanceReset);
             agentHistoryFacade.create(agentHistory);
@@ -211,5 +270,15 @@ public class AgencyController implements Serializable {
         }
         return items;
     }
+
+    public int getTabIndex() {
+        return tabIndex;
+    }
+
+    public void setTabIndex(int tabIndex) {
+        this.tabIndex = tabIndex;
+    }
+    
+    
 
 }

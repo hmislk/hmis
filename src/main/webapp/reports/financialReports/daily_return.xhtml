@@ -4,132 +4,588 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp/bundles">
 
     <h:body class="w-100 border">
 
         <ui:composition template="/reports/index.xhtml" class="w-100 border">
             <ui:define name="subcontent">
-                <h:form class="w-100">
-                    <p:panel header="Daily Return" class="w-100">
-                        <h:panelGrid columns="5" class="w-100 ">
-                            <p:outputLabel value="From (Billed) Date" >
-                            </p:outputLabel>
-                            <p:datePicker value="#{reportController.fromDate}" 
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
-                            <p:spacer width="20"></p:spacer>
-                            <p:outputLabel value="To (Billed) Date" >
-                            </p:outputLabel>
-                            <p:datePicker value="#{reportController.toDate}"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                <h:form >
+                    <p:panel   header="Daily Return" class="m-1">
 
 
-                            <p:outputLabel value="Institution/Branch" for="institutionMenu"></p:outputLabel>
-                            <p:selectOneMenu value="#{reportController.institution}" id="institutionMenu" required="true">
-                                <f:selectItem itemLabel="Select Institution Type"/>
-                                <f:selectItems value="#{institutionController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
-                               <p:ajax process="@this" update="cmdDepartment"></p:ajax>
+                        <h:panelGrid columns="2" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="From" for="fromDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar 
+                                styleClass="w-100" 
+                                inputStyleClass="w-100 form-control" 
+                                id="fromDate" 
+                                value="#{searchController.fromDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                />
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="To" for="toDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar 
+                                styleClass="w-100" 
+                                inputStyleClass="w-100 form-control" 
+                                id="toDate" 
+                                value="#{searchController.toDate}" 
+                                navigator="false" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                />
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
+                                <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="cmbIns"
+                                styleClass="w-100 form-control" 
+                                value="#{searchController.institution}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Institutions" />
+                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                <p:ajax process="cmbIns" update="cmbDept" />
                             </p:selectOneMenu>
-                            <p:spacer/>
-                            <p:outputLabel value="Department">
-                            </p:outputLabel>
-                            <p:selectOneMenu 
-                                id="cmdDepartment"
-                                value="#{reportController.department}" 
-                                filter="true"
-                                >
-                                <f:selectItem itemLabel="All"></f:selectItem>
-                                <f:selectItems value="#{departmentController.getInsDepartments(reportController.institution)}"
-                                               var="d"
-                                               itemLabel="#{d.name}"
-                                               itemValue="#{d}"></f:selectItems>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="cmbDept"
+                                styleClass="w-100 form-control"  
+                                value="#{searchController.department}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Departments" />
+                                <f:selectItems value="#{departmentController.getInsDepartments(searchController.institution)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
                             </p:selectOneMenu>
 
-                            
-                           
-                            
-                            <p:outputLabel value="Professionality" for="institutionMenu"></p:outputLabel>
-                            <p:selectOneRadio>
-                                <f:selectItem itemLabel="With Professional"></f:selectItem>
-                                <f:selectItem itemLabel="Without Professional"></f:selectItem>
-                            </p:selectOneRadio>
-                            
-                           <p:outputLabel value="Type" for=""></p:outputLabel>
-                            <p:selectOneRadio>
-                                <f:selectItem itemLabel="Summary"></f:selectItem>
-                                <f:selectItem itemLabel="Detail"></f:selectItem>
-                            </p:selectOneRadio>
-                           <p:spacer/>
-                           <p:commandButton ajax="false" value="Process" action="null" >
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
+                                <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="siteMenu"
+                                styleClass="w-100 form-control"  
+                                value="#{searchController.site}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Sites" />
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                            </p:selectOneMenu>
+
+                        </h:panelGrid>
+
+
+
+                        <h:panelGrid columns="3" class="my-2" >
+
+                            <p:commandButton  
+                                value="Process" 
+                                ajax="false"
+                                action="#{searchController.generateDailyReturn()}" 
+                                class="ui-button-success" icon="fas fa-cogs">
                             </p:commandButton>
-                        </h:panelGrid><br />
-                        
-                        <p:dataTable value="#{searchController.telephoneNumbers}" var="b" id="tb1" rowIndexVar="i"
-                                     rowKey="#{b}" 
-                                     rows="#{searchController.rows}"
-                                     selection="#{searchController.selectedTelephoneNumbers}"
-                                     paginator="true"
-                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     rowsPerPageTemplate="20, 50, 100, 1000, 1500" class="w-100">
 
-                            <f:facet name="header" >
-                                <p:outputLabel value="Asset Register Reports" />                                
-                            </f:facet>
-                            
-                            <p:column style="text-align: left;" >
-                                <f:facet name="header" >
-                                    <p:outputLabel value="Item Service" >
-                                    </p:outputLabel>
-                                </f:facet>
-                            </p:column>
+                            <p:commandButton  
+                                value="Update" 
+                                ajax="false"
+                                action="#{searchController.updateBillItenValues()}" 
+                                class="ui-button-danger" icon="fas fa-cogs">
+                            </p:commandButton>
 
-                            <p:column style="text-align: left;" >
-                                <f:facet name="header" >
-                                    <p:outputLabel value="Item Count" >
-                                    </p:outputLabel>
-                                </f:facet>
-                            </p:column>
-                            <p:column style="text-align: left;" >
-                                <f:facet name="header" >
-                                    <p:outputLabel value="Hospital Fee" >
-                                    </p:outputLabel>
-                                </f:facet>
-                            </p:column>
+                            <p:commandButton value="Print" icon="fas fa-print">
+                                <p:printer target="printPanel" />
+                            </p:commandButton>
 
-                            <p:column style="text-align: left;" >
-                                <f:facet name="header" >
-                                    <p:outputLabel value="Discount Amount" >
-                                    </p:outputLabel>
-                                </f:facet> 
-                            </p:column>
-                            
-                            <p:column style="text-align: left;" >
-                                <f:facet name="header" >
-                                    <p:outputLabel value="Total Hospital Fee" >
-                                    </p:outputLabel>
-                                </f:facet>
-                            </p:column>
-                            
-                            <p:column style="text-align: left;" >
-                                <f:facet name="header" >
-                                    <p:outputLabel value="Professional Fee" >
-                                    </p:outputLabel>
-                                </f:facet>
-                            </p:column>
-                            
-                            <p:column style="text-align: left;" >
-                                <f:facet name="header" >
-                                    <p:outputLabel value="Total Amount" >
-                                    </p:outputLabel>
-                                </f:facet>
-                            </p:column>
-                            
-                           
-                            
-                        </p:dataTable>
+                        </h:panelGrid>
+
+
+
+                        <!--Do not remove this part-->
+                        <h:panelGroup style="display: none;" >
+                            <ui:repeat value="#{searchController.bundle.bundles}" var="myBundle1" >
+                                #{myBundle1.name} - #{myBundle1.bundleType} <br/>
+                            </ui:repeat>
+                        </h:panelGroup>
+                        <!--Do not remove the above part-->
+
+
+                        <h:panelGroup id="printPanel">        
+
+                            <ui:repeat value="#{searchController.bundle.bundles}" var="myBundle">
+                                <ez:opdServiceCollection bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'opdServiceCollection'}"/>
+                                <ez:pharmacyCollection bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'pharmacyCollection'}"/>
+                                <ez:ccCollection bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'ccCollection'}"/>
+                                <ez:companyPaymentBillOpd bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'companyPaymentBillOpd'}"/>
+                                <ez:companyPaymentBillInward bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'companyPaymentBillInward'}"/>
+                                <ez:companyPaymentBillPharmacy bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'companyPaymentBillPharmacy'}"/>
+                                <ez:companyPaymentBillChannelling bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'companyPaymentBillChannelling'}"/>
+                                <ez:patientDepositPayments bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportPatientDeposit'}" ></ez:patientDepositPayments>
+                                <ez:collectionForTheDay bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'collectionForTheDay'}"/>
+                                <ez:pettyCashPayments bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'pettyCashPayments'}"/>
+                                <ez:professionalPaymentBillOpd bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'ProfessionalPaymentBillReportOpd'}"/>
+                                <ez:professionalPaymentBillChannelling bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'ProfessionalPaymentBillReportChannelling'}"/>
+                                <ez:professionalPaymentBillInward bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'ProfessionalPaymentBillReportChannelling'}"/>
+
+                                <ez:paymentReportCards bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportCards'}"/>
+                                <ez:staffPayments bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportStaffWelfare'}"/>
+                                <ez:voucherPayments bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportVoucher'}"/>
+                                <ez:chequePayments bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportCheque'}"/>
+                                <ez:ewalletPayments bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportEwallet'}"/>
+
+                                <!--
+                                  <p:panel collapsed="false" toggleable="true" rendered="#{myBundle.bundleType eq 'paymentReportCards'}">
+                                      <f:facet name="header">
+                                          <h:outputLabel value="#{myBundle.name}"></h:outputLabel>
+                                      </f:facet>
+                                      <ez:paymentReportCards bundle="#{myBundle}"/>
+                                      <f:facet name="footer">
+                                          <div class="d-flex align-items-center justify-content-between">
+                                              <div>
+                                                  <h:outputLabel value="Total for #{myBundle.name}" style="font-weight: 600; font-size: 1.2em" ></h:outputLabel>
+                                              </div>
+                                              <div>
+                                                  <h:outputLabel value="#{myBundle.total}" style="font-weight: 600; font-size: 1.2em" >
+                                                      <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                  </h:outputLabel>
+                                              </div>
+                                          </div>
+                                      </f:facet>
+                                  </p:panel>
+                                
+                                
+                                  <p:panel collapsed="false" toggleable="true" rendered="#{myBundle.bundleType eq 'paymentReportStaffWelfare'}">
+                                      <f:facet name="header">
+                                          <h:outputLabel value="#{myBundle.name}"></h:outputLabel>
+                                      </f:facet>
+                                      <ez:staffPayments bundle="#{myBundle}"/>
+                                      <f:facet name="footer">
+                                          <div class="d-flex align-items-center justify-content-between">
+                                              <div>
+                                                  <h:outputLabel value="Total for #{myBundle.name}" style="font-weight: 600; font-size: 1.2em" ></h:outputLabel>
+                                              </div>
+                                              <div>
+                                                  <h:outputLabel value="#{myBundle.total}" style="font-weight: 600; font-size: 1.2em" >
+                                                      <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                  </h:outputLabel>
+                                              </div>
+                                          </div>
+                                      </f:facet>
+                                  </p:panel>
+                                
+                                  <p:panel collapsed="false" toggleable="true" rendered="#{myBundle.bundleType eq 'paymentReportVoucher'}">
+                                      <f:facet name="header">
+                                          <h:outputLabel value="#{myBundle.name}"></h:outputLabel>
+                                      </f:facet>
+                                      <ez:voucherPayments bundle="#{myBundle}"/>
+                                      <f:facet name="footer">
+                                          <div class="d-flex align-items-center justify-content-between">
+                                              <div>
+                                                  <h:outputLabel value="Total for #{myBundle.name}" style="font-weight: 600; font-size: 1.2em" ></h:outputLabel>
+                                              </div>
+                                              <div>
+                                                  <h:outputLabel value="#{myBundle.total}" style="font-weight: 600; font-size: 1.2em" >
+                                                      <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                  </h:outputLabel>
+                                              </div>
+                                          </div>
+                                      </f:facet>
+                                  </p:panel>
+                                
+                                
+                                  <p:panel collapsed="false" toggleable="true" rendered="#{myBundle.bundleType eq 'paymentReportCheque'}">
+                                      <f:facet name="header">
+                                          <h:outputLabel value="#{myBundle.name}"></h:outputLabel>
+                                      </f:facet>
+                                      <ez:chequePayments bundle="#{myBundle}"/>
+                                      <f:facet name="footer">
+                                          <div class="d-flex align-items-center justify-content-between">
+                                              <div>
+                                                  <h:outputLabel value="Total for #{myBundle.name}" style="font-weight: 600; font-size: 1.2em" ></h:outputLabel>
+                                              </div>
+                                              <div>
+                                                  <h:outputLabel value="#{myBundle.total}" style="font-weight: 600; font-size: 1.2em" >
+                                                      <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                  </h:outputLabel>
+                                              </div>
+                                          </div>
+                                      </f:facet>
+                                  </p:panel>
+                                
+                                
+                                  <p:panel collapsed="false" toggleable="true" rendered="#{myBundle.bundleType eq 'paymentReportEwallet'}">
+                                      <f:facet name="header">
+                                          <h:outputLabel value="#{myBundle.name}"></h:outputLabel>
+                                      </f:facet>
+                                      <ez:ewalletPayments bundle="#{myBundle}"/>
+                                      <f:facet name="footer">
+                                          <div class="d-flex align-items-center justify-content-between">
+                                              <div>
+                                                  <h:outputLabel value="Total for #{myBundle.name}" style="font-weight: 600; font-size: 1.2em" ></h:outputLabel>
+                                              </div>
+                                              <div>
+                                                  <h:outputLabel value="#{myBundle.total}" style="font-weight: 600; font-size: 1.2em" >
+                                                      <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                  </h:outputLabel>
+                                              </div>
+                                          </div>
+                                      </f:facet>
+                                  </p:panel>-->
+
+                                <!--                                
+                                                                <p:panel collapsed="false" toggleable="true" rendered="#{myBundle.bundleType eq 'paymentReportPatientDeposit'}">
+                                                                    <f:facet name="header">
+                                                                        <h:outputLabel value="#{myBundle.name}"></h:outputLabel>
+                                                                    </f:facet>
+                                                                    <ez:patientDepositPayments bundle="#{myBundle}"/>
+                                                                    <f:facet name="footer">
+                                                                        <div class="d-flex align-items-center justify-content-between">
+                                                                            <div>
+                                                                                <h:outputLabel value="Total for #{myBundle.name}" style="font-weight: 600; font-size: 1.2em" ></h:outputLabel>
+                                                                            </div>
+                                                                            <div>
+                                                                                <h:outputLabel value="#{myBundle.total}" style="font-weight: 600; font-size: 1.2em" >
+                                                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                                                </h:outputLabel>
+                                                                            </div>
+                                                                        </div>
+                                                                    </f:facet>
+                                                                </p:panel>
+                                                                
+                                -->
+
+                                <p:panel collapsed="false" toggleable="true" rendered="#{myBundle.bundleType eq 'slipPayments'}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="#{myBundle.name}"></h:outputLabel>
+                                    </f:facet>
+                                    <ez:slipPayments bundle="#{myBundle}"/>
+                                    <f:facet name="footer">
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <div>
+                                                <h:outputLabel value="Total for #{myBundle.name}" style="font-weight: 600; font-size: 1.2em" ></h:outputLabel>
+                                            </div>
+                                            <div>
+                                                <h:outputLabel value="#{myBundle.total}" style="font-weight: 600; font-size: 1.2em" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputLabel>
+                                            </div>
+                                        </div>
+                                    </f:facet>
+                                </p:panel>
+                                <p:panel collapsed="false" toggleable="true" rendered="#{myBundle.bundleType eq 'netCash'}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="#{myBundle.name}"></h:outputLabel>
+                                    </f:facet>
+                                    <ez:netCashForTheDay bundle="#{myBundle}"/>
+                                    <f:facet name="footer">
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <div>
+                                                <h:outputLabel value="Total for #{myBundle.name}" style="font-weight: 600; font-size: 1.2em" ></h:outputLabel>
+                                            </div>
+                                            <div>
+                                                <h:outputLabel value="#{myBundle.total}" style="font-weight: 600; font-size: 1.2em" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputLabel>
+                                            </div>
+                                        </div>
+                                    </f:facet>
+                                </p:panel>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                <!--
+                                                                <p:panel collapsed="false" toggleable="true" rendered="#{myBundle.bundleType eq 'opdServiceCollection'}" >
+                                                                    <f:facet name="header" >
+                                                                        <h:outputLabel value="#{myBundle.name}" ></h:outputLabel>
+                                                                    </f:facet>
+                                                                    <ez:opdServiceCollection bundle="#{myBundle}"/>
+                                                                    <f:facet name="footer" >
+                                                                        <div class="d-flex align-items-center justify-content-between">
+                                                                            <div>
+                                                                                <h:outputLabel value="Total for #{myBundle.name}" style="font-weight: 600; font-size: 1.2em" ></h:outputLabel>
+                                                                            </div>
+                                                                            <div>
+                                                                                <h:outputLabel value="#{myBundle.total}" style="font-weight: 600; font-size: 1.2em" >
+                                                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                                                </h:outputLabel>
+                                                                            </div>
+                                                                        </div>
+                                
+                                                                    </f:facet>
+                                                                </p:panel>-->
+
+<!--                                <p:panel collapsed="false" toggleable="true" rendered="#{myBundle.bundleType eq 'pharmacyCollection'}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="#{myBundle.name}"></h:outputLabel>
+                                    </f:facet>
+                                    <ez:pharmacyCollection bundle="#{myBundle}"/>
+                                    <f:facet name="footer">
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <div>
+                                                <h:outputLabel value="Total for #{myBundle.name}" style="font-weight: 600; font-size: 1.2em" ></h:outputLabel>
+                                            </div>
+                                            <div>
+                                                <h:outputLabel value="#{myBundle.total}" style="font-weight: 600; font-size: 1.2em" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputLabel>
+                                            </div>
+                                        </div>
+                                    </f:facet>
+                                </p:panel>-->
+
+
+<!--                                <p:panel collapsed="false" toggleable="true" rendered="#{myBundle.bundleType eq 'ccCollection'}">
+    <f:facet name="header">
+        <h:outputLabel value="#{myBundle.name}"></h:outputLabel>
+    </f:facet>
+    <ez:ccCollection bundle="#{myBundle}"/>
+    <f:facet name="footer">
+        <div class="d-flex align-items-center justify-content-between">
+            <div>
+                <h:outputLabel value="Total for #{myBundle.name}" style="font-weight: 600; font-size: 1.2em" ></h:outputLabel>
+            </div>
+            <div>
+                <h:outputLabel value="#{myBundle.total}" style="font-weight: 600; font-size: 1.2em" >
+                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                </h:outputLabel>
+            </div>
+        </div>
+    </f:facet>
+</p:panel>-->
+                                <!--
+                                
+                                                                <p:panel collapsed="false" toggleable="true" rendered="#{myBundle.bundleType eq 'companyPaymentBillOpd'}">
+                                                                    <f:facet name="header">
+                                                                        <h:outputLabel value="#{myBundle.name}"></h:outputLabel>
+                                                                    </f:facet>
+                                                                    <ez:companyPaymentBillOpd bundle="#{myBundle}"/>
+                                                                    <f:facet name="footer">
+                                                                        <div class="d-flex align-items-center justify-content-between">
+                                                                            <div>
+                                                                                <h:outputLabel value="Total for #{myBundle.name}" style="font-weight: 600; font-size: 1.2em" ></h:outputLabel>
+                                                                            </div>
+                                                                            <div>
+                                                                                <h:outputLabel value="#{myBundle.total}" style="font-weight: 600; font-size: 1.2em" >
+                                                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                                                </h:outputLabel>
+                                                                            </div>
+                                                                        </div>
+                                                                    </f:facet>
+                                                                </p:panel>
+                                                                
+                                                                
+                                -->
+
+
+<!--                                <p:panel collapsed="false" toggleable="true" rendered="#{myBundle.bundleType eq 'companyPaymentBillInward'}">
+    <f:facet name="header">
+        <h:outputLabel value="#{myBundle.name}"></h:outputLabel>
+    </f:facet>
+    <ez:companyPaymentBillInward bundle="#{myBundle}"/>
+    <f:facet name="footer">
+        <div class="d-flex align-items-center justify-content-between">
+            <div>
+                <h:outputLabel value="Total for #{myBundle.name}" style="font-weight: 600; font-size: 1.2em" ></h:outputLabel>
+            </div>
+            <div>
+                <h:outputLabel value="#{myBundle.total}" style="font-weight: 600; font-size: 1.2em" >
+                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                </h:outputLabel>
+            </div>
+        </div>
+    </f:facet>
+</p:panel>-->
+
+
+                                <!--                                
+                                                                <p:panel collapsed="false" toggleable="true" rendered="#{myBundle.bundleType eq 'companyPaymentBillPharmacy'}">
+                                                                    <f:facet name="header">
+                                                                        <h:outputLabel value="#{myBundle.name}"></h:outputLabel>
+                                                                    </f:facet>
+                                                                    <ez:companyPaymentBillPharmacy bundle="#{myBundle}"/>
+                                                                    <f:facet name="footer">
+                                                                        <div class="d-flex align-items-center justify-content-between">
+                                                                            <div>
+                                                                                <h:outputLabel value="Total for #{myBundle.name}" style="font-weight: 600; font-size: 1.2em" ></h:outputLabel>
+                                                                            </div>
+                                                                            <div>
+                                                                                <h:outputLabel value="#{myBundle.total}" style="font-weight: 600; font-size: 1.2em" >
+                                                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                                                </h:outputLabel>
+                                                                            </div>
+                                                                        </div>
+                                                                    </f:facet>
+                                                                </p:panel>-->
+
+
+                                <!--                                
+                                                                <p:panel collapsed="false" toggleable="true" rendered="#{myBundle.bundleType eq 'companyPaymentBillChannelling'}">
+                                                                    <f:facet name="header">
+                                                                        <h:outputLabel value="#{myBundle.name}"></h:outputLabel>
+                                                                    </f:facet>
+                                                                    <ez:companyPaymentBillChannelling bundle="#{myBundle}"/>
+                                                                    <f:facet name="footer">
+                                                                        <div class="d-flex align-items-center justify-content-between">
+                                                                            <div>
+                                                                                <h:outputLabel value="Total for #{myBundle.name}" style="font-weight: 600; font-size: 1.2em" ></h:outputLabel>
+                                                                            </div>
+                                                                            <div>
+                                                                                <h:outputLabel value="#{myBundle.total}" style="font-weight: 600; font-size: 1.2em" >
+                                                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                                                </h:outputLabel>
+                                                                            </div>
+                                                                        </div>
+                                                                    </f:facet>
+                                                                </p:panel>-->
+
+                                <!--
+                                                                <p:panel collapsed="false" toggleable="true" rendered="#{myBundle.bundleType eq 'collectionForTheDay'}">
+                                                                    <f:facet name="header">
+                                                                        <h:outputLabel value="#{myBundle.name}"></h:outputLabel>
+                                                                    </f:facet>
+                                                                    <ez:collectionForTheDay bundle="#{myBundle}"/>
+                                                                    <f:facet name="footer">
+                                                                        <div class="d-flex align-items-center justify-content-between">
+                                                                            <div>
+                                                                                <h:outputLabel value="Total for #{myBundle.name}" style="font-weight: 600; font-size: 1.2em" ></h:outputLabel>
+                                                                            </div>
+                                                                            <div>
+                                                                                <h:outputLabel value="#{myBundle.total}" style="font-weight: 600; font-size: 1.2em" >
+                                                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                                                </h:outputLabel>
+                                                                            </div>
+                                                                        </div>
+                                                                    </f:facet>
+                                                                </p:panel>
+                                                                
+                                -->
+<!--                                <p:panel collapsed="false" toggleable="true" rendered="#{myBundle.bundleType eq 'pettyCashPayments'}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="#{myBundle.name}"></h:outputLabel>
+                                    </f:facet>
+                                    <ez:pettyCashPayments bundle="#{myBundle}"/>
+                                    <f:facet name="footer">
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <div>
+                                                <h:outputLabel value="Total for #{myBundle.name}" style="font-weight: 600; font-size: 1.2em" ></h:outputLabel>
+                                            </div>
+                                            <div>
+                                                <h:outputLabel value="#{myBundle.total}" style="font-weight: 600; font-size: 1.2em" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputLabel>
+                                            </div>
+                                        </div>
+                                    </f:facet>
+                                </p:panel>-->
+
+
+
+<!--                                <p:panel collapsed="false" toggleable="true" rendered="#{myBundle.bundleType eq 'professionalPaymentBillOpd'}">
+    <f:facet name="header">
+        <h:outputLabel value="#{myBundle.name}"></h:outputLabel>
+    </f:facet>
+    <ez:professionalPaymentBillOpd bundle="#{myBundle}"/>
+    <f:facet name="footer">
+        <div class="d-flex align-items-center justify-content-between">
+            <div>
+                <h:outputLabel value="Total for #{myBundle.name}" style="font-weight: 600; font-size: 1.2em" ></h:outputLabel>
+            </div>
+            <div>
+                <h:outputLabel value="#{myBundle.total}" style="font-weight: 600; font-size: 1.2em" >
+                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                </h:outputLabel>
+            </div>
+        </div>
+    </f:facet>
+</p:panel>
+                                -->
+
+
+
+                                <!--                                
+                                                                <p:panel collapsed="false" toggleable="true" rendered="#{myBundle.bundleType eq 'ProfessionalPaymentBillReportChannelling'}">
+                                                                    <f:facet name="header">
+                                                                        <h:outputLabel value="#{myBundle.name}"></h:outputLabel>
+                                                                    </f:facet>
+                                                                    <ez:professionalPaymentBillInward bundle="#{myBundle}"/>
+                                                                    <f:facet name="footer">
+                                                                        <div class="d-flex align-items-center justify-content-between">
+                                                                            <div>
+                                                                                <h:outputLabel value="Total for #{myBundle.name}" style="font-weight: 600; font-size: 1.2em" ></h:outputLabel>
+                                                                            </div>
+                                                                            <div>
+                                                                                <h:outputLabel value="#{myBundle.total}" style="font-weight: 600; font-size: 1.2em" >
+                                                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                                                </h:outputLabel>
+                                                                            </div>
+                                                                        </div>
+                                                                    </f:facet>
+                                                                </p:panel>
+                                                                <p:panel collapsed="false" toggleable="true" rendered="#{myBundle.bundleType eq 'ProfessionalPaymentBillReportOpd'}">
+                                                                    <f:facet name="header">
+                                                                        <h:outputLabel value="#{myBundle.name}"></h:outputLabel>
+                                                                    </f:facet>
+                                                                    <ez:professionalPaymentBillPharmacy bundle="#{myBundle}"/>
+                                                                    <f:facet name="footer">
+                                                                        <div class="d-flex align-items-center justify-content-between">
+                                                                            <div>
+                                                                                <h:outputLabel value="Total for #{myBundle.name}" style="font-weight: 600; font-size: 1.2em" ></h:outputLabel>
+                                                                            </div>
+                                                                            <div>
+                                                                                <h:outputLabel value="#{myBundle.total}" style="font-weight: 600; font-size: 1.2em" >
+                                                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                                                </h:outputLabel>
+                                                                            </div>
+                                                                        </div>
+                                                                    </f:facet>
+                                                                </p:panel>-->
+
+
+
+
+
+
+                            </ui:repeat>
+
+                        </h:panelGroup>
+
 
                     </p:panel>
+
                 </h:form>
+
             </ui:define>
         </ui:composition>
 

@@ -43,7 +43,6 @@ import com.divudi.entity.Person;
 import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
-import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
@@ -58,18 +57,14 @@ import com.divudi.facade.PersonFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.HistoryType;
 import com.divudi.data.dataStructure.ComponentDetail;
-import com.divudi.data.dataStructure.DailyCash;
-import com.divudi.data.dataStructure.SearchKeyword;
-import com.divudi.entity.AppEmail;
+import com.divudi.entity.FamilyMember;
+import com.divudi.entity.PatientDeposit;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -148,6 +143,8 @@ public class BillController implements Serializable {
     private WebUserController webUserController;
     @Inject
     private OpdBillController opdBillController;
+    @Inject
+    PatientDepositController patientDepositController;
 
     /**
      * Class Vairables
@@ -1624,6 +1621,8 @@ public class BillController implements Serializable {
                 + " from BillFee bf"
                 + " where bf.retired=:ret"
                 + " and bf.staff=:staff "
+                + " and bf.bill.cancelled=:can"
+                + " and bf.billItem.refunded=:ret"
                 + " and (bf.feeValue - bf.paidValue) > 0 "
                 + " and bf.bill.billTypeAtomic in :btcs "
                 + " and bf.fee.feeType=:ft";
@@ -1638,32 +1637,31 @@ public class BillController implements Serializable {
             m.put("toDate", toDate);
         }
 
+        m.put("ret", false);
+        m.put("can", false);
         m.put("btcs", btcs);
         m.put("staff", staff);
         m.put("ret", false);
         m.put("ft", FeeType.Staff);
 
-
         tmpFees = billFeeFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
 
-
-        List<BillFee> removingBillFees = new ArrayList<>();
-        for (BillFee bf : tmpFees) {
-            m = new HashMap<>();
-            jpql = "SELECT bi FROM BillItem bi where "
-                    + " bi.retired=false"
-                    + " and bi.bill.cancelled=false "
-                    + " and type(bi.bill)=:class "
-                    + " and bi.referanceBillItem=:rbi";
-            m.put("class", RefundBill.class);
-            m.put("rbi", bf.getBillItem());
-            BillItem rbi = getBillItemFacade().findFirstByJpql(jpql, m);
-            if (rbi != null) {
-                removingBillFees.add(bf);
-            }
-        }
-        tmpFees.removeAll(removingBillFees);
-
+//        List<BillFee> removingBillFees = new ArrayList<>();
+//        for (BillFee bf : tmpFees) {
+//            m = new HashMap<>();
+//            jpql = "SELECT bi FROM BillItem bi where "
+//                    + " bi.retired=false"
+//                    + " and bi.bill.cancelled=false "
+//                    + " and type(bi.bill)=:class "
+//                    + " and bi.referanceBillItem=:rbi";
+//            m.put("class", RefundBill.class);
+//            m.put("rbi", bf.getBillItem());
+//            BillItem rbi = getBillItemFacade().findFirstByJpql(jpql, m);
+//            if (rbi != null) {
+//                removingBillFees.add(bf);
+//            }
+//        }
+//        tmpFees.removeAll(removingBillFees);
         return tmpFees;
     }
 
@@ -1710,7 +1708,19 @@ public class BillController implements Serializable {
             return "";
         }
 
+        if (paymentMethod == PaymentMethod.PatientDeposit) {
+//            if(getBatchBill().getPatient().getHasAnAccount() == null){
+//                JsfUtil.addErrorMessage("Create Patient Account First");
+//                return "";
+//            }
+//            if(!getBatchBill().getPatient().getHasAnAccount()){
+//                JsfUtil.addErrorMessage("Create Patient Account First");
+//                return "";
+//            }
+        }
+
         Bill cancellationBatchBill = new CancelledBill();
+        cancellationBatchBill.copy(batchBill);
         cancellationBatchBill.setDepartment(sessionController.getDepartment());
         cancellationBatchBill.setInstitution(sessionController.getInstitution());
         cancellationBatchBill.setFromDepartment(batchBill.getFromDepartment());
@@ -1745,8 +1755,18 @@ public class BillController implements Serializable {
             cancelSingleBillWhenCancellingOpdBatchBill(originalBill, cancellationBatchBill);
         }
 
-        cancellationBatchBill.copy(batchBill);
         cancellationBatchBill.setBilledBill(batchBill);
+
+        if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.PatientDeposit) {
+//            if (cancellationBatchBill.getPatient().getRunningBalance() == null) {
+//                cancellationBatchBill.getPatient().setRunningBalance(Math.abs(cancellationBatchBill.getNetTotal()));
+//            } else {
+//                cancellationBatchBill.getPatient().setRunningBalance(cancellationBatchBill.getPatient().getRunningBalance() + Math.abs(cancellationBatchBill.getNetTotal()));
+//            }
+//            patientFacade.edit(cancellationBatchBill.getPatient());
+            PatientDeposit pd = patientDepositController.getDepositOfThePatient(cancellationBatchBill.getPatient(), sessionController.getDepartment());
+            patientDepositController.updateBalance(cancellationBatchBill, pd);
+        }
 
         createPaymentForOpdBatchBillCancellation(cancellationBatchBill, batchBill.getPaymentMethod());
 
@@ -1754,6 +1774,7 @@ public class BillController implements Serializable {
         opdBillController.setBills(bills);
         opdBillController.setBatchBill(batchBill);
         getSessionController().setLoggedUser(wb);
+        printPreview = true;
         return "/opd/opd_batch_bill_print?faces-redirect=true";
     }
 
@@ -1859,7 +1880,7 @@ public class BillController implements Serializable {
         } else {
             getBillFacade().edit(cancellationBill);
         }
-        createPayment(cancellationBill, cancellationBatchBill.getPaymentMethod());
+        //createPayment(cancellationBill, cancellationBatchBill.getPaymentMethod());
 
         String deptId = getBillNumberGenerator().generateBillNumber(cancellationBill.getFromDepartment(), cancellationBill.getToDepartment(), cancellationBill.getBillType(), cancellationBill.getBillClassType());
         String insId = getBillNumberGenerator().generateBillNumber(cancellationBill.getInstitution(), cancellationBill.getBillType(), cancellationBill.getBillClassType());
@@ -1987,7 +2008,6 @@ public class BillController implements Serializable {
 
             p.setPaidValue(p.getBill().getNetTotal());
             paymentFacade.create(p);
-
             ps.add(p);
         }
         return ps;
@@ -2113,8 +2133,7 @@ public class BillController implements Serializable {
         temp.setBillTime(new Date());
         temp.setPatient(tmpPatient);
 
-        temp.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(tmpPatient, getSessionController().getApplicationPreference().isMembershipExpires()));
-
+//        temp.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(tmpPatient, getSessionController().getApplicationPreference().isMembershipExpires()));
         temp.setPaymentScheme(getPaymentScheme());
         temp.setPaymentMethod(paymentMethod);
         temp.setCreatedAt(new Date());
@@ -2491,6 +2510,7 @@ public class BillController implements Serializable {
     public List<Bill> findUnpaidBills(Date frmDate, Date toDate, List<BillTypeAtomic> billTypes, PaymentMethod pm, Double balanceGraterThan) {
         String jpql;
         HashMap hm;
+        List<BillType> bts = null;
         jpql = "Select b "
                 + " From Bill b "
                 + " where b.retired=:ret "
@@ -2514,8 +2534,46 @@ public class BillController implements Serializable {
             hm.put("bts", billTypes);
             jpql += " and b.billTypeAtomic in :bts";
         }
+
+        if (bts != null) {
+            hm.put("bt", bts);
+            jpql += " or b.billType in :bt";
+        }
+
         return getBillFacade().findByJpql(jpql, hm, TemporalType.TIMESTAMP);
 
+    }
+
+    public void addMissingBillTypeAtomics() {
+        String jpql = "select b "
+                + " from Bill b "
+                + " where b.retired=:ret "
+                + " and b.billTypeAtomic is null "
+                + " and b.billType is not null ";
+        Map m = new HashMap();
+        m.put("ret", false);
+        List<Bill> billsWithoutBillTypeAtomic = getFacade().findByJpql(jpql, m, 1000);
+        for (Bill b : billsWithoutBillTypeAtomic) {
+            b.setBillTypeAtomic(BillTypeAtomic.getBillTypeAtomic(b.getBillType(), b.getBillClassType()));
+            getFacade().edit(b);
+        }
+    }
+
+    public List<BillType> getBillTypesByAtomicBillTypes(List<BillTypeAtomic> ba) {
+        List<BillType> bt = new ArrayList<>();
+        if (ba == null) {
+            return bt;
+        }
+        for (BillTypeAtomic billTypeAtomic : ba) {
+            if (billTypeAtomic == billTypeAtomic.PHARMACY_GRN) {
+                bt.add(billType.PharmacyGrnBill);
+            } else if (billTypeAtomic == billTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL) {
+                bt.add(billType.PharmacyWholeSale);
+            } else if (billTypeAtomic == billTypeAtomic.PHARMACY_DIRECT_PURCHASE) {
+                bt.add(billType.PharmacyPurchaseBill);
+            }
+        }
+        return bt;
     }
 
     public List<Bill> listBills(
@@ -2585,6 +2643,7 @@ public class BillController implements Serializable {
         this.billSessions = billSessions;
     }
 
+    @Deprecated
     public void addToBill() {
 
         if (getCurrentBillItem() == null) {
@@ -2758,6 +2817,70 @@ public class BillController implements Serializable {
     @Inject
     MembershipSchemeController membershipSchemeController;
 
+    public void addMissingRefundStatusForCcRefunds() {
+        String jpql = "select bi "
+                + " from BillItem bi "
+                + " where bi.retired=false "
+                + " and bi.bill.billTypeAtomic=:bta";
+        Map m = new HashMap();
+        m.put("bta", BillTypeAtomic.CC_BILL_REFUND);
+        List<BillItem> bis = billItemFacade.findByJpql(jpql, m, 1000);
+        System.out.println("bis = " + bis);
+        if (bis == null) {
+            return;
+        }
+        for (BillItem bi : bis) {
+            System.out.println("bi = " + bi);
+            BillItem originalBilItem = bi.getReferanceBillItem();
+            System.out.println("originalBilItem = " + originalBilItem);
+            System.out.println("1 originalBilItem.isRefunded() = " + originalBilItem.isRefunded());
+            originalBilItem.setRefunded(true);
+            System.out.println("2 originalBilItem.isRefunded() = " + originalBilItem.isRefunded());
+            billItemFacade.edit(originalBilItem);
+            System.out.println("3 originalBilItem.isRefunded() = " + originalBilItem.isRefunded());
+            billItemFacade.editAndCommit(originalBilItem);
+            System.out.println("4 originalBilItem.isRefunded() = " + originalBilItem.isRefunded());
+        }
+    }
+    public String navigateTomissingBillsForCcCancellation() {
+        return "/dataAdmin/missing_cc_cancellation_bills?faces-redirect=true";
+    }
+    public void addMissingValuesForCcCancellationBillItems() {
+        String jpql = "select bi "
+                + " from BillItem bi "
+                + " where bi.retired=false "
+                + " and bi.bill.billTypeAtomic=:bta";
+        Map m = new HashMap();
+        m.put("bta", BillTypeAtomic.CC_BILL_CANCELLATION);
+        List<BillItem> bis = billItemFacade.findByJpql(jpql, m, 10000);
+        System.out.println("bis = " + bis);
+        if (bis == null) {
+            return;
+        }
+        for (BillItem bi : bis) {
+            System.out.println("bi = " + bi);
+            Institution cc = bi.getBill().getCollectingCentre();
+            Double collectingCentreMargin = cc.getPercentage();
+            Double netTotal = bi.getNetValue();
+            System.out.println("netTotal = " + netTotal);
+            Double ccFee = netTotal * collectingCentreMargin / 100;
+            System.out.println("ccFee = " + ccFee);
+            Double hosFee = netTotal - ccFee;
+            System.out.println("hosFee = " + hosFee);
+            if(bi.getHospitalFee()==0.0){
+                bi.setHospitalFee(hosFee);
+                billItemFacade.edit(bi);
+            }
+            if(bi.getCollectingCentreFee()==0.0){
+                bi.setCollectingCentreFee(ccFee);
+                billItemFacade.edit(bi);
+            }
+            
+            
+        }
+        
+    }
+
     public void calTotals() {
 //     //   ////// // System.out.println("calculating totals");
         if (paymentMethod == null) {
@@ -2774,8 +2897,7 @@ public class BillController implements Serializable {
         double billNet = 0.0;
         double billVat = 0.0;
 
-        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getSearchedPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
-
+//        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getSearchedPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
         for (BillEntry be : getLstBillEntries()) {
             //////// // System.out.println("bill item entry");
             double entryGross = 0.0;
@@ -2798,17 +2920,9 @@ public class BillController implements Serializable {
                     item = bf.getBillItem().getItem();
                 }
 
-                //Membership Scheme
-                if (membershipScheme != null) {
-                    priceMatrix = getPriceMatrixController().getOpdMemberDisCount(paymentMethod, membershipScheme, department, category);
-                    getBillBean().setBillFees(bf, isForeigner(), paymentMethod, membershipScheme, bi.getItem(), priceMatrix);
-                    ////// // System.out.println("priceMetrix = " + priceMatrix);
-
-                } else {
-                    //Payment  Scheme && Credit Company
-                    priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(paymentMethod, paymentScheme, department, item);
-                    getBillBean().setBillFees(bf, isForeigner(), paymentMethod, paymentScheme, getCreditCompany(), priceMatrix);
-                }
+                //Payment  Scheme && Credit Company
+                priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(paymentMethod, paymentScheme, department, item);
+                getBillBean().setBillFees(bf, isForeigner(), paymentMethod, paymentScheme, getCreditCompany(), priceMatrix);
 
                 if (bf.getBillItem().getItem().isVatable()) {
                     if (!(bf.getFee().getFeeType() == FeeType.CollectingCentre && collectingCentreBillController.getCollectingCentre() != null)) {
@@ -2951,15 +3065,16 @@ public class BillController implements Serializable {
         return "/opd/opd_bill";
     }
 
-    public void prepareNewBillForMember() {
+    public String prepareNewBillForMember(FamilyMember familyMember) {
         clearBillItemValues();
         clearBillValuesForMember();
         setPrintPreview(true);
         printPreview = false;
         paymentMethodData = null;
-        paymentScheme = null;
         paymentMethod = PaymentMethod.Cash;
+
         collectingCentreBillController.setCollectingCentre(null);
+        return "/opd/opd_bill?faces-redirect=true;";
     }
 
     public void makeNull() {

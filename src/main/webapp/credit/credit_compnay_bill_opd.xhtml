@@ -23,8 +23,7 @@
                             </p:selectOneMenu>
 
                             <p:inputText value="#{cashRecieveBillController.comment}" id="comment"/>
-                            <p:watermark value="Comment" for="comment"/>
-
+                            
                             <h:panelGroup id="creditCard" style="display: #{cashRecieveBillController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
                                 <pa:creditCard paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
                             </h:panelGroup>
@@ -113,7 +112,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Bill No"/>                                    
                                 </f:facet>                               
-                                <p:outputLabel value="#{b.referenceBill.insId}"/>
+                                <p:outputLabel value="#{b.referenceBill.deptId}"/>
                             </p:column>
                             <p:column headerText="Patient Name">
                                 <p:outputLabel value="#{b.referenceBill.patient.person.name}"/>                               

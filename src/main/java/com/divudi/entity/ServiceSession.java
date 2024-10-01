@@ -53,7 +53,7 @@ public class ServiceSession extends Item implements Serializable {
     Date startingTime;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date endingTime;
-    
+
     private Integer numberOfDaysForAutomaticInstanceCreation;
 
     boolean refundable = false;
@@ -84,12 +84,14 @@ public class ServiceSession extends Item implements Serializable {
     @Transient
     Boolean arival;
     @Transient
-    boolean serviceSessionCreateForOriginatingSession=false;
+    boolean serviceSessionCreateForOriginatingSession = false;
 
     //new Adittions
     private int recervedNumbers;
     private boolean paidAppointmentsOnly;
+    private boolean excludeFromPatientPortal;
     private boolean canChangePatient;
+    private String sessionStartingNumber;
 
     @Lob
     private String activities;
@@ -99,6 +101,8 @@ public class ServiceSession extends Item implements Serializable {
     private String notificationRoles;
     @Lob
     private String dataEntryForms;
+    @Lob
+    private String specialNotice;
 
     public SessionNumberGenerator getSessionNumberGenerator() {
         return sessionNumberGenerator;
@@ -230,7 +234,7 @@ public class ServiceSession extends Item implements Serializable {
     }
 
     public String getDayString() {
-        if (sessionWeekday==null) {
+        if (sessionWeekday == null) {
             return "";
         }
         switch (sessionWeekday) {
@@ -340,16 +344,6 @@ public class ServiceSession extends Item implements Serializable {
     }
 
     public Date getEndingTime() {
-        if (endingTime == null) {
-            if (startingTime == null) {
-                endingTime = null;
-            } else {
-                Calendar e = Calendar.getInstance();
-                e.setTime(startingTime);
-                e.add(Calendar.HOUR, 2);
-                endingTime = e.getTime();
-            }
-        }
         return endingTime;
     }
 
@@ -509,10 +503,28 @@ public class ServiceSession extends Item implements Serializable {
         this.dataEntryForms = dataEntryForms;
     }
 
-   
-    
-    
-    
-    
+    public boolean isExcludeFromPatientPortal() {
+        return excludeFromPatientPortal;
+    }
+
+    public void setExcludeFromPatientPortal(boolean excludeFromPatientPortal) {
+        this.excludeFromPatientPortal = excludeFromPatientPortal;
+    }
+
+    public String getSessionStartingNumber() {
+        return sessionStartingNumber;
+    }
+
+    public void setSessionStartingNumber(String sessionStartingNumber) {
+        this.sessionStartingNumber = sessionStartingNumber;
+    }
+
+    public String getSpecialNotice() {
+        return specialNotice;
+    }
+
+    public void setSpecialNotice(String specialNotice) {
+        this.specialNotice = specialNotice;
+    }
 
 }

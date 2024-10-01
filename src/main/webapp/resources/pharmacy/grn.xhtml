@@ -203,7 +203,7 @@
                         <tr>
                             <td colspan="7" style="text-align: left; font-weight: bold!important;">Expenses</td>
                             <td colspan="2" style="text-align: right; font-weight: bold!important;">
-                                <h:outputText value="#{0-cc.attrs.bill.expenseTotal}">
+                                <h:outputText value="#{cc.attrs.bill.expenseTotal}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </td>
@@ -246,29 +246,32 @@
                     <thead style="font-size: 15px;">
                         <tr>
                             <th style="text-align: left!important;min-width: 60%; font-weight: bold!important;">Expense</th>
+                            <th style="width: 20%; font-weight: bold!important;">Description</th>
                             <th style="width: 20%; text-align: right!important; font-weight: bold!important;">Value</th>
-                            <th style="width: 20%; text-align: right!important; font-weight: bold!important;">Description</th>
                         </tr>
                     </thead> 
-
+                    <h:panelGroup rendered="#{cc.attrs.bill.billExpenses ne null}">
                     <tbody>
                         <ui:repeat value="#{cc.attrs.bill.billExpenses}" var="be">
                             <tr>
                                 <td>#{be.item.name}</td>
-                                <td>
+                                <td>#{be.descreption}</td>
+                                <td style="text-align: right">
                                     <h:outputText value="#{be.netValue}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </td>
-                                <td>#{be.description}</td>
                             </tr>
                         </ui:repeat>
                     </tbody>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{cc.attrs.bill.billExpenses eq null}">
                     <tfoot>
                         <tr>
                             <td colspan="3" style="text-align: left;" class="empty-message">No Bill Expenses</td>
                         </tr>
                     </tfoot>
+                    </h:panelGroup>
                 </table>
 
             </div>

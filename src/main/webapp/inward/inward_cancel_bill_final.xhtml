@@ -95,7 +95,7 @@
                                                 <h:outputLabel value="Bill No " ></h:outputLabel>
                                             </div>
                                             <div class="col-md-10">
-                                                <h:outputLabel value="#{inwardSearch.bill.insId}" ></h:outputLabel>
+                                                <h:outputLabel value="#{inwardSearch.bill.deptId}" ></h:outputLabel>
                                             </div>
                                         </div>
 
@@ -191,13 +191,13 @@
 <!--                           <div style="border: 1px solid;" >
                                 <h:panelGroup id="gpBillP1review" >
                                     <div style="height:100cm; width:12cm; padding:0.5cm; overflow:hidden!important; page-break-after:always; font-family: sans-serif; font-size: 16px; position: relative; " >
-                                        <h:outputLabel value="#{inwardSearch.bill.cancelledBill.insId} **Cancelled"  style="position:absolute;left:4.5cm; top:1.5cm;" /> 
+                                        <h:outputLabel value="#{inwardSearch.bill.cancelledBill.deptId} **Cancelled"  style="position:absolute;left:4.5cm; top:1.5cm;" /> 
 
                                         <h:outputLabel value="#{inwardSearch.bill.cancelledBill.billDate}"  style="position: absolute; left: 10.5cm; top:1.5cm;" >
                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                         </h:outputLabel>
 
-                                        <h:outputLabel value="#{inwardSearch.bill.cancelledBill.paymentMethod} / #{inwardSearch.bill.insId}" style="position:absolute;left:4.5cm; top:2.0cm;"  />
+                                        <h:outputLabel value="#{inwardSearch.bill.cancelledBill.paymentMethod} / #{inwardSearch.bill.deptId}" style="position:absolute;left:4.5cm; top:2.0cm;"  />
 
                                         <h:outputLabel value="#{inwardSearch.bill.cancelledBill.billTime}"  style="position: absolute; left: 10.5cm; top:2.0cm;" >
                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}"/>

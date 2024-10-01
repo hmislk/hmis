@@ -1,0 +1,52 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bundle" type="com.divudi.data.ReportTemplateRowBundle" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <hr/>
+        <table class="table w-100">
+            <thead>
+                <tr class="text-light bg-dark">
+                    <th class="text-light bg-dark" colspan="5">
+                        Collection for the Day
+                    </th>
+                    <th class="text-light bg-dark text-end">
+                        <h:outputText value="#{cc.attrs.bundle.total}" >
+                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                        </h:outputText>
+                    </th>
+                </tr>
+            </thead>
+        </table>
+        <hr/>
+
+        <!--
+                <div class="row" >
+                    <div class="col" >
+                        <h1>
+                            <h:outputText value="#{cc.attrs.bundle.name}" ></h:outputText>
+                        </h1>
+        
+                    </div>
+                    <div class="col" >
+                        <h1>
+                            <h:outputText value="#{cc.attrs.bundle.total}" >
+                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            </h:outputText>
+                        </h1>
+        
+                    </div>
+                </div>-->
+
+    </cc:implementation>
+</html>

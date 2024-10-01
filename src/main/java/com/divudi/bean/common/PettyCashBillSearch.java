@@ -12,6 +12,7 @@ import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.ejb.EjbApplication;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
@@ -20,6 +21,7 @@ import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
+import com.divudi.entity.Payment;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.BillComponentFacade;
@@ -43,6 +45,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import org.joda.time.LocalTime;
 import org.primefaces.model.LazyDataModel;
 
 /**
@@ -84,6 +87,12 @@ public class PettyCashBillSearch implements Serializable {
     SessionController sessionController;
     @Inject
     private WebUserController webUserController;
+    @Inject
+    PettyCashBillController pettyCashBillController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    BillController billController;
     @EJB
     EjbApplication ejbApplication;
     private List<BillItem> tempbillItems;
@@ -94,6 +103,26 @@ public class PettyCashBillSearch implements Serializable {
     private String comment;
     WebUser user;
     private SearchKeyword searchKeyword;
+
+    
+    public String navigateToPettyCashCancel() {
+        return "petty_cash_bill_cancel";
+        
+    }
+   
+    
+    
+    public void sendToApprovePettyCashBillCancellation() {
+        Bill b = new Bill();
+        b.setCreatedAt(new Date());
+        b.setCreater(webUserController.getCurrent());
+        b.setInstitution(webUserController.getInstitution());
+        b.setDepartment(webUserController.getDepartment());
+        b.setBillType(BillType.PettyCashCancelApprove);
+        b.setReferenceBill(bill);
+        billController.save(b);
+        JsfUtil.addSuccessMessage("Send To Approve");
+    }
 
     public WebUser getUser() {
         return user;
@@ -257,6 +286,7 @@ public class PettyCashBillSearch implements Serializable {
         cb.setCreater(getSessionController().getLoggedUser());
         cb.setDepartment(getSessionController().getDepartment());
         cb.setInstitution(getSessionController().getInstitution());
+        cb.setBillTypeAtomic(BillTypeAtomic.PETTY_CASH_BILL_CANCELLATION);
         cb.setPaymentMethod(paymentMethod);
         cb.setComments(comment);
 
@@ -301,14 +331,32 @@ public class PettyCashBillSearch implements Serializable {
         this.cashTransactionBean = cashTransactionBean;
     }
 
+    public static Date getMidnight() {
+        Calendar calendar = Calendar.getInstance();
+        // Reset the time to midnight
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        return calendar.getTime();
+    }
+
     public void cancelBill() {
+        Date current = new Date();
+        Date midNight = getMidnight();
+        if (configOptionApplicationController.getBooleanValueByKey("Enable PettyCash bill cancellation restriction after midnight")) {
+            if (current.before(midNight)) {
+                JsfUtil.addErrorMessage("Bill cancellation is not allowed after midnight.");
+                return;
+            }
+        }
+
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (errorCheck()) {
                 return;
             }
 
             CancelledBill cb = createCancelBill();
-
             //Copy & paste
             //if (webUserController.hasPrivilege("LabBillCancelling")) {
             if (true) {
@@ -321,6 +369,7 @@ public class PettyCashBillSearch implements Serializable {
 
                 WebUser wb = getCashTransactionBean().saveBillCashInTransaction(cb, getSessionController().getLoggedUser());
                 getSessionController().setLoggedUser(wb);
+                Payment p = pettyCashBillController.createPaymentForPettyCashBillCancellation(cb, paymentMethod);
                 printPreview = true;
             } else {
                 getEjbApplication().getBillsToCancel().add(cb);

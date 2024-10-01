@@ -1,0 +1,189 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form >
+
+                    <p:panel>
+                        <f:facet name="header">
+                            <h:outputLabel value="Bill Wise Item Movement Report" />
+                        </f:facet>
+
+                        <h:panelGrid columns="6" class="my-2 w-100">
+                            <h:panelGroup >
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="From Date"  class="mx-3"/>
+                            </h:panelGroup>
+                            <p:outputLabel value=" : " />
+                            <p:datePicker
+                                value="#{reportController.fromDate}"
+                                class="w-75"
+                                showTime="true"
+                                showButtonBar="true"
+                                timeInput="true"
+                                inputStyleClass="form-control"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
+                            </p:datePicker>
+
+                            <h:panelGroup >
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="To Date"  class="mx-3"/>
+                            </h:panelGroup>
+                            <p:outputLabel value=" : " />
+                            <p:datePicker
+                                value="#{reportController.toDate}"
+                                class="w-75"
+                                showTime="true"
+                                showButtonBar="true"
+                                timeInput="true"
+                                inputStyleClass="form-control"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
+                            </p:datePicker>
+
+
+                            <h:panelGroup >
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
+                                <h:outputLabel value="Institution/Branch" for="cmbIns" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:outputLabel value=" : " />
+                            <p:autoComplete
+                                value="#{reportController.institution}"
+                                completeMethod="#{institutionController.completeCompany}"
+                                var="ins"
+                                class="w-75 mt-1"
+                                inputStyleClass="form-control"
+                                itemLabel="#{ins.name}"
+                                itemValue="#{ins}">
+
+                            </p:autoComplete>
+
+                            <h:panelGroup >
+                                <h:outputText value="&#xf007;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Patient MRN" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:outputLabel value=" : " />
+                            <p:inputText value="#{reportController.phn}" class="w-75 mt-1" />
+
+
+                            <h:panelGroup >
+                                <h:outputText value="&#xf022;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <p:outputLabel value="Service Category" class="mx-3"></p:outputLabel>
+                            </h:panelGroup>
+                            <p:outputLabel value=" : " />
+                            <p:autoComplete 
+                                completeMethod="#{categoryController.completeCategory}" 
+                                var="pta" 
+                                itemLabel="#{pta.name}"
+                                itemValue="#{pta}" 
+                                value="#{itemController.current.category}"
+                                class="w-75 mt-1"
+                                inputStyleClass="form-control"
+                                >                                    
+                                <p:column>#{pta.name}</p:column>
+                                <p:column>#{pta.parentCategory}</p:column>                                        
+                            </p:autoComplete>
+
+                            <h:panelGroup >
+                                <h:outputText value="&#xf466;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <p:outputLabel value="Item" class="mx-3"></p:outputLabel>
+                            </h:panelGroup>
+                            <p:outputLabel value=" : " />
+                            <p:autoComplete
+                                value="#{reportController.item}"
+                                completeMethod="#{webUserController.completeUser}"
+                                var="w"
+                                class="w-75 mt-1"
+                                inputStyleClass="form-control"
+                                itemLabel="#{w.webUserPerson.name}"
+                                itemValue="#{w}">
+                            </p:autoComplete>
+                        </h:panelGrid>
+
+                        <h:panelGrid columns="6" class="my-2">
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Process" 
+                                icon="fas fa-cogs" 
+                                class="ui-button-warning"
+                                action="#{reportController.generateItemMovementByBillReport}"
+                                >
+                            </p:commandButton>
+                            <p:commandButton 
+                                ajax="false" value="Excel" icon="fas fa-file-excel" class="ui-button-success mx-1" >
+                                <p:dataExporter fileName="item_movement_by_bill" target="tbl" type="xlsx"></p:dataExporter>
+                            </p:commandButton>
+                            <p:commandButton ajax="false" value="Print" icon="fas fa-print" class="ui-button-info"  >
+                                <p:printer target="tbl" ></p:printer>
+                            </p:commandButton>
+                            <p:commandButton 
+                                class="m-2 ui-button-danger" 
+                                icon="fa-solid fa-file-pdf"
+                                ajax="false" 
+                                value="PDF">
+                                <p:dataExporter fileName="item_movement_by_bill" target="tbl" type="pdf"></p:dataExporter>
+                            </p:commandButton>
+                        </h:panelGrid>
+
+                        <p:dataTable
+                            id="tbl"
+                            var="pc" 
+                            rows="10"
+                            paginator="true" 
+                            paginatorPosition="both"
+                            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                            rowsPerPageTemplate="5,10,{ShowAll|'All'}"
+                            value="#{reportController.billAndItemDataRows}" 
+                            widgetVar="billDataTable">
+
+                            <p:column headerText="MRN" width="5em">
+                                <h:outputText value="#{pc.bill.patient.phn}" />
+                                <f:facet name="footer">
+                                    <h:outputText value="Total" />
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Name" width="12em">
+                                <h:outputText value="#{pc.bill.patient.person.nameWithTitle}" />
+                            </p:column>
+
+                            <p:column headerText="Bill ID" width="9em">
+                                <h:outputText value="#{pc.bill.deptId}" />
+                            </p:column>
+
+                            <p:columns 
+                                width="5em"
+                                value="#{reportController.headerBillAndItemDataRow.itemDetailCells}" var="hr" columnIndexVar="colIndex">
+                                <f:facet name="header">
+                                    <h:outputText value="#{hr.item.name}" />
+                                </f:facet>
+                                <h:outputText value="#{pc.itemDetailCells[colIndex].quentity}">
+                                    <f:convertNumber integerOnly="true" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{hr.quentity}">
+                                        <f:convertNumber integerOnly="true" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:columns>
+
+                        </p:dataTable>
+
+
+
+
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

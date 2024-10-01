@@ -256,7 +256,7 @@
                                     filter="true"
                                     height="500"
                                     var="vt" >
-                                    <p:column headerText="Item"  style="padding: 6px;">
+                                    <p:column headerText="Item"  style="width: 350px; padding: 6px;">
                                         <h:outputLabel value="#{vt.name}"></h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Code"  style="padding: 6px;">
@@ -287,11 +287,14 @@
                                     scrollHeight="600"
                                     inputStyleClass="w-100"
                                     completeMethod="#{itemController.completeAmpItem}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
-                                    <p:column headerText="Item" style="padding: 6px;">
+                                    <p:column headerText="Item" style="width: 350px; padding: 6px;">
                                         <h:outputLabel value="#{vt.name}"></h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Code" style="padding: 6px;">
                                         <h:outputLabel value="#{vt.code}"></h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Bar Code" style="padding: 6px;">
+                                        <h:outputLabel value="#{vt.barcode}"></h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Department Stock" style="padding: 6px; text-align: right;">
                                         <p:outputLabel value="#{stockController.departmentItemStock(sessionController.department , vt)}"/>                            
@@ -371,7 +374,7 @@
                                     <h:panelGrid columns="6" class="my-2 w-100">
                                         <h:outputLabel value="Order No" />
                                         <h:outputLabel value=":" style="width: 15px; text-align: center"/>
-                                        <h:outputLabel value="#{purchaseOrderRequestController.currentBill.insId}" />
+                                        <h:outputLabel value="#{purchaseOrderRequestController.currentBill.deptId}" />
                                         <h:outputLabel value="Order Department" />
                                         <h:outputLabel value=":" style="width: 15px; text-align: center"/>
                                         <h:outputLabel value="#{purchaseOrderRequestController.currentBill.department.name}" />

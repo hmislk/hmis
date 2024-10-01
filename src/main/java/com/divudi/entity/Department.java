@@ -15,17 +15,18 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Inheritance;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
-import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
  * @author buddhika
  */
 @Entity
-@XmlRootElement
+@Inheritance
+
 public class Department implements Serializable {
 
     static final long serialVersionUID = 1L;
@@ -33,7 +34,6 @@ public class Department implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     //Main Properties   
     Long id;
-    @Deprecated
     String departmentCode;
     String name;
     @Lob
@@ -45,46 +45,50 @@ public class Department implements Serializable {
     String telephone2;
     String fax;
     String email;
+
     @ManyToOne
-    @JsonIgnore
     Institution institution;
+
     @ManyToOne
-    @JsonIgnore
+    private Institution site;
+
+    @ManyToOne
     Department superDepartment;
     @Enumerated(EnumType.STRING)
     DepartmentType departmentType;
     @ManyToOne
-    @JsonIgnore
+
     Department sampleDepartment;
     @ManyToOne
-    @JsonIgnore
+
     Department labDepartment;
 
     @ManyToOne
-    @JsonIgnore
+
     Institution sampleInstitution;
     @ManyToOne
-    @JsonIgnore
+
     Institution labInstitution;
 //     double maxDiscount;
 
     //Created Properties
     @ManyToOne
-    @JsonIgnore
+
     WebUser creater;
-    @JsonIgnore
+
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date createdAt;
     //Retairing properties
-    @JsonIgnore
+
     boolean retired;
-    @JsonIgnore
+
     @ManyToOne
     WebUser retirer;
-    @JsonIgnore
+
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date retiredAt;
     String retireComments;
+    private Boolean active;
 
     double margin;
     double pharmacyMarginFromPurchaseRate;
@@ -282,6 +286,13 @@ public class Department implements Serializable {
     }
 
     public String getDepartmentCode() {
+        if (departmentCode == null || departmentCode.trim().isEmpty()) {
+            if (code != null && !code.trim().isEmpty()) {
+                departmentCode = code;
+            } else if (name != null && name.trim().length() >= 2) {
+                departmentCode = name.trim().substring(0, 2).toUpperCase(); // Extract the first two letters and make them uppercase
+            }
+        }
         return departmentCode;
     }
 
@@ -343,4 +354,21 @@ public class Department implements Serializable {
     public void setEmail(String email) {
         this.email = email;
     }
+
+    public Boolean getActive() {
+        return active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
+    }
+
 }

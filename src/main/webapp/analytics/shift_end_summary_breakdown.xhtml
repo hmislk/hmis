@@ -1,0 +1,142 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/analytics/index.xhtml">
+            <ui:define name="report">
+                <h:form >
+
+                    <p:panel>
+                        <f:facet name="header" >
+                            <h:outputLabel value="Financial Transaction Summary - Cashier PaymentMethod"/>                          
+                        </f:facet>
+                        <h:panelGrid columns="2" class="my-2" >
+                            <h:outputLabel value="Cashier"/>
+                            <h:outputLabel value="#{financialTransactionController.nonClosedShiftStartFundBill.creater.webUserPerson.name}"/>
+
+                            <h:outputLabel value="Start Bill ID"/>
+                            <p:inputText 
+                                class="w-100 mx-4" 
+                                id="fromDate" 
+                                value="#{searchController.startBillId}" 
+                                >      
+                            </p:inputText>
+                            <h:outputLabel value="End Bill ID"/>
+                            <p:inputText 
+                                class="w-100 mx-4" 
+                                id="toDate" 
+                                value="#{searchController.endBillId}"  >                                                                              
+                            </p:inputText>
+
+                            <h:outputText value="Payment Methods" />
+                            <p:selectCheckboxMenu id="cmbParentMethod"
+                                                  multiple="true"
+                                                  value="#{searchController.paymentMethods}" class="w-100 mx-4"
+                                                  filter="true" filterMatchMode="contains">
+                                <f:selectItems value="#{enumController.paymentMethods}" var="method"
+                                               itemLabel="#{method.label}" itemValue="#{method}" />
+                            </p:selectCheckboxMenu>
+                        </h:panelGrid>
+                        <h:panelGrid columns="6" class="my-2" >
+                            <p:commandButton 
+                                class="ui-button-warning" 
+                                icon="fas fa-magnifying-glass" 
+                                id="btnSearch" 
+                                ajax="false" 
+                                value="Process" 
+                                action="#{searchController.processAllFinancialTransactionalSummarybySingleUserByIds}"/>
+                            <p:commandButton 
+                                class="ui-button-success mx-2" 
+                                icon="fas fa-file-excel" 
+                                id="btnExcel" 
+                                ajax="false" 
+                                value="Excel" >
+                                <p:dataExporter 
+                                    fileName="All Financial Transactions - Cashier PaymentMethod" 
+                                    type="xlsx" 
+                                    target="tbl" >
+                                </p:dataExporter>
+                            </p:commandButton>
+                        </h:panelGrid>
+
+
+                        <p:dataTable 
+                            rowIndexVar="i" id="tbl" 
+                            value="#{searchController.billSummaryRows}" 
+                            reflow="true"
+                            var="bill"  
+                            style="min-width: 100%;"  
+                            paginator="true"
+                            paginatorPosition="bottom"
+                            rows="10"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="5,10,15">
+
+                            <p:column headerText="Bill Type" >
+                                <h:outputLabel value="#{bill.billTypeAtomic.label}">
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Payment Method" styleClass="alignTop" width="10em">
+                                <h:outputLabel value="#{bill.paymentMethod}"/>
+                                <f:facet name="footer">
+                                    <h:outputText value="Total"></h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Count" width="8em">
+                                <p:commandButton 
+                                    ajax="false" 
+                                    value="#{bill.billCount}" 
+                                    action="#{searchController.navigateToListSingleUserBills}" >
+                                    <f:setPropertyActionListener value="#{bill.billTypeAtomic}" target="#{searchController.billTypeAtomic}" ></f:setPropertyActionListener>
+                                </p:commandButton>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{searchController.totalBillCount}">
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Gross Total" width="10em">
+                                <h:outputLabel value="#{bill.grossTotal}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{searchController.grossTotal}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Discount" width="10em">
+                                <h:outputLabel value="#{bill.discount}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{searchController.discount}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Net Value" width="10em">
+                                <h:outputLabel value="#{bill.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{searchController.netTotal}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>                         
+                        </p:dataTable>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

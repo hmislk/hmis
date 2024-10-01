@@ -1,0 +1,53 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="paymentMethodData"  type="com.divudi.data.dataStructure.PaymentMethodData" />
+        <cc:attribute name="valueRequired" type="boolean" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <p:autoComplete  
+            minQueryLength="3"
+            forceSelection="true" 
+            value="#{opdBillController.toStaff}" 
+            id="welfareStaff"
+            completeMethod="#{staffController.completeStaff}" 
+            var="mys" 
+            class="w-100"
+            placeholder="Staff (Type at least 4 letters to search)"
+            inputStyleClass="form-control"
+            itemLabel="#{mys.person.name}" 
+            itemValue="#{mys}"
+            size="10">
+            <p:column headerText="Name" style="padding: 2px;">
+                <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
+            </p:column>
+            <p:column headerText="EPF" style="padding: 2px;">
+                <h:outputText value="#{mys.epfNo}" ></h:outputText>
+            </p:column>
+            <p:column headerText="Welfare Entitlement" style="padding: 2px;">
+                <h:outputText value="#{mys.annualWelfareQualified}" >
+                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                </h:outputText>
+            </p:column>
+            <p:column  headerText="Welfare Utilized" style="padding: 2px;">
+                <h:outputText value="#{mys.annualWelfareUtilized}" >
+                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                </h:outputText>
+            </p:column>
+            <p:ajax process="@this" 
+                    update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}"
+                    event="itemSelect"  
+                    listener="#{opdBillController.calTotals()}" />
+        </p:autoComplete>
+
+    </cc:implementation>
+</html>

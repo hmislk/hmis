@@ -11,7 +11,6 @@ package com.divudi.bean.common;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.WebUserRole;
 import com.divudi.facade.WebUserRoleFacade;
-import com.google.common.collect.HashBiMap;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -50,6 +49,8 @@ public class WebUserRoleController implements Serializable {
         items = findAllItems();
         return "/admin/users/user_roles?faces-redirect=true";
     }
+    
+  
     
     public String navigateToManageWebUserRolePrivileges(){
         if(current==null){
@@ -132,6 +133,8 @@ public class WebUserRoleController implements Serializable {
         m.put("ret", false);
         return getFacade().findByJpql(jpql, m);
     }
+    
+
     
     public WebUserRoleFacade getEjbFacade() {
         return ejbFacade;

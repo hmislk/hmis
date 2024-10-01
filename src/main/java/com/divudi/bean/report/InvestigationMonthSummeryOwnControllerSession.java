@@ -1026,7 +1026,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
 
         for (BillItem b : temps) {
             if (b.getBill() != null && b.getBill().isCancelled() == false) {
-                if (b.isRefunded() == null || b.isRefunded() == false) {
+                if (!b.isRefunded()) {
                     if (b.getItem().getId() == w.getId()) {
                         tot += b.getNetValue();
                         c++;

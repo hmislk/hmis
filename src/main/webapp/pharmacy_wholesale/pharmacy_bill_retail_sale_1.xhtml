@@ -458,7 +458,7 @@
                                 event="itemSelect"  listener="#{pharmacyWholeSaleController1.paymentSchemeChanged}" />
 
                     </p:autoComplete>
-                    <p:watermark for="scCreditCompany" value="Type at least 3 charactors of Company" ></p:watermark>
+                    
 
                     <p:outputLabel value="Staff Member" ></p:outputLabel>
                     <p:autoComplete  style="width: 400px;" 
@@ -489,7 +489,7 @@
                                 event="itemSelect"  listener="#{pharmacyWholeSaleController1.paymentSchemeChanged}" />
 
                     </p:autoComplete>
-                    <p:watermark for="scStaff" value="Type at least 3 charactors of Staff member." ></p:watermark>
+                    
                 </p:panelGrid>
             </p:tab>
 
@@ -900,7 +900,7 @@
                                                                                         event="itemSelect"  listener="#{pharmacyWholeSaleController1.paymentSchemeChanged}" />
 
                                                                             </p:autoComplete>
-                                                                            <p:watermark for="scCreditCompany" value="Type at least 2 charactors of Company" ></p:watermark>
+                                                                            
 
                                                                             <p:outputLabel value="Staff Member" ></p:outputLabel>
                                                                             <p:autoComplete  
@@ -931,7 +931,7 @@
                                                                                         event="itemSelect"  listener="#{pharmacyWholeSaleController1.paymentSchemeChanged}" />
 
                                                                             </p:autoComplete>
-                                                                            <p:watermark for="scStaff" value="Type at least 2 charactors of Staff member." ></p:watermark>
+                                                                            
                                                                         </h:panelGrid>
                                                                     </h:panelGroup>
                                                     </div>
@@ -1021,7 +1021,8 @@
                                     icon="fa fa-print"
                                     value="Print" 
                                     class="ui-button-info"
-                                    ajax="false" 
+                                    ajax="false"
+                                    rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Bill Support for Native Printers')}"
                                     action="#" >
                                     <p:printer target="gpBillPreview" ></p:printer>
                                 </p:commandButton>
@@ -1087,7 +1088,15 @@
                                         <phi:saleBill_five_five bill="#{pharmacyWholeSaleController1.printBill}"></phi:saleBill_five_five>
                                     </h:panelGroup>
                                 </div>
-                            </h:panelGroup>                            
+                            </h:panelGroup>
+                            
+                            <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosHeaderPaper'}"> 
+                                <div >
+                                    <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
+                                        <phi:saleBill_Header bill="#{pharmacyWholeSaleController1.printBill}"></phi:saleBill_Header>
+                                    </h:panelGroup>
+                                </div>
+                            </h:panelGroup>
 
                         </h:panelGroup>  
 

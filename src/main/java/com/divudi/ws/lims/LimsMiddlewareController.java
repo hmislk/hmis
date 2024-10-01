@@ -5,6 +5,7 @@
  */
 package com.divudi.ws.lims;
 
+import ca.uhn.fhir.context.FhirContext;
 import com.divudi.bean.common.SecurityController;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.BillFacade;
@@ -43,19 +44,24 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import ca.uhn.hl7v2.parser.Parser;
+import com.divudi.bean.common.DepartmentController;
+import com.divudi.bean.common.DepartmentMachineController;
+import com.divudi.bean.lab.MachineController;
 
 import com.divudi.data.InvestigationItemValueType;
+import com.divudi.data.lab.PatientInvestigationStatus;
 import com.divudi.data.lab.SysMex;
-import com.divudi.data.lab.SysMexOld;
-import com.divudi.data.lab.SysMexAdf1;
-import com.divudi.data.lab.SysMexAdf2;
 import com.divudi.data.lab.SysMexTypeA;
+import com.divudi.ejb.PatientReportBean;
+import com.divudi.entity.Bill;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
+import com.divudi.entity.lab.DepartmentMachine;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationItemValueFlag;
+import com.divudi.entity.lab.Machine;
 import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.entity.lab.PatientReport;
 import com.divudi.entity.lab.PatientReportItemValue;
@@ -75,6 +81,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.inject.Inject;
+import javax.ws.rs.GET;
 
 /**
  * REST Web Service
@@ -84,8 +92,9 @@ import java.util.regex.Pattern;
 @Path("limsmw")
 @RequestScoped
 public class LimsMiddlewareController {
-
+// to be taken as correct on 2024 09 04 08 31
     //FOR UNIT TESTING
+
     @EJB
     InvestigationItemFacade investigationItemFacade;
     @EJB
@@ -107,6 +116,15 @@ public class LimsMiddlewareController {
     @EJB
     InvestigationItemValueFlagFacade iivfFacade;
 
+    @Inject
+    DepartmentMachineController departmentMachineController;
+    @Inject
+    DepartmentController departmentController;
+    @Inject
+    MachineController machineController;
+    @Inject
+    private PatientReportBean prBean;
+
     private WebUser loggedUser;
     private Department loggedDepartment;
     private Institution loggedInstitution;
@@ -115,6 +133,240 @@ public class LimsMiddlewareController {
      * Creates a new instance of LIMS
      */
     public LimsMiddlewareController() {
+    }
+
+    @GET
+    @Path("/test")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response testEndpoint() {
+        return Response.ok("Hello, the path is correct!").build();
+    }
+
+    @POST
+    @Path("/observation")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response receiveObservation(String observationJson) {
+        try {
+            // Parse the incoming JSON string to a JSONObject
+            JSONObject observation = new JSONObject(observationJson);
+
+            // Process the Observation JSON object
+            return processD10Observation(observation);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Failed to process Observation").build();
+        }
+    }
+
+    private Response processD10Observation(JSONObject observation) {
+        // Extract relevant fields from the JSON object using the exact names as sent by the client
+        String sampleId = observation.optString("sampleId");
+        String analyzerName = observation.optString("analyzerName");
+        String analyzerId = observation.optString("analyzerId");
+        String departmentId = observation.optString("departmentId");
+        String departmentAnalyzerId = observation.optString("departmentAnalyzerId");
+        String observationValueCodingSystem = observation.optString("observationValueCodingSystem");
+        String observationValueCode = observation.optString("observationValueCode");
+        String observationUnitCodingSystem = observation.optString("observationUnitCodingSystem");
+        String observationUnitCode = observation.optString("observationUnitCode");
+        String observationValueStr = observation.optString("observationValue");
+        Double observationValueDbl = null;
+        String issuedDate = observation.optString("issuedDate");
+        String password = observation.optString("password");
+        String username = observation.optString("username");
+
+        // Convert observationValueStr to Double
+        try {
+            observationValueDbl = Double.valueOf(observationValueStr);
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid observation value: " + observationValueStr);
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Invalid observation value: " + observationValueStr)
+                    .build();
+        }
+
+        // Log the extracted values for debugging or further processing
+        System.out.println("sampleId: " + sampleId);
+        System.out.println("analyzerName: " + analyzerName);
+        System.out.println("analyzerId: " + analyzerId);
+        System.out.println("departmentId: " + departmentId);
+        System.out.println("departmentAnalyzerId: " + departmentAnalyzerId);
+        System.out.println("observationValueCodingSystem: " + observationValueCodingSystem);
+        System.out.println("observationValueCode: " + observationValueCode);
+        System.out.println("observationUnitCodingSystem: " + observationUnitCodingSystem);
+        System.out.println("observationUnitCode: " + observationUnitCode);
+        System.out.println("observationValue: " + observationValueStr);
+        System.out.println("issuedDate: " + issuedDate);
+
+        Long sampleIdLong;
+        Machine analyzer;
+        DepartmentMachine departmentAnalyzer = null;
+        Department department;
+        WebUser wu;
+        boolean resultAdded = false;
+
+        // Find the user
+        wu = findRequestSendingUser(username, password);
+        if (wu == null) {
+            System.out.println("Cannot find the user: " + username);
+            return Response.status(Response.Status.UNAUTHORIZED)
+                    .entity("User is not found for ID: " + username)
+                    .build();
+        }
+
+        // Convert sample ID to Long
+        try {
+            sampleIdLong = Long.valueOf(sampleId);
+        } catch (Exception e) {
+            System.out.println("Cannot convert sample ID to Long: " + sampleId);
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Invalid sample ID: " + sampleId)
+                    .build();
+        }
+
+        // Find the department
+        department = departmentController.findDepartment(departmentId);
+        if (department == null) {
+            System.out.println("Cannot find the department: " + departmentId);
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity("Department not found for ID: " + departmentId)
+                    .build();
+        }
+
+        // Find the machine (analyzer)
+        analyzer = machineController.findMachine(analyzerId);
+        if (analyzer == null) {
+            System.out.println("Cannot find the machine (analyzer): " + analyzerId);
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity("Machine (analyzer) not found for ID: " + analyzerId)
+                    .build();
+        }
+
+        // Find the department machine
+        if (departmentAnalyzerId != null && !departmentAnalyzerId.isEmpty()) {
+            departmentAnalyzer = departmentMachineController.findDepartmentMachine(departmentAnalyzerId);
+        }
+        if (departmentAnalyzer == null) {
+            departmentAnalyzer = departmentMachineController.findDepartmentMachine(department, analyzer, true);
+        }
+
+        // Find the patient sample
+        PatientSample ps = patientSampleFromId(sampleIdLong);
+        if (ps == null) {
+            System.out.println("Cannot find the patient sample: " + sampleId);
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity("Patient sample not found for ID: " + sampleId)
+                    .build();
+        }
+
+        // Get patient sample components
+        List<PatientSampleComponant> pscs = getPatientSampleComponents(ps);
+        if (pscs == null || pscs.isEmpty()) {
+            System.out.println("Invalid Sample Components. Please inform developers. Resend results for sample ID: " + sampleIdLong);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Invalid sample components for sample ID: " + sampleIdLong)
+                    .build();
+        }
+
+        // Get patient investigations
+        List<PatientInvestigation> ptixs = getPatientInvestigations(pscs);
+        if (ptixs == null || ptixs.isEmpty()) {
+            System.out.println("Invalid Patient Investigations. Please inform developers. Resend results for sample ID: " + sampleIdLong);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Invalid patient investigations for sample ID: " + sampleIdLong)
+                    .build();
+        }
+
+        // Process the patient investigations and reports
+        System.out.println("Process the patient investigations and reports = ");
+        for (PatientInvestigation pi : ptixs) {
+
+            Investigation ix = null;
+
+            if (pi.getInvestigation() == null) {
+                continue;
+            }
+
+            ix = pi.getInvestigation();
+
+            if (ix.getReportedAs() != null) {
+                if (ix.getReportedAs() instanceof Investigation) {
+                    ix = (Investigation) ix.getReportedAs();
+                }
+            }
+
+            System.out.println("pi = " + pi);
+            List<PatientReport> prs = new ArrayList<>();
+
+            System.out.println("ix = " + ix);
+
+            System.out.println("pi.getInvestigation().getMachine() = " + pi.getInvestigation().getMachine());
+            if (ix.getMachine() != null && ix.getMachine().equals(analyzer)) {
+                System.out.println("Match Machine");
+                PatientReport tpr = getUnsavedPatientReport(pi);
+                System.out.println("tpr = " + tpr);
+                if (tpr == null) {
+                    tpr = createNewPatientReport(pi, ix, departmentAnalyzer, wu);
+                }
+                System.out.println("tpr = " + tpr);
+                prs.add(tpr);
+            }
+            System.out.println("prs = " + prs);
+            if (prs.isEmpty()) {
+                List<Item> temItems = getItemsForParentItem(ix);
+                for (Item ti : temItems) {
+                    System.out.println("ti = " + ti);
+                    if (ti instanceof Investigation) {
+                        Investigation tix = (Investigation) ti;
+                        if (tix.getMachine() != null && tix.getMachine().equals(analyzer)) {
+                            PatientReport tprs = getUnsavedPatientReport(pi);
+                            System.out.println("tprs = " + tprs);
+                            if (tprs == null) {
+                                tprs = createNewPatientReport(pi, tix);
+                            }
+                            prs.add(tprs);
+                        }
+                    }
+                }
+            }
+
+            System.out.println("prs = " + prs);
+            for (PatientReport tpr : prs) {
+                System.out.println("tpr = " + tpr);
+                for (PatientReportItemValue priv : tpr.getPatientReportItemValues()) {
+                    System.out.println("priv = " + priv);
+                    System.out.println("priv.getInvestigationItem().getValueCodeSystem() = " + priv.getInvestigationItem());
+                    if (priv.getInvestigationItem() != null
+                            && priv.getInvestigationItem().getValueCodeSystem() != null
+                            && priv.getInvestigationItem().getValueCodeSystem().equals(observationValueCodingSystem)
+                            && priv.getInvestigationItem().getValueCode() != null
+                            && priv.getInvestigationItem().getValueCode().equals(observationValueCode)) {
+                        priv.setStrValue(observationValueStr);
+                        priv.setDoubleValue(observationValueDbl);
+                        resultAdded = true;
+                    }
+                }
+                tpr.setAutomated(true);
+                tpr.setAutomatedAt(new Date());
+                tpr.setAutomatedAnalyzer(analyzer);
+                tpr.setAutomatedDepartment(department);
+                tpr.setAutomatedInstitution(department.getInstitution());
+                tpr.setAutomatedUser(wu);
+                prFacade.edit(tpr);
+            }
+        }
+
+        if (resultAdded) {
+            return Response.status(Response.Status.CREATED)
+                    .entity("Results Added Successfully for Sample ID : " + sampleIdLong)
+                    .build();
+        } else {
+            return Response.status(Response.Status.EXPECTATION_FAILED)
+                    .entity("Results Could NOT be Added for Sample ID : " + sampleIdLong)
+                    .build();
+        }
     }
 
     @POST
@@ -258,7 +510,6 @@ public class LimsMiddlewareController {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response limsProcessAnalyzerMessage(String requestBody, @HeaderParam("Authorization") String authorizationHeader) {
-
 
         try {
             JSONObject requestJson = new JSONObject(requestBody);
@@ -744,8 +995,182 @@ public class LimsMiddlewareController {
         return ok;
     }
 
-    private boolean addResultToReport(String sampleId, String testStr, String result, String unit, String error) {
+    public boolean addResultToReport(String sampleId, String testCodeFromUploadedDataBundle, String result, String unit, String error) {
+        System.out.println("addResultToReport");
+        System.out.println("testStr = " + testCodeFromUploadedDataBundle);
+        System.out.println("result = " + result);
+        boolean temFlag = false;
+        Long sid;
+        try {
+            sid = Long.valueOf(sampleId);
+        } catch (NumberFormatException e) {
+            sid = 0l;
+        }
+        System.out.println("Sample ID = " + sid);
+        PatientSample ps = patientSampleFromId(sid);
+        System.out.println("Patient Sample = " + ps);
+        if (ps == null) {
+            return temFlag;
+        }
+
+        List<PatientSampleComponant> pscs = getPatientSampleComponents(ps);
+        System.out.println("Patient Sample Component = " + pscs);
+        if (pscs == null) {
+            return temFlag;
+        }
+        List<PatientInvestigation> ptixs = getPatientInvestigations(pscs);
+        System.out.println("Patient Investigations = " + ptixs);
+        if (ptixs == null || ptixs.isEmpty()) {
+            return temFlag;
+        }
+        for (PatientInvestigation pi : ptixs) {
+            System.out.println("Patient Investigation = " + pi.getInvestigation());
+
+            Investigation ix = pi.getInvestigation();
+
+            if (ix.getReportedAs() != null) {
+                if (ix.getReportedAs() instanceof Investigation) {
+                    ix = (Investigation) ix.getReportedAs();
+                }
+            }
+
+            System.out.println("ix = " + ix.getName());
+
+            List<PatientReport> prs = new ArrayList<>();
+            PatientReport tpr;
+            tpr = getUnapprovedPatientReport(pi);
+            System.out.println("Previous Unapproved Report = " + tpr);
+            if (tpr == null) {
+                tpr = createNewPatientReport(pi, ix);
+                System.out.println("new Report Created tpr = " + tpr);
+            }
+            prs.add(tpr);
+
+            for (PatientReport rtpr : prs) {
+                boolean valueToSave = false;
+                System.out.println("Patient Report = " + rtpr);
+                for (PatientReportItemValue priv : rtpr.getPatientReportItemValues()) {
+                    System.out.println("Patient Report Item Value = " + priv);
+                    System.out.println("priv.getInvestigationItem()  = " + priv.getInvestigationItem());
+                    if (priv.getInvestigationItem() != null && priv.getInvestigationItem().getTest() != null
+                            && priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Value) {
+                        System.out.println("priv.getInvestigationItem().getTest() = " + priv.getInvestigationItem().getTest());
+                        String testCodeFromDatabase;
+                        testCodeFromDatabase = priv.getInvestigationItem().getResultCode();
+                        System.out.println("Test Result Code from LIMS = " + testCodeFromDatabase);
+                        if (testCodeFromDatabase == null || testCodeFromDatabase.trim().equals("")) {
+                            testCodeFromDatabase = priv.getInvestigationItem().getTest().getCode().toUpperCase();
+                            System.out.println("Test Code from Test = " + testCodeFromDatabase);
+                        }
+                        System.out.println("Test Name from Data Bundle = " + testCodeFromUploadedDataBundle);
+                        if (testCodeFromDatabase.equalsIgnoreCase(testCodeFromUploadedDataBundle)) {
+                            System.out.println("data bundle and componant are the same");
+                            System.out.println("ps.getInvestigationComponant() = " + ps.getInvestigationComponant());
+                            System.out.println("priv.getInvestigationItem().getSampleComponent() = " + priv.getInvestigationItem().getSampleComponent());
+                            if (ps.getInvestigationComponant() == null || priv.getInvestigationItem().getSampleComponent() == null) {
+                                System.out.println("1 result = " + result);
+                                priv.setStrValue(result);
+                                Double dbl = 0d;
+                                try {
+                                    dbl = Double.parseDouble(result);
+                                } catch (Exception e) {
+                                }
+                                priv.setDoubleValue(dbl);
+                                System.out.println("1 priv.getDoubleValue() = " + priv.getDoubleValue());
+                                System.out.println("priv = " + priv.getId());
+                                System.out.println("priv double value " + priv.getDoubleValue());
+                                System.out.println("priv Str value = " + priv.getStrValue());
+                                if (priv.getId() == null) {
+                                    patientReportItemValueFacade.create(priv);
+                                    System.out.println("1 new priv created = " + dbl);
+                                } else {
+                                    System.out.println("1 new priv Updates = " + dbl);
+                                    patientReportItemValueFacade.edit(priv);
+                                }
+                                valueToSave = true;
+                                temFlag = true;
+                            } else if (priv.getInvestigationItem().getSampleComponent().equals(ps.getInvestigationComponant())) {
+                                System.out.println("2 result = " + result);
+                                priv.setStrValue(result);
+
+                                Double dbl = 0d;
+                                try {
+                                    dbl = Double.parseDouble(result);
+                                    System.out.println("2 dbl = " + dbl);
+                                } catch (Exception e) {
+                                }
+                                priv.setDoubleValue(dbl);
+                                System.out.println("2 priv.getDoubleValue() = " + priv.getDoubleValue());
+                                if (priv.getId() == null) {
+                                    System.out.println("2 new priv created = " + dbl);
+                                    patientReportItemValueFacade.create(priv);
+                                } else {
+                                    System.out.println("2 new priv Updates = " + dbl);
+                                    patientReportItemValueFacade.edit(priv);
+                                }
+                                temFlag = true;
+                                valueToSave = true;
+                            } else {
+                                System.out.println("3 result = " + result);
+                                priv.setStrValue(result);
+
+                                Double dbl = 0d;
+                                try {
+                                    dbl = Double.parseDouble(result);
+                                    System.out.println("3 dbl = " + dbl);
+                                } catch (Exception e) {
+                                }
+                                priv.setDoubleValue(dbl);
+                                System.out.println("3 priv.getDoubleValue() = " + priv.getDoubleValue());
+                                if (priv.getId() == null) {
+                                    System.out.println("3 new priv created = " + dbl);
+                                    patientReportItemValueFacade.create(priv);
+                                } else {
+                                    System.out.println("3 new priv Updates = " + dbl);
+                                    patientReportItemValueFacade.edit(priv);
+                                }
+                                temFlag = true;
+                                valueToSave = true;
+                            }
+
+                        }
+                    }
+
+                }
+                if (valueToSave) {
+                    rtpr.setDataEntered(true);
+                    rtpr.setDataEntryAt(new Date());
+                    rtpr.setDataEntryComments("Initial Results were taken from Analyzer through Middleware");
+                    prFacade.edit(rtpr);
+                }
+            }
+
+            pi.setStatus(PatientInvestigationStatus.REPORT_CREATED);
+            pi.setPerformed(true);
+//            pi.setPerformDepartment(sessionController.getDepartment());
+//            pi.setPerformInstitution(sessionController.getInstitution());
+            pi.setPerformedAt(new Date());
+//            pi.setPerformedUser(sessionController.getLoggedUser());
+            patientInvestigationFacade.edit(pi);
+
+            if (pi.getBillItem() == null) {
+                continue;
+            }
+            if (pi.getBillItem().getBill() == null) {
+                continue;
+            }
+            Bill b = pi.getBillItem().getBill();
+            b.setStatus(PatientInvestigationStatus.REPORT_CREATED);
+            billFacade.edit(b);
+        }
+
+        return temFlag;
+    }
+
+    public boolean addResultToReportPrevious(String sampleId, String testStr, String result, String unit, String error) {
         System.out.println("Adding Individual Result To Report");
+        System.out.println("testStr = " + testStr);
+        System.out.println("result = " + result);
         boolean temFlag = false;
         Long sid;
         try {
@@ -772,16 +1197,26 @@ public class LimsMiddlewareController {
         }
         for (PatientInvestigation pi : ptixs) {
             System.out.println("Patient Investigation = " + pi);
+
+            Investigation ix = pi.getInvestigation();
+
+            if (ix.getReportedAs() != null) {
+                if (ix.getReportedAs() instanceof Investigation) {
+                    ix = (Investigation) ix.getReportedAs();
+                }
+            }
+
             List<PatientReport> prs = new ArrayList<>();
             PatientReport tpr;
             tpr = getUnapprovedPatientReport(pi);
             System.out.println("Previous Unapproved Report = " + tpr);
             if (tpr == null) {
-                tpr = createNewPatientReport(pi, pi.getInvestigation());
+                tpr = createNewPatientReport(pi, ix);
             }
             prs.add(tpr);
 
             for (PatientReport rtpr : prs) {
+                boolean valueToSave = false;
                 System.out.println("Patient Report = " + rtpr);
                 for (PatientReportItemValue priv : rtpr.getPatientReportItemValues()) {
                     System.out.println("Patient Report Item Value = " + priv);
@@ -800,6 +1235,7 @@ public class LimsMiddlewareController {
                             System.out.println("ps.getInvestigationComponant() = " + ps.getInvestigationComponant());
                             System.out.println("priv.getInvestigationItem().getSampleComponent() = " + priv.getInvestigationItem().getSampleComponent());
                             if (ps.getInvestigationComponant() == null || priv.getInvestigationItem().getSampleComponent() == null) {
+                                System.out.println("1 result = " + result);
                                 priv.setStrValue(result);
                                 Double dbl = 0d;
                                 try {
@@ -807,32 +1243,62 @@ public class LimsMiddlewareController {
                                 } catch (Exception e) {
                                 }
                                 priv.setDoubleValue(dbl);
+                                System.out.println("1 priv.getDoubleValue() = " + priv.getDoubleValue());
+                                System.out.println("priv = " + priv.getId());
+                                System.out.println("priv double value " + priv.getDoubleValue());
+                                System.out.println("priv Str value = " + priv.getStrValue());
+                                if (priv.getId() == null) {
+                                    patientReportItemValueFacade.create(priv);
+                                    System.out.println("1 new priv created = " + dbl);
+                                } else {
+                                    System.out.println("1 new priv Updates = " + dbl);
+                                    patientReportItemValueFacade.edit(priv);
+                                }
+                                valueToSave = true;
                                 temFlag = true;
                             } else if (priv.getInvestigationItem().getSampleComponent().equals(ps.getInvestigationComponant())) {
-                                System.out.println("priv.getInvestigationItem().getSampleComponent() = " + priv.getInvestigationItem().getSampleComponent());
+                                System.out.println("2 result = " + result);
                                 priv.setStrValue(result);
+
                                 Double dbl = 0d;
                                 try {
                                     dbl = Double.parseDouble(result);
+                                    System.out.println("2 dbl = " + dbl);
                                 } catch (Exception e) {
                                 }
                                 priv.setDoubleValue(dbl);
+                                System.out.println("2 priv.getDoubleValue() = " + priv.getDoubleValue());
+                                if (priv.getId() == null) {
+                                    System.out.println("2 new priv created = " + dbl);
+                                    patientReportItemValueFacade.create(priv);
+                                } else {
+                                    System.out.println("2 new priv Updates = " + dbl);
+                                    patientReportItemValueFacade.edit(priv);
+                                }
                                 temFlag = true;
+                                valueToSave = true;
                             } else {
                                 System.out.println("Else");
                             }
+
                         }
                     }
+
                 }
-                rtpr.setDataEntered(true);
-                rtpr.setDataEntryAt(new Date());
-                rtpr.setDataEntryComments("Initial Results were taken from Analyzer through Middleware");
-                prFacade.edit(rtpr);
+                if (valueToSave) {
+                    rtpr.setDataEntered(true);
+                    rtpr.setDataEntryAt(new Date());
+                    rtpr.setDataEntryComments("Initial Results were taken from Analyzer through Middleware");
+                    prFacade.edit(rtpr);
+                }
             }
         }
 
         return temFlag;
     }
+
+    @EJB
+    PatientReportItemValueFacade patientReportItemValueFacade;
 
     public List<MyTestResult> getResultsFromOUL_R22Message(String message) {
         System.err.println("getResultsFromOUL_R22Message");
@@ -960,7 +1426,36 @@ public class LimsMiddlewareController {
             }
             prFacade.create(r);
             r.setPatientInvestigation(pi);
-            addPatientReportItemValuesForReport(r);
+            prBean.addPatientReportItemValuesForReport(r);
+            prFacade.edit(r);
+        } else {
+            JsfUtil.addErrorMessage("No ptIx or Ix selected to add");
+        }
+        return r;
+    }
+
+    public PatientReport createNewPatientReport(PatientInvestigation pi, Investigation ix, DepartmentMachine deptAnalyzer, WebUser u) {
+        System.out.println("createNewPatientReport = ");
+        PatientReport r = null;
+        if (pi != null && pi.getId() != null && ix != null) {
+            r = new PatientReport();
+            r.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            r.setCreater(loggedUser);
+            r.setItem(ix);
+            r.setDataEntryDepartment(loggedDepartment);
+            r.setDataEntryInstitution(loggedInstitution);
+            r.setAutomated(Boolean.TRUE);
+            r.setAutomatedAnalyzer(deptAnalyzer.getMachine());
+            r.setAutomatedAt(new Date());
+            r.setAutomatedDepartment(deptAnalyzer.getDepartment());
+            r.setAutomatedInstitution(deptAnalyzer.getDepartment().getInstitution());
+            r.setAutomatedUser(u);
+            if (r.getTransInvestigation() != null) {
+                r.setReportFormat(r.getTransInvestigation().getReportFormat());
+            }
+            prFacade.create(r);
+            r.setPatientInvestigation(pi);
+            prBean.addPatientReportItemValuesForReport(r);
             prFacade.edit(r);
         } else {
             JsfUtil.addErrorMessage("No ptIx or Ix selected to add");
@@ -988,101 +1483,100 @@ public class LimsMiddlewareController {
         return null;
     }
 
-    public void addPatientReportItemValuesForReport(PatientReport ptReport) {
-        String sql = "";
-        Investigation temIx = (Investigation) ptReport.getItem();
-        for (ReportItem ii : temIx.getReportItems()) {
-            PatientReportItemValue val = null;
-            if ((ii.getIxItemType() == InvestigationItemType.Value || ii.getIxItemType() == InvestigationItemType.Calculation || ii.getIxItemType() == InvestigationItemType.Flag || ii.getIxItemType() == InvestigationItemType.Template) && ii.isRetired() == false) {
-                if (ptReport.getId() == null || ptReport.getId() == 0) {
-
-                    val = new PatientReportItemValue();
-                    if (ii.getIxItemValueType() == InvestigationItemValueType.Varchar) {
-                        val.setStrValue(getDefaultVarcharValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
-                    } else if (ii.getIxItemValueType() == InvestigationItemValueType.Memo) {
-                        val.setLobValue(getDefaultMemoValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
-                    } else if (ii.getIxItemValueType() == InvestigationItemValueType.Double) {
-                        val.setDoubleValue(getDefaultDoubleValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
-                    } else if (ii.getIxItemValueType() == InvestigationItemValueType.Image) {
-                        val.setBaImage(getDefaultImageValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
-                    } else {
-                    }
-                    val.setInvestigationItem((InvestigationItem) ii);
-                    val.setPatient(ptReport.getPatientInvestigation().getPatient());
-                    val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
-                    val.setPatientReport(ptReport);
-                    // ptReport.getPatientReportItemValues().add(val);
-                    ////// // System.out.println("New value added to pr teport" + ptReport);
-
-                } else {
-                    sql = "select i from PatientReportItemValue i where i.patientReport=:ptRp"
-                            + " and i.investigationItem=:inv ";
-                    HashMap hm = new HashMap();
-                    hm.put("ptRp", ptReport);
-                    hm.put("inv", ii);
-                    val = ptRivFacade.findFirstByJpql(sql, hm);
-                    if (val == null) {
-                        ////// // System.out.println("val is null");
-                        val = new PatientReportItemValue();
-                        if (ii.getIxItemValueType() == InvestigationItemValueType.Varchar) {
-                            val.setStrValue(getDefaultVarcharValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
-                        } else if (ii.getIxItemValueType() == InvestigationItemValueType.Memo) {
-                            val.setLobValue(getDefaultMemoValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
-                        } else if (ii.getIxItemValueType() == InvestigationItemValueType.Double) {
-                            val.setDoubleValue(getDefaultDoubleValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
-                        } else if (ii.getIxItemValueType() == InvestigationItemValueType.Image) {
-                            val.setBaImage(getDefaultImageValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
-                        } else {
-                        }
-                        val.setInvestigationItem((InvestigationItem) ii);
-                        val.setPatient(ptReport.getPatientInvestigation().getPatient());
-                        val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
-                        val.setPatientReport(ptReport);
-                        //ptReport.getPatientReportItemValues().add(val);
-                        ////// // System.out.println("value added to pr teport" + ptReport);
-
-                    }
-
-                }
-            } else if (ii.getIxItemType() == InvestigationItemType.DynamicLabel && ii.isRetired() == false) {
-                if (ptReport.getId() == null || ptReport.getId() == 0) {
-
-                    val = new PatientReportItemValue();
-                    val.setStrValue(getPatientDynamicLabel((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
-                    val.setInvestigationItem((InvestigationItem) ii);
-                    val.setPatient(ptReport.getPatientInvestigation().getPatient());
-                    val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
-                    val.setPatientReport(ptReport);
-                    // ptReport.getPatientReportItemValues().add(val);
-                    ////// // System.out.println("New value added to pr teport" + ptReport);
-
-                } else {
-                    sql = "select i from PatientReportItemValue i where i.patientReport.id = " + ptReport.getId() + " and i.investigationItem.id = " + ii.getId() + " and i.investigationItem.ixItemType = com.divudi.data.InvestigationItemType.Value";
-                    val = ptRivFacade.findFirstByJpql(sql);
-                    if (val == null) {
-                        val = new PatientReportItemValue();
-                        val.setStrValue(getPatientDynamicLabel((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
-                        val.setInvestigationItem((InvestigationItem) ii);
-                        val.setPatient(ptReport.getPatientInvestigation().getPatient());
-                        val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
-                        val.setPatientReport(ptReport);
-                        // ptReport.getPatientReportItemValues().add(val);
-                        ////// // System.out.println("value added to pr teport" + ptReport);
-
-                    }
-
-                }
-            }
-
-            if (val != null) {
-
-                ptRivFacade.create(val);
-
-                ptReport.getPatientReportItemValues().add(val);
-            }
-        }
-    }
-
+//    public void addPatientReportItemValuesForReport(PatientReport ptReport) {
+//        String sql = "";
+//        Investigation temIx = (Investigation) ptReport.getItem();
+//        for (ReportItem ii : temIx.getReportItems()) {
+//            PatientReportItemValue val = null;
+//            if ((ii.getIxItemType() == InvestigationItemType.Value || ii.getIxItemType() == InvestigationItemType.Calculation || ii.getIxItemType() == InvestigationItemType.Flag || ii.getIxItemType() == InvestigationItemType.Template) && ii.isRetired() == false) {
+//                if (ptReport.getId() == null || ptReport.getId() == 0) {
+//
+//                    val = new PatientReportItemValue();
+//                    if (ii.getIxItemValueType() == InvestigationItemValueType.Varchar) {
+//                        val.setStrValue(getDefaultVarcharValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
+//                    } else if (ii.getIxItemValueType() == InvestigationItemValueType.Memo) {
+//                        val.setLobValue(getDefaultMemoValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
+//                    } else if (ii.getIxItemValueType() == InvestigationItemValueType.Double) {
+//                        val.setDoubleValue(getDefaultDoubleValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
+//                    } else if (ii.getIxItemValueType() == InvestigationItemValueType.Image) {
+//                        val.setBaImage(getDefaultImageValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
+//                    } else {
+//                    }
+//                    val.setInvestigationItem((InvestigationItem) ii);
+//                    val.setPatient(ptReport.getPatientInvestigation().getPatient());
+//                    val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
+//                    val.setPatientReport(ptReport);
+//                    // ptReport.getPatientReportItemValues().add(val);
+//                    ////// // System.out.println("New value added to pr teport" + ptReport);
+//
+//                } else {
+//                    sql = "select i from PatientReportItemValue i where i.patientReport=:ptRp"
+//                            + " and i.investigationItem=:inv ";
+//                    HashMap hm = new HashMap();
+//                    hm.put("ptRp", ptReport);
+//                    hm.put("inv", ii);
+//                    val = ptRivFacade.findFirstByJpql(sql, hm);
+//                    if (val == null) {
+//                        ////// // System.out.println("val is null");
+//                        val = new PatientReportItemValue();
+//                        if (ii.getIxItemValueType() == InvestigationItemValueType.Varchar) {
+//                            val.setStrValue(getDefaultVarcharValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
+//                        } else if (ii.getIxItemValueType() == InvestigationItemValueType.Memo) {
+//                            val.setLobValue(getDefaultMemoValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
+//                        } else if (ii.getIxItemValueType() == InvestigationItemValueType.Double) {
+//                            val.setDoubleValue(getDefaultDoubleValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
+//                        } else if (ii.getIxItemValueType() == InvestigationItemValueType.Image) {
+//                            val.setBaImage(getDefaultImageValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
+//                        } else {
+//                        }
+//                        val.setInvestigationItem((InvestigationItem) ii);
+//                        val.setPatient(ptReport.getPatientInvestigation().getPatient());
+//                        val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
+//                        val.setPatientReport(ptReport);
+//                        //ptReport.getPatientReportItemValues().add(val);
+//                        ////// // System.out.println("value added to pr teport" + ptReport);
+//
+//                    }
+//
+//                }
+//            } else if (ii.getIxItemType() == InvestigationItemType.DynamicLabel && ii.isRetired() == false) {
+//                if (ptReport.getId() == null || ptReport.getId() == 0) {
+//
+//                    val = new PatientReportItemValue();
+//                    val.setStrValue(getPatientDynamicLabel((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
+//                    val.setInvestigationItem((InvestigationItem) ii);
+//                    val.setPatient(ptReport.getPatientInvestigation().getPatient());
+//                    val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
+//                    val.setPatientReport(ptReport);
+//                    // ptReport.getPatientReportItemValues().add(val);
+//                    ////// // System.out.println("New value added to pr teport" + ptReport);
+//
+//                } else {
+//                    sql = "select i from PatientReportItemValue i where i.patientReport.id = " + ptReport.getId() + " and i.investigationItem.id = " + ii.getId() + " and i.investigationItem.ixItemType = com.divudi.data.InvestigationItemType.Value";
+//                    val = ptRivFacade.findFirstByJpql(sql);
+//                    if (val == null) {
+//                        val = new PatientReportItemValue();
+//                        val.setStrValue(getPatientDynamicLabel((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
+//                        val.setInvestigationItem((InvestigationItem) ii);
+//                        val.setPatient(ptReport.getPatientInvestigation().getPatient());
+//                        val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
+//                        val.setPatientReport(ptReport);
+//                        // ptReport.getPatientReportItemValues().add(val);
+//                        ////// // System.out.println("value added to pr teport" + ptReport);
+//
+//                    }
+//
+//                }
+//            }
+//
+//            if (val != null) {
+//
+//                ptRivFacade.create(val);
+//
+//                ptReport.getPatientReportItemValues().add(val);
+//            }
+//        }
+//    }
     public String getPatientDynamicLabel(InvestigationItem ii, Patient p) {
         String dl;
         String sql;
@@ -1105,6 +1599,18 @@ public class LimsMiddlewareController {
                 + " and (r.approved = :a or r.approved is null) "
                 + " order by r.id desc";
 
+        Map m = new HashMap();
+        m.put("pi", pi);
+        m.put("a", false);
+        PatientReport r = prFacade.findFirstByJpql(j, m);
+        return r;
+    }
+
+    public PatientReport getUnsavedPatientReport(PatientInvestigation pi) {
+        String j = "select r from PatientReport r "
+                + " where r.patientInvestigation = :pi "
+                + " and (r.dataEntered = :a or r.dataEntered is null) "
+                + " order by r.id desc";
         Map m = new HashMap();
         m.put("pi", pi);
         m.put("a", false);
@@ -1209,7 +1715,16 @@ public class LimsMiddlewareController {
     }
 
     public PatientSample patientSampleFromId(Long id) {
-        return patientSampleFacade.find(id);
+        PatientSample ps = patientSampleFacade.find(id);
+        if (ps != null) {
+            return ps;
+        }
+        String j = "Select ps "
+                + " from PatientSample ps "
+                + " where ps.sampleId=:sid ";
+        Map m = new HashMap<>();
+        m.put("sid", id);
+        return patientSampleFacade.findFirstByJpql(j, m);
     }
 
     public List<PatientSampleComponant> getPatientSampleComponents(PatientSample ps) {
@@ -1306,6 +1821,209 @@ public class LimsMiddlewareController {
 
     public void setLoggedInstitution(Institution loggedInstitution) {
         this.loggedInstitution = loggedInstitution;
+    }
+
+    public List<String> generateTestCodesForAnalyzer(String sampleId, String sendingAnalyzerName) {
+        System.out.println("sendingAnalyzerName = " + sendingAnalyzerName);
+        System.out.println("generateTestCodesForAnalyzer");
+        PatientSample ps = patientSampleFromId(sampleId);
+        System.out.println("ps = " + ps);
+        if (ps == null) {
+            System.out.println("No PS");
+            return null;
+        }
+
+        List<PatientSampleComponant> pscs = getPatientSampleComponents(ps);
+        System.out.println("pscs = " + pscs);
+        if (pscs == null || pscs.isEmpty()) {
+            System.out.println("PSCS NULL OR EMPTY");
+            return null;
+        }
+
+        List<String> tests = new ArrayList<>();
+
+        for (PatientSampleComponant c : pscs) {
+            System.out.println("c = " + c);
+            Investigation myIx = c.getPatientInvestigation().getInvestigation();
+
+            if (myIx == null) {
+                return null;
+            }
+
+            if (myIx.getReportedAs() != null) {
+                if (myIx.getReportedAs() instanceof Investigation) {
+                    myIx = (Investigation) myIx.getReportedAs();
+                }
+            }
+
+            for (InvestigationItem tii : myIx.getReportItems()) {
+//                System.out.println("tii = " + tii.getName());
+                if (tii.getIxItemType() == InvestigationItemType.Value) {
+//                    System.out.println("value");
+                    String sampleTypeName;
+                    String samplePriority;
+
+                    if (tii.getItem() == null) {
+                        System.out.println("tii is NULL " + tii);
+                        continue;
+                    }
+
+                    if (tii.getSample() != null) {
+                        sampleTypeName = tii.getSample().getName();
+                    } else {
+                        sampleTypeName = "serum";
+                    }
+                    if (tii.getItem().getPriority() != null) {
+                        samplePriority = tii.getItem().getPriority().toString();
+                    } else {
+                        samplePriority = (Priority.Routeine).toString();
+                    }
+                    MySpeciman ms = new MySpeciman();
+                    ms.setSpecimanName(sampleTypeName);
+                    if (tii.getItem().isHasMoreThanOneComponant()) {
+                        System.out.println("more than one componant");
+                        System.out.println("tti = " + tii.getName());
+                        if (tii.getTest() != null && !tii.getTest().getName().trim().equals("")) {
+                            if (tii.getSampleComponent().equals(ps.getInvestigationComponant())) {
+                                System.out.println("going to check analyzer equal");
+                                if (tii.getMachine().getName().equalsIgnoreCase(sendingAnalyzerName)) {
+                                    tests.add(tii.getTest().getCode());
+                                    updateStatusToPeformed(c);
+                                    System.out.println("1. tii.getTest().getCode() = " + tii.getTest().getCode());
+                                }
+//                                tests.add(tii.getTest().getName());
+
+                            }
+                        }
+                    } else {
+                        System.out.println("one componant");
+                        System.out.println("tti = " + tii.getName());
+                        System.out.println("tii.getTest() = " + tii.getTest());
+                        if (tii.getTest() != null && !tii.getTest().getName().trim().equals("")) {
+                            System.out.println("going to check analyzer equal");
+                            if (tii.getMachine().getName().equalsIgnoreCase(sendingAnalyzerName)) {
+                                tests.add(tii.getTest().getCode());
+                                updateStatusToPeformed(c);
+                                System.out.println("1. tii.getTest().getCode() = " + tii.getTest().getCode());
+                            }
+
+                        }
+                    }
+                }
+            }
+        }
+        System.out.println("tests = " + tests);
+        return tests;
+    }
+
+    public void updateStatusToPeformed(PatientSampleComponant psc) {
+        if (psc == null) {
+            return;
+        }
+        if (psc.getPatientInvestigation() == null) {
+            return;
+        }
+        PatientInvestigation pi = psc.getPatientInvestigation();
+        pi.setStatus(PatientInvestigationStatus.SAMPLE_INTERFACED);
+        pi.setPerformed(true);
+//            pi.setPerformDepartment(sessionController.getDepartment());
+//            pi.setPerformInstitution(sessionController.getInstitution());
+        pi.setPerformedAt(new Date());
+//            pi.setPerformedUser(sessionController.getLoggedUser());
+        patientInvestigationFacade.edit(pi);
+        if (pi.getBillItem() == null) {
+            return;
+        }
+        if (pi.getBillItem().getBill() == null) {
+            return;
+        }
+        Bill b = pi.getBillItem().getBill();
+        b.setStatus(PatientInvestigationStatus.SAMPLE_INTERFACED);
+        billFacade.edit(b);
+        if (psc.getSample() == null) {
+            return;
+        }
+        PatientSample ps = psc.getPatientSample();
+        ps.setStatus(PatientInvestigationStatus.SAMPLE_INTERFACED);
+        ps.setSentToAnalyzer(Boolean.TRUE);
+        ps.setSentToAnalyzerAt(new Date());
+        //TODO: Add other fields
+        patientSampleFacade.edit(ps);
+
+    }
+
+    public List<String> generateTestCodesForAnalyzer(String sampleId) {
+        System.out.println("generateTestCodesForAnalyzer");
+        PatientSample ps = patientSampleFromId(sampleId);
+        System.out.println("ps = " + ps);
+        if (ps == null) {
+            System.out.println("No PS");
+            return null;
+        }
+
+        List<PatientSampleComponant> pscs = getPatientSampleComponents(ps);
+        System.out.println("pscs = " + pscs);
+        if (pscs == null || pscs.isEmpty()) {
+            System.out.println("PSCS NULL OR EMPTY");
+            return null;
+        }
+
+        List<String> tests = new ArrayList<>();
+
+        for (PatientSampleComponant c : pscs) {
+            System.out.println("c = " + c);
+            Investigation myIx = c.getPatientInvestigation().getInvestigation();
+
+            if (myIx == null) {
+                return null;
+            }
+
+            if (myIx.getReportedAs() != null) {
+                if (myIx.getReportedAs() instanceof Investigation) {
+                    myIx = (Investigation) myIx.getReportedAs();
+                }
+            }
+
+            for (InvestigationItem tii : myIx.getReportItems()) {
+                System.out.println("tii = " + tii);
+                if (tii.getIxItemType() == InvestigationItemType.Value) {
+                    String sampleTypeName;
+                    String samplePriority;
+                    if (tii.getSample() != null) {
+                        sampleTypeName = tii.getSample().getName();
+                    } else {
+                        sampleTypeName = "serum";
+                    }
+                    if (tii.getItem().getPriority() != null) {
+                        samplePriority = tii.getItem().getPriority().toString();
+                    } else {
+                        samplePriority = (Priority.Routeine).toString();
+                    }
+                    MySpeciman ms = new MySpeciman();
+                    ms.setSpecimanName(sampleTypeName);
+                    if (tii.getItem().isHasMoreThanOneComponant()) {
+                        System.out.println("tti = " + tii);
+                        if (tii.getTest() != null && !tii.getTest().getName().trim().equals("")) {
+                            if (tii.getSampleComponent().equals(ps.getInvestigationComponant())) {
+
+                                tests.add(tii.getTest().getCode());
+                                System.out.println("1. tii.getTest().getCode() = " + tii.getTest().getCode());
+                                tests.add(tii.getTest().getName());
+
+                            }
+                        }
+                    } else {
+                        if (tii.getTest() != null && !tii.getTest().getName().trim().equals("")) {
+                            tests.add(tii.getTest().getCode());
+                            System.out.println("1. tii.getTest().getCode() = " + tii.getTest().getCode());
+
+                        }
+                    }
+                }
+            }
+        }
+        System.out.println("tests = " + tests);
+        return tests;
     }
 
     private static class MySampleTests {

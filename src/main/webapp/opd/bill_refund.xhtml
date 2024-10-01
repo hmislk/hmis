@@ -56,7 +56,6 @@
                                     </h:panelGrid>
                                 </f:facet>
 
-
                                 <p:panel>
                                     <f:facet name="header">
                                         <h:outputText styleClass="fas fa-money-bill"></h:outputText>
@@ -65,7 +64,7 @@
                                     <p:selectOneMenu   id="cmbPs" value="#{billSearch.paymentMethod}"  
                                                        rendered="#{billSearch.bill.billType eq 'OpdBill'}">
                                         <f:selectItem itemLabel="Select paymentMethod"/>
-                                        <f:selectItems value="#{enumController.paymentMethods}"/>
+                                        <f:selectItems value="#{enumController.paymentMethodsForOpdBilling}"/>
                                     </p:selectOneMenu>
 
                                     <p:selectOneMenu   id="cmbPs2" value="#{billSearch.paymentMethod}"  
@@ -95,7 +94,7 @@
                                             </f:facet>
                                             <p:panelGrid columns="2">
                                                 <h:outputLabel value="Bill No :" ></h:outputLabel>
-                                                <h:outputLabel value="#{billSearch.bill.insId}" ></h:outputLabel>
+                                                <h:outputLabel value="#{billSearch.bill.deptId}" ></h:outputLabel>
                                                 <h:outputLabel value="Total :" ></h:outputLabel>
                                                 <h:outputLabel value="#{billSearch.bill.total}" ></h:outputLabel>
                                                 <h:outputLabel value="Discount :" ></h:outputLabel>
@@ -252,7 +251,7 @@
 
                             <h:panelGroup id="printPreview">
                                 <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'PosPaper'}">
-                                    <bi:opdPOSReturnBill bill="#{billSearch.bill}"/>
+                                    <bi:opdPOSReturnBill bill="#{billSearch.currentRefundBill}"/>
                                 </h:panelGroup>
 
 

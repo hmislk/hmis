@@ -1,0 +1,177 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!-- Configuration done by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI. -->
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/admin/institutions/admin_institutions_index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+    <ui:define name="admin">
+
+        <h:panelGroup rendered="#{!adjustmentCategoryControllerdataUploadController.uploadComplete}" >
+            <div class="container-fluid" >
+                <div class="card" >
+                    <div class="card-header" >
+                        <h2>Upload Departments</h2>
+                    </div>
+                    <div class="card-body" >
+                        <h:form enctype="multipart/form-data">
+                            <p:fileUpload value="#{dataUploadController.file}"
+                                          mode="simple"
+                                          label="Choose File"/>
+                            <p:commandButton value="Upload"
+                                             icon="fas fa-upload"
+                                             class="ui-button-success"
+                                             action="#{dataUploadController.uploadDepartments()}"
+                                             ajax="false"/>
+                            <p:dialog modal="true" widgetVar="statusDialog" header="Status" draggable="false" closable="false" resizable="false">
+                            </p:dialog>
+                            <script type="text/javascript">
+                                function start() {
+                                    PF('statusDialog').show();
+                                }
+
+                                function stop() {
+                                    PF('statusDialog').hide();
+                                }
+                            </script>
+
+                        </h:form>
+
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Column</th>
+                                    <th>Title</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>A</td>
+                                    <td>Department Code</td>
+                                    <td>Department Code. Required</td>
+                                </tr>
+                                <tr>
+                                    <td>B</td>
+                                    <td>Department Name</td>
+                                    <td>Department Name. Required</td>
+                                </tr>
+                                <tr>
+                                    <td>C</td>
+                                    <td>Bill Prefix</td>
+                                    <td>Bill Prefix. Optional</td>
+                                </tr>
+                                <tr>
+                                    <td>D</td>
+                                    <td>Department Type</td>
+                                    <td>Type. Optional. If Left Blank, Other will be used as default.</td>
+                                </tr>
+                                <tr>
+                                    <td>E</td>
+                                    <td>Phone</td>
+                                    <td>Phone. Optional</td>
+                                </tr>
+                                <tr>
+                                    <td>F</td>
+                                    <td>Email</td>
+                                    <td>Email. Optional</td>
+                                </tr>
+                                <tr>
+                                    <td>G</td>
+                                    <td>Address</td>
+                                    <td>Address. Optional</td>
+                                </tr>
+                                <tr>
+                                    <td>H</td>
+                                    <td>Institution</td>
+                                    <td>Institution. If Left Blank, Logged Institution will be used as default.</td>
+                                </tr>
+                                <tr>
+                                    <td>I</td>
+                                    <td>Active</td>
+                                    <td>True or False</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+
+
+                    </div>
+                </div>
+            </div>
+
+           
+        </h:panelGroup>
+        
+        <p:poll update="gpUpload" rendered="#{not dataUploadController.uploadComplete}"></p:poll>
+         
+         
+
+         <h:panelGroup id="gpUpload" >
+
+            <h:form rendered="#{dataUploadController.uploadComplete}">
+
+
+                <p:commandButton ajax="false" 
+                                 action="#{dataUploadController.saveDepartments()}" 
+                                 value="Save" 
+                                 icon="fa fa-save" 
+                                 styleClass="ui-button-primary" />
+
+                <p:dataTable id="tbl"
+                             value="#{dataUploadController.departments}"
+                             var="dept"
+                             paginator="true"
+                             rows="10"
+                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="5,10,15">
+
+                    <p:column headerText="Department Code" filterBy="#{dept.departmentCode}" filterMatchMode="contains" sortBy="#{dept.departmentCode}">
+                        <h:outputText value="#{dept.departmentCode}" />
+                    </p:column>
+
+                    <p:column headerText="Department Name" filterBy="#{dept.name}" filterMatchMode="contains" sortBy="#{dept.name}">
+                        <h:outputText value="#{dept.name}" />
+                    </p:column>
+
+                    <p:column headerText="Bill Prefix" filterBy="#{dept.departmentCode}" filterMatchMode="contains" sortBy="#{dept.departmentCode}">
+                        <h:outputText value="#{dept.departmentCode}" />
+                    </p:column>
+
+                    <p:column headerText="Department Type" filterBy="#{dept.departmentType}" filterMatchMode="contains" sortBy="#{dept.departmentType}">
+                        <h:outputText value="#{dept.departmentType}" />
+                    </p:column>
+
+                    <p:column headerText="Phone" filterBy="#{dept.telephone1}" filterMatchMode="contains" sortBy="#{dept.telephone1}">
+                        <h:outputText value="#{dept.telephone1}" />
+                    </p:column>
+
+                    <p:column headerText="Email" filterBy="#{dept.email}" filterMatchMode="contains" sortBy="#{dept.email}">
+                        <h:outputText value="#{dept.email}" />
+                    </p:column>
+
+                    <p:column headerText="Address" filterBy="#{dept.address}" filterMatchMode="contains" sortBy="#{dept.address}">
+                        <h:outputText value="#{dept.address}" />
+                    </p:column>
+
+                    <p:column headerText="Institution" filterBy="#{dept.institution.name}" filterMatchMode="contains" sortBy="#{dept.institution.name}">
+                        <h:outputText value="#{dept.institution.name}" />
+                    </p:column>
+
+                    <p:column headerText="Active" filterBy="#{dept.active}" filterMatchMode="contains" sortBy="#{dept.active}">
+                        <h:outputText value="#{dept.active ? 'True' : 'False'}" />
+                    </p:column>
+
+                </p:dataTable>
+
+            </h:form>
+
+
+        </h:panelGroup>
+
+
+
+    </ui:define>
+</ui:composition>

@@ -30,6 +30,10 @@ public enum HistoryType {
     PatientDepositCancel,
     PatientDepositReturn,
     PatientDepositUtilization,
+    PatientDepositUtilizationCancel,
+    PatientDepositUtilizationReturn,
+    PatientDepositTransfer,
+    PatientDepositTransferCancel,
 
     AgentBalanceUpdateBill,
     CollectingCentreBalanceUpdateBill,
@@ -40,5 +44,9 @@ public enum HistoryType {
     CollectingCentreDebitNote,
     CollectingCentreDebitNoteCancel,
     CollectingCentreBilling,
+    CollectingCentreBillingCancel,
+    CollectingCentreBillingRefund,
+    CollectingentrePaymentMadeBill,
+    CollectingentrePaymentMadeBillCancelled,
     MonthlyRecord,
 }

@@ -1,0 +1,95 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:emr="http://xmlns.jcp.org/jsf/composite/ezcomp/emr"
+      >
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content" >
+
+                <p:panel id="docPrescreption" >
+                    <h:outputStylesheet library="css" name="printing/prescription.css" ></h:outputStylesheet>
+                    <f:facet name="header">
+                        <h:outputText  styleClass="fas fa-prescription-bottle"/>
+                        <h:outputText class="mx-4" value="Prescription"/>
+                    </f:facet>
+
+                    <!-- Button Row -->
+                    <h:panelGrid columns="3" style="width: 100%; margin-bottom: 10px;">
+                        <h:form style="margin-right: 10px;">
+                            <p:commandButton
+                                class="ui-button-info" 
+                                ajax="false" 
+                                value="Back" 
+                                action="opd_visit"
+                                icon="pi pi-arrow-left">
+                            </p:commandButton>
+                        </h:form>
+
+                        <p:commandButton
+                            class="ui-button-info" 
+                            ajax="false" 
+                            value="Print" 
+                            icon="pi pi-print"
+                            style="margin-right: 10px;">
+                            <p:printer target="txtPrescriptionDoc" />
+                        </p:commandButton>
+
+                        <p:commandButton icon="fas fa-refresh" class="mx-2 ui-button-warning" id="btnRefresh" ajax="false" value="refresh" action="#{patientEncounterController.refreshPrescription}"/>
+                    </h:panelGrid>
+
+                    <style>
+                        @media print {
+                            /* Target the ui-texteditor container and its children */
+                            #docPrescreption .ui-texteditor,
+                            #docPrescreption .ui-texteditor *,
+                            #docPrescreption .ui-texteditor *::after,
+                            #docPrescreption .ui-texteditor *::before {
+                                border: none !important;
+                                box-sizing: content-box !important; /* Reset box-sizing */
+                                /* Additional styles to reset other properties if needed */
+                            }
+
+                            /* Ensure that the specific ids are targeted */
+                            #txtPrescriptionDoc,
+                            #txtPrescriptionDoc * {
+                                border: none !important;
+                                box-sizing: content-box !important;
+                                /* Reset other styles, if necessary */
+                            }
+
+                            /* If there are iframes or other embedded elements, target them too */
+                            #txtPrescriptionDoc iframe,
+                            #txtPrescriptionDoc iframe * {
+                                border: none !important;
+                                box-sizing: content-box !important;
+                                /* Reset other styles, if necessary */
+                            }
+                        }
+                    </style>
+
+
+
+                    <p:textEditor 
+                        styleClass="textEditer"
+                        class="my-2" 
+                        id="txtPrescriptionDoc" 
+                        toolbarVisible="false"
+                        secure='false' 
+                        widgetVar="textEditorWidget" 
+                        value="#{patientEncounterController.encounterPrescreption.lobValue}"
+                        >
+                    </p:textEditor>
+                </p:panel>
+
+
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

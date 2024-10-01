@@ -23,8 +23,7 @@
                             </p:selectOneMenu>
                             
                             <p:inputText value="#{cashRecieveBillController.comment}" id="comment"/>
-                            <p:watermark value="Comment" for="comment"/>
-
+                            
                             <h:panelGroup id="creditCard" style="display: #{cashRecieveBillController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
                                 <pa:creditCard paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
                             </h:panelGroup>
@@ -66,7 +65,9 @@
                         </h:panelGroup>
                         <p:dataTable value="#{cashRecieveBillController.billItems}"
                                      rowIndexVar="rowIndex"   var="b" id="items"
-                                     rowKey="#{b.searialNo}" selection="#{cashRecieveBillController.selectedBillItems}">
+                                     rowKey="#{b.searialNo}"
+                                     selectionMode="multiple"
+                                     selection="#{cashRecieveBillController.selectedBillItems}">
                             <f:facet name="header">
                                 <h:outputLabel value="Paying Institution : "/>
                                 <h:outputLabel value="#{cashRecieveBillController.institution.name}"/>
@@ -81,9 +82,9 @@
                             <p:ajax  event="rowUnselectCheckbox" process="@this" 
                                      update=":#{p:resolveFirstComponentWithId('tot',view).clientId}" 
                                      listener="#{cashRecieveBillController.calTotal}"/>
-                            <p:column selectionMode="multiple" />                                        
+                            <p:column  />                                        
 
-                            <p:column >  
+                            <p:column selectionBox="true" >  
                                 <f:facet name="header">
                                     <h:outputLabel value="Bill No"/>                                    
                                 </f:facet>                               

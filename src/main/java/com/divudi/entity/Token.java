@@ -85,6 +85,11 @@ public class Token implements Serializable {
     private String idStr;
     @ManyToOne
     private Doctor doctor;
+    @ManyToOne
+    private Token referaToken;
+    private boolean restartTokenServices;
+    
+    
 // </editor-fold> 
 
     public Long getId() {
@@ -387,8 +392,23 @@ public class Token implements Serializable {
         this.doctor = doctor;
     }
 
-  
-    
+    public boolean isRestartTokenServices() {
+        return restartTokenServices;
+    }
+
+    public void setRestartTokenServices(boolean restartTokenServices) {
+        this.restartTokenServices = restartTokenServices;
+    }
+
+    public Token getReferaToken() {
+        return referaToken;
+    }
+
+    public void setReferaToken(Token referaToken) {
+        this.referaToken = referaToken;
+    }
+
+
     
     
     

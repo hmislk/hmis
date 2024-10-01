@@ -70,8 +70,7 @@
                         <p:commandButton ajax="false" value="Process Net And OT Payment" action="#{hrReportController.createStaffSalaryNetAndOtPayment()}"/>
 
                         <p:inputText value="#{hrReportController.chequeNo}" id="chq"/>
-                        <p:watermark for="chq" value="Cheque Number"/>
-                        <p:commandButton ajax="false" value="Update" action="#{hrReportController.update()}"/>
+                                                <p:commandButton ajax="false" value="Update" action="#{hrReportController.update()}"/>
 
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
                             <p:dataExporter type="xlsx" target="tb1" fileName="hr_report_staff_salary_payment_bank"  />

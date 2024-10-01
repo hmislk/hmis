@@ -4,12 +4,9 @@
  */
 package com.divudi.entity;
 
-import com.divudi.data.TriggerType;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -32,6 +29,7 @@ public class WebUserRoleUser implements Serializable {
     private WebUserRole webUserRole;
     @ManyToOne
     private WebUser webUser;
+    private Department department;
     
     //Created Properties
     @ManyToOne
@@ -52,6 +50,9 @@ public class WebUserRoleUser implements Serializable {
 
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date editedAt;
+    
+    
+    
 
     public Long getId() {
         return id;
@@ -165,4 +166,12 @@ public class WebUserRoleUser implements Serializable {
     public void setWebUserRole(WebUserRole webUserRole) {
         this.webUserRole = webUserRole;
     } 
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
 }

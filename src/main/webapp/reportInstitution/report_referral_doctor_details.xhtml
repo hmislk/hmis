@@ -1,0 +1,116 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/reportInstitution/report_referrals_index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
+                >
+
+
+    <ui:define name="subcontent">
+        <!--        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>-->
+        <h:panelGroup rendered="true" >
+            <h:form>
+                <p:panel>
+
+                    <f:facet name="header" >
+                        <h:outputLabel value="Doctor Referrals" />
+                    </f:facet>
+
+                    <h:panelGrid columns="2" class="my-2" >
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="frmDate" value="#{commonReport.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                        </p:calendar>
+
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100 my-1" id="toDate" value="#{commonReport.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                        </p:calendar>
+                    </h:panelGrid>
+                    <h:panelGrid columns="6" class="my-2" >
+                        <p:commandButton  id="btnRefresh" ajax="false" value="Process"
+                                          class="ui-button-warning" icon="fas fa-cogs" 
+                                          actionListener="#{commonReport.fillDoctorReferralBills()}" />
+                        <p:defaultCommand target="btnRefresh"/>
+                        <p:commandButton ajax="false" value="Print" class="ui-button-info mx-2" icon="fas fa-print" >
+                            <p:printer target="reportPrint"/>
+                        </p:commandButton>  
+                        <p:commandButton ajax="false" value="Excel" class="ui-button-success" icon="fas fa-file-excel" >
+                            <p:dataExporter type="xlsx" 
+                                            target="billed"
+                                            fileName="Doctor Refferals" />
+                        </p:commandButton> 
+                    </h:panelGrid>
+
+                    <p:panel id="reportPrint" styleClass="noBorder summeryBorder">
+                        <p:dataTable id="billed"  value="#{commonReport.referralDoctorBills}" var="b"
+                                     paginator="false"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="5,10,15,20" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Referal Doctor Bill List "/><br/>
+                                <h:outputLabel value="From :&emsp;"/> <h:outputLabel value="#{commonReport.fromDate}"/>  <h:outputLabel value="&emsp;&emsp;To :&emsp;"/> <h:outputLabel value="#{commonReport.fromDate}"/>
+                            </f:facet>
+
+                            <p:column headerText="Id" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="ID" style="float: left"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.deptId}"/>
+                            </p:column>
+
+
+
+                            <p:column headerText="Referral Doctor" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Referral Doctor" style="float: left"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.referredBy.person.nameWithTitle}"/>
+                            </p:column>
+
+                            <p:column headerText="Referral ID" >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Patient Name" style="float: left"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.patient.person.name}"/>
+                            </p:column>
+
+                            <p:column headerText="Bill Created By" >
+                                <f:facet name="header">
+                                    <h:outputLabel value="Bill Created By" style="float: left"/>
+                                </f:facet>
+                                <h:outputLabel value="#{b.creater.webUserPerson.name}"/>
+                            </p:column>
+
+                            <p:column headerText="Billed By" >
+                                <f:facet name="header">
+                                    <h:outputLabel value="Billed By" style="float: left"/>
+                                </f:facet>
+                                <h:outputLabel value="#{b.paidBill.creater.webUserPerson.name}"/>
+                            </p:column>
+
+                            <p:column >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Billed At" style="float: left"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.createdAt}"/>
+                            </p:column>
+
+                            <p:column >
+                                <f:facet name="header">  
+                                    <h:outputLabel value="Total" style="float: left"/>
+                                </f:facet> 
+                                <h:outputLabel value="#{b.total}"/>
+                            </p:column>
+
+                        </p:dataTable>
+
+                    </p:panel>
+                </p:panel>
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+
+</ui:composition>

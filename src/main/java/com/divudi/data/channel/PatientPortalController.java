@@ -1,6 +1,7 @@
 package com.divudi.data.channel;
 
 import com.divudi.bean.channel.BookingController;
+import com.divudi.bean.channel.BookingControllerViewScope;
 import com.divudi.bean.channel.ChannelBillController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.DoctorController;
@@ -13,13 +14,11 @@ import com.divudi.bean.hr.StaffController;
 import com.divudi.data.BillType;
 import com.divudi.data.MessageType;
 import com.divudi.data.PaymentMethod;
-import com.divudi.data.SmsSentResponse;
 import com.divudi.ejb.ChannelBean;
 import com.divudi.ejb.SmsManagerEjb;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillSession;
 import com.divudi.entity.Consultant;
-import com.divudi.entity.Doctor;
 import com.divudi.entity.Patient;
 import com.divudi.entity.Payment;
 import com.divudi.entity.PaymentGatewayTransaction;
@@ -37,13 +36,7 @@ import com.divudi.facade.SessionInstanceFacade;
 import com.divudi.facade.SmsFacade;
 import com.divudi.facade.StaffFacade;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import javax.ejb.EJB;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
@@ -98,6 +91,8 @@ public class PatientPortalController implements Serializable {
     ChannelBillController channelBillController;
     @Inject
     StaffController staffController;
+    @Inject
+    BookingControllerViewScope bookingControllerViewScope;
 
     private String PatientphoneNumber;
     private boolean bookDoctor;
@@ -141,6 +136,7 @@ public class PatientPortalController implements Serializable {
     private ChannelBean channelBean;
 
     public String navigateBookingMenue() {
+        bookingControllerViewScope.fillBillSessions(Collections.singletonList(selectedSessionInstance));
         sessionInstances = null;
         selectedConsultant = null;
         selectedSpeciality = null;
@@ -211,6 +207,7 @@ public class PatientPortalController implements Serializable {
         addNewProfile = false;
         bookingCompleted = false;
         addNewPatient = false;
+        sessionInstances = null;
     }
 
     public List<Staff> fillConsultants() {
@@ -259,7 +256,7 @@ public class PatientPortalController implements Serializable {
         calendar.setTime(currentDate);
         calendar.add(Calendar.DAY_OF_MONTH, 2);
         Map<String, Object> m = new HashMap<>();
-        StringBuilder jpql = new StringBuilder("select i from SessionInstance i where i.retired=:ret and i.sessionDate BETWEEN :cd AND :nextTwoDays");
+        StringBuilder jpql = new StringBuilder("select i from SessionInstance i where i.retired=:ret and i.originatingSession.excludeFromPatientPortal=:epp and i.sessionDate BETWEEN :cd AND :nextTwoDays");
 
         if (selectedConsultant != null) {
             jpql.append(" and i.originatingSession.staff=:os");
@@ -273,10 +270,13 @@ public class PatientPortalController implements Serializable {
         }
 
         m.put("ret", false);
+        m.put("epp", false);
         m.put("cd", currentDate);
         m.put("nextTwoDays", calendar.getTime());
 
         sessionInstances = sessionInstanceFacade.findByJpql(jpql.toString(), m, TemporalType.DATE);
+
+        bookingControllerViewScope.fillBillSessions(sessionInstances);
     }
 
     public void otpCodeConverter() {
@@ -314,7 +314,24 @@ public class PatientPortalController implements Serializable {
         } else {
             JsfUtil.addSuccessMessage("SMS Failed");
         }
+        e.setSentSuccessfully(sent);
+        getSmsFacade().edit(e);
 
+    }
+    
+    public Date getSessionStartDateTime(SessionInstance session) {
+        Calendar sessionDateTimeCal = Calendar.getInstance();
+        sessionDateTimeCal.setTime(session.getSessionDate()); // Assuming session has a getSessionDate method
+
+        Calendar sessionTimeCal = Calendar.getInstance();
+        sessionTimeCal.setTime(session.getSessionTime()); // Assuming session has a getSessionTime method
+
+        // Combine session date and time
+        sessionDateTimeCal.set(Calendar.HOUR_OF_DAY, sessionTimeCal.get(Calendar.HOUR_OF_DAY));
+        sessionDateTimeCal.set(Calendar.MINUTE, sessionTimeCal.get(Calendar.MINUTE));
+        sessionDateTimeCal.set(Calendar.SECOND, sessionTimeCal.get(Calendar.SECOND));
+
+        return sessionDateTimeCal.getTime();
     }
 
     public void findPatients() {

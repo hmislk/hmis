@@ -46,6 +46,7 @@
                             id="lstSelect" 
                             class="w-100"
                             filter="true"
+                            filterMatchMode="contains"
                             value="#{ampController.current}" 
                             >
                             <f:selectItems 
@@ -110,7 +111,11 @@
                                 </p:autoComplete>      
 
                                 <h:outputText  value="Department Type" class="w-100"></h:outputText>
-                                <p:selectOneMenu  value="#{ampController.current.departmentType}" class="w-100">
+                                <p:selectOneMenu  
+                                    value="#{ampController.current.departmentType}" 
+                                    class="w-100"
+                                    filter="true"
+                                    filterMatchMode="contains">
                                     <f:selectItem itemLabel="Select" ></f:selectItem>
                                     <f:selectItems value="#{enumController.departmentType}" ></f:selectItems>
                                 </p:selectOneMenu>

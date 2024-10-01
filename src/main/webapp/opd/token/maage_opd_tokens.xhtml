@@ -53,6 +53,10 @@
                             <p:column headerText="Counter">
                                 <h:outputText value="#{token.counter.name}" />
                             </p:column>
+                            
+                            <p:column headerText="Doctor">
+                                <h:outputText value="#{token.staff.person.nameWithTitle}" />
+                            </p:column>
 
                             <!-- Patient Name Column -->
                             <p:column headerText="Bill">
@@ -65,8 +69,7 @@
                                     </h:panelGroup>
 
                                     <h:panelGroup rendered="#{token.bill.referenceBill eq null}" >
-                                        <h:outputText value="AWAITING PAYMENT" rendered="#{token.bill.cancelled eq false}"/>
-
+                                        <h:outputText value="AWAITING PAYMENT" rendered="#{token.bill.cancelled eq false}"/><br/>
                                         <h:outputText value="ALL ITEMS GET ADDED TO STOCK" rendered="#{token.bill.cancelled eq true}"/>
                                         <br/>
                                         <h:outputText value="Bill Number : " />
@@ -115,7 +118,7 @@
                                     <p:commandButton 
                                         id="opdCashier"
                                         icon="fa fa-fw fa-cash-register"
-                                        disabled="#{token.bill ne null}"
+                                        disabled="#{token.bill ne null and token.restartTokenServices eq false}"
                                         action="#{opdTokenController.navigateToNewOpdBillForCashier()}"
                                         ajax="false"
                                         >
@@ -125,7 +128,7 @@
                                     <p:commandButton 
                                         id="opdBill"
                                         icon="fa fa-fw fa-notes-medical"
-                                        disabled="#{token.bill ne null}"
+                                        disabled="#{token.bill ne null and token.restartTokenServices eq false}"
                                         action="#{opdBillController.navigateToNewOpdBillFromToken()}"
                                         actionListener="#{opdBillController.makeNull()}"
                                         ajax="false"

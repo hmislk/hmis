@@ -38,6 +38,7 @@ import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.facade.StockHistoryFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillTypeAtomic;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -414,6 +415,8 @@ public class StoreIssueController implements Serializable {
         getPreBill().setBillTime(new Date());
         getPreBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
         getPreBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+        getPreBill().setBillType(BillType.StoreIssue);
+        getPreBill().setBillTypeAtomic(BillTypeAtomic.STORE_ORDER);
 
         if (getPreBill().getId() == null) {
             getBillFacade().create(getPreBill());
@@ -526,12 +529,8 @@ public class StoreIssueController implements Serializable {
     public void settleBill() {
 
         editingQty = null;
-        //   ////System.out.println("editingQty = " + editingQty);
         errorMessage = null;
-        //   ////System.out.println("errorMessage = " + errorMessage);
-        
          if(checkIssue()){
-            
             return;
         }
         
@@ -545,16 +544,8 @@ public class StoreIssueController implements Serializable {
             return;
         }
         
-        if (errorCheckForSaleBill()) {
-               ////System.out.println("Error for sale bill");
-            return;
-        }
-       //storeIssueController.toDepartment
-        
-        
-        
         getPreBill().setPaidAmount(getPreBill().getTotal());
-        //   ////System.out.println("getPreBill().getPaidAmount() = " + getPreBill().getPaidAmount());
+        
         List<BillItem> tmpBillItems = getPreBill().getBillItems();
         getPreBill().setBillItems(null);
 
@@ -725,10 +716,10 @@ public class StoreIssueController implements Serializable {
         if (getPreBill() == null) {
             return;
         }
-        if (billItem == null) {
+        if (getBillItem() == null) {
             return;
         }
-        if (billItem.getPharmaceuticalBillItem() == null) {
+        if (getBillItem().getPharmaceuticalBillItem() == null) {
             return;
         }
         if (billItem.getPharmaceuticalBillItem().getStock() == null) {
@@ -741,13 +732,16 @@ public class StoreIssueController implements Serializable {
         //Bill Item
 //        billItem.setInwardChargeType(InwardChargeType.Medicine);
         billItem.setItem(getStock().getItemBatch().getItem());
+        System.out.println("billItem.getItem() = " + billItem.getItem());
         billItem.setQty(qty);
+        System.out.println("billItem.getQty() = " + billItem.getQty());
 
         //pharmaceutical Bill Item
         billItem.getPharmaceuticalBillItem().setDoe(getStock().getItemBatch().getDateOfExpire());
         billItem.getPharmaceuticalBillItem().setFreeQty(0.0f);
         billItem.getPharmaceuticalBillItem().setItemBatch(getStock().getItemBatch());
         billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - qty));
+        System.out.println("billItem.getPharmaceuticalBillItem().getQtyInUnit = " + billItem.getPharmaceuticalBillItem().getQtyInUnit());
 
         //Rates
         //Values
@@ -755,6 +749,8 @@ public class StoreIssueController implements Serializable {
         billItem.setDiscount(0);
         billItem.setMarginValue(billItem.getMarginRate() * qty);
         billItem.setNetValue(billItem.getNetRate() * qty);
+        System.out.println("billItem.getRate() = " + billItem.getRate());
+        System.out.println("billItem.getMarginRate() = " + billItem.getMarginRate());
 
     }
 
@@ -795,9 +791,7 @@ public class StoreIssueController implements Serializable {
     }
 
     public void calculateRates(BillItem bi) {
-        //   ////System.out.println("calculating rates");
         if (bi.getPharmaceuticalBillItem().getStock() == null) {
-            //////System.out.println("stock is null");
             return;
         }
         
@@ -979,7 +973,6 @@ public class StoreIssueController implements Serializable {
         if (preBill == null) {
             preBill = new PreBill();
             preBill.setBillType(BillType.StoreIssue);
-            //   preBill.setPaymentScheme(getPaymentSchemeController().getItems().get(0));
         }
         return preBill;
     }

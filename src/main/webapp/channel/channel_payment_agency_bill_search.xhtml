@@ -11,6 +11,10 @@
             <ui:define name="content">
                 <h:form>
                     <p:panel header="Agency Payment Done Search" >
+                        <f:facet name="header">
+                            <h:outputLabel value="Agency Payment Done Search"/>
+                            <p:commandButton value="Back" icon="fas fa-arrow-left" class="ui-button-warning" style="float: right;" action="/payments/pay_index?faces-redirect=true" ajax="false"/>     
+                        </f:facet>
                         <div class="row">
                             <div class="col-2">
                                 <h:outputLabel value="From Date"/>
@@ -41,7 +45,7 @@
                                              rowsPerPageTemplate="5,10,{ShowAll|'All'}">
 
                                     <p:column headerText="Bill No" >
-                                        <h:commandLink action="payment_bill_reprint" value="#{billItem.bill.insId}">
+                                        <h:commandLink action="payment_bill_reprint" value="#{billItem.bill.deptId}">
                                             <h:outputLabel  ></h:outputLabel>
                                             <f:setPropertyActionListener value="#{billItem.bill}" target="#{billSearch.bill}"/>
                                         </h:commandLink>

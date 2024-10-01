@@ -12,26 +12,42 @@
             <h:panelGroup rendered="#{!issueReturnController.printPreview}" styleClass="alignTop" >
                 <p:panel>
 
-                    <f:facet name="header" >      
+                    <f:facet name="header" >     
 
-
-
-                        <p:outputLabel  value="Recievable Amount :" class="mt-2"/> 
-                        <p:outputLabel
-                            class="mx-2 mt-2"
-                            id="total"  
-                            value="#{issueReturnController.returnBill.total}"
-                            >
-                        </p:outputLabel>
-
-                        <p:commandButton 
-                            icon="fa fa-money-bill-wave"
-                            class="ui-button-warning"
-                            value="Return" 
-                            action="#{issueReturnController.settle}" 
-                            ajax="false" 
-                            style="float: right;"  >
-                        </p:commandButton>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p:outputLabel  value="Recievable Amount :" class="mt-2"/> 
+                                <p:outputLabel
+                                    class="mx-2 mt-2"
+                                    id="total"  
+                                    value="#{issueReturnController.returnBill.total}"
+                                    >
+                                </p:outputLabel>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <p:commandButton 
+                                    icon="fas fa-save"
+                                    class="ui-button-primary"
+                                    value="Save" 
+                                    action="#{issueReturnController.saveIssueBillReturn()}" 
+                                    ajax="false" >
+                                </p:commandButton>
+                                <p:commandButton 
+                                    icon="fas fa-save"
+                                    class="ui-button-success mx-1"
+                                    value="Finalize" 
+                                    action="#{issueReturnController.finalizeIssueBillReturn()}" 
+                                    ajax="false" >
+                                </p:commandButton>
+                                <p:commandButton 
+                                    icon="fa fa-money-bill-wave"
+                                    class="ui-button-warning"
+                                    value="Return" 
+                                    action="#{issueReturnController.settle}" 
+                                    ajax="false"  >
+                                </p:commandButton>
+                            </div>
+                        </div>
 
                     </f:facet>
                 </p:panel>
@@ -53,6 +69,14 @@
                         <h:outputText value=" #{ph.item.name}"  />                     
 
                     </p:column>  
+                    <p:column headerText="BillItem id" style="width:50px!important;">  
+                        <h:outputText value=" #{ph.id}"  />                     
+
+                    </p:column> 
+                    <p:column headerText="Item id" style="width:50px!important;">  
+                        <h:outputText value=" #{ph.item.id}"  />                     
+
+                    </p:column> 
 
                     <p:column headerText="Balance Qty in Unit" style="width:25px!important;"> 
                         <h:outputText value="#{ph.pharmaceuticalBillItem.qty}" />                   
@@ -72,9 +96,9 @@
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"  />
                         </h:outputText>
                     </p:column>
-
-                    <p:column headerText="Returning Qty in Unit" style="width:25px!important;">                     
-                        <p:inputText autocomplete="off" value="#{ph.qty}" >
+                   
+                    <p:column headerText="Returning Qty in Unit" style="width:25px!important;" >                     
+                        <p:inputText autocomplete="off" value="#{ph.qty}" disabled="#{issueReturnController.bill.checkedBy ne null}" >
                             <f:ajax 
                                 event="blur" 
                                 render="@this :#{p:resolveFirstComponentWithId('total',view).clientId}" 

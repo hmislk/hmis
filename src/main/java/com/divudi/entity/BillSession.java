@@ -49,7 +49,7 @@ public class BillSession implements Serializable {
     private WebUser completedBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date completedAt;
-    
+
     @ManyToOne
     private WebUser markedToCancelBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
@@ -58,10 +58,7 @@ public class BillSession implements Serializable {
     private WebUser markedToRefundBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date markedToRefundAt;
-    
-    
-    
-    
+
     //Retairing properties
     boolean retired;
     @ManyToOne
@@ -91,6 +88,8 @@ public class BillSession implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIME)
     Date sessionTime;
     int serialNo;
+    @Transient
+    private String serialNoStr;
     //Present
     //  Boolean present = true;
     //Absent
@@ -124,6 +123,13 @@ public class BillSession implements Serializable {
     ChannelFee hospitalFee;
     @Transient
     ChannelFee agentFee;
+    @OneToOne(fetch = FetchType.LAZY)
+    BillSession rescheduledFromBillSession;
+    @OneToOne(fetch = FetchType.LAZY)
+    BillSession rescheduledToBillSession;
+
+    private boolean reservedBooking = false;
+    private boolean recheduledSession = false;
 
     public void copy(BillSession billSession) {
         packege = billSession.getPackege();
@@ -142,7 +148,6 @@ public class BillSession implements Serializable {
         patientEncounter = billSession.getPatientEncounter();
     }
 
-
     public int getSerialNo() {
         return serialNo;
     }
@@ -150,6 +155,8 @@ public class BillSession implements Serializable {
     public void setSerialNo(int serialNo) {
         this.serialNo = serialNo;
     }
+    
+    
 
     public Date getSessionDate() {
         return sessionDate;
@@ -173,7 +180,6 @@ public class BillSession implements Serializable {
         return serviceSession;
     }
 
-    
     @Deprecated
     public void setServiceSession(ServiceSession serviceSession) {
         //Use SessionInstance instead
@@ -284,7 +290,7 @@ public class BillSession implements Serializable {
     public void setRetireComments(String retireComments) {
         this.retireComments = retireComments;
     }
-    
+
     public Bill getBill() {
         return bill;
     }
@@ -536,8 +542,45 @@ public class BillSession implements Serializable {
     public void setMarkedToRefundAt(Date markedToRefundAt) {
         this.markedToRefundAt = markedToRefundAt;
     }
-    
-    
-    
 
+    public boolean isReservedBooking() {
+        return reservedBooking;
+    }
+
+    public void setReservedBooking(boolean reservedBooking) {
+        this.reservedBooking = reservedBooking;
+    }
+
+    public boolean isRecheduledSession() {
+        return recheduledSession;
+    }
+
+    public void setRecheduledSession(boolean recheduledSession) {
+        this.recheduledSession = recheduledSession;
+    }
+
+    public BillSession getRescheduledFromBillSession() {
+        return rescheduledFromBillSession;
+    }
+
+    public BillSession setRescheduledFromBillSession(BillSession rescheduledFromBillSession) {
+        this.rescheduledFromBillSession = rescheduledFromBillSession;
+        return this;
+    }
+
+    public BillSession getRescheduledToBillSession() {
+        return rescheduledToBillSession;
+    }
+
+    public BillSession setRescheduledToBillSession(BillSession rescheduledToBillSession) {
+        this.rescheduledToBillSession = rescheduledToBillSession;
+        return this;
+    }
+
+    public String getSerialNoStr() {
+        serialNoStr = serialNo + "";
+        return serialNoStr;
+    }
+
+   
 }

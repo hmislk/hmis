@@ -35,6 +35,7 @@ import javax.persistence.Transient;
 /**
  *
  * @author Dr M H B Ariyaratne <buddhika.ari at gmail.com>
+ * 0715812399
  */
 @Entity
 public class SessionInstance implements Serializable {
@@ -213,13 +214,27 @@ public class SessionInstance implements Serializable {
 
     private Long bookedPatientCount;
     private Long paidPatientCount;
+    private Long cancelPatientCount;
+    private Long refundedPatientCount;
+    private Long onCallPatientCount;
     private Long completedPatientCount;
     private Long remainingPatientCount;
+    private Long paidToDoctorPatientCount;
+    private Long reservedBookingCount;
+    private Long cancelOnCallPatientCount;
+    private Long cancelPaidPatientCount;
+    private Long nextAvailableAppointmentNumber;
     
     private boolean arrived;
     
+    
     @ManyToOne
     private ArrivalRecord arrivalRecord;
+    
+    private int reportPatients = 0;
+    
+    @Lob
+    private String specialNoticeSessionInstance;
 
     
     
@@ -1262,6 +1277,86 @@ public class SessionInstance implements Serializable {
 
     public void setCancelledAt(Date cancelledAt) {
         this.cancelledAt = cancelledAt;
+    }
+
+    public int getReportPatients() {
+        return reportPatients;
+    }
+
+    public void setReportPatients(int reportPatients) {
+        this.reportPatients = reportPatients;
+    }
+
+    public Long getCancelPatientCount() {
+        return cancelPatientCount;
+    }
+
+    public void setCancelPatientCount(Long cancelPatientCount) {
+        this.cancelPatientCount = cancelPatientCount;
+    }
+
+    public Long getRefundedPatientCount() {
+        return refundedPatientCount;
+    }
+
+    public void setRefundedPatientCount(Long refundedPatientCount) {
+        this.refundedPatientCount = refundedPatientCount;
+    }
+
+    public Long getOnCallPatientCount() {
+        return onCallPatientCount;
+    }
+
+    public void setOnCallPatientCount(Long onCallPatientCount) {
+        this.onCallPatientCount = onCallPatientCount;
+    }
+
+    public Long getReservedBookingCount() {
+        return reservedBookingCount;
+    }
+
+    public void setReservedBookingCount(Long reservedBookingCount) {
+        this.reservedBookingCount = reservedBookingCount;
+    }
+
+    public Long getPaidToDoctorPatientCount() {
+        return paidToDoctorPatientCount;
+    }
+
+    public void setPaidToDoctorPatientCount(Long paidToDoctorPatientCount) {
+        this.paidToDoctorPatientCount = paidToDoctorPatientCount;
+    }
+
+    public Long getCancelOnCallPatientCount() {
+        return cancelOnCallPatientCount;
+    }
+
+    public void setCancelOnCallPatientCount(Long cancelOnCallPatientCount) {
+        this.cancelOnCallPatientCount = cancelOnCallPatientCount;
+    }
+
+    public Long getCancelPaidPatientCount() {
+        return cancelPaidPatientCount;
+    }
+
+    public void setCancelPaidPatientCount(Long cancelPaidPatientCount) {
+        this.cancelPaidPatientCount = cancelPaidPatientCount;
+    }
+
+    public Long getNextAvailableAppointmentNumber() {
+        return nextAvailableAppointmentNumber;
+    }
+
+    public void setNextAvailableAppointmentNumber(Long nextAvailableAppointmentNumber) {
+        this.nextAvailableAppointmentNumber = nextAvailableAppointmentNumber;
+    }
+
+    public String getSpecialNoticeSessionInstance() {
+        return specialNoticeSessionInstance;
+    }
+
+    public void setSpecialNoticeSessionInstance(String specialNoticeSessionInstance) {
+        this.specialNoticeSessionInstance = specialNoticeSessionInstance;
     }
     
     

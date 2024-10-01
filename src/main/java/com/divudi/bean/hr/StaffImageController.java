@@ -190,7 +190,6 @@ public class StaffImageController implements Serializable {
             }
         }
     }
-    
 
     public StreamedContent getSignatureFromPatientReport() {
         FacesContext context = FacesContext.getCurrentInstance();
@@ -208,19 +207,16 @@ public class StaffImageController implements Serializable {
             if (patientReportController.getCurrentPatientReport().getApproveUser().getStaff() == null) {
             }
             Staff temImg = patientReportController.getCurrentPatientReport().getApproveUser().getStaff();
-
             if (temImg != null) {
-
+                temImg = staffController.findStaffById(temImg.getId());
                 byte[] imgArr = null;
                 try {
                     imgArr = temImg.getBaImage();
                 } catch (Exception e) {
                     return new DefaultStreamedContent();
                 }
-
                 InputStream targetStream = new ByteArrayInputStream(temImg.getBaImage());
                 StreamedContent str = DefaultStreamedContent.builder().contentType(temImg.getFileType()).name(temImg.getFileName()).stream(() -> targetStream).build();
-
                 return str;
             } else {
                 return new DefaultStreamedContent();

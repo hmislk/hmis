@@ -36,7 +36,7 @@ import javax.persistence.TemporalType;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
@@ -64,6 +64,8 @@ public class PackageItemController implements Serializable {
     private List<Item> filteredItems;
     List<Item> serviceItems;
 
+    private boolean canRemovePackageItemfromPackage;
+
     public List<Item> getServiceItems() {
         if (serviceItems == null) {
             String temSql;
@@ -77,6 +79,10 @@ public class PackageItemController implements Serializable {
 
         return serviceItems;
     }
+    
+    public String navigateToPackageItemList(){
+         return "/admin/pricing/package_item?faces-redirect=true";
+     }
 
     public void updateFee() {
         if (getCurrentPackege() == null) {
@@ -161,9 +167,38 @@ public class PackageItemController implements Serializable {
         pi.setItem(getCurrentItem());
         pi.setCreatedAt(new Date());
         pi.setCreater(sessionController.loggedUser);
-        getFacade().create(pi);
+        if(pi.getId() == null){
+            getFacade().create(pi);
+        }
+        
+        pi.getItem().setCanRemoveItemfromPackage(canRemovePackageItemfromPackage);
+        
+        if(pi.getId() != null){
+            itemFacade.edit(pi.getItem());
+        }
+        
         JsfUtil.addSuccessMessage("Added");
         recreateModel();
+    }
+    
+    public void EditPackageItem() {
+        if (getCurrentPackege() == null) {
+            JsfUtil.addErrorMessage("Please select a package");
+            return;
+        }
+        if (getCurrent() == null) {
+            JsfUtil.addErrorMessage("Please select an item");
+            return;
+        }else{
+            getCurrent().getItem().setCanRemoveItemfromPackage(canRemovePackageItemfromPackage);
+            itemFacade.edit(getCurrent().getItem());
+        }
+
+        recreateModel();
+        getItems();
+        
+        JsfUtil.addSuccessMessage("Updated");
+        
     }
 
     public void removeFromPackage() {
@@ -251,6 +286,11 @@ public class PackageItemController implements Serializable {
 
     private PackageItemFacade getFacade() {
         return ejbFacade;
+    }
+    
+    public void clearValus(){
+        canRemovePackageItemfromPackage = false;
+        
     }
 
     /**
@@ -444,6 +484,14 @@ public class PackageItemController implements Serializable {
 
     public void setFilteredItems(List<Item> filteredItems) {
         this.filteredItems = filteredItems;
+    }
+
+    public boolean isCanRemovePackageItemfromPackage() {
+        return canRemovePackageItemfromPackage;
+    }
+
+    public void setCanRemovePackageItemfromPackage(boolean canRemovePackageItemfromPackage) {
+        this.canRemovePackageItemfromPackage = canRemovePackageItemfromPackage;
     }
 
     /**

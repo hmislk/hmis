@@ -15,10 +15,21 @@
                 <h:form>
                     <p:panelGrid columns="1" >
                         <p:panel header="Select Investigation and Field" >
-                             <p:commandButton 
-                                value="Back" 
-                                class="my-1"
-                                action="#{investigationController.navigateToManageInvestigation}" ajax="false" ></p:commandButton>
+                            <f:facet name="header">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        
+                                    </div>
+                                    <div>
+                                        <p:commandButton 
+                                            value="Back" 
+                                            class="my-1"
+                                            icon="fas fa-arrow-left"
+                                            action="#{investigationController.navigateToManageInvestigation}" ajax="false" ></p:commandButton> 
+                                    </div>
+                                </div>
+                                
+                            </f:facet>
                             <p:panelGrid columns="2" >
 
 

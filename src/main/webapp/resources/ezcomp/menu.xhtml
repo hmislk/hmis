@@ -17,21 +17,6 @@
                 }
             </style>
 
-            <p:tooltip for="home" value="Home" ></p:tooltip>
-            <p:tooltip for="smOpd" value="OPD" ></p:tooltip>
-            <p:tooltip for="smMembership" value="Membership" ></p:tooltip>
-            <p:tooltip for="smInpatient" value="Inward" ></p:tooltip>
-            <p:tooltip for="smLab" value="Lab" ></p:tooltip>
-            <p:tooltip for="smPharmacy" value="Pharmacy" ></p:tooltip>
-            <p:tooltip for="smTheatre" value="Theatre" ></p:tooltip>
-            <p:tooltip for="smStore" value="Store" ></p:tooltip>
-            <p:tooltip for="smChannelling" value="Channelling" ></p:tooltip>
-            <p:tooltip for="smPayment" value="Payment" ></p:tooltip>
-            <p:tooltip for="smHr" value="HR" ></p:tooltip>
-            <p:tooltip for="smEmr" value="EMR" ></p:tooltip>
-            <p:tooltip for="smReports" value="Reports" ></p:tooltip>
-            <p:tooltip for="smSettings" value="Settings" ></p:tooltip>
-
 
 
             <p:menubar autoDisplay="#{sessionController.userPreference.autodisplayMenu}"  >
@@ -54,7 +39,7 @@
                         rendered="true" />
                     <p:menuitem 
                         ajax="false" 
-                        action="#{opdTokenController.navigateToTokenIndex()}" 
+                        action="#{opdTokenController.navigateToCreateNewOpdToken()}" 
                         value="OPD Token" 
                         icon="fa fa-file-medical" 
                         rendered="true" />
@@ -76,6 +61,7 @@
                             value="OPD Billing"
                             icon="fa fa-fw fa-notes-medical" 
                             rendered="#{webUserController.hasPrivilege('OpdBilling')}" ></p:menuitem>
+
 
                         <p:menuitem 
                             ajax="false" 
@@ -253,7 +239,7 @@
                         />
                     <p:menuitem 
                         ajax="false" 
-                        action="#{cashierReportController.navigateToOpdSummeries()}" 
+                        action="#{cashierReportController.navigateToOpdAnalytics()}" 
                         value="OPD Analytics" 
                         icon="fa fa-list-alt">
                     </p:menuitem>
@@ -275,10 +261,12 @@
 
                 </p:submenu>
                 <p:submenu id="smMembership"  icon="fa fa-fw fa-id-card"  rendered="#{webUserController.hasPrivilege('MemberShip')}">
+                    <p:menuitem ajax="false" action="#{patientController.navigateToAddNewIndividualMembership()}" value="Add Individual Membership" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>
+                    <p:menuitem ajax="false" action="#{patientController.navigateToSearchIndividualMembership()}" value="Search Individual Membership" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>
+
                     <p:menuitem ajax="false" action="#{patientController.navigateToAddNewFamilyMembership()}" value="Add Family Membership" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="#{patientController.navigateToSearchFamilyMembership()}" value="Search Family Membership" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="/membership/reports?faces-redirect=true" value="Family Membership Reports" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>
-                    <p:menuitem ajax="false" action="/membership/administration?faces-redirect=true" value="Administration" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>
                 </p:submenu>
 
                 <p:submenu id="smInpatient"  icon="fa fa-fw fa-bed"  rendered="#{webUserController.hasPrivilege('Inward')}">
@@ -399,22 +387,75 @@
 
                 </p:submenu>
 
+                <p:submenu id="smCC" icon="fas fa-city" rendered="#{webUserController.hasPrivilege('OpdCollectingCentreBilling')}">
+                    <p:menuitem 
+                        ajax="false" 
+                        action="#{collectingCentreBillController.navigateToCollectingCenterBillingromMenu()}"    
+                        value="Collecting Centre Billing"
+                        icon="fa fa-fw fa-hospital-alt" 
+                        rendered="#{webUserController.hasPrivilege('OpdCollectingCentreBilling')}" >
+                    </p:menuitem>
+
+                    <p:menuitem 
+                        ajax="false" 
+                        action="/collecting_centre/collecting_centre_search_bill_own?faces-redirect=true"
+                        actionListener="#{searchController.makeListNull}"
+                        value="Collecting Centre Bill Search" 
+                        icon="fa fa-search"
+                        rendered="#{webUserController.hasPrivilege('OpdCollectingCentreBilling')}" >
+                    </p:menuitem>
+
+                    <p:submenu label="Payments" icon="fas fa-money-check-dollar"  rendered="#{webUserController.hasPrivilege('Payment')}">
+                        <p:menuitem icon="fas fa-money-bill-wave"  ajax="false"  action="/collecting_centre/collecting_centre_bill?faces-redirect=true" value="Collecting Centre Payment" actionListener="#{agentAndCcPaymentController.prepareNewBill()}" ></p:menuitem>
+                        <p:menuitem  ajax="false" icon="fa fa-search" action="/collecting_centre/collecting_centre_bill_search_own?faces-redirect=true"
+                                     actionListener="#{searchController.makeListNull}"  value="Collecting Centre Bill Search"  ></p:menuitem>
+                    </p:submenu>
+
+                    <p:menuitem  ajax="false" icon="fas fa-book" action="/lab/agent_referece_book?faces-redirect=true" value="Add Lab Book to Collecting Centre"  ></p:menuitem>
+
+                    <p:submenu label="Credit/Debit Note" rendered="#{webUserController.hasPrivilege('ChannelCrdeitNote') or webUserController.hasPrivilege('ChannelDebitNote')}" >
+                        <p:menuitem  ajax="false"  value="Credit Note"  action="/collecting_centre/collecting_center_credit_note_bill?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannelCrdeitNote')}" actionListener="#{agentAndCcPaymentController.prepareNewBill()}" ></p:menuitem>
+                        <p:menuitem  ajax="false"  value="Credit Note Search"  action="/collecting_centre/collecting_center_credit_note_bill_search_own?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannelCrdeitNoteSearch')}" actionListener="#{searchController.makeListNull}" ></p:menuitem>
+                        <p:menuitem  ajax="false"  value="Debit Note"  action="/collecting_centre/collecting_center_debit_note_bill?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannelDebitNote')}" actionListener="#{agentAndCcPaymentController.prepareNewBill()}" ></p:menuitem>
+                        <p:menuitem  ajax="false"  value="Debit Note Search"  action="/collecting_centre/collecting_center_note_bill_search_own?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannelDebitNoteSearch')}" actionListener="#{searchController.makeListNull}" ></p:menuitem>
+                    </p:submenu>
+
+                    <p:submenu label="Collecting Centre Reports">
+
+                        <p:menuitem  ajax="false"  action="/collecting_centre/report_collecting_center_referece_book?faces-redirect=true" value="Collecting Centre Book Report"  ></p:menuitem>
+                        <p:menuitem  ajax="false"  action="/collecting_centre/cc_update_credit_limit?faces-redirect=true" value="Collecting Centre Credit Limit Update" actionListener="#{institutionController.makeNull()}" rendered="#{webUserController.hasPrivilege('ChangeCreditLimitInCC')}"></p:menuitem>
+                        <p:menuitem  ajax="false"  action="/reportLab/collecting_centre_report_agent_history?faces-redirect=true" value="Collecting Centre History"  ></p:menuitem>
+                        <p:menuitem  ajax="false"  action="/reportLab/collecting_center_report_history_1?faces-redirect=true" value="Collecting Centre Statement"  ></p:menuitem>
+                        <p:menuitem  ajax="false"  action="/reportLab/report_collecting_center_payment_bill?faces-redirect=true" value="Collecting Centre Diposits"  ></p:menuitem>
+                        <p:menuitem  ajax="false"  action="/reportLab/report_collecting_center_balance?faces-redirect=true" value="Collecting Center Current Balance"  ></p:menuitem>
+
+                    </p:submenu>
+
+                </p:submenu>
+
                 <p:submenu id="smLab" icon="fa fa-fw fa-flask"  rendered="#{webUserController.hasPrivilege('Lab')}">
-                    <p:submenu label="Billing" rendered="#{webUserController.hasPrivilege('LabBilling')}">
+<!--                    <p:submenu label="Billing" rendered="#{webUserController.hasPrivilege('LabBilling')}">
                         <p:menuitem ajax="false" action="/opd/opd_bill?faces-redirect=true" actionListener="#{billController.prepareNewBill}" value="OPD Billing" rendered="#{webUserController.hasPrivilege('LabBilling')}" ></p:menuitem>
                         <p:menuitem ajax="false" action="#{searchController.navigateToSearchOpdBillsOfLoggedDepartment()}" actionListener="#{searchController.makeListNull}"  value="Search OPD Bills" rendered="#{webUserController.hasPrivilege('LabBillSearch')}" ></p:menuitem>
                         <p:menuitem ajax="false" action="/opd_search_billitem_own?faces-redirect=true" value="Search OPD Bill Items" actionListener="#{searchController.makeListNull}" rendered="#{webUserController.hasPrivilege('LabBillItemSearch')}" ></p:menuitem>
                         <p:separator/>
                         <p:menuitem ajax="false" action="/inward/inward_bill_service?faces-redirect=true" value="In-patient Billing" actionListener="#{billBhtController.resetBillData}" rendered="#{webUserController.hasPrivilege('LabInwardBilling')}" ></p:menuitem>                                            
                         <p:menuitem ajax="false" action="/lab/inward_search_service?faces-redirect=true" value="Search In-patient Bills" actionListener="#{searchController.makeListNull}"  rendered="#{webUserController.hasPrivilege('LabInwardSearchServiceBill')}" ></p:menuitem>  
-                    </p:submenu>
+                    </p:submenu>-->
 
 
                     <p:menuitem 
                         ajax="false"
-                        action="#{patientInvestigationController.navigateToPatientSampelIndex()}"
-                        value="Sampling" 
+                        action="#{patientInvestigationController.navigateToGenerateBarcodes()}"
+                        value="Sample Management" 
                         rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}" ></p:menuitem>
+                    <p:menuitem
+                        ajax="false"  
+                        rendered="false"
+                        action="/lab/sample_at_lab_index?faces-redirect=true" 
+                        value="Sample Management - Lab"></p:menuitem>
+
+
                     <p:menuitem ajax="false" action="/lab/receive?faces-redirect=true" actionListener="#{patientInvestigationController.toPrintWorksheets()}" value="Worksheets" rendered="#{webUserController.hasPrivilege('LabSampleReceiving')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="#{searchController.navigateToLabReportSearch}"  value="Reports/Search" rendered="#{webUserController.hasPrivilege('LabReportSearch')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="/lab/search_for_reporting_ondemand_institution?faces-redirect=true" value="Reports/Search By Logged Institution" rendered="#{false and webUserController.hasPrivilege('LabReportSearchByLoggedInstitution')}" ></p:menuitem>
@@ -422,6 +463,20 @@
                     <p:menuitem ajax="false" action="/lab/search_reports?faces-redirect=true" value="Reporting" rendered="#{webUserController.hasPrivilege('LabReporting')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="/reportLab/lab_summeries_index?faces-redirect=true" value="Lab Analytics"  rendered="#{webUserController.hasPrivilege('LabSummeries')}" ></p:menuitem>
                 </p:submenu>
+                
+                <p:menuitem 
+                    id="courier"
+                    ajax="false"
+                    action="/collecting_centre/courier/index.xhtml?faces-redirect=true" 
+                    icon=""
+                    rendered="#{webUserController.hasPrivilege('Courier')}"
+                    title="Courier">
+                    <img  
+                        width="28" 
+                        height="28" 
+                        src="https://img.icons8.com/external-kmg-design-detailed-outline-kmg-design/64/external-courier-shipping-delivery-kmg-design-detailed-outline-kmg-design.png" alt="external-courier-shipping-delivery-kmg-design-detailed-outline-kmg-design"/>
+                </p:menuitem>
+                
                 <p:submenu  id="smPharmacy" icon="fa fa-fw fa-prescription-bottle-alt"  rendered="#{webUserController.hasPrivilege('Pharmacy')}">
                     <p:menuitem 
                         ajax="false" 
@@ -588,7 +643,14 @@
                             value="Goods Receipt"  
                             icon="fas fa-dolly-flatbed"
                             actionListener="#{searchController.makeListNull()}" 
-                            rendered="#{webUserController.hasPrivilege('GoodsRecipt')}" ></p:menuitem>                                        
+                            rendered="#{webUserController.hasPrivilege('GoodsRecipt') and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Good Recipt With Approval')}"  ></p:menuitem> 
+                        <p:menuitem  
+                            ajax="false" 
+                            action="/pharmacy/pharmacy_purchase_order_list_for_recieve_with_approval?faces-redirect=true"  
+                            value="Goods Receipt With Approval"  
+                            icon="fas fa-dolly-flatbed"
+                            actionListener="#{searchController.makeListNull()}" 
+                            rendered="#{webUserController.hasPrivilege('GoodsRecipt') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Good Recipt With Approval')}" ></p:menuitem>
                         <p:menuitem  
                             ajax="false" 
                             action="/pharmacy/pharmacy_grn_list_for_return?faces-redirect=true"  
@@ -632,7 +694,20 @@
                                     action="/pharmacy/pharmacy_transfer_request?faces-redirect=true"  
                                     value="Request" 
                                     actionListener="#{searchController.makeListNull()}" 
-                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRequest')}" 
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRequest') and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Transer Request With Approval')}" 
+                                    icon="fas fa-hand-holding-medical"></p:menuitem>
+
+                        <p:menuitem ajax="false" 
+                                    action="#{searchController.navigateToCreateTransferRequest}"  
+                                    value="Create Transer Request" 
+                                    actionListener="#{searchController.makeListNull()}" 
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRequest') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Transer Request With Approval')}" 
+                                    icon="fas fa-hand-holding-medical"></p:menuitem>
+                        <p:menuitem ajax="false" 
+                                    action="/pharmacy/pharmacy_transfer_request_list_search_for_approval?faces-redirect=true"  
+                                    value="Search Transer Request" 
+                                    actionListener="#{searchController.makeListNull()}" 
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRequest') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Transer Request With Approval')}" 
                                     icon="fas fa-hand-holding-medical"></p:menuitem>
 
                         <p:menuitem ajax="false" 
@@ -653,10 +728,17 @@
                                     action="/pharmacy/pharmacy_transfer_issued_list?faces-redirect=true"  
                                     value="Receive" 
                                     actionListener="#{searchController.makeListNull()}" 
-                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRecieve')}" 
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRecieve') and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receive With Approval')}"
                                     icon="fas fa-truck-loading"></p:menuitem>
 
                         <p:menuitem ajax="false" 
+                                    action="/pharmacy/pharmacy_transfer_issued_list_with_approval?faces-redirect=true"
+                                    value="Receive With Approval"
+                                    actionListener="#{searchController.makeListNull()}"
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRecieve') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receive With Approval')}"
+                                    icon="fas fa-truck-loading"></p:menuitem>
+
+                        <p:menuitem ajax="false"
                                     action="/pharmacy/pharmacy_report_transfer?faces-redirect=true"  
                                     value="Reports" 
                                     actionListener="#{searchController.makeListNull()}" 
@@ -817,13 +899,14 @@
                                      value="Unit Issue Margin" />
                     </p:submenu>
                     <p:submenu label="Purchase" rendered="#{webUserController.hasPrivilege('StorePurchase')}">
-                        <p:menuitem  ajax="false" action="/store/store_purhcase_order_request?faces-redirect=true"  value="Purchase Orders" rendered="#{webUserController.hasPrivilege('StorePurchaseOrder')}" ></p:menuitem>
+                        <p:menuitem  ajax="false" action="/store/store_purhcase_order_request?faces-redirect=true"  value="Purchase Orders" rendered="#{webUserController.hasPrivilege('StorePurchaseOrder')}" actionListener="#{storePurchaseOrderRequestController.recreate}"></p:menuitem>
                         <p:menuitem  ajax="false" action="/store/store_purhcase_order_list_to_approve?faces-redirect=true"  value="PO Approve" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('StorePurchaseOrderApproveSearch') or webUserController.hasPrivilege('StorePurchaseOrderApprove')}" ></p:menuitem>
                         <p:menuitem  ajax="false" action="/store/store_purchase_order_list_for_recieve?faces-redirect=true"  value="GRN Receive"  actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('StorePurchaseGRNRecive')}" ></p:menuitem>                                        
                         <p:menuitem  ajax="false" action="/store/store_grn_list_for_return?faces-redirect=true"  value="GRN Return" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('StorePurchaseGRNReturn')}" ></p:menuitem>  
                         <p:menuitem  ajax="false" action="/store/store_purchase?faces-redirect=true"  value="Direct Purchase" 
                                      rendered="#{webUserController.hasPrivilege('StorePurchasePurchase')}" 
                                      actionListener="#{storePurchaseController.makeNull()}" ></p:menuitem>
+                        <p:menuitem ajax="false" action="/store/store_direct_purchase_return?faces-redirect=true"  value="Direct Purchase Return" actionListener="#{searchController.makeListNull()}" rendered="#{webUserController.hasPrivilege('StorePurchaseGRNReturn')}"></p:menuitem>
                     </p:submenu>
                     <p:submenu label="Transfer" rendered="#{webUserController.hasPrivilege('StoreTransfer')}">
                         <p:menuitem  ajax="false" action="/store/store_transfer_request?faces-redirect=true"  value="Request" actionListener="#{storeTransferRequestController.recreate}" rendered="#{webUserController.hasPrivilege('StoreTransferRequest')}" ></p:menuitem>
@@ -869,6 +952,18 @@
                     </p:menuitem>
                     <p:menuitem 
                         ajax="false"  
+                        value="Channel Booking - By Month"  
+                        action="#{bookingControllerViewScopeMonth.navigateToChannelBookingFromMenuByMonth()}" 
+                        rendered="#{webUserController.hasPrivilege('ChannellingChannelBooking')}" >
+                    </p:menuitem>
+                    <p:menuitem 
+                        ajax="false"  
+                        value="Schedule Calendar "  
+                        action="#{bookingControllerViewScope.navigateToScheduleCalendarFromMenu()}" 
+                        rendered="#{webUserController.hasPrivilege('Channelling')}" >
+                    </p:menuitem>
+                    <p:menuitem 
+                        ajax="false"  
                         value="Channel Queue"  
                         action="#{bookingController.navigateToChannelQueueFromMenu}" 
                         rendered="#{webUserController.hasPrivilege('ChannellingChannelBooking')}" >
@@ -880,7 +975,8 @@
                         rendered="#{webUserController.hasPrivilege('ChannellingChannelBooking')}" >
                     </p:menuitem>
                     <p:menuitem  ajax="false"  value="Past Bookings"  action="/channel/past_channel_booking?faces-redirect=true" actionListener="#{pastBookingController.navigateToPastChannelBookingFromMenu()}" rendered="#{webUserController.hasPrivilege('ChannellingPastBooking')}" ></p:menuitem>
-                    <p:menuitem  ajax="false"  value="Booked List"  action="/channel/channel_booked_list?faces-redirect=true" actionListener="#{bookingPastController.makeNull}" rendered="false" ></p:menuitem>
+                    
+                    <p:menuitem  ajax="false"  value="Channel BIll Search"  action="/channel/channel_bill_search?faces-redirect=true"></p:menuitem>
                     <p:submenu label="Doctor Leave" rendered="#{webUserController.hasPrivilege('ChannellingDoctorLeave')}" >
                         <p:menuitem  ajax="false"  value="By Date"  action="/channel/channel_doctor_leave_by_date?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannellingDoctorLeaveByDate')}" actionListener="#{bookingController.resetToStartFromSpeciality}" ></p:menuitem>
                         <p:menuitem  ajax="false"  value="By Service Session"  action="/channel/channel_doctor_leave_by_service_session?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannellingDoctorLeaveByServiceSession')}" actionListener="#{bookingController.resetToStartFromSpeciality}" ></p:menuitem>
@@ -891,7 +987,7 @@
                         action="/channel/channel_scheduling/index?faces-redirect=true"  ></p:menuitem>
                     <p:menuitem  ajax="false"  value="Channel Fees"  action="/channel/channel_fee?faces-redirect=true" rendered="false" ></p:menuitem>
                     <p:menuitem  ajax="false"  value="Doctor Session View"  action="/channel/channel_doctor_session_report?faces-redirect=true" actionListener="#{channelScheduleController.prepareAdd}" rendered="false"></p:menuitem>
-                    
+
 
                     <p:submenu label="Payment" rendered="#{webUserController.hasPrivilege('ChannellingPayment')}" >
                         <p:menuitem  ajax="false"  value="Pay Doctor"  action="/channel/channel_payment_staff_bill?faces-redirect=true" actionListener="#{channelStaffPaymentBillController.makenull()}" rendered="#{webUserController.hasPrivilege('ChannellingPaymentPayDoctor')}" ></p:menuitem>
@@ -907,15 +1003,16 @@
                         <p:menuitem  ajax="false"  value="Expenses Bill Search"  action="/channel/channel_expenses_bill_search_own?faces-redirect=true" actionListener="#{incomeExpensessBillController.prepareNewBill()}" rendered="#{webUserController.hasPrivilege('ChannelCashierTransactionExpencessSearch')}"></p:menuitem>
                     </p:submenu>
                     <p:submenu label="Credit/Debit Note" rendered="#{webUserController.hasPrivilege('ChannelCrdeitNote') or webUserController.hasPrivilege('ChannelDebitNote')}" >
-                        <p:menuitem  ajax="false"  value="Credit Note"  action="/channel/channel_credit_note_bill?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannelCrdeitNote')}" actionListener="#{agentPaymentRecieveBillController.prepareNewBill()}" ></p:menuitem>
+                        <p:menuitem  ajax="false"  value="Credit Note"  action="/channel/channel_credit_note_bill?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannelCrdeitNote')}" actionListener="#{agentAndCcPaymentController.prepareNewBill()}" ></p:menuitem>
                         <p:menuitem  ajax="false"  value="Credit Note Search"  action="/channel/channel_credit_note_bill_search_own?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannelCrdeitNoteSearch')}" actionListener="#{searchController.makeListNull}" ></p:menuitem>
-                        <p:menuitem  ajax="false"  value="Debit Note"  action="/channel/channel_debit_note_bill?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannelDebitNote')}" actionListener="#{agentPaymentRecieveBillController.prepareNewBill()}" ></p:menuitem>
+                        <p:menuitem  ajax="false"  value="Debit Note"  action="/channel/channel_debit_note_bill?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannelDebitNote')}" actionListener="#{agentAndCcPaymentController.prepareNewBill()}" ></p:menuitem>
                         <p:menuitem  ajax="false"  value="Debit Note Search"  action="/channel/channel_debit_note_bill_search_own?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannelDebitNoteSearch')}" actionListener="#{searchController.makeListNull}" ></p:menuitem>
                     </p:submenu>
                     <p:menuitem ajax="false" value="Reports" action="/channel/channel_reports?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannelReports')}" />
                     <p:menuitem ajax="false" action="/analytics/opd/index?faces-redirect=true" value="Channel Analytics" rendered="#{webUserController.hasPrivilege('ChannelSummery')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="/channel/management_index?faces-redirect=true" value="Management" rendered="#{webUserController.hasPrivilege('ChannelManagement')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="/channel/patient_portal?faces-redirect=true" value="Patient Portal" ></p:menuitem>
+                    <p:menuitem ajax="false" action="/channel/doctor_card?faces-redirect=true" value="Doctor Card" ></p:menuitem>
                     <p:menuitem 
                         ajax="false"
                         styleClass="#{financialTransactionController.nonClosedShiftStartFundBill eq null ? 'bg-warning text-white font-weight-bold' : ''}"
@@ -926,50 +1023,111 @@
                     </p:menuitem>
                 </p:submenu>
 
+                <p:submenu id="smOpdOptician"  icon="fa fa-eye" rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Optician Module')}"  >
+                    <p:menuitem value="Patient Management" action="#{opticianController.navigateToOpticianPatientManagement()}" ajax="false" icon="fa fa-users" />
+                    <p:menuitem value="Appointment Management" action="#{opticianController.navigateToOpticianAppointmentManagement()}" ajax="false" icon="fa fa-calendar-alt" />
+                    <p:menuitem value="Retail Sale" action="#{opticianSaleController.navigateToPharmacyRetailSale()}" ajax="false" icon="fa fa-shopping-cart" />
+                    <p:menuitem value="Repair Management" action="#{opticianRepairBillController.navigateToNewOpdBill()}" ajax="false" icon="fa fa-tools" />
+                    <p:menuitem value="Stock Management" action="#{opticianController.navigateToOpticianStockManagement()}" ajax="false" icon="fa fa-warehouse" />
+                    <p:menuitem value="Product Catalog" action="#{opticianController.navigateToOpticianProductCatalog()}" ajax="false" icon="fa fa-book-open" />
+                </p:submenu>
+
+
                 <p:submenu id="smPayment" icon="fa fa-fw fa-money-bill-wave"  rendered="#{webUserController.hasPrivilege('Payment')}">  
                     <p:menuitem  
                         ajax="false"  
                         action="#{financialTransactionController.navigateToFinancialTransactionIndex()}"
                         value="Financial Transaction Manager" 
+                        icon="pi pi-wallet"
                         rendered="#{webUserController.hasPrivilege('PaymentBilling')}" >
                     </p:menuitem>
-                    <p:submenu label="Pay"
-                               rendered="#{webUserController.hasPrivilege('Payment')}">
-                        <p:submenu label="OPD">
-                            <p:menuitem  ajax="false"  action="/payment_staff_bill?faces-redirect=true" value="Pay Doctor/Staff" rendered="#{webUserController.hasPrivilege('PaymentBilling')}" ></p:menuitem>
-                            <p:menuitem  ajax="false"  action="/opd_search_professional_payment_due?faces-redirect=true" actionListener="#{searchController.makeListNull}"  value="Payments Due Search" rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}" ></p:menuitem>
-                            <p:menuitem  ajax="false"  action="/opd_search_professional_payment_done?faces-redirect=true" actionListener="#{searchController.makeListNull}"
-                                         value="Payments Done Search"  rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}" ></p:menuitem>                                                               
-                        </p:submenu>
-                        <p:submenu label="Inward">
-                            <p:menuitem  ajax="false" action="/inward/inward_bill_staff_payment?faces-redirect=true" value="Pay Doctor"  />
-                            <p:menuitem  ajax="false"   action="/inward/inward_search_professional_payment_due?faces-redirect=true"  value="Payment Due Search"
-                                         actionListener="#{searchController.makeListNull}" />
-                            <p:menuitem  ajax="false" action="/inward/inward_search_professional_payment_done?faces-redirect=true" value="Payment Done Search"  
-                                         actionListener="#{searchController.makeListNull}" />
-                        </p:submenu>
 
-                        <p:submenu label="Channel" rendered="#{webUserController.hasPrivilege('ChannellingPayment')}" >
-                            <p:submenu label="Doctor/Staff">
-                                <p:menuitem  ajax="false"  value="Pay Doctor"  action="/channel/channel_payment_staff_bill?faces-redirect=true" actionListener="#{channelStaffPaymentBillController.makenull()}" rendered="#{webUserController.hasPrivilege('ChannellingPaymentPayDoctor')}" ></p:menuitem>
-                                <p:menuitem  ajax="false"  value="Payment Due Search"  action="/channel/channel_payments_due_searc?faces-redirect=trueh" rendered="#{webUserController.hasPrivilege('ChannellingPaymentDueSearch')}"  ></p:menuitem>
-                                <p:menuitem  ajax="false"  value="Payment Done Search"  action="/channel/channel_payment_bill_search?faces-redirect=true" actionListener="#{billSearch.recreateModel}" rendered="#{webUserController.hasPrivilege('ChannellingPaymentDoneSearch')}" ></p:menuitem>                                            
-                            </p:submenu>
+                    <p:menuitem  
+                        ajax="false"  
+                        action="/payments/pay_index?faces-redirect=true"
+                        value="Payment Management" 
+                        icon="pi pi-money-bill"
+                        rendered="#{webUserController.hasPrivilege('PaymentBilling')}" >
+                    </p:menuitem>
 
-                            <p:submenu label="Agency">
-                                <p:menuitem  ajax="false"  value="Pay Agent"  action="/channel/channel_payment_agent_bill?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannellingPaymentPayDoctor')}" ></p:menuitem>
-                                <p:menuitem  ajax="false"  value="Payment Done Search"  action="/channel/channel_payment_agency_bill_search?faces-redirect=true" actionListener="#{billSearch.recreateModel}" rendered="#{webUserController.hasPrivilege('ChannellingPaymentDoneSearch')}" ></p:menuitem>
-                            </p:submenu>                                        
-                        </p:submenu> 
+                    <p:menuitem  
+                        ajax="false"  
+                        action="/collecting_centre/index?faces-redirect=true"
+                        value="Collecting Centre Management" 
+                        icon="pi pi-briefcase"
+                        rendered="#{webUserController.hasPrivilege('PaymentBilling')}" >
+                    </p:menuitem>
+                    
+<!--                    agency management command link-->
+                    
+                     <p:menuitem  
+                        ajax="false"  
+                        action="/agency_management/index?faces-redirect=true"
+                        value="Agency Management" 
+                        icon="fa fa-cart-arrow-down"
+                        rendered="#{webUserController.hasPrivilege('PaymentBilling')}" >
+                    </p:menuitem>
 
-                        <p:submenu label="Petty Cash">
-                            <p:menuitem  ajax="false"  action="/petty_cash_bill?faces-redirect=true" value="Petty Cash Payment" actionListener="#{pettyCashBillController.prepareNewBill()}"  ></p:menuitem>
-                            <p:menuitem  ajax="false"  action="/petty_cash_bill_search_own?faces-redirect=true" actionListener="#{searchController.makeListNull}"  value="Petty Cash Bill Search"  ></p:menuitem>
-                            <p:menuitem  ajax="false"  action="/iou_bill?faces-redirect=true" value="Petty Cash (IOU)"  ></p:menuitem>
-                        </p:submenu>
+
+                    <p:menuitem
+                        ajax="false"
+                        action="/patient_deposit/index?faces-redirect=true"
+                        value="Patient Deposit Management"
+                        icon="fas fa-money-bill-transfer"
+                        rendered="#{webUserController.hasPrivilege('PaymentBilling')}" >
+                    </p:menuitem>
+
+                    <p:submenu label="Cash">
+
+                        <p:menuitem  
+                            ajax="false"  
+                            action="/payments/recieve_index?faces-redirect=true"
+                            value="Cash For Receive" 
+                            rendered="#{webUserController.hasPrivilege('Payment')}" >
+                        </p:menuitem>
+                        <p:menuitem
+                            ajax="false"  
+                            action="/payments/staff_credit_settle?faces-redirect=true"
+                            value="Staff Credit Settle" >
+                        </p:menuitem>
                     </p:submenu>
+                    <!--                    <p:submenu label="Pay"
+                                                   rendered="#{webUserController.hasPrivilege('Payment')}">
+                                            <p:submenu label="OPD">
+                                                <p:menuitem  ajax="false"  action="/payment_staff_bill?faces-redirect=true" value="Pay Doctor/Staff" rendered="#{webUserController.hasPrivilege('PaymentBilling')}" ></p:menuitem>
+                                                <p:menuitem  ajax="false"  action="/opd_search_professional_payment_due?faces-redirect=true" actionListener="#{searchController.makeListNull}"  value="Payments Due Search" rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}" ></p:menuitem>
+                                                <p:menuitem  ajax="false"  action="/opd_search_professional_payment_done?faces-redirect=true" actionListener="#{searchController.makeListNull}"
+                                                             value="Payments Done Search"  rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}" ></p:menuitem>                                                               
+                                            </p:submenu>
+                                            <p:submenu label="Inward">
+                                                <p:menuitem  ajax="false" action="/inward/inward_bill_staff_payment?faces-redirect=true" value="Pay Doctor"  />
+                                                <p:menuitem  ajax="false"   action="/inward/inward_search_professional_payment_due?faces-redirect=true"  value="Payment Due Search"
+                                                             actionListener="#{searchController.makeListNull}" />
+                                                <p:menuitem  ajax="false" action="/inward/inward_search_professional_payment_done?faces-redirect=true" value="Payment Done Search"  
+                                                             actionListener="#{searchController.makeListNull}" />
+                                            </p:submenu>
+                    
+                                            <p:submenu label="Channel" rendered="#{webUserController.hasPrivilege('ChannellingPayment')}" >
+                                                <p:submenu label="Doctor/Staff">
+                                                    <p:menuitem  ajax="false"  value="Pay Doctor"  action="/channel/channel_payment_staff_bill?faces-redirect=true" actionListener="#{channelStaffPaymentBillController.makenull()}" rendered="#{webUserController.hasPrivilege('ChannellingPaymentPayDoctor')}" ></p:menuitem>
+                                                    <p:menuitem  ajax="false"  value="Payment Due Search"  action="/channel/channel_payments_due_searc?faces-redirect=trueh" rendered="#{webUserController.hasPrivilege('ChannellingPaymentDueSearch')}"  ></p:menuitem>
+                                                    <p:menuitem  ajax="false"  value="Payment Done Search"  action="/channel/channel_payment_bill_search?faces-redirect=true" actionListener="#{billSearch.recreateModel}" rendered="#{webUserController.hasPrivilege('ChannellingPaymentDoneSearch')}" ></p:menuitem>                                            
+                                                </p:submenu>
+                    
+                                                <p:submenu label="Agency">
+                                                    <p:menuitem  ajax="false"  value="Pay Agent"  action="/channel/channel_payment_agent_bill?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannellingPaymentPayDoctor')}" ></p:menuitem>
+                                                    <p:menuitem  ajax="false"  value="Payment Done Search"  action="/channel/channel_payment_agency_bill_search?faces-redirect=true" actionListener="#{billSearch.recreateModel}" rendered="#{webUserController.hasPrivilege('ChannellingPaymentDoneSearch')}" ></p:menuitem>
+                                                </p:submenu>                                        
+                                            </p:submenu> 
+                    
+                                            <p:submenu label="Petty Cash">
+                                                <p:menuitem  ajax="false"  action="/petty_cash_bill?faces-redirect=true" value="Petty Cash Payment" actionListener="#{pettyCashBillController.prepareNewBill()}"  ></p:menuitem>
+                                                <p:menuitem  ajax="false"  action="/petty_cash_bill_search_own?faces-redirect=true" actionListener="#{searchController.makeListNull}"  value="Petty Cash Bill Search"  ></p:menuitem>
+                                                <p:menuitem  ajax="false"  action="/iou_bill?faces-redirect=true" value="Petty Cash (IOU)"  ></p:menuitem>
+                                            </p:submenu>
+                                        </p:submenu>-->
 
-                    <p:submenu label="Recieve"  rendered="#{webUserController.hasPrivilege('Payment')}">  
+                    <p:submenu label="Recieve"  rendered="#{webUserController.hasPrivilege('Payment') and false}">  
                         <p:submenu label="Inward Deposit">
                             <p:menuitem  ajax="false"  action="/inward/inward_bill_payment?faces-redirect=true" value="Payment" 
                                          actionListener="#{inwardPaymentController.makeNull}" rendered="#{webUserController.hasPrivilege('InwardBilling')}" ></p:menuitem>
@@ -1012,19 +1170,15 @@
                         </p:submenu>
 
                         <p:submenu label="Agent"  rendered="#{webUserController.hasPrivilege('Payment')}">
-                            <p:menuitem  ajax="false"  action="/agent_bill?faces-redirect=true" value="Agent Payment" actionListener="#{agentPaymentRecieveBillController.prepareNewBill()}" ></p:menuitem>
+                            <p:menuitem  ajax="false"  action="/agent_bill?faces-redirect=true" value="Agent Payment" actionListener="#{agentAndCcPaymentController.prepareNewBill()}" ></p:menuitem>
                             <p:menuitem  ajax="false"  action="/agent_bill_search_own?faces-redirect=true"
                                          actionListener="#{searchController.makeListNull}"  value="Agent Payment Bill Search"  ></p:menuitem>
                         </p:submenu>
 
                         <p:submenu label="Collecting Centre"  rendered="#{webUserController.hasPrivilege('Payment')}">
-                            <p:menuitem  ajax="false"  action="/lab/collecting_centre_bill?faces-redirect=true" value="Collecting Centre Payment" actionListener="#{agentPaymentRecieveBillController.prepareNewBill()}" ></p:menuitem>
-                            <p:menuitem  ajax="false"  action="/lab/collecting_centre_bill_search_own?faces-redirect=true"
+                            <p:menuitem  ajax="false"  action="#{agentAndCcPaymentController.navigateToCcDeposit}" value="Collecting Centre Payment" actionListener="#{agentAndCcPaymentController.prepareNewBill()}" ></p:menuitem>
+                            <p:menuitem  ajax="false"  action="/collecting_centre/collecting_centre_bill_search_own?faces-redirect=true"
                                          actionListener="#{searchController.makeListNull}"  value="Collecting Centre Bill Search"  ></p:menuitem>
-                        </p:submenu>
-
-                        <p:submenu label="Patient Deposit"  rendered="#{webUserController.hasPrivilege('Payment')}">
-
                         </p:submenu>
 
                     </p:submenu>
@@ -1032,16 +1186,16 @@
                     <p:submenu label="Book Issuing" rendered="#{webUserController.hasPrivilege('Payment')}">
                         <p:submenu label="Collecting Centre Book Issuing">
                             <p:menuitem  ajax="false"  action="/lab/agent_referece_book?faces-redirect=true" value="Add Lab Book to Collecting Centre"  ></p:menuitem>
-                            <p:menuitem  ajax="false"  action="/lab/report_collecting_center_referece_book?faces-redirect=true" value="Collecting Centre Book Report"  ></p:menuitem>
-                            <p:menuitem  ajax="false"  action="/lab/institutions_udate_credit_limit?faces-redirect=true" value="Collecting Centre Credit Limit Update"  ></p:menuitem>
+                            <p:menuitem  ajax="false"  action="/collecting_centre/report_collecting_center_referece_book?faces-redirect=true" value="Collecting Centre Book Report"  ></p:menuitem>
+                            <p:menuitem  ajax="false"  action="/collecting_centre/cc_update_credit_limit?faces-redirect=true" value="Collecting Centre Credit Limit Update" actionListener="#{institutionController.makeNull()}" rendered="#{webUserController.hasPrivilege('ChangeCreditLimitInCC')}"></p:menuitem>
                             <p:menuitem  ajax="false"  action="/reportLab/collecting_centre_report_agent_history?faces-redirect=true" value="Collecting Centre History"  ></p:menuitem>
                             <p:menuitem  ajax="false"  action="/reportLab/collecting_center_report_history_1?faces-redirect=true" value="Collecting Centre Statement"  ></p:menuitem>
                             <p:menuitem  ajax="false"  action="/reportLab/report_collecting_center_payment_bill?faces-redirect=true" value="Collecting Centre Diposits"  ></p:menuitem>
                             <p:menuitem  ajax="false"  action="/reportLab/report_collecting_center_balance?faces-redirect=true" value="Collecting Center Current Balance"  ></p:menuitem>
                             <p:submenu label="Credit/Debit Note" rendered="#{webUserController.hasPrivilege('ChannelCrdeitNote') or webUserController.hasPrivilege('ChannelDebitNote')}" >
-                                <p:menuitem  ajax="false"  value="Credit Note"  action="/collecting_centre/collecting_center_credit_note_bill?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannelCrdeitNote')}" actionListener="#{agentPaymentRecieveBillController.prepareNewBill()}" ></p:menuitem>
+                                <p:menuitem  ajax="false"  value="Credit Note"  action="/collecting_centre/collecting_center_credit_note_bill?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannelCrdeitNote')}" actionListener="#{agentAndCcPaymentController.prepareNewBill()}" ></p:menuitem>
                                 <p:menuitem  ajax="false"  value="Credit Note Search"  action="/collecting_centre/collecting_center_credit_note_bill_search_own?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannelCrdeitNoteSearch')}" actionListener="#{searchController.makeListNull}" ></p:menuitem>
-                                <p:menuitem  ajax="false"  value="Debit Note"  action="/collecting_centre/collecting_center_debit_note_bill?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannelDebitNote')}" actionListener="#{agentPaymentRecieveBillController.prepareNewBill()}" ></p:menuitem>
+                                <p:menuitem  ajax="false"  value="Debit Note"  action="/collecting_centre/collecting_center_debit_note_bill?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannelDebitNote')}" actionListener="#{agentAndCcPaymentController.prepareNewBill()}" ></p:menuitem>
                                 <p:menuitem  ajax="false"  value="Debit Note Search"  action="/collecting_centre/collecting_center_note_bill_search_own?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannelDebitNoteSearch')}" actionListener="#{searchController.makeListNull}" ></p:menuitem>
                             </p:submenu>
                         </p:submenu>
@@ -1104,7 +1258,9 @@
                     <p:menuitem  ajax="false"  action="#{searchController.navigateToAnalytics}" 
                                  value="Analytics" 
                                  rendered="#{webUserController.hasPrivilege('ReportsSearchCashCardOwn')}" ></p:menuitem>  
-                    <p:menuitem  ajax="false"  action="/reports/index?faces-redirect=true" value="Reports" rendered="#{webUserController.hasPrivilege('ReportsSearchCashCardOwn')}" ></p:menuitem>                                            
+                    <p:menuitem  ajax="false"  action="/reports/index?faces-redirect=true" value="Reports" rendered="#{webUserController.hasPrivilege('ReportsSearchCashCardOwn')}" ></p:menuitem> 
+                    <p:menuitem  ajax="false"  action="/reports/dynamic_reports/dynamic_reports?faces-redirect=true" 
+                                 value="Dynamic Reports" rendered="#{webUserController.hasPrivilege('ReportsSearchCashCardOwn')}" ></p:menuitem> 
                     <p:menuitem  ajax="false"  action="/reportInstitution/report_own?faces-redirect=true" value="Institution Report" rendered="#{webUserController.hasPrivilege('ReportsSearchCashCardOwn')}" ></p:menuitem>                               
                     <p:menuitem  ajax="false"  action="/reportIncome/report_income?faces-redirect=true" value="Income Report"  ></p:menuitem>
                     <p:menuitem  ajax="false"  action="/revenue_reports/index?faces-redirect=true" value="Revenue Reports"  ></p:menuitem>
@@ -1184,7 +1340,7 @@
                     </p:menuitem>
                     <p:menuitem  
                         ajax="false"  
-                        action="#{itemController.toManageItemdIndex()}" 
+                        action="#{itemController.toManageItemIndex()}" 
                         value="Manage Items" 
                         icon="fa fa-list"
                         rendered="#{webUserController.hasPrivilege('AdminItems')}" >
@@ -1235,32 +1391,50 @@
 
                 <f:facet name="options">
                     <div class="d-flex align-items-center">
+                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Display Cashiers Cash Total on Menu')}">
+                            <h:outputLabel class="mx-2" style="font-size: 1.2em; color: green; font-weight: 600" value="Cash in Hand : #{(financialTransactionController.financialReportByPayments.netCashTotal+(financialTransactionController.financialReportByPayments.floatReceived - financialTransactionController.financialReportByPayments.floatHandover)+ financialTransactionController.financialReportByPayments.shiftStartFunds)}" />
+                            <p:commandButton class="ui-button-info"
+                                             icon="fas fa-refresh"
+                                             ajax="false"
+                                             action="#{financialTransactionController.refreshCashNetTotalForMenu()}" />
+                        </h:panelGroup>
                         <div class="mx-4">
-                            <p:poll interval="180" 
+                            <h:panelGroup>
+                                <p:poll
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Auto-refresh Menu Notifications', false)}"
+                                    interval="#{configOptionApplicationController.getLongValueByKey('Auto-refresh Menu Notification Duration', 1800)}"
                                     listener="#{userNotificationController.fillLoggedUserNotifications()}"
                                     update="notCount" />
-                            <h:panelGroup id="notCount">
-                                <p:badge id="bdgeNotiCount" severity="danger" value="#{webUserController.userNotificationCount}" >
-                                    <p:commandButton id="btnNot" ajax="false" icon="pi pi-bell" action="#{userNotificationController.navigateToRecivedNotification()}"/>
-                                </p:badge>
+                                <h:panelGroup id="notCount">
+                                    <p:badge id="bdgeNotiCount" severity="danger" value="#{webUserController.userNotificationCount}">
+                                        <p:commandButton id="btnNot" ajax="false" icon="pi pi-bell" action="#{userNotificationController.navigateToRecivedNotification()}" />
+                                    </p:badge>
+                                </h:panelGroup>
+                                <p:commandButton 
+                                    icon="pi pi-refresh" 
+                                    rendered="#{not configOptionApplicationController.getBooleanValueByKey('Auto-refresh Menu Notifications', false)}"
+                                    action="#{userNotificationController.fillLoggedUserNotifications()}"
+                                    title="Refresh Notifications" style="margin-left: 10px;"/>
                             </h:panelGroup>
                         </div>
+
 
                         <p:commandButton id="btnLogout" ajax="false" icon="pi pi-sign-out" action="#{sessionController.logout}" />
                     </div>
 
                     <p:tooltip for="btnLogout" value="df"  >
-                        <h:panelGrid columns="3" >
-                            <h:outputText value="Institution" ></h:outputText>
-                            <p:spacer width="10" height="1" ></p:spacer>
-                            <h:outputText value="#{sessionController.loggedUser.institution.name}" ></h:outputText>
-                            <h:outputText value="Department" ></h:outputText>
-                            <p:spacer width="10" height="1" ></p:spacer>
-                            <h:outputText value="#{sessionController.loggedUser.department.name} " ></h:outputText>
-                            <h:outputText value="User" ></h:outputText>
-                            <p:spacer width="10" height="1" ></p:spacer>
-                            <h:outputText value="#{sessionController.loggedUser.webUserPerson.name}" ></h:outputText>
-                        </h:panelGrid>
+                        <p:panel header="Logging Details" style="height: 10em; width: 30em;">
+                            <p:panelGrid columns="2" class="w-100" >
+                                <h:outputText value="Institution" ></h:outputText>
+                                <h:outputText value="#{sessionController.institution.name}" ></h:outputText>
+                                <h:outputText value="Site" ></h:outputText>
+                                <h:outputText value="#{sessionController.loggedSite.name}" ></h:outputText>
+                                <h:outputText value="Department" ></h:outputText>
+                                <h:outputText value="#{sessionController.loggedUser.department.name} " ></h:outputText>
+                                <h:outputText value="User" ></h:outputText>
+                                <h:outputText value="#{sessionController.loggedUser.webUserPerson.name}" ></h:outputText>
+                            </p:panelGrid>
+                        </p:panel>
                     </p:tooltip>
                 </f:facet>
 

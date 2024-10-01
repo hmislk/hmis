@@ -23,8 +23,7 @@
                             </p:selectOneMenu>
 
                             <p:inputText value="#{cashRecieveBillController.comment}" id="comment"/>
-                            <p:watermark value="Comment" for="comment"/>
-
+                            
                             <h:panelGroup id="creditCard" style="display: #{cashRecieveBillController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
                                 <pa:creditCard paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
                             </h:panelGroup>
@@ -67,6 +66,7 @@
                         <p:dataTable value="#{cashRecieveBillController.billItems}" 
                                      rowIndexVar="rowIndex"   var="b" id="items"
                                      rowKey="#{b.searialNo}" selection="#{cashRecieveBillController.selectedBillItems}"
+                                     selectionMode="multiple"
                                      >
                             <f:facet name="header">
                                 <h:outputLabel value="Paying Institution : "/>
@@ -82,7 +82,7 @@
                             <p:ajax  event="rowUnselectCheckbox" process="@this" 
                                      update=":#{p:resolveFirstComponentWithId('tot',view).clientId}" 
                                      listener="#{cashRecieveBillController.calTotal}"/>
-                            <p:column selectionMode="multiple" />                                       
+                            <p:column  selectionBox="true" />                                       
                             <p:column>
                                 <f:facet name="header">
                                     <h:outputLabel value="No"/>.                                  
@@ -94,7 +94,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Bill No"/>                                    
                                 </f:facet>                               
-                                <p:outputLabel value="#{b.referenceBill.insId}"/>
+                                <p:outputLabel value="#{b.referenceBill.deptId}"/>
                             </p:column>
                             <p:column headerText="Patient Name">
                                 <p:outputLabel value="#{b.referenceBill.patient.person.name}"/>                               

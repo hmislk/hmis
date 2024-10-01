@@ -215,7 +215,9 @@ public class ServiceSessionBean {
             BillType.ChannelOnCall,
             BillType.ChannelStaff,
             BillType.ClinicalOpdBooking,
-            BillType.ChannelCredit
+            BillType.ChannelCredit,
+            BillType.ChannelResheduleWithOutPayment,
+            BillType.ChannelResheduleWithPayment
         };
 
         List<BillType> bts = Arrays.asList(billTypes);
@@ -257,7 +259,9 @@ public class ServiceSessionBean {
             BillType.ChannelCash,
             BillType.ChannelOnCall,
             BillType.ChannelStaff,
-            BillType.ChannelCredit};
+            BillType.ChannelCredit,
+            BillType.ChannelResheduleWithOutPayment,
+            BillType.ChannelResheduleWithPayment};
 
         List<BillType> bts = Arrays.asList(billTypes);
         String sql = "Select bs From BillSession bs where "
@@ -321,7 +325,9 @@ public class ServiceSessionBean {
             BillType.ChannelCash,
             BillType.ChannelOnCall,
             BillType.ChannelStaff,
-            BillType.ChannelCredit
+            BillType.ChannelCredit,
+            BillType.ChannelResheduleWithOutPayment,
+            BillType.ChannelResheduleWithPayment
         };
 
         List<BillType> bts = Arrays.asList(billTypes);
@@ -346,6 +352,12 @@ public class ServiceSessionBean {
         // Find the next available number
         // Assuming serial numbers start from 1 and increment by 1
         int nextAvailableNumber = 1;
+        if (si.getOriginatingSession().getSessionStartingNumber()!=null) {
+            if (!si.getOriginatingSession().getSessionStartingNumber().trim().equals("")) {
+             nextAvailableNumber=Integer.valueOf(si.getOriginatingSession().getSessionStartingNumber());   
+            }
+        }
+        
         while (allUnavailableNumbers.contains(nextAvailableNumber)) {
             nextAvailableNumber++;
         }
@@ -360,7 +372,9 @@ public class ServiceSessionBean {
             BillType.ChannelCash,
             BillType.ChannelOnCall,
             BillType.ChannelStaff,
-            BillType.ChannelCredit
+            BillType.ChannelCredit,
+            BillType.ChannelResheduleWithOutPayment,
+            BillType.ChannelResheduleWithPayment
         };
 
         List<BillType> bts = Arrays.asList(billTypes);

@@ -44,7 +44,7 @@
                                 <p:panel header="Bill Detail">
                                     <p:panelGrid columns="2">
                                         <h:outputText value="Bill No (Ins Id) :" ></h:outputText>
-                                        <h:outputText value="#{billSearch.billSearch.insId}" />
+                                        <h:outputText value="#{billSearch.billSearch.deptId}" />
 
                                         <h:outputText value="Bill No (Dept Id) :" ></h:outputText>
                                         <h:outputText value="#{billSearch.billSearch.deptId}" />
@@ -53,7 +53,7 @@
                                         <h:outputText value="#{billSearch.billSearch.billedBill.id}" rendered="#{billSearch.billSearch.billedBill ne null}" />
 
                                         <h:outputText value="Billed bill No (Ins Id) :" rendered="#{billSearch.billSearch.billedBill ne null}"></h:outputText>
-                                        <p:inputText value="#{billSearch.billSearch.billedBill.insId}" rendered="#{billSearch.billSearch.billedBill ne null}" />
+                                        <p:inputText value="#{billSearch.billSearch.billedBill.deptId}" rendered="#{billSearch.billSearch.billedBill ne null}" />
 
                                         <h:outputLabel value="Billed bill No (Dept Id) :" rendered="#{billSearch.billSearch.billedBill ne null}"></h:outputLabel>
                                         <p:inputText value="#{billSearch.billSearch.billedBill.deptId}" rendered="#{billSearch.billSearch.billedBill ne null}" />
@@ -62,7 +62,7 @@
                                         <h:outputText value="#{billSearch.billSearch.paidBill.id}" rendered="#{billSearch.billSearch.paidBill ne null}" />
 
                                         <h:outputText value="Paid bill No (Ins Id) :" rendered="#{billSearch.billSearch.paidBill ne null}"></h:outputText>
-                                        <p:inputText value="#{billSearch.billSearch.paidBill.insId}" rendered="#{billSearch.billSearch.paidBill ne null}" />
+                                        <p:inputText value="#{billSearch.billSearch.paidBill.deptId}" rendered="#{billSearch.billSearch.paidBill ne null}" />
 
                                         <h:outputLabel value="Paid bill No (Dept Id) :" rendered="#{billSearch.billSearch.paidBill ne null}"></h:outputLabel>
                                         <p:inputText value="#{billSearch.billSearch.paidBill.deptId}" rendered="#{billSearch.billSearch.paidBill ne null}" />
@@ -86,7 +86,7 @@
 
 
                                         <h:outputLabel value="Canceled Bill(Ins Id) :" rendered="#{billSearch.billSearch.cancelledBill ne null}" ></h:outputLabel>
-                                        <p:inputText value="#{billSearch.billSearch.cancelledBill.insId}" rendered="#{billSearch.billSearch.cancelledBill ne null}" ></p:inputText>
+                                        <p:inputText value="#{billSearch.billSearch.cancelledBill.deptId}" rendered="#{billSearch.billSearch.cancelledBill ne null}" ></p:inputText>
 
                                         <h:outputLabel value="Canceled Bill(Dept Id) :" rendered="#{billSearch.billSearch.cancelledBill ne null}" ></h:outputLabel>
                                         <p:inputText value="#{billSearch.billSearch.cancelledBill.deptId}" rendered="#{billSearch.billSearch.cancelledBill ne null}" ></p:inputText>
@@ -95,7 +95,7 @@
                                         <p:inputText value="#{billSearch.billSearch.referenceBill}"  />
 
                                         <h:outputLabel value="Reference Bill(Ins Id) :" rendered="#{billSearch.billSearch.referenceBill ne null}" ></h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.billSearch.referenceBill.insId}" rendered="#{billSearch.billSearch.referenceBill ne null}" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.billSearch.referenceBill.deptId}" rendered="#{billSearch.billSearch.referenceBill ne null}" ></h:outputLabel>
 
                                         <h:outputLabel value="Reference Bill(Dept Id) :" rendered="#{billSearch.billSearch.referenceBill ne null}" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.billSearch.referenceBill.deptId}" rendered="#{billSearch.billSearch.referenceBill ne null}" ></h:outputLabel>
@@ -104,7 +104,7 @@
                                         <p:inputText value="#{billSearch.billSearch.forwardReferenceBill}" />
 
                                         <h:outputLabel value="Forward ref Bill(Ins Id) :" rendered="#{billSearch.billSearch.forwardReferenceBill ne null}" ></h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.billSearch.forwardReferenceBill.insId}" rendered="#{billSearch.billSearch.forwardReferenceBill ne null}" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.billSearch.forwardReferenceBill.deptId}" rendered="#{billSearch.billSearch.forwardReferenceBill ne null}" ></h:outputLabel>
 
                                         <h:outputLabel value="Forward ref Bill(Dept Id) :" rendered="#{billSearch.billSearch.forwardReferenceBill ne null}" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.billSearch.forwardReferenceBill.deptId}" rendered="#{billSearch.billSearch.forwardReferenceBill ne null}" ></h:outputLabel>
@@ -113,7 +113,7 @@
                                         <p:inputText value="#{billSearch.billSearch.backwardReferenceBill}"  />
 
                                         <h:outputLabel value="Backword ref Bill(Ins Id) :" rendered="#{billSearch.billSearch.backwardReferenceBill ne null}" ></h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.billSearch.backwardReferenceBill.insId}" rendered="#{billSearch.billSearch.backwardReferenceBill ne null}" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.billSearch.backwardReferenceBill.deptId}" rendered="#{billSearch.billSearch.backwardReferenceBill ne null}" ></h:outputLabel>
 
                                         <h:outputLabel value="Backword ref Bill(Dept Id) :" rendered="#{billSearch.billSearch.backwardReferenceBill ne null}" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.billSearch.backwardReferenceBill.deptId}" rendered="#{billSearch.billSearch.backwardReferenceBill ne null}" ></h:outputLabel>
@@ -472,7 +472,7 @@
                                                 <h:outputLabel value="#{bip21.bill.deptId}" />
                                             </p:column>
                                             <p:column headerText="Ins ID of Bill ">
-                                                <h:outputLabel value="#{bip21.bill.insId}" />
+                                                <h:outputLabel value="#{bip21.bill.deptId}" />
                                             </p:column>
                                             <p:column headerText="Bill Type">
                                                 <h:outputLabel value="#{bip21.paidForBillFee.bill.billType}" />
@@ -744,7 +744,7 @@
                                 <h:panelGroup  rendered="#{sessionController.loggedPreference.printLabelForOPdBill eq false
                                                            and sessionController.loggedPreference.applicationInstitution eq 'Ruhuna'
                                                            and sessionController.loggedPreference.fiveFivePaperWithHeadings eq false}">
-                                    <bi:opdBillPrintRuhunu bill="#{billSearch.billSearch}" dup="false" />
+                                    <bi:opdBillPrintRmh bill="#{billSearch.billSearch}" dup="false" />
 
                                 </h:panelGroup>
 

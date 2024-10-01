@@ -12,6 +12,10 @@
             <ui:define name="content">
                 <h:form>
                     <p:panel header="Search Bills" >
+                         <f:facet name="header">
+                            <h:outputLabel value="Inward Payments Due Search"/>
+                            <p:commandButton value="Back" icon="fas fa-arrow-left" class="ui-button-warning" style="float: right;" action="/payments/pay_index?faces-redirect=true" ajax="false"/>     
+                        </f:facet>
                         <div class="row">
                             <div class="col-2">
                                 <h:outputLabel value="From Date"/>
@@ -93,10 +97,10 @@
                                         <f:facet name="header">
                                             <h:outputLabel value="Bill No"  />
                                         </f:facet>
-                                        <h:outputLabel value="#{bf.bill.insId}" 
+                                        <h:outputLabel value="#{bf.bill.deptId}" 
                                                        rendered="#{bf.bill.cancelled}" style="color: red;">
                                         </h:outputLabel>
-                                        <h:outputLabel value="#{bf.bill.insId}" 
+                                        <h:outputLabel value="#{bf.bill.deptId}" 
                                                        rendered="#{!bf.bill.cancelled}" >
                                         </h:outputLabel>
                                     </p:column>
@@ -138,8 +142,9 @@
                                         <h:outputLabel value="#{bf.feeValue}" />
                                     </p:column>
                                     <p:column headerText="Action">
-                                        <p:commandButton ajax="false" value="Pay Professional" action="inward_bill_staff_payment"  >
+                                        <p:commandButton ajax="false" value="Pay Professional" action="#{inwardStaffPaymentBillController.calculateDueFees()}"  >
                                             <f:setPropertyActionListener value="#{bf.staff}" target="#{inwardStaffPaymentBillController.currentStaff}"/>
+<!--                                            <f:setPropertyActionListener value="#{bf.staff.speciality}" target="#{inwardStaffPaymentBillController.speciality}"/>-->
                                         </p:commandButton>
                                     </p:column>
 

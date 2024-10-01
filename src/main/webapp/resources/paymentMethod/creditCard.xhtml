@@ -9,32 +9,34 @@
     <!-- INTERFACE -->
     <cc:interface>
         <cc:attribute name="paymentMethodData"  type="com.divudi.data.dataStructure.PaymentMethodData" />
-        <cc:attribute name="valueRequired" type="boolean" />
+        <cc:attribute name="valueRequired" type="boolean" default="true"/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <div class="d-flex" >
-            <h:panelGroup rendered="#{cc.attrs.valueRequired}" >
-                <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.creditCard.totalValue}"  id="txtVal">
-                    <p:ajax process="@this"></p:ajax>
+        <div class="d-flex gap-2 mt-2" >
+            <h:panelGroup rendered="#{cc.attrs.valueRequired}" class="" layout="block"  >
+                <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.creditCard.totalValue}" style="width: 7em;" id="txtVal" >
+                    <p:ajax process="@this" ></p:ajax>
                 </p:inputText>
-                
-                <p:watermark value="Value" for="txtVal" />
             </h:panelGroup>
+
+
             <p:inputText 
-                autocomplete="off"   
-                value="#{cc.attrs.paymentMethodData.creditCard.no}" style="width: 10em;" class="mx-2" id="refno">
+                autocomplete="off"
+                style="width: 100px"
+                value="#{cc.attrs.paymentMethodData.creditCard.no}"  
+                id="refno"
+                placeholder="Card Last 4 Digits">
                 <p:ajax process="@this" ></p:ajax>
-            </p:inputText>                                
-            <p:selectOneMenu value="#{cc.attrs.paymentMethodData.creditCard.institution}"  style="width: 10em;" class="mx-2">
+            </p:inputText>                          
+            <p:selectOneMenu style="width: 150px" value="#{cc.attrs.paymentMethodData.creditCard.institution}" filter="true" filterMatchMode="contains"  >
                 <f:selectItem itemLabel="Select Bank"/>
                 <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
                 <p:ajax process="@this" ></p:ajax>
             </p:selectOneMenu>
-            <p:watermark value="Card Ref. No." for="refno" />
+            <p:inputText value="#{cc.attrs.paymentMethodData.creditCard.comment}" placeholder="Enter Credit Card Comments" ></p:inputText>
         </div>
-
 
     </cc:implementation>
 </html>

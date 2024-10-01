@@ -48,11 +48,7 @@
                                                 >
                                 </p:autoComplete>
                             </h:panelGrid>
-                            <p:watermark for="fdate" value="From Date" />
-                            <p:watermark for="tdate" value="To Date" />
-                            <p:watermark for="acSpeciality" value="Speciality" />
-                            <p:watermark for="scStaff" value="Staff / Doctor" />
-                        <h:panelGrid columns="4" class="my-2">
+                                                                                                                                        <h:panelGrid columns="4" class="my-2">
                             <p:commandButton 
                                 ajax="false"
                                 class="ui-button-warning"
@@ -126,9 +122,9 @@
                                         <f:facet name="header">
                                             <p:outputLabel value="Bill No" />
                                         </f:facet>
-                                        <p:outputLabel value="#{b.insId}" >
+                                        <p:outputLabel value="#{b.deptId}" >
                                         </p:outputLabel>
-                                        <p:outputLabel value=" - #{b.cancelledBill.insId}" rendered="#{b.cancelled}">
+                                        <p:outputLabel value=" - #{b.cancelledBill.deptId}" rendered="#{b.cancelled}">
                                         </p:outputLabel>
                                     </p:column>
 
@@ -186,9 +182,9 @@
                                         <f:facet name="header">
                                             <p:outputLabel value="Bill No" />
                                         </f:facet>
-                                        <p:outputLabel value="#{b.insId}" >
+                                        <p:outputLabel value="#{b.deptId}" >
                                         </p:outputLabel>
-                                        <p:outputLabel value=" - #{b.billedBill.insId}">
+                                        <p:outputLabel value=" - #{b.billedBill.deptId}">
                                         </p:outputLabel>
                                     </p:column>
 

@@ -16,9 +16,24 @@
                         <f:facet name="header" >
                             <h:outputLabel value="Reprint" ></h:outputLabel>
                             <hr/>
+                            <h:panelGroup class="mx-1" rendered="#{configOptionApplicationController.getBooleanValueByKey('Need Approvel For Petty Cash Bill Cancelletion') eq false}">
+                                <p:commandButton  ajax="false" value="Cancel" action="#{pettyCashBillSearch.navigateToPettyCashCancel()}" /> 
+                            </h:panelGroup>
 
-                            <p:commandButton ajax="false" value="Cancel" action="petty_cash_bill_cancel" disabled="#{pettyCashBillSearch.bill.cancelled}">                           
-                            </p:commandButton>
+
+                            <h:panelGroup class="mx-1" rendered="#{configOptionApplicationController.getBooleanValueByKey('Need Approvel For Petty Cash Bill Cancelletion')}" >
+                                <h:panelGroup rendered="#{pettyCashBillSearch.bill.approveAt ne null}">
+                                    <p:commandButton class="mx-1" ajax="false" value="Cancel" action="#{pettyCashBillSearch.navigateToPettyCashCancel()}" disabled="#{pettyCashBillSearch.bill.cancelled}">                           
+                                    </p:commandButton>
+                                </h:panelGroup>
+                                <p:commandButton ajax="false" value="To Cancel" action="#{pettyCashBillSearch.sendToApprovePettyCashBillCancellation}" disabled="#{pettyCashBillSearch.bill.approveAt ne null}">                           
+                                </p:commandButton>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{webUserController.hasPrivilege('PettyCashBillCancellationApprove')}" >
+                                <p:commandButton ajax="false" value="Approve" action="#{pettyCashBillController.pettyCashCancelBillApprove}" disabled="#{pettyCashBillSearch.bill.approveAt ne null}">                           
+                                </p:commandButton>
+                            </h:panelGroup>
 
                             <p:commandButton  class="mx-1" value="Return" onclick="PF('confirmationDialog').show()">                           
                             </p:commandButton>
@@ -36,7 +51,7 @@
                             <p:panel header="Bill Detail">
                                 <p:panelGrid columns="2">
                                     <h:outputLabel value="Bill No :" ></h:outputLabel>
-                                    <h:outputLabel value="#{pettyCashBillSearch.bill.insId}" ></h:outputLabel>
+                                    <h:outputLabel value="#{pettyCashBillSearch.bill.deptId}" ></h:outputLabel>
                                     <h:outputLabel value="Payment Type : " ></h:outputLabel>
                                     <h:outputLabel value="#{pettyCashBillSearch.bill.paymentMethod}" ></h:outputLabel>                                        
                                     <h:outputLabel value="Net Total :" ></h:outputLabel>

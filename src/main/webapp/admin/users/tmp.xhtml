@@ -7,37 +7,24 @@
       xmlns:p="http://primefaces.org/ui">
 
     <h:body>
-
-        <div class="ui-selectlistbox-listcontainer" style="height:200px">
-            <table class="ui-selectlistbox-list">
-                <tbody>
-                    <tr class="ui-selectlistbox-item ui-corner-all">
-                        <td><span> Angiotensin-Converting Enzyme (ACE)  GC</span></td>
-                        <td><span>12100.0</span></td>
-                        <td><span>Outsource Lab</span></td>
-                    </tr>
-                    <tr class="ui-selectlistbox-item ui-corner-all">
-                        <td><span> Blood Transfusion Charges Blood Transfusion Charges</span></td>
-                        <td><span>7500.0</span></td>
-                        <td><span>Inward</span></td>
-                    </tr>
-                    <tr class="ui-selectlistbox-item ui-corner-all">
-                        <td><span> Serum Albumin Corrected Calcium( AS)</span>
-                        </td><td><span>1560.0</span></td>
-                        <td><span>Outsource Lab</span></td>
-                    </tr>
-                    <tr class="ui-selectlistbox-item ui-corner-all">
-                        <td><span>(25) OH D3 LEVEL (A)</span>
-                        </td><td><span>9150.0</span></td>
-                        <td><span>Outsource Lab</span>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-
-
-
+        <h:form id="form">
+            <p:selectOneMenu 
+                id="cmbDepartment"
+                placeholder="Department"
+                value="#{userPrivilageController.department}" 
+                class="w-100"
+                required="true"
+                requiredMessage="Please select a department"
+                filter="true">
+                <f:selectItem itemLabel="Select Department" />
+                <f:selectItems 
+                    value="#{userPrivilageController.departments}"
+                    var="d"
+                    itemLabel="#{d.name}"
+                    itemValue="#{d}" />
+                <p:ajax event="change" process="@this" update="tmp" />
+            </p:selectOneMenu>
+            <h:outputText id="tmp" value="#{userPrivilageController.department.name}" style="font-weight: bold;" />
+        </h:form>
     </h:body>
 </html>

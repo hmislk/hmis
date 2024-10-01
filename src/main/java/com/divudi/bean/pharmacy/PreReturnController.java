@@ -41,6 +41,7 @@ public class PreReturnController implements Serializable {
     private Bill bill;
     private Bill returnBill;
     private boolean printPreview;
+    String comment;
     ////////
 
     private List<BillItem> billItems;
@@ -204,6 +205,10 @@ public class PreReturnController implements Serializable {
 
         if (getReturnBill().getTotal() == 0) {
             JsfUtil.addErrorMessage("Total is Zero cant' return");
+            return;
+        }
+        if (getReturnBill().getComments() == null || getReturnBill().getComments().trim().equals("")) {
+            JsfUtil.addErrorMessage("Please enter a comment");
             return;
         }
 
@@ -383,6 +388,14 @@ public class PreReturnController implements Serializable {
 
     public void setBillItems(List<BillItem> billItems) {
         this.billItems = billItems;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 
 }

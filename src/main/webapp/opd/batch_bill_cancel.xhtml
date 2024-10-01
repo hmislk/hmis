@@ -13,13 +13,28 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-                    <h:panelGroup rendered="#{!billSearch.printPreview}" styleClass="alignTop">
+                    <h:panelGroup rendered="#{!billController.printPreview}" styleClass="alignTop">
                         <p:panel>
                             <f:facet name="header">
-                                <h:outputText value="Cancellation" class="mt-5"/>
+                                <h:outputText value="Batch Bill Cancellation" class="mt-5"/>
                                 <h:panelGrid columns="3" style="float: right" class="w-50">
-                                    <p:inputText placeholder="Enter Comments to Cancel Bill" value="#{billController.comment}" style="float: right" class="p-2 w-100"/>
-
+<!--                                    <p:inputText placeholder="Enter Comments to Cancel Bill" value="#{billController.comment}" style="float: right" class="p-2 w-100"/>-->
+                                    <p:selectOneMenu
+                                        id="commentsMenu"
+                                        value="#{billController.comment}"
+                                        editable="true"
+                                        filter="true"
+                                        placeholder="Select or enter a comment"
+                                        filterMatchMode="contains"
+                                        style="float: right; width: 100%"
+                                        class="p-2">
+                                        <f:selectItem itemLabel="Select or enter a comment" itemValue="" noSelectionOption="true"/>
+                                        <f:selectItems
+                                            value="#{configOptionApplicationController.getListOfCustomOptions('OPD Bill Cancellation Comments')}"
+                                            var="option"
+                                            itemLabel="#{option}"
+                                            itemValue="#{option}"/>
+                                    </p:selectOneMenu>
                                     <p:commandButton 
                                         ajax="false"
                                         value="Cancel Bill" 
@@ -36,11 +51,10 @@
                                     <h:outputText styleClass="fas fa-money-bill"></h:outputText>
                                     <h:outputLabel value="Payment Mode" class="mx-2"></h:outputLabel>
                                 </f:facet>
-                                <p:selectOneMenu id="cmbPs" value="#{billController.paymentMethod}"  
-                                                 disabled="#{billController.batchBill.paymentMethod eq 'Cash'}"
+                                <p:selectOneMenu id="cmbPs" value="#{billController.paymentMethod}"
                                                  rendered="#{billController.batchBill.billType eq 'OpdBathcBill'}">
                                     <f:selectItem itemLabel="Select paymentMethod"/>
-                                    <f:selectItems value="#{inwardPaymentController.paymentMethods}"/>
+                                    <f:selectItems value="#{enumController.paymentMethodsForOpdBillCanceling}"/>
                                 </p:selectOneMenu>
 
                                 <p:selectOneMenu id="cmbPs2" value="#{billController.paymentMethod}"  
@@ -70,7 +84,7 @@
                                         </f:facet>
                                         <p:panelGrid columns="2">
                                             <h:outputLabel value="Bill No :" ></h:outputLabel>
-                                            <h:outputLabel value="#{billController.batchBill.insId}" ></h:outputLabel>
+                                            <h:outputLabel value="#{billController.batchBill.deptId}" ></h:outputLabel>
                                             <h:outputLabel value="Total :" ></h:outputLabel>
                                             <h:outputLabel value="#{billController.batchBill.total}" ></h:outputLabel>
                                             <h:outputLabel value="Discount :" ></h:outputLabel>
@@ -111,7 +125,7 @@
                     </h:panelGroup>
 
                     <!-- Print Preview Panel -->
-                    <h:panelGroup rendered="#{billSearch.printPreview}" >
+                    <h:panelGroup rendered="#{billController.printPreview}" >
                         <div class="d-flex justify-content-center">
                             <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
                             <p:selectOneMenu value="#{sessionController.departmentPreference.opdBillPaperType}" class="m-1" style="width: 13em;">
@@ -155,6 +169,9 @@
                             <prints:posOpdBill bill="#{billSearch.bill.cancelledBill}" duplicate="#{opdBillController.duplicatePrint}"/>
                             <prints:A4_paper_with_headings bill="#{billSearch.bill.cancelledBill}" duplicate="#{opdBillController.duplicatePrint}"/>
                             <prints:A4_paper_without_headings bill="#{billSearch.bill.cancelledBill}" duplicate="#{opdBillController.duplicatePrint}"/>
+                            
+                            
+                            
                         </h:panelGroup>
                     </h:panelGroup>
                 </h:form>                

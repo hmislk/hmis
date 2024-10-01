@@ -11,6 +11,7 @@
     <!-- INTERFACE -->
     <cc:interface>
         <cc:attribute name="controller" type="com.divudi.bean.common.ControllerWithMultiplePayments" />
+        <cc:attribute name="paymentMethods" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -53,7 +54,7 @@
                                     class="w-70">  
                                     <f:selectItem itemLabel="Select" ></f:selectItem>
                                     <f:selectItems 
-                                        value="#{enumController.paymentMethodsNonCreditExceptMultiple}"  
+                                        value="#{enumController.getPaymentMethodsNonCreditExceptMultiple(cc.attrs.paymentMethods)}"  
                                         var="pm1"
                                         itemLabel="#{pm1.label}"
                                         itemValue="#{pm1}"/>
@@ -77,8 +78,7 @@
 
                         <div class="col-12" >
 
-                            <h:panelGroup layout="block" class="col-9"  id="paymentDetails"  >
-
+                            <h:panelGroup layout="block" class="col-12"  id="paymentDetails"  >
                                 <h:panelGroup id="cash" rendered="#{pm.paymentMethod eq 'Cash'}"  layout="block" class="row" >
                                     <pa:cash valueRequired="true" paymentMethodData="#{pm.paymentMethodData}"/>
                                 </h:panelGroup>
@@ -94,8 +94,14 @@
                                 <h:panelGroup id="slip"  rendered="#{pm.paymentMethod eq 'Slip'}"  layout="block" class="row" >
                                     <pa:slip valueRequired="true" paymentMethodData="#{pm.paymentMethodData}"/>
                                 </h:panelGroup>
+                                <h:panelGroup id="staffCredit"  rendered="#{pm.paymentMethod eq 'Staff'}"  layout="block" class="row" >
+                                    <pa:staff_credit valueRequired="true" paymentMethodData="#{pm.paymentMethodData}"/>
+                                </h:panelGroup>
                                 <h:panelGroup id="patientDeposit"  rendered="#{pm.paymentMethod eq 'PatientDeposit'}"  layout="block" class="row" >
                                     <pa:patient_deposit valueRequired="true" paymentMethodData="#{pm.paymentMethodData}"/>
+                                </h:panelGroup>                               
+                                <h:panelGroup id="Staff_Welfare" rendered="#{pm.paymentMethod eq 'Staff_Welfare'}" layout="block" class="row">
+                                    <pa:staff_welfare valueRequired="true" paymentMethodData="#{pm.paymentMethodData}"/>
                                 </h:panelGroup>
 
 

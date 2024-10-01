@@ -12,10 +12,12 @@ public class PaymentMethodData {
     private ComponentDetail creditCard;
     private ComponentDetail cheque;
     private ComponentDetail slip;
+    private ComponentDetail iou;
     private ComponentDetail ewallet;
     private ComponentDetail patient_deposit;
     private ComponentDetail paymentMethodMultiple;
     private ComponentDetail credit;
+    private ComponentDetail staffCredit;
     
     private PaymentMethod paymentMethod;
 
@@ -127,6 +129,30 @@ public class PaymentMethodData {
 
     public void setCredit(ComponentDetail credit) {
         this.credit = credit;
+    }
+
+    public ComponentDetail getStaffCredit() {
+        if(staffCredit==null){
+            staffCredit = new ComponentDetail();
+            staffCredit.setPaymentMethod(PaymentMethod.Staff);
+        }
+        return staffCredit;
+    }
+
+    public void setStaffCredit(ComponentDetail staffCredit) {
+        this.staffCredit = staffCredit;
+    }
+
+    public ComponentDetail getIou() {
+         if(iou==null){
+            iou = new ComponentDetail();
+            iou.setPaymentMethod(PaymentMethod.IOU);
+        }
+        return iou;
+    }
+
+    public void setIou(ComponentDetail iou) {
+        this.iou = iou;
     }
 
     

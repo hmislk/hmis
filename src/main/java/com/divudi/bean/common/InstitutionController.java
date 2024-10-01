@@ -71,6 +71,20 @@ public class InstitutionController implements Serializable {
     private String selectText = "";
     private Boolean codeDisabled = false;
     private int managaeInstitutionIndex = -1;
+    private List<Institution> sites;
+    
+    public void fillAllSites(){
+        sites = new ArrayList();
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "select c from Institution c "
+                + " where c.retired=false "
+                + " and c.institutionType =:type";
+        
+        sql += " order by c.name";
+        hm.put("type", InstitutionType.Site);
+        sites = getFacade().findByJpql(sql, hm);
+    }
 
     public String toAdminManageInstitutions() {
         return "/admin/institutions/admin_institutions_index?faces-redirect=true";
@@ -92,6 +106,11 @@ public class InstitutionController implements Serializable {
             return "";
         }
         return "/admin/institutions/institution?faces-redirect=true";
+    }
+
+    public void makeNull() {
+        current = null;
+
     }
 
     public String deleteInstitution() {
@@ -196,7 +215,7 @@ public class InstitutionController implements Serializable {
         sql = "select c from Institution c "
                 + " where c.retired=false ";
         if (qry != null) {
-            sql += " and ((c.name) like :qry or (c.institutionCode) like :qry) ";
+            sql += " and ((c.name) like :qry or (c.code) like :qry) ";
             hm.put("qry", "%" + qry.toUpperCase() + "%");
         }
         if (types != null) {
@@ -242,8 +261,6 @@ public class InstitutionController implements Serializable {
             agencies = completeInstitution(selectText, InstitutionType.Agency);
         }
 
-        
-
         return agencies;
     }
 
@@ -258,6 +275,11 @@ public class InstitutionController implements Serializable {
 
     public List<Institution> completeCompany(String qry) {
         return completeInstitution(qry, InstitutionType.Company);
+    }
+    
+    public List<Institution> completeSite(String qry) {
+        //Sites
+        return completeInstitution(qry, InstitutionType.Site);
     }
 
     public List<Institution> completeCollectingCenter(String qry) {
@@ -352,6 +374,7 @@ public class InstitutionController implements Serializable {
                 + " where i.name=:name"
                 + " and i.retired=:ret";
         Institution i = getFacade().findFirstByJpql(sql, m);
+
         if (i == null) {
             i = new Institution();
             i.setName(name);
@@ -360,6 +383,38 @@ public class InstitutionController implements Serializable {
             i.setRetired(false);
             getFacade().edit(i);
         }
+        return i;
+    }
+
+    public Institution findAndSaveInstitutionByCode(String code) {
+        if (code == null || code.trim().equals("")) {
+            return null;
+        }
+        String sql;
+        Map m = new HashMap();
+        m.put("code", code);
+        m.put("ret", false);
+        sql = "select i "
+                + " from Institution i "
+                + " where i.code=:code"
+                + " and i.retired=:ret";
+        Institution i = getFacade().findFirstByJpql(sql, m);
+        return i;
+    }
+
+    public Institution findExistingInstitutionByName(String name) {
+        if (name == null || name.trim().equals("")) {
+            return null;
+        }
+        String sql;
+        Map m = new HashMap();
+        m.put("name", name);
+        m.put("ret", false);
+        sql = "select i "
+                + " from Institution i "
+                + " where i.name=:name"
+                + " and i.retired=:ret";
+        Institution i = getFacade().findFirstByJpql(sql, m);
         return i;
     }
 
@@ -401,6 +456,12 @@ public class InstitutionController implements Serializable {
         codeDisabled = false;
         current = new Institution();
     }
+    
+     public void prepareAddSite() {
+        codeDisabled = false;
+        current = new Institution();
+        current.setInstitutionType(InstitutionType.Site);
+    }
 
     public void prepareAddAgency() {
         codeDisabled = false;
@@ -436,6 +497,40 @@ public class InstitutionController implements Serializable {
             getFacade().edit(ins);
         }
     }
+    
+    
+    public void saveSelectedSite() {
+        if (getCurrent().getInstitutionType() != InstitutionType.Site) {
+            JsfUtil.addErrorMessage("Invalid Institution Type");
+            return;
+        }
+
+        if (getCurrent().getId() != null && getCurrent().getId() > 0) {
+//
+//            if (getCurrent().getCode() != null) {
+//                getCurrent().setInstitutionCode(getCurrent().getCode());
+//            }
+            getFacade().edit(getCurrent());
+            JsfUtil.addSuccessMessage("Updated Successfully.");
+        } else {
+//            if (getCurrent().getCode() != null) {
+//                if (!checkCodeExist()) {
+//                    getCurrent().setInstitutionCode(getCurrent().getCode());
+//
+//                } else {
+//                    return;
+//                }
+//            }
+            getCurrent().setCreatedAt(new Date());
+            getCurrent().setCreater(getSessionController().getLoggedUser());
+            getFacade().create(getCurrent());
+            JsfUtil.addSuccessMessage("Saved Successfully");
+        }
+        fillAllSites();
+    }
+    
+    
+    
 
     public void saveSelected() {
         if (getCurrent().getInstitutionType() == null) {
@@ -466,7 +561,8 @@ public class InstitutionController implements Serializable {
         }
         fillItems();
     }
-
+    
+   
     public void saveSelectedAgency() {
         if (getAgency().getInstitutionType() == null) {
             JsfUtil.addErrorMessage("Select Institution Type");
@@ -568,16 +664,20 @@ public class InstitutionController implements Serializable {
         AgentHistory agentHistory = new AgentHistory();
         agentHistory.setCreatedAt(new Date());
         agentHistory.setCreater(getSessionController().getLoggedUser());
-        agentHistory.setBeforeBallance(historyValue);
+        agentHistory.setBalanceBeforeTransaction(historyValue);
         agentHistory.setTransactionValue(transactionValue);
         agentHistory.setHistoryType(historyType);
         agentHistory.setComment(comment);
+        agentHistory.setAgency(ins);
         agentHistory.setInstitution(ins);
         agentHistoryFacade.create(agentHistory);
         JsfUtil.addSuccessMessage("History Saved");
     }
 
     public Institution findInstitution(Long id) {
+        if (id == null) {
+            return null;
+        }
         return getFacade().find(id);
     }
 
@@ -624,6 +724,24 @@ public class InstitutionController implements Serializable {
         fetchSelectedAgencys();
         current = null;
         getCurrent();
+    }
+    
+      public void deleteSite() {
+
+        if (getCurrent() != null) {
+            getCurrent().setRetired(true);
+            getCurrent().setRetiredAt(new Date());
+            getCurrent().setRetirer(getSessionController().getLoggedUser());
+            getFacade().edit(getCurrent());
+            JsfUtil.addSuccessMessage("Deleted Successfully");
+        } else {
+            JsfUtil.addSuccessMessage("Nothing to Delete");
+        }
+        
+        current = null;
+        getCurrent();
+        fillAllSites();
+        getSites();
     }
 
     public void deleteAgency() {
@@ -759,6 +877,18 @@ public class InstitutionController implements Serializable {
 
     public void setCollectingCentresAndManagedInstitutions(List<Institution> collectingCentresAndManagedInstitutions) {
         this.collectingCentresAndManagedInstitutions = collectingCentresAndManagedInstitutions;
+    }
+
+    public List<Institution> getSites() {
+        if(sites == null){
+            fillAllSites();
+        }
+        
+        return sites;
+    }
+
+    public void setSites(List<Institution> sites) {
+        this.sites = sites;
     }
 
     /**

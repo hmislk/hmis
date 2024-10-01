@@ -11,7 +11,6 @@ package com.divudi.bean.lab;
 
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.entity.Category;
 import com.divudi.entity.lab.InvestigationCategory;
 import com.divudi.entity.lab.Machine;
 import com.divudi.facade.InvestigationCategoryFacade;
@@ -69,6 +68,7 @@ public class InvestigationCategoryController implements Serializable {
     private UploadedFile file;
     String selectText = "";
     int manageItemIndex=-1;
+    
 
     public List<InvestigationCategory> getSelectedItems() {
         selectedItems = getFacade().findByJpql("select c from InvestigationCategory c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");

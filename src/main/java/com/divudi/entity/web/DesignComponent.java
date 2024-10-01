@@ -26,8 +26,14 @@ public class DesignComponent implements Serializable {
     private Long id;
     
     private String name;
+    private String code;
+    private String codeSystem;
     @Lob
     private String description;
+    @Lob
+    private String viewHtml;
+    @Lob
+    private String editHtml;
     @Enumerated(EnumType.STRING)
     private TemplateComponentType type;
     @ManyToOne
@@ -132,5 +138,39 @@ public class DesignComponent implements Serializable {
     public void setDataEntryForm(DesignComponent dataEntryForm) {
         this.dataEntryForm = dataEntryForm;
     }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public String getCodeSystem() {
+        return codeSystem;
+    }
+
+    public void setCodeSystem(String codeSystem) {
+        this.codeSystem = codeSystem;
+    }
+
+    public String getViewHtml() {
+        return viewHtml;
+    }
+
+    public void setViewHtml(String viewHtml) {
+        this.viewHtml = viewHtml;
+    }
+
+    public String getEditHtml() {
+        return editHtml;
+    }
+
+    public void setEditHtml(String editHtml) {
+        this.editHtml = editHtml;
+    }
+    
+    
     
 }

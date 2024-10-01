@@ -73,7 +73,7 @@
                             </p:column>
 
                             <p:column headerText="Bill No">
-                                <h:outputLabel value="#{bi.paidForBillFee.bill.insId}">
+                                <h:outputLabel value="#{bi.paidForBillFee.bill.deptId}">
                                 </h:outputLabel>
                             </p:column>
 
@@ -151,7 +151,7 @@
                             </p:column>
 
                             <p:column headerText="Bill No">
-                                <h:outputLabel value="#{bi.paidForBillFee.bill.insId}">
+                                <h:outputLabel value="#{bi.paidForBillFee.bill.deptId}">
                                 </h:outputLabel>
                             </p:column>
 
@@ -239,7 +239,7 @@
 
                             <p:column headerText="Bill No">
                                 <h:commandLink action="payment_staff_bill" >
-                                    <h:outputLabel value="#{bf.bill.insId}">
+                                    <h:outputLabel value="#{bf.bill.deptId}">
                                     </h:outputLabel>
                                     <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
                                 </h:commandLink>
@@ -341,7 +341,7 @@
 
                             <p:column headerText="Bill No">
                                 <h:commandLink action="payment_staff_bill" >
-                                    <h:outputLabel value="#{bf.bill.insId}">
+                                    <h:outputLabel value="#{bf.bill.deptId}">
                                     </h:outputLabel>
                                     <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
                                 </h:commandLink>

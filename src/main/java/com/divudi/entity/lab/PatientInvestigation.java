@@ -4,6 +4,7 @@
  */
 package com.divudi.entity.lab;
 
+import com.divudi.data.lab.PatientInvestigationStatus;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Department;
@@ -17,12 +18,15 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 
 /**
@@ -52,7 +56,7 @@ public class PatientInvestigation implements Serializable {
     private Patient patient;
     @ManyToOne
     private Investigation investigation;
-    @ManyToOne
+    @OneToOne
     private BillItem billItem;
     @ManyToOne
     BillComponent billComponent;
@@ -61,6 +65,12 @@ public class PatientInvestigation implements Serializable {
     @ManyToOne
     private PatientEncounter encounter;
     //Sample Collection
+    private Boolean barcodeGenerated = false;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date barcodeGeneratedAt;
+    @ManyToOne
+    private WebUser barcodeGeneratedBy;
+    //Sample Collection
     private Boolean collected = false;
     @ManyToOne
     private WebUser sampleCollecter;
@@ -68,6 +78,13 @@ public class PatientInvestigation implements Serializable {
     private Date sampledAt;
     private Boolean sampleOutside = false;
     private String sampleComments;
+    //Sample Sent to Lab
+    private Boolean sampleSent = false;
+    @ManyToOne
+    private WebUser sampleSentBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date sampleSentAt;
+    private String sampleSentComments;
     @ManyToOne
     private Department sampleDepartment;
     @ManyToOne
@@ -163,11 +180,126 @@ public class PatientInvestigation implements Serializable {
     private Department outsourcedDepartment;
     @ManyToOne
     private Institution outsourcedInstitution;
-    @OneToMany(mappedBy="patientInvestigation",fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "patientInvestigation", fetch = FetchType.EAGER)
     List<PatientReport> patientReports;
+    @Enumerated(EnumType.ORDINAL)
+    private PatientInvestigationStatus status;
+    // Report Distributes
+    private Boolean reportDistributed = false;
+    @ManyToOne
+    private WebUser reportDistributedBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date reportDistributedAt;
+    //Report Handovered
+    private Boolean reportHandedOver = false;
+    @ManyToOne
+    private WebUser reportHandedOverBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date reportHandedOverAt;
+//Report Printed
+    private Boolean reportPrinted = false;
+    @ManyToOne
+    private WebUser reportPrintedBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date reportPrintedAt;
+//Report reached at Collecting Centre
+    private Boolean reportReachedCollectingCentre = false;
+    @ManyToOne
+    private WebUser reportReachedCollectingCentreBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date reportReachedCollectingCentreAt;
+//Sample Accepted
+    private Boolean sampleAccepted = false;
+    @ManyToOne
+    private WebUser sampleAcceptedBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date sampleAcceptedAt;
+//Sample Approved
+    private Boolean sampleApproved = false;
+    @ManyToOne
+    private WebUser sampleApprovedBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date sampleApprovedAt;
+//Sample Repeated
+    private Boolean sampleApprovedAndRepeated = false;
+    @ManyToOne
+    private WebUser sampleApprovedAndRepeatedBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date sampleApprovedAndRepeatedAt;
+//Sample Collected
+    private Boolean sampleCollected = false;
+    @ManyToOne
+    private WebUser sampleCollectedBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date sampleCollectedAt;
+//Sample Generate
+    private Boolean sampleGenerated = false;
+    @ManyToOne
+    private WebUser sampleGeneratedBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date sampleGeneratedAt;
+//Sample Interfaces
+    private Boolean sampleInterfaced = false;
+    @ManyToOne
+    private WebUser sampleInterfacedBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date sampleInterfacedAt;
+//Sample Recollected
+    private Boolean sampleRecollected = false;
+    @ManyToOne
+    private WebUser sampleRecollectedBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date sampleRecollectedAt;
+//Sample Rejected
+    private Boolean sampleRejected = false;
+    @ManyToOne
+    private WebUser sampleRejectedBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date sampleRejectedAt;
+//Sample Repeated
+    private Boolean sampleRepeated = false;
+    @ManyToOne
+    private WebUser sampleRepeatedBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date sampleRepeatedAt;
+//Sample Resent
+    private Boolean sampleResent = false;
+    @ManyToOne
+    private WebUser sampleResentBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date sampleResentAt;
+//Sample Reverted
+    private Boolean sampleReverted = false;
+    @ManyToOne
+    private WebUser sampleRevertedBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date sampleRevertedAt;
+    
+    String sampleIds;
+
+    
+    
+    public PatientInvestigation() {
+        if (status == null) {
+            status = PatientInvestigationStatus.ORDERED;
+        }
+    }
+
+    public String getSampleIds() {
+        if(sampleIds == null){
+            sampleIds = "";
+        }
+        return sampleIds;
+    }
+
+    public void setSampleIds(String sampleIds) {
+        this.sampleIds = sampleIds;
+    }
+    
+    
 
     public List<PatientReport> getPatientReports() {
-        if(patientReports == null){
+        if (patientReports == null) {
             patientReports = new ArrayList<>();
         }
         return patientReports;
@@ -176,9 +308,7 @@ public class PatientInvestigation implements Serializable {
     public void setPatientReports(List<PatientReport> patientReports) {
         this.patientReports = patientReports;
     }
-    
-    
-    
+
     public BillComponent getBillComponent() {
         return billComponent;
     }
@@ -196,7 +326,7 @@ public class PatientInvestigation implements Serializable {
 
     @Override
     public boolean equals(Object object) {
-        
+
         if (!(object instanceof PatientInvestigation)) {
             return false;
         }
@@ -254,7 +384,7 @@ public class PatientInvestigation implements Serializable {
 
     public Boolean getSampleOutside() {
         //////// // System.out.println("Getting "+sampleOutside);
-        
+
         return sampleOutside;
     }
 
@@ -400,7 +530,7 @@ public class PatientInvestigation implements Serializable {
     }
 
     public Boolean getCancelled() {
-        
+
         return cancelled;
     }
 
@@ -767,4 +897,429 @@ public class PatientInvestigation implements Serializable {
     public void setPackege(Packege packege) {
         this.packege = packege;
     }
+
+    public Boolean getBarcodeGenerated() {
+        return barcodeGenerated;
+    }
+
+    public void setBarcodeGenerated(Boolean barcodeGenerated) {
+        this.barcodeGenerated = barcodeGenerated;
+    }
+
+    public Date getBarcodeGeneratedAt() {
+        return barcodeGeneratedAt;
+    }
+
+    public void setBarcodeGeneratedAt(Date barcodeGeneratedAt) {
+        this.barcodeGeneratedAt = barcodeGeneratedAt;
+    }
+
+    public WebUser getBarcodeGeneratedBy() {
+        return barcodeGeneratedBy;
+    }
+
+    public void setBarcodeGeneratedBy(WebUser barcodeGeneratedBy) {
+        this.barcodeGeneratedBy = barcodeGeneratedBy;
+    }
+
+    public PatientInvestigationStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(PatientInvestigationStatus status) {
+        this.status = status;
+    }
+
+    public Boolean getSampleSent() {
+        return sampleSent;
+    }
+
+    public void setSampleSent(Boolean sampleSent) {
+        this.sampleSent = sampleSent;
+    }
+
+    public WebUser getSampleSentBy() {
+        return sampleSentBy;
+    }
+
+    public void setSampleSentBy(WebUser sampleSentBy) {
+        this.sampleSentBy = sampleSentBy;
+    }
+
+    public Date getSampleSentAt() {
+        return sampleSentAt;
+    }
+
+    public void setSampleSentAt(Date sampleSentAt) {
+        this.sampleSentAt = sampleSentAt;
+    }
+
+    public String getSampleSentComments() {
+        return sampleSentComments;
+    }
+
+    public void setSampleSentComments(String sampleSentComments) {
+        this.sampleSentComments = sampleSentComments;
+    }
+
+    public Boolean getReportDistributed() {
+        return reportDistributed;
+    }
+
+    public void setReportDistributed(Boolean reportDistributed) {
+        this.reportDistributed = reportDistributed;
+    }
+
+    public WebUser getReportDistributedBy() {
+        return reportDistributedBy;
+    }
+
+    public void setReportDistributedBy(WebUser reportDistributedBy) {
+        this.reportDistributedBy = reportDistributedBy;
+    }
+
+    public Date getReportDistributedAt() {
+        return reportDistributedAt;
+    }
+
+    public void setReportDistributedAt(Date reportDistributedAt) {
+        this.reportDistributedAt = reportDistributedAt;
+    }
+
+    public Boolean getReportHandedOver() {
+        return reportHandedOver;
+    }
+
+    public void setReportHandedOver(Boolean reportHandedOver) {
+        this.reportHandedOver = reportHandedOver;
+    }
+
+    public WebUser getReportHandedOverBy() {
+        return reportHandedOverBy;
+    }
+
+    public void setReportHandedOverBy(WebUser reportHandedOverBy) {
+        this.reportHandedOverBy = reportHandedOverBy;
+    }
+
+    public Date getReportHandedOverAt() {
+        return reportHandedOverAt;
+    }
+
+    public void setReportHandedOverAt(Date reportHandedOverAt) {
+        this.reportHandedOverAt = reportHandedOverAt;
+    }
+
+    public Boolean getReportPrinted() {
+        return reportPrinted;
+    }
+
+    public void setReportPrinted(Boolean reportPrinted) {
+        this.reportPrinted = reportPrinted;
+    }
+
+    public WebUser getReportPrintedBy() {
+        return reportPrintedBy;
+    }
+
+    public void setReportPrintedBy(WebUser reportPrintedBy) {
+        this.reportPrintedBy = reportPrintedBy;
+    }
+
+    public Date getReportPrintedAt() {
+        return reportPrintedAt;
+    }
+
+    public void setReportPrintedAt(Date reportPrintedAt) {
+        this.reportPrintedAt = reportPrintedAt;
+    }
+
+    public Boolean getReportReachedCollectingCentre() {
+        return reportReachedCollectingCentre;
+    }
+
+    public void setReportReachedCollectingCentre(Boolean reportReachedCollectingCentre) {
+        this.reportReachedCollectingCentre = reportReachedCollectingCentre;
+    }
+
+    public WebUser getReportReachedCollectingCentreBy() {
+        return reportReachedCollectingCentreBy;
+    }
+
+    public void setReportReachedCollectingCentreBy(WebUser reportReachedCollectingCentreBy) {
+        this.reportReachedCollectingCentreBy = reportReachedCollectingCentreBy;
+    }
+
+    public Date getReportReachedCollectingCentreAt() {
+        return reportReachedCollectingCentreAt;
+    }
+
+    public void setReportReachedCollectingCentreAt(Date reportReachedCollectingCentreAt) {
+        this.reportReachedCollectingCentreAt = reportReachedCollectingCentreAt;
+    }
+
+    public Boolean getSampleAccepted() {
+        return sampleAccepted;
+    }
+
+    public void setSampleAccepted(Boolean sampleAccepted) {
+        this.sampleAccepted = sampleAccepted;
+    }
+
+    public WebUser getSampleAcceptedBy() {
+        return sampleAcceptedBy;
+    }
+
+    public void setSampleAcceptedBy(WebUser sampleAcceptedBy) {
+        this.sampleAcceptedBy = sampleAcceptedBy;
+    }
+
+    public Date getSampleAcceptedAt() {
+        return sampleAcceptedAt;
+    }
+
+    public void setSampleAcceptedAt(Date sampleAcceptedAt) {
+        this.sampleAcceptedAt = sampleAcceptedAt;
+    }
+
+    public Boolean getSampleApproved() {
+        return sampleApproved;
+    }
+
+    public void setSampleApproved(Boolean sampleApproved) {
+        this.sampleApproved = sampleApproved;
+    }
+
+    public WebUser getSampleApprovedBy() {
+        return sampleApprovedBy;
+    }
+
+    public void setSampleApprovedBy(WebUser sampleApprovedBy) {
+        this.sampleApprovedBy = sampleApprovedBy;
+    }
+
+    public Date getSampleApprovedAt() {
+        return sampleApprovedAt;
+    }
+
+    public void setSampleApprovedAt(Date sampleApprovedAt) {
+        this.sampleApprovedAt = sampleApprovedAt;
+    }
+
+    public Boolean getSampleApprovedAndRepeated() {
+        return sampleApprovedAndRepeated;
+    }
+
+    public void setSampleApprovedAndRepeated(Boolean sampleApprovedAndRepeated) {
+        this.sampleApprovedAndRepeated = sampleApprovedAndRepeated;
+    }
+
+    public WebUser getSampleApprovedAndRepeatedBy() {
+        return sampleApprovedAndRepeatedBy;
+    }
+
+    public void setSampleApprovedAndRepeatedBy(WebUser sampleApprovedAndRepeatedBy) {
+        this.sampleApprovedAndRepeatedBy = sampleApprovedAndRepeatedBy;
+    }
+
+    public Date getSampleApprovedAndRepeatedAt() {
+        return sampleApprovedAndRepeatedAt;
+    }
+
+    public void setSampleApprovedAndRepeatedAt(Date sampleApprovedAndRepeatedAt) {
+        this.sampleApprovedAndRepeatedAt = sampleApprovedAndRepeatedAt;
+    }
+
+    public Boolean getSampleCollected() {
+        return sampleCollected;
+    }
+
+    public void setSampleCollected(Boolean sampleCollected) {
+        this.sampleCollected = sampleCollected;
+    }
+
+    public WebUser getSampleCollectedBy() {
+        return sampleCollectedBy;
+    }
+
+    public void setSampleCollectedBy(WebUser sampleCollectedBy) {
+        this.sampleCollectedBy = sampleCollectedBy;
+    }
+
+    public Date getSampleCollectedAt() {
+        return sampleCollectedAt;
+    }
+
+    public void setSampleCollectedAt(Date sampleCollectedAt) {
+        this.sampleCollectedAt = sampleCollectedAt;
+    }
+
+    public Boolean getSampleGenerated() {
+        return sampleGenerated;
+    }
+
+    public void setSampleGenerated(Boolean sampleGenerated) {
+        this.sampleGenerated = sampleGenerated;
+    }
+
+    public WebUser getSampleGeneratedBy() {
+        return sampleGeneratedBy;
+    }
+
+    public void setSampleGeneratedBy(WebUser sampleGeneratedBy) {
+        this.sampleGeneratedBy = sampleGeneratedBy;
+    }
+
+    public Date getSampleGeneratedAt() {
+        return sampleGeneratedAt;
+    }
+
+    public void setSampleGeneratedAt(Date sampleGeneratedAt) {
+        this.sampleGeneratedAt = sampleGeneratedAt;
+    }
+
+    public Boolean getSampleInterfaced() {
+        return sampleInterfaced;
+    }
+
+    public void setSampleInterfaced(Boolean sampleInterfaced) {
+        this.sampleInterfaced = sampleInterfaced;
+    }
+
+    public WebUser getSampleInterfacedBy() {
+        return sampleInterfacedBy;
+    }
+
+    public void setSampleInterfacedBy(WebUser sampleInterfacedBy) {
+        this.sampleInterfacedBy = sampleInterfacedBy;
+    }
+
+    public Date getSampleInterfacedAt() {
+        return sampleInterfacedAt;
+    }
+
+    public void setSampleInterfacedAt(Date sampleInterfacedAt) {
+        this.sampleInterfacedAt = sampleInterfacedAt;
+    }
+
+    public Boolean getSampleRecollected() {
+        return sampleRecollected;
+    }
+
+    public void setSampleRecollected(Boolean sampleRecollected) {
+        this.sampleRecollected = sampleRecollected;
+    }
+
+    public WebUser getSampleRecollectedBy() {
+        return sampleRecollectedBy;
+    }
+
+    public void setSampleRecollectedBy(WebUser sampleRecollectedBy) {
+        this.sampleRecollectedBy = sampleRecollectedBy;
+    }
+
+    public Date getSampleRecollectedAt() {
+        return sampleRecollectedAt;
+    }
+
+    public void setSampleRecollectedAt(Date sampleRecollectedAt) {
+        this.sampleRecollectedAt = sampleRecollectedAt;
+    }
+
+    public Boolean getSampleRejected() {
+        return sampleRejected;
+    }
+
+    public void setSampleRejected(Boolean sampleRejected) {
+        this.sampleRejected = sampleRejected;
+    }
+
+    public WebUser getSampleRejectedBy() {
+        return sampleRejectedBy;
+    }
+
+    public void setSampleRejectedBy(WebUser sampleRejectedBy) {
+        this.sampleRejectedBy = sampleRejectedBy;
+    }
+
+    public Date getSampleRejectedAt() {
+        return sampleRejectedAt;
+    }
+
+    public void setSampleRejectedAt(Date sampleRejectedAt) {
+        this.sampleRejectedAt = sampleRejectedAt;
+    }
+
+    public Boolean getSampleRepeated() {
+        return sampleRepeated;
+    }
+
+    public void setSampleRepeated(Boolean sampleRepeated) {
+        this.sampleRepeated = sampleRepeated;
+    }
+
+    public WebUser getSampleRepeatedBy() {
+        return sampleRepeatedBy;
+    }
+
+    public void setSampleRepeatedBy(WebUser sampleRepeatedBy) {
+        this.sampleRepeatedBy = sampleRepeatedBy;
+    }
+
+    public Date getSampleRepeatedAt() {
+        return sampleRepeatedAt;
+    }
+
+    public void setSampleRepeatedAt(Date sampleRepeatedAt) {
+        this.sampleRepeatedAt = sampleRepeatedAt;
+    }
+
+    public Boolean getSampleResent() {
+        return sampleResent;
+    }
+
+    public void setSampleResent(Boolean sampleResent) {
+        this.sampleResent = sampleResent;
+    }
+
+    public WebUser getSampleResentBy() {
+        return sampleResentBy;
+    }
+
+    public void setSampleResentBy(WebUser sampleResentBy) {
+        this.sampleResentBy = sampleResentBy;
+    }
+
+    public Date getSampleResentAt() {
+        return sampleResentAt;
+    }
+
+    public void setSampleResentAt(Date sampleResentAt) {
+        this.sampleResentAt = sampleResentAt;
+    }
+
+    public Boolean getSampleReverted() {
+        return sampleReverted;
+    }
+
+    public void setSampleReverted(Boolean sampleReverted) {
+        this.sampleReverted = sampleReverted;
+    }
+
+    public WebUser getSampleRevertedBy() {
+        return sampleRevertedBy;
+    }
+
+    public void setSampleRevertedBy(WebUser sampleRevertedBy) {
+        this.sampleRevertedBy = sampleRevertedBy;
+    }
+
+    public Date getSampleRevertedAt() {
+        return sampleRevertedAt;
+    }
+
+    public void setSampleRevertedAt(Date sampleRevertedAt) {
+        this.sampleRevertedAt = sampleRevertedAt;
+    }
+
 }

@@ -22,10 +22,9 @@ public class BillLight {
     private Double discount;
     private Double netValue;
     private Long patientId;
-
+    private String canterName;
     private String referringDoctorName;
-
-
+    
     public BillLight() {
     }
 
@@ -38,11 +37,21 @@ public class BillLight {
         this.netValue = netValue;
     }
 
-    
-
-    
-    
-    
+    public BillLight(Long id, String billNo, Date billDate, String CenterName, String institutionName, String departmentName, String userName, String patientName, String patientPhone, Double grossValue, Double discount, Double netValue, Long patientId) {
+        this.id = id;
+        this.billNo = billNo;
+        this.billDate = billDate;
+        this.canterName = CenterName;
+        this.institutionName = institutionName;
+        this.departmentName = departmentName;
+        this.userName = userName;
+        this.patientName = patientName;
+        this.patientPhone = patientPhone;
+        this.grossValue = grossValue;
+        this.discount = discount;
+        this.netValue = netValue;
+        this.patientId = patientId;
+    }
 
     public BillLight(Long id, String billNo, Date billDate, String institutionName, String departmentName, String userName, String patientName, String patientPhone, Double grossValue, Double discount, Double netValue) {
         this.id = id;
@@ -92,8 +101,6 @@ public class BillLight {
     public Date getBillDate() {
         return billDate;
     }
-    
-    
 
     public void setBillDate(Date billDate) {
         this.billDate = billDate;
@@ -171,8 +178,6 @@ public class BillLight {
         this.patientId = patientId;
     }
 
-    
-
     public String getReferringDoctorName() {
         return referringDoctorName;
     }
@@ -210,8 +215,13 @@ public class BillLight {
         final BillLight other = (BillLight) obj;
         return Objects.equals(this.id, other.id);
     }
-    
-    
-    
+
+    public String getCanterName() {
+        return canterName;
+    }
+
+    public void setCanterName(String canterName) {
+        this.canterName = canterName;
+    }
 
 }

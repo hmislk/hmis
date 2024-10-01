@@ -94,9 +94,7 @@
                                     <p:inputText class="mx-4" id="comment" value="#{admissionController.current.comments}" placeholder="Comment/Reference No"/>
                                 </h:panelGroup>
                                 <p:defaultCommand target="admt"/>
-                                <p:watermark for="bh" value="BHT No"/>
-                                <p:watermark for="cmbDoc" value="Room No "/>
-
+                                                                
                             </h:panelGrid>
                         </div>
 
@@ -132,9 +130,9 @@
                                                         id="refCon"
                                                         required="true" requiredMessage="Please select referring consultant"
                                                         completeMethod="#{consultantController.completeConsultant}" 
-                                                        var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
+                                                        var="mysp" itemLabel="#{mysp.person.nameWithTitle}" itemValue="#{mysp}"
                                                         styleClass="form-control w-100"
-                                                        class="w-100" 
+                                                        class="w-100" placeholder="Referring Consultant"
                                                         inputStyleClass="w-100"></p:autoComplete>
 
                                         <p:outputLabel value="Medical Officer"/>
@@ -242,12 +240,7 @@
                                                         </p:selectOneMenu>
 
 
-                                                        <p:watermark value="Guardian Name" for="gname" />
-                                                        <p:watermark value="Guardian NIC" for="gnic" />
-                                                        <p:watermark value="Guardian Address" for="gadd" />
-                                                        <p:watermark value="Guardian Mobile No" for="gmno" />
-                                                        <p:watermark value="Guardian Home No" for="ghno" />
-                                                    </h:panelGrid>
+                                                                                                                                                                                                                                                                                                                                            </h:panelGrid>
                                                 </p:tab>
                                                 <p:tab title="Appointment" >
                                                     <p:autoComplete forceSelection="true" id="aBill" 
@@ -257,7 +250,7 @@
                                                                     itemValue="#{apt2}" >
                                                         <p:ajax event="itemSelect" process="aBill" update="panSearch2" />
                                                         <p:column>
-                                                            #{apt2.insId}
+                                                            #{apt2.deptId}
                                                         </p:column>
                                                         <p:column>
                                                             #{apt2.patient.person.nameWithTitle}

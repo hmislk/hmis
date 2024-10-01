@@ -17,6 +17,7 @@ public enum ReportItemType {
     DataEntrySignature,
     DataEntryUserName,
     DataEntryUserDetails,
+    ApprovedAt,
     ApprovedSignature,
     ApprovedUserName,
     ApprovedUserDetails,
@@ -44,6 +45,7 @@ public enum ReportItemType {
     DataEntered,
     DateTime,
     Fax,
+    @Deprecated
     Institution,
     InvestigationName,
     Item,
@@ -58,6 +60,7 @@ public enum ReportItemType {
     PatientSex,
     Person,
     Phn,
+    PrintedAt,
     Phone,
     QrCodeDetails,
     QrCodeLink,
@@ -66,12 +69,27 @@ public enum ReportItemType {
     Religion,
     ReportedDate,
     ReportedTime,
+    ReceivedAt,
     SampledAt,
     SampledDate,
     SampledTime,
     Speciman,
     Surname,
     Ward,
+    
+    MRN,
+    SampledID,    
+    BillingDepartment,
+    PerformDepartment,
+    BillingInstitution,
+    PerformInstitution,
+    VisitType,
+    
+    CollectedOn,
+    ReceivedOn,
+    
+    PatientAgeandGender,
+    
     ;
 
     public String getLabel() {
@@ -190,6 +208,32 @@ public enum ReportItemType {
                 return "Data Entered User's Name";
             case DataEntryUserDetails:
                 return "Data Entered User's Details";
+            case ApprovedAt:
+                return "Approved Time";
+            case PrintedAt:
+                return "Printed Time";
+            case ReceivedAt:
+                return "Sample Received Time";
+            case MRN:
+                return "Patient MRN No";
+            case SampledID:
+                return "Sample ID";
+            case BillingDepartment:
+                return "Billing Department";
+            case PerformDepartment:
+                return "Perform Department";
+            case BillingInstitution:
+                return "Billing Institution";
+            case PerformInstitution:
+                return "Perform Institution";
+            case VisitType:
+                return "Visit Type";  
+            case CollectedOn:
+                return "Sample Collected Time";
+            case ReceivedOn:
+                return "Sample Received Time (Lab)";
+            case PatientAgeandGender:
+                return "Patient Age and Gender";
             default:
                 return this.toString();
         }

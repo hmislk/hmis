@@ -26,7 +26,8 @@
                 <div class="col-5">
                     <div class="d-flex"> 
                         <h:outputLabel value="REFUND" rendered="#{cc.attrs.bill.refunded}" /> 
-                        <h:outputLabel value="RECEIPT"/><h:outputText value=" - " /><h:outputText value="#{cc.attrs.bill.department.name}" />
+                        <h:outputLabel value="&nbsp;&nbsp;RECEIPT"/>
+                        <h:outputText rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Logged Department Name on the OPD Bill')}" value="&nbsp;&nbsp;-&nbsp;&nbsp;#{cc.attrs.bill.department.name}" />
                     </div>
                 </div>
 
@@ -119,8 +120,8 @@
                         </td>
 
                         <td>
-                            <h:outputLabel value="#{cc.attrs.bill.deptId}" class="billDetailsFiveFive">
-                            </h:outputLabel>
+                            <h:outputLabel value="#{cc.attrs.bill.cancelledBill.deptId}" class="billDetailsFiveFive" rendered="#{cc.attrs.bill.cancelled}"></h:outputLabel>
+                            <h:outputLabel value="#{cc.attrs.bill.deptId}" class="billDetailsFiveFive" rendered="#{!cc.attrs.bill.cancelled}"></h:outputLabel>
                         </td>
 
                     </tr>
@@ -210,10 +211,21 @@
             <h:panelGroup rendered="#{cc.attrs.bill.fromStaff ne null}" style="font-weight: bold;text-align: left;font-size: 14pt" >
                 <div >
                     <div style="width: 100%;text-align: center;font-size: 15px;font-weight: bolder" class="mt-2">
-                        <h:outputLabel value="Doctor : " ></h:outputLabel>
+                        <!--                        <h:outputLabel value="Doctor : " ></h:outputLabel>-->
                         <h:outputLabel value="#{cc.attrs.bill.fromStaff.person.nameWithTitle}" ></h:outputLabel>
                     </div>
                 </div>
+            </h:panelGroup>
+            
+             <h:panelGroup  rendered="#{configOptionApplicationController.getBooleanValueByKey('Print OPD Bill Session Number')}" >
+                <h:panelGroup  rendered="#{cc.attrs.bill.singleBillSession ne null}" >
+                    <div class="billline">
+                        <div style="width: 100%;text-align: center;font-size: 10px;">
+                            <p:outputLabel value="Session No. : " ></p:outputLabel>
+                            <p:outputLabel value="#{cc.attrs.bill.singleBillSession.serialNo}" ></p:outputLabel>
+                        </div>
+                    </div>
+                </h:panelGroup>
             </h:panelGroup>
 
             <div class="" >
@@ -266,6 +278,20 @@
                                         </h:outputLabel>
                                     </td>
                                 </tr>
+                                <h:panelGroup rendered="#{bip.item.printSessionNumber}" >
+                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Individual Bill Item Session Number in OPD Bills')}" >
+                                        <tr>
+                                            <td  style="overflow: visible;">
+                                                <p:spacer height="1" width="10" ></p:spacer>
+                                                <h:outputLabel class="itemsBlockRightFiveFive" value="Session No. : " >
+                                                </h:outputLabel>
+                                                <h:outputLabel class="itemsBlockRightFiveFive"   value="#{bip.billSession.serialNo}"    >
+                                                </h:outputLabel>
+                                            </td>
+                                        </tr>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+
                             </h:panelGroup>
                             <h:panelGroup rendered="#{bip.item.printFeesForBills}">
                                 <ui:repeat value="#{bip.billFees}" var="bf" >
@@ -303,7 +329,7 @@
                     </h:panelGroup>
 
                     <h:panelGroup rendered="#{cc.attrs.bill.margin ne 0.0}">
-                       
+
                         <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip"   >
                             <tr>
                                 <td  style="overflow: visible;">
@@ -400,12 +426,16 @@
 
             </div>
 
-            <div style="font-size: 8pt">
-                <h:outputLabel value="Payment : #{cc.attrs.bill.paymentMethod}" >
-                </h:outputLabel>
+            <div style="font-size: 9pt" class="d-flex justify-content-between">
+                <h:outputLabel value="Payment : #{cc.attrs.bill.paymentMethod}" ></h:outputLabel>
+                <h:outputLabel value="Original Bill : #{cc.attrs.bill.deptId}" rendered="#{cc.attrs.bill.cancelled and configOptionApplicationController.getBooleanValueByKey('Package Billing - Display the Original Bill Number in Canceled Bill',false)}"/>
+            
             </div>
+            
+            
 
-            <ui:repeat value="#{cc.attrs.payments}" var="ps">
+            <ui:repeat value="#{cc.attrs.bill.payments}" var="ps">
+                
                 <h:panelGroup rendered="#{ps.paymentMethod eq 'Card' }" >
                     <h:outputText 
                         style="font-size: 8pt"  
@@ -421,6 +451,24 @@
                     <h:outputLabel value="#{sessionController.currentDate}">
                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                     </h:outputLabel>
+                </div>
+            </h:panelGroup>
+
+            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Add OPD Bill Printing by Details')}">
+                <br />
+                <div style="font-size: 9pt">
+                    <h:outputLabel value="Printed By :"/>
+                    <h:outputLabel value="#{sessionController.loggedUser.name}"/>
+                    <h:outputLabel class="mx-2" value="#{sessionController.currentDate}">
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
+                    </h:outputLabel>
+                </div>
+            </h:panelGroup>
+            
+            <h:panelGroup rendered="#{cc.attrs.bill.cancelled}">
+                <div class="d-flex gap-2" style="font-size: 12px;">
+                    <h:outputLabel value="Remark :"/>
+                    <h:outputLabel value="#{cc.attrs.bill.cancelledBill.comments}"/>
                 </div>
             </h:panelGroup>
 

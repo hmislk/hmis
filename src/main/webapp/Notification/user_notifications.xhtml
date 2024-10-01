@@ -49,7 +49,7 @@
 
                         </div>
                         <h:panelGroup id="reNot" >
-                            <p:repeat value="#{userNotificationController.items}" var="un">
+                            <ui:repeat value="#{userNotificationController.items}" var="un">
                                 <div class="row mt-2 shadow-lg" style="#{un.notification.bill.cancelled ? 'background-color: #e35656;' : ''}">
                                     <h:panelGroup rendered="#{un.notification.bill.billTypeAtomic eq 'INWARD_PHARMACY_REQUEST'}">
                                         <div class="col-4 p-2 text-left" style="background: linear-gradient(90deg, rgba(58,71,180,1) 0%, rgba(65,6,27,1) 100%);">
@@ -150,7 +150,7 @@
                                     </div>
 
                                 </div>
-                            </p:repeat>
+                            </ui:repeat>
                         </h:panelGroup>
                     </h:panelGroup>
                 </h:form>

@@ -7,6 +7,7 @@ package com.divudi.entity;
 import com.divudi.data.BillItemStatus;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.data.lab.Priority;
+import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.entity.pharmacy.Ampp;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.entity.pharmacy.UserStock;
@@ -38,6 +39,12 @@ import javax.persistence.Transient;
 @Entity
 public class BillItem implements Serializable {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    Long id;
+
+    static final long serialVersionUID = 1L;
+
     @OneToOne(mappedBy = "billItem", fetch = FetchType.LAZY)
     BillSession billSession;
 
@@ -47,10 +54,6 @@ public class BillItem implements Serializable {
     @OneToOne(mappedBy = "billItem", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private PharmaceuticalBillItem pharmaceuticalBillItem;
 
-    static final long serialVersionUID = 1L;
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    Long id;
     Double qty = 0.0;
     @Transient
     private Double absoluteQty;
@@ -71,13 +74,14 @@ public class BillItem implements Serializable {
     double netValue;
     @Transient
     private double absoluteNetValue;
-    double vatPlusNetValue;
+    private double vatPlusNetValue;
 
-    double marginValue;
+    private double marginValue;
     private double adjustedValue;
-    double hospitalFee;
+    private double hospitalFee;
     private double collectingCentreFee;
-    double staffFee;
+    private double staffFee;
+    private double otherFee;
 //    private double dblValue;
     @ManyToOne
     Item item;
@@ -85,7 +89,8 @@ public class BillItem implements Serializable {
     Bill bill;
     @ManyToOne
     Bill expenseBill;
-    Boolean refunded;
+    boolean refunded;
+    private boolean billItemRefunded;
     //Created Properties
     @ManyToOne
     WebUser creater;
@@ -112,6 +117,8 @@ public class BillItem implements Serializable {
     Date fromTime;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date toTime;
+    @OneToOne(mappedBy = "billItem")
+    private PatientInvestigation patientInvestigation;
     @OneToOne
     BillItem referanceBillItem;
     @OneToOne
@@ -131,6 +138,7 @@ public class BillItem implements Serializable {
     private Priority priority;
     @Enumerated(EnumType.ORDINAL)
     private BillItemStatus billItemStatus;
+    private double feeValue;
 
 //    @Transient
     int searialNo;
@@ -278,6 +286,9 @@ public class BillItem implements Serializable {
         hospitalFee = 0 - billItem.getHospitalFee();
         vat = 0 - billItem.getVat();
         vatPlusNetValue = 0 - billItem.getVatPlusNetValue();
+        collectingCentreFee = 0 - billItem.getCollectingCentreFee();
+        otherFee = 0 - billItem.getOtherFee();
+        feeValue = 0 - billItem.getFeeValue();
     }
 
     public void invertValue() {
@@ -295,6 +306,9 @@ public class BillItem implements Serializable {
         hospitalFee = 0 - getHospitalFee();
         vat = 0 - getVat();
         vatPlusNetValue = 0 - getVatPlusNetValue();
+        collectingCentreFee = 0 - getCollectingCentreFee();
+        otherFee = 0 - getOtherFee();
+        feeValue = 0 - getFeeValue();
     }
 
     @Override
@@ -417,15 +431,15 @@ public class BillItem implements Serializable {
         this.bill = bill;
     }
 
-    public Boolean isRefunded() {
+    public boolean isRefunded() {
         return refunded;
     }
 
-    public Boolean getRefunded() {
-        return refunded;
-    }
+//    public boolean getRefunded() {
+//        return refunded;
+//    }
 
-    public void setRefunded(Boolean refunded) {
+    public void setRefunded(boolean refunded) {
         this.refunded = refunded;
     }
 
@@ -952,5 +966,39 @@ public class BillItem implements Serializable {
         return totalProcedureFeeValueTransient;
     }
 
+    public double getOtherFee() {
+        return otherFee;
+    }
+
+    public void setOtherFee(double otherFee) {
+        this.otherFee = otherFee;
+    }
+
+    public double getFeeValue() {
+        return feeValue;
+    }
+
+    public void setFeeValue(double feeValue) {
+        this.feeValue = feeValue;
+    }
+
+    
+    public PatientInvestigation getPatientInvestigation() {
+        return patientInvestigation;
+    }
+
+    public void setPatientInvestigation(PatientInvestigation patientInvestigation) {
+        this.patientInvestigation = patientInvestigation;
+    }
+
+    public boolean isBillItemRefunded() {
+        return billItemRefunded;
+    }
+
+    public void setBillItemRefunded(boolean billItemRefunded) {
+        this.billItemRefunded = billItemRefunded;
+    }
+    
+    
 
 }

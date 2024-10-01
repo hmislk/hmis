@@ -23,8 +23,7 @@
                             </p:selectOneMenu>
 
                             <p:inputText value="#{cashRecieveBillController.comment}" id="comment"/>
-                            <p:watermark value="Comment" for="comment"/>
-
+                            
                             <h:panelGroup id="creditCard" style="display: #{cashRecieveBillController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
                                 <pa:creditCard paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
                             </h:panelGroup>
@@ -130,7 +129,7 @@
                 <p:panel rendered="#{cashRecieveBillController.printPreview}" >
                     <p:commandButton value="New Bill" ajax="false" action="#{cashRecieveBillController.prepareNewBill()}"  >
                     </p:commandButton>
-                    <bi:insRecieve billController="#{cashRecieveBillController}"  bill="#{cashRecieveBillController.current}" dup="false"/>                       
+                    <bi:insRecieve_custom billController="#{cashRecieveBillController}"  bill="#{cashRecieveBillController.current}" dup="false"/>                       
                 </p:panel>
 
             </h:form>

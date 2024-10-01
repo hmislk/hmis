@@ -12,6 +12,7 @@ import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
@@ -70,6 +71,8 @@ public class StorePurchaseOrderController implements Serializable {
     // List<PharmaceuticalBillItem> pharmaceuticalBillItems;
     //////////
 
+    private BillItem currentBillItem;
+
     private CommonFunctions commonFunctions;
     private LazyDataModel<Bill> searchBills;
 
@@ -95,9 +98,33 @@ public class StorePurchaseOrderController implements Serializable {
         calTotal();
     }
 
-    private int maxResult = 50;
 
-   
+    
+    public void addExtraItem() {
+        if (getCurrentBillItem().getItem() == null) {
+            JsfUtil.addErrorMessage("Please select and item from the list");
+            return;
+        }
+
+        for (BillItem bi : getBillItems()) {
+            if (getCurrentBillItem().getItem().equals(bi.getItem())) {
+                JsfUtil.addErrorMessage("Already added this item");
+                return;
+            }
+        }
+
+        getCurrentBillItem().setSearialNo(getBillItems().size());
+        getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRateInUnit(getStoreBean().getLastPurchaseRate(getCurrentBillItem().getItem(), getSessionController().getDepartment()));
+        getCurrentBillItem().getPharmaceuticalBillItem().setRetailRateInUnit(getStoreBean().getLastRetailRate(getCurrentBillItem().getItem(), getSessionController().getDepartment()));
+      
+        getBillItems().add(getCurrentBillItem());
+
+        calTotal();
+
+        currentBillItem = null;
+    }
+
+    private int maxResult = 50;
 
     public void clearList() {
         filteredValue = null;
@@ -125,7 +152,7 @@ public class StorePurchaseOrderController implements Serializable {
     public void approve() {
         if (getAprovedBill().getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Select Paymentmethod");
-            return ;
+            return;
         }
 
         calTotal();
@@ -137,11 +164,10 @@ public class StorePurchaseOrderController implements Serializable {
         getRequestedBill().setReferenceBill(getAprovedBill());
         getBillFacade().edit(getRequestedBill());
 
-        clearList();
+        printPreview = true;
 
-       // return viewRequestedList();
+        // return viewRequestedList();
         //   printPreview = true;
-
     }
 
     public String viewRequestedList() {
@@ -183,10 +209,10 @@ public class StorePurchaseOrderController implements Serializable {
         getAprovedBill().setFromInstitution(getRequestedBill().getInstitution());
         getAprovedBill().setReferenceBill(getRequestedBill());
         getAprovedBill().setBackwardReferenceBill(getRequestedBill());
+        getAprovedBill().setBillTypeAtomic(BillTypeAtomic.STORE_ORDER_APPROVAL);
 
 //        getAprovedBill().setDeptId(getBillNumberBean().institutionBillNumberGeneratorWithReference(getRequestedBill().getDepartment(), getAprovedBill(), BillType.StoreOrder, BillNumberSuffix.PO));
 //        getAprovedBill().setInsId(getBillNumberBean().institutionBillNumberGeneratorWithReference(getRequestedBill().getInstitution(), getAprovedBill(), BillType.StoreOrder, BillNumberSuffix.PO));
-        
         getAprovedBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getRequestedBill().getDepartment(), BillType.StoreOrderApprove, BillClassType.BilledBill, BillNumberSuffix.PO));
         getAprovedBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getRequestedBill().getInstitution(), BillType.StoreOrderApprove, BillClassType.BilledBill, BillNumberSuffix.PO));
 
@@ -209,18 +235,41 @@ public class StorePurchaseOrderController implements Serializable {
 
             PharmaceuticalBillItem phItem = i.getPharmaceuticalBillItem();
             i.setPharmaceuticalBillItem(null);
-            getBillItemFacade().create(i);
+            try {
+                if (i.getId() == null) {
+                    getBillItemFacade().create(i);
+                } else {
+                    getBillItemFacade().edit(i);
+                }
+            } catch (Exception e) {
+            }
 
             phItem.setBillItem(i);
-            getPharmaceuticalBillItemFacade().create(phItem);
+            try {
+                if (phItem.getId() == null) {
+                    getPharmaceuticalBillItemFacade().create(phItem);
+                } else {
+                    getPharmaceuticalBillItemFacade().edit(phItem);
+                }
+            } catch (Exception e) {
+            }
 
             i.setPharmaceuticalBillItem(phItem);
-            getBillItemFacade().edit(i);
+            try {
+                getBillItemFacade().edit(i);
+            } catch (Exception e) {
+
+            }
 
             getAprovedBill().getBillItems().add(i);
         }
 
         getBillFacade().edit(getAprovedBill());
+    }
+
+    public String navigateToPurchaseOrderApproval() {
+        printPreview = false;
+        return "/store/store_purhcase_order_approving?faces-redirect=true";
     }
 
     public void generateBillComponent() {
@@ -232,6 +281,7 @@ public class StorePurchaseOrderController implements Serializable {
             PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
             ph.setBillItem(bi);
             ph.setQtyInUnit(i.getQtyInUnit());
+            ph.setFreeQtyInUnit(i.getFreeQtyInUnit());
             ph.setPurchaseRateInUnit(i.getPurchaseRateInUnit());
             ph.setRetailRateInUnit(i.getRetailRateInUnit());
             bi.setPharmaceuticalBillItem(ph);
@@ -304,7 +354,7 @@ public class StorePurchaseOrderController implements Serializable {
     public void setStoreBean(StoreBean storeBean) {
         this.storeBean = storeBean;
     }
-    
+
     public void calTotal() {
         double tmp = 0;
         int serialNo = 0;
@@ -348,7 +398,6 @@ public class StorePurchaseOrderController implements Serializable {
         this.billsToApprove = billsToApprove;
     }
 
-  
     public boolean getPrintPreview() {
         return printPreview;
     }
@@ -428,5 +477,16 @@ public class StorePurchaseOrderController implements Serializable {
 
     public void setMaxResult(int maxResult) {
         this.maxResult = maxResult;
+    }
+
+    public BillItem getCurrentBillItem() {
+        if(currentBillItem == null){
+            currentBillItem = new BillItem();
+        }
+        return currentBillItem;
+    }
+
+    public void setCurrentBillItem(BillItem currentBillItem) {
+        this.currentBillItem = currentBillItem;
     }
 }

@@ -10,6 +10,7 @@ import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.IdentifiableWithNameOrCode;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.inward.SurgeryBillType;
+import com.divudi.data.lab.PatientInvestigationStatus;
 import com.divudi.entity.cashTransaction.CashTransaction;
 import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.entity.pharmacy.StockVarientBillItem;
@@ -52,11 +53,14 @@ public class Bill implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     Long id;
-    
+
     static final long serialVersionUID = 1L;
-    
+
+    @ManyToOne
+    private Item item;
     @ManyToOne
     private MembershipScheme membershipScheme;
+    @Deprecated
     @OneToOne
     private CashTransaction cashTransaction;
     @OneToMany(mappedBy = "bill", fetch = FetchType.LAZY)
@@ -86,8 +90,7 @@ public class Bill implements Serializable {
     @Transient
     boolean transError;
 
-    
-    
+    private String ipOpOrCc;
 
     @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Payment> payments = new ArrayList<>();
@@ -109,7 +112,7 @@ public class Bill implements Serializable {
     // Bank Detail
     private String creditCardRefNo;
     private String chequeRefNo;
-
+    private boolean creditBill;
     private int creditDuration;
     @ManyToOne(fetch = FetchType.LAZY)
     private Institution bank;
@@ -176,7 +179,6 @@ public class Bill implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     private Institution paymentSchemeInstitution;
     @ManyToOne(fetch = FetchType.LAZY)
-    @Deprecated //Use fromInstitution
     private Institution collectingCentre;
     @ManyToOne(fetch = FetchType.LAZY)
     private Institution institution;
@@ -222,6 +224,8 @@ public class Bill implements Serializable {
     //Staff
     @ManyToOne(fetch = FetchType.LAZY)
     private Staff staff;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private WebUser webUser;
     @ManyToOne(fetch = FetchType.LAZY)
     private Staff fromStaff;
     @ManyToOne(fetch = FetchType.LAZY)
@@ -316,6 +320,12 @@ public class Bill implements Serializable {
     @OneToMany(mappedBy = "bill")
     private List<Sms> sentSmses;
 
+    private boolean completed;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private WebUser completedBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date completedAt;
+
     //Print Information
     private boolean printed;
     @ManyToOne(fetch = FetchType.LAZY)
@@ -323,7 +333,7 @@ public class Bill implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date printedAt;
 
-        //Print Information
+    //Print Information
     private boolean duplicatedPrinted;
     @ManyToOne(fetch = FetchType.LAZY)
     private WebUser duplicatePrintedUser;
@@ -358,8 +368,34 @@ public class Bill implements Serializable {
     private String ageAtBilledDate;
     @Transient
     private Bill tmpRefBill;
-    
-    
+
+    private String agentRefNo;
+    private boolean billClosed;
+
+    private String localNumber;
+
+    private boolean billPaymentCompletelySettled;
+
+    private double tenderedAmount;
+
+    private double totalHospitalFee;
+    private double totalCenterFee;
+    private double totalStaffFee;
+
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date fromDate;
+
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date toDate;
+
+    @Enumerated(EnumType.ORDINAL)
+    private PatientInvestigationStatus status;
+
+    public Bill() {
+        if (status == null) {
+            status = PatientInvestigationStatus.ORDERED;
+        }
+    }
 
     private void generateBillPrintFromBillTemplate() {
         billPrint = "";
@@ -557,8 +593,6 @@ public class Bill implements Serializable {
 
     }
 
-    
-    
     private String safeReplace(String value) {
         return value != null ? value : "";
     }
@@ -757,6 +791,14 @@ public class Bill implements Serializable {
         margin = 0 - bill.getMargin();
         grnNetTotal = 0 - bill.getGrnNetTotal();
         billTotal = 0 - bill.getBillTotal();
+        refundAmount = 0 - bill.getRefundAmount();
+        serviceCharge = 0 - bill.getServiceCharge();
+        expenseTotal = 0 - bill.getExpenseTotal();
+        claimableTotal = 0 - bill.getClaimableTotal();
+        tenderedAmount = 0 - bill.getTenderedAmount();
+        totalHospitalFee = 0 - bill.getTotalHospitalFee();
+        totalCenterFee = 0 - bill.getTotalCenterFee();
+        totalStaffFee = 0 - bill.getTotalStaffFee();
     }
 
     public void invertValue() {
@@ -780,6 +822,14 @@ public class Bill implements Serializable {
         grnNetTotal = 0 - getGrnNetTotal();
         vatPlusNetTotal = 0 - getVatPlusNetTotal();
         billTotal = 0 - getBillTotal();
+        refundAmount = 0 - getRefundAmount();
+        serviceCharge = 0 - getServiceCharge();
+        expenseTotal = 0 - getExpenseTotal();
+        claimableTotal = 0 - getClaimableTotal();
+        tenderedAmount = 0 - getTenderedAmount();
+        totalHospitalFee = 0 - getTotalHospitalFee();
+        totalCenterFee = 0 - getTotalCenterFee();
+        totalStaffFee = 0 - getTotalStaffFee();
     }
 
     public void copy(Bill bill) {
@@ -789,6 +839,7 @@ public class Bill implements Serializable {
         catId = bill.getCatId();
         creditCompany = bill.getCreditCompany();
         staff = bill.getStaff();
+        webUser = bill.getWebUser();
         toStaff = bill.getToStaff();
         fromStaff = bill.getFromStaff();
         toDepartment = bill.getToDepartment();
@@ -814,6 +865,7 @@ public class Bill implements Serializable {
         vat = bill.getVat();
         vatPlusNetTotal = bill.getVatPlusNetTotal();
         sessionId = bill.getSessionId();
+        ipOpOrCc = bill.getIpOpOrCc();
         //      referenceBill=bill.getReferenceBill();
     }
 
@@ -1159,7 +1211,6 @@ public class Bill implements Serializable {
     public void setPatientEncounter(PatientEncounter patientEncounter) {
         this.patientEncounter = patientEncounter;
     }
-
 
     public Long getId() {
         return id;
@@ -1537,6 +1588,9 @@ public class Bill implements Serializable {
     }
 
     public List<BillFee> getBillFees() {
+        if (billFees == null) {
+            billFees = new ArrayList<>();
+        }
         return billFees;
     }
 
@@ -1843,10 +1897,12 @@ public class Bill implements Serializable {
         this.fromWebUser = fromWebUser;
     }
 
+    @Deprecated
     public CashTransaction getCashTransaction() {
         return cashTransaction;
     }
 
+    @Deprecated
     public void setCashTransaction(CashTransaction cashTransaction) {
         this.cashTransaction = cashTransaction;
 
@@ -2192,4 +2248,159 @@ public class Bill implements Serializable {
         this.duplicatePrintedAt = duplicatePrintedAt;
     }
 
+    public String getAgentRefNo() {
+        return agentRefNo;
+    }
+
+    public void setAgentRefNo(String agentRefNo) {
+        this.agentRefNo = agentRefNo;
+    }
+
+    public boolean isBillClosed() {
+        return billClosed;
+    }
+
+    public void setBillClosed(boolean billClosed) {
+        this.billClosed = billClosed;
+    }
+
+    public String getLocalNumber() {
+        return localNumber;
+    }
+
+    public void setLocalNumber(String localNumber) {
+        this.localNumber = localNumber;
+    }
+
+    public String getIpOpOrCc() {
+        ipOpOrCc = "OP";
+        if (this.getPatientEncounter() != null) {
+            ipOpOrCc = "IP";
+        } else if (this.getCollectingCentre() != null) {
+            ipOpOrCc = "CC";
+        }
+        return ipOpOrCc;
+    }
+
+    public void setIpOpOrCc(String ipOpOrCc) {
+        this.ipOpOrCc = ipOpOrCc;
+    }
+
+    public boolean isBillPaymentCompletelySettled() {
+        return billPaymentCompletelySettled;
+    }
+
+    public void setBillPaymentCompletelySettled(boolean billPaymentCompletelySettled) {
+        this.billPaymentCompletelySettled = billPaymentCompletelySettled;
+    }
+
+    public double getTenderedAmount() {
+        return tenderedAmount;
+    }
+
+    public void setTenderedAmount(double tenderedAmount) {
+        this.tenderedAmount = tenderedAmount;
+    }
+
+    public double getTotalHospitalFee() {
+        return totalHospitalFee;
+    }
+
+    public void setTotalHospitalFee(double totalHospitalFee) {
+        this.totalHospitalFee = totalHospitalFee;
+    }
+
+    public double getTotalCenterFee() {
+        return totalCenterFee;
+    }
+
+    public void setTotalCenterFee(double totalCenterFee) {
+        this.totalCenterFee = totalCenterFee;
+    }
+
+    public double getTotalStaffFee() {
+        return totalStaffFee;
+    }
+
+    public void setTotalStaffFee(double totalStaffFee) {
+        this.totalStaffFee = totalStaffFee;
+    }
+
+    public PatientInvestigationStatus getStatus() {
+        if (status == null) {
+            status = PatientInvestigationStatus.ORDERED;
+        }
+        return status;
+    }
+
+    public void setStatus(PatientInvestigationStatus status) {
+        this.status = status;
+    }
+
+    public Item getItem() {
+        return item;
+    }
+
+    public void setItem(Item item) {
+        this.item = item;
+    }
+
+    public Date getFromDate() {
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
+    public boolean isCreditBill() {
+        return creditBill;
+    }
+
+    public void setCreditBill(boolean creditBill) {
+        this.creditBill = creditBill;
+    }
+
+    public boolean isCompleted() {
+        return completed;
+    }
+
+    public void setCompleted(boolean completed) {
+        this.completed = completed;
+    }
+
+    public WebUser getWebUser() {
+        return webUser;
+    }
+
+    public void setWebUser(WebUser webUser) {
+        this.webUser = webUser;
+    }
+
+    public WebUser getCompletedBy() {
+        return completedBy;
+    }
+
+    public void setCompletedBy(WebUser completedBy) {
+        this.completedBy = completedBy;
+    }
+
+    public Date getCompletedAt() {
+        return completedAt;
+    }
+
+    public void setCompletedAt(Date completedAt) {
+        this.completedAt = completedAt;
+    }
+
+    
+    
 }

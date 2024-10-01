@@ -8,7 +8,7 @@
       >
 
     <h:body>
-        <ui:composition template="/analytics/opd/index.xhtml">
+        <ui:composition template="/opd/analytics/index.xhtml">
             <ui:define name="subcontent">
                 <h:form>
                     <p:panel header="OPD Doctor Payments And Due" >
@@ -60,10 +60,7 @@
                                 <p:commandButton class="ui-button-success" icon="fas fa-file-excel" ajax="false" value="Excel"  >
                                     <p:dataExporter type="xlsx" target="tblFee,tblFee2" fileName="opd_pro_pay_due"  />
                                 </p:commandButton>
-                                <p:watermark for="acIx" value="Service" />
-                                <p:watermark for="acSpeciality" value="Speciality" />
-                                <p:watermark for="scStaff" value="Staff / Doctor" />
-
+                                                                                                
                             </h:panelGrid>
                         <br/><br/>
 
@@ -120,7 +117,7 @@
                                         <f:facet name="header">
                                             <h:outputLabel value="Bill No"/>
                                         </f:facet>
-                                        <h:outputLabel value="#{bf.bill.insId}">
+                                        <h:outputLabel value="#{bf.bill.deptId}">
                                         </h:outputLabel>
                                     </p:column>
 
@@ -210,7 +207,7 @@
                                         <f:facet name="header">
                                             <h:outputLabel value="Bill No"/>
                                         </f:facet>
-                                        <h:outputLabel value="#{bf.bill.insId}">
+                                        <h:outputLabel value="#{bf.bill.deptId}">
                                         </h:outputLabel>
                                     </p:column>
 

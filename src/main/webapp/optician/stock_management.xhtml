@@ -1,0 +1,63 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:bil="http://xmlns.jcp.org/jsf/composite/bill"
+      xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
+      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+      xmlns:pat="http://xmlns.jcp.org/jsf/composite/patient"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+
+                <p:growl id="panelError" />
+
+                <div class="row" >
+                    <div class="col-2" >
+                        <h:form>
+                            <p:panelGrid columns="1" class="w-100">
+                                <p:commandButton value="Purchase" icon="pi pi-shopping-cart" class="ui-button-success w-100"
+                                                 ajax="false" action="#{opticianController.navigateToPurchase()}">
+                                </p:commandButton>
+                                <p:commandButton value="Item Master" icon="pi pi-list" class="ui-button-warning w-100"
+                                                 ajax="false" action="#{opticianController.navigateToItemMaster()}">
+                                </p:commandButton>
+                                <p:commandButton value="Stock" icon="fa fa-truck" class="ui-button-primary w-100"
+                                                 ajax="false" action="#{opticianController.navigateToStockReport}">
+                                </p:commandButton>
+                                <p:commandButton value="Manufacturers" icon="fa fa-industry" class="ui-button-secondary w-100"
+                                                 ajax="false" action="#{opticianController.navigateToManufacturer()}">
+                                </p:commandButton>
+                                <p:commandButton value="Importers" icon="fa fa-globe" class="ui-button-secondary w-100"
+                                                 ajax="false" action="#{opticianController.navigateToImporter()}">
+                                </p:commandButton>
+                                <p:commandButton value="Suppliers" icon="fa fa-truck" class="ui-button-primary w-100"
+                                                 ajax="false" action="#{opticianController.navigateToSuppliers()}">
+                                </p:commandButton>
+                            </p:panelGrid>
+                        </h:form>
+
+
+                    </div>
+                    <div class="col-10" >
+                        <ui:insert name="subcontent" >
+
+                        </ui:insert>
+                    </div>
+                </div>
+
+
+
+
+
+
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>

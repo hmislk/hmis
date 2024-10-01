@@ -5,12 +5,15 @@
  */
 package com.divudi.entity.lab;
 
+import com.divudi.data.lab.PatientInvestigationStatus;
+import com.divudi.data.lab.Priority;
 import com.divudi.data.lab.SampleRequestType;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
+import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
 import java.util.Date;
@@ -26,7 +29,8 @@ import javax.persistence.Temporal;
 
 /**
  *
- * @author buddhika_ari
+ * @author buddhika.ari@gmail.com
+ *
  */
 @Entity
 public class PatientSample implements Serializable {
@@ -35,6 +39,13 @@ public class PatientSample implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+    private Long sampleId;
+
+    @ManyToOne
+    private Institution institution;
+    @ManyToOne
+    private Department department;
+
     @ManyToOne
     private Patient patient;
     @ManyToOne
@@ -46,18 +57,41 @@ public class PatientSample implements Serializable {
     private WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date createdAt;
+    //Barcode Generation
+    private Boolean barcodeGenerated;
+    @ManyToOne
+    private WebUser barcodeGenerator;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date barcodeGeneratedAt;
+    @ManyToOne
+    private Department barcodeGeneratedDepartment;
+    @ManyToOne
+    private Institution barcodeGeneratedInstitution;
     //Sample Collection
-    private Boolean collected;
+    private Boolean sampleCollected;
     @ManyToOne
     private WebUser sampleCollecter;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    private Date sampledAt;
-    private Boolean sampleOutside;
-    private String sampleComments;
+    private Date sampleCollectedAt;
+    private Boolean sampleCollectedOutside;
+    private String sampleCollectionComments;
     @ManyToOne
-    private Department sampleDepartment;
+    private Department sampleCollectedDepartment;
     @ManyToOne
-    private Institution sampleInstitution;
+    private Institution sampleCollectedInstitution;
+    //Sample Received at Lab
+    //Sample Sent to Lab
+    private Boolean sampleSent = false;
+    @ManyToOne
+    private WebUser sampleSentBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date sampleSentAt;
+    @ManyToOne
+    private Staff sampleTransportedToLabByStaff;
+
+    @Enumerated
+    private Priority priority;
+
     //Sent To Analyzer
     private Boolean readyTosentToAnalyzer;
     @Enumerated(EnumType.STRING)
@@ -85,6 +119,14 @@ public class PatientSample implements Serializable {
     private Department receivedFromAnalyzerDepartment;
     @ManyToOne
     private Institution receivedFromAnalyzerInstitution;
+    @ManyToOne
+    private PatientSample duplicatedFrom;
+    @ManyToOne
+    private PatientSample duplicatedTo;
+    @ManyToOne
+    private PatientSample divertedFrom;
+    @ManyToOne
+    private PatientSample divertedTo;
 
 //
     @ManyToOne
@@ -97,6 +139,25 @@ public class PatientSample implements Serializable {
     private Machine machine;
     @ManyToOne
     private Sample sample;
+
+    private Boolean sampleReceivedAtLab;
+
+    @ManyToOne
+    private WebUser sampleReceiverAtLab;
+
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date sampleReceivedAtLabAt;
+
+    private String sampleReceivedAtLabComments;
+
+    @ManyToOne
+    private Department sampleReceivedAtLabDepartment;
+
+    @ManyToOne
+    private Institution sampleReceivedAtLabInstitution;
+    @Enumerated(EnumType.ORDINAL)
+    private PatientInvestigationStatus status;
+
     //Cancellation
     private Boolean cancelled = false;
     @ManyToOne
@@ -108,6 +169,21 @@ public class PatientSample implements Serializable {
     private Department cancellDepartment;
     @ManyToOne
     private Institution cancellInstitution;
+    
+    private String sampleRejectionComment;
+    private Boolean sampleRejected = false;
+    @ManyToOne
+    private WebUser sampleRejectedBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date sampleRejectedAt;
+    
+    //Retairing properties
+    private boolean retired;
+    @ManyToOne
+    private WebUser retirer;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date retiredAt;
+    private String retireComments;
 
     public Long getId() {
         return id;
@@ -118,7 +194,7 @@ public class PatientSample implements Serializable {
     }
 
     public String getIdStr() {
-        String formatted = String.format("%08d", id);
+        String formatted = id + "";
         return formatted;
     }
 
@@ -141,10 +217,18 @@ public class PatientSample implements Serializable {
         }
         return true;
     }
+    
+    
 
     @Override
     public String toString() {
         return "com.divudi.entity.lab.PatientSample[ id=" + id + " ]";
+    }
+
+    public PatientSample() {
+        if (status == null) {
+            status = PatientInvestigationStatus.SAMPLE_GENERATED;
+        }
     }
 
     public Patient getPatient() {
@@ -203,12 +287,12 @@ public class PatientSample implements Serializable {
         this.sample = sample;
     }
 
-    public Boolean getCollected() {
-        return collected;
+    public Boolean getSampleCollected() {
+        return sampleCollected;
     }
 
-    public void setCollected(Boolean collected) {
-        this.collected = collected;
+    public void setSampleCollected(Boolean sampleCollected) {
+        this.sampleCollected = sampleCollected;
     }
 
     public WebUser getSampleCollecter() {
@@ -219,44 +303,44 @@ public class PatientSample implements Serializable {
         this.sampleCollecter = sampleCollecter;
     }
 
-    public Date getSampledAt() {
-        return sampledAt;
+    public Date getSampleCollectedAt() {
+        return sampleCollectedAt;
     }
 
-    public void setSampledAt(Date sampledAt) {
-        this.sampledAt = sampledAt;
+    public void setSampleCollectedAt(Date sampleCollectedAt) {
+        this.sampleCollectedAt = sampleCollectedAt;
     }
 
-    public Boolean getSampleOutside() {
-        return sampleOutside;
+    public Boolean getSampleCollectedOutside() {
+        return sampleCollectedOutside;
     }
 
-    public void setSampleOutside(Boolean sampleOutside) {
-        this.sampleOutside = sampleOutside;
+    public void setSampleCollectedOutside(Boolean sampleCollectedOutside) {
+        this.sampleCollectedOutside = sampleCollectedOutside;
     }
 
-    public String getSampleComments() {
-        return sampleComments;
+    public String getSampleCollectionComments() {
+        return sampleCollectionComments;
     }
 
-    public void setSampleComments(String sampleComments) {
-        this.sampleComments = sampleComments;
+    public void setSampleCollectionComments(String sampleCollectionComments) {
+        this.sampleCollectionComments = sampleCollectionComments;
     }
 
-    public Department getSampleDepartment() {
-        return sampleDepartment;
+    public Department getSampleCollectedDepartment() {
+        return sampleCollectedDepartment;
     }
 
-    public void setSampleDepartment(Department sampleDepartment) {
-        this.sampleDepartment = sampleDepartment;
+    public void setSampleCollectedDepartment(Department sampleCollectedDepartment) {
+        this.sampleCollectedDepartment = sampleCollectedDepartment;
     }
 
-    public Institution getSampleInstitution() {
-        return sampleInstitution;
+    public Institution getSampleCollectedInstitution() {
+        return sampleCollectedInstitution;
     }
 
-    public void setSampleInstitution(Institution sampleInstitution) {
-        this.sampleInstitution = sampleInstitution;
+    public void setSampleCollectedInstitution(Institution sampleCollectedInstitution) {
+        this.sampleCollectedInstitution = sampleCollectedInstitution;
     }
 
     public Boolean getCancelled() {
@@ -441,6 +525,265 @@ public class PatientSample implements Serializable {
 
     public void setSampleRequestType(SampleRequestType sampleRequestType) {
         this.sampleRequestType = sampleRequestType;
+    }
+
+    public boolean isRetired() {
+        return retired;
+    }
+
+    public void setRetired(boolean retired) {
+        this.retired = retired;
+    }
+
+    public WebUser getRetirer() {
+        return retirer;
+    }
+
+    public void setRetirer(WebUser retirer) {
+        this.retirer = retirer;
+    }
+
+    public Date getRetiredAt() {
+        return retiredAt;
+    }
+
+    public void setRetiredAt(Date retiredAt) {
+        this.retiredAt = retiredAt;
+    }
+
+    public String getRetireComments() {
+        return retireComments;
+    }
+
+    public void setRetireComments(String retireComments) {
+        this.retireComments = retireComments;
+    }
+
+    public PatientSample getDuplicatedFrom() {
+        return duplicatedFrom;
+    }
+
+    public void setDuplicatedFrom(PatientSample duplicatedFrom) {
+        this.duplicatedFrom = duplicatedFrom;
+    }
+
+    public PatientSample getDuplicatedTo() {
+        return duplicatedTo;
+    }
+
+    public void setDuplicatedTo(PatientSample duplicatedTo) {
+        this.duplicatedTo = duplicatedTo;
+    }
+
+    public PatientSample getDivertedFrom() {
+        return divertedFrom;
+    }
+
+    public void setDivertedFrom(PatientSample divertedFrom) {
+        this.divertedFrom = divertedFrom;
+    }
+
+    public PatientSample getDivertedTo() {
+        return divertedTo;
+    }
+
+    public void setDivertedTo(PatientSample divertedTo) {
+        this.divertedTo = divertedTo;
+    }
+
+    public Boolean getBarcodeGenerated() {
+        return barcodeGenerated;
+    }
+
+    public void setBarcodeGenerated(Boolean barcodeGenerated) {
+        this.barcodeGenerated = barcodeGenerated;
+    }
+
+    public WebUser getBarcodeGenerator() {
+        return barcodeGenerator;
+    }
+
+    public void setBarcodeGenerator(WebUser barcodeGenerator) {
+        this.barcodeGenerator = barcodeGenerator;
+    }
+
+    public Department getBarcodeGeneratedDepartment() {
+        return barcodeGeneratedDepartment;
+    }
+
+    public void setBarcodeGeneratedDepartment(Department barcodeGeneratedDepartment) {
+        this.barcodeGeneratedDepartment = barcodeGeneratedDepartment;
+    }
+
+    public Institution getBarcodeGeneratedInstitution() {
+        return barcodeGeneratedInstitution;
+    }
+
+    public void setBarcodeGeneratedInstitution(Institution barcodeGeneratedInstitution) {
+        this.barcodeGeneratedInstitution = barcodeGeneratedInstitution;
+    }
+
+    public Date getBarcodeGeneratedAt() {
+        return barcodeGeneratedAt;
+    }
+
+    public void setBarcodeGeneratedAt(Date barcodeGeneratedAt) {
+        this.barcodeGeneratedAt = barcodeGeneratedAt;
+    }
+
+    public Boolean getSampleReceivedAtLab() {
+        return sampleReceivedAtLab;
+    }
+
+    public void setSampleReceivedAtLab(Boolean sampleReceivedAtLab) {
+        this.sampleReceivedAtLab = sampleReceivedAtLab;
+    }
+
+    public WebUser getSampleReceiverAtLab() {
+        return sampleReceiverAtLab;
+    }
+
+    public void setSampleReceiverAtLab(WebUser sampleReceiverAtLab) {
+        this.sampleReceiverAtLab = sampleReceiverAtLab;
+    }
+
+    public Date getSampleReceivedAtLabAt() {
+        return sampleReceivedAtLabAt;
+    }
+
+    public void setSampleReceivedAtLabAt(Date sampleReceivedAtLabAt) {
+        this.sampleReceivedAtLabAt = sampleReceivedAtLabAt;
+    }
+
+    public String getSampleReceivedAtLabComments() {
+        return sampleReceivedAtLabComments;
+    }
+
+    public void setSampleReceivedAtLabComments(String sampleReceivedAtLabComments) {
+        this.sampleReceivedAtLabComments = sampleReceivedAtLabComments;
+    }
+
+    public Department getSampleReceivedAtLabDepartment() {
+        return sampleReceivedAtLabDepartment;
+    }
+
+    public void setSampleReceivedAtLabDepartment(Department sampleReceivedAtLabDepartment) {
+        this.sampleReceivedAtLabDepartment = sampleReceivedAtLabDepartment;
+    }
+
+    public Institution getSampleReceivedAtLabInstitution() {
+        return sampleReceivedAtLabInstitution;
+    }
+
+    public void setSampleReceivedAtLabInstitution(Institution sampleReceivedAtLabInstitution) {
+        this.sampleReceivedAtLabInstitution = sampleReceivedAtLabInstitution;
+    }
+
+    public PatientInvestigationStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(PatientInvestigationStatus status) {
+        this.status = status;
+    }
+
+    public Long getSampleId() {
+        if (sampleId == null) {
+            sampleId = id;
+        }
+        return sampleId;
+    }
+
+    public void setSampleId(Long sampleId) {
+        this.sampleId = sampleId;
+    }
+
+    public Boolean getSampleSent() {
+        return sampleSent;
+    }
+
+    public void setSampleSent(Boolean sampleSent) {
+        this.sampleSent = sampleSent;
+    }
+
+    public WebUser getSampleSentBy() {
+        return sampleSentBy;
+    }
+
+    public void setSampleSentBy(WebUser sampleSentBy) {
+        this.sampleSentBy = sampleSentBy;
+    }
+
+    public Date getSampleSentAt() {
+        return sampleSentAt;
+    }
+
+    public void setSampleSentAt(Date sampleSentAt) {
+        this.sampleSentAt = sampleSentAt;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public Priority getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Priority priority) {
+        this.priority = priority;
+    }
+
+    public Boolean getSampleRejected() {
+        return sampleRejected;
+    }
+
+    public void setSampleRejected(Boolean sampleRejected) {
+        this.sampleRejected = sampleRejected;
+    }
+
+    public WebUser getSampleRejectedBy() {
+        return sampleRejectedBy;
+    }
+
+    public void setSampleRejectedBy(WebUser sampleRejectedBy) {
+        this.sampleRejectedBy = sampleRejectedBy;
+    }
+
+    public Date getSampleRejectedAt() {
+        return sampleRejectedAt;
+    }
+
+    public void setSampleRejectedAt(Date sampleRejectedAt) {
+        this.sampleRejectedAt = sampleRejectedAt;
+    }
+
+    public Staff getSampleTransportedToLabByStaff() {
+        return sampleTransportedToLabByStaff;
+    }
+
+    public void setSampleTransportedToLabByStaff(Staff sampleTransportedToLabByStaff) {
+        this.sampleTransportedToLabByStaff = sampleTransportedToLabByStaff;
+    }
+
+    public String getSampleRejectionComment() {
+        return sampleRejectionComment;
+    }
+
+    public void setSampleRejectionComment(String sampleRejectionComment) {
+        this.sampleRejectionComment = sampleRejectionComment;
     }
 
     

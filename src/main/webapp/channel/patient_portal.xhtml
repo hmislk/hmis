@@ -206,6 +206,9 @@
 
                         </div>
                     </nav>
+                  
+<!--                    <p:staticMessage severity="error" summary="ERROR" detail="This function is currently unavailable due to maintenance. Please refrain from using it until further notice." style="width: 100%; font-size: 2em;"/>-->
+
                 </div>
                 <div>
                     <h:panelGroup rendered="#{patientPortalController.patient.id ne null}" class="h-100 container"  >
@@ -221,7 +224,7 @@
                                                 <h6>Select Speciality</h6>
                                             </div>
                                             <div>
-                                                <p:watermark for="acSpeciality" value="Select Speciality" ></p:watermark>
+                                                
                                                 <div>
                                                     <p:selectOneMenu class="w-100" id="acSpeciality" value="#{patientPortalController.selectedSpeciality}">
                                                         <f:selectItem itemLabel="Select One"/>
@@ -237,7 +240,7 @@
                                                 <h6>Select Doctor</h6>
                                             </div>
                                             <div>
-                                                <p:watermark for="scStaff" value="Select Doctor" ></p:watermark>
+                                                
                                                 <div>
                                                     <p:selectOneMenu filter="true" class="w-100" id="scStaff"  value="#{patientPortalController.selectedConsultant}">
                                                         <f:selectItem itemLabel="Select One"/>
@@ -337,7 +340,7 @@
                                         <h:panelGroup rendered="#{s.started}">
                                             <h5>Ongoing</h5>
                                             <div class="scaling-circle mx-4 d-flex justify-content-center align-items-center" >
-                                                <h3 >#{s.completedPatientCount}</h3>
+                                                <h3><h:outputLabel value="#{s.currentlyConsultingBillSession.bill.singleBillSession.serialNo eq null ? '0' : s.currentlyConsultingBillSession.bill.singleBillSession.serialNo}"/></h3>
                                             </div>
                                         </h:panelGroup>
                                     </div>
@@ -345,7 +348,9 @@
                                     <div class="d-flex justify-content-center align-items-center">
                                         <h5>Total Bookings</h5>
                                         <div class="scaling-circle mx-4 d-flex justify-content-center align-items-center" >
-                                            <h3 >#{s.displayCount}</h3>
+                                            <h3>
+                                                <h:outputLabel value="#{s.bookedPatientCount eq null ? '0' : s.bookedPatientCount}"/>
+                                            </h3>
                                         </div>
                                     </div>
                                     <div class="d-flex justify-content-end  p-2">
@@ -375,6 +380,7 @@
 
                 <h:panelGroup rendered="#{patientPortalController.otpVerify eq false}" >
                     <div class="d-flex justify-content-center align-items-center h-100 w-100">
+                         
                         <div class=" mt-4" style="min-width: 25rem">
                             <div class="card-body">
                                 <div class="d-flex justify-content-center align-items-center">

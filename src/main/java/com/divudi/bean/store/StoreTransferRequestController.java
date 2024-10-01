@@ -73,6 +73,11 @@ public class StoreTransferRequestController implements Serializable {
         billItems = null;
         printPreview = false;
     }
+    
+    public void changeDepartment() {
+        billItems = null;
+        bill.setToDepartment(null);
+    }
 
     private boolean checkItems(Item item) {
         for (BillItem b : getBillItems()) {
@@ -90,7 +95,7 @@ public class StoreTransferRequestController implements Serializable {
         }
 
         if (getBill().getToDepartment().getId() == getSessionController().getDepartment().getId()) {
-            JsfUtil.addErrorMessage("U can't request same department");
+            JsfUtil.addErrorMessage("You can't request same department");
             return true;
         }
 
@@ -166,7 +171,7 @@ public class StoreTransferRequestController implements Serializable {
         }
 
         if (getBill().getToDepartment() == getSessionController().getDepartment()) {
-            JsfUtil.addErrorMessage("U cant request ur department itself");
+            JsfUtil.addErrorMessage("You cant request ur department itself");
             return;
         }
 

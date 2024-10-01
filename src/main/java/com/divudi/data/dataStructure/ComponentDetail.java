@@ -9,6 +9,8 @@ import com.divudi.bean.opd.OpdBillController;
 import com.divudi.data.PaymentMethod;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Patient;
+import com.divudi.entity.PatientDeposit;
+import com.divudi.entity.Staff;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -32,6 +34,11 @@ public class ComponentDetail {
     private List<ComponentDetail> multiplePaymentMethodComponentDetails;
     private PaymentMethodData paymentMethodData;
     private int creditDuration;
+    private Staff toStaff;
+    private String referralNo;
+    private String referenceNo;
+    private PatientDeposit patientDepost;
+    
 
     public List<ComponentDetail> getMultiplePaymentMethodComponentDetails() {
         if (multiplePaymentMethodComponentDetails == null) {
@@ -42,13 +49,13 @@ public class ComponentDetail {
         }
         return multiplePaymentMethodComponentDetails;
     }
-    
-    public void addAnotherPaymentDetail(){
+
+    public void addAnotherPaymentDetail() {
         ComponentDetail cd = new ComponentDetail();
         getMultiplePaymentMethodComponentDetails().add(cd);
     }
-    
-    public void removePaymentDetail(ComponentDetail cd){
+
+    public void removePaymentDetail(ComponentDetail cd) {
         getMultiplePaymentMethodComponentDetails().remove(cd);
     }
 
@@ -113,7 +120,7 @@ public class ComponentDetail {
     }
 
     public PaymentMethodData getPaymentMethodData() {
-        if(paymentMethodData==null){
+        if (paymentMethodData == null) {
             paymentMethodData = new PaymentMethodData();
         }
         return paymentMethodData;
@@ -130,8 +137,37 @@ public class ComponentDetail {
     public void setCreditDuration(int creditDuration) {
         this.creditDuration = creditDuration;
     }
-    
-    
-    
+
+    public Staff getToStaff() {
+        return toStaff;
+    }
+
+    public void setToStaff(Staff toStaff) {
+        this.toStaff = toStaff;
+    }
+
+    public String getReferralNo() {
+        return referralNo;
+    }
+
+    public void setReferralNo(String referralNo) {
+        this.referralNo = referralNo;
+    }
+
+    public String getReferenceNo() {
+        return referenceNo;
+    }
+
+    public void setReferenceNo(String referenceNo) {
+        this.referenceNo = referenceNo;
+    }
+
+    public PatientDeposit getPatientDepost() {
+        return patientDepost;
+    }
+
+    public void setPatientDepost(PatientDeposit patientDepost) {
+        this.patientDepost = patientDepost;
+    }
 
 }

@@ -139,7 +139,10 @@ public class StoreTransferReceiveController implements Serializable {
     public void settle() {
 
         saveBill();
-
+        if(getReceivedBill().getComments() == null || getReceivedBill().getComments().trim().equals("")) {
+            JsfUtil.addErrorMessage("Please enter a comment");
+            return;
+        }
         for (BillItem i : getBillItems()) {
 
 //            i.getPharmaceuticalBillItem().setQtyInUnit(i.getQty());
@@ -188,6 +191,11 @@ public class StoreTransferReceiveController implements Serializable {
             getPharmaceuticalBillItemFacade().edit(tmpPh);
 
             getReceivedBill().getBillItems().add(i);
+        }
+        
+        if(getReceivedBill().getBillItems().isEmpty() || getReceivedBill().getBillItems() == null){
+            JsfUtil.addErrorMessage("Nothing to Recive, Please check Recieved Quantity");
+            return;
         }
 
         getReceivedBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.StoreTransferReceive, BillClassType.BilledBill, BillNumberSuffix.STTR));

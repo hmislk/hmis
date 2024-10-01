@@ -52,9 +52,19 @@
                                                  value="#{investigationController.current.fullName}"  >
                                     </p:inputText>
 
+                                    <h:outputText  id="lblShortName" value="Short Name" ></h:outputText>
+                                    <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
+                                    <p:inputText class="form-control"  autocomplete="off" id="txtShortName"  
+                                                 value="#{investigationController.current.shortName}"  >
+                                    </p:inputText>
+
                                     <p:outputLabel value="Item Code"/>
                                     <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
                                     <p:inputText class="form-control" autocomplete="off" value="#{investigationController.current.code}"/>
+
+                                    <p:outputLabel value="Discription"/>
+                                    <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
+                                    <p:inputTextarea class="form-control" value="#{investigationController.current.comments}"/>
 
                                     <h:outputText value="Category" ></h:outputText>
                                     <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
@@ -103,10 +113,8 @@
                                     <p:outputLabel value="Report Category"/>
                                     <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
                                     <p:selectOneMenu class="form-control" value="#{investigationController.current.reportType}" >                               
-                                        <f:selectItem itemLabel="General" itemValue="General"/>
-                                        <f:selectItem itemLabel="Microbiology" itemValue="Microbiology"/>
-                                        <f:selectItem itemLabel="Pathology / Haematology" 
-                                                      itemValue="PathologyOrHaematology"/>
+                                        <f:selectItem itemLabel="Select" />
+                                        <f:selectItems value="#{enumController.investigationReportTypes}" ></f:selectItems>
                                     </p:selectOneMenu>
 
                                     <h:outputText value="Report Format" ></h:outputText>
@@ -151,10 +159,18 @@
                                     <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
                                     <p:selectBooleanCheckbox  
                                         id="chkHasReport" 
-                                        itemLabel="Has a Report Format" 
+                                        itemLabel="Report Format" 
                                         value="#{itemController.current.hasReportFormat}" >
                                     </p:selectBooleanCheckbox>
-
+                                    
+                                    <h:outputText value="Multiple Reports Allowed" ></h:outputText>
+                                    <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
+                                    <p:selectBooleanCheckbox 
+                                        id="chkmultipleReportsAllowed" 
+                                        itemLabel="Reports Allowed" 
+                                        value="#{investigationController.current.multipleReportsAllowed}" >
+                                    </p:selectBooleanCheckbox>
+                                    
                                     <h:outputText value="Master Item Reference" ></h:outputText>
                                     <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
                                     <p:autoComplete 
@@ -212,14 +228,16 @@
                                         itemLabel="#{ix2.name}" 
                                         itemValue="#{ix2}" 
                                         size="30"  >
-                                        <p:column >
+                                        <p:column headerText="Name" >
                                             <h:outputText value="#{ix2.name}" ></h:outputText>
                                         </p:column>
-                                        <p:column >
-                                            <h:outputText value="Master Item" rendered="#{ix2.institution eq null}" ></h:outputText>
-                                            <h:outputText value="#{ix2.institution.name}" rendered="#{ix2.institution ne null}"  ></h:outputText>
+                                        <p:column headerText="Code">
+                                            <h:outputText value="#{ix2.code}" ></h:outputText>
                                         </p:column>
-                                        <p:column >
+                                        <p:column headerText="ID">
+                                            <h:outputText value="#{ix2.id}" ></h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Department">
                                             <h:outputText value="#{ix2.department.name}" rendered="#{ix2.department ne null}"  ></h:outputText>
                                         </p:column>
                                     </p:autoComplete>
@@ -316,35 +334,35 @@
                             </p:tab>
                             <p:tab title="Manage" >
                                 <h:panelGrid columns="1" >
-                                    
+
                                     <p:commandButton                                                 
                                         class="w-100" 
                                         ajax="false" 
                                         action="#{investigationController.navigateToEditFormatSingle()}" 
                                         value="Manage Format - Single Item" >
                                     </p:commandButton>
-                                    
+
                                     <p:commandButton                                                 
                                         class="w-100" 
                                         ajax="false" 
                                         action="#{investigationController.navigateToEditFormatMultiple()}" 
                                         value="Manage Format - All Items" >
                                     </p:commandButton>
-                                    
+
                                     <p:commandButton                                                 
                                         class="w-100" 
                                         ajax="false" 
                                         action="#{investigationController.navigateToManageCalculations()}" 
                                         value="Manage Calculations" >
                                     </p:commandButton>
-                                    
+
                                     <p:commandButton                                                 
                                         class="w-100" 
                                         ajax="false" 
                                         action="#{investigationController.navigateToReplaceableInvestigations()}" 
                                         value="Manage Replaceable Investigations" >
                                     </p:commandButton>
-                                    
+
                                     <p:commandButton                                                 
                                         class="w-100" 
                                         ajax="false" 
@@ -357,7 +375,7 @@
                                         disabled="#{!webUserController.hasPrivilege('AdminPrices')}"
                                         ajax="false" 
                                         action="#{investigationController.navigateToManageFees()}"
-                                        value="Prices" >
+                                        value="Manage Prices" >
                                     </p:commandButton>
 
                                     <p:commandButton 
@@ -370,29 +388,31 @@
                                     <p:commandButton 
                                         class="w-100" 
                                         ajax="false" 
-                                        value="Flags" 
+                                        value="Manage Flags" 
                                         action="#{investigationController.navigateToManageFlagsForLab()}" >
+                                        <f:setPropertyActionListener value="#{investigationController.current}" target="#{testFlagController.investigation}"/>
                                     </p:commandButton>
-                                    
+
                                     <p:commandButton 
                                         class="w-100" 
                                         ajax="false" 
+                                        rendered="false"
                                         value="Calculations" 
-                                        action="/admin/lims/calculation" >
-                                        </p:commandButton>
-                                    
+                                        action="/admin/lims/calculation?faces-redirect=true" >
+                                    </p:commandButton>
+
                                     <p:commandButton 
                                         class="w-100" 
                                         ajax="false" 
                                         value="Dynamic Labels" 
-                                        action="/admin/lims/dynamic_labels" >
+                                        action="/admin/lims/dynamic_labels?faces-redirect=true" >
                                     </p:commandButton>
-                                    
+
                                     <p:commandButton                                         
                                         class="w-100" 
                                         ajax="false" 
                                         value="Validators" 
-                                        action="/lab/investigation_value_component" >
+                                        action="/lab/investigation_value_component?faces-redirect=true" >
                                     </p:commandButton>
 
                                     <p:commandButton
@@ -401,7 +421,7 @@
                                         action="#{investigationController.toLoadParentInvestigation()}" 
                                         value="Load Parent Investigation" >
                                     </p:commandButton>
-                                    
+
                                     <p:commandButton                                                 
                                         class="w-100" 
                                         ajax="false" 
@@ -410,9 +430,9 @@
                                     </p:commandButton>
                                 </h:panelGrid>
                             </p:tab>
-                            
+
                         </p:tabView>
-                        
+
                     </p:panel>
                 </h:form>
             </ui:define>

@@ -1,6 +1,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.Denomination;
 import com.divudi.data.OptionScope;
 import com.divudi.data.OptionValueType;
 import com.divudi.entity.Department;
@@ -33,6 +34,7 @@ public class ConfigOptionApplicationController implements Serializable {
     private ConfigOptionFacade optionFacade;
 
     private List<ConfigOption> options;
+    private List<Denomination> denominations;
 
     /**
      * Creates a new instance of OptionController
@@ -45,7 +47,23 @@ public class ConfigOptionApplicationController implements Serializable {
     @PostConstruct
     public void init() {
         loadApplicationOptions();
+
     }
+
+    private void initializeDenominations() {
+        String denominationsStr = getLongTextValueByKey("Currency Denominations");
+        if (denominationsStr == null || !denominationsStr.trim().isEmpty()) {
+            denominationsStr = "1,2,5,10,20,50,100,500,1000,5000";
+        }
+        denominations = Arrays.stream(denominationsStr.split(","))
+                .map(String::trim) // Trim any extra spaces
+                .filter(s -> !s.isEmpty()) // Filter out empty strings
+                .map(Integer::parseInt)
+                .map(value -> new Denomination(value, 0))
+                .collect(Collectors.toList());
+    }
+
+   
 
     public void loadApplicationOptions() {
         applicationOptions = new HashMap<>();
@@ -53,9 +71,13 @@ public class ConfigOptionApplicationController implements Serializable {
         for (ConfigOption option : options) {
             applicationOptions.put(option.getOptionKey(), option);
         }
+        initializeDenominations();
     }
 
     public ConfigOption getApplicationOption(String key) {
+        if (applicationOptions == null) {
+            loadApplicationOptions();
+        }
         ConfigOption c = applicationOptions.get(key);
         return c;
     }
@@ -71,6 +93,16 @@ public class ConfigOptionApplicationController implements Serializable {
         } else {
             optionFacade.edit(option);
         }
+    }
+
+    public List<Denomination> getDenominations() {
+        if (denominations == null) {
+            initializeDenominations();
+        }
+        for(Denomination d:denominations){
+            d.setCount(0);
+        }
+        return denominations;
     }
 
     public void saveShortTextOption(String key, String value) {
@@ -186,6 +218,21 @@ public class ConfigOptionApplicationController implements Serializable {
         return option.getOptionValue();
     }
 
+    public void setLongTextValueByKey(String key, String value) {
+        ConfigOption option = getApplicationOption(key);
+        if (option == null || option.getValueType() != OptionValueType.LONG_TEXT) {
+            option = new ConfigOption();
+            option.setCreatedAt(new Date());
+            option.setOptionKey(key);
+            option.setScope(OptionScope.APPLICATION);
+            option.setValueType(OptionValueType.LONG_TEXT);
+            optionFacade.create(option);
+        }
+        option.setOptionValue(value);
+        optionFacade.edit(option);
+        loadApplicationOptions();
+    }
+
     public String getShortTextValueByKey(String key) {
         ConfigOption option = getApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.SHORT_TEXT) {
@@ -265,6 +312,32 @@ public class ConfigOptionApplicationController implements Serializable {
         }
     }
 
+    public Long getLongValueByKey(String key, Long defaultValue) {
+        ConfigOption option = getApplicationOption(key);
+        if (option == null || option.getValueType() != OptionValueType.LONG) {
+            option = new ConfigOption();
+            option.setCreatedAt(new Date());
+            option.setOptionKey(key);
+            option.setScope(OptionScope.APPLICATION);
+            option.setInstitution(null);
+            option.setDepartment(null);
+            option.setWebUser(null);
+            option.setValueType(OptionValueType.LONG);
+            if (defaultValue != null) {
+                option.setOptionValue("" + defaultValue);
+            } else {
+                option.setOptionValue("0");
+            }
+            optionFacade.create(option);
+            loadApplicationOptions();
+        }
+        try {
+            return Long.parseLong(option.getOptionValue());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
     public List<String> getListOfCustomOptions(String optionName) {
         // Fetch the string that contains options separated by line breaks
         String listOfOptionSeperatedByLineBreaks = getLongTextValueByKey("Custom option values for " + optionName);
@@ -318,6 +391,24 @@ public class ConfigOptionApplicationController implements Serializable {
             loadApplicationOptions();
         }
         return Boolean.parseBoolean(option.getOptionValue());
+    }
+
+    public void setBooleanValueByKey(String key, boolean value) {
+        ConfigOption option = getApplicationOption(key);
+        if (option == null || option.getValueType() != OptionValueType.BOOLEAN) {
+            option = new ConfigOption();
+            option.setCreatedAt(new Date());
+            option.setOptionKey(key);
+            option.setScope(OptionScope.APPLICATION);
+            option.setInstitution(null);
+            option.setDepartment(null);
+            option.setWebUser(null);
+            option.setValueType(OptionValueType.BOOLEAN);
+            optionFacade.create(option);
+        }
+        option.setOptionValue(Boolean.toString(value));
+        optionFacade.edit(option);
+        loadApplicationOptions();
     }
 
     public List<ConfigOption> getAllOptions(Object entity) {

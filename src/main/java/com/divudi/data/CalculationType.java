@@ -23,7 +23,8 @@ public enum CalculationType {
     AgeInDays,
     GenderDependentConstant,
     Comma,
-    Space;
+    Space,
+    JavaScript;
 
     public String getLabel() {
         switch (this) {
@@ -57,6 +58,8 @@ public enum CalculationType {
                 return "Comma";
             case Space:
                 return "Sapce";
+            case JavaScript:
+                return "Java Script";
         }
         return "Other";
     }

@@ -15,28 +15,28 @@
                             <p:selectOneMenu   id="cmbPs" value="#{pettyCashBillSearch.paymentMethod}" required="true"  >
                                 <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"  />
                             </p:selectOneMenu>
-                            <h:commandButton value="Cancel" action="#{pettyCashBillSearch.cancelBill()}" >
-                            </h:commandButton>                            
+                            <p:commandButton class="mx-2 btn-danger" value="Cancel" ajax="false" action="#{pettyCashBillSearch.cancelBill()}" >
+                            </p:commandButton>                            
                         </p:panel>
-                        <p:panelGrid columns="2" style="width: 100%;">
+                        <h:panelGrid columns="2" style="width: 100%;" class="mx-1">
                             <p:panel header="Person Detail">
-                                <p:panelGrid columns="2">
+                                <p:panelGrid columns="2" class="w-100">
                                     <h:outputLabel value="Person Name:" ></h:outputLabel>
-                                    <h:outputLabel value="#{pettyCashBillSearch.bill.fromInstitution.name }" ></h:outputLabel>                                        
+                                    <h:outputLabel value="#{pettyCashBillSearch.bill.staff.name }" ></h:outputLabel>                                        
                                 </p:panelGrid>
                             </p:panel>
                             <p:panel header="Bill Detail">
-                                <p:panelGrid columns="2">
+                                <p:panelGrid columns="2" class="w-100">
                                     <h:outputLabel value="Bill No :" ></h:outputLabel>
-                                    <h:outputLabel value="#{pettyCashBillSearch.bill.insId}" ></h:outputLabel>                                  
+                                    <h:outputLabel value="#{pettyCashBillSearch.bill.deptId}" ></h:outputLabel>                                  
                                     <h:outputLabel value="Net Total :" ></h:outputLabel>
                                     <h:outputLabel value="#{pettyCashBillSearch.bill.netTotal}" ></h:outputLabel>
                                 </p:panelGrid>
                             </p:panel>
-                        </p:panelGrid>
+                        </h:panelGrid>
 
-                        <p:panel header="Comments">
-                            <h:inputTextarea value="#{pettyCashBillSearch.comment}"/>                            
+                        <p:panel header="Comments" class="w-100">
+                            <p:inputTextarea value="#{pettyCashBillSearch.comment}" class="w-75"/>                            
                         </p:panel>
                     </h:panelGroup>
 

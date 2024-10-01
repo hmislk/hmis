@@ -152,6 +152,10 @@ public class SpecialityController implements Serializable {
         selectedItems = getFacade().findByJpql("select c from Speciality c where c.retired=false and type(c)=:class and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name", m);
         return selectedItems;
     }
+    
+    public List<Speciality> completeDoctorSpeciality() {
+        return completeDoctorSpeciality("");
+    }
 
     public Speciality findSpeciality(String name, boolean createNewIfNotExists) {
         String j;
@@ -170,6 +174,25 @@ public class SpecialityController implements Serializable {
             ds.setCreater(sessionController.getLoggedUser());
             getFacade().create(ds);
         }
+        return ds;
+    }
+    
+    public Speciality findSpeciality(String idString) {
+        Long id;
+        try{
+            id = Long.valueOf(idString);
+        }catch(NumberFormatException e){
+            return null;
+        }
+        String j;
+        j = "select s "
+                + " from Speciality s "
+                + " where s.retired=:ret "
+                + " and s.id=:id";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("id", id);
+        Speciality ds = getFacade().findFirstByJpql(j, m);
         return ds;
     }
 

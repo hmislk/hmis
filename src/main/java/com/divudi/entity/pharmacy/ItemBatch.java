@@ -64,7 +64,7 @@ public class ItemBatch implements Serializable {
     
     @ManyToOne
     BillItem lastPurchaseBillItem;
-
+    
     public String getSerialNo() {
         return serialNo;
     }
