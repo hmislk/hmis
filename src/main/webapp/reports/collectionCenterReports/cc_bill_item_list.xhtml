@@ -189,7 +189,7 @@
                         <p:commandLink 
                             ajax="false" 
                             title="View Bill Details"
-                            action="#{billSearch.navigateViewBillByBillTypeAtomic()}">
+                            action="#{billSearch.navigateToViewBillByAtomicBillType()}">
                             <h:outputText 
                                 value="&#xf06e;" 
                                 escape="false"  
@@ -329,7 +329,7 @@
                             ajax="false" 
                             rendered="#{billItem.bill.cancelled}" 
                             title="View Cancel Bill Details"
-                            action="#{billSearch.navigateViewBillByBillTypeAtomic()}">
+                            action="#{billSearch.navigateToViewBillByAtomicBillType()}">
                             <h:outputText 
                                 value="&#xf06e;" 
                                 escape="false"  

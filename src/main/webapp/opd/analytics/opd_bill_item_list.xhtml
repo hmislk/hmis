@@ -153,7 +153,7 @@
                                     </p:column>
 
                                     <p:column headerText="Bill No"  sortBy="#{pi.billItem.bill.deptId}" filterBy="#{pi.billItem.bill.deptId}" filterMatchMode="contains">
-                                        <h:commandLink action="#{billSearch.navigateViewBillByBillTypeAtomic()}" value="#{pi.billItem.bill.deptId}">
+                                        <h:commandLink action="#{billSearch.navigateToViewBillByAtomicBillType()}" value="#{pi.billItem.bill.deptId}">
                                             <f:setPropertyActionListener value="#{pi.billItem.bill}" target="#{billSearch.billSearch}"/>
                                         </h:commandLink>   
                                     </p:column>

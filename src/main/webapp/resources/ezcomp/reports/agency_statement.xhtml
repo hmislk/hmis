@@ -112,7 +112,7 @@
                     <p:commandLink 
                         value="#{agentHx.bill.deptId}" 
                         ajax="false"
-                        action="#{billSearch.navigateViewBillByBillTypeAtomic()}" >
+                        action="#{billSearch.navigateToViewBillByBillTypeAtomic()}" >
                         <f:setPropertyActionListener value="#{agentHx.bill}" target="#{billSearch.bill}" />
                     </p:commandLink>
                     
@@ -122,7 +122,7 @@
 <!--                    <p:commandLink value="Original Bill - #{agentHx.bill.deptId}" 
                                    ajax="false"
                                    rendered="#{agentHx.bill.billedBill}"
-                                   action="#{billSearch.navigateViewBillByBillTypeAtomic()}" >
+                                   action="#{billSearch.navigateToViewBillByBillTypeAtomic()}" >
                         <f:setPropertyActionListener value="#{agentHx.bill.billedBill}" target="#{billSearch.bill}" />
                     </p:commandLink>-->
 

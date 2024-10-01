@@ -54,7 +54,7 @@
                             <td>
                                 <h:outputText value="#{row.bill.deptId}" />
                                 <h:commandLink rendered="#{row.bill.deptId ne null}" 
-                                               action="#{billSearch.navigateViewBillByBillTypeAtomic()}" 
+                                               action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
                                                styleClass="btn btn-link mx-2 no-print">
                                     <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}" />
                                     <f:setPropertyActionListener value="true" target="#{agentAndCcPaymentController.printPreview}" />
@@ -107,7 +107,7 @@
                 <f:facet name="header">
                     <h:outputText value="Bil No" />
                 </f:facet>
-                <h:commandLink action="#{billSearch.navigateViewBillByBillTypeAtomic()}" value="#{row.bill.deptId}">
+                <h:commandLink action="#{billSearch.navigateToViewBillByAtomicBillType()}" value="#{row.bill.deptId}">
                     <f:setPropertyActionListener value="#{row.bill}" target="#{agentAndCcPaymentController.current}" />
                     <f:setPropertyActionListener value="true" target="#{agentAndCcPaymentController.printPreview}" />
                 </h:commandLink>
