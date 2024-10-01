@@ -37,7 +37,8 @@
                                 <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
                                 <h:outputLabel value="Institution/Branch"  class="mx-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu filter="true" id="cmdInstitution" 
+                            <p:selectOneMenu filter="true" id="cmdInstitution"
+                                             filterMatchMode="contains"
                                              style=" max-width: 100%; overflow-x: auto; "
                                              class="w-100"
                                              value="#{reportController.institution}">
@@ -55,7 +56,7 @@
                                 <h:outputLabel value="Collection Center "  class="mx-3"/>
                                 <p:outputLabel  />
                             </h:panelGroup>
-                            <p:selectOneMenu value="#{reportController.collectingCentre}" style=" max-width: 100%; overflow-x: auto;" class="w-100" >
+                            <p:selectOneMenu value="#{reportController.collectingCentre}" style=" max-width: 100%; overflow-x: auto;" class="w-100" filter="true" filterMatchMode="contains">
                                 <f:selectItem itemLabel="Select" ></f:selectItem>
                                 <f:selectItems value="#{collectingCentreController.items}"
                                                var="i"
@@ -70,7 +71,8 @@
                                 id="siteMenu"
                                 styleClass="w-100 form-control"  
                                 value="#{searchController.site}" 
-                                filter="true">
+                                filter="true"
+                                filterMatchMode="contains">
                                 <f:selectItem itemLabel="All Sites" />
                                 <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
                             </p:selectOneMenu>
