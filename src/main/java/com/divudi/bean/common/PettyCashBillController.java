@@ -335,7 +335,7 @@ public class PettyCashBillController implements Serializable {
         saveBill();
         saveBillItem();
         List<Payment> payments = createPaymentForPettyCashBill(getCurrent(),getCurrent().getPaymentMethod());
-        drawerController.updateDrawerForIns(payments);
+        drawerController.updateDrawerForOuts(payments);
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(getCurrent(), getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
         JsfUtil.addSuccessMessage("Bill Saved");

@@ -22,7 +22,7 @@
                                     </h:panelGroup>
                                 </div>
                                 <div class="col-md-4 mx-2">
-                                    <p:datePicker value="#{reportController.toDate}"
+                                    <p:datePicker value="#{reportController.fromDate}"
                                                   style=" max-width: 100%; overflow-x: auto; "
                                                   class="w-100"
                                                   inputStyleClass="w-100"
@@ -36,10 +36,29 @@
                                     </h:panelGroup>
                                 </div>
                                 <div class="col-md-4 w-50 " >
-                                    <p:selectOneMenu value="#{reportController.collectingCentre}" filter="true" filterMatchMode="contains">
-                                        <f:selectItem itemLabel="All" itemValue="" />
-                                        <f:selectItems var="r" itemLabel="#{r.name} - #{r.code}" value="#{collectingCentreController.items}" itemValue="#{r}" />
-                                    </p:selectOneMenu>
+                                    
+                                     <p:autoComplete 
+                                        id="creditCom" 
+                                        forceSelection="true" 
+                                        value="#{reportController.collectingCentre}" 
+                                        completeMethod="#{institutionController.completeCollectingCenter}" 
+                                        var="ix" 
+                                        class="w-100"
+                                        inputStyleClass="form-control"
+                                        itemLabel="#{ix.name}" 
+                                        itemValue="#{ix}" 
+                                        size="30" 
+                                        maxResults="20"                                
+                                        >
+                                        <f:ajax  event="itemSelect" execute="creditCom"  />
+                                        <p:column headerText="Code" style="padding: 5px; width: 150px;">#{ix.institutionCode}</p:column>
+                                        <p:column headerText="Collecting Centre Name" style="padding: 5px;">#{ix.name}</p:column>
+                                        <p:column headerText="Balance" style="padding: 5px; width: 150px; text-align: right;">
+                                            <p:outputLabel value="#{ix.ballance}" >
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </p:outputLabel>
+                                        </p:column>
+                                    </p:autoComplete>
 
                                 </div>
                             </h:panelGrid>
@@ -49,7 +68,7 @@
                                     <p:commandButton ajax="false" 
                                                      value="Process" 
                                                      style="width: 150px"
-                                                     action="#{reportController.processCollectionCenterBalanceByAgentHistory()}" 
+                                                     action="#{reportController.processCollectionCenterBalance()}" 
                                                      class="mx-2 ui-button-warning"
                                                      icon="fas fa-cogs">
                                     </p:commandButton>
@@ -79,10 +98,6 @@
                                             type="pdf" target="agentHistoriesTable" fileName="agent_histories_report" />
                                     </p:commandButton>
 
-                                    <pe:counter start="0" end="9000" duration="5" onstart="console.log('STARTED')" onend="console.log('ENDED')" autoStart="true">
-                                        <p:ajax event="start" listener="#{counterController.startListener}"/>
-                                        <p:ajax event="end" listener="#{counterController.endListener}"/>
-                                    </pe:counter>
 
 
                                 </div>
@@ -106,41 +121,41 @@
 
                             <p:spacer height="5"></p:spacer>
 
-                            <p:dataTable id="agentHistoriesTable" value="#{reportController.agentHistories}"  var="ah" rowIndexVar="i">
-                                <p:column headerText="S. No">
+                            <p:dataTable id="agentHistoriesTable" value="#{reportController.bundle.reportTemplateRows}"  var="ah" rowIndexVar="i">
+                                <p:column headerText="S. No" width="20">
                                     <h:outputText value="#{i+1}" />
                                 </p:column>
 
                                 <p:column headerText="CC Name" >
-                                    <h:outputText value="#{ah.institution.name}" />
+                                    <h:outputText value="#{ah.agentHistory.agency.name}" />
                                 </p:column>
 
                                 <p:column headerText="CC Route">
-                                    <h:outputText value="#{ah.institution.route}" />
+                                    <h:outputText value="#{ah.agentHistory.agency.route.name}" />
                                 </p:column>
 
                                 <p:column headerText="CC Code" >
-                                    <h:outputText value="#{ah.institution.code}" />
+                                    <h:outputText value="#{ah.agentHistory.agency.code}" />
                                 </p:column>
 
                                 <p:column headerText="CC Phone No">
-                                    <h:outputText value="#{ah.institution.phone}" />
+                                    <h:outputText value="#{ah.agentHistory.agency.phone}" />
                                 </p:column>
 
                                 <p:column headerText="CC Credit Limit" style="text-align: right">
-                                    <h:outputText value="#{ah.institution.maxCreditLimit}">
+                                    <h:outputText value="#{ah.agentHistory.agency.maxCreditLimit}">
                                         <f:convertNumber groupingUsed="true" maxFractionDigits="2" minFractionDigits="2" />
                                     </h:outputText>
                                 </p:column>
 
                                 <p:column headerText="Max Credit Limit" style="text-align: right">
-                                    <h:outputText value="#{ah.institution.maxCreditLimit}">
+                                    <h:outputText value="#{ah.agentHistory.agency.maxCreditLimit}">
                                         <f:convertNumber groupingUsed="true" maxFractionDigits="2" minFractionDigits="2" />
                                     </h:outputText>
                                 </p:column>
 
                                 <p:column headerText="CC Balance" style="text-align: right">
-                                    <h:outputText value="#{ah.balanceAfterTransaction}">
+                                    <h:outputText value="#{ah.agentHistory.balanceAfterTransaction}">
                                         <f:convertNumber groupingUsed="true" maxFractionDigits="2" minFractionDigits="2" />
                                     </h:outputText>
                                 </p:column>

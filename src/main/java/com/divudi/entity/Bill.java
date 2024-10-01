@@ -321,6 +321,10 @@ public class Bill implements Serializable {
     private List<Sms> sentSmses;
 
     private boolean completed;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private WebUser completedBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date completedAt;
 
     //Print Information
     private boolean printed;
@@ -2381,4 +2385,22 @@ public class Bill implements Serializable {
         this.webUser = webUser;
     }
 
+    public WebUser getCompletedBy() {
+        return completedBy;
+    }
+
+    public void setCompletedBy(WebUser completedBy) {
+        this.completedBy = completedBy;
+    }
+
+    public Date getCompletedAt() {
+        return completedAt;
+    }
+
+    public void setCompletedAt(Date completedAt) {
+        this.completedAt = completedAt;
+    }
+
+    
+    
 }
