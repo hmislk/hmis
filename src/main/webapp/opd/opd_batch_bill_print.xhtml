@@ -154,9 +154,9 @@
                             <div class="col-3" >
                                 <p:commandButton 
                                     value="Print" 
-                                                 class="ui-button-info m-1"
-                                                 icon="fa fa-print"
-                                                 ajax="false">
+                                    class="ui-button-info m-1"
+                                    icon="fa fa-print"
+                                    ajax="false">
                                     <p:printer target="groupBatchBillPrint" />
                                 </p:commandButton> 
 
@@ -209,10 +209,17 @@
                                     <p:column headerText="Actions" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
                                         <!-- To Bill Details Button -->
                                         <p:commandButton ajax="false"
-                                                         title="View Bill Details"
+                                                         title="View Bill"
+                                                         class="ui-button-success m-1"
+                                                         icon="fa fa-file-invoice"
+                                                         action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                                            <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}"/>
+                                        </p:commandButton>
+                                        <p:commandButton ajax="false"
+                                                         title="Manage Bill"
                                                          class="ui-button-warning m-1"
                                                          icon="fa fa-file-invoice"
-                                                         action="#{billSearch.navigateToViewOpdBill()}">
+                                                         action="#{billSearch.navigateToManageBillByAtomicBillType()}">
                                             <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}"/>
                                         </p:commandButton>
 
@@ -255,22 +262,42 @@
                                     </p:column>
                                 </p:dataTable>
 
-                                <table class="ui-datatable ui-widget w-100 m-1">
+                                <p:panelGrid columns="2" layout="tabular" class="w-100">
+                                    <f:facet name="header" >
+                                        <h:outputLabel value="Batch Bill Details" ></h:outputLabel>
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            icon="fa fa-ban" 
+                                            value="To Cancel Batch Bill"
+                                            disabled="#{opdBillController.batchBill.cancelled or opdBillController.batchBill.refunded}"
+                                            action="#{billController.navigateToCancelOpdBatchBill()}" 
+                                            styleClass="m-1 ui-button-danger">
+                                            <f:setPropertyActionListener 
+                                                value="#{opdBillController.batchBill}" 
+                                                target="#{billController.batchBill}" ></f:setPropertyActionListener>
+                                        </p:commandButton>
+                                        <p:commandButton ajax="false"
+                                                         title="View Batch Bill"
+                                                         class="ui-button-success m-1"
+                                                         icon="fa fa-file-invoice"
+                                                         action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                                            <f:setPropertyActionListener value="#{opdBillController.batchBill}" target="#{billSearch.bill}"/>
+                                        </p:commandButton>
+                                        <p:commandButton ajax="false"
+                                                         title="Manage Batch Bill"
+                                                         class="ui-button-warning m-1"
+                                                         icon="fa fa-file-invoice"
+                                                         action="#{billSearch.navigateToManageBillByAtomicBillType()}">
+                                            <f:setPropertyActionListener value="#{opdBillController.batchBill}" target="#{billSearch.bill}"/>
+                                        </p:commandButton>
+
+                                    </f:facet>
+                                    
+                                    
+                                           <table class="ui-datatable ui-widget w-100 m-1">
                                     <thead>
                                         <tr  class="ui-widget-header">
                                             <th colspan="2" class="w-100 d-flex justify-content-between align-items-center">
-                                                <span>Batch Bill Details</span>
-                                                <p:commandButton 
-                                                    ajax="false" 
-                                                    icon="fa fa-ban" 
-                                                    value="Cancel Batch Bill"
-                                                    disabled="#{opdBillController.batchBill.cancelled or opdBillController.batchBill.refunded}"
-                                                    action="#{billController.navigateToCancelOpdBatchBill()}" 
-                                                    styleClass="m-1 ui-button-danger">
-                                                    <f:setPropertyActionListener 
-                                                        value="#{opdBillController.batchBill}" 
-                                                        target="#{billController.batchBill}" ></f:setPropertyActionListener>
-                                                </p:commandButton>
                                             </th>
                                         </tr>
                                     </thead>
@@ -305,16 +332,23 @@
                                         </tr>
                                     </tbody>
                                 </table>
+                                    
+                                </p:panelGrid>
 
-                                <p:dataTable value="#{opdBillController.payments}" var="p" >
-                                    <p:column >
+                         
+
+                                <p:dataTable 
+                                    value="#{opdBillController.payments}"
+                                    class="m-2"
+                                    var="p" >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Payments" ></h:outputText>
+                                    </f:facet>
+                                    <p:column headerText="Payment Method" >
                                         <h:outputText value="#{p.paymentMethod.label}" ></h:outputText>
                                     </p:column>
-                                    <p:column >
+                                    <p:column headerText="Value">
                                         <h:outputText value="#{p.paidValue}" ></h:outputText>
-                                    </p:column>
-                                    <p:column >
-                                        <h:outputText value="#{p.bill.id}" ></h:outputText>
                                     </p:column>
                                 </p:dataTable>
 

@@ -274,6 +274,9 @@ public class ReportController implements Serializable {
                 if (cell.getQuentity() == null) {
                     cell.setQuentity(0.0);
                 }
+                if (bi.getQty() == 0.0) {
+                    bi.setQty(1.0);
+                }
                 if (cancelledBill || refundedBill) {
                     cell.setQuentity(cell.getQuentity() - bi.getQty());
                 } else {

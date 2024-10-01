@@ -138,7 +138,7 @@
                         <h:panelGrid columns="6" class="my-2">
                             <p:commandButton 
                                 ajax="false" 
-                              
+
                                 value="Process" 
                                 icon="fas fa-cogs" 
                                 class="ui-button-warning"
@@ -182,6 +182,10 @@
 
                             <p:column headerText="Name" width="12em">
                                 <h:outputText value="#{pc.bill.patient.person.nameWithTitle}" />
+                            </p:column>
+
+                            <p:column headerText="Bill Details" width="12em">
+                                <h:outputText value="#{pc.bill.billTypeAtomic}" />
                             </p:column>
 
                             <p:column headerText="Bill ID" width="12em">
