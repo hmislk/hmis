@@ -41,14 +41,22 @@
 
 
                         <p:panelGrid columns="2" style="width: 100%;">
-                            <p:panel header="Person Detail">
+                            <p:panel>
+                                <f:facet name="header">
+                                    <h:outputText value="&#xf007;" styleClass="fa mr-2"></h:outputText>
+                                    <h:outputLabel value="Person Details" class="mx-2"></h:outputLabel>
+                                </f:facet>
                                 <p:panelGrid columns="2">
                                     <h:outputLabel value="Person Name:" ></h:outputLabel>
                                     <h:outputLabel value="#{pettyCashBillSearch.bill.staff.person.nameWithTitle }" rendered="#{pettyCashBillSearch.bill.staff ne null}" ></h:outputLabel>                                        
                                     <h:outputLabel value="#{pettyCashBillSearch.bill.person.nameWithTitle }" rendered="#{pettyCashBillSearch.bill.staff eq null}" ></h:outputLabel>                                        
                                 </p:panelGrid>
                             </p:panel>
-                            <p:panel header="Bill Detail">
+                            <p:panel>
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fas fa-list-alt"></h:outputText>
+                                    <h:outputLabel value="Bill Detail" class="mx-2"></h:outputLabel>
+                                </f:facet>
                                 <p:panelGrid columns="2">
                                     <h:outputLabel value="Bill No :" ></h:outputLabel>
                                     <h:outputLabel value="#{pettyCashBillSearch.bill.deptId}" ></h:outputLabel>
