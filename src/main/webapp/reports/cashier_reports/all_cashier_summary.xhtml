@@ -68,19 +68,20 @@
 
                             <p:spacer width="20" ></p:spacer>
 
+                            <h:outputLabel value="Site*"/>   
+                            <p:selectOneMenu class="w-100 "  value="#{searchController.site}" filter="true">
+                                <f:selectItem itemLabel="All Sites" ></f:selectItem>
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" ></f:selectItems>
+                            </p:selectOneMenu>
+                            
+                            <p:spacer width="20" ></p:spacer>
+                            
                             <h:outputLabel value="Department"/>                                
                             <p:selectOneMenu class="w-100 "  value="#{searchController.department}" filter="true">
                                 <f:selectItem itemLabel="All Departments" ></f:selectItem>
                                 <f:selectItems value="#{sessionController.loggableDepartments}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
                             </p:selectOneMenu>
 
-                            <p:spacer width="20" ></p:spacer>
-
-                            <h:outputLabel value="Site*"/>   
-                            <p:selectOneMenu class="w-100 "  value="#{searchController.site}" filter="true">
-                                <f:selectItem itemLabel="All Departments" ></f:selectItem>
-                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" ></f:selectItems>
-                            </p:selectOneMenu>
 
 
 
@@ -110,7 +111,7 @@
                             <p:column headerText="Cashier" 
                                       sortBy="#{summary.user.webUserPerson.name}" 
                                       filterBy="#{summary.user.webUserPerson.name}">
-                                <h:outputText value="#{summary.user.webUserPerson.name}" />
+                                <h:outputText value="#{summary.user.webUserPerson.name} (#{summary.user.name})" />
                             </p:column>
 
                             <p:column headerText="Institution" sortBy="#{summary.department.institution.name}" filterBy="#{summary.department.institution.name}">
