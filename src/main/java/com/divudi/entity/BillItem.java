@@ -601,7 +601,7 @@ public class BillItem implements Serializable {
     }
     
     @Transient
-    public Double getQtyAbsolute() {
+    public double getQtyAbsolute() {
         return Math.abs(getQty());
     }
 

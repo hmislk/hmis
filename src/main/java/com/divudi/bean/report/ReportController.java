@@ -286,7 +286,7 @@ public class ReportController implements Serializable {
 
                 // Accumulate totals directly in the header row
                 ItemDetailsCell totalCell = headerBillAndItemDataRow.getItemDetailCells().get(itemIndex);
-                totalCell.setQuentity(totalCell.getQuentity() + (bill.isCancelled() || bill.isRefunded() ? -bi.getQtyAbsolute() : bi.getQtyAbsolute()));
+                totalCell.setQuentity(totalCell.getQuentity() + (cancelledBill || refundedBill ? -bi.getQtyAbsolute() : bi.getQtyAbsolute()));
             }
 
             billMap.put(bill, row);
