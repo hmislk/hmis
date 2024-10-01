@@ -1127,7 +1127,7 @@
                                             </p:submenu>
                                         </p:submenu>-->
 
-                    <p:submenu label="Recieve"  rendered="#{webUserController.hasPrivilege('Payment')}">  
+                    <p:submenu label="Recieve"  rendered="#{webUserController.hasPrivilege('Payment') and false}">  
                         <p:submenu label="Inward Deposit">
                             <p:menuitem  ajax="false"  action="/inward/inward_bill_payment?faces-redirect=true" value="Payment" 
                                          actionListener="#{inwardPaymentController.makeNull}" rendered="#{webUserController.hasPrivilege('InwardBilling')}" ></p:menuitem>
