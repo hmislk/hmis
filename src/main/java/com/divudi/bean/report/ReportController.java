@@ -51,6 +51,7 @@ import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.PatientDepositHistoryFacade;
+import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import com.divudi.light.common.PrescriptionSummaryReportRow;
@@ -115,6 +116,8 @@ public class ReportController implements Serializable {
     PatientController patientController;
     @Inject
     WebUserController webUserController;
+    @Inject
+    PatientInvestigationFacade patientInvestigationFacade;
 
     private int reportIndex;
     private Institution institution;
@@ -804,8 +807,8 @@ public class ReportController implements Serializable {
 
         bundle.setReportTemplateRows(results);
     }
-    
-     public void processCurrentCollectionCenterBalance() {
+
+    public void processCurrentCollectionCenterBalance() {
         bundle = new ReportTemplateRowBundle();
         String jpql;
         Map<String, Object> parameters = new HashMap<>();
@@ -816,9 +819,8 @@ public class ReportController implements Serializable {
                 + " where cc.retired <> :ret "
                 + " and cc.institutionType=:insType ";
 
-        
         parameters.put("ret", true);
-        parameters.put("insType", InstitutionType.CollectingCentre);  
+        parameters.put("insType", InstitutionType.CollectingCentre);
 
         if (collectingCentre != null) {
             jpql += " and cc=:cc";
@@ -1116,8 +1118,10 @@ public class ReportController implements Serializable {
         }
 
         if (collectingCentre != null) {
-            jpql += " and bi.bill.fromInstitution = :cc ";
+            jpql += " and bi.bill.collectingCentre = :cc ";
             m.put("cc", collectingCentre);
+        } else {
+            jpql += " and bi.bill.collectingCentre is not null ";
         }
 
         if (toDepartment != null) {
@@ -1151,6 +1155,84 @@ public class ReportController implements Serializable {
         }
 
         billItems = billItemFacade.findByJpql(jpql, m);
+    }
+
+    public void listCcReportPrint() {
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+
+        jpql = "SELECT i "
+                + " FROM PatientInvestigation i "
+                + " WHERE i.retired = :ret ";
+
+        jpql += " AND i.billItem.bill.createdAt BETWEEN :fd AND :td ";
+        params.put("fd", getFromDate());
+        params.put("td", getToDate());
+
+        if (institution != null) {
+            jpql += " AND i.billItem.bill.institution = :orderedInstitution ";
+            params.put("orderedInstitution", institution);
+        }
+
+        if (department != null) {
+            jpql += " AND i.billItem.bill.department = :orderedDepartment ";
+            params.put("orderedDepartment", department);
+        }
+
+        if (site != null) {
+            jpql += " AND i.billItem.bill.department = :orderedDepartment ";
+            params.put("orderedDepartment", department);
+        }
+
+        if (toInstitution != null) {
+            jpql += " AND i.performInstitution = :peformingInstitution ";
+            params.put("peformingInstitution", toInstitution);
+        }
+
+        if (toDepartment != null) {
+            jpql += " AND i.performDepartment = :peformingDepartment ";
+            params.put("peformingDepartment", toDepartment);
+        }
+
+        if (collectingCentre != null) {
+            jpql += " AND (i.billItem.bill.collectingCentre = :collectionCenter OR i.billItem.bill.fromInstitution = :collectionCenter) ";
+            params.put("collectionCenter", collectingCentre);
+        } else {
+            jpql += " AND (i.billItem.bill.collectingCentre is not null OR i.billItem.bill.fromInstitution.institutionType=:ccType) ";
+            params.put("ccType", InstitutionType.CollectingCentre);
+        }
+        
+
+        if (route != null) {
+            jpql += " AND (i.billItem.bill.collectingCentre.route = :route OR i.billItem.bill.fromInstitution.route = :route) ";
+            params.put("route", getRoute());
+        }
+
+        if (phn != null && !phn.trim().isEmpty()) {
+            jpql += " AND i.billItem.bill.patient.phn=:phn ";
+            params.put("phn", phn);
+        }
+
+        if (doctor != null) {
+            jpql += " AND i.billItem.bill.referringDoctor = :referringDoctor ";
+            params.put("referringDoctor", doctor);
+        }
+
+        if (investigation != null) {
+            jpql += " AND i.investigation = :investigation ";
+            params.put("investigation", getInvestigation());
+        }
+
+        if (patientInvestigationStatus != null) {
+            jpql += " AND i.status = :patientInvestigationStatus ";
+            params.put("patientInvestigationStatus", getPatientInvestigationStatus());
+        }
+
+        jpql += " ORDER BY i.id DESC";
+
+        params.put("ret", false);
+
+        patientInvestigations = patientInvestigationFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     public void processCollectingCentreStatementReportNew() {
