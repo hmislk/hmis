@@ -12250,16 +12250,16 @@ public class SearchController implements Serializable {
         List<BillTypeAtomic> opdBts = new ArrayList<>();
         opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
         opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-        opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
+//        opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
 
-        opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
-        opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
+//        opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+//        opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
 
         opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
         opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-        opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
-        opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
-        opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
+//        opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
+//        opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+//        opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
 
         ReportTemplateRowBundle opdServiceCollection = generatePaymentColumnForCollections(opdBts, nonCreditPaymentMethods);
         opdServiceCollection.setBundleType("cashierSummaryOpd");
