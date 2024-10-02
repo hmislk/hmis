@@ -367,6 +367,9 @@ public class PatientDepositController implements Serializable, ControllerWithPat
     }
 
     public PatientDeposit checkDepositOfThePatient(Patient p, Department d) {
+        if(p == null){
+            return new PatientDeposit();
+        }
         Map m = new HashMap<>();
         String jpql = "select pd from PatientDeposit pd"
                 + " where pd.patient.id=:pt "
