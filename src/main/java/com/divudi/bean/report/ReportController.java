@@ -229,6 +229,7 @@ public class ReportController implements Serializable {
             jpql.append(" AND bi.bill.patient.phn=:phn");
             params.put("phn", phn);
         }
+        jpql.append(" ORDER BY bi.id ");
         List<BillItem> tmpBillItems = billItemFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
         if (tmpBillItems == null) {
             return;
@@ -274,16 +275,19 @@ public class ReportController implements Serializable {
                 if (cell.getQuentity() == null) {
                     cell.setQuentity(0.0);
                 }
+                if (bi.getQty() == 0.0) {
+                    bi.setQty(1.0);
+                }
                 if (cancelledBill || refundedBill) {
-                    cell.setQuentity(cell.getQuentity() - bi.getQty());
+                    cell.setQuentity(cell.getQuentity() - bi.getQtyAbsolute());
                 } else {
-                    cell.setQuentity(cell.getQuentity() + bi.getQty());
+                    cell.setQuentity(cell.getQuentity() + bi.getQtyAbsolute());
                 }
                 row.getItemDetailCells().set(itemIndex, cell);
 
                 // Accumulate totals directly in the header row
                 ItemDetailsCell totalCell = headerBillAndItemDataRow.getItemDetailCells().get(itemIndex);
-                totalCell.setQuentity(totalCell.getQuentity() + (bill.isCancelled() || bill.isRefunded() ? -bi.getQty() : bi.getQty()));
+                totalCell.setQuentity(totalCell.getQuentity() + (cancelledBill || refundedBill ? -bi.getQtyAbsolute() : bi.getQtyAbsolute()));
             }
 
             billMap.put(bill, row);
@@ -319,8 +323,8 @@ public class ReportController implements Serializable {
         if (category != null) {
             jpql.append(" AND (bi.item.category=:cat OR bi.item.category.parentCategory=:cat)");
             params.put("cat", category);
-        }            
-        if(phn != null && !phn.isEmpty()){
+        }
+        if (phn != null && !phn.isEmpty()) {
             jpql.append(" AND bi.bill.patient.phn=:mrn");
             params.put("mrn", phn);
         }
@@ -767,38 +771,65 @@ public class ReportController implements Serializable {
     }
 
     public void processCollectionCenterBalance() {
-    bundle = new ReportTemplateRowBundle();
-    String jpql;
-    Map<String, Object> parameters = new HashMap<>();
+        bundle = new ReportTemplateRowBundle();
+        String jpql;
+        Map<String, Object> parameters = new HashMap<>();
 
-    // JPQL query to fetch the last unique AgentHistory for each collecting centre (agency)
-    jpql = "select new com.divudi.data.ReportTemplateRow(ah) "
-            + " from AgentHistory ah "
-            + " where ah.retired <> :ret "
-            + " and ah.createdAt < :hxDate "
-            + " and ah.agency.institutionType=:insType "
-            + " and ah.createdAt = (select max(subAh.createdAt) "
-            + " from AgentHistory subAh "
-            + " where subAh.retired <> :ret "
-            + " and subAh.agency = ah.agency "
-            + " and subAh.agency.institutionType=:insType  "
-            + " and subAh.createdAt < :hxDate)";
+        // JPQL query to fetch the last unique AgentHistory for each collecting centre (agency)
+        jpql = "select new com.divudi.data.ReportTemplateRow(ah) "
+                + " from AgentHistory ah "
+                + " where ah.retired <> :ret "
+                + " and ah.createdAt < :hxDate "
+                + " and ah.agency.institutionType=:insType "
+                + " and ah.createdAt = (select max(subAh.createdAt) "
+                + " from AgentHistory subAh "
+                + " where subAh.retired <> :ret "
+                + " and subAh.agency = ah.agency "
+                + " and subAh.agency.institutionType=:insType  "
+                + " and subAh.createdAt < :hxDate)";
 
-    parameters.put("ret", true);
-    parameters.put("hxDate", fromDate);  // Ensure this is the first millisecond of the next day
-    parameters.put("insType", InstitutionType.CollectingCentre);  // Ensure correct type is passed
+        Date nextDayStart = CommonFunctions.getNextDateStart(getFromDate());
 
-    if (collectingCentre != null) {
-        jpql += " and ah.agency = :cc";
-        parameters.put("cc", collectingCentre);
+        parameters.put("ret", true);
+        parameters.put("hxDate", nextDayStart);  // Ensure this is the first millisecond of the next day
+        parameters.put("insType", InstitutionType.CollectingCentre);  // Ensure correct type is passed
+
+        if (collectingCentre != null) {
+            jpql += " and ah.agency = :cc";
+            parameters.put("cc", collectingCentre);
+        }
+
+        // Fetch the results and convert to ReportTemplateRow
+        List<ReportTemplateRow> results = (List<ReportTemplateRow>) institutionFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+        bundle.setReportTemplateRows(results);
     }
+    
+     public void processCurrentCollectionCenterBalance() {
+        bundle = new ReportTemplateRowBundle();
+        String jpql;
+        Map<String, Object> parameters = new HashMap<>();
 
-    // Fetch the results and convert to ReportTemplateRow
-    List<ReportTemplateRow> results = (List<ReportTemplateRow>) institutionFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        // JPQL query to fetch the last unique AgentHistory for each collecting centre (agency)
+        jpql = "select new com.divudi.data.ReportTemplateRow(cc) "
+                + " from Institution cc "
+                + " where cc.retired <> :ret "
+                + " and cc.institutionType=:insType ";
 
-    bundle.setReportTemplateRows(results);
-}
+        
+        parameters.put("ret", true);
+        parameters.put("insType", InstitutionType.CollectingCentre);  
 
+        if (collectingCentre != null) {
+            jpql += " and cc=:cc";
+            parameters.put("cc", collectingCentre);
+        }
+
+        // Fetch the results and convert to ReportTemplateRow
+        List<ReportTemplateRow> results = (List<ReportTemplateRow>) institutionFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+        bundle.setReportTemplateRows(results);
+    }
 
     public void processCollectingCentreBook() {
         String sql;
@@ -2146,7 +2177,7 @@ public class ReportController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = commonFunctions.getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
