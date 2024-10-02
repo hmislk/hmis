@@ -12,6 +12,7 @@ import com.divudi.data.BillItemStatus;
 import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.CategoryCount;
+import com.divudi.data.InstitutionType;
 import com.divudi.data.ItemCount;
 import com.divudi.data.ItemLight;
 import com.divudi.data.PaymentMethod;
@@ -25,6 +26,7 @@ import com.divudi.data.lab.PatientInvestigationStatus;
 import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
+import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Doctor;
@@ -33,6 +35,7 @@ import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
 import com.divudi.entity.PatientDepositHistory;
 import com.divudi.entity.Person;
+import com.divudi.entity.RefundBill;
 import com.divudi.entity.Route;
 import com.divudi.entity.Service;
 import com.divudi.entity.Speciality;
@@ -194,6 +197,108 @@ public class ReportController implements Serializable {
     public void generateItemMovementByBillReport() {
         billAndItemDataRows = new ArrayList<>();
         Map<String, Object> params = new HashMap<>();
+
+        // Update JPQL to include all bills, regardless of their status
+        StringBuilder jpql = new StringBuilder("SELECT bi FROM BillItem bi WHERE bi.retired=:bir AND bi.bill.retired=:br AND bi.bill.createdAt BETWEEN :fd AND :td");
+        params.put("bir", false);
+        params.put("br", false);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+
+        if (institution != null) {
+            jpql.append(" AND bi.bill.institution=:ins");
+            params.put("ins", institution);
+        }
+        if (department != null) {
+            jpql.append(" AND bi.bill.department=:dep");
+            params.put("dep", department);
+        }
+        if (site != null) {
+            jpql.append(" AND bi.bill.department.site=:site");
+            params.put("site", site);
+        }
+        if (category != null) {
+            jpql.append(" AND (bi.item.category=:cat OR bi.item.category.parentCategory=:cat)");
+            params.put("cat", category);
+        }
+        if (item != null) {
+            jpql.append(" AND bi.item=:item");
+            params.put("item", item);
+        }
+        if (phn != null && !phn.trim().equals("")) {
+            jpql.append(" AND bi.bill.patient.phn=:phn");
+            params.put("phn", phn);
+        }
+        List<BillItem> tmpBillItems = billItemFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+        if (tmpBillItems == null) {
+            return;
+        }
+
+        // Deduplicate and sort items for headers
+        Set<Item> items = new TreeSet<>(Comparator.comparing(Item::getName));
+        tmpBillItems.stream().map(BillItem::getItem).filter(Objects::nonNull).forEach(items::add);
+        List<Item> sortedItems = new ArrayList<>(items);
+
+        // Initialize header row with items and placeholders for totals
+        headerBillAndItemDataRow = new BillAndItemDataRow();
+        for (Item it : sortedItems) {
+            ItemDetailsCell cell = new ItemDetailsCell();
+            cell.setItem(it);
+            cell.setQuentity(0.0);  // Initialize with zero for totals
+            headerBillAndItemDataRow.getItemDetailCells().add(cell);
+        }
+
+        // Map to hold rows, mapped by Bill
+        Map<Bill, BillAndItemDataRow> billMap = new HashMap<>();
+        for (BillItem bi : tmpBillItems) {
+            if (bi.getItem() == null) {
+                continue;
+            }
+
+            Bill bill = bi.getBill();
+            BillAndItemDataRow row = billMap.getOrDefault(bill, new BillAndItemDataRow());
+            row.setBill(bill);
+
+            if (row.getItemDetailCells().isEmpty()) {
+                for (int i = 0; i < sortedItems.size(); i++) {
+                    row.getItemDetailCells().add(new ItemDetailsCell());
+                }
+            }
+
+            int itemIndex = sortedItems.indexOf(bi.getItem());
+            if (itemIndex != -1) {
+                ItemDetailsCell cell = row.getItemDetailCells().get(itemIndex);
+                // Adjust the quantity for cancelled/refunded items
+                boolean cancelledBill = bill instanceof CancelledBill;
+                boolean refundedBill = bill instanceof RefundBill;
+                if (cell.getQuentity() == null) {
+                    cell.setQuentity(0.0);
+                }
+                if (bi.getQty() == 0.0) {
+                    bi.setQty(1.0);
+                }
+                if (cancelledBill || refundedBill) {
+                    cell.setQuentity(cell.getQuentity() - bi.getQtyAbsolute());
+                } else {
+                    cell.setQuentity(cell.getQuentity() +  bi.getQtyAbsolute());
+                }
+                row.getItemDetailCells().set(itemIndex, cell);
+
+                // Accumulate totals directly in the header row
+                ItemDetailsCell totalCell = headerBillAndItemDataRow.getItemDetailCells().get(itemIndex);
+                totalCell.setQuentity(totalCell.getQuentity() + (cancelledBill || refundedBill ? -bi.getQtyAbsolute() : bi.getQtyAbsolute()));
+            }
+
+            billMap.put(bill, row);
+        }
+
+        billAndItemDataRows = new ArrayList<>(billMap.values());
+    }
+
+    @Deprecated
+    public void generateItemMovementByBillReportOld() {
+        billAndItemDataRows = new ArrayList<>();
+        Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder("SELECT bi FROM BillItem bi WHERE bi.retired=:bir AND bi.bill.cancelled=:bc AND bi.refunded=:birf AND bi.bill.retired=:br AND bi.bill.createdAt BETWEEN :fd AND :td");
         params.put("bir", false);
         params.put("br", false);
@@ -217,10 +322,18 @@ public class ReportController implements Serializable {
         if (category != null) {
             jpql.append(" AND (bi.item.category=:cat OR bi.item.category.parentCategory=:cat)");
             params.put("cat", category);
+        }            
+        if(phn != null && !phn.isEmpty()){
+            jpql.append(" AND bi.bill.patient.phn=:mrn");
+            params.put("mrn", phn);
         }
         if (item != null) {
             jpql.append(" AND bi.item=:item");
             params.put("item", item);
+        }
+        if (phn != null && phn.trim().equals("")) {
+            jpql.append(" AND bi.bill.patient.phn=:phn");
+            params.put("phn", phn);
         }
 
         List<BillItem> billItems = billItemFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
@@ -323,10 +436,7 @@ public class ReportController implements Serializable {
         }
         jpql += " group by b.collectingCentre "
                 + "order by b.collectingCentre.name ";
-        System.out.println("m = " + m);
-        System.out.println("jpql = " + jpql);
         List<ReportTemplateRow> rows = billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
-        System.out.println("rows = " + rows);
 
         // Calculate the aggregate values using stream.
         long totalCount = rows.stream()
@@ -402,10 +512,7 @@ public class ReportController implements Serializable {
         }
         jpql += " group by b.collectingCentre "
                 + "order by b.collectingCentre.name ";
-        System.out.println("m = " + m);
-        System.out.println("jpql = " + jpql);
         rows = billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
-        System.out.println("rows = " + rows);
 
         // Calculate the aggregate values using stream.
         totalCount = rows.stream()
@@ -485,10 +592,7 @@ public class ReportController implements Serializable {
         }
         jpql += " group by b.collectingCentre "
                 + "order by b.collectingCentre.name ";
-        System.out.println("m = " + m);
-        System.out.println("jpql = " + jpql);
         List<ReportTemplateRow> rows = billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
-        System.out.println("rows = " + rows);
 
         // Calculate the aggregate values using stream.
         long totalCount = rows.stream()
@@ -564,10 +668,7 @@ public class ReportController implements Serializable {
         }
         jpql += " group by b.collectingCentre "
                 + "order by b.collectingCentre.name ";
-        System.out.println("m = " + m);
-        System.out.println("jpql = " + jpql);
         rows = billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
-        System.out.println("rows = " + rows);
 
         // Calculate the aggregate values using stream.
         totalCount = rows.stream()
@@ -618,7 +719,6 @@ public class ReportController implements Serializable {
             existingRow.setItemCollectingCentreFee(existingRow.getItemCollectingCentreFee() + row.getItemCollectingCentreFee());
             existingRow.setItemProfessionalFee(existingRow.getItemProfessionalFee() + row.getItemProfessionalFee());
             existingRow.setItemNetTotal(existingRow.getItemNetTotal() + row.getItemNetTotal());
-            System.out.println("Added Billed - Institution: " + institution + " | NetTotal: " + row.getItemNetTotal());
         }
 
         // Process the CR bundle and adjust by taking absolute values and subtracting
@@ -631,7 +731,6 @@ public class ReportController implements Serializable {
             existingRow.setItemCollectingCentreFee(existingRow.getItemCollectingCentreFee() - Math.abs(row.getItemCollectingCentreFee()));
             existingRow.setItemProfessionalFee(existingRow.getItemProfessionalFee() + row.getItemProfessionalFee());  // Assuming this is correctly negative
             existingRow.setItemNetTotal(existingRow.getItemNetTotal() - Math.abs(row.getItemNetTotal()));
-            System.out.println("Processed CR - Institution: " + institution + " | NetTotal: " + (-Math.abs(row.getItemNetTotal())));
         }
 
         combinedBundle.setReportTemplateRows(new ArrayList<>(combinedResults.values()));
@@ -648,9 +747,6 @@ public class ReportController implements Serializable {
         combinedBundle.setHospitalTotal(totalHospitalFee);
         combinedBundle.setCcTotal(totalCCFee);
         combinedBundle.setStaffTotal(totalProfessionalFee);
-
-        System.out.println("Final Totals - Count: " + totalCount + " | Hospital Fee: " + totalHospitalFee
-                + " | CC Fee: " + totalCCFee + " | Professional Fee: " + totalProfessionalFee + " | Net Total: " + totalNet);
 
         return combinedBundle;
     }
@@ -674,20 +770,38 @@ public class ReportController implements Serializable {
     }
 
     public void processCollectionCenterBalance() {
-        String jpql = "select cc"
-                + " from Institution cc"
-                + " where cc.retired=:ret";
+    bundle = new ReportTemplateRowBundle();
+    String jpql;
+    Map<String, Object> parameters = new HashMap<>();
 
-        Map<String, Object> m = new HashMap<>();
-        m.put("ret", false);
+    // JPQL query to fetch the last unique AgentHistory for each collecting centre (agency)
+    jpql = "select new com.divudi.data.ReportTemplateRow(ah) "
+            + " from AgentHistory ah "
+            + " where ah.retired <> :ret "
+            + " and ah.createdAt < :hxDate "
+            + " and ah.agency.institutionType=:insType "
+            + " and ah.createdAt = (select max(subAh.createdAt) "
+            + " from AgentHistory subAh "
+            + " where subAh.retired <> :ret "
+            + " and subAh.agency = ah.agency "
+            + " and subAh.agency.institutionType=:insType  "
+            + " and subAh.createdAt < :hxDate)";
 
-        if (collectingCentre != null) {
-            jpql += " and cc = :i";
-            m.put("i", collectingCentre);
-        }
+    parameters.put("ret", true);
+    parameters.put("hxDate", fromDate);  // Ensure this is the first millisecond of the next day
+    parameters.put("insType", InstitutionType.CollectingCentre);  // Ensure correct type is passed
 
-        collectionCenters = institutionFacade.findByJpql(jpql, m);
+    if (collectingCentre != null) {
+        jpql += " and ah.agency = :cc";
+        parameters.put("cc", collectingCentre);
     }
+
+    // Fetch the results and convert to ReportTemplateRow
+    List<ReportTemplateRow> results = (List<ReportTemplateRow>) institutionFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+    bundle.setReportTemplateRows(results);
+}
+
 
     public void processCollectingCentreBook() {
         String sql;
@@ -1037,8 +1151,6 @@ public class ReportController implements Serializable {
             jpql += " and (ah.bill.insId = :inv or ah.bill.deptId = :inv) ";
             m.put("inv", invoiceNumber);
         }
-        System.out.println("m = " + m);
-        System.out.println("jpql = " + jpql);
         agentHistories = agentHistoryFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
     }
 
