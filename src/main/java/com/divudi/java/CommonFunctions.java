@@ -896,7 +896,10 @@ public class CommonFunctions {
         return cal.getTime();
     }
 
-    public Date getNextDateStart(Date fromDate) {
+    public static Date getNextDateStart(Date fromDate) {
+        if (fromDate == null) {
+            fromDate = new Date();
+        }
         Calendar cal = Calendar.getInstance();
         cal.setTime(fromDate);
         cal.add(Calendar.DAY_OF_MONTH, 1); // Move to the next day
