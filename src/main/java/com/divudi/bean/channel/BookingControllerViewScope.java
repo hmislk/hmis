@@ -2634,7 +2634,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         if (bill.getPaidBill().equals(bill)) {
             CancelledBill cb = createCancelCashBill(bill);
-            createPaymentForCancellationsAndRefunds(cb, cb.getPaymentMethod());
+            Payment p = createPaymentForCancellationsAndRefunds(cb, cb.getPaymentMethod());
+            drawerController.updateDrawerForOuts(p);
             BillItem cItem = cancelBillItems(billItem, cb);
             BillSession cbs = cancelBillSession(billSession, cb, cItem);
             bill.setCancelled(true);
