@@ -119,7 +119,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
     StaffBean staffBean;
     @EJB
     private StaffFacade staffFacade;
-    
+
 /////////////////////////
     Item selectedAlternative;
 
@@ -1685,8 +1685,6 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
 
     public void createOpdCancelRefundBillFeePayment(Bill bill, List<BillFee> billFees, Payment p) {
         calculateBillfeePaymentsForCancelRefundBill(billFees, p);
-
-        //JsfUtil.addSuccessMessage("Sucessfully Paid");
     }
 
     public Payment createPaymentForCancellationsforOPDBill(Bill bill, PaymentMethod pm) {
@@ -1700,9 +1698,8 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         p.setCreatedAt(new Date());
         p.setCreater(getSessionController().getLoggedUser());
         p.setPaymentMethod(pm);
-        
-        //System.out.println("pm = " + pm);
 
+        //System.out.println("pm = " + pm);
         if (pm == PaymentMethod.PatientDeposit) {
             //System.out.println("Before Balance = " + bill.getPatient().getRunningBalance());
             if (bill.getPatient().getRunningBalance() == null) {
@@ -1715,25 +1712,25 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
             patientFacade.edit(bill.getPatient());
             //System.out.println("After Balance = " + bill.getPatient().getRunningBalance());
         }
-        
+
         if (pm == PaymentMethod.Staff) {
             //System.out.println("PaymentMethod - Staff");
             //System.out.println("Before Balance = " + bill.getToStaff().getCurrentCreditValue());
-            bill.getToStaff().setCurrentCreditValue( bill.getToStaff().getCurrentCreditValue() - Math.abs(bill.getNetTotal()));
+            bill.getToStaff().setCurrentCreditValue(bill.getToStaff().getCurrentCreditValue() - Math.abs(bill.getNetTotal()));
             //System.out.println("After Balance = " + bill.getToStaff().getCurrentCreditValue());
             staffFacade.edit(bill.getToStaff());
             //System.out.println("Staff Credit Updated");
         }
-        
+
         //System.out.println("001");  
-        if (p.getId() == null) { 
+        if (p.getId() == null) {
             getPaymentFacade().create(p);
         }
         getPaymentFacade().edit(p);
         //System.out.println("End Payment");  
         return p;
     }
-    
+
     public Payment createPaymentForCollectingCenterBill(Bill bill) {
         Payment p = new Payment();
         p.setBill(bill);
@@ -1744,8 +1741,8 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         p.setDepartment(getSessionController().getDepartment());
         p.setCreatedAt(new Date());
         p.setCreater(getSessionController().getLoggedUser());
-        
-        if (p.getId() == null) { 
+
+        if (p.getId() == null) {
             getPaymentFacade().create(p);
         }
         getPaymentFacade().edit(p);
