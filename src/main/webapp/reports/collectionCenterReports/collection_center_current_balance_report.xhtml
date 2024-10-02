@@ -10,23 +10,27 @@
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
                 <h:form >
-                    <p:panel header="Collection Center Balance Report" >
+                    <p:panel header="Current Collection Center Balance Report" >
                         <div class="row mb-2">
                             <div class="col-md-2">
-                                <p:commandButton ajax="false" value="Process" action="#{reportController.processCurrentCollectionCenterBalance}" >
+                                <p:commandButton 
+                                    ajax="false" 
+                                    value="Process" 
+                                    action="#{reportController.processCurrentCollectionCenterBalance}" >
                                 </p:commandButton>
                             </div>
                         </div>
 
-                        <p:dataTable id="agentHistoriesTable" 
-                                     value="#{reportController.bundle.reportTemplateRows}"  
-                                     var="ah" 
-                                     rowIndexVar="i" 
-                                     paginator="true" 
-                                     rows="10" 
-                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"  
-                                     rowsPerPageTemplate="5,10,20" 
-                                     sortBy="#{ah.institution.name}" >
+                        <p:dataTable 
+                            id="agentHistoriesTable" 
+                            value="#{reportController.bundle.reportTemplateRows}"  
+                            var="ah" 
+                            rowIndexVar="i" 
+                            paginator="true" 
+                            rows="10" 
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"  
+                            rowsPerPageTemplate="5,10,20" 
+                            sortBy="#{ah.institution.name}" >
 
                             <p:column headerText="S. No" width="20" sortBy="#{i+1}">
                                 <h:outputText value="#{i+1}" />
