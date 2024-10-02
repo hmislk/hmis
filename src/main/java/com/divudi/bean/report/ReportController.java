@@ -229,6 +229,7 @@ public class ReportController implements Serializable {
             jpql.append(" AND bi.bill.patient.phn=:phn");
             params.put("phn", phn);
         }
+        jpql.append(" ORDER BY bi.id ");
         List<BillItem> tmpBillItems = billItemFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
         if (tmpBillItems == null) {
             return;
@@ -274,16 +275,19 @@ public class ReportController implements Serializable {
                 if (cell.getQuentity() == null) {
                     cell.setQuentity(0.0);
                 }
+                if (bi.getQty() == 0.0) {
+                    bi.setQty(1.0);
+                }
                 if (cancelledBill || refundedBill) {
-                    cell.setQuentity(cell.getQuentity() - bi.getQty());
+                    cell.setQuentity(cell.getQuentity() - bi.getQtyAbsolute());
                 } else {
-                    cell.setQuentity(cell.getQuentity() + bi.getQty());
+                    cell.setQuentity(cell.getQuentity() +  bi.getQtyAbsolute());
                 }
                 row.getItemDetailCells().set(itemIndex, cell);
 
                 // Accumulate totals directly in the header row
                 ItemDetailsCell totalCell = headerBillAndItemDataRow.getItemDetailCells().get(itemIndex);
-                totalCell.setQuentity(totalCell.getQuentity() + (bill.isCancelled() || bill.isRefunded() ? -bi.getQty() : bi.getQty()));
+                totalCell.setQuentity(totalCell.getQuentity() + (cancelledBill || refundedBill ? -bi.getQtyAbsolute() : bi.getQtyAbsolute()));
             }
 
             billMap.put(bill, row);
@@ -319,6 +323,10 @@ public class ReportController implements Serializable {
         if (category != null) {
             jpql.append(" AND (bi.item.category=:cat OR bi.item.category.parentCategory=:cat)");
             params.put("cat", category);
+        }            
+        if(phn != null && !phn.isEmpty()){
+            jpql.append(" AND bi.bill.patient.phn=:mrn");
+            params.put("mrn", phn);
         }
         if (item != null) {
             jpql.append(" AND bi.item=:item");
