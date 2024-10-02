@@ -13,36 +13,57 @@
                     <p:panel header="Collection Center Balance Report" >
                         <div class="row mb-2">
                             <div class="col-md-2">
-                                <p:commandButton ajax="false" value="Process" action="#{reportController.processCollectionCenterBalance}" >
+                                <p:commandButton ajax="false" value="Process" action="#{reportController.processCurrentCollectionCenterBalance}" >
                                 </p:commandButton>
                             </div>
                         </div>
-                        <p:dataTable
-                            value="#{reportController.collectionCenters}" 
-                            var="c"
-                            rowKey="#{c.id}"
-                            rowIndexVar="i"
-                            >
-                            <p:column headerText="S. No" >
-                                <h:outputText value="#{i+1}" ></h:outputText>
+
+                        <p:dataTable id="agentHistoriesTable" 
+                                     value="#{reportController.bundle.reportTemplateRows}"  
+                                     var="ah" 
+                                     rowIndexVar="i" 
+                                     paginator="true" 
+                                     rows="10" 
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"  
+                                     rowsPerPageTemplate="5,10,20" 
+                                     sortBy="#{ah.institution.name}" >
+
+                            <p:column headerText="S. No" width="20" sortBy="#{i+1}">
+                                <h:outputText value="#{i+1}" />
                             </p:column>
-                            <p:column headerText="CC Name" >
-                                <h:outputText value="#{c.name}" ></h:outputText>
+
+                            <p:column headerText="CC Name" sortBy="#{ah.institution.name}" filterBy="#{ah.institution.name}" filterMatchMode="contains">
+                                <h:outputText value="#{ah.institution.name}" />
                             </p:column>
-                            <p:column headerText="CC Route" >
-                                <h:outputText value="#{c.route.name}" ></h:outputText>
+
+                            <p:column headerText="CC Route" sortBy="#{ah.institution.route.name}" filterBy="#{ah.institution.route.name}" filterMatchMode="contains">
+                                <h:outputText value="#{ah.institution.route.name}" />
                             </p:column>
-                            <p:column headerText="CC Phone No" >
-                                <h:outputText value="#{c.phone}" ></h:outputText>
+
+                            <p:column headerText="CC Code" sortBy="#{ah.institution.code}" filterBy="#{ah.institution.code}" filterMatchMode="contains">
+                                <h:outputText value="#{ah.institution.code}" />
                             </p:column>
-                            <p:column headerText="CC Credit Limit" >
-                                <h:outputText value="#{c.maxCreditLimit}" ></h:outputText>
+
+                            <p:column headerText="CC Phone No" sortBy="#{ah.institution.phone}" filterBy="#{ah.institution.phone}" filterMatchMode="contains">
+                                <h:outputText value="#{ah.institution.phone}" />
                             </p:column>
-                            <p:column headerText="Max Credit Limit" >
-                                <h:outputText value="#{c.maxCreditLimit}" ></h:outputText>
+
+                            <p:column headerText="CC Credit Limit" style="text-align: right" sortBy="#{ah.institution.maxCreditLimit}" filterBy="#{ah.institution.maxCreditLimit}" filterMatchMode="gte">
+                                <h:outputText value="#{ah.institution.maxCreditLimit}">
+                                    <f:convertNumber groupingUsed="true" maxFractionDigits="2" minFractionDigits="2" />
+                                </h:outputText>
                             </p:column>
-                            <p:column headerText="CC Balance" >
-                                <h:outputText value="#{c.ballance}" ></h:outputText>
+
+                            <p:column headerText="Max Credit Limit" style="text-align: right" sortBy="#{ah.institution.maxCreditLimit}" filterBy="#{ah.institution.maxCreditLimit}" filterMatchMode="gte">
+                                <h:outputText value="#{ah.institution.maxCreditLimit}">
+                                    <f:convertNumber groupingUsed="true" maxFractionDigits="2" minFractionDigits="2" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="CC Balance" style="text-align: right" sortBy="#{ah.institution.ballance}" filterBy="#{ah.institution.ballance}" filterMatchMode="gte">
+                                <h:outputText value="#{ah.institution.ballance}">
+                                    <f:convertNumber groupingUsed="true" maxFractionDigits="2" minFractionDigits="2" />
+                                </h:outputText>
                             </p:column>
 
                         </p:dataTable>
