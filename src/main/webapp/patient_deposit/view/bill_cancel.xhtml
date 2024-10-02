@@ -141,8 +141,7 @@
                                 <p:printer target="billPanel"></p:printer>
                             </p:commandButton>
                             <p:commandButton icon="fas fa-plus" class="mx-1" value="New Bill"
-                                             ajax="false" action="/payments/patient/receive?faces-redirect=true"
-                                             actionListener="#{patientDepositController.clearDataForPatientDeposit()}" >
+                                             ajax="false" action="#{patientDepositController.navigateToAddNewPatientDeposit()}" >
                             </p:commandButton>
                             <p:commandButton ajax="false" icon="fas fa-search" value="Patient Lookup" class="mx-1 ui-button-warning"
                                              action="#{patientController.navigateToSearchPatients}"></p:commandButton>
