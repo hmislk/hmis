@@ -1,5 +1,6 @@
 package com.divudi.data;
 
+import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
@@ -38,7 +39,7 @@ public class ReportTemplateRow implements Serializable {
     private BillItem billItem;
     private BillFee billFee;
     private Payment payment;
-    
+
     private boolean selected;
 
     private Item item;
@@ -95,6 +96,7 @@ public class ReportTemplateRow implements Serializable {
     private Department department;
     private Institution institution;
     private Institution site;
+    private AgentHistory agentHistory;
 
     private Date date;
     private Date fromDate;
@@ -129,7 +131,7 @@ public class ReportTemplateRow implements Serializable {
     private double patientDepositValue;
     private double patientPointsValue;
     private double onlineSettlementValue;
-    
+
     private Double grossTotal;
     private Double discount;
     private Double total;
@@ -141,7 +143,7 @@ public class ReportTemplateRow implements Serializable {
     private String rowType;
 
     private UUID id;
-    
+
     private List<DenominationTransaction> denominationTransactions;
 
     // Constructor to generate a new UUID when an object is created
@@ -149,8 +151,17 @@ public class ReportTemplateRow implements Serializable {
         this.id = UUID.randomUUID();
     }
 
+    public ReportTemplateRow(Institution institution) {
+        this.institution = institution;
+    }
+
     
     
+    public ReportTemplateRow(Institution institution, Double itemTotal) {
+        this.itemTotal = itemTotal;
+        this.institution = institution;
+    }
+
     public ReportTemplateRow(Institution institution, Long itemCount, Double itemHospitalFee, Double itemCollectingCentreFee, Double itemProfessionalFee, Double itemNetTotal) {
         this.itemCount = itemCount;
         this.itemHospitalFee = itemHospitalFee;
@@ -159,8 +170,6 @@ public class ReportTemplateRow implements Serializable {
         this.itemNetTotal = itemNetTotal;
         this.institution = institution;
     }
-    
-    
 
     // Getter for UUID (optional, depending on use case)
     public UUID getId() {
@@ -229,7 +238,6 @@ public class ReportTemplateRow implements Serializable {
         this.onlineSettlementValue = onlineSettlementValue;
     }
 
-    
     public ReportTemplateRow(Bill bill,
             double cashValue, double cardValue, double multiplePaymentMethodsValue,
             double staffValue, double creditValue, double staffWelfareValue,
@@ -254,7 +262,6 @@ public class ReportTemplateRow implements Serializable {
         this.onlineSettlementValue = onlineSettlementValue;
     }
 
-    
     public ReportTemplateRow(Department department, Date date, WebUser user,
             double cashValue, double cardValue, double multiplePaymentMethodsValue,
             double staffValue, double creditValue, double staffWelfareValue,
@@ -423,8 +430,6 @@ public class ReportTemplateRow implements Serializable {
         this.rowValue = rowValue;
     }
 
-    
-    
     public ReportTemplateRow(BillTypeAtomic billTypeAtomic, Double rowValue) {
         this.billTypeAtomic = billTypeAtomic;
         this.rowValue = rowValue;
@@ -1131,6 +1136,12 @@ public class ReportTemplateRow implements Serializable {
         this.speciality = speciality;
     }
 
+    public ReportTemplateRow(AgentHistory agentHistory) {
+        this.agentHistory = agentHistory;
+    }
+    
+    
+
     public Double getGrossTotal() {
         return grossTotal;
     }
@@ -1194,7 +1205,13 @@ public class ReportTemplateRow implements Serializable {
     public void setDenominationTransactions(List<DenominationTransaction> denominationTransactions) {
         this.denominationTransactions = denominationTransactions;
     }
-    
-    
+
+    public AgentHistory getAgentHistory() {
+        return agentHistory;
+    }
+
+    public void setAgentHistory(AgentHistory agentHistory) {
+        this.agentHistory = agentHistory;
+    }
 
 }

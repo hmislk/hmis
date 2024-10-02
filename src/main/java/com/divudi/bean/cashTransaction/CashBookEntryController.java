@@ -19,6 +19,7 @@ import com.divudi.entity.Payment;
 import com.divudi.entity.cashTransaction.CashBook;
 import com.divudi.entity.cashTransaction.CashBookEntry;
 import com.divudi.facade.CashBookEntryFacade;
+import com.divudi.facade.CashBookFacade;
 import com.divudi.facade.PaymentFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -46,6 +47,8 @@ public class CashBookEntryController implements Serializable {
 
     @EJB
     private CashBookEntryFacade cashbookEntryFacade;
+    @EJB
+    private CashBookFacade cashbookFacade;
     @EJB
     PaymentFacade paymentFacade;
 
@@ -93,8 +96,14 @@ public class CashBookEntryController implements Serializable {
             JsfUtil.addErrorMessage("Cashbook Entry Error !");
             return null;
         }
+        if (bundleCb == null) {
+            JsfUtil.addErrorMessage("Cashbook Entry Error !");
+            return null;
+        }
 
         List<CashBookEntry> cashbookEntries = new ArrayList<>();
+
+        bundleCb = cashbookFacade.findWithLock(bundleCb.getId());
 
         for (PaymentMethod pm : PaymentMethod.asList()) {
             Double value = 0.0;
@@ -155,28 +164,247 @@ public class CashBookEntryController implements Serializable {
                 continue;
             }
 
+            // Create a new CashBookEntry
             CashBookEntry newCbEntry = new CashBookEntry();
-
             newCbEntry.setInstitution(bundle.getDepartment().getInstitution());
             newCbEntry.setDepartment(bundle.getDepartment());
             newCbEntry.setSite(bundle.getDepartment().getSite());
             newCbEntry.setWebUser(bundle.getUser());
-
+            newCbEntry.setCashbookDate(bundle.getDate());
             newCbEntry.setCreater(sessionController.getLoggedUser());
             newCbEntry.setCreatedAt(new Date());
-
             newCbEntry.setPaymentMethod(pm);
             newCbEntry.setEntryValue(value);
             newCbEntry.setBill(bill);
             newCbEntry.setCashBook(bundleCb);
+
+            // Get the current balance from CashBook and set it in CashBookEntry before entry
+            Double balanceBefore = getBalanceByPaymentMethod(bundleCb, pm);
+            if (balanceBefore == null) {
+                balanceBefore = 0.0;
+            }
+            setBalanceBefore(newCbEntry, pm, balanceBefore);
+
+            // Update the CashBook balance with the new value
+            Double newBalance = balanceBefore + value;
+            updateCashBookBalance(bundleCb, pm, newBalance);
+
+            // Set the balance after the entry in CashBookEntry
+            setBalanceAfter(newCbEntry, pm, newBalance);
+
+            // Persist the changes
             cashbookEntryFacade.create(newCbEntry);
             cashbookEntries.add(newCbEntry);
-            System.out.println("newCbEntry = " + newCbEntry);
-            updateBalances(bundle.getPaymentMethod(), value, newCbEntry);
+            cashbookFacade.editAndCommit(bundleCb); // Update CashBook after balance change
 
+            System.out.println("newCbEntry = " + newCbEntry);
         }
 
         return cashbookEntries;
+    }
+
+    private Double getBalanceByPaymentMethod(CashBook cashBook, PaymentMethod pm) {
+        switch (pm) {
+            case Cash:
+                return cashBook.getCashBalance();
+            case Card:
+                return cashBook.getCardBalance();
+            case Agent:
+                return cashBook.getAgentBalance();
+            case Cheque:
+                return cashBook.getChequeBalance();
+            case Credit:
+                return cashBook.getCreditBalance();
+            case IOU:
+                return cashBook.getIouBalance();
+            case MultiplePaymentMethods:
+                return cashBook.getMultiplePaymentMethodsBalance();
+            case OnCall:
+                return cashBook.getOnCallBalance();
+            case OnlineSettlement:
+                return cashBook.getOnlineSettlementBalance();
+            case PatientDeposit:
+                return cashBook.getPatientDepositBalance();
+            case PatientPoints:
+                return cashBook.getPatientPointsBalance();
+            case Slip:
+                return cashBook.getSlipBalance();
+            case Staff:
+                return cashBook.getStaffBalance();
+            case Staff_Welfare:
+                return cashBook.getStaffWelfareBalance();
+            case Voucher:
+                return cashBook.getVoucherBalance();
+            case ewallet:
+                return cashBook.getEwalletBalance();
+            default:
+                return 0.0;
+        }
+    }
+
+    private void updateCashBookBalance(CashBook cashBook, PaymentMethod pm, Double newBalance) {
+        switch (pm) {
+            case Cash:
+                cashBook.setCashBalance(newBalance);
+                break;
+            case Card:
+                cashBook.setCardBalance(newBalance);
+                break;
+            case Agent:
+                cashBook.setAgentBalance(newBalance);
+                break;
+            case Cheque:
+                cashBook.setChequeBalance(newBalance);
+                break;
+            case Credit:
+                cashBook.setCreditBalance(newBalance);
+                break;
+            case IOU:
+                cashBook.setIouBalance(newBalance);
+                break;
+            case MultiplePaymentMethods:
+                cashBook.setMultiplePaymentMethodsBalance(newBalance);
+                break;
+            case OnCall:
+                cashBook.setOnCallBalance(newBalance);
+                break;
+            case OnlineSettlement:
+                cashBook.setOnlineSettlementBalance(newBalance);
+                break;
+            case PatientDeposit:
+                cashBook.setPatientDepositBalance(newBalance);
+                break;
+            case PatientPoints:
+                cashBook.setPatientPointsBalance(newBalance);
+                break;
+            case Slip:
+                cashBook.setSlipBalance(newBalance);
+                break;
+            case Staff:
+                cashBook.setStaffBalance(newBalance);
+                break;
+            case Staff_Welfare:
+                cashBook.setStaffWelfareBalance(newBalance);
+                break;
+            case Voucher:
+                cashBook.setVoucherBalance(newBalance);
+                break;
+            case ewallet:
+                cashBook.setEwalletBalance(newBalance);
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void setBalanceBefore(CashBookEntry cashBookEntry, PaymentMethod pm, Double balanceBefore) {
+        switch (pm) {
+            case Cash:
+                cashBookEntry.setCashBalanceBefore(balanceBefore);
+                break;
+            case Card:
+                cashBookEntry.setCardBalanceBefore(balanceBefore);
+                break;
+            case Agent:
+                cashBookEntry.setAgentBalanceBefore(balanceBefore);
+                break;
+            case Cheque:
+                cashBookEntry.setChequeBalanceBefore(balanceBefore);
+                break;
+            case Credit:
+                cashBookEntry.setCreditBalanceBefore(balanceBefore);
+                break;
+            case IOU:
+                cashBookEntry.setIouBalanceBefore(balanceBefore);
+                break;
+            case MultiplePaymentMethods:
+                cashBookEntry.setMultiplePaymentMethodsBalanceBefore(balanceBefore);
+                break;
+            case OnCall:
+                cashBookEntry.setOnCallBalanceBefore(balanceBefore);
+                break;
+            case OnlineSettlement:
+                cashBookEntry.setOnlineSettlementBalanceBefore(balanceBefore);
+                break;
+            case PatientDeposit:
+                cashBookEntry.setPatientDepositBalanceBefore(balanceBefore);
+                break;
+            case PatientPoints:
+                cashBookEntry.setPatientPointsBalanceBefore(balanceBefore);
+                break;
+            case Slip:
+                cashBookEntry.setSlipBalanceBefore(balanceBefore);
+                break;
+            case Staff:
+                cashBookEntry.setStaffBalanceBefore(balanceBefore);
+                break;
+            case Staff_Welfare:
+                cashBookEntry.setStaffWelfareBalanceBefore(balanceBefore);
+                break;
+            case Voucher:
+                cashBookEntry.setVoucherBalanceBefore(balanceBefore);
+                break;
+            case ewallet:
+                cashBookEntry.setEwalletBalanceBefore(balanceBefore);
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void setBalanceAfter(CashBookEntry cashBookEntry, PaymentMethod pm, Double balanceAfter) {
+        switch (pm) {
+            case Cash:
+                cashBookEntry.setCashBalanceAfter(balanceAfter);
+                break;
+            case Card:
+                cashBookEntry.setCardBalanceAfter(balanceAfter);
+                break;
+            case Agent:
+                cashBookEntry.setAgentBalanceAfter(balanceAfter);
+                break;
+            case Cheque:
+                cashBookEntry.setChequeBalanceAfter(balanceAfter);
+                break;
+            case Credit:
+                cashBookEntry.setCreditBalanceAfter(balanceAfter);
+                break;
+            case IOU:
+                cashBookEntry.setIouBalanceAfter(balanceAfter);
+                break;
+            case MultiplePaymentMethods:
+                cashBookEntry.setMultiplePaymentMethodsBalanceAfter(balanceAfter);
+                break;
+            case OnCall:
+                cashBookEntry.setOnCallBalanceAfter(balanceAfter);
+                break;
+            case OnlineSettlement:
+                cashBookEntry.setOnlineSettlementBalanceAfter(balanceAfter);
+                break;
+            case PatientDeposit:
+                cashBookEntry.setPatientDepositBalanceAfter(balanceAfter);
+                break;
+            case PatientPoints:
+                cashBookEntry.setPatientPointsBalanceAfter(balanceAfter);
+                break;
+            case Slip:
+                cashBookEntry.setSlipBalanceAfter(balanceAfter);
+                break;
+            case Staff:
+                cashBookEntry.setStaffBalanceAfter(balanceAfter);
+                break;
+            case Staff_Welfare:
+                cashBookEntry.setStaffWelfareBalanceAfter(balanceAfter);
+                break;
+            case Voucher:
+                cashBookEntry.setVoucherBalanceAfter(balanceAfter);
+                break;
+            case ewallet:
+                cashBookEntry.setEwalletBalanceAfter(balanceAfter);
+                break;
+            default:
+                break;
+        }
     }
 
     public void writeCashBookEntryAtHandover(Payment p, CashBook cb) {

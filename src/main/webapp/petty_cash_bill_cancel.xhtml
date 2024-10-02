@@ -11,38 +11,94 @@
             <ui:define name="content">
                 <h:form>
                     <h:panelGroup rendered="#{!pettyCashBillSearch.printPreview}" styleClass="alignTop" >
-                        <p:panel  header="Cancellation">
-                            <p:selectOneMenu   id="cmbPs" value="#{pettyCashBillSearch.paymentMethod}" required="true"  >
-                                <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"  />
-                            </p:selectOneMenu>
-                            <p:commandButton class="mx-2 btn-danger" value="Cancel" ajax="false" action="#{pettyCashBillSearch.cancelBill()}" >
-                            </p:commandButton>                            
+                        <p:panel>
+                            <f:facet name="header">
+                                <h:outputText value="Cancellation" class="mt-5"/>
+                                <h:panelGrid columns="3" style="float: right" class="w-50">
+                                    <p:inputTextarea value="#{pettyCashBillSearch.comment}" class="w-100"       
+                                                     placeholder="Add comment here" />
+                                    <p:commandButton value="Cancel Bill" 
+                                                     icon="fa fa-cancel"
+                                                     style="float: right"
+                                                     class="ui-button-danger" ajax="false" action="#{pettyCashBillSearch.cancelBill()}" >
+                                    </p:commandButton>
+                                    <p:commandButton  
+                                        class="ui-button-secondary d-flex justify-content-end mx-2"
+                                        style="float: right"
+                                        value="Back To Search"
+                                        icon="fa-solid fa-arrow-left"
+                                        action="/petty_cash_bill_search_own?faces-redirect=true"
+                                        ajax="false">
+                                    </p:commandButton>
+                                </h:panelGrid>
+                            </f:facet>
+
+                            <p:panel>
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fas fa-money-bill"></h:outputText>
+                                    <h:outputLabel value="Payment Mode" class="mx-2"></h:outputLabel>
+                                </f:facet>
+                                <p:selectOneMenu   id="cmbPs" value="#{pettyCashBillSearch.paymentMethod}" required="true"  >
+                                    <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"  />
+                                </p:selectOneMenu>
+                            </p:panel>
+
+
                         </p:panel>
-                        <h:panelGrid columns="2" style="width: 100%;" class="mx-1">
-                            <p:panel header="Person Detail">
-                                <p:panelGrid columns="2" class="w-100">
+
+                        <p:panelGrid columns="2" style="width: 100%;">
+                            <p:panel>
+                                <f:facet name="header">
+                                    <h:outputText value="&#xf007;" styleClass="fa mr-2"></h:outputText>
+                                    <h:outputLabel value="Person Details" class="mx-2"></h:outputLabel>
+                                </f:facet>
+                                <p:panelGrid columns="2">
                                     <h:outputLabel value="Person Name:" ></h:outputLabel>
-                                    <h:outputLabel value="#{pettyCashBillSearch.bill.staff.name }" ></h:outputLabel>                                        
+                                    <h:outputLabel value="#{pettyCashBillSearch.bill.staff.person.nameWithTitle }" rendered="#{pettyCashBillSearch.bill.staff ne null}" ></h:outputLabel>                                        
+                                    <h:outputLabel value="#{pettyCashBillSearch.bill.person.nameWithTitle }" rendered="#{pettyCashBillSearch.bill.staff eq null}" ></h:outputLabel>                                        
                                 </p:panelGrid>
                             </p:panel>
-                            <p:panel header="Bill Detail">
-                                <p:panelGrid columns="2" class="w-100">
+                            <p:panel>
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fas fa-list-alt"></h:outputText>
+                                    <h:outputLabel value="Bill Detail" class="mx-2"></h:outputLabel>
+                                </f:facet>
+                                <p:panelGrid columns="2">
                                     <h:outputLabel value="Bill No :" ></h:outputLabel>
-                                    <h:outputLabel value="#{pettyCashBillSearch.bill.deptId}" ></h:outputLabel>                                  
+                                    <h:outputLabel value="#{pettyCashBillSearch.bill.deptId}" ></h:outputLabel>
+                                    <h:outputLabel value="Payment Type : " ></h:outputLabel>
+                                    <h:outputLabel value="#{pettyCashBillSearch.bill.paymentMethod}" ></h:outputLabel>                                        
                                     <h:outputLabel value="Net Total :" ></h:outputLabel>
                                     <h:outputLabel value="#{pettyCashBillSearch.bill.netTotal}" ></h:outputLabel>
                                 </p:panelGrid>
                             </p:panel>
-                        </h:panelGrid>
+                        </p:panelGrid>      
 
-                        <p:panel header="Comments" class="w-100">
-                            <p:inputTextarea value="#{pettyCashBillSearch.comment}" class="w-75"/>                            
-                        </p:panel>
                     </h:panelGroup>
 
 
+
                     <h:panelGroup rendered="#{pettyCashBillSearch.printPreview}" >
-                        <bi:petty   bill="#{pettyCashBillSearch.bill}" billController="#{pettyCashBillSearch}" dup="false"/>
+                        <div class="d-flex justify-content-end">
+                            <p:commandButton value="Print" 
+                                             class="ui-button-info m-1"
+                                             icon="fa fa-print"
+                                             ajax="false">
+                                <p:printer target="cancelPettyBill" />
+                            </p:commandButton>
+                            <p:commandButton  
+                                class="ui-button-secondary d-flex justify-content-end mx-2"
+                                style="float: right"
+                                value="Back To Search"
+                                icon="fa-solid fa-arrow-left"
+                                action="/petty_cash_bill_search_own?faces-redirect=true"
+                                ajax="false">
+                            </p:commandButton>
+
+                        </div>
+                        <h:panelGroup id="cancelPettyBill">
+                            <bi:petty   bill="#{pettyCashBillSearch.bill}" billController="#{pettyCashBillSearch}" dup="false"/>
+                        </h:panelGroup>
                     </h:panelGroup>
 
 
