@@ -1566,8 +1566,8 @@ public class BillSearch implements Serializable {
         getBill().setRefundedBill(rb);
         getBillFacade().editAndCommit(getBill());
         double feeTotalExceptCcfs = 0.0;
-        Payment p = collectingCentreBillController.createPaymentForRefunds(rb, paymentMethod);
-        drawerController.updateDrawerForOuts(p);
+//        Payment p = collectingCentreBillController.createPaymentForRefunds(rb, paymentMethod);
+//        drawerController.updateDrawerForOuts(p);
 
 //            for (BillItem bi : refundingItems) {
 //                String sql = "select c from BillFee c where c.billItem.id = " + bi.getId();
@@ -2356,7 +2356,7 @@ public class BillSearch implements Serializable {
 
         CancelledBill cancellationBill = createCollectingCenterCancelBill(bill);
         billController.save(cancellationBill);
-        Payment p = getOpdPreSettleController().createPaymentForCancellationsforOPDBill(cancellationBill, paymentMethod);
+//        Payment p = getOpdPreSettleController().createPaymentForCancellationsforOPDBill(cancellationBill, paymentMethod);
         List<BillItem> list = cancelBillItems(getBill(), cancellationBill, p);
         cancellationBill.setBillItems(list);
         billFacade.edit(cancellationBill);
@@ -2383,7 +2383,7 @@ public class BillSearch implements Serializable {
                 HistoryType.CollectingCentreBillingCancel,
                 cancellationBill);
         
-        drawerController.updateDrawerForOuts(p);
+//        drawerController.updateDrawerForOuts(p);
 
         bill = billFacade.find(bill.getId());
         printPreview = true;
