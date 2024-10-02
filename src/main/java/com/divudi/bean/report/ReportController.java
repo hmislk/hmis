@@ -1841,6 +1841,10 @@ public class ReportController implements Serializable {
         }
         return "/reports/lab/turn_around_time_details?faces-redirect=true";
     }
+    
+    public String navigateToTestWiseCountReports() {
+        return "/reports/lab/test_wise_count_report?faces-redirect=true";
+    }
 
     public String navigateToAnnualTestStatistics() {
         if (institutionController.getItems() == null) {
@@ -2646,6 +2650,56 @@ public class ReportController implements Serializable {
 
     }
 
+     public void processLabTestWiseCountReport() {
+        String jpql = "select new  com.divudi.data.TestWiseCountReport("
+                + "bi.item.name, "
+                + "count(bi.item.name), "
+                + "sum(bi.hospitalFee) , "
+                + "sum(bi.collectingCentreFee), "
+                + "sum(bi.staffFee), "
+                + "sum(bi.netValue)"
+                + ") "
+                + " from BillItem bi "
+                + " where bi.retired=:ret"
+                + " and bi.bill.billDate between :fd and :td "
+                + " and bi.bill.billType != :bType ";
+
+        if (false) {
+            BillItem bi = new BillItem();
+            bi.getItem();
+            bi.getHospitalFee();
+            bi.getCollectingCentreFee();
+            bi.getStaffFee();
+            bi.getNetValue();
+        }
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bType", BillType.CollectingCentreBill);
+
+        if (institution != null) {
+            jpql += " and bi.bill.institution = :ins ";
+            m.put("ins", institution);
+        }
+
+        if (department != null) {
+            jpql += " and bi.bill.department = :dep ";
+            m.put("dep", department);
+        }
+        
+        if (site != null) {
+            jpql += " and bi.bill.department.site = :site ";
+            m.put("site", site);
+        }
+
+        jpql += " group by bi.item.name";
+
+        testWiseCounts = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m);
+
+    }
+    
     private List<TestWiseCountReport> testWiseCounts;
 
     public List<TestWiseCountReport> getTestWiseCounts() {
