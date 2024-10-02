@@ -2357,7 +2357,7 @@ public class BillSearch implements Serializable {
         CancelledBill cancellationBill = createCollectingCenterCancelBill(bill);
         billController.save(cancellationBill);
 //        Payment p = getOpdPreSettleController().createPaymentForCancellationsforOPDBill(cancellationBill, paymentMethod);
-        List<BillItem> list = cancelBillItems(getBill(), cancellationBill, p);
+        List<BillItem> list = cancelCcBillItems(getBill(), cancellationBill);
         cancellationBill.setBillItems(list);
         billFacade.edit(cancellationBill);
 
@@ -2746,6 +2746,55 @@ public class BillSearch implements Serializable {
             List<BillFee> tmpC = getBillFeeFacade().findByJpql(sql);
             getOpdPreSettleController().createOpdCancelRefundBillFeePayment(cancellationBill, tmpC, p);
             //
+
+            list.add(b);
+
+        }
+
+        return list;
+    }
+    
+    private List<BillItem> cancelCcBillItems(Bill originalBill, Bill cancellationBill) {
+        List<BillItem> list = new ArrayList<>();
+        for (BillItem nB : originalBill.getBillItems()) {
+            BillItem b = new BillItem();
+            b.setBill(cancellationBill);
+
+            if (cancellationBill.getBillType() != BillType.PaymentBill) {
+                b.setItem(nB.getItem());
+            } else {
+                b.setReferanceBillItem(nB.getReferanceBillItem());
+            }
+            
+            b.setHospitalFee(0 - nB.getHospitalFee());
+            b.setCollectingCentreFee(0 - nB.getCollectingCentreFee());
+            b.setStaffFee(0 - nB.getStaffFee());
+
+            b.setNetValue(0 - nB.getNetValue());
+            b.setGrossValue(0 - nB.getGrossValue());
+            b.setRate(0 - nB.getRate());
+            b.setVat(0 - nB.getVat());
+            b.setVatPlusNetValue(0 - nB.getVatPlusNetValue());
+
+            b.setCatId(nB.getCatId());
+            b.setDeptId(nB.getDeptId());
+            b.setInsId(nB.getInsId());
+            b.setDiscount(0 - nB.getDiscount());
+            b.setQty(1.0);
+            b.setRate(nB.getRate());
+
+            b.setCreatedAt(new Date());
+            b.setCreater(getSessionController().getLoggedUser());
+
+            b.setPaidForBillFee(nB.getPaidForBillFee());
+
+            getBillItemFacede().create(b);
+
+            cancelBillComponents(cancellationBill, b);
+
+            String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + nB.getId();
+            List<BillFee> tmp = getBillFeeFacade().findByJpql(sql);
+            cancelBillFee(cancellationBill, b, tmp);
 
             list.add(b);
 
