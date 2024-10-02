@@ -788,7 +788,7 @@ public class ReportController implements Serializable {
                 + " and subAh.agency.institutionType=:insType  "
                 + " and subAh.createdAt < :hxDate)";
 
-        Date nextDayStart = commonFunctions.getNextDateStart(getFromDate());
+        Date nextDayStart = CommonFunctions.getNextDateStart(getFromDate());
 
         parameters.put("ret", true);
         parameters.put("hxDate", nextDayStart);  // Ensure this is the first millisecond of the next day
@@ -2177,7 +2177,7 @@ public class ReportController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = commonFunctions.getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
