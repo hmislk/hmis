@@ -449,7 +449,7 @@ public class ReportTemplateRowBundle implements Serializable {
     }
 
     public void calculateTotals() {
-        // Reset totals and boolean flags before starting calculation
+        System.out.println("calculateTotals = " );
         resetTotalsAndFlags();
 
         // Check if the list of rows is not null and not empty
@@ -479,11 +479,19 @@ public class ReportTemplateRowBundle implements Serializable {
                 addValueAndUpdateFlag("ccTotal", safeDouble(row.getCcTotal()));
             }
         }
+        total
+                = this.cashValue + this.cardValue + this.multiplePaymentMethodsValue + this.staffValue
+                + this.creditValue + this.staffWelfareValue + this.voucherValue + this.iouValue
+                + this.agentValue + this.chequeValue + this.slipValue + this.eWalletValue
+                + this.patientDepositValue + this.patientPointsValue + this.onlineSettlementValue;
+//                + this.grossTotal + this.discount 
+//                + this.hospitalTotal + this.staffTotal + this.ccTotal + 0.0;
     }
-    
-    
+
     public void calculateTotalsByChildBundles() {
+        System.out.println("calculateTotalsByChildBundles");
         resetTotalsAndFlags();
+        System.out.println("total = " + total);
 
         if (this.bundles != null && !this.bundles.isEmpty()) {
             for (ReportTemplateRowBundle childBundle : this.bundles) {
@@ -505,19 +513,22 @@ public class ReportTemplateRowBundle implements Serializable {
                 addValueAndUpdateFlag("onlineSettlement", safeDouble(childBundle.getOnlineSettlementValue()));
                 addValueAndUpdateFlag("grossTotal", safeDouble(childBundle.getGrossTotal()));
                 addValueAndUpdateFlag("discount", safeDouble(childBundle.getDiscount()));
-                addValueAndUpdateFlag("total", safeDouble(childBundle.getTotal()));
+
                 addValueAndUpdateFlag("hospitalTotal", safeDouble(childBundle.getHospitalTotal()));
                 addValueAndUpdateFlag("staffTotal", safeDouble(childBundle.getStaffTotal()));
                 addValueAndUpdateFlag("ccTotal", safeDouble(childBundle.getCcTotal()));
+
                 System.out.println("childBundle.getTotal() = " + childBundle.getTotal());
+
                 System.out.println("total Before= " + total);
-                total += safeDouble(childBundle.getTotal());
+
+                addValueAndUpdateFlag("total", safeDouble(childBundle.getTotal()));
+
                 System.out.println("total After= " + total);
             }
         }
     }
 
-    
     public void calculateTotalsByPayments() {
         resetTotalsAndFlags();
 
@@ -698,18 +709,16 @@ public class ReportTemplateRowBundle implements Serializable {
                 Double amount = safeDouble(row.getPayment().getPaidValue());  // Ensure amounts are not null
                 Double amountHandingOver = 0.0;
 
-                
-                PaymentMethod method = row.getPayment().getPaymentMethod(); 
-                
+                PaymentMethod method = row.getPayment().getPaymentMethod();
+
                 if (row.isSelected()) {
                     amountHandingOver = amount;
-                }else{
-                    if(method==Cash){
+                } else {
+                    if (method == Cash) {
                         amountHandingOver = amount;
                     }
                 }
 
-                
                 total += amount;
 
                 switch (method) {
@@ -794,8 +803,7 @@ public class ReportTemplateRowBundle implements Serializable {
                         this.hasEWalletTransaction = true;
                         break;
                     default:
-                        
-                        
+
                         break;
                 }
             }
@@ -806,21 +814,44 @@ public class ReportTemplateRowBundle implements Serializable {
     public void createRowValuesFromBill() {
         if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
             for (ReportTemplateRow row : this.reportTemplateRows) {
+                System.out.println("Processing row: " + row);
+                System.out.println("row.getBill() = " + row.getBill());
+
                 if (row.getBill() == null) {
+                    System.out.println("Skipping row, as bill is null.");
                     continue;
                 }
+
+                // Debugging bill details
+                System.out.println("row.getBill().getGrantTotal() = " + row.getBill().getGrantTotal());
+                System.out.println("row.getBill().getDiscount() = " + row.getBill().getDiscount());
+                System.out.println("row.getBill().getNetTotal() = " + row.getBill().getNetTotal());
+                System.out.println("row.getBill().getTotalStaffFee() = " + row.getBill().getTotalStaffFee());
+                System.out.println("row.getBill().getTotalCenterFee() = " + row.getBill().getTotalCenterFee());
+                System.out.println("row.getHospitalTotal() = " + row.getHospitalTotal());
+
+                // Setting values
                 row.setGrossTotal(row.getBill().getGrantTotal());
                 row.setDiscount(row.getBill().getDiscount());
                 row.setTotal(row.getBill().getNetTotal());
                 row.setHospitalTotal(row.getHospitalTotal());
                 row.setStaffTotal(row.getBill().getTotalStaffFee());
                 row.setCcTotal(row.getBill().getTotalCenterFee());
+
+                // Debugging after setting
+                System.out.println("row.getGrossTotal() = " + row.getGrossTotal());
+                System.out.println("row.getDiscount() = " + row.getDiscount());
+                System.out.println("row.getTotal() = " + row.getTotal());
+                System.out.println("row.getHospitalTotal() = " + row.getHospitalTotal());
+                System.out.println("row.getStaffTotal() = " + row.getStaffTotal());
+                System.out.println("row.getCcTotal() = " + row.getCcTotal());
             }
+        } else {
+            System.out.println("No reportTemplateRows to process.");
         }
     }
 
     private void resetTotalsAndFlags() {
-        // Reset all financial values and transaction flags
         this.cashValue = this.cardValue = this.multiplePaymentMethodsValue = this.staffValue
                 = this.creditValue = this.staffWelfareValue = this.voucherValue = this.iouValue
                 = this.agentValue = this.chequeValue = this.slipValue = this.eWalletValue
@@ -923,7 +954,7 @@ public class ReportTemplateRowBundle implements Serializable {
                     this.ccTotal += amount;
                     break;
                 default:
-                    
+
                     break;
             }
         }
@@ -1674,6 +1705,4 @@ public class ReportTemplateRowBundle implements Serializable {
         this.toUser = toUser;
     }
 
-    
-    
 }
