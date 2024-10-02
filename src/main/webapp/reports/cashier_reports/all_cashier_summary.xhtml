@@ -80,7 +80,7 @@
                             <h:outputLabel value="Department"/>                                
                             <p:selectOneMenu class="w-100 "  value="#{searchController.department}" filter="true" id="dept">
                                 <f:selectItem itemLabel="All Departments" ></f:selectItem>
-                                <f:selectItems value="#{sessionController.fillLoggableDepts(searchController.site)}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
+                                <f:selectItems value="#{departmentController.getInstitutionDepartments(searchController.site)}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
                             </p:selectOneMenu>
 
 
