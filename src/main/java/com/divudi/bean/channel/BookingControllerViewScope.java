@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.channel;
 
+import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.BillController;
@@ -239,6 +240,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     StaffController staffController;
     @Inject
     EnumController enumController;
+    @Inject
+    DrawerController drawerController;
     /**
      * Properties
      */
@@ -3447,8 +3450,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             return;
         }
         addChannelBooking(false);
+        
         fillBillSessions();
         billingStarted = false;
+        
+        
     }
 
     public void addReservedChannelBooking() {
@@ -3581,7 +3587,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         if (printingBill.getBillTypeAtomic()
                 .getBillFinanceType() == BillFinanceType.CASH_IN) {
-            createPayment(printingBill, paymentMethod);
+            List<Payment> p = createPayment(printingBill, paymentMethod);
+            
+            drawerController.updateDrawerForIns(p);
         }
 
         sendSmsAfterBooking();

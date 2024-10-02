@@ -58,13 +58,12 @@
                                 <td style="width: 15px;"></td>
                                 <td>
                                     <h:outputLabel 
-                                        value="#{cc.attrs.bill.cancelledBill.deptId} **Cancelled"  
+                                        value="#{cc.attrs.bill.cancelledBill.deptId}"  
                                         rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}"/> 
                                     <h:outputLabel 
                                         value="#{cc.attrs.bill.deptId}" 
                                         rendered="#{cc.attrs.bill.cancelledBill.deptId eq null}"/>  
-                                    <h:outputLabel 
-                                        value="  **Duplicate" 
+                                    <h:outputLabel                                         
                                         rendered="#{cc.attrs.bill.cancelledBill.deptId eq null and cc.attrs.dup eq true }" />
 
                                 </td>
