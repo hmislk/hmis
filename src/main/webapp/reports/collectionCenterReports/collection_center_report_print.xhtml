@@ -154,7 +154,7 @@
                                 id="cmbCat" 
                                 filter="true"
                                 filterMatchMode="contains"
-                                value="#{investigationController.current.category}" >
+                                value="#{reportController.category}" >
                                 <f:selectItem itemLabel="Please select a laboratory category"/>
                                 <f:selectItems 
                                     value="#{investigationCategoryController.items}" 
@@ -201,12 +201,22 @@
 
                         </h:panelGrid>
 
-                        <p:commandButton     ajax="false"
-                                             value="Process"
-                                             style="width: 150px"
-                                             class="ui-button-warning mx-2"
-                                             icon="fas fa-cogs"
-                                             />
+                        <p:commandButton     
+                            ajax="false"
+                            value="Process*"
+                            style="width: 150px"
+                            class="ui-button-warning mx-2"
+                            icon="fas fa-cogs"
+                            action="#{reportController.listCcReportPrint()}"
+                            />
+                        <p:commandButton     
+                            ajax="false"
+                            value="Process"
+                            style="width: 150px"
+                            class="ui-button-warning mx-2"
+                            icon="fas fa-cogs"
+                            action="#{reportController.processCollectingCentreReportsToPrint()}"
+                            />
                         <p:commandButton 
                             icon="fa-solid fa-print"
                             class="mx-2 ui-button-info"
