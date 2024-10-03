@@ -284,6 +284,7 @@
                                     class="w-75"
                                     maxResults="50"
                                     scrollHeight="600"
+                                    minQueryLength="#{configOptionApplicationController.getShortTextValueByKey('Minimum Number of Characters to Search for Item','4')}"
                                     inputStyleClass="w-100"
                                     completeMethod="#{itemController.completeAmpItem}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
                                     <p:column headerText="Item" style="width: 350px; padding: 6px;">

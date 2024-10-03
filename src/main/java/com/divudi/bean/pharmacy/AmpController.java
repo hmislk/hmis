@@ -10,6 +10,7 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.CategoryController;
 import com.divudi.bean.common.CommonController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.bean.common.util.JsfUtil;
@@ -94,6 +95,8 @@ public class AmpController implements Serializable {
     CategoryController categoryController;
     @Inject
     VmpController vmpController;
+    @Inject
+    private ConfigOptionApplicationController configOptionApplicationController;
     private UploadedFile file;
 
     public UploadedFile getFile() {
@@ -711,6 +714,19 @@ public class AmpController implements Serializable {
             JsfUtil.addErrorMessage("No Name");
             return;
         }
+        
+        int maxCodeLeanth = Integer.parseInt(configOptionApplicationController.getShortTextValueByKey("Minimum Number of Characters to Search for Item","4"));
+        
+        System.out.println("maxCodeLeanth = " + maxCodeLeanth);
+        System.out.println("Current Code length = " + current.getCode().trim().length());
+        
+        System.out.println(current.getCode().trim().length() < maxCodeLeanth);
+        
+        if (current.getCode().trim().length() < maxCodeLeanth){
+            JsfUtil.addErrorMessage("Minimum " + maxCodeLeanth + " characters are Required for Item Code");
+            return;
+        }
+        
         if (checkItemCode(current.getCode())) {
             JsfUtil.addErrorMessage("This Code has Already been Used.");
             return;
@@ -979,6 +995,14 @@ public class AmpController implements Serializable {
 
     public void setItems(List<Amp> items) {
         this.items = items;
+    }
+
+    public ConfigOptionApplicationController getConfigOptionApplicationController() {
+        return configOptionApplicationController;
+    }
+
+    public void setConfigOptionApplicationController(ConfigOptionApplicationController configOptionApplicationController) {
+        this.configOptionApplicationController = configOptionApplicationController;
     }
 
     /**

@@ -73,7 +73,9 @@ import com.divudi.entity.Category;
 import com.divudi.entity.Payment;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.cashTransaction.CashBookEntry;
+import com.divudi.entity.cashTransaction.Drawer;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.facade.DrawerFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.TokenFacade;
@@ -145,6 +147,8 @@ public class SearchController implements Serializable {
     private PatientFacade patientFacade;
     @EJB
     TokenFacade tokenFacade;
+    @EJB
+    private DrawerFacade drawerFacade;
 
     /**
      * Inject
@@ -298,6 +302,8 @@ public class SearchController implements Serializable {
 
     private List<CashBookEntry> cashBookEntries;
     private Institution site;
+    private List<Drawer> drawerList;
+    private Drawer selectedDrawer;
     private int opdAnalyticsIndex;
 
     public String navigateToPettyCashBillApprove() {
@@ -893,6 +899,10 @@ public class SearchController implements Serializable {
     public String navigatToCashierDetails() {
         bundle = new ReportTemplateRowBundle();
         return "/reports/cashier_reports/cashier_detailed?faces-redirect=true";
+    }
+    
+    public String navigateToAllCashierDrawersDetails() {
+        return "/reports/cashier_reports/all_cashiers_drawer_details?faces-redirect=true";
     }
 
     public String navigatToReportDoctorPaymentOpd() {
@@ -1850,7 +1860,31 @@ public class SearchController implements Serializable {
     }
 
     public void setOpdAnalyticsIndex(int opdAnalyticsIndex) {
-        this.opdAnalyticsIndex = opdAnalyticsIndex;
+        this.opdAnalyticsIndex = opdAnalyticsIndex;    
+    }
+
+    public List<Drawer> getDrawerList() {
+        return drawerList;
+    }
+
+    public void setDrawerList(List<Drawer> drawerList) {
+        this.drawerList = drawerList;
+    }
+
+    public DrawerFacade getDrawerFacade() {
+        return drawerFacade;
+    }
+
+    public void setDrawerFacade(DrawerFacade drawerFacade) {
+        this.drawerFacade = drawerFacade;
+    }
+
+    public Drawer getSelectedDrawer() {
+        return selectedDrawer;
+    }
+
+    public void setSelectedDrawer(Drawer selectedDrawer) {
+        this.selectedDrawer = selectedDrawer;
     }
 
     public class billsWithbill {
@@ -12557,6 +12591,23 @@ public class SearchController implements Serializable {
         bundle.getBundles().add(netCashForTheDayBundle);
         bundle.calculateTotalsByChildBundles();
 
+    }
+    
+    public void genarateDrawerDetailsForCashiers(){
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+        
+        jpql = "select d from Drawer d "
+                + " where d.createdAt BETWEEN :fd AND :td ";
+        
+        params.put("fd", getFromDate());
+        params.put("td", getToDate());
+        
+        if(webUser != null){
+            jpql += " AND d.drawerUser = :du ";
+            params.put("du", webUser);
+        }
+        drawerList = drawerFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     public void generateCashierDetailed() {
