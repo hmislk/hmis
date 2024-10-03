@@ -222,17 +222,11 @@
             </p:column>
 
             <p:column headerText="Grand Total">
-                <h:outputText value="#{summary.cashValue + summary.cardValue + summary.multiplePaymentMethodsValue + 
-                                       summary.creditValue + summary.staffWelfareValue + summary.staffValue + summary.voucherValue + 
-                                       summary.iouValue + summary.agentValue + summary.chequeValue + summary.slipValue + 
-                                       summary.ewalletValue + summary.patientDepositValue + summary.patientPointsValue + summary.onlineSettlementValue}">
+                <h:outputText value="#{summary.total}">
                     <f:convertNumber pattern="#,##0.00" />
                 </h:outputText>
                 <f:facet name="footer">
-                    <h:outputText value="#{cc.attrs.bundle.cashValue + cc.attrs.bundle.cardValue + cc.attrs.bundle.multiplePaymentMethodsValue + 
-                                           cc.attrs.bundle.creditValue + cc.attrs.bundle.staffWelfareValue + cc.attrs.bundle.staffValue + cc.attrs.bundle.voucherValue + 
-                                           cc.attrs.bundle.iouValue + cc.attrs.bundle.agentValue + cc.attrs.bundle.chequeValue + cc.attrs.bundle.slipValue + 
-                                           cc.attrs.bundle.ewalletValue + cc.attrs.bundle.patientDepositValue + cc.attrs.bundle.patientPointsValue + cc.attrs.bundle.onlineSettlementValue}" 
+                    <h:outputText value="#{cc.attrs.bundle.total}" 
                                   style="text-align: right;">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>

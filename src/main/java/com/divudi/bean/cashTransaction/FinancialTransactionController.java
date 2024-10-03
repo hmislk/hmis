@@ -2270,19 +2270,18 @@ public class FinancialTransactionController implements Serializable {
         bundle.setCashHandoverValue(0.0);
         return "/cashier/handover_start_all?faces-redirect=true";
     }
-    
-    
+
     public String navigateToHandoverCreateBillForSelectedPeriod() {
         return "/cashier/handover_start_for_period?faces-redirect=true";
     }
-    
+
     public void processToHandoverCreateBillForSelectedPeriod() {
         resetClassVariables();
         findNonClosedShiftStartFundBillIsAvailable();
         handoverValuesCreated = false;
         bundle = new ReportTemplateRowBundle(sessionController);
 
-        List<Payment> shiftPayments = fetchPaymentsFromShiftStartToEndByDateAndDepartment(fromDate, toDate , sessionController.getLoggedUser());
+        List<Payment> shiftPayments = fetchPaymentsFromShiftStartToEndByDateAndDepartment(fromDate, toDate, sessionController.getLoggedUser());
         List<Payment> shiftFloats = fetchShiftFloatsFromShiftStartToEnd(fromDate, toDate, sessionController.getLoggedUser());
         List<Payment> othersPayments = fetchAllPaymentInMyHold(sessionController.getLoggedUser());
 
@@ -2565,8 +2564,8 @@ public class FinancialTransactionController implements Serializable {
         financialReportByPayments = new FinancialReport(atomicBillTypeTotalsByPayments);
 
     }
-    
-     public void fillPaymentsFromViewHandoverAcceptBillOld() {
+
+    public void fillPaymentsFromViewHandoverAcceptBillOld() {
         paymentsFromShiftSratToNow = new ArrayList<>();
         Map<String, Object> m = new HashMap<>();
         String jpql = "SELECT p "
@@ -2623,7 +2622,6 @@ public class FinancialTransactionController implements Serializable {
 
         financialReportByPayments = new FinancialReport(atomicBillTypeTotalsByPayments);
     }
-
 
     public void fillPaymentsFromShiftStartToNowNotYetStartedToEntereToCashbook() {
         paymentsFromShiftSratToNow = new ArrayList<>();
@@ -3000,7 +2998,6 @@ public class FinancialTransactionController implements Serializable {
         return shiftPaymentsToEnd;
     }
 
-    
     public List<Payment> fetchPaymentsFromShiftStartToEndByDateAndDepartment(
             Long startBillId, Long endBillId, WebUser wu) {
 
@@ -3008,7 +3005,7 @@ public class FinancialTransactionController implements Serializable {
             System.out.println("Exiting 1");
             return null;
         }
-        
+
         List<BillTypeAtomic> btas = new ArrayList<>();
         btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_IN));
         btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_OUT));
@@ -3051,7 +3048,7 @@ public class FinancialTransactionController implements Serializable {
         }
         return shiftPaymentsToEnd;
     }
-    
+
     public List<Payment> fetchPaymentsFromShiftStartToEndByDateAndDepartment(
             Date fromDate, Date toDate, WebUser wu) {
 
@@ -3059,7 +3056,7 @@ public class FinancialTransactionController implements Serializable {
             System.out.println("Exiting 1");
             return null;
         }
-        
+
         List<BillTypeAtomic> btas = new ArrayList<>();
         btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_IN));
         btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_OUT));
@@ -3088,7 +3085,7 @@ public class FinancialTransactionController implements Serializable {
 
         String jpql = jpqlBuilder.toString();
 
-        List<Payment> shiftPayments = paymentFacade.findByJpql(jpql, m);
+        List<Payment> shiftPayments = paymentFacade.findByJpql(jpql, m,TemporalType.TIMESTAMP);
         System.out.println("shiftPayments = " + shiftPayments);
         List<Payment> shiftPaymentsToEnd = new ArrayList<>();
         for (Payment p : shiftPayments) {
@@ -3102,7 +3099,7 @@ public class FinancialTransactionController implements Serializable {
         }
         return shiftPaymentsToEnd;
     }
-    
+
     public List<Payment> fetchShiftFloatsFromShiftStartToEnd(
             Bill startBill, Bill endBill, WebUser wu) {
         System.out.println("startBill = " + startBill);
@@ -3160,15 +3157,13 @@ public class FinancialTransactionController implements Serializable {
         }
         return myFloats;
     }
-    
+
     public List<Payment> fetchShiftFloatsFromShiftStartToEnd(
             Date fromDate, Date toDate, WebUser wu) {
         System.out.println("startBill = " + fromDate);
         if (fromDate == null) {
             return null;
         }
-
-      
 
         List<BillTypeAtomic> btas = new ArrayList<>();
         btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.FLOAT_CLOSING_BALANCE));
@@ -4003,10 +3998,11 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("No Payments to Handover");
             return null;
         }
-        if (bundle.getCashValue() != bundle.getCashHandoverValue()) {
-            JsfUtil.addErrorMessage("Cash Value Collected and the cash value Handing over are differernt. Can not handover.");
+        if (Math.abs(bundle.getCashValue() - bundle.getCashHandoverValue()) > 1) {
+            JsfUtil.addErrorMessage("Cash Value Collected and the cash value Handing over are different. Cannot handover.");
             return null;
         }
+
         bundle.setFromUser(sessionController.getLoggedUser());
         bundle.setToUser(user);
 
