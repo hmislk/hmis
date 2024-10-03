@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
@@ -131,6 +132,9 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     private List<Item> packaes;
 
     //</editor-fold>
+    @Inject
+    DrawerController drawerController;
+    
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private static final long serialVersionUID = 1L;
 
@@ -388,7 +392,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             getPatientFacade().edit(getPatient());
         }
         saveBillItemSessions();
-
+        drawerController.updateDrawerForIns(ps);
         clearBillItemValues();
 
         JsfUtil.addSuccessMessage(
@@ -1556,7 +1560,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             return;
         }
 
-
         getListOfTheNonExpiredPackages();
 
         if (configOptionApplicationController.getBooleanValueByKey("Package bill – Reloading packages Considering the Expiry Date.", false)) {
@@ -1572,16 +1575,16 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                     }
                 }
             }
-        }else{
+        } else {
             listOfTheNonExpiredPackages = packaes;
         }
 
         malePackaes = new ArrayList<>();
         femalePackaes = new ArrayList<>();
-        bothPackaes = new ArrayList<>();       
-        
+        bothPackaes = new ArrayList<>();
+
         packaes = listOfTheNonExpiredPackages;
-        
+
         for (Item i : listOfTheNonExpiredPackages) {
             if (i.getForGender() == null) {
                 bothPackaes.add(i);

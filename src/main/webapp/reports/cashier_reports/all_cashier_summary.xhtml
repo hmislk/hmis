@@ -18,7 +18,6 @@
 
 
 
-
                         <h:panelGrid columns="8" class="w-100">
                             <h:outputLabel value="From"/>
                             <p:calendar 
@@ -42,8 +41,24 @@
                             </p:calendar>
 
                             <p:spacer ></p:spacer>
-                            <p:spacer ></p:spacer>
-                            <p:spacer ></p:spacer>
+                            <h:outputLabel value="User"/> 
+                            <p:autoComplete
+                                completeMethod="#{webUserController.completeUser}"
+                                class="w-100"
+                                id="acStaff" 
+                                inputStyleClass="w-100"
+                                value="#{searchController.webUser}" 
+                                var="user"
+                                scrollHeight="450"
+                                itemLabel="#{user.webUserPerson.name}" 
+                                itemValue="#{user}" >
+                                <p:column headerText="Username" >
+                                    <h:outputText value="#{user.name}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Name" >
+                                    <h:outputText value="#{user.webUserPerson.name}" ></h:outputText>
+                                </p:column>
+                            </p:autoComplete>
 
                             <h:outputLabel value="Institution"/>                                
                             <p:selectOneMenu class="w-100 " value="#{searchController.institution}" filter="true" >
@@ -53,41 +68,55 @@
 
                             <p:spacer width="20" ></p:spacer>
 
-                            <h:outputLabel value="Department"/>                                
-                            <p:selectOneMenu class="w-100 "  value="#{searchController.department}" filter="true">
-                                <f:selectItem itemLabel="All Departments" ></f:selectItem>
-                                <f:selectItems value="#{sessionController.loggableDepartments}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
-                            </p:selectOneMenu>
-
-                            <p:spacer width="20" ></p:spacer>
-
                             <h:outputLabel value="Site*"/>   
                             <p:selectOneMenu class="w-100 "  value="#{searchController.site}" filter="true">
-                                <f:selectItem itemLabel="All Departments" ></f:selectItem>
+                                <f:selectItem itemLabel="All Sites" ></f:selectItem>
                                 <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" ></f:selectItems>
+                                <p:ajax event="itemSelect" process="@this" update="dept"/>
                             </p:selectOneMenu>
+                            
+                            <p:spacer width="20" ></p:spacer>
+                            
+                            <h:outputLabel value="Department"/>                                
+                            <p:selectOneMenu class="w-100 "  value="#{searchController.department}" filter="true" id="dept">
+                                <f:selectItem itemLabel="All Departments" ></f:selectItem>
+                                <f:selectItems value="#{sessionController.fillLoggableDepts(searchController.site)}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
+                            </p:selectOneMenu>
+
 
 
 
                         </h:panelGrid>
 
 
-
-                        <h:panelGrid columns="3" class="my-2" >
+                        <h:panelGrid columns="6" class="my-2" >
 
                             <p:commandButton  
                                 value="Process" 
                                 ajax="false"
-                                action="#{searchController.generateAllCashierSummary()}" 
+                                action="#{searchController.generateAllCashierSummary}" 
                                 class="ui-button-warning" icon="fas fa-cogs">
                             </p:commandButton>
-
-                            <p:commandButton 
-                                value="Download Excel" 
-                                ajax="false" 
-                                class="mx-2 ui-button-success" 
-                                icon="fa fa-file-excel">
-                                <p:dataExporter target="tblCashier" fileName="All_Cashier_Summary" type="xlsx" ></p:dataExporter>
+                            
+                             <p:commandButton  
+                                value="Print" 
+                                ajax="false"
+                                class="ui-button-info mx-1" icon="fas fa-print">
+                                 <p:printer target="printdata" />
+                            </p:commandButton>
+                            
+                             <p:commandButton  
+                                value="Excel" 
+                                ajax="false"
+                                class="ui-button-success" icon="fas fa-file-excel">
+                                 <p:dataExporter type="xlsx" target="printdata" fileName="All Cashier Summury Report #{sessionController.currentDate} - #{sessionController.institution.name} #{sessionController.department.name}" />
+                            </p:commandButton>
+                            
+                             <p:commandButton  
+                                value="PDF" 
+                                ajax="false"
+                                class="ui-button-danger mx-1" icon="fas fa-file-pdf">
+                                 <p:dataExporter type="pdf" target="printdata" fileName="All Cashier Summury Report #{sessionController.currentDate} - #{sessionController.institution.name} #{sessionController.department.name}" />
                             </p:commandButton>
 
                         </h:panelGrid>
@@ -95,12 +124,18 @@
 
 
                         <p:dataTable value="#{searchController.bundle.reportTemplateRows}" var="summary"
-                                     paginator="true" rows="10" id="tblCashier"
+                                     paginator="true" rows="10"
+                                     id="printdata"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
                                      currentPageReportTemplate="(Page {currentPage} of {totalPages})"
-                                     paginatorPosition="top">
+                                     paginatorPosition="bottom">
 
 
+                            <p:column headerText="Cashier" 
+                                      sortBy="#{summary.user.webUserPerson.name}" 
+                                      filterBy="#{summary.user.webUserPerson.name}">
+                                <h:outputText value="#{summary.user.webUserPerson.name} (#{summary.user.name})" />
+                            </p:column>
 
                             <p:column headerText="Institution" sortBy="#{summary.department.institution.name}" filterBy="#{summary.department.institution.name}">
                                 <h:outputText value="#{summary.department.institution.name}" />
@@ -119,9 +154,19 @@
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                 </h:outputText>
                             </p:column>
+                            
+                            <p:column headerText="HandOvered Date" sortBy="#{summary.date}" filterBy="#{summary.date}">
+                                <h:outputText value="#{summary.date}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                </h:outputText>
+                            </p:column>
+                            
+                             <p:column headerText="Checked By" >
+                                 
+                            </p:column>
 
                             <p:column headerText="Cash" 
-                                      style="text-align: left;"
+                                      style="text-align: right;"
                                       sortBy="#{summary.cashValue}" filterBy="#{summary.cashValue}" rendered="#{searchController.bundle.hasCashTransaction}" >
                                 <h:outputText value="#{summary.cashValue}"  style="text-align: right;">
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
@@ -145,7 +190,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Multiple Payment Methods" sortBy="#{summary.multiplePaymentMethodsValue}" filterBy="#{summary.multiplePaymentMethodsValue}"  rendered="#{searchController.bundle.hasMultiplePaymentMethodsTransaction}" >
+                            <p:column headerText="Multiple Payment Methods" sortBy="#{summary.multiplePaymentMethodsValue}" filterBy="#{summary.multiplePaymentMethodsValue}"  rendered="false" >
                                 <h:outputText value="#{summary.multiplePaymentMethodsValue}" >
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputText>
@@ -174,17 +219,6 @@
                                 </h:outputText>
                                 <f:facet name="footer">
                                     <h:outputText value="#{searchController.bundle.staffWelfareValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
-
-                            <p:column headerText="Staff" sortBy="#{summary.staffValue}" filterBy="#{summary.staffValue}"  rendered="#{searchController.bundle.hasStaffTransaction}" >
-                                <h:outputText value="#{summary.staffValue}" >
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{searchController.bundle.staffValue}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
@@ -289,22 +323,8 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Grand Total">
-                                <f:facet name="footer">
-                                    <h:outputText value="#{searchController.bundle.cashValue + searchController.bundle.cardValue + searchController.bundle.multiplePaymentMethodsValue + 
-                                                           searchController.bundle.creditValue + searchController.bundle.staffWelfareValue + searchController.bundle.staffValue + searchController.bundle.voucherValue + 
-                                                           searchController.bundle.iouValue + searchController.bundle.agentValue + searchController.bundle.chequeValue + searchController.bundle.slipValue + 
-                                                           searchController.bundle.ewalletValue + searchController.bundle.patientDepositValue + searchController.bundle.patientPointsValue + searchController.bundle.onlineSettlementValue}" 
-                                                  style="text-align: right;">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
-
-
 
                         </p:dataTable>
-
                     </p:panel>
 
                 </h:form>

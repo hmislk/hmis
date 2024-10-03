@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.hr.StaffController;
 import com.divudi.data.Dashboard;
 import com.divudi.data.Privileges;
@@ -31,6 +32,7 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.LoginPage;
 import com.divudi.entity.UserNotification;
 import com.divudi.entity.WebUserRole;
+import com.divudi.entity.cashTransaction.Drawer;
 import com.divudi.facade.UserNotificationFacade;
 import com.divudi.light.common.WebUserLight;
 import java.io.Serializable;
@@ -99,6 +101,8 @@ public class WebUserController implements Serializable {
     UserNotificationController userNotificationController;
     @Inject
     WebUserRoleUserController webUserRoleUserController;
+    @Inject
+    private DrawerController drawerController;
     /**
      * Class Variables
      */
@@ -279,9 +283,6 @@ public class WebUserController implements Serializable {
         this.staffFacade = staffFacade;
     }
 
-    
-    
-    
     public boolean hasPrivilege(String privilege) {
         boolean hasPri = false;
         if (grantAllPrivilegesToAllUsersForTesting) {
@@ -633,7 +634,6 @@ public class WebUserController implements Serializable {
         fillLightUsers();
         return "/admin/users/user_list?faces-redirect=true";
     }
-    
 
     private void fillLightUsers() {
         HashMap<String, Object> m = new HashMap<>();
@@ -646,7 +646,7 @@ public class WebUserController implements Serializable {
         m.put("ret", false);
         webUseLights = (List<WebUserLight>) getPersonFacade().findLightsByJpql(jpql, m);
     }
-    
+
     private void fillLightUsersWithoutStaff() {
         HashMap<String, Object> m = new HashMap<>();
         String jpql;
@@ -802,7 +802,7 @@ public class WebUserController implements Serializable {
             JsfUtil.addErrorMessage("Please select a user");
             return "";
         }
-        if(selected.getStaff()==null){
+        if (selected.getStaff() == null) {
             staff = new Staff();
             staff.setPerson(selected.getWebUserPerson());
             staffFacade.create(staff);
@@ -881,7 +881,7 @@ public class WebUserController implements Serializable {
         getUserDepartmentController().setItems(getUserDepartmentController().fillWebUserDepartments(selected));
         return "/admin/users/user_department?faces-redirect=true";
     }
-    
+
     public String navigateToManageRoutes() {
         if (selected == null) {
             JsfUtil.addErrorMessage("Please select a user");
@@ -900,6 +900,17 @@ public class WebUserController implements Serializable {
         current = selected;
         listWebUserDashboards();
         return "/admin_manage_dashboards?faces-redirect=true";
+    }
+
+    public String toManageDrawers() {
+        if (selected == null) {
+            JsfUtil.addErrorMessage("Please select a user");
+            return "";
+        }
+        current = selected;
+        Drawer d = drawerController.getUsersDrawer(selected);
+        drawerController.setCurrent(d);
+        return "/admin/users/drawer?faces-redirect=true";
     }
 
     public String toManageUserPreferences() {
@@ -1132,6 +1143,14 @@ public class WebUserController implements Serializable {
         this.grantAllPrivilegesToAllUsersForTesting = grantAllPrivilegesToAllUsersForTesting;
     }
 
+    public DrawerController getDrawerController() {
+        return drawerController;
+    }
+
+    public void setDrawerController(DrawerController drawerController) {
+        this.drawerController = drawerController;
+    }
+
     @FacesConverter(forClass = WebUser.class)
     public static class WebUserControllerConverter implements Converter {
 
@@ -1190,5 +1209,7 @@ public class WebUserController implements Serializable {
     public void setUserNotificationCount(int userNotificationCount) {
         this.userNotificationCount = userNotificationCount;
     }
+    
+    
 
 }

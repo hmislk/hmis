@@ -133,6 +133,8 @@ public class ReportTemplateRowBundle implements Serializable {
     private boolean hasOnlineSettlementTransaction;
 
     private WebUser user;
+    private WebUser fromUser;
+    private WebUser toUser;
     private Date date;
     private Department department;
     private List<Department> departments;
@@ -310,6 +312,9 @@ public class ReportTemplateRowBundle implements Serializable {
         }
     }
 
+//    public void prepareDenominations(){
+//        denominationTransactions = createDefaultDenominationTransaction(PaymentMethod.Cash);
+//    }
     public Double getPaymentValue(PaymentMethod pm) {
         switch (pm) {
             case Agent:
@@ -317,9 +322,9 @@ public class ReportTemplateRowBundle implements Serializable {
             case Card:
                 return cardValue;
             case Cash:
-                if (denominationTransactions == null) {
-                    denominationTransactions = createDefaultDenominationTransaction(PaymentMethod.Cash);
-                }
+//                if (denominationTransactions == null) {
+//                    denominationTransactions = createDefaultDenominationTransaction(PaymentMethod.Cash);
+//                }
                 return cashValue;
             case Cheque:
                 return chequeValue;
@@ -484,6 +489,40 @@ public class ReportTemplateRowBundle implements Serializable {
             }
         }
     }
+    
+    public void calculateTotalsByChildBundles() {
+        // Reset totals and boolean flags before starting calculation
+        resetTotalsAndFlags();
+
+        // Check if the list of rows is not null and not empty
+        if (this.bundles != null && !this.bundles.isEmpty()) {
+            // Aggregate values from each row and update transaction flags
+            for (ReportTemplateRowBundle childBundle : this.bundles) {
+                addValueAndUpdateFlag("cash", safeDouble(childBundle.getCashValue()));
+                addValueAndUpdateFlag("card", safeDouble(childBundle.getCardValue()));
+                addValueAndUpdateFlag("multiplePaymentMethods", safeDouble(childBundle.getMultiplePaymentMethodsValue()));
+                addValueAndUpdateFlag("staff", safeDouble(childBundle.getStaffValue()));
+                addValueAndUpdateFlag("credit", safeDouble(childBundle.getCreditValue()));
+                addValueAndUpdateFlag("staffWelfare", safeDouble(childBundle.getStaffWelfareValue()));
+                addValueAndUpdateFlag("voucher", safeDouble(childBundle.getVoucherValue()));
+                addValueAndUpdateFlag("iou", safeDouble(childBundle.getIouValue()));
+                addValueAndUpdateFlag("agent", safeDouble(childBundle.getAgentValue()));
+                addValueAndUpdateFlag("cheque", safeDouble(childBundle.getChequeValue()));
+                addValueAndUpdateFlag("slip", safeDouble(childBundle.getSlipValue()));
+                addValueAndUpdateFlag("eWallet", safeDouble(childBundle.getEwalletValue()));
+                addValueAndUpdateFlag("patientDeposit", safeDouble(childBundle.getPatientDepositValue()));
+                addValueAndUpdateFlag("patientPoints", safeDouble(childBundle.getPatientPointsValue()));
+                addValueAndUpdateFlag("onlineSettlement", safeDouble(childBundle.getOnlineSettlementValue()));
+                addValueAndUpdateFlag("grossTotal", safeDouble(childBundle.getGrossTotal()));
+                addValueAndUpdateFlag("discount", safeDouble(childBundle.getDiscount()));
+                addValueAndUpdateFlag("total", safeDouble(childBundle.getTotal()));
+                addValueAndUpdateFlag("hospitalTotal", safeDouble(childBundle.getHospitalTotal()));
+                addValueAndUpdateFlag("staffTotal", safeDouble(childBundle.getStaffTotal()));
+                addValueAndUpdateFlag("ccTotal", safeDouble(childBundle.getCcTotal()));
+                total += safeDouble(childBundle.getTotal());
+            }
+        }
+    }
 
     public void calculateTotalsByPayments() {
         resetTotalsAndFlags();
@@ -516,9 +555,9 @@ public class ReportTemplateRowBundle implements Serializable {
                         this.hasCardTransaction = true;
                         break;
                     case Cash:
-                        if (denominationTransactions == null) {
-                            denominationTransactions = createDefaultDenominationTransaction(PaymentMethod.Cash);
-                        }
+//                        if (denominationTransactions == null) {
+//                            denominationTransactions = createDefaultDenominationTransaction(PaymentMethod.Cash);
+//                        }
                         this.cashValue += amount;
                         this.cashHandoverValue += amountHandingOver;
                         this.hasCashTransaction = true;
@@ -667,11 +706,18 @@ public class ReportTemplateRowBundle implements Serializable {
                 Double amount = safeDouble(row.getPayment().getPaidValue());  // Ensure amounts are not null
                 Double amountHandingOver = 0.0;
 
+                
+                PaymentMethod method = row.getPayment().getPaymentMethod(); 
+                
                 if (row.isSelected()) {
                     amountHandingOver = amount;
+                }else{
+                    if(method==Cash){
+                        amountHandingOver = amount;
+                    }
                 }
 
-                PaymentMethod method = row.getPayment().getPaymentMethod();  // Using the enum type directly
+                
                 total += amount;
 
                 switch (method) {
@@ -686,11 +732,8 @@ public class ReportTemplateRowBundle implements Serializable {
                         this.hasCardTransaction = true;
                         break;
                     case Cash:
-                        if (denominationTransactions == null) {
-                            denominationTransactions = createDefaultDenominationTransaction(PaymentMethod.Cash);
-                        }
                         this.cashValue += amount;
-//                        this.cashHandoverValue += amountHandingOver;
+                        this.cashHandoverValue += amountHandingOver;
                         this.hasCashTransaction = true;
                         break;
                     case Cheque:
@@ -1594,27 +1637,31 @@ public class ReportTemplateRowBundle implements Serializable {
             return;
         }
         for (DenominationTransaction dt : denominationTransactions) {
-            if (dt == null || dt.getDenomination() == null || dt.getDenomination().getDenominationValue() == null || dt.getDenominationQty() == null) {
+            if (dt == null || dt.getDenomination() == null || dt.getDenomination().getDenominationValue() == null) {
                 continue;
             }
-            Double dv = dt.getDenomination().getDenominationValue() * dt.getDenominationQty();
-            dt.setDenominationValue(dv);
-            cashHandoverValue += dv;
+            if (dt.getDenominationQty() == null) {
+                dt.setDenominationQty(0l);
+                dt.setDenominationValue(null);
+            } else {
+                Double dv = dt.getDenomination().getDenominationValue() * dt.getDenominationQty();
+                dt.setDenominationValue(dv);
+                cashHandoverValue += dv;
+            }
         }
     }
 
-    private List<DenominationTransaction> createDefaultDenominationTransaction(PaymentMethod pm) {
-        List<DenominationTransaction> dts = new ArrayList<>();
-        List<com.divudi.entity.cashTransaction.Denomination> denominations = sessionController.findDefaultDenominations();
-        for (com.divudi.entity.cashTransaction.Denomination d : denominations) {
-            DenominationTransaction dt = new DenominationTransaction();
-            dt.setDenomination(d);
-            dt.setPaymentMethod(pm);
-            dts.add(dt);
-        }
-        return dts;
-    }
-
+//    private List<DenominationTransaction> createDefaultDenominationTransaction(PaymentMethod pm) {
+//        List<DenominationTransaction> dts = new ArrayList<>();
+//        List<com.divudi.entity.cashTransaction.Denomination> denominations = sessionController.findDefaultDenominations();
+//        for (com.divudi.entity.cashTransaction.Denomination d : denominations) {
+//            DenominationTransaction dt = new DenominationTransaction();
+//            dt.setDenomination(d);
+//            dt.setPaymentMethod(pm);
+//            dts.add(dt);
+//        }
+//        return dts;
+//    }
     public PaymentMethod getPaymentMethod() {
         return paymentMethod;
     }
@@ -1623,4 +1670,22 @@ public class ReportTemplateRowBundle implements Serializable {
         this.paymentMethod = paymentMethod;
     }
 
+    public WebUser getFromUser() {
+        return fromUser;
+    }
+
+    public void setFromUser(WebUser fromUser) {
+        this.fromUser = fromUser;
+    }
+
+    public WebUser getToUser() {
+        return toUser;
+    }
+
+    public void setToUser(WebUser toUser) {
+        this.toUser = toUser;
+    }
+
+    
+    
 }

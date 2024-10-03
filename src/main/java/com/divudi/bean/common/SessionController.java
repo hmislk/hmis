@@ -975,25 +975,26 @@ public class SessionController implements Serializable, HttpSessionListener {
         return false;
     }
 
-    public void decryptAllUsers() {
-        String temSQL;
-        temSQL = "SELECT u FROM WebUser u";
-        List<WebUser> allUsers = getFacede().findByJpql(temSQL);
-        int i = 1;
-        for (WebUser u : allUsers) {
-            try {
-                u.setName(getSecurityController().decrypt(u.getName()));
-            } catch (Exception e) {
-                if (u.getName().trim().equals("")) {
-                    u.setName("" + i);
-                }
-            }
-            if (u.getName() != null && !u.getName().trim().equals("")) {
-                getFacede().edit(u);
-            }
-            i++;
-        }
-    }
+//    
+//    public void decryptAllUsers() {
+//        String temSQL;
+//        temSQL = "SELECT u FROM WebUser u";
+//        List<WebUser> allUsers = getFacede().findByJpql(temSQL);
+//        int i = 1;
+//        for (WebUser u : allUsers) {
+//            try {
+//                u.setName(getSecurityController().decrypt(u.getName()));
+//            } catch (Exception e) {
+//                if (u.getName().trim().equals("")) {
+//                    u.setName("" + i);
+//                }
+//            }
+//            if (u.getName() != null && !u.getName().trim().equals("")) {
+//                getFacede().edit(u);
+//            }
+//            i++;
+//        }
+//    }
 
     public boolean loginForRequests() {
         return loginForRequests(userName, password);
@@ -1470,6 +1471,28 @@ public class SessionController implements Serializable, HttpSessionListener {
                 + " order by wd.department.name";
         return departmentFacade.findByJpql(sql, m);
     }
+    
+    public List<Department> fillLoggableDepts(Institution site) {
+        WebUser e = getLoggedUser();
+        if (e == null) {
+            return new ArrayList<>();
+        }
+        String sql;
+        Map m = new HashMap();
+        m.put("wu", e);
+        sql = "select distinct wd.department "
+                + " from WebUserDepartment wd "
+                + " where wd.retired=false ";
+        if(site != null){
+            sql += "and wd.department.site=:site ";
+            m.put("site", site);
+        }    
+        sql+=  " and wd.department.retired=false "
+                + " and wd.webUser=:wu "
+                + " order by wd.department.name";
+        return departmentFacade.findByJpql(sql, m);
+    }
+
 
     private List<Department> fillLoggableSubDepts(Department loggableDept) {
         List<Department> ds = new ArrayList<>();
@@ -2240,9 +2263,10 @@ public class SessionController implements Serializable, HttpSessionListener {
         this.loggedSite = loggedSite;
     }
 
-    public List<Denomination> findDefaultDenominations() {
-        return denominationController.getDenominations();
-    }
+//    
+//    public List<Denomination> findDefaultDenominations() {
+//        return denominationController.getDenominations();
+//    }
 
     public Drawer getLoggedUserDrawer() {
         return loggedUserDrawer;
