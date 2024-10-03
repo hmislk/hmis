@@ -106,18 +106,21 @@
                                                 </div>
                                                 <div class="col-md-8 text-right">
                                                     <p:commandButton 
-                                                        value="Accept Handover" 
+                                                        value="Accept Handover as Main Cashier - Can not hanover again" 
                                                         styleClass="ui-button-success mx-1" 
                                                         icon="pi pi-check-circle" 
                                                         ajax="false" 
+                                                        disabled="#{not webUserController.hasPrivilege('ShiftHandoverAcceptAsMainCashier')}"
                                                         onclick="return confirm('Are you sure you want to proceed with the handover?');" 
                                                         action="#{financialTransactionController.acceptHandoverBill()}">
                                                     </p:commandButton>
 
+
                                                     <p:commandButton 
-                                                        value="Accept Handover &amp; Write to Cash Book" 
-                                                        styleClass="ui-button-info mx-1" 
-                                                        icon="pi pi-save" 
+                                                        value="Accept Handover as Cashier - Need to hanover to main cashier" 
+                                                        styleClass="ui-button-success mx-1" 
+                                                        icon="pi pi-check-circle" 
+                                                        disabled="#{not webUserController.hasPrivilege('ShiftHandoverAcceptAsCashier')}"
                                                         ajax="false" 
                                                         onclick="return confirm('Are you sure you want to proceed with the handover?');" 
                                                         action="#{financialTransactionController.acceptHandoverBillAndWriteToCashbook()}">
@@ -128,7 +131,7 @@
                                                         action="#{financialTransactionController.rejectToReceiveHandoverBill()}"
                                                         ajax="false"
                                                         onclick="if (!confirm('Are you sure you want to Reject this record?'))
-                                                        return false;" 
+                                                                    return false;" 
                                                         class="m-1 ui-button-danger"
                                                         icon="pi pi-times-circle">
                                                     </p:commandButton>
