@@ -118,6 +118,8 @@ public class FinancialTransactionController implements Serializable {
     DetailedFinancialBillController detailedFinancialBillController;
     @Inject
     private DenominationTransactionController denominationTransactionController;
+    @Inject
+    private DrawerController drawerController;
     // </editor-fold>  
 
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
@@ -4789,6 +4791,7 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setInstitution(sessionController.getInstitution());
         currentBill.setStaff(sessionController.getLoggedUser().getStaff());
 
+        currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_DEPOSIT_BILL);
         currentBill.setBillDate(new Date());
         currentBill.setBillTime(new Date());
 
@@ -4798,6 +4801,7 @@ public class FinancialTransactionController implements Serializable {
             p.setDepartment(sessionController.getDepartment());
             p.setInstitution(sessionController.getInstitution());
             paymentController.save(p);
+            drawerController.updateDrawerForOuts(p);
         }
         return "/cashier/deposit_funds_print?faces-redirect=true";
     }
