@@ -3133,7 +3133,7 @@ public class FinancialTransactionController implements Serializable {
 
         String jpql = jpqlBuilder.toString();
 
-        List<Payment> shiftPayments = paymentFacade.findByJpql(jpql, m);
+        List<Payment> shiftPayments = paymentFacade.findByJpql(jpql, m,TemporalType.TIMESTAMP);
         System.out.println("shiftPayments = " + shiftPayments);
         List<Payment> shiftPaymentsToEnd = new ArrayList<>();
         for (Payment p : shiftPayments) {
@@ -4046,10 +4046,11 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("No Payments to Handover");
             return null;
         }
-        if (bundle.getCashValue() != bundle.getCashHandoverValue()) {
-            JsfUtil.addErrorMessage("Cash Value Collected and the cash value Handing over are differernt. Can not handover.");
+        if (Math.abs(bundle.getCashValue() - bundle.getCashHandoverValue()) > 1) {
+            JsfUtil.addErrorMessage("Cash Value Collected and the cash value Handing over are different. Cannot handover.");
             return null;
         }
+
         bundle.setFromUser(sessionController.getLoggedUser());
         bundle.setToUser(user);
 
