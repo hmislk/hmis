@@ -229,6 +229,7 @@ public class ReportController implements Serializable {
             jpql.append(" AND bi.bill.patient.phn=:phn");
             params.put("phn", phn);
         }
+        jpql.append(" ORDER BY bi.id ");
         List<BillItem> tmpBillItems = billItemFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
         if (tmpBillItems == null) {
             return;
