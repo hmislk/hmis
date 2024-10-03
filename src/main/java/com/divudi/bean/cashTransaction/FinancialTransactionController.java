@@ -1801,13 +1801,11 @@ public class FinancialTransactionController implements Serializable {
             denominationTransactions = denominationTransactionController.createDefaultDenominationTransaction();
         }
     }
-    
-    
-    
+
     public void calculateTotalCashDenomination() {
         totalCashFund = 0.0;
         if (denominationTransactions == null || denominationTransactions.isEmpty()) {
-            return ;
+            return;
         }
         for (DenominationTransaction dt : denominationTransactions) {
             if (dt == null || dt.getDenomination() == null || dt.getDenomination().getDenominationValue() == null) {
@@ -1932,10 +1930,12 @@ public class FinancialTransactionController implements Serializable {
         getCurrentBillPayments().add(currentPayment);
         calculateInitialFundBillTotal();
 
-        for (DenominationTransaction dt : getDenominationTransactions()) {
-            dt.setBill(currentBill);
-            dt.setPayment(currentPayment);
-            dt.setPaymentMethod(currentPayment.getPaymentMethod());
+        if (configOptionApplicationController.getBooleanValueByKey("Allow to Denomination for shift Starting Process", false)) {
+            for (DenominationTransaction dt : getDenominationTransactions()) {
+                dt.setBill(currentBill);
+                dt.setPayment(currentPayment);
+                dt.setPaymentMethod(currentPayment.getPaymentMethod());
+            }
         }
 
         currentPayment = null;
@@ -2087,7 +2087,7 @@ public class FinancialTransactionController implements Serializable {
 
         if (configOptionApplicationController.getBooleanValueByKey("Allow to Denomination for shift Starting Process", false)) {
             for (DenominationTransaction dt : getDenominationTransactions()) {
-                
+
                 denominationTransactionController.save(dt);
             }
         }
@@ -3133,7 +3133,7 @@ public class FinancialTransactionController implements Serializable {
 
         String jpql = jpqlBuilder.toString();
 
-        List<Payment> shiftPayments = paymentFacade.findByJpql(jpql, m,TemporalType.TIMESTAMP);
+        List<Payment> shiftPayments = paymentFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         System.out.println("shiftPayments = " + shiftPayments);
         List<Payment> shiftPaymentsToEnd = new ArrayList<>();
         for (Payment p : shiftPayments) {
@@ -5817,7 +5817,6 @@ public class FinancialTransactionController implements Serializable {
 
     // <editor-fold defaultstate="collapsed" desc="Damitha's Edit">
     // </editor-fold>
-
     public List<DenominationTransaction> getDenominationTransactions() {
         return denominationTransactions;
     }
@@ -5841,5 +5840,5 @@ public class FinancialTransactionController implements Serializable {
     public void setTotalCashFund(double totalCashFund) {
         this.totalCashFund = totalCashFund;
     }
-    
+
 }
