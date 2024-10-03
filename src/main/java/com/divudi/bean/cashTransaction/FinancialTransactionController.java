@@ -116,7 +116,7 @@ public class FinancialTransactionController implements Serializable {
     @Inject
     DetailedFinancialBillController detailedFinancialBillController;
     @Inject
-    DenominationTransactionController denominationTransactionController;
+    private DenominationTransactionController denominationTransactionController;
     // </editor-fold>  
 
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
@@ -243,6 +243,10 @@ public class FinancialTransactionController implements Serializable {
     private int tabIndex;
 
     private Drawer loggedUserDrawer;
+
+    private List<DenominationTransaction> denominationTransactions;
+    private DenominationTransaction dt;
+    private double totalCashFund;
 
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Constructors">
@@ -1791,6 +1795,32 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_START_BILL);
         currentBill.setBillClassType(BillClassType.Bill);
         currentBill.setStaff(sessionController.getLoggedUser().getStaff());
+
+        if (configOptionApplicationController.getBooleanValueByKey("Allow to Denomination for shift Starting Process", false)) {
+            denominationTransactions = new ArrayList<>();
+            denominationTransactions = denominationTransactionController.createDefaultDenominationTransaction();
+        }
+    }
+
+    public void calculateTotalCashDenomination() {
+        totalCashFund = 0.0;
+        if (denominationTransactions == null || denominationTransactions.isEmpty()) {
+            return;
+        }
+        for (DenominationTransaction dt : denominationTransactions) {
+            if (dt == null || dt.getDenomination() == null || dt.getDenomination().getDenominationValue() == null) {
+                continue;
+            }
+            if (dt.getDenominationQty() == null) {
+                dt.setDenominationQty(0l);
+                dt.setDenominationValue(null);
+            } else {
+                Double dv = dt.getDenomination().getDenominationValue() * dt.getDenominationQty();
+                dt.setDenominationValue(dv);
+                totalCashFund += dv;
+            }
+        }
+        System.out.println("Value = " + totalCashFund);
     }
 
     private void prepareToAddNewFundTransferBill() {
@@ -1899,10 +1929,20 @@ public class FinancialTransactionController implements Serializable {
         }
         getCurrentBillPayments().add(currentPayment);
         calculateInitialFundBillTotal();
+
+        if (configOptionApplicationController.getBooleanValueByKey("Allow to Denomination for shift Starting Process", false)) {
+            for (DenominationTransaction dt : getDenominationTransactions()) {
+                dt.setBill(currentBill);
+                dt.setPayment(currentPayment);
+                dt.setPaymentMethod(currentPayment.getPaymentMethod());
+            }
+        }
+
         currentPayment = null;
         getCurrentPayment();
         getCurrentPayment().setCurrencyDenominations(null);
         getCurrentPayment().setCurrencyDenominationsJson("");
+
     }
 
     public void addPaymentToFundTransferBill() {
@@ -2044,6 +2084,14 @@ public class FinancialTransactionController implements Serializable {
             p.serializeDenominations();
             paymentController.save(p);
         }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Allow to Denomination for shift Starting Process", false)) {
+            for (DenominationTransaction dt : getDenominationTransactions()) {
+
+                denominationTransactionController.save(dt);
+            }
+        }
+
         return "/cashier/initial_fund_bill_print?faces-redirect=true";
     }
 
@@ -3085,7 +3133,7 @@ public class FinancialTransactionController implements Serializable {
 
         String jpql = jpqlBuilder.toString();
 
-        List<Payment> shiftPayments = paymentFacade.findByJpql(jpql, m,TemporalType.TIMESTAMP);
+        List<Payment> shiftPayments = paymentFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         System.out.println("shiftPayments = " + shiftPayments);
         List<Payment> shiftPaymentsToEnd = new ArrayList<>();
         for (Payment p : shiftPayments) {
@@ -4796,6 +4844,12 @@ public class FinancialTransactionController implements Serializable {
         // Now pmvs contains the total amounts for each payment method
     }
 
+    public void updateCashTaralFromDenomination() {
+        double denominationTotal = reportTemplateRowBundle.getCashValue();
+        System.out.println("Denomination Total = " + denominationTotal);
+        currentPayment.setPaidValue(denominationTotal);
+    }
+
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
     public Bill getCurrentBill() {
         return currentBill;
@@ -5763,4 +5817,28 @@ public class FinancialTransactionController implements Serializable {
 
     // <editor-fold defaultstate="collapsed" desc="Damitha's Edit">
     // </editor-fold>
+    public List<DenominationTransaction> getDenominationTransactions() {
+        return denominationTransactions;
+    }
+
+    public void setDenominationTransactions(List<DenominationTransaction> denominationTransactions) {
+        this.denominationTransactions = denominationTransactions;
+    }
+
+    public DenominationTransaction getDt() {
+        return dt;
+    }
+
+    public void setDt(DenominationTransaction dt) {
+        this.dt = dt;
+    }
+
+    public double getTotalCashFund() {
+        return totalCashFund;
+    }
+
+    public void setTotalCashFund(double totalCashFund) {
+        this.totalCashFund = totalCashFund;
+    }
+
 }
