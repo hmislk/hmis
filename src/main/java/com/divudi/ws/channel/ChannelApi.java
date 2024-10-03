@@ -354,8 +354,15 @@ public class ChannelApi {
     @Path("/doctorAvailability")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getDoctorAvailabilityList(Map<String, Object> requestBody) {
+    public Response getDoctorAvailabilityList(@Context HttpServletRequest requestContext, Map<String, Object> requestBody) {
         // Extract parameters from the request body
+        String key = requestContext.getHeader("Finance");
+        if (!isValidKey(key)) {
+            JSONObject responseError = new JSONObject();
+            responseError = errorMessageNotValidKey();
+            String json = responseError.toString();
+            return Response.status(Response.Status.ACCEPTED).entity(responseError.toString()).build();
+        }
         String type = (String) requestBody.get("type");
         String bookingChannel = (String) requestBody.get("bookingChannel");
         String hosIdStr = (String) requestBody.get("hosID");
@@ -366,7 +373,6 @@ public class ChannelApi {
 //        Integer offset = (Integer) requestBody.get("offset");
         Long hosId;
         try {
-
             hosId = Long.valueOf(hosIdStr);
         } catch (Exception e) {
             hosId = null;
@@ -400,8 +406,9 @@ public class ChannelApi {
             doctorDetails.put("HosCode", si.getInstitution().getCode());
             doctorDetails.put("AppDate", si.getSessionDate().toString());
             doctorDetails.put("DocName", si.getOriginatingSession().getStaff().getPerson().getNameWithTitle());
+            doctorDetails.put("DoctorNotes", si.getOriginatingSession().getSpecialNotice());
             doctorDetails.put("DoctorNo", si.getId().toString());
-            doctorDetails.put("SessionStart", si.getOriginatingSession().getSessionTime().toString());
+            doctorDetails.put("SessionStart", si.getOriginatingSession().getStartingTime().toString());
             resultMap.put(si.getId().toString(), doctorDetails);
         }
 

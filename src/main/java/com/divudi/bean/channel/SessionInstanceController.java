@@ -46,7 +46,7 @@ public class SessionInstanceController implements Serializable {
     SessionController sessionController;
     @Inject
     ChannelScheduleController ChannelScheduleController;
-    
+
     @EJB
     private SessionInstanceFacade ejbFacade;
 
@@ -69,8 +69,16 @@ public class SessionInstanceController implements Serializable {
 
     public SessionInstanceController() {
     }
-    
-     public List<SessionInstance>  findSessionInstance(Institution institution ,Speciality speciality, Doctor consultant,  Date fromDate, Date toDate) {
+
+    public List<SessionInstance> findSessionInstance(Institution institution, Speciality speciality, Doctor consultant, Date fromDate, Date toDate) {
+        List<Speciality> specialities = new ArrayList<>();
+        if (speciality != null) {
+            specialities.add(speciality);
+        }
+        return findSessionInstance(institution, specialities, consultant, fromDate, toDate);
+    }
+
+    public List<SessionInstance> findSessionInstance(Institution institution, List<Speciality> specialities, Doctor consultant, Date fromDate, Date toDate) {
         List<SessionInstance> sessionInstances;
         Date currentDate = new Date();
         Calendar calendar = Calendar.getInstance();
@@ -89,17 +97,16 @@ public class SessionInstanceController implements Serializable {
             jpql.append(" and i.originatingSession.institution=:ins");
             m.put("ins", institution);
         }
-        if (speciality != null) {
+        if (specialities != null) {
             jpql.append(" and i.originatingSession.staff.speciality in :spe ");
-            m.put("spe", speciality);
+            m.put("spe", specialities);
         }
         m.put("ret", false);
         m.put("fd", fromDate);
         m.put("td", toDate);
         sessionInstances = ejbFacade.findByJpql(jpql.toString(), m, TemporalType.DATE);
-       return sessionInstances;
-        
-        
+        return sessionInstances;
+
     }
 
     public SessionInstanceFacade getFacade() {
