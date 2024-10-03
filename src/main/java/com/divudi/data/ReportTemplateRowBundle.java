@@ -236,7 +236,6 @@ public class ReportTemplateRowBundle implements Serializable {
 
         if (bundles != null) {
             for (ReportTemplateRowBundle childBundle : bundles) {
-                System.out.println("childBundle = " + childBundle.getId().toString());
                 grossTotal += nullSafeDouble(childBundle.grossTotal);
                 discount += nullSafeDouble(childBundle.discount);
                 total += nullSafeDouble(childBundle.total);
@@ -254,8 +253,6 @@ public class ReportTemplateRowBundle implements Serializable {
                 // Payment values
                 onCallValue += childBundle.onCallValue;
                 cashValue += childBundle.cashValue;
-                System.out.println("childBundle = " + childBundle.getCardValue());
-                System.out.println("cashValue = " + cashValue);
                 cardValue += childBundle.cardValue;
                 multiplePaymentMethodsValue += childBundle.multiplePaymentMethodsValue;
                 staffValue += childBundle.staffValue;
@@ -274,8 +271,6 @@ public class ReportTemplateRowBundle implements Serializable {
                 // Handover values
                 onCallHandoverValue += childBundle.onCallHandoverValue;
                 cashHandoverValue += childBundle.cashHandoverValue;
-                System.out.println("childBundle Handover = " + childBundle.getCardHandoverValue());
-                System.out.println("cashHandoverValue = " + cashHandoverValue);
                 cardHandoverValue += childBundle.cardHandoverValue;
                 multiplePaymentMethodsHandoverValue += childBundle.multiplePaymentMethodsHandoverValue;
                 staffHandoverValue += childBundle.staffHandoverValue;
@@ -353,8 +348,6 @@ public class ReportTemplateRowBundle implements Serializable {
             case ewallet:
                 return eWalletValue;
             default:
-                // Log unexpected payment method or handle error
-                System.out.println("Unhandled payment method: " + pm);
                 return null;
         }
     }
@@ -394,8 +387,6 @@ public class ReportTemplateRowBundle implements Serializable {
             case ewallet:
                 return eWalletHandoverValue;
             default:
-                // Log unexpected payment method or handle error
-                System.out.println("Unhandled payment method: " + pm);
                 return null;
         }
     }
@@ -490,14 +481,13 @@ public class ReportTemplateRowBundle implements Serializable {
         }
     }
     
+    
     public void calculateTotalsByChildBundles() {
-        // Reset totals and boolean flags before starting calculation
         resetTotalsAndFlags();
 
-        // Check if the list of rows is not null and not empty
         if (this.bundles != null && !this.bundles.isEmpty()) {
-            // Aggregate values from each row and update transaction flags
             for (ReportTemplateRowBundle childBundle : this.bundles) {
+                System.out.println("childBundle = " + childBundle.getName());
                 addValueAndUpdateFlag("cash", safeDouble(childBundle.getCashValue()));
                 addValueAndUpdateFlag("card", safeDouble(childBundle.getCardValue()));
                 addValueAndUpdateFlag("multiplePaymentMethods", safeDouble(childBundle.getMultiplePaymentMethodsValue()));
@@ -519,11 +509,15 @@ public class ReportTemplateRowBundle implements Serializable {
                 addValueAndUpdateFlag("hospitalTotal", safeDouble(childBundle.getHospitalTotal()));
                 addValueAndUpdateFlag("staffTotal", safeDouble(childBundle.getStaffTotal()));
                 addValueAndUpdateFlag("ccTotal", safeDouble(childBundle.getCcTotal()));
+                System.out.println("childBundle.getTotal() = " + childBundle.getTotal());
+                System.out.println("total Before= " + total);
                 total += safeDouble(childBundle.getTotal());
+                System.out.println("total After= " + total);
             }
         }
     }
 
+    
     public void calculateTotalsByPayments() {
         resetTotalsAndFlags();
 
@@ -628,8 +622,6 @@ public class ReportTemplateRowBundle implements Serializable {
                         this.hasEWalletTransaction = true;
                         break;
                     default:
-                        // Log unexpected payment method or handle error
-                        System.out.println("Unhandled payment method: " + method);
                         break;
                 }
             }
@@ -802,8 +794,8 @@ public class ReportTemplateRowBundle implements Serializable {
                         this.hasEWalletTransaction = true;
                         break;
                     default:
-                        // Log unexpected payment method or handle error
-                        System.out.println("Unhandled payment method: " + method);
+                        
+                        
                         break;
                 }
             }
@@ -850,10 +842,6 @@ public class ReportTemplateRowBundle implements Serializable {
     }
 
     private void addValueAndUpdateFlag(String calculationAttribute, double amount) {
-        System.out.println("addValueAndUpdateFlag");
-        System.out.println("amount = " + amount);
-        System.out.println("calculationAttribute = " + calculationAttribute);
-
         if (amount != 0) {
             switch (calculationAttribute) {
                 case "cash":
@@ -935,7 +923,7 @@ public class ReportTemplateRowBundle implements Serializable {
                     this.ccTotal += amount;
                     break;
                 default:
-                    // Log unexpected payment method or handle error
+                    
                     break;
             }
         }
