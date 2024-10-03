@@ -165,11 +165,17 @@ public class AgentAndCcPaymentController implements Serializable {
 
     private boolean errorCheckForAgencyPaymentReceiptBill() {
         if (getCurrent().getFromInstitution() == null) {
-            JsfUtil.addErrorMessage("Select Collecting Centre");
+            JsfUtil.addErrorMessage("Select a Agency");
             return true;
         }
 
         if (getCurrent().getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Select a Payement method");
+            return true;
+        }
+        
+        if (getCurrent().getNetTotal()<= 0) {
+            JsfUtil.addErrorMessage("Add Valid Amount");
             return true;
         }
 
@@ -361,7 +367,8 @@ public class AgentAndCcPaymentController implements Serializable {
         }
         saveBillItem();
 
-        createPayment(current, getCurrent().getPaymentMethod());
+        List<Payment> p = createPayment(current, getCurrent().getPaymentMethod());
+        drawerController.updateDrawerForIns(p);
         collectingCentreApplicationController.updateCcBalance(
                 current.getFromInstitution(),
                 0,

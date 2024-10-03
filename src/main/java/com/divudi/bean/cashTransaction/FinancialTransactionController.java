@@ -2128,7 +2128,12 @@ public class FinancialTransactionController implements Serializable {
             p.setDepartment(null);
             p.setPaidValue(0-Math.abs(p.getPaidValue()));
             paymentController.save(p);
+            
+            drawerController.updateDrawerForOuts(p);
         }
+        
+        
+        
         currentBill.getPayments().addAll(currentBillPayments);
         billController.save(currentBill);
         return "/cashier/fund_transfer_bill_print?faces-redirect=true";
@@ -4309,8 +4314,13 @@ public class FinancialTransactionController implements Serializable {
             p.setCurrentHolder(sessionController.getLoggedUser());
             p.setDepartment(null);
             p.setInstitution(null);
+            p.setPaidValue(Math.abs(p.getPaidValue()));
             paymentController.save(p);
         }
+        
+        drawerController.updateDrawerForIns(currentBillPayments);
+        
+        
         currentBill.getReferenceBill().setReferenceBill(currentBill);
         billController.save(currentBill.getReferenceBill());
 

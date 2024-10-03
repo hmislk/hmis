@@ -1845,6 +1845,10 @@ public class ReportController implements Serializable {
     public String navigateToTestWiseCountReports() {
         return "/reports/lab/test_wise_count_report?faces-redirect=true";
     }
+    
+    public String navigateToLabBillItemList() {
+        return "/reports/lab/lab_bill_item_list?faces-redirect=true";
+    }
 
     public String navigateToAnnualTestStatistics() {
         if (institutionController.getItems() == null) {
