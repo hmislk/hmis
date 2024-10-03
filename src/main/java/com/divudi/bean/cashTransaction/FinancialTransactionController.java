@@ -2124,6 +2124,7 @@ public class FinancialTransactionController implements Serializable {
             p.setCreater(sessionController.getLoggedUser());
             p.setInstitution(null);
             p.setDepartment(null);
+            p.setPaidValue(0-Math.abs(p.getPaidValue()));
             paymentController.save(p);
         }
         currentBill.getPayments().addAll(currentBillPayments);
