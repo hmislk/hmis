@@ -70,6 +70,7 @@ import javax.persistence.TemporalType;
 import kotlin.collections.ArrayDeque;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import sun.awt.PaintEventDispatcher;
 
 /**
  *
@@ -4307,8 +4308,12 @@ public class FinancialTransactionController implements Serializable {
             p.setCurrentHolder(sessionController.getLoggedUser());
             p.setDepartment(null);
             p.setInstitution(null);
+            p.setPaidValue(Math.abs(p.getPaidValue()));
             paymentController.save(p);
         }
+        
+        
+        
         currentBill.getReferenceBill().setReferenceBill(currentBill);
         billController.save(currentBill.getReferenceBill());
 
