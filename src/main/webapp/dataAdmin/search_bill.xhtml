@@ -19,8 +19,8 @@
                       
                             <p:panelGrid columns="3" styleClass="ui-grid ui-grid-responsive" columnClasses="col-4,col-4,col-4">
                                 <!-- First Row -->
-                                <h:outputLabel for="deptId" value="Bill No (Ins ID)" />
-                                <p:inputText id="deptId" autocomplete="off" value="#{searchController.searchKeyword.deptId}" />
+                                <h:outputLabel for="insId" value="Bill No (Ins ID)" />
+                                <p:inputText id="insId" autocomplete="off" value="#{searchController.searchKeyword.deptId}" />
                                 <p:commandButton id="btnSearchInsId" ajax="false" value="Search by Ins ID"
                                                  action="#{searchController.searchByInsId()}"
                                                  icon="fa fa-search" styleClass="ui-button-primary" />
