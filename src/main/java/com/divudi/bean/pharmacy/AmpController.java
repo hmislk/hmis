@@ -711,6 +711,10 @@ public class AmpController implements Serializable {
             JsfUtil.addErrorMessage("No Name");
             return;
         }
+        if (checkItemCode(current.getCode())) {
+            JsfUtil.addErrorMessage("This Code has Already been Used.");
+            return;
+        }
         if (current.getDepartmentType() == null) {
             current.setDepartmentType(DepartmentType.Pharmacy);
         }
@@ -742,6 +746,20 @@ public class AmpController implements Serializable {
             JsfUtil.addSuccessMessage("Saved Successfully");
             recreateModel();
             getItems();
+        }
+    }
+
+    public boolean checkItemCode(String code) {
+        Map m = new HashMap();
+        String jpql = "select c from Amp c "
+                + " where c.retired=false"
+                + " and (c.code is not null and c.code=:icode)";
+        m.put("icode", code);
+        Amp amp = getFacade().findFirstByJpql(jpql, m);
+        if (amp == null) {
+            return false;
+        } else {
+            return true;
         }
     }
 
