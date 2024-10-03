@@ -7,6 +7,7 @@ package com.divudi.ws.channel;
 
 import com.divudi.bean.channel.AgentReferenceBookController;
 import com.divudi.bean.channel.SessionInstanceController;
+import com.divudi.bean.common.ApiKeyController;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ConsultantController;
@@ -23,6 +24,7 @@ import com.divudi.ejb.ChannelBean;
 
 import com.divudi.ejb.ServiceSessionBean;
 import com.divudi.entity.AgentHistory;
+import com.divudi.entity.ApiKey;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
@@ -73,6 +75,7 @@ import javax.ws.rs.Produces;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.POST;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -136,6 +139,8 @@ public class ChannelApi {
     InstitutionController institutionController;
     @Inject
     SpecialityController specialityController;
+    @Inject
+    ApiKeyController apiKeyController;
 
     /**
      * Creates a new instance of Api
@@ -147,11 +152,17 @@ public class ChannelApi {
     @Path("/specializations")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getSpecializations(String requestBody) {
+    public Response getSpecializations(@Context HttpServletRequest requestContext, String requestBody) {
         JSONObject requestJson = new JSONObject(requestBody);
         String type = requestJson.getString("type");
         String bookingChannel = requestJson.getString("bookingChannel");
-
+        String key = requestContext.getHeader("Finance");
+        JSONObject response = new JSONObject();
+        if (!isValidKey(key)) {
+            response = errorMessageNotValidKey();
+            String json = response.toString();
+            return Response.status(Response.Status.ACCEPTED).entity(response.toString()).build();
+        }
         List<Object[]> specializations = specilityList();
         Map<String, String> specialityMap = new HashMap<>();
 
@@ -162,7 +173,6 @@ public class ChannelApi {
         JSONObject data = new JSONObject();
         data.put("specialityMap", specialityMap);
 
-        JSONObject response = new JSONObject();
         response.put("code", "202");
         response.put("message", "Accepted");
         response.put("data", data);
@@ -170,15 +180,80 @@ public class ChannelApi {
         return Response.status(Response.Status.ACCEPTED).entity(response.toString()).build();
     }
 
+    private boolean isValidKey(String key) {
+        if (key == null || key.trim().equals("")) {
+            return false;
+        }
+        ApiKey k = apiKeyController.findApiKey(key);
+        if (k == null) {
+            return false;
+        }
+        if (k.getWebUser() == null) {
+            return false;
+        }
+        if (k.getWebUser().isRetired()) {
+            return false;
+        }
+        if (!k.getWebUser().isActivated()) {
+            return false;
+        }
+        if (k.getDateOfExpiary().before(new Date())) {
+            return false;
+        }
+        return true;
+    }
+
+    private JSONObject errorMessageNoData() {
+        JSONObject jSONObjectOut = new JSONObject();
+        jSONObjectOut.put("code", 400);
+        jSONObjectOut.put("type", "error");
+        String e = "No Data.";
+        jSONObjectOut.put("message", e);
+        return jSONObjectOut;
+    }
+
+    private JSONObject errorMessageNotValidKey() {
+        JSONObject jSONObjectOut = new JSONObject();
+        jSONObjectOut.put("code", 401);
+        jSONObjectOut.put("type", "error");
+        String e = "Not a valid key.";
+        jSONObjectOut.put("message", e);
+        return jSONObjectOut;
+    }
+
+    private JSONObject errorMessageNotValidPathParameter() {
+        JSONObject jSONObjectOut = new JSONObject();
+        jSONObjectOut.put("code", 401);
+        jSONObjectOut.put("type", "error");
+        String e = "Not a valid path parameter.";
+        jSONObjectOut.put("message", e);
+        return jSONObjectOut;
+    }
+
+    private JSONObject errorMessageNotValidInstitution() {
+        JSONObject jSONObjectOut = new JSONObject();
+        jSONObjectOut.put("code", 401);
+        jSONObjectOut.put("type", "error");
+        String e = "Not a valid institution code.";
+        jSONObjectOut.put("message", e);
+        return jSONObjectOut;
+    }
+
     @POST
     @Path("/hospitals")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response getHospitalList(Map<String, String> requestBody) {
+    public Response getHospitalList(@Context HttpServletRequest requestContext, Map<String, String> requestBody) {
         // Extract the type and bookingChannel from the request body
         String type = requestBody.get("type");
         String bookingChannel = requestBody.get("bookingChannel");
-
+        String key = requestContext.getHeader("Finance");
+        if (!isValidKey(key)) {
+            JSONObject responseError = new JSONObject();
+            responseError = errorMessageNotValidKey();
+            String json = responseError.toString();
+            return Response.status(Response.Status.ACCEPTED).entity(responseError.toString()).build();
+        }
         // Get the list of institutions from the controller
         List<Institution> institutions = institutionController.getCompanies();
 
@@ -989,7 +1064,7 @@ public class ChannelApi {
         jpql += " where staff.retired=:ret ";
         jpql += " order by staff.speciality.name, staff.person.name ";
         m.put("ret", false);
-        consultants = getStaffFacade().findAggregates(jpql,m);
+        consultants = getStaffFacade().findAggregates(jpql, m);
         return consultants;
     }
 

@@ -56,25 +56,31 @@
                                             action="#{searchController.navigatToTotalCashierSummary()}"
                                             class="w-100"  
                                             ajax="false" 
-                                            value="1. Total Cashier Summary" >
+                                            value="Total Cashier Summary" >
                                         </p:commandButton>
                                         <p:commandButton  
                                             action="#{searchController.navigatToAllCashierSummary}"
                                             class="w-100"  
                                             ajax="false" 
-                                            value="2. All Cashier Summary" >
+                                            value="1. All Cashier Summary" >
                                         </p:commandButton>
                                         <p:commandButton  
                                             action="#{searchController.navigatToCashierSummary()}"
                                             class="w-100"  
                                             ajax="false" 
-                                            value="3. Cashier Summary" >
+                                            value="2. Cashier Summary" >
                                         </p:commandButton>
                                         <p:commandButton  
                                             class="w-100"  
                                             ajax="false" 
-                                            action="#{searchController.navigatToShiftStartAndEnds()}"
-                                            value="3. Shift End Summary" >
+                                            action="#{searchController.navigatToCashierDetails()}"
+                                            value="3. Cashier Details" >
+                                        </p:commandButton>
+                                        <p:commandButton  
+                                            class="w-100"  
+                                            ajax="false" 
+                                            action="#{searchController.navigateToAllCashierDrawersDetails()}"
+                                            value="4.All Cashiers Drawers Details" >
                                         </p:commandButton>
                                     </div>
                                 </p:tab>
@@ -283,6 +289,8 @@
                                             ajax="false"
                                             value="Test Count Report"
                                             action="#{reportController.navigateToLabReportsTestCount()}"/>
+                                        <p:commandButton   class="w-100"  ajax="false" value="Test Wise Count" action="#{reportController.navigateToTestWiseCountReports()}" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Lab Bill Item List" action="#{reportController.navigateToLabBillItemList()}" />
                                         <p:commandButton   class="w-100"  ajax="false" value="Collection Center Statement" />
                                         <p:commandButton   class="w-100"  ajax="false" value="Turn Around Time Details" action="#{reportController.navigateToTurnAroundTimeDetails()}" />
                                         <p:commandButton   class="w-100"  ajax="false" value="Turn Around Time(Hourly)" action="#{reportController.navigateToTurnAroundTimeHourly}"/>

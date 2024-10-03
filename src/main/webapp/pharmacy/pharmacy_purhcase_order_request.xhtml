@@ -39,10 +39,9 @@
                                     </div>
                                 </f:facet>  
 
-                                <p:column selectionMode="multiple" style="width: 40px; padding: 0;"/>
+                                <p:column style="width: 20px; padding: 0;"/>
 
-
-                                <p:column headerText="No" style="width: 25px; padding: 0;" >
+                                <p:column headerText="No" style="width: 40px; padding: 0;" >
                                     <h:outputLabel value="#{bi.searialNo+1}" >
                                         <f:convertNumber pattern="00" ></f:convertNumber>
                                     </h:outputLabel>
@@ -285,6 +284,7 @@
                                     class="w-75"
                                     maxResults="50"
                                     scrollHeight="600"
+                                    minQueryLength="#{configOptionApplicationController.getShortTextValueByKey('Minimum Number of Characters to Search for Item','4')}"
                                     inputStyleClass="w-100"
                                     completeMethod="#{itemController.completeAmpItem}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
                                     <p:column headerText="Item" style="width: 350px; padding: 6px;">
@@ -292,9 +292,6 @@
                                     </p:column>
                                     <p:column headerText="Code" style="padding: 6px;">
                                         <h:outputLabel value="#{vt.code}"></h:outputLabel>
-                                    </p:column>
-                                    <p:column headerText="Bar Code" style="padding: 6px;">
-                                        <h:outputLabel value="#{vt.barcode}"></h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Department Stock" style="padding: 6px; text-align: right;">
                                         <p:outputLabel value="#{stockController.departmentItemStock(sessionController.department , vt)}"/>                            

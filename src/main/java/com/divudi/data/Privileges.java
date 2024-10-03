@@ -41,9 +41,7 @@ public enum Privileges {
     OpdReprintOriginalBill("OPD Reprint Original Bill"),
     OpdAddNewRefferalDoctor("OPD Add New Referral Doctor"),
     OpdAddNewCollectingCentre("OPD Add New Collecting Centre"),
-    
     AddCreditLimitInRegistration("Add Credit Limit in Registration"),
-    
     InwardAdmissions("Inward Admissions"),
     InwardAdmissionsAdmission("Inward Admissions Admission"),
     InwardAdmissionsEditAdmission("Inward Admissions Edit Admission"),
@@ -84,7 +82,6 @@ public enum Privileges {
     InwardPharmacyIssueRequest("Inward Pharmacy Issue Request"),
     InwardPharmacyIssueRequestSearch("Inward Pharmacy Issue Request Search"),
     InwardBillSettleWithoutCheck("Inward Bill Settle Without Check"),
-
     LabBilling("Lab Billing"),
     LabBillCancelSpecial("Lab Bill Cancel Special"),
     LabBillRefundSpecial("Lab Bill Refund Special"),
@@ -144,7 +141,6 @@ public enum Privileges {
     LabReporting("Lab Reporting"),
     // Don't remove
     LabSearchBillLoggedInstitution("Lab Search Bill Logged Institution"),
-
     PaymentBilling("Payment Billing"),
     PaymentBillSearch("Payment Bill Search"),
     PaymentBillReprint("Payment Bill Reprint"),
@@ -157,7 +153,6 @@ public enum Privileges {
     ReportsSearchCashCardOther("Reports Search Cash/Card Other"),
     ReportSearchCreditOther("Report Search Credit Other"),
     ReportsItemOther("Reports Item Other"),
-
     PharmacyOrderCreation("Pharmacy Order Creation"),
     PharmacyOrderApproval("Pharmacy Order Approval"),
     PharmacyOrderCancellation("Pharmacy Order Cancellation"),
@@ -165,19 +160,16 @@ public enum Privileges {
     PharmacySaleReprint("Pharmacy Sale Reprint"),
     PharmacySaleCancel("Pharmacy Sale Cancel"),
     PharmacySaleReturn("Pharmacy Sale Return"),
-
     // Wholesale
     PharmacySaleWh("Pharmacy Sale Wholesale"),
     PharmacySaleReprintWh("Pharmacy Sale Reprint Wholesale"),
     PharmacySaleCancelWh("Pharmacy Sale Cancel Wholesale"),
     PharmacySaleReturnWh("Pharmacy Sale Return Wholesale"),
-
     // End wholesale
     PharmacyInwardBilling("Pharmacy Inward Billing"),
     PharmacyInwardBillingCancel("Pharmacy Inward Billing Cancel"),
     PharmacyInwardBillingReturn("Pharmacy Inward Billing Return"),
     PharmacyGoodReceive("Pharmacy Good Receive"),
-
     // Wholesale
     PharmacyGoodReceiveWh("Pharmacy Good Receive Wholesale"),
     // End Wholesale
@@ -185,7 +177,6 @@ public enum Privileges {
     PharmacyGoodReceiveReturn("Pharmacy Good Receive Return"),
     PharmacyGoodReceiveEdit("Pharmacy Good Receive Edit"),
     PharmacyPurchase("Pharmacy Purchase"),
-
     // Wholesale
     PharmacyPurchaseWh("Pharmacy Purchase Wholesale"),
     // Theater
@@ -211,7 +202,6 @@ public enum Privileges {
     TheaterIssueOpdSearchPreBillForReturnItemOnly("Theater Issue OPD Search Pre Bill for Return Item Only"),
     TheaterIssueOpdSearchPreBillReturn("Theater Issue OPD Search Pre Bill Return"),
     TheaterIssueOpdSearchPreBillAddToStock("Theater Issue OPD Search Pre Bill Add to Stock"),
-
     ClinicalPatientSummery("Clinical Patient Summary"),
     ClinicalPatientDetails("Clinical Patient Details"),
     ClinicalPatientPhoto("Clinical Patient Photo"),
@@ -220,7 +210,6 @@ public enum Privileges {
     ClinicalHistory("Clinical History"),
     ClinicalAdministration("Clinical Administration"),
     ClinicalPatientDelete("Clinical Patient Delete"),
-
     ChannelAdd("Channel Add"),
     ChannelCancel("Channel Cancel"),
     ChannelRefund("Channel Refund"),
@@ -234,7 +223,6 @@ public enum Privileges {
     ChannelManageSessions("Channel Manage Sessions"),
     ChannelAdministration("Channel Administration"),
     ChannelAgencyReports("Channel Agency Reports"),
-
     AdminManagingUsers("Admin Managing Users"),
     AdminInstitutions("Admin Institutions"),
     AdminStaff("Admin Staff"),
@@ -243,7 +231,6 @@ public enum Privileges {
     AdminFilterWithoutDepartment("Admin Filter Without Department"),
     ChangeProfessionalFee("Change Professional Fee"),
     ChangeCollectingCentre("Change Collecting Centre"),
-
     StoreIssue("Store Issue"),
     StoreIssueInwardBilling("Store Issue Inward Billing"),
     StoreIssueSearchBill("Store Issue Search Bill"),
@@ -265,7 +252,6 @@ public enum Privileges {
     StoreAdjustmentStaffStock("Store Adjustment Staff Stock"),
     StoreAdjustmentPurchaseRate("Store Adjustment Purchase Rate"),
     StoreAdjustmentSaleRate("Store Adjustment Sale Rate"),
-
     StoreDealorPayment("Store Dealer Payment"),
     StoreDealorPaymentDueSearch("Store Dealer Payment Due Search"),
     StoreDealorPaymentDueByAge("Store Dealer Payment Due by Age"),
@@ -273,18 +259,16 @@ public enum Privileges {
     StoreDealorPaymentPaymentGRN("Store Dealer Payment Payment GRN"),
     StoreDealorPaymentPaymentGRNSelect("Store Dealer Payment Payment GRN Select"),
     StoreDealorPaymentGRNDoneSearch("Store Dealer Payment GRN Done Search"),
-
     StoreSearch("Store Search"),
     StoreReports("Store Reports"),
     StoreSummery("Store Summary"),
     StoreAdministration("Store Administration"),
-
     SearchGrand("Search Grand"),
-
     CashTransactionCashIn("Cash Transaction Cash In"),
     CashTransactionCashOut("Cash Transaction Cash Out"),
     CashTransactionListToCashRecieve("Cash Transaction List to Cash Receive"),
-
+    ShiftHandoverAcceptAsCashier("Shift Handover Accept As Cashier"),
+    ShiftHandoverAcceptAsMainCashier("Shift Handover Accept As Main Cashier"),
     ChannellingChannelBooking("Channelling Channel Booking"),
     ChannellingFutureChannelBooking("Channelling Future Channel Booking"),
     ChannellingPastBooking("Channelling Past Booking"),
@@ -301,22 +285,18 @@ public enum Privileges {
     ChannellingChannelShedulMaxRowNo("Channelling Channel Schedule Max Row No"),
     ChannellingChannelAgentFee("Channelling Channel Agent Fee"),
     ChannellingDoctorSessionView("Channelling Doctor Session View"),
-
     ChannellingPayment("Channelling Payment"),
     ChannellingPaymentPayDoctor("Channelling Payment Pay Doctor"),
     ChannellingPaymentDueSearch("Channelling Payment Due Search"),
     ChannellingPaymentDoneSearch("Channelling Payment Done Search"),
-
     ChannellingApoinmentNumberCountEdit("Channelling Appointment Number Count Edit"),
     ChannellingEditSerialNo("Channelling Edit Serial No"),
     ChannellingEditPatientDetails("Channelling Edit Patient Details"),
     ChannellingPrintInPastBooking("Channelling Print in Past Booking"),
     ChannellingEditCreditLimitUserLevel("Channelling Edit Credit Limit User Level"),
     ChannellingEditCreditLimitAdminLevel("Channelling Edit Credit Limit Admin Level"),
-
     ChannellingReprintOriginalBill("Channelling Reprint Original Bill"),
     ChannellingPastBookingPatientAttend("Channelling Past Booking Patient Attend"),
-
     ChannelReports("Channel Reports"),
     ChannelSummery("Channel Summary"),
     ChannelManagement("Channel Management"),
@@ -334,7 +314,6 @@ public enum Privileges {
     ChannelDebitNote("Channel Debit Note"),
     ChannelDebitNoteSearch("Channel Debit Note Search"),
     ChannelCashCancelRestriction("Channel Cash Cancel Restriction"),
-
     ChannelBookingChange("Channel Booking Change"),
     ChannelBookingBokking("Channel Booking Booking"),
     ChannelBookingReprint("Channel Booking Reprint"),
@@ -350,9 +329,7 @@ public enum Privileges {
     ChannelCashierTransactionIncomeSearch("Channel Cashier Transaction Income Search"),
     ChannelCashierTransactionExpencess("Channel Cashier Transaction Expenses"),
     ChannelCashierTransactionExpencessSearch("Channel Cashier Transaction Expenses Search"),
-
     ChannelActiveVat("Channel Active VAT"),
-
     MemberShip("Membership"),
     MemberShipAdd("Membership Add"),
     MemberShipEdit("Membership Edit"),
@@ -369,7 +346,6 @@ public enum Privileges {
     MemberShipOpdMemberShipDisOpdMemberShipReport("OPD Membership Report"),
     MemberShipMemberDeActive("Membership Deactivate"),
     MemberShipMemberReActive("Membership Reactivate"),
-
     HrAdmin("HR Admin"),
     HrReports("HR Reports"),
     HrReportsLevel1("HR Reports Level 1"),
@@ -392,10 +368,8 @@ public enum Privileges {
     HrEditRetiedDate("HR Edit Retired Date"),
     HrRemoveResignDate("HR Remove Resign Date"),
     Developers("Developers"),
-
     // Cashier
     AllCashierSummery("All Cashier Summary"),
-
     // Administration
     SearchAll("Search All"),
     ChangePreferece("Change Preference"),
@@ -409,7 +383,6 @@ public enum Privileges {
     ClinicalMembershipAdd("Clinical Membership Add"),
     ClinicalMembershipEdit("Clinical Membership Edit"),
     ClinicalPatientPhoneNumberEdit("Clinical Patient Phone Number Edit"),
-
     // Pharmacy Disbursement
     PharmacyDisburesementMenu("Pharmacy Disbursement Menu"),
     PharmacyDisbursementRequest("Pharmacy Disbursement Request"),
@@ -417,7 +390,6 @@ public enum Privileges {
     PharmacyDisbursementDirectIssue("Pharmacy Disbursement Direct Issue"),
     PharmacyDisbursementRecieve("Pharmacy Disbursement Receive"),
     PharmacyDisbursementReports("Pharmacy Disbursement Reports"),
-
     // Pharmacy Inpatient medication management
     InpatientMedicationManagementMenue("Inpatient Medication Management Menu"),
     PharmacyDirectIssueToBht("Pharmacy Direct Issue to BHT"),
@@ -427,7 +399,6 @@ public enum Privileges {
     PharmacySearchInpatientDirectIssuesbyItem("Pharmacy Search Inpatient Direct Issues by Item"),
     PharmacySearchInpatientDirectIssueReturnsbyBill("Pharmacy Search Inpatient Direct Issue Returns by Bill"),
     PharmacysSearchInpatientDirectIssueReturnsbyItem("Pharmacy Search Inpatient Direct Issue Returns by Item"),
-
     // Pharmacy Retail Transactions
     PharmacyRetailTransactionMenue("Pharmacy Retail Transaction Menu"),
     PharmacyRetailTransaction("Pharmacy Retail Transaction"),
@@ -441,7 +412,6 @@ public enum Privileges {
     PharmacyReturnItemsAndPayments("Pharmacy Return Items and Payments"),
     PharmacySearchReturnBill("Pharmacy Search Return Bill"),
     PharmacyAddToStock("Pharmacy Add to Stock"),
-
     // Pharmacy Wholesale Transaction
     PharmacyWholeSaleTransactionMenue("Pharmacy Wholesale Transaction Menu"),
     PharmacyWholeSaleTransaction("Pharmacy Wholesale Transaction"),
@@ -454,7 +424,6 @@ public enum Privileges {
     PharmacyWholesaleWholeSaleAddToStock("Pharmacy Wholesale Add to Stock"),
     PharmacyWholeSalePurchase("Pharmacy Wholesale Purchase"),
     PharmacySearchReturnBillItems("Pharmacy Search Return Bill Items"),
-
     // Pharmacy Disposal
     PharmacyDisposalMenue("Pharmacy Disposal Menu"),
     PharmacyDisposalIssue("Pharmacy Disposal Issue"),
@@ -462,7 +431,6 @@ public enum Privileges {
     PharmacyDisposalSearchIssueBillItems("Pharmacy Disposal Search Issue Bill Items"),
     PharmacyDisposalSearchIssueReturnBill("Pharmacy Disposal Search Issue Return Bill"),
     PharmacyDisposalUnitIssueMargin("Pharmacy Disposal Unit Issue Margin"),
-
     // Pharmacy Adjustment
     PharmacyAdjustmentMenue("Pharmacy Adjustment Menu"),
     PharmacyAdjustmentDepartmentStockQTY("Pharmacy Adjustment Department Stock Quantity"),
@@ -474,7 +442,6 @@ public enum Privileges {
     PharmacyAdjustmentExpiryDate("Pharmacy Adjustment Expiry Date"),
     PharmacyAdjustmentSearchAdjustmentBills("Pharmacy Adjustment Search Adjustment Bills"),
     PharmacyAdjustmentTransferAllStock("Pharmacy Adjustment Transfer All Stock"),
-
     // Pharmacy Dealer Payments
     PharmacyDealerPaymentMenue("Pharmacy Dealer Payment Menu"),
     PharmacyDealerDueSearch("Pharmacy Dealer Due Search"),
@@ -483,7 +450,6 @@ public enum Privileges {
     PharmacyGRNPaymentApprove("Pharmacy GRN Payment Approve"),
     PharmacyGRNPaymentDoneSearch("Pharmacy GRN Payment Done Search"),
     PharmacyCreditDueAndAccess("Pharmacy Credit Due and Access"),
-
     // Whalesale
     PharmacyWholesaleMenue("Pharmacy Wholesale Menu"),
     PharmacyPurchaseReprint("Pharmacy Purchase Reprint"),
@@ -502,7 +468,6 @@ public enum Privileges {
     PharmacySetReorderLevel("Pharmacy Set Reorder Level"),
     PharmacyReturnWithoutTraising("Pharmacy Return without Traising"),
     PharmacyBHTIssueAccept("Pharmacy BHT Issue Accept"),
-
     // Pharmacy Procurement
     PharmacyProcurementMenu("Pharmacy Procurement Menu"),
     CreatePurchaseOrder("Create Purchase Order"),
@@ -514,11 +479,9 @@ public enum Privileges {
     GoodsRecipt("Goods Receipt"),
     ReturnReceviedGoods("Return Received Goods"),
     ReturnWithoutRecipt("Return without Receipt"),
-
     PharmacyItemSearch("Pharmacy Item Search"),
     PharmacyGenarateReports("Pharmacy Generate Reports"),
     PharmacySummaryViews("Pharmacy Summary Views"),
-
     // Optician
     Optician("Optician"),
     OpticianPatientManagement("Optician Patient Management"),
@@ -527,7 +490,6 @@ public enum Privileges {
     OpticianStockManagement("Optician Stock Management"),
     OpticianProductCatalog("Optician Product Catalog"),
     OpticianRepairManagement("Optician Repair Management"),
-
     @Deprecated
     Ophthalmology("Ophthalmology"),
     @Deprecated
@@ -542,7 +504,6 @@ public enum Privileges {
     OphthalmologyProductCatalog("Ophthalmology Product Catalog"),
     @Deprecated
     OphthalmologyRepairManagement("Ophthalmology Repair Management"),
-
     // New privileges for couriers
     Courier("Courier"),
     CourierCollectSamples("Courier Collect Samples"),
