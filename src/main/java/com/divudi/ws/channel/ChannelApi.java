@@ -243,11 +243,17 @@ public class ChannelApi {
     @Path("/hospitals")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response getHospitalList(Map<String, String> requestBody) {
+    public Response getHospitalList(@Context HttpServletRequest requestContext, Map<String, String> requestBody) {
         // Extract the type and bookingChannel from the request body
         String type = requestBody.get("type");
         String bookingChannel = requestBody.get("bookingChannel");
-
+        String key = requestContext.getHeader("Finance");
+        if (!isValidKey(key)) {
+            JSONObject responseError = new JSONObject();
+            responseError = errorMessageNotValidKey();
+            String json = responseError.toString();
+            return Response.status(Response.Status.ACCEPTED).entity(responseError.toString()).build();
+        }
         // Get the list of institutions from the controller
         List<Institution> institutions = institutionController.getCompanies();
 
