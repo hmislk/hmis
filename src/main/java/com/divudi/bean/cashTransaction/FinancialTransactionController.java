@@ -70,7 +70,6 @@ import javax.persistence.TemporalType;
 import kotlin.collections.ArrayDeque;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import sun.awt.PaintEventDispatcher;
 
 /**
  *
@@ -2129,7 +2128,12 @@ public class FinancialTransactionController implements Serializable {
             p.setDepartment(null);
             p.setPaidValue(0-Math.abs(p.getPaidValue()));
             paymentController.save(p);
+            
+            drawerController.updateDrawerForOuts(p);
         }
+        
+        
+        
         currentBill.getPayments().addAll(currentBillPayments);
         billController.save(currentBill);
         return "/cashier/fund_transfer_bill_print?faces-redirect=true";
@@ -4314,6 +4318,7 @@ public class FinancialTransactionController implements Serializable {
             paymentController.save(p);
         }
         
+        drawerController.updateDrawerForIns(currentBillPayments);
         
         
         currentBill.getReferenceBill().setReferenceBill(currentBill);
