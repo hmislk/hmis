@@ -9920,43 +9920,60 @@ public class SearchController implements Serializable {
     }
 
     public void createSearchBill() {
-        if (getSearchKeyword().getInsId() == null && getSearchKeyword().getDeptId() == null
-                && getSearchKeyword().getBhtNo() == null && getSearchKeyword().getRefBillNo() == null) {
+        // Check if getSearchKeyword() itself is null to prevent NPE
+        if (getSearchKeyword() == null) {
+            JsfUtil.addErrorMessage("Search keyword is null");
+            return;
+        }
+
+        // Check if all necessary fields in getSearchKeyword() are null
+        if ((getSearchKeyword().getInsId() == null || getSearchKeyword().getInsId().isEmpty())
+                && (getSearchKeyword().getDeptId() == null || getSearchKeyword().getDeptId().isEmpty())
+                && (getSearchKeyword().getBhtNo() == null || getSearchKeyword().getBhtNo().trim().isEmpty())
+                && getSearchKeyword().getRefBillNo() == null) {
             JsfUtil.addErrorMessage("Enter BHT No or Bill No");
             return;
         }
+
         bills = null;
         String sql;
-        Map m = new HashMap();
+        Map<String, Object> m = new HashMap<>();
 
-        sql = "select b from Bill b where "
-                + " b.id is not null ";
+        sql = "select b from Bill b where b.id is not null";
 
-        if (!getSearchKeyword().getInsId().isEmpty()) {
+        // Check and handle InsId
+        if (getSearchKeyword().getInsId() != null && !getSearchKeyword().getInsId().isEmpty()) {
             sql += " and (b.insId=:insId or b.deptId=:insId)  ";
             m.put("insId", getSearchKeyword().getInsId());
         }
 
-        if (!getSearchKeyword().getDeptId().isEmpty()) {
+        // Check and handle DeptId
+        if (getSearchKeyword().getDeptId() != null && !getSearchKeyword().getDeptId().isEmpty()) {
             sql += " and (b.insId=:deptId or b.deptId=:deptId)  ";
             m.put("deptId", getSearchKeyword().getDeptId());
         }
 
-        if (!getSearchKeyword().getBhtNo().trim().isEmpty()) {
+        // Check and handle BhtNo
+        if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().isEmpty()) {
             sql += " and b.patientEncounter.bhtNo=:bht";
-            m.put("bht", getSearchKeyword().getBhtNo());
+            m.put("bht", getSearchKeyword().getBhtNo().trim());
         }
+
+        // Check and handle RefBillNo
         if (getSearchKeyword().getRefBillNo() != null) {
             try {
                 long l = Long.parseLong(getSearchKeyword().getRefBillNo());
                 sql += " and b.id=:id";
                 m.put("id", l);
-            } catch (Exception e) {
+            } catch (NumberFormatException e) {
+                // Handle the case where RefBillNo is not a valid number
+                JsfUtil.addErrorMessage("Invalid Bill No");
             }
-
         }
-        sql += " order by b.deptId ";
-//        m.put("class", PreBill.class);
+
+        sql += " order by b.deptId";
+
+        // Fetch bills using the query
         bills = getBillFacade().findByJpql(sql, m, 5000);
     }
 
@@ -12250,16 +12267,15 @@ public class SearchController implements Serializable {
         List<BillTypeAtomic> opdBts = new ArrayList<>();
         opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
         opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-        opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
+//        opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
 
-        opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
-        opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
-
+//        opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+//        opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
         opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
         opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-        opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
-        opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
-        opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
+//        opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
+//        opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+//        opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
 
         ReportTemplateRowBundle opdServiceCollection = generatePaymentColumnForCollections(opdBts, nonCreditPaymentMethods);
         opdServiceCollection.setBundleType("cashierSummaryOpd");
