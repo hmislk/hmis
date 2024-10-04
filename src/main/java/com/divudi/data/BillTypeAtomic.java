@@ -240,10 +240,16 @@ public enum BillTypeAtomic {
     FUND_WITHDRAWAL_BILL_CANCELLED("Withdrawal Fund Bill - Cancelled", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.BANK_OUT, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
     CREDIT_COMPANY_OPD_PATIENT_PAYMENT("Credit Company OPD Patient Payment", BillCategory.BILL, ServiceType.OPD, BillFinanceType.CASH_IN, CountedServiceType.OPD_IN, PaymentCategory.CREDIT_SPEND),
     CREDIT_COMPANY_OPD_PATIENT_PAYMENT_CANCELLATION("Credit Company OPD Patient Payment Cancellation", BillCategory.CANCELLATION, ServiceType.OPD, BillFinanceType.CASH_OUT, CountedServiceType.OPD_OUT, PaymentCategory.CREDIT_SPEND),
-    CREDIT_COMPANY_OPD_PATIENT_PAYMENT_REFUND("Credit Company OPD Patient Payment Refund", BillCategory.REFUND, ServiceType.OPD , BillFinanceType.CASH_OUT, CountedServiceType.OPD_OUT, PaymentCategory.CREDIT_SPEND),
+    CREDIT_COMPANY_OPD_PATIENT_PAYMENT_REFUND("Credit Company OPD Patient Payment Refund", BillCategory.REFUND, ServiceType.OPD, BillFinanceType.CASH_OUT, CountedServiceType.OPD_OUT, PaymentCategory.CREDIT_SPEND),
     CREDIT_COMPANY_INPATIENT_PAYMENT("Credit Company Inpatient Payment", BillCategory.BILL, ServiceType.INWARD, BillFinanceType.CASH_IN, CountedServiceType.INWARD, PaymentCategory.CREDIT_SPEND),
     CREDIT_COMPANY_INPATIENT_PAYMENT_CANCELLATION("Credit Company Inpatient Payment Cancellation", BillCategory.CANCELLATION, ServiceType.INWARD, BillFinanceType.CASH_OUT, CountedServiceType.INWARD, PaymentCategory.CREDIT_SPEND),
-    CREDIT_COMPANY_INPATIENT_PAYMENT_REFUND("Credit Company Inpatient Payment Refund", BillCategory.REFUND, ServiceType.INWARD, BillFinanceType.CASH_OUT, CountedServiceType.INWARD, PaymentCategory.CREDIT_SPEND);
+    CREDIT_COMPANY_INPATIENT_PAYMENT_REFUND("Credit Company Inpatient Payment Refund", BillCategory.REFUND, ServiceType.INWARD, BillFinanceType.CASH_OUT, CountedServiceType.INWARD, PaymentCategory.CREDIT_SPEND),
+    // Additional Income
+    SUPPLEMENTARY_INCOME("Supplementary Income", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.CASH_IN, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_COLLECTION),
+    SUPPLEMENTARY_INCOME_CANCELLED("Supplementary Income - Cancelled", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.CASH_OUT, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_COLLECTION),
+    // Operational Expenses
+    OPERATIONAL_EXPENSES("Operational Expenses", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.CASH_OUT, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
+    OPERATIONAL_EXPENSES_CANCELLED("Operational Expenses - Cancelled", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.CASH_IN, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND);
 
     private final String label;
     private final BillCategory billCategory;
