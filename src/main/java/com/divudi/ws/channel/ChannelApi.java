@@ -483,6 +483,26 @@ public class ChannelApi {
                 .build();
     }
 
+    @Path("/testAPI")
+    public class SimpleTestService {
+
+        @GET
+        @Produces(MediaType.APPLICATION_JSON)
+        public Response testAPI() {
+            System.out.println("API test method called");
+
+            // Create a simple JSON object to return as response
+            JSONObject responseObject = new JSONObject();
+            responseObject.put("status", "success");
+            responseObject.put("message", "API is reachable and responding successfully.");
+
+            // Return a 200 OK response with the JSON object
+            return Response.status(Response.Status.OK)
+                    .entity(responseObject.toString())
+                    .build();
+        }
+    }
+
     private JSONObject searchDoctor(
             Integer hosID,
             Integer docNo,
