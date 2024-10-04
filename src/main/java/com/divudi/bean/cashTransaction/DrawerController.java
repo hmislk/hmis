@@ -50,6 +50,9 @@ public class DrawerController implements Serializable {
     List<Drawer> drawers;
 
     public void updateDrawerForIns(List<Payment> payments) {
+        if (payments == null) {
+            return;
+        }
         for (Payment payment : payments) {
             updateDrawerForIns(payment);
         }
