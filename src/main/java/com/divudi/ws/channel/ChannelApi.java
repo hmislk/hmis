@@ -77,6 +77,7 @@ import javax.inject.Inject;
 import javax.persistence.TemporalType;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.POST;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.json.JSONArray;
@@ -430,6 +431,131 @@ public class ChannelApi {
 
         // Return the response
         return Response.status(Response.Status.ACCEPTED).entity(response).build();
+    }
+
+    @GET
+    @Path("/searchData")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response searchDoctors(
+            @Context HttpServletRequest requestContext,
+            @QueryParam("hosID") Integer hosID,
+            @QueryParam("docNo") Integer docNo,
+            @QueryParam("docName") String docName,
+            @QueryParam("specID") Integer specID,
+            @QueryParam("offset") Integer offset,
+            @QueryParam("page") Integer page,
+            @QueryParam("sessionDate") String sessionDate) {
+        System.out.println("searchDoctors");
+        // Validate the input parameters
+        if (hosID == null && docNo == null && docName == null && specID == null && (offset == null || page == null)) {
+            JSONObject errorResponse = new JSONObject();
+            errorResponse.put("error", "At least one search parameter must be provided, along with offset and page if no specific doctor or hospital is queried.");
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(errorResponse.toString())
+                    .build();
+        }
+        String key = requestContext.getHeader("Finance");
+        if (!isValidKey(key)) {
+            JSONObject responseError = new JSONObject();
+            responseError = errorMessageNotValidKey();
+            String json = responseError.toString();
+            return Response.status(Response.Status.ACCEPTED).entity(responseError.toString()).build();
+        }
+        // Search logic and build the JSON response
+        JSONObject results = searchDoctor(hosID, docNo, docName, specID, offset, page, sessionDate);
+
+        // Constructing the detailed response
+        JSONObject response = new JSONObject();
+        response.put("code", 200);
+        response.put("message", "OK");
+        response.put("data", results);
+        response.put("detailMessage", "Success");
+
+        // Implementing pagination details
+        JSONObject paginationDetails = new JSONObject();
+        paginationDetails.put("currentPage", page);
+        paginationDetails.put("itemsPerPage", 10);  // Assuming a fixed number of items per page
+        paginationDetails.put("totalPages", (int) Math.ceil((double) results.getInt("totalCount") / 10));
+        response.put("pagination", paginationDetails);
+
+        return Response.status(Response.Status.OK)
+                .entity(response.toString())
+                .build();
+    }
+
+    private JSONObject searchDoctor(
+            Integer hosID,
+            Integer docNo,
+            String docName,
+            Integer specID,
+            Integer offset,
+            Integer page,
+            String sessionDate) {
+        // Parse the sessionDate
+        System.out.println("searchDoctor");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        Date fromDate;
+        try {
+            fromDate = dateFormat.parse(sessionDate);
+        } catch (ParseException e) {
+            System.err.println("Invalid date format: " + sessionDate);
+            return new JSONObject().put("error", "Invalid date format");
+        }
+        Date toDate = fromDate; // Set toDate as same as fromDate for single day search
+
+        // Fetch necessary entities based on IDs
+        Institution hospital = institutionController.findInstitution(hosID);
+        Speciality speciality = specialityController.findSpeciality(specID);
+        Consultant consultant = consultantController.getConsultantById(docNo);
+
+        // Create a list of specialities if needed (assuming single speciality search)
+        List<Speciality> specialities = (speciality != null) ? Arrays.asList(speciality) : null;
+
+        // Call the method to find session instances
+        List<SessionInstance> sessions = sessionInstanceController.findSessionInstance(hospital, specialities, consultant, fromDate, toDate);
+
+        // Process the results
+        JSONArray hospitalArray = new JSONArray();
+        JSONObject hospitalObject = new JSONObject();
+        hospitalObject.put("hosId", hosID.toString());
+        hospitalObject.put("displayName", hospital != null ? hospital.getName() : "N/A");
+
+        JSONArray doctorArray = new JSONArray();
+        for (SessionInstance session : sessions) {
+            JSONObject doctor = new JSONObject();
+            doctor.put("docNo", consultant != null ? consultant.getId().toString() : "N/A");
+            doctor.put("displayName", consultant != null ? consultant.getPerson().getNameWithTitle() : "N/A");
+            doctor.put("title", consultant != null ? consultant.getPerson().getTitle() : "N/A");
+            doctor.put("nextAvailableDate", dateFormat.format(session.getSessionDate()));
+            doctorArray.put(doctor);
+        }
+        hospitalObject.put("doctor", doctorArray);
+        hospitalArray.put(hospitalObject);
+
+        JSONObject results = new JSONObject();
+        results.put("totalCount", sessions.size()); // Total count of sessions
+        results.put("result", hospitalArray);
+
+        return results;
+    }
+
+    // Inner class to encapsulate search results
+    private class SearchResults {
+
+        private List<DoctorDetail> doctors;
+        private Integer totalCount;
+
+        // Assume getters and setters are here
+    }
+
+    // Inner class for Doctor details
+    private class DoctorDetail {
+
+        private String name;
+        private String speciality;
+        private String hospital;
+
+        // Assume getters and setters are here
     }
 
     @GET

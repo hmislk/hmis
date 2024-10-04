@@ -178,23 +178,38 @@ public class SpecialityController implements Serializable {
         return ds;
     }
 
-    public Speciality findSpeciality(String idString) {
-        Long id;
-        try {
-            id = Long.valueOf(idString);
-        } catch (NumberFormatException e) {
+    // Original method modified to accept a Long directly
+    public Speciality findSpeciality(Long id) {
+        if (id == null) {
             return null;
         }
-        String j;
-        j = "select s "
-                + " from Speciality s "
-                + " where s.retired=:ret "
-                + " and s.id=:id";
-        Map m = new HashMap();
-        m.put("ret", false);
-        m.put("id", id);
-        Speciality ds = getFacade().findFirstByJpql(j, m);
-        return ds;
+        String jpql = "select s from Speciality s where s.retired=:ret and s.id=:id";
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("id", id);
+        return getFacade().findFirstByJpql(jpql, params);
+    }
+
+    // Overloaded method to handle String input
+    public Speciality findSpeciality(String idString) {
+        if (idString == null || idString.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            Long id = Long.parseLong(idString);
+            return findSpeciality(id);
+        } catch (NumberFormatException e) {
+            System.err.println("Invalid speciality ID format: " + idString);
+            return null;
+        }
+    }
+
+    // Overloaded method to handle Integer input
+    public Speciality findSpeciality(Integer id) {
+        if (id == null) {
+            return null;
+        }
+        return findSpeciality(Long.valueOf(id));
     }
 
     public List<Speciality> getSelectedItems() {

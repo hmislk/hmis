@@ -79,6 +79,7 @@ public class SessionInstanceController implements Serializable {
     }
 
     public List<SessionInstance> findSessionInstance(Institution institution, List<Speciality> specialities, Doctor consultant, Date fromDate, Date toDate) {
+        System.out.println("findSessionInstance");
         List<SessionInstance> sessionInstances;
         Date currentDate = new Date();
         Calendar calendar = Calendar.getInstance();
@@ -104,7 +105,10 @@ public class SessionInstanceController implements Serializable {
         m.put("ret", false);
         m.put("fd", fromDate);
         m.put("td", toDate);
+        System.out.println("jpql = " + jpql);
+        System.out.println("m = " + m);
         sessionInstances = ejbFacade.findByJpql(jpql.toString(), m, TemporalType.DATE);
+        System.out.println("sessionInstances = " + sessionInstances);
         return sessionInstances;
 
     }
