@@ -58,16 +58,16 @@
                                         ajax="false" 
                                         action="#{financialTransactionController.navigateToHandoverCreateBillForCurrentShift()}" >
                                     </p:commandButton>
-                                    
-                                     <p:commandButton 
+
+                                    <p:commandButton 
                                         class="my-1 w-100 ui-button-primary"
                                         value="Handover By Period"
                                         icon="pi pi-forward"
                                         ajax="false" 
                                         action="#{financialTransactionController.navigateToHandoverCreateBillForSelectedPeriod()}" >
                                     </p:commandButton>
-                                    
-                                    
+
+
                                     <p:commandButton 
                                         class="my-1 w-100 ui-button-secondary"
                                         value="Handover Shift (OLD)"
@@ -75,7 +75,7 @@
                                         ajax="false" 
                                         action="#{financialTransactionController.navigateToHandoverCreateBill()}" >
                                     </p:commandButton>
-                                    
+
                                     <p:commandButton 
                                         class="my-1 w-100 ui-button-info"
                                         value="My Shifts"
@@ -134,6 +134,32 @@
                                 </p:tab>
 
 
+                                <p:tab title="Income &amp; Expense Management">
+                                    <p:commandButton 
+                                        class="my-1 w-100 ui-button-primary" 
+                                        value="Add Supplimantary Income"
+                                        icon="pi pi-directions"  
+                                        ajax="false" 
+                                        action="#{financialTransactionController.navigateToNewIncomeBill()}" >
+                                    </p:commandButton>
+
+
+                                    <p:commandButton 
+                                        class="my-1 w-100 ui-button-warning"  
+                                        value="Add Expenses"
+                                        icon="pi pi-inbox" 
+                                        ajax="false" 
+                                        action="#{financialTransactionController.navigateToNewExpenseBill()}" >
+                                    </p:commandButton>
+
+                                    <p:commandButton 
+                                        class="my-1 w-100 ui-button-success"  
+                                        value= "Trace  &amp; Expense"
+                                        icon="pi pi-refresh" 
+                                        ajax="false" 
+                                        action="#{financialTransactionController.navigateToTraceIncomeExpenseBills()}" >
+                                    </p:commandButton>
+                                </p:tab>
 
 
 
