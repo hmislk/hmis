@@ -11,82 +11,174 @@
         <ui:composition template="./index.xhtml">
             <ui:define name="subcontent">
                 <h:form>
-                    <div style="width: 100%; height: 100%; display: flex; justify-content: center; align-items: center;">
-                        <h:panelGroup rendered="#{financialTransactionController.nonClosedShiftStartFundBill eq null}"  style="text-align: center; width: 100%; height: 100%;">
-                            <div class="mt-5">
+                    <p:panel>
+                        <f:facet name="header"  >
+                            <div class="d-flex justify-content-between">
                                 <div>
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="width: 128px; height: 128px;">
-                                        <path fill="red" d="M256 32c14.2 0 27.3 7.5 34.5 19.8l216 368c7.3 12.4 7.3 27.7 .2 40.1S486.3 480 472 480H40c-14.3 0-27.6-7.7-34.7-20.1s-7-27.8 .2-40.1l216-368C228.7 39.5 241.8 32 256 32zm0 128c-13.3 0-24 10.7-24 24V296c0 13.3 10.7 24 24 24s24-10.7 24-24V184c0-13.3-10.7-24-24-24zm32 224a32 32 0 1 0 -64 0 32 32 0 1 0 64 0z"/>
-                                    </svg>
+                                    <h:outputText styleClass="fas fa-search" />
+                                    <h:outputLabel value="Income Bill Search " class="mx-4"/>
                                 </div>
-                                <div style="font-size: 2em">
-                                    No Start Fund Bill Available to Receive Funds
+                                
+                                <div class="flex-column" >
+                                    <h:panelGroup id="searchKeyword">
+                                        <p:commandButton 
+                                            icon="fas fa-search"
+                                            id="btnSearch" 
+                                            ajax="false" 
+                                            value="Search" 
+                                            class="ui-button-success w-100 mt-2"
+                                            action="#{searchController.createPaymentHistoryTable()}"  >
+                                        </p:commandButton>
+
+                                        <p:commandButton 
+                                            id="btnExcel"
+                                            icon="fa-solid fa-file-excel"
+                                            ajax="false" 
+                                            value="Download"
+                                            class="w-100 mt-1">
+                                            <p:dataExporter fileName="Income Bills" type="xls" target="tblBills" ></p:dataExporter>
+                                        </p:commandButton>
+
+                                    </h:panelGroup>
+
                                 </div>
                             </div>
-                        </h:panelGroup>
-                    </div>
-                    <p:panel rendered="#{financialTransactionController.nonClosedShiftStartFundBill ne null}" >
-                        <p:panel header="Funds" >
-                            <p:commandButton 
-                                value="To Receive"
-                                action="#{financialTransactionController.navigateToReceiveNewFundTransferBill()}"
-                                ajax="false"
-                                class="my-2 ui-button-success"
-                                >
+                            
+                        </f:facet>
 
-                            </p:commandButton>
+                        <div class="row">
+                            
 
+                            <div class="col-md-12">
+                                <p:defaultCommand target="btnSearch" />
+                                <p:dataTable 
+                                    rowIndexVar="i" 
+                                    id="tblBills" 
+                                    value="#{searchController.bills}" 
+                                    var="bill"  
+                                    style="min-width: 100%;"  
+                                    rows ="10"
+                                    paginator="true"
+                                    paginatorPosition="bottom"
+                                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    rowsPerPageTemplate="5,10,25,50"
+                                    >
+                                    <p:column 
+                                        headerText="No" 
+                                        filterBy="#{bill.id}" 
+                                        filterMatchMode="contains"
+                                        sortBy="#{bill.id}"
+                                        rendered="false"
+                                        styleClass="alignTop" 
+                                        width="15">
+                                        <h:outputLabel value="#{bill.id}"/>
+                                    </p:column>
+                                    <p:column headerText="Bill No*" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}" filterMatchMode="contains">                                
+                                        <div>
+                                            <p:commandLink 
+                                                id="billNo" 
+                                                ajax="false" 
+                                                value="#{bill.deptId}" 
+                                                action="#{billSearch.navigateToViewSupplimentaryIncomeBill()}">
+                                                <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
+                                            </p:commandLink>
+                                        </div>
+                                        <div>
+                                            <p:commandLink
+                                                id="CancelBillNo"
+                                                ajax="false"
+                                                value="#{bill.cancelledBill.deptId}"
+                                                action="#{billSearch.navigateToViewSingleOpdBill()}"
+                                                rendered="#{bill.cancelled}" style="color: red">
+                                                <f:setPropertyActionListener value="#{bill.cancelledBill}" target="#{billSearch.bill}"/>
+                                            </p:commandLink>
+                                            <p:commandLink
+                                                id="RefundBillNo"
+                                                ajax="false"
+                                                value="#{bill.refundedBill.deptId}"
+                                                action="#{billSearch.navigateToViewSingleOpdBill()}"
+                                                rendered="#{bill.refunded}" style="color: orange">
+                                                <f:setPropertyActionListener value="#{bill.refundedBill}" target="#{billSearch.bill}"/>
+                                            </p:commandLink>
+                                        </div>
 
-                            <p:dataTable
-                                id="tblbill"
-                                value="#{financialTransactionController.fundTransferBillsToReceive}" 
-                                var="bp" 
-                                rowKey="#{bp.id}"
-                                selectionMode="single"
-                                selection="#{financialTransactionController.selectedBill}">
+                                    </p:column>
+                                    <p:column headerText="Billed At" filterBy="#{bill.billDate}" sortBy="#{bill.billDate}">
+                                        <h:panelGroup >
+                                            <p:outputLabel id="billTime1" value="#{bill.createdAt}" >
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
+                                            </p:outputLabel>
 
-                                <p:column headerText="Staff">
-                                    <h:outputText value="#{bp.staff.person.nameWithTitle}" />
-                                </p:column>
+                                        </h:panelGroup>
+                                    </p:column>
 
-                                <p:column headerText="Created At">
-                                    <h:outputText value="#{bp.createdAt}" />
-                                </p:column>
+                                    <p:column headerText="Billed by" 
+                                              sortBy="#{bill.creater.name}" 
+                                              filterMatchMode="contains"
+                                              filterBy="#{bill.creater.name}">
+                                        <h:outputLabel value="#{bill.creater.webUserPerson.name}" ></h:outputLabel>
+                                        <h:panelGroup rendered="#{bill.cancelled or bill.refunded}" style="display: grid">
+                                            <h:outputLabel value="#{bill.cancelledBill.creater.webUserPerson.name}" style="color: red" rendered="#{bill.cancelled}"></h:outputLabel>
+                                            <h:outputLabel value="#{bill.refundedBill.creater.webUserPerson.name}" style="color: orange" rendered="#{bill.refunded}"></h:outputLabel>
+                                        </h:panelGroup>
+                                    </p:column>   
 
-                                <p:column headerText="Payment Method">
-                                    <h:outputText value="#{bp.paymentMethod}" />
-                                </p:column>
+                                    <p:column headerText="Remarks" >  
+                                        <h:panelGroup id="remark">
+                                            
+                                        </h:panelGroup>
 
-                                <p:column headerText="Net Total">
-                                    <h:outputText value="#{bp.netTotal}" />
-                                </p:column>
+                                        <p:tooltip for="remark" value="df" rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD - Display Bill Details in Tooltip')}" >
+                                            <h:panelGrid columns="3" >
+                                                <h:outputText value="Creater" ></h:outputText>
+                                                <p:spacer width="15" height="1" ></p:spacer>
+                                                <h:panelGroup>
+                                                    <h:outputText value="#{bill.cancelledBill.creater.webUserPerson.name}" rendered="#{bill.cancelled}"></h:outputText>
+                                                    <h:outputText value="#{bill.refundedBill.creater.webUserPerson.name}" rendered="#{bill.refunded}"></h:outputText>
+                                                </h:panelGroup>
 
-                                <!-- Subtable Column -->
-                                <p:column headerText="Payments">
-                                    <p:dataTable
-                                        id="subTblbill"
-                                        value="#{bp.payments}" 
-                                        var="payment" 
-                                        rowKey="#{payment.id}">
-                                        <p:column headerText="Payment Method">
-                                            <h:outputText value="#{payment.paymentMethod}" />
-                                        </p:column>
-                                        <p:column headerText="Paid Value">
-                                            <h:outputText value="#{payment.paidValue}" />
-                                        </p:column>
+                                                <h:outputText value="Created At" ></h:outputText>
+                                                <p:spacer width="15" height="1" ></p:spacer>
+                                                <h:panelGroup>
+                                                    <h:outputText value="#{bill.cancelledBill.createdAt}" rendered="#{bill.cancelled}">
+                                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                                    </h:outputText>
+                                                    <h:outputText value="#{bill.refundedBill.createdAt}" rendered="#{bill.refunded}">
+                                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                                    </h:outputText>
+                                                </h:panelGroup>
+                                                <h:outputText value="Department" ></h:outputText>
+                                                <p:spacer width="15" height="1" ></p:spacer>
+                                                <h:panelGroup>
+                                                    <h:outputText value="#{bill.cancelledBill.department.name}" rendered="#{bill.cancelled}"></h:outputText>
+                                                    <h:outputText value="#{bill.refundedBill.department.name}" rendered="#{bill.refunded}"></h:outputText>
+                                                </h:panelGroup>
+                                            </h:panelGrid>
+                                        </p:tooltip>
+                                    </p:column>
 
-                                        <!-- Add more columns for payment details if needed -->
+                                    <p:column headerText="Value" sortBy="#{bill.total}" 
+                                              styleClass="averageNumericColumn">
+                                        <h:outputLabel value="#{bill.total}" >
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>
+                                     
 
-                                    </p:dataTable>
-                                </p:column>
+                                    <p:column headerText="Actions">
+                                        <p:commandButton icon="pi pi-wallet" styleClass="m-1" ajax="false" title="Manage Bill" action="#{billSearch.navigateToManageBillByAtomicBillType()}">
+                                            <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
+                                        </p:commandButton>
+                                        <p:commandButton icon="pi pi-search" styleClass="m-1" ajax="false" title="View Bill" action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                                            <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
+                                        </p:commandButton>
+                                    </p:column>
+                                </p:dataTable>
 
-                            </p:dataTable>
-
-
-                        </p:panel>
-
-
+                            </div>
+                        </div>
                     </p:panel>
+
                 </h:form>
             </ui:define>
         </ui:composition>
