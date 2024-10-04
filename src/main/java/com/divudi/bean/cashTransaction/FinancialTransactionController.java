@@ -117,6 +117,8 @@ public class FinancialTransactionController implements Serializable {
     DetailedFinancialBillController detailedFinancialBillController;
     @Inject
     private DenominationTransactionController denominationTransactionController;
+    @Inject
+    private DrawerController drawerController;
     // </editor-fold>  
 
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
@@ -2124,8 +2126,14 @@ public class FinancialTransactionController implements Serializable {
             p.setCreater(sessionController.getLoggedUser());
             p.setInstitution(null);
             p.setDepartment(null);
+            p.setPaidValue(0-Math.abs(p.getPaidValue()));
             paymentController.save(p);
+            
+            drawerController.updateDrawerForOuts(p);
         }
+        
+        
+        
         currentBill.getPayments().addAll(currentBillPayments);
         billController.save(currentBill);
         return "/cashier/fund_transfer_bill_print?faces-redirect=true";
@@ -2203,6 +2211,7 @@ public class FinancialTransactionController implements Serializable {
         List<Payment> shiftPayments = fetchPaymentsFromShiftStartToEndByDateAndDepartment(startBill, null);
         List<Payment> shiftFloats = fetchShiftFloatsFromShiftStartToEnd(startBill, null, sessionController.getLoggedUser());
         List<Payment> othersPayments = fetchAllPaymentInMyHold(sessionController.getLoggedUser());
+        List<Payment> bankPayments = fetchBankPayments(startBill, null, sessionController.getLoggedUser());
 
         Set<Payment> uniquePaymentSet = new HashSet<>();
         if (shiftPayments != null) {
@@ -2214,6 +2223,10 @@ public class FinancialTransactionController implements Serializable {
         if (othersPayments != null) {
             uniquePaymentSet.addAll(othersPayments);
         }
+        if (bankPayments != null) {
+            uniquePaymentSet.addAll(bankPayments);
+        }
+        
 
         List<Payment> allUniquePayments = new ArrayList<>(uniquePaymentSet);
 
@@ -3204,6 +3217,61 @@ public class FinancialTransactionController implements Serializable {
             }
         }
         return myFloats;
+    }
+    
+    public List<Payment> fetchBankPayments(
+            Bill startBill, Bill endBill, WebUser wu) {
+        System.out.println("startBill = " + startBill);
+        System.out.println("endBill = " + endBill);
+        if (startBill == null || startBill.getId() == null || startBill.getCreater() == null) {
+            return null;
+        }
+
+        WebUser paymentUser = startBill.getCreater();
+
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.BANK_IN));
+        btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.BANK_OUT));
+
+        Map<String, Object> m = new HashMap<>();
+
+        StringBuilder jpqlBuilder = new StringBuilder("SELECT p ")
+                .append("FROM Payment p JOIN p.bill b ")
+                .append("WHERE p.retired=:pr ")
+                .append("AND b.retired=:br ")
+                .append("AND b.billTypeAtomic IN :btas  ")
+                .append("AND p.creater=:cr ")
+                .append("AND p.cancelled=:can ")
+                .append("AND p.id > :sid ");
+        m.put("btas", btas);
+        m.put("cr", paymentUser);
+        m.put("pr", false);
+        m.put("br", false);
+        m.put("can", false);
+        m.put("sid", startBill.getId());
+
+        if (endBill != null && endBill.getId() != null) {
+            jpqlBuilder.append("AND p.id < :eid ");
+            m.put("eid", endBill.getId());
+        }
+        jpqlBuilder.append("ORDER BY p.createdAt, b.department, p.creater");
+        String jpql = jpqlBuilder.toString();
+        System.out.println("jpql = " + jpql);
+        System.out.println("m = " + m);
+        List<Payment> bankPayments = paymentFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        System.out.println("allFloats = " + bankPayments);
+        List<Payment> myBankPayments = new ArrayList<>();
+        for (Payment p : bankPayments) {
+            System.out.println("p = " + p);
+            WebUser u = p.getCurrentHolder();
+            if (u == null) {
+                p.setCurrentHolder(paymentUser);
+                myBankPayments.add(p);
+            } else if (paymentUser.equals(u)) {
+                myBankPayments.add(p);
+            }
+        }
+        return myBankPayments;
     }
 
     public List<Payment> fetchShiftFloatsFromShiftStartToEnd(
@@ -4306,8 +4374,13 @@ public class FinancialTransactionController implements Serializable {
             p.setCurrentHolder(sessionController.getLoggedUser());
             p.setDepartment(null);
             p.setInstitution(null);
+            p.setPaidValue(Math.abs(p.getPaidValue()));
             paymentController.save(p);
         }
+        
+        drawerController.updateDrawerForIns(currentBillPayments);
+        
+        
         currentBill.getReferenceBill().setReferenceBill(currentBill);
         billController.save(currentBill.getReferenceBill());
 
@@ -4783,15 +4856,19 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setInstitution(sessionController.getInstitution());
         currentBill.setStaff(sessionController.getLoggedUser().getStaff());
 
+        currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_DEPOSIT_BILL);
         currentBill.setBillDate(new Date());
         currentBill.setBillTime(new Date());
 
         billController.save(currentBill);
+        Double netTotal = currentBill.getNetTotal();
+        currentBill.setNetTotal(0 - Math.abs(netTotal));
         for (Payment p : getCurrentBillPayments()) {
             p.setBill(currentBill);
             p.setDepartment(sessionController.getDepartment());
             p.setInstitution(sessionController.getInstitution());
             paymentController.save(p);
+            drawerController.updateDrawerForOuts(p);
         }
         return "/cashier/deposit_funds_print?faces-redirect=true";
     }
