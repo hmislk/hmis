@@ -33,6 +33,7 @@ import com.divudi.data.analytics.ReportTemplateType;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.entity.BillComponent;
+import com.divudi.entity.BillItem;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
@@ -229,6 +230,8 @@ public class FinancialTransactionController implements Serializable {
     private Date cashbookDate;
     private Department cashbookDepartment;
     private List<Date> cashbookDates;
+    private List<BillItem> billItems;
+    private BillItem removingBillItem;
     private List<Department> cashbookDepartments;
     private List<PaymentMethodValue> handingOverPaymentMethodValues;
 
@@ -261,6 +264,26 @@ public class FinancialTransactionController implements Serializable {
         resetClassVariables();
         fillFundTransferBillsForMeToReceive();
         return "/cashier/index?faces-redirect=true;";
+    }
+    
+    public String navigateToNewIncomeBill() {
+        resetClassVariables();
+        currentBill = new Bill();
+        currentBill.setBillType(BillType.SUPPLEMENTARY_INCOME);
+        currentBill.setBillTypeAtomic(BillTypeAtomic.SUPPLEMENTARY_INCOME);
+        return "/cashier/income_bill?faces-redirect=true;";
+    }
+    
+    public String navigateToNewExpenseBill() {
+        resetClassVariables();
+        fillFundTransferBillsForMeToReceive();
+        return "/cashier/expense_bill?faces-redirect=true;";
+    }
+    
+    public String navigateToTraceIncomeExpenseBills() {
+        resetClassVariables();
+        fillFundTransferBillsForMeToReceive();
+        return "/cashier/trace_income_expenses?faces-redirect=true;";
     }
 
     public String navigateToMyDrawer() {
@@ -2096,6 +2119,36 @@ public class FinancialTransactionController implements Serializable {
 
         return "/cashier/initial_fund_bill_print?faces-redirect=true";
     }
+    
+    public String settleIncomeBill() {
+        if (currentBill == null) {
+            JsfUtil.addErrorMessage("Error");
+            return "";
+        }
+        if (currentBill.getBillType() != BillType.SUPPLEMENTARY_INCOME) {
+            JsfUtil.addErrorMessage("Error");
+            return "";
+        }
+        currentBill.setDepartment(sessionController.getDepartment());
+        currentBill.setInstitution(sessionController.getInstitution());
+        currentBill.setStaff(sessionController.getLoggedUser().getStaff());
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.SUPPLEMENTARY_INCOME);
+        currentBill.setBillDate(new Date());
+        currentBill.setBillTime(new Date());
+        currentBill.setDeptId(deptId);
+        currentBill.setInsId(deptId);
+        billController.save(currentBill);
+        for (Payment p : getCurrentBillPayments()) {
+            p.setBill(currentBill);
+            p.setDepartment(sessionController.getDepartment());
+            p.setInstitution(sessionController.getInstitution());
+            // Serialize denominations before saving
+            p.serializeDenominations();
+            paymentController.save(p);
+        }
+        drawerController.updateDrawerForIns(paymentsSelected);
+        return "/cashier/income_bill_print?faces-redirect=true";
+    }
 
     public String settleFundTransferBill() {
         if (currentBill == null) {
@@ -2126,14 +2179,12 @@ public class FinancialTransactionController implements Serializable {
             p.setCreater(sessionController.getLoggedUser());
             p.setInstitution(null);
             p.setDepartment(null);
-            p.setPaidValue(0-Math.abs(p.getPaidValue()));
+            p.setPaidValue(0 - Math.abs(p.getPaidValue()));
             paymentController.save(p);
-            
+
             drawerController.updateDrawerForOuts(p);
         }
-        
-        
-        
+
         currentBill.getPayments().addAll(currentBillPayments);
         billController.save(currentBill);
         return "/cashier/fund_transfer_bill_print?faces-redirect=true";
@@ -2226,7 +2277,6 @@ public class FinancialTransactionController implements Serializable {
         if (bankPayments != null) {
             uniquePaymentSet.addAll(bankPayments);
         }
-        
 
         List<Payment> allUniquePayments = new ArrayList<>(uniquePaymentSet);
 
@@ -3218,7 +3268,7 @@ public class FinancialTransactionController implements Serializable {
         }
         return myFloats;
     }
-    
+
     public List<Payment> fetchBankPayments(
             Bill startBill, Bill endBill, WebUser wu) {
         System.out.println("startBill = " + startBill);
@@ -4377,10 +4427,9 @@ public class FinancialTransactionController implements Serializable {
             p.setPaidValue(Math.abs(p.getPaidValue()));
             paymentController.save(p);
         }
-        
+
         drawerController.updateDrawerForIns(currentBillPayments);
-        
-        
+
         currentBill.getReferenceBill().setReferenceBill(currentBill);
         billController.save(currentBill.getReferenceBill());
 
@@ -4702,6 +4751,28 @@ public class FinancialTransactionController implements Serializable {
         calculateFundDepositBillTotal();
         currentPayment = null;
     }
+    
+    public void addPaymentToIncomeBill() {
+        if (currentBill == null) {
+            JsfUtil.addErrorMessage("Error");
+            return;
+        }
+        if (currentBill.getBillTypeAtomic()!= BillTypeAtomic.SUPPLEMENTARY_INCOME) {
+            JsfUtil.addErrorMessage("Error");
+            return;
+        }
+        if (currentPayment == null) {
+            JsfUtil.addErrorMessage("Error");
+            return;
+        }
+        if (currentPayment.getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Select a Payment Method");
+            return;
+        }
+        getCurrentBillPayments().add(currentPayment);
+        calculateIncometBillTotal();
+        currentPayment = null;
+    }
 
     public void addShortageRecord() {
         if (currentPayment == null) {
@@ -4835,6 +4906,15 @@ public class FinancialTransactionController implements Serializable {
     }
 
     private void calculateFundDepositBillTotal() {
+        double total = 0.0;
+        for (Payment p : getCurrentBillPayments()) {
+            total += p.getPaidValue();
+        }
+        currentBill.setTotal(total);
+        currentBill.setNetTotal(total);
+    }
+    
+    private void calculateIncometBillTotal() {
         double total = 0.0;
         for (Payment p : getCurrentBillPayments()) {
             total += p.getPaidValue();
@@ -5916,6 +5996,22 @@ public class FinancialTransactionController implements Serializable {
 
     public void setTotalCashFund(double totalCashFund) {
         this.totalCashFund = totalCashFund;
+    }
+
+    public List<BillItem> getBillItems() {
+        return billItems;
+    }
+
+    public void setBillItems(List<BillItem> billItems) {
+        this.billItems = billItems;
+    }
+
+    public BillItem getRemovingBillItem() {
+        return removingBillItem;
+    }
+
+    public void setRemovingBillItem(BillItem removingBillItem) {
+        this.removingBillItem = removingBillItem;
     }
 
 }

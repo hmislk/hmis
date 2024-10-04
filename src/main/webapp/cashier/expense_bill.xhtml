@@ -22,14 +22,6 @@
                         <p:panelGrid layout="tabular" columns="1" class="w-100" >
                             <f:facet name="header" >
                                 <p:outputLabel value="Income" class="font-weight-bold" ></p:outputLabel>
-
-                                <p:commandButton 
-                                    icon="pi pi-play"
-                                    class="ui-button-success"
-                                    value="Settle Income" 
-                                    ajax="false" 
-                                    action="#{financialTransactionController.settleIncomeBill()}" >
-                                </p:commandButton>
                             </f:facet>
 
 
@@ -48,10 +40,7 @@
                                             <p:ajax process="cmdPayment" update="paymentDetails" ></p:ajax>
                                         </p:selectOneMenu>
                                     </div>
-                                    <div class="col-md-1">
-                                        <p:inputTextarea value="#{financialTransactionController.currentPayment.comments}" ></p:inputTextarea>
-                                    </div>
-                                    <div class="col-md-6" >
+                                    <div class="col-md-7" >
                                         <h:panelGroup id="paymentDetails" >
                                             <h:panelGroup
                                                 class="d-flex"
@@ -113,22 +102,31 @@
 
 
                                     </div>
-
                                     <div class="col-md-1">
                                         <p:commandButton
                                             id="btnAdd"
                                             style="float: right;"
                                             value="Add"
-                                            ajax="false"
-                                            action="#{financialTransactionController.addPaymentToIncomeBill()}" >
+                                            icon="fa fa-plus"
+                                            class="ui-button-success"
+                                            process="btnAdd cmdPayment paymentDetails"
+                                            update="tblPayments totals cmdPayment paymentDetails"
+                                            action="#{financialTransactionController.addPaymentToInitialFundBill()}" >
                                         </p:commandButton>
                                     </div>
                                 </div>
-                                <p:messages ></p:messages>
+
                             </p:panel>
 
 
 
+                            <p:commandButton 
+                                icon="pi pi-play"
+                                class="ui-button-success"
+                                value="Start Shift" 
+                                ajax="false" 
+                                action="#{financialTransactionController.settleInitialFundBill()}" >
+                            </p:commandButton>
 
                         </p:panelGrid>
 
