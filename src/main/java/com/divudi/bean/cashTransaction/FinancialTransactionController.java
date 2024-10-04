@@ -2146,7 +2146,7 @@ public class FinancialTransactionController implements Serializable {
             p.serializeDenominations();
             paymentController.save(p);
         }
-        drawerController.updateDrawerForIns(paymentsSelected);
+        drawerController.updateDrawerForIns(getCurrentBillPayments());
         return "/cashier/income_bill_print?faces-redirect=true";
     }
 
