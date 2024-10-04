@@ -29,6 +29,7 @@ public class WebUserRoleUser implements Serializable {
     private WebUserRole webUserRole;
     @ManyToOne
     private WebUser webUser;
+    private Department department;
     
     //Created Properties
     @ManyToOne
@@ -49,6 +50,9 @@ public class WebUserRoleUser implements Serializable {
 
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date editedAt;
+    
+    
+    
 
     public Long getId() {
         return id;
@@ -162,4 +166,12 @@ public class WebUserRoleUser implements Serializable {
     public void setWebUserRole(WebUserRole webUserRole) {
         this.webUserRole = webUserRole;
     } 
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
 }

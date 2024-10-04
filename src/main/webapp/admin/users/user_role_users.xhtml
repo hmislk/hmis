@@ -23,24 +23,12 @@
 
                     <p:panelGrid
                         class="w-100 my-2"
-                        columns="3">
-                        <p:outputLabel  value="User Role" ></p:outputLabel>
-                        <p:outputLabel class="form-control w-100" value="#{webUserRoleUserController.current.webUserRole.name}"></p:outputLabel>
-                        <p:commandButton
-                            id="btnList"
-                            title="List Users for the User Roles"
-                            value="List Users"
-                            process="btnList cmbDepartment"
-                            class="ui-button-warning w-100"
-                            ajax="false"
-                            icon="fa fa-list"
-                            update="tbl"
-                            action="#{webUserRoleUserController.fillUsers}"
-                            >
-                        </p:commandButton>
-                        <p:outputLabel value="Users to Add" ></p:outputLabel>
+                        columns="2">
+
+
+                        <p:outputLabel value="User" ></p:outputLabel>
                         <p:selectOneMenu
-                            value="#{webUserRoleUserController.current.webUser}"
+                            value="#{webUserRoleUserController.webUser}"
                             filter="true"
                             filterMatchMode="contains"
                             class="w-100"
@@ -50,43 +38,64 @@
                                            itemLabel="#{i.name}"
                                            itemValue="#{i}"/>
                         </p:selectOneMenu>
-                        <p:commandButton
-                            value="List Department"
-                            icon="fa fa-list"
-                            class="ui-button-warning w-100"
-                            action="#{webUserRoleUserController.fillDepartment}"
-                            ajax="false"
-                            update="tbl"
-                            />
 
-                        <p:outputLabel  value="Department" ></p:outputLabel>
+
+
+
+                        <p:outputLabel  value="Role" ></p:outputLabel>
                         <p:selectOneMenu
-                            id="cmbDepartment"
-                            placeholder="Department"
                             class="w-100"
-                            value="#{webUserRoleUserController.department}"
-                            filter="true"
-                            autoWidth="false">
-                            <f:selectItem itemLabel="All" ></f:selectItem>
-                            <f:selectItems
-                                value="#{webUserRoleUserController.departments}"
-                                var="d"
-                                itemLabel="#{d.name}"
-                                itemValue="#{d}" ></f:selectItems>
+                            value="#{webUserRoleUserController.webUserRole}" >
+                            <f:selectItem itemLabel="Select" ></f:selectItem>
+                            <f:selectItems value="#{webUserRoleController.items}" 
+                                           var="ur" 
+                                           itemLabel="#{ur.name}" 
+                                           itemValue="#{ur}" ></f:selectItems>
                         </p:selectOneMenu>
+
+
+                        <p:outputLabel value="Institution"  ></p:outputLabel>                                            
+                        <p:autoComplete 
+                            id="ins"
+                            value="#{webUserRoleUserController.institution}"
+                            rendered="#{!webUserController.createOnlyUserForExsistingUser}"
+                            completeMethod="#{institutionController.completeIns}"
+                            var="ins"
+                            class="w-100 mt-1"
+                            inputStyleClass="form-control"
+                            itemLabel="#{ins.name}"
+                            itemValue="#{ins}">
+                            <p:ajax event="itemSelect" update="gpDept"/>
+                        </p:autoComplete>
+
+                        <p:outputLabel value="Department"  ></p:outputLabel>  
+                        <h:panelGroup id="gpDept" >
+                            <p:selectOneMenu 
+                                class="w-100"
+                                rendered="#{webUserRoleUserController.institution ne null}"
+                                value="#{webUserRoleUserController.department}" >
+                                <f:selectItem itemLabel="Select" ></f:selectItem>
+                                <f:selectItems value="#{departmentController.getInsDepartments(webUserRoleUserController.institution)}" 
+                                               var="ur" 
+                                               itemLabel="#{ur.name}" 
+                                               itemValue="#{ur}" ></f:selectItems>
+                            </p:selectOneMenu>
+                        </h:panelGroup>
+
+
+                        <p:spacer ></p:spacer>
+
                         <p:commandButton
-                            value="Add User"
+                            value="Add User and Role Privileges to Department"
                             icon="fa fa-plus"
                             class="ui-button-success w-100"
-                            action="#{webUserRoleUserController.addUsers}"
+                            action="#{webUserRoleUserController.addUsersToDepartmentRoleWithPrivileges}"
                             ajax="false"
                             update="tbl"
                             />
-
-
-
-
                     </p:panelGrid>
+
+
                 </p:panel>
 
                 <p:dataTable

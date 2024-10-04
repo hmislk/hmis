@@ -8,6 +8,8 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.CashBookController;
+import com.divudi.bean.cashTransaction.DenominationController;
+import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.channel.BookingController;
 import com.divudi.bean.collectingCentre.CourierController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
@@ -41,6 +43,8 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.Route;
 import com.divudi.entity.Staff;
 import com.divudi.entity.cashTransaction.CashBook;
+import com.divudi.entity.cashTransaction.Denomination;
+import com.divudi.entity.cashTransaction.Drawer;
 import com.divudi.facade.StaffFacade;
 import java.io.IOException;
 import java.io.Serializable;
@@ -126,6 +130,10 @@ public class SessionController implements Serializable, HttpSessionListener {
     CourierController courierController;
     @Inject
     CashBookController cashBookController;
+    @Inject
+    DenominationController denominationController;
+    @Inject
+    DrawerController drawerController;
     /**
      * Properties
      */
@@ -174,8 +182,9 @@ public class SessionController implements Serializable, HttpSessionListener {
     private CashBook loggedCashbook;
     private Institution loggedSite;
 
-    public String navigateToLoginPage() {
+    private Drawer loggedUserDrawer;
 
+    public String navigateToLoginPage() {
         return "/index1.xhtml";
     }
 
@@ -966,25 +975,26 @@ public class SessionController implements Serializable, HttpSessionListener {
         return false;
     }
 
-    public void decryptAllUsers() {
-        String temSQL;
-        temSQL = "SELECT u FROM WebUser u";
-        List<WebUser> allUsers = getFacede().findByJpql(temSQL);
-        int i = 1;
-        for (WebUser u : allUsers) {
-            try {
-                u.setName(getSecurityController().decrypt(u.getName()));
-            } catch (Exception e) {
-                if (u.getName().trim().equals("")) {
-                    u.setName("" + i);
-                }
-            }
-            if (u.getName() != null && !u.getName().trim().equals("")) {
-                getFacede().edit(u);
-            }
-            i++;
-        }
-    }
+//    
+//    public void decryptAllUsers() {
+//        String temSQL;
+//        temSQL = "SELECT u FROM WebUser u";
+//        List<WebUser> allUsers = getFacede().findByJpql(temSQL);
+//        int i = 1;
+//        for (WebUser u : allUsers) {
+//            try {
+//                u.setName(getSecurityController().decrypt(u.getName()));
+//            } catch (Exception e) {
+//                if (u.getName().trim().equals("")) {
+//                    u.setName("" + i);
+//                }
+//            }
+//            if (u.getName() != null && !u.getName().trim().equals("")) {
+//                getFacede().edit(u);
+//            }
+//            i++;
+//        }
+//    }
 
     public boolean loginForRequests() {
         return loginForRequests(userName, password);
@@ -1126,6 +1136,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
                     getFacede().edit(u);
                     setLoggedUser(u);
+                    setLoggedUsersDrawer(drawerController.getUsersDrawer(u));
                     loggableDepartments = fillLoggableDepts();
                     loggableCollectingCentres = fillLoggableCollectingCentres();
                     if (webUserController.isGrantAllPrivilegesToAllUsersForTesting()) {
@@ -1460,7 +1471,7 @@ public class SessionController implements Serializable, HttpSessionListener {
                 + " order by wd.department.name";
         return departmentFacade.findByJpql(sql, m);
     }
-
+    
     private List<Department> fillLoggableSubDepts(Department loggableDept) {
         List<Department> ds = new ArrayList<>();
         ds.add(loggableDept);
@@ -1541,6 +1552,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         userPrivilages = null;
         websiteUserGoingToLog = false;
         recordLogout();
+        setLoggedUsersDrawer(null);
         setLoggedUser(null);
         loggableDepartments = null;
         loggableSubDepartments = null;
@@ -2227,6 +2239,19 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public void setLoggedSite(Institution loggedSite) {
         this.loggedSite = loggedSite;
+    }
+
+//    
+//    public List<Denomination> findDefaultDenominations() {
+//        return denominationController.getDenominations();
+//    }
+
+    public Drawer getLoggedUserDrawer() {
+        return loggedUserDrawer;
+    }
+
+    public void setLoggedUsersDrawer(Drawer loggedUserDrawer) {
+        this.loggedUserDrawer = loggedUserDrawer;
     }
 
 }

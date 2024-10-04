@@ -12,6 +12,9 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
+                <h:panelGroup rendered="#{!webUserController.hasPrivilege('LabBillReturning')}" >
+                    <p:outputLabel value="You have no privilege to reund Collectin Centre Bills" ></p:outputLabel>
+                </h:panelGroup>
                 <h:panelGroup rendered="#{webUserController.hasPrivilege('LabBillReturning')}" >
 
                     <h:form>

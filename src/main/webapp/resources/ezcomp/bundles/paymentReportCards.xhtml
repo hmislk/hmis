@@ -57,7 +57,7 @@
                             <td>
                                 <h:outputText value="#{row.payment.bill.deptId}" rendered="#{row.bill.deptId eq null}" />
                                 <h:commandLink rendered="#{row.payment.bill ne null}" 
-                                               action="#{billSearch.navigateViewBillByBillTypeAtomic()}" 
+                                               action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
                                                styleClass="btn btn-link" title="View Bill Details">
                                     <f:setPropertyActionListener value="#{row.payment.bill}" target="#{billSearch.bill}" />
                                     <i class="fa fa-search" aria-hidden="true"></i> <!-- Example using FontAwesome's search icon -->
@@ -107,7 +107,7 @@
                         </f:facet>
                         <p:commandLink value="#{row.payment.bill.deptId}"   
                                        ajax="false"
-                                       action="#{billSearch.navigateViewBillByBillTypeAtomic()}"
+                                       action="#{billSearch.navigateToViewBillByAtomicBillType()}"
                                        >
                             <f:setPropertyActionListener value="#{row.payment.bill}" target="#{billSearch.bill}" ></f:setPropertyActionListener>
                         </p:commandLink>

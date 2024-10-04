@@ -385,7 +385,7 @@
                                     value="#{financialTransactionController.currentBill.toStaff}" 
                                     var="staff"
                                     scrollHeight="450"
-                                    itemLabel="#{staff.name}" 
+                                    itemLabel="#{staff.person.name}" 
                                     itemValue="#{staff}" >
                                 </p:autoComplete>
 
@@ -463,7 +463,7 @@
                                         icon=" fa-solid fa-eye"
                                         value="View Bill" 
                                         ajax="false"
-                                        action="#{billSearch.navigateViewBillByBillTypeAtomic()}"
+                                        action="#{billSearch.navigateToViewBillByAtomicBillType()}"
                                         >
                                         <f:setPropertyActionListener value="#{bp.bill}" target="#{billSearch.bill}"/>
                                     </p:commandButton>

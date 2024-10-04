@@ -7,7 +7,10 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
+
+import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.bean.report.ReportController;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.HistoryType;
@@ -19,6 +22,7 @@ import com.divudi.entity.Department;
 import com.divudi.entity.Patient;
 import com.divudi.entity.PatientDeposit;
 import com.divudi.entity.PatientDepositHistory;
+import com.divudi.entity.Payment;
 import com.divudi.facade.PatientDepositFacade;
 import com.divudi.facade.PatientDepositHistoryFacade;
 import java.io.Serializable;
@@ -38,8 +42,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -52,6 +56,10 @@ public class PatientDepositController implements Serializable, ControllerWithPat
     PatientController patientController;
     @Inject
     BillBeanController billBeanController;
+    @Inject
+    ReportController reportController;
+    @Inject
+    DrawerController drawerController;
     @EJB
     private PatientDepositFacade patientDepositFacade;
     @EJB
@@ -67,128 +75,255 @@ public class PatientDepositController implements Serializable, ControllerWithPat
     private Boolean patientDetailsEditable = false;
     private List<PatientDepositHistory> latestPatientDeposits;
     private List<PatientDepositHistory> latestPatientDepositHistory;
-    
-    private int patientDepositManagementIndex=0;
-    
-    public String navigateToAddNewPatientDeposit(){
-       patientController.clearDataForPatientDeposite();
+
+    private int patientDepositManagementIndex = 0;
+
+    public String navigateToAddNewPatientDeposit() {
+        clearDataForPatientDeposit();
         return "/patient_deposit/receive?faces-redirect=true";
-    } 
-    
-    public void getPatientDepositOnPatientDepositAdding(){
+    }
+
+    public String navigateToPatientDepositRefundFromOPDBill(Patient p) {
+        clearDataForPatientDeposit();
+        patient = p;
+        current = getDepositOfThePatient(patient, sessionController.getDepartment());
+        return "/patient_deposit/pay?faces-redirect=true";
+    }
+
+    public String navigateToReciveDepositWithPatient(Patient p) {
+        clearDataForPatientDeposit();
+        patient = p;
+        current = getDepositOfThePatient(patient, sessionController.getDepartment());
+        fillLatestPatientDeposits(current);
+        fillLatestPatientDepositHistory(current);
+        return "/patient_deposit/receive?faces-redirect=true";
+    }
+
+    public void clearDataForPatientDeposit() {
+        patientController.setCurrent(null);
+        current = null;
+        patient = new Patient();
+        latestPatientDepositHistory = new ArrayList<>();
+        latestPatientDeposits = new ArrayList<>();
+        patientController.clearDataForPatientDeposite();
+    }
+
+    public String navigateToNewPatientDepositCancel() {
+        if (patientController.getBill().isCancelled()) {
+            JsfUtil.addErrorMessage("Already Canceled Bill");
+            return "";
+        }
+        patientController.preparePatientDepositCancel();
+        return "/patient_deposit/view/bill_cancel?faces-redirect=true";
+    }
+
+    public void clearDataForPatientDepositHistory() {
+        patientController.setCurrent(null);
+        reportController.setFromDate(null);
+        reportController.setToDate(null);
+    }
+
+    public void getPatientDepositOnPatientDepositAdding() {
         patientController.quickSearchPatientLongPhoneNumber(this);
         current = null;
-        current = getDepositOfThePatient(patient,sessionController.getDepartment());
+        if (patient == null) {
+            return;
+        }
+        current = getDepositOfThePatient(patient, sessionController.getDepartment());
         fillLatestPatientDeposits(current);
         fillLatestPatientDepositHistory(current);
         System.out.println("current = " + current);
     }
-    
-    public void settlePatientDeposit(){
-        if(patient == null){
-            JsfUtil.addErrorMessage("Please Select a Patient");
+
+    public void getPatientDepositOnPatientDepositAddingMulti() {
+        patientController.selectQuickOneFromQuickSearchPatient(this);
+        current = null;
+        if (patient == null) {
             return;
         }
-        patientController.settlePatientDepositReceive();
-        updateBalance(patientController.getBill(), current);
-        billBeanController.createPayment(patientController.getBill(),
-                patientController.getBill().getPaymentMethod(), 
-                patientController.getPaymentMethodData() );
+        current = getDepositOfThePatient(patient, sessionController.getDepartment());
+        fillLatestPatientDeposits(current);
+        fillLatestPatientDepositHistory(current);
+        System.out.println("current = " + current);
     }
-    
-    public void settlePatientDepositReturn(){
-        if(patient == null){
+
+    public void settlePatientDeposit() {
+        if (patient == null) {
             JsfUtil.addErrorMessage("Please Select a Patient");
             return;
         }
-        if(current.getBalance() < patientController.getBill().getNetTotal()){
+        int code = patientController.settlePatientDepositReceiveNew();
+
+        if (code == 1) {
+            JsfUtil.addErrorMessage("Please select a Payment Method");
+            return;
+        } else if (code == 2) {
+            JsfUtil.addErrorMessage("Please enter all relavent Payment Method Details");
+            return;
+        }
+
+        updateBalance(patientController.getBill(), current);
+        List<Payment> payments = billBeanController.createPayment(patientController.getBill(),
+                patientController.getBill().getPaymentMethod(),
+                patientController.getPaymentMethodData());
+        drawerController.updateDrawerForIns(payments);
+    }
+
+    public void settlePatientDepositCancel() {
+        if (patient == null) {
+            JsfUtil.addErrorMessage("Please Select a Patient");
+            return;
+        }
+        current = getDepositOfThePatient(patientController.getBill().getPatient(), sessionController.getDepartment());
+        if (patientController.getBill().getNetTotal() > current.getBalance()) {
+            JsfUtil.addErrorMessage("Insufficient Balance");
+            return;
+        }
+
+        int code = patientController.settlePatientDepositReceiveCancelNew();
+
+        if (code == 1) {
+            JsfUtil.addErrorMessage("Please select a Payment Method");
+            return;
+        } else if (code == 2) {
+            JsfUtil.addErrorMessage("Please enter all relavent Payment Method Details");
+            return;
+        }
+
+        updateBalance(patientController.getCancelBill(), current);
+        billBeanController.createPayment(patientController.getBill(),
+                patientController.getCancelBill().getPaymentMethod(),
+                patientController.getPaymentMethodData());
+    }
+
+    public void settlePatientDepositReturn() {
+        if (patient == null) {
+            JsfUtil.addErrorMessage("Please Select a Patient");
+            return;
+        }
+        if (current.getBalance() < patientController.getBill().getNetTotal()) {
             JsfUtil.addErrorMessage("Can't Refund a Total More that Deposit");
             return;
         }
-        patientController.settlePatientDepositReturn();
+        int code = patientController.settlePatientDepositReturnNew();
+
+        if (code == 1) {
+            JsfUtil.addErrorMessage("No Patient");
+            return;
+        } else if (code == 2) {
+            JsfUtil.addErrorMessage("Please select a Payment Method");
+            return;
+        } else if (code == 3) {
+            JsfUtil.addErrorMessage("The Refunded Value is Missing");
+            return;
+        } else if (code == 4) {
+            JsfUtil.addErrorMessage("The Refunded Value is more than the Current Deposit Value of the Patient");
+            return;
+        } else if (code == 5) {
+            JsfUtil.addErrorMessage("Please Add Comment");
+            return;
+        } else if (code == 6) {
+            JsfUtil.addErrorMessage("Please enter all relavent Payment Method Details");
+            return;
+        }
+
         System.out.println("patientController.getBill() = " + patientController.getBill());
         updateBalance(patientController.getBill(), current);
         billBeanController.createPayment(patientController.getBill(),
-                patientController.getBill().getPaymentMethod(), 
-                patientController.getPaymentMethodData() );
+                patientController.getBill().getPaymentMethod(),
+                patientController.getPaymentMethodData());
     }
-    
-    public void updateBalance(Bill b, PatientDeposit pd){ 
+
+    public void updateBalance(Bill b, PatientDeposit pd) {
         switch (b.getBillTypeAtomic()) {
             case PATIENT_DEPOSIT:
-                handlePatientDepositBill(b,pd);
+                handlePatientDepositBill(b, pd);
                 break;
-                
+
             case PATIENT_DEPOSIT_REFUND:
-                handlePatientDepositBillReturn(b,pd);
+                handlePatientDepositBillReturn(b, pd);
                 break;
-                
+
             case OPD_BATCH_BILL_WITH_PAYMENT:
-                handleOPDBill(b,pd);
+                handleOPDBill(b, pd);
                 break;
-                
+
             case OPD_BATCH_BILL_CANCELLATION:
-                handleOPDBillCancel(b,pd);
+                handleOPDBillCancel(b, pd);
                 break;
-                
+
             case OPD_BILL_CANCELLATION:
-                handleOPDBillCancel(b,pd);
+                handleOPDBillCancel(b, pd);
                 break;
-            
+
             case OPD_BILL_REFUND:
-                handleOPDBillCancel(b,pd);
+                handleOPDBillCancel(b, pd);
                 break;
-                
+
+            case PATIENT_DEPOSIT_CANCELLED:
+                handlePatientDepositBillCancel(b, pd);
+                break;
+
             default:
                 throw new AssertionError();
-        }  
+        }
     }
-    
-    public void handlePatientDepositBill(Bill b, PatientDeposit pd){
-       Double beforeBalance = pd.getBalance();
+
+    public void handlePatientDepositBill(Bill b, PatientDeposit pd) {
+        Double beforeBalance = pd.getBalance();
         Double afterBalance = beforeBalance + b.getNetTotal();
         pd.setBalance(afterBalance);
         patientDepositFacade.edit(pd);
         JsfUtil.addSuccessMessage("Balance Updated.");
-        createPatientDepositHitory(HistoryType.PatientDeposit,pd,b,beforeBalance,afterBalance,Math.abs(b.getNetTotal())); 
+        createPatientDepositHitory(HistoryType.PatientDeposit, pd, b, beforeBalance, afterBalance, Math.abs(b.getNetTotal()));
     }
-    
-     public void handlePatientDepositBillReturn(Bill b, PatientDeposit pd){
-       Double beforeBalance = pd.getBalance();
+
+    public void handlePatientDepositBillReturn(Bill b, PatientDeposit pd) {
+        Double beforeBalance = pd.getBalance();
         Double afterBalance = beforeBalance - Math.abs(b.getNetTotal());
         pd.setBalance(afterBalance);
         patientDepositFacade.edit(pd);
         JsfUtil.addSuccessMessage("Balance Updated.");
-        createPatientDepositHitory(HistoryType.PatientDepositReturn,pd,b,beforeBalance,afterBalance,0-Math.abs(b.getNetTotal())); 
+        createPatientDepositHitory(HistoryType.PatientDepositReturn, pd, b, beforeBalance, afterBalance, 0 - Math.abs(b.getNetTotal()));
     }
-     
-     public void handleOPDBill(Bill b, PatientDeposit pd){
-       Double beforeBalance = pd.getBalance();
+
+    public void handlePatientDepositBillCancel(Bill b, PatientDeposit pd) {
+        Double beforeBalance = pd.getBalance();
         Double afterBalance = beforeBalance - Math.abs(b.getNetTotal());
         pd.setBalance(afterBalance);
         patientDepositFacade.edit(pd);
         JsfUtil.addSuccessMessage("Balance Updated.");
-        createPatientDepositHitory(HistoryType.PatientDepositUtilization,pd,b,beforeBalance,afterBalance,0-Math.abs(b.getNetTotal())); 
+        createPatientDepositHitory(HistoryType.PatientDepositCancel, pd, b, beforeBalance, afterBalance, 0 - Math.abs(b.getNetTotal()));
     }
-     
-    public void handleOPDBillCancel(Bill b, PatientDeposit pd){
-       Double beforeBalance = pd.getBalance();
+
+    public void handleOPDBill(Bill b, PatientDeposit pd) {
+        Double beforeBalance = pd.getBalance();
+        Double afterBalance = beforeBalance - Math.abs(b.getNetTotal());
+        pd.setBalance(afterBalance);
+        patientDepositFacade.edit(pd);
+        JsfUtil.addSuccessMessage("Balance Updated.");
+        createPatientDepositHitory(HistoryType.PatientDepositUtilization, pd, b, beforeBalance, afterBalance, 0 - Math.abs(b.getNetTotal()));
+    }
+
+    public void handleOPDBillCancel(Bill b, PatientDeposit pd) {
+        Double beforeBalance = pd.getBalance();
         Double afterBalance = beforeBalance + Math.abs(b.getNetTotal());
         pd.setBalance(afterBalance);
         patientDepositFacade.edit(pd);
         JsfUtil.addSuccessMessage("Balance Updated.");
-        createPatientDepositHitory(HistoryType.PatientDepositUtilizationCancel,pd,b,beforeBalance,afterBalance,Math.abs(b.getNetTotal())); 
+        createPatientDepositHitory(HistoryType.PatientDepositUtilizationCancel, pd, b, beforeBalance, afterBalance, Math.abs(b.getNetTotal()));
     }
-    public void handleOPDBillRefund(Bill b, PatientDeposit pd){
-       Double beforeBalance = pd.getBalance();
+
+    public void handleOPDBillRefund(Bill b, PatientDeposit pd) {
+        Double beforeBalance = pd.getBalance();
         Double afterBalance = beforeBalance + Math.abs(b.getNetTotal());
         pd.setBalance(afterBalance);
         patientDepositFacade.edit(pd);
         JsfUtil.addSuccessMessage("Balance Updated.");
-        createPatientDepositHitory(HistoryType.PatientDepositUtilizationReturn,pd,b,beforeBalance,afterBalance,Math.abs(b.getNetTotal())); 
+        createPatientDepositHitory(HistoryType.PatientDepositUtilizationReturn, pd, b, beforeBalance, afterBalance, Math.abs(b.getNetTotal()));
     }
-    
-    public void createPatientDepositHitory(HistoryType ht,PatientDeposit pd, Bill b, Double beforeBalance,Double afterBalance ,Double transactionValue){
+
+    public void createPatientDepositHitory(HistoryType ht, PatientDeposit pd, Bill b, Double beforeBalance, Double afterBalance, Double transactionValue) {
         PatientDepositHistory pdh = new PatientDepositHistory();
         pdh.setPatientDeposit(pd);
         pdh.setBill(b);
@@ -200,25 +335,25 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         pdh.setCreatedAt(new Date());
         pdh.setDepartment(sessionController.getDepartment());
         pdh.setInstitution(sessionController.getInstitution());
-        
+
         patientDepositHistoryFacade.create(pdh);
     }
-    
-    public PatientDeposit getDepositOfThePatient(Patient p , Department d){        
+
+    public PatientDeposit getDepositOfThePatient(Patient p, Department d) {
         Map m = new HashMap<>();
         String jpql = "select pd from PatientDeposit pd"
                 + " where pd.patient.id=:pt "
                 + " and pd.department.id=:dep "
                 + " and pd.retired=:ret";
-        
-        m.put("pt",p.getId());
+
+        m.put("pt", p.getId());
         m.put("dep", d.getId());
         m.put("ret", false);
-        
+
         PatientDeposit pd = patientDepositFacade.findFirstByJpql(jpql, m);
         System.out.println("pd = " + pd);
-        
-        if(pd == null){
+
+        if (pd == null) {
             pd = new PatientDeposit();
             pd.setBalance(0.0);
             pd.setPatient(p);
@@ -230,35 +365,53 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         }
         return pd;
     }
-    
-    public void fillLatestPatientDeposits(PatientDeposit pd){
+
+    public PatientDeposit checkDepositOfThePatient(Patient p, Department d) {
+        if(p == null){
+            return new PatientDeposit();
+        }
         Map m = new HashMap<>();
-        
+        String jpql = "select pd from PatientDeposit pd"
+                + " where pd.patient.id=:pt "
+                + " and pd.department.id=:dep "
+                + " and pd.retired=:ret";
+
+        m.put("pt", p.getId());
+        m.put("dep", d.getId());
+        m.put("ret", false);
+
+        PatientDeposit pd = patientDepositFacade.findFirstByJpql(jpql, m);
+        System.out.println("pd = " + pd);
+        return pd;
+    }
+
+    public void fillLatestPatientDeposits(PatientDeposit pd) {
+        Map m = new HashMap<>();
+
         String jpql = "select pdh from PatientDepositHistory pdh "
                 + " where pdh.patientDeposit.id=:pd "
                 + " and pdh.historyType=:ht"
                 + " and pdh.retired=:ret order by pdh.id";
-        
+
         m.put("pd", pd.getId());
-        m.put("ht",HistoryType.PatientDeposit);
-        m.put("ret",false);
-        
+        m.put("ht", HistoryType.PatientDeposit);
+        m.put("ret", false);
+
         latestPatientDeposits = patientDepositHistoryFacade.findByJpql(jpql, m, 10);
     }
-    
-    public void fillLatestPatientDepositHistory(PatientDeposit pd){
+
+    public void fillLatestPatientDepositHistory(PatientDeposit pd) {
         Map m = new HashMap<>();
-        
+
         String jpql = "select pdh from PatientDepositHistory pdh "
                 + " where pdh.patientDeposit.id=:pd "
                 + " and pdh.retired=:ret order by pdh.id";
-        
+
         m.put("pd", pd.getId());
-        m.put("ret",false);
-        
+        m.put("ret", false);
+
         latestPatientDepositHistory = patientDepositHistoryFacade.findByJpql(jpql, m, 10);
     }
-    
 
     public PatientDepositFacade getPatientDepositFacade() {
         return patientDepositFacade;
@@ -435,5 +588,4 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         }
     }
 
-    
 }

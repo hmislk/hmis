@@ -4,6 +4,7 @@ package com.divudi.data;
  *
  * @author buddhika
  */
+@Deprecated
 public class Denomination {
     private double value;
     private int count;

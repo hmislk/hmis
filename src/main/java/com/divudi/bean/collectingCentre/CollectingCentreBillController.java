@@ -159,7 +159,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     @Inject
     FeeValueController feeValueController;
     @Inject
-    CollectingCentreApplicationController collectingCentreApplicationController;
+    AgentAndCcApplicationController collectingCentreApplicationController;
     /**
      * Properties
      */
@@ -811,7 +811,6 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 ////        updateBallance(collectingCentre, 0 - Math.abs(feeTotalExceptCcfs), HistoryType.CollectingCentreBalanceUpdateBill, temBill, referralId);
 //        return true;
 //    }
-
     public void setPrintigBill() {
         ////// // System.out.println("In Print");
         billPrint = bill;
@@ -876,7 +875,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 //            HistoryType historyType,
 //            Bill bill
 //        
-        collectingCentreApplicationController.updateBalance(
+        collectingCentreApplicationController.updateCcBalance(
                 collectingCentre,
                 totalHosFee,
                 totalCCFee,
@@ -891,6 +890,15 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         checkBillValues();
         printPreview = true;
 
+    }
+
+    public Payment createPaymentForRefunds(Bill bill, PaymentMethod pm) {
+        Payment p = new Payment();
+        p.setBill(bill);
+        double valueToSet = 0 - Math.abs(bill.getNetTotal());
+        p.setPaidValue(valueToSet);
+        setPaymentMethodData(p, pm);
+        return p;
     }
 
     @Deprecated

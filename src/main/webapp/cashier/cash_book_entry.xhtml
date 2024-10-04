@@ -106,15 +106,31 @@
                                 <p:column rendered="false" headerText="Department Balance" style="text-align: left;">
                                     <p:outputLabel value="#{cb.departmentBalance}" ></p:outputLabel>
                                 </p:column>
+                                
+                                <p:column headerText="Cash Before" style="text-align: left;" >
+                                    <p:outputLabel value="#{cb.cashBalanceBefore}" ></p:outputLabel>
+                                </p:column>
 
-                                <p:column rendered="false" headerText="Institution Balance" style="text-align: left;" >
-                                    <p:outputLabel value="#{cb.institutionBalance}" ></p:outputLabel>
+                                <p:column headerText="Cash After" style="text-align: left;" >
+                                    <p:outputLabel value="#{cb.cashBalanceAfter}" ></p:outputLabel>
+                                </p:column>
+                                
+                                <p:column headerText="Card Before" style="text-align: left;" >
+                                    <p:outputLabel value="#{cb.cardBalanceBefore}" ></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Card After" style="text-align: left;" >
+                                    <p:outputLabel value="#{cb.cardBalanceAfter}" ></p:outputLabel>
                                 </p:column>
 
                                 <p:column rendered="false" headerText="Site Balance" style="text-align: left;">
                                     <p:outputLabel value=" #{cb.siteBalance}" ></p:outputLabel>
                                 </p:column>
-
+                                
+                                <p:column  headerText="Summary Date" style="text-align: left;">
+                                    <p:outputLabel value=" #{cb.cashbookDate}" ></p:outputLabel>
+                                </p:column>
+                                
                                 <p:column headerText="Institution" sortBy="#{cb.institution}" style="text-align: right; padding-right: 20px;">
                                     <p:outputLabel value="#{cb.institution.name}" ></p:outputLabel>
                                 </p:column>
@@ -125,6 +141,14 @@
 
                                 <p:column headerText="Total" sortBy="#{cb.entryValue}" style="text-align: right; padding-right: 20px;">
                                     <p:outputLabel value="#{cb.entryValue}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </p:outputLabel>
+                                </p:column>
+                                
+                                <p:column headerText="Department Balance" 
+                                          sortBy="#{cb.institutionBalance}" 
+                                          style="text-align: right; padding-right: 20px;">
+                                    <p:outputLabel value="#{cb.institutionBalance}" >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </p:outputLabel>
                                 </p:column>

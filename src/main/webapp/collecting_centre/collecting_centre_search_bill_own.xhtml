@@ -31,7 +31,7 @@
                                         icon="fas fa-search" 
                                         ajax="false" 
                                         value="Search" 
-                                        action="#{searchController.createCollectingCentreBillSearch}"/>
+                                        action="#{searchController.collectingCentreBillSearch}"/>
 
                                 </div>
                                 <h:outputLabel value="Collecting Center Name"/>
@@ -72,7 +72,7 @@
                                 <p:dataTable 
                                     rowIndexVar="i" 
                                     id="tblBills" 
-                                    value="#{searchController.billLights}" 
+                                    value="#{searchController.bills}" 
                                     var="bill"  
                                     style="min-width: 100%;"  
                                     paginator="true"
@@ -85,29 +85,29 @@
                                         <h:outputLabel value="#{i+1}"/>
                                     </p:column>
                                     <p:column headerText="Billed No"  >                                
-                                        <h:outputLabel value="#{bill.billNo}" />
+                                        <h:outputLabel value="#{bill.deptId}" />
                                     </p:column>
                                     <p:column headerText="Collecting Centre"  >                                
-                                        <h:outputLabel value="#{bill.canterName}" />
+                                        <h:outputLabel value="#{bill.collectingCentre.name}" />
                                     </p:column>
                                     <p:column headerText="Billed At"  >
-                                        <h:outputLabel value="#{bill.billDate}" >
+                                        <h:outputLabel value="#{bill.createdAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                     </p:column> 
                                     <p:column headerText="Patient">  
-                                        <h:outputLabel value="#{bill.patientName}" rendered="#{!webUserController.hasPrivilege('OpdBillSearchEdit')}"/>
-                                        <h:commandLink value="#{bill.patientName}" action="#{patientController.navigateToOpdPatientEdit()}" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit')}">
-                                            <f:setPropertyActionListener value="#{patientController.findPatientById(bill.patientId)}" target="#{patientController.current}"/>
+                                        <h:outputLabel value="#{bill.patient.person.name}" rendered="#{!webUserController.hasPrivilege('OpdBillSearchEdit')}"/>
+                                        <h:commandLink value="#{bill.patient.person.name}" action="#{patientController.navigateToOpdPatientEdit()}" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit')}">
+                                            <f:setPropertyActionListener value="#{bill.patient}" target="#{patientController.current}"/>
                                         </h:commandLink>
                                     </p:column>
 
                                     <p:column headerText="Patient Phone No">                              
-                                        <h:outputLabel value="#{bill.patientPhone}" />
+                                        <h:outputLabel value="#{bill.patient.person.phone}" />
                                     </p:column>
 
                                     <p:column headerText="Gross Value" styleClass="averageNumericColumn">
-                                        <h:outputLabel value="#{bill.grossValue}" >
+                                        <h:outputLabel value="#{bill.total}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column>
@@ -117,19 +117,32 @@
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Net Value" styleClass="averageNumericColumn">
-                                        <h:outputLabel value="#{bill.netValue}" >
+                                        <h:outputLabel value="#{bill.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
-                                    </p:column>  
+                                    </p:column> 
+                                    <p:column headerText="Comments" styleClass="averageNumericColumn">
+                                        <h:outputLabel value="Cancelled" 
+                                                       rendered="#{bill.cancelled}">
+                                        </h:outputLabel>
+                                        <h:outputLabel value="Refunded" 
+                                                       rendered="#{bill.refunded}">
+                                        </h:outputLabel>
+                                    </p:column> 
 
                                     <p:column headerText="View">
+                                         <p:commandButton 
+                                            ajax="false" 
+                                            value="Manage Bill" 
+                                            action="#{billSearch.navigateToManageCollectingCentreBill()}">
+                                            <f:setPropertyActionListener target="#{billSearch.bill}" value="#{bill}"/>
+                                        </p:commandButton>
                                         <p:commandButton 
                                             ajax="false" 
                                             value="View Bill" 
-                                            action="#{billSearch.navigateToViewCollectingCentreBill()}">
-                                            <f:setPropertyActionListener target="#{billSearch.bill}" value="#{billController.findBillbyID(bill.id)}"/>
+                                            action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                                            <f:setPropertyActionListener target="#{billSearch.bill}" value="#{bill}"/>
                                         </p:commandButton>
-                                        <!--#{billController.findBillbyID(bill.id)}-->
                                     </p:column>
 
                                 </p:dataTable>

@@ -207,7 +207,7 @@
                                                          title="View Bill Details"
                                                          class="ui-button-warning m-1"
                                                          icon="fa fa-file-invoice"
-                                                         action="#{billSearch.navigateViewBillByBillTypeAtomic()}">
+                                                         action="#{billSearch.navigateToViewBillByAtomicBillType()}">
                                             <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}"/>
                                         </p:commandButton>
 
@@ -311,7 +311,7 @@
                                     <p:column headerText="Actions">
                                         <p:commandButton 
                                             value="View" 
-                                            class="m-2"
+                                            class="m-2 ui-button-success"
                                             ajax="false"
                                             icon="fa fa-eye"
                                             action="#{billSearch.navigateToViewPayment()}">
@@ -322,7 +322,7 @@
                                         <p:commandButton 
                                             value="Edit" 
                                             ajax="false"
-                                            class="m-2"
+                                            class="m-2 ui-button-warning"
                                             icon="fa fa-pencil"
                                             action="#{billSearch.navigateToEditPayment()}">
                                             <f:setPropertyActionListener 

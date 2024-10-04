@@ -2,17 +2,19 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
-    <h:body class="w-100 border">
+    <h:body>
 
-        <ui:composition template="/reports/index.xhtml" class="w-100 border">
-            <ui:define name="subcontent">
+        <ui:composition template="/analytics/index.xhtml">
+
+            <ui:define name="report">
+
                 <p:panel>
                     <f:facet name="header" >
-                        <h:outputLabel value="OPD Payment List "/>                          
+                        <h:outputLabel value="Payment List "/>                          
                     </f:facet>
 
                     <h:form>
@@ -20,8 +22,6 @@
                             <h:outputLabel value="From Date"/>
                             <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="fromDate" value="#{searchController.fromDate}"  navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
                             </p:calendar>
-
-
 
                             <h:outputLabel value="To Date"/>
                             <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
@@ -44,29 +44,30 @@
                                     <h:outputLabel value="#{dep.institution.name}"/>
                                 </p:column>
                             </p:autoComplete>
-
-                            <h:outputLabel value="Category" />
-                            <p:autoComplete class="w-100 mx-4"
-                                            inputStyleClass="w-100" value="#{searchController.category}" 
-                                            forceSelection="true"
-                                            completeMethod="#{categoryController.completeServiceCategory}" 
-                                            var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" >
-                            </p:autoComplete>
                         </h:panelGrid>
                         <h:panelGrid columns="2" class="my-2" >
-                            <p:commandButton class="ui-button-warning" icon="fas fa-magnifying-glass" id="btnSearch" ajax="false" value="Search" 
-                                             action="#{searchController.searchOpdProfessionalPaymentBillFees()}"/>
-                            <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" id="btnExcel" ajax="false" value="Excel" >
-                                <p:dataExporter fileName="OPD Professional Payments by Patient" type="xls" target="tblBills" ></p:dataExporter>
+                            <p:commandButton 
+                                class="ui-button-warning" 
+                                icon="fas fa-magnifying-glass" 
+                                id="btnSearch"
+                                ajax="false"
+                                value="Fill" 
+                                action="#{searchController.listPayments}"/>
+                            <p:commandButton 
+                                class="ui-button-success mx-2" 
+                                icon="fas fa-file-excel" 
+                                id="btnExcel"
+                                ajax="false"
+                                value="Excel" >
+                                <p:dataExporter fileName="Payments" type="xls" target="tblBills" ></p:dataExporter>
                             </p:commandButton>
                         </h:panelGrid>
-
 
                         <p:dataTable 
                             rowIndexVar="i" 
                             id="tblBills" 
-                            value="#{searchController.billFees}" 
-                            var="billFee" 
+                            value="#{searchController.payments}" 
+                            var="payment" 
                             class="w-100"
                             rows="20"
                             paginator="true" 
@@ -77,39 +78,44 @@
                             scrollable="true"
                             scrollWidth="100%">
 
-                            <p:column headerText="Professional Payment Date" width="8em" style="text-align: left;" >
-                                <p:outputLabel value="#{billFee.bill.billDate}" >
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                            <p:column 
+                                headerText="ID"
+                                sortBy="#{payment.id}">
+                                <p:outputLabel value="#{payment.id}" />
+                            </p:column>
+
+                            <p:column headerText="Payment Method" >
+                                <p:outputLabel value="#{payment.paymentMethod.label}" />
+                            </p:column>
+
+                            <p:column headerText="Bill Type Atomic" >
+                                <p:outputLabel value="#{payment.bill.billTypeAtomic.label}" />
+                            </p:column>
+                            
+                             <p:column headerText="Status" >
+                                 <p:outputLabel value="#{payment.cancelled?'Cancelled':''}" />
+                            </p:column>
+
+                            <p:column headerText="Value" class="text-end">
+                                <p:outputLabel value="#{payment.paidValue}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </p:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Professional Payment Bill Receipt No" width="10em" style="text-align: left;">
-                                <p:outputLabel value="#{billFee.bill.deptId}" />
-                            </p:column>
-
-                            <p:column 
-                                headerText="Professional" 
-                                sortBy="#{billFee.bill.toStaff.person.name}"
-                                filterBy="#{billFee.bill.toStaff.person.name}"
-                                filterMatchMode="contains"
-                                style="text-align: left;">
-                                <h:outputLabel value="#{billFee.bill.toStaff.person.name}" />
-                            </p:column>
-
-                            <p:column headerText="Value" width="100" style="text-align: right;">                              
-                                <h:outputLabel value="#{billFee.feeValue}" >
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                </h:outputLabel>
-                            </p:column>
 
                         </p:dataTable>
+
 
                     </h:form>
 
 
 
+
                 </p:panel>
+
+
             </ui:define>
+
         </ui:composition>
 
     </h:body>

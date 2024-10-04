@@ -1,0 +1,382 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form >
+                    <p:panel header="Referring Doctor Wise Revenue" >
+                        <h:panelGrid columns="4" class="w-100 my-3">
+
+                            <h:panelGroup>
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
+                                <h:outputLabel class="mx-3" value="From Date"/>
+                            </h:panelGroup>
+
+                            <p:datePicker 
+                                class="w-100"
+                                inputStyleClass="w-100" 
+                                id="fromDate" 
+                                showTime="true" 
+                                value="#{patientInvestigationController.fromDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+
+                            <h:panelGroup class="mx-2">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
+                                <h:outputLabel class="mx-3" value="To Date"/>
+                            </h:panelGroup>
+
+                            <p:datePicker 
+                                inputStyleClass="w-100" 
+                                id="toDate" 
+                                showTime="true" 
+                                value="#{patientInvestigationController.fromDate}" 
+                                class="w-100" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+
+                            <h:panelGroup >
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
+                                <h:outputLabel class="mx-3" value="Branch"/>
+                            </h:panelGroup>
+
+                            <p:selectOneMenu 
+                                id="branch"
+                                value="#{reportController.fromInstitution}"
+                                filter="true"
+                                style="width: 100%"
+                                >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value="#{institutionController.collectingCentresAndManagedInstitutions}"
+                                               var="i"
+                                               itemLabel="#{i.name}"
+                                               itemValue="#{i}" ></f:selectItems>
+                                <p:ajax process="" update="" ></p:ajax>
+                            </p:selectOneMenu>
+
+                            <h:panelGroup class="mx-2">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
+                                <h:outputLabel class="mx-3" value="Service Group"/>
+                            </h:panelGroup>
+
+                            <p:selectOneMenu 
+                                id="serviceGroup"
+                                style="width: 100%"
+                                value="#{reportController.fromInstitution}"
+                                filter="true"
+                                >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value="#{institutionController.collectingCentresAndManagedInstitutions}"
+                                               var="i"
+                                               itemLabel="#{i.name}"
+                                               itemValue="#{i}" ></f:selectItems>
+                                <p:ajax process="" update="" ></p:ajax>
+                            </p:selectOneMenu>
+
+                            <h:panelGroup>
+                                <i class="fa fa-bars" aria-hidden="true"></i>
+                                <h:outputLabel class="mx-3" value="Service Name"/>
+                            </h:panelGroup>
+
+                            <p:selectOneMenu 
+                                id="serviceName"
+                                style="width: 100%"
+                                value="#{reportController.fromDepartment}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value="#{departmentController.getInsDepartments(reportController.fromInstitution)}"
+                                               var="d"
+                                               itemLabel="#{d.name}"
+                                               itemValue="#{d}" ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <h:panelGroup class="mx-2">
+                                <h:outputText value="&#xf46d;" styleClass="fa mr-2" />
+                                <h:outputLabel class="mx-3" value="Visit Type"/>
+                            </h:panelGroup>
+
+                            <p:selectOneMenu 
+                                id="visitType"
+                                style="width: 100%"
+                                value="#{reportController.fromDepartment}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value="#{departmentController.getInsDepartments(reportController.fromInstitution)}"
+                                               var="d"
+                                               itemLabel="#{d.name}"
+                                               itemValue="#{d}" ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <h:panelGroup class="my-3" >
+                                <i class="fa fa-id-badge" aria-hidden="true"></i>
+                                <h:outputLabel value="Speciality" class="mx-3"/>
+
+                            </h:panelGroup>
+
+                             <p:selectOneMenu 
+                                id="speciality"
+                                style="width: 100%"
+                                value="#{reportController.fromDepartment}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value="#{departmentController.getInsDepartments(reportController.fromInstitution)}"
+                                               var="d"
+                                               itemLabel="#{d.name}"
+                                               itemValue="#{d}" ></f:selectItems>
+                            </p:selectOneMenu>
+                            
+                            <h:panelGroup class="mx-2">
+                              <i class="fa fa-user-md" aria-hidden="true"></i>
+                                <h:outputLabel class="mx-3" value="Consultant"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu 
+                                id="consultant"
+                                style="width: 100%"
+                                value="#{reportController.fromDepartment}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value="#{departmentController.getInsDepartments(reportController.fromInstitution)}"
+                                               var="d"
+                                               itemLabel="#{d.name}"
+                                               itemValue="#{d}" ></f:selectItems>
+                            </p:selectOneMenu>
+                            
+                             <h:panelGroup class="my-3" >
+                                <i class="fa fa-cog" aria-hidden="true"></i>
+                                <h:outputLabel value="Type" class="mx-3"/>
+
+                            </h:panelGroup>
+
+                            <h:selectOneRadio id="type" value="#{bean.selectedOption}">
+                                <f:selectItem  itemValue="yes" itemLabel="Detail &nbsp;" />                              
+                                <f:selectItem  itemValue="no" itemLabel="Summery" />
+                            </h:selectOneRadio>
+
+                            
+
+                        </h:panelGrid>
+                        
+                        <div class="my-3">
+                        <p:commandButton 
+                            ajax="false" 
+                            action="#{patientInvestigationController.listBillItemsForCcs()}" 
+                            value="Process" 
+                            style="width: 150px"
+                            icon="fas fa-cogs" 
+                            class="mx-2 ui-button-warning"
+                            />
+
+                        <p:commandButton 
+                            icon="fa-solid fa-print"
+                            class="mx-2 ui-button-info"
+                            style="width: 150px"
+                            ajax="false" 
+                            value="Print">
+                            <p:printer target="tbl" />
+                        </p:commandButton>
+
+                        <p:commandButton 
+                            ajax="false" 
+                            value="Excel" 
+                            style="width: 150px"
+                            icon="fas fa-file-excel" 
+                            class="ui-button-success mx-2"
+                            >
+                            <p:dataExporter fileName="referring_doctor_wise_revenue" target="tbl" type="xlsx" ></p:dataExporter>
+                        </p:commandButton>
+
+                        <p:commandButton 
+                            class="mx-2 ui-button-danger" 
+                            style="width: 150px"
+                            icon="fa-solid fa-file-pdf"
+                            ajax="false" 
+                            value="PDF">
+                            <p:dataExporter type="pdf" target="tbl"  fileName="referring_doctor_wise_revenue" ></p:dataExporter>
+                        </p:commandButton>
+
+                    </div>
+
+
+
+                    </p:panel>
+
+                </h:form>
+
+                <h:panelGroup>
+
+                    <p:panel header="Referring Doctor Summary Report ">
+
+                        <h:panelGroup>
+
+
+                            <div class="row " >
+                                <div class="col-3">
+                                    <h:outputLabel style="width: 100px; font-weight:bold ">From Date</h:outputLabel><span>:</span>
+                                </div>
+                                <div class="col-3">
+                                    <h:outputLabel></h:outputLabel>
+                                </div>
+                            </div>
+
+                            <div class="row w-50" >
+                                <div class="col-3">
+                                    <h:outputLabel style="width: 100px ; font-weight:bold ">To Date</h:outputLabel><span>:</span>
+                                </div>
+                                <div class="col-3">
+                                    <h:outputLabel></h:outputLabel>
+                                </div>
+                            </div>
+
+                            <div class="row w-50" >
+                                <div class="col-3">
+                                    <h:outputLabel style="width: 100px ; font-weight:bold ">Branch</h:outputLabel><span>:</span>
+                                </div>
+                                <div class="col-3">
+                                    <h:outputLabel ></h:outputLabel>
+                                </div>
+                            </div>
+
+                        </h:panelGroup>
+
+
+                        <p:dataTable id="tbl" value="" var="catReport"
+                                     paginator="true"
+                                     rows="10"
+                                     paginatorPosition="bottom"
+                                     class="my-3"
+
+                                     >
+                            <p:column headerText="S. NO" width="5rem">
+                                <h:outputText value="#{item.testName}" />
+                            </p:column>
+
+                            <p:column headerText="Referring Doctor " width="5rem">
+                                <h:outputText value="#{item.testCount}" />
+                            </p:column>
+
+                            <p:column headerText="Agent Name" width="5rem">
+                                <h:outputText value="#{item.testCount}" />
+                            </p:column>
+
+                            <p:column headerText="Count" width="5rem">
+                                <h:outputText value="#{item.testCount}" />
+                            </p:column>
+
+                            <p:column headerText="Gross Amount" width="5rem">
+                                <h:outputText value="#{item.testCount}" />
+                            </p:column>
+                            
+                             <p:column headerText="CC Amount" width="5rem">
+                                <h:outputText value="#{item.testCount}" />
+                            </p:column>
+                            
+                             <p:column headerText="Discount Amount " width="5rem">
+                                <h:outputText value="#{item.testCount}" />
+                            </p:column>
+                            
+                             <p:column headerText="Net Amount" width="5rem">
+                                <h:outputText value="#{item.testCount}" />
+                            </p:column>
+
+                        </p:dataTable>
+
+                    </p:panel>
+
+                </h:panelGroup>
+
+                <h:panelGroup>
+
+                    <p:panel header="Referring Doctor Detail Report ">
+
+                        <h:panelGroup>
+
+
+                            <div class="row " >
+                                <div class="col-3">
+                                    <h:outputLabel style="width: 100px; font-weight:bold ">From Date</h:outputLabel><span>:</span>
+                                </div>
+                                <div class="col-3">
+                                    <h:outputLabel></h:outputLabel>
+                                </div>
+                            </div>
+
+                            <div class="row w-50" >
+                                <div class="col-3">
+                                    <h:outputLabel style="width: 100px ; font-weight:bold ">To Date</h:outputLabel><span>:</span>
+                                </div>
+                                <div class="col-3">
+                                    <h:outputLabel></h:outputLabel>
+                                </div>
+                            </div>
+
+                            <div class="row w-50" >
+                                <div class="col-3">
+                                    <h:outputLabel style="width: 100px ; font-weight:bold ">Branch</h:outputLabel><span>:</span>
+                                </div>
+                                <div class="col-3">
+                                    <h:outputLabel ></h:outputLabel>
+                                </div>
+                            </div>
+
+
+                        </h:panelGroup>
+
+                        <p:dataTable id="tbl2" value="" var="catReport"
+                                     paginator="true"
+                                     rows="10"
+                                     paginatorPosition="bottom"
+                                     class="my-3"
+
+                                     >
+                            <p:column headerText="S.No" width="5rem">
+                                <h:outputText value="#{item.testName}" />
+                            </p:column>
+
+                            <p:column headerText="Invoice No" width="5rem">
+                                <h:outputText value="#{item.testCount}" />
+                            </p:column>
+
+                            <p:column headerText="Referring Doctor" width="5rem">
+                                <h:outputText value="#{item.testCount}" />
+                            </p:column>
+
+                            <p:column headerText="Service Name" width="5rem">
+                                <h:outputText value="#{item.testCount}" />
+                            </p:column>
+
+                            <p:column headerText="Date " width="5rem">
+                                <h:outputText value="#{item.testCount}" />
+                            </p:column>
+
+                            <p:column headerText="Status" width="5rem">
+                                <h:outputText value="#{item.testCount}" />
+                            </p:column>
+
+                            <p:column headerText="CC Amt" width="5rem">
+                                <h:outputText value="#{item.testCount}" />
+                            </p:column>
+
+                            <p:column headerText="Hos Amt" width="5rem">
+                                <h:outputText value="#{item.testCount}" />
+                            </p:column>
+
+                            <p:column headerText="Net Amt" width="5rem">
+                                <h:outputText value="#{item.testCount}" />
+                            </p:column>
+
+                        </p:dataTable>
+
+                    </p:panel>
+
+
+                </h:panelGroup>
+
+                
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

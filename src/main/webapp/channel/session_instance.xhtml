@@ -30,7 +30,7 @@
                                              class="ui-button-danger mx-1"
                                              rendered="#{bookingControllerViewScope.selectedSessionInstance.completed}">
                             </p:commandButton>
-                             <p:commandButton 
+                            <p:commandButton 
                                 value="Mark To Absent"
                                 ajax="false" 
                                 action="#{bookingControllerViewScope.markBillSessionForAbsent}" 
@@ -204,11 +204,13 @@
                                             <p:column>
                                                 <p:commandButton 
                                                     rendered="#{bs.absent}"
+                                                    disabled="#{!(bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall')}"
                                                     value="Change Patient"
                                                     ajax="false" 
                                                     action="#{bookingControllerViewScope.navigateToManageBooking(bs)}" 
-                                                    class="ui-button-secondary ">
+                                                    class="ui-button-secondary">
                                                 </p:commandButton>
+
                                             </p:column>
 
 
@@ -725,6 +727,9 @@
                                                 <p:outputLabel value="Exclude From Patient Portal"/>
                                                 <p:selectBooleanCheckbox value="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.excludeFromPatientPortal}"/>
 
+                                                <h:outputLabel value="Special Notice For Session" />
+                                                <p:inputTextarea class="mx-2 w-100"  rows="4" value="#{bookingControllerViewScope.selectedSessionInstance.specialNoticeSessionInstance}"/>
+
 
                                             </h:panelGrid>
 
@@ -848,84 +853,85 @@
                                         </p:tab>
 
                                         <p:tab title="Additional Items">
-                                            <p:panelGrid  >
-                                                <f:facet name="header" >
-                                                    <h:outputLabel value="Additional Items" ></h:outputLabel>
-                                                </f:facet>
 
-                                                <p:row >
-                                                    <p:column >
-                                                        <p:outputLabel value="Item to add"/>
+                                            <div class="row d-flex align-items-center" >
+                                                <div class="col-3 ">
+                                                    <p:outputLabel value="Item to add"/>
+                                                </div>
+                                                <div class="col-6" >
+                                                    <p:autoComplete 
+                                                        widgetVar="acAdditionalItem" 
+                                                        id="acAdditionalItem" 
+                                                        forceSelection="true" 
+                                                        inputStyleClass="w-100"
+                                                        class="w-100"
+                                                        value="#{channelScheduleController.additionalItemToAdd}"
+                                                        completeMethod="#{itemController.completeAllServicesAndInvestigations}" 
+                                                        var="ix" 
+                                                        itemLabel="#{ix.name}" itemValue="#{ix}" size="5"  
+                                                        style="width: 200px;">
+                                                        <p:ajax event="itemSelect" process="@this"></p:ajax>
+
+                                                        <p:column width="5rem" headerText="Type" >
+                                                            <p:outputLabel value="#{ix.class.simpleName}" ></p:outputLabel>
+                                                        </p:column>
+                                                        <p:column width="10rem" headerText="Name" >
+                                                            <p:outputLabel value="#{ix.name}" ></p:outputLabel>
+                                                        </p:column>
+                                                        <p:column width="5rem" headerText="Institution" >
+                                                            <p:outputLabel value="#{ix.institution.name}" ></p:outputLabel>
+                                                        </p:column>
+                                                        <p:column width="5rem" headerText="Department" >
+                                                            <p:outputLabel value="#{ix.department.name}" ></p:outputLabel>
+                                                        </p:column>
+                                                        <p:column width="5rem" headerText="Total" >
+                                                            <p:outputLabel value="#{ix.total}" >
+                                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                            </p:outputLabel>
+                                                        </p:column>
+
+                                                    </p:autoComplete>
+                                                </div>
+                                                <div class="col-3" >
+                                                    <p:commandButton 
+                                                        id="btnAddAdditionalItem"
+                                                        value="Add Item" 
+                                                        class="ui-button-success"
+                                                        process="btnAddAdditionalItem acAdditionalItem"
+                                                        update=":form:msg acAdditionalItem tblAdditionalItems"
+                                                        action="#{channelScheduleController.addAdditionalItems()}" >
+                                                    </p:commandButton>
+
+                                                </div>
+                                            </div>
+
+                                            
+                                            <row class="my-3">
+
+                                                <p:dataTable 
+                                                    id="tblAdditionalItems"
+                                                    value="#{channelScheduleController.additionalItemsAddedForCurrentSession}" 
+                                                    var="ii" 
+                                                    class="my-3"
+                                                    rowKey="#{ii.id}">
+                                                    <p:column headerText="Item">
+                                                        <p:outputLabel value="#{ii.childItem.name}" ></p:outputLabel>>
                                                     </p:column>
-                                                    <p:column >
-                                                        <p:autoComplete 
-                                                            widgetVar="acAdditionalItem" 
-                                                            id="acAdditionalItem" 
-                                                            forceSelection="true" 
-                                                            inputStyleClass="w-100"
-                                                            class="w-100"
-                                                            value="#{channelScheduleController.additionalItemToAdd}"
-                                                            completeMethod="#{itemController.completeAllServicesAndInvestigations}" 
-                                                            var="ix" 
-                                                            itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  
-                                                            style="width: 400px;">
-                                                            <p:ajax event="itemSelect" process="@this"></p:ajax>
-                                                            <p:column headerText="Type" >
-                                                                <p:outputLabel value="#{ix.class.simpleName}" ></p:outputLabel>
-                                                            </p:column>
-                                                            <p:column headerText="Name" >
-                                                                <p:outputLabel value="#{ix.name}" ></p:outputLabel>
-                                                            </p:column>
-                                                            <p:column headerText="Institution" >
-                                                                <p:outputLabel value="#{ix.institution.name}" ></p:outputLabel>
-                                                            </p:column>
-                                                            <p:column headerText="Department" >
-                                                                <p:outputLabel value="#{ix.department.name}" ></p:outputLabel>
-                                                            </p:column>
-                                                            <p:column headerText="Total" >
-                                                                <p:outputLabel value="#{ix.total}" >
-                                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                                </p:outputLabel>
-                                                            </p:column>
-                                                        </p:autoComplete>
-                                                    </p:column>
-                                                    <p:column  >
+                                                    <p:column headerText="Actions">
                                                         <p:commandButton 
-                                                            id="btnAddAdditionalItem"
-                                                            value="Add Item to Session" 
-                                                            process="btnAddAdditionalItem acAdditionalItem"
-                                                            update=":form:msg acAdditionalItem tblAdditionalItems"
-                                                            action="#{channelScheduleController.addAdditionalItems()}" >
+                                                            id="btnRemoveAdditionalItem" 
+                                                            value="Remove" 
+                                                            process="btnRemoveAdditionalItem" 
+                                                            update="tblAdditionalItems"
+                                                            action="#{channelScheduleController.removeAdditionalItems()}" >
+                                                            <f:setPropertyActionListener value="#{ii}" target="#{channelScheduleController.additionalItemToRemove}" ></f:setPropertyActionListener>
                                                         </p:commandButton>
-
                                                     </p:column>
-                                                </p:row>
+                                                </p:dataTable>
 
-                                                <p:row>
-                                                    <p:column colspan="3" >
-                                                        <p:dataTable 
-                                                            id="tblAdditionalItems"
-                                                            value="#{channelScheduleController.additionalItemsAddedForCurrentSession}" 
-                                                            var="ii" 
-                                                            rowKey="#{ii.id}">
-                                                            <p:column headerText="Item">
-                                                                <h:outputText value="#{ii.childItem.name}" ></h:outputText>
-                                                            </p:column>
-                                                            <p:column headerText="Actions">
-                                                                <p:commandButton 
-                                                                    id="btnRemoveAdditionalItem" 
-                                                                    value="Remove" 
-                                                                    process="btnRemoveAdditionalItem" 
-                                                                    update="tblAdditionalItems"
-                                                                    action="#{channelScheduleController.removeAdditionalItems()}" >
-                                                                    <f:setPropertyActionListener value="#{ii}" target="#{channelScheduleController.additionalItemToRemove}" ></f:setPropertyActionListener>
-                                                                </p:commandButton>
-                                                            </p:column>
-                                                        </p:dataTable>
-                                                    </p:column>
-                                                </p:row>
+                                            </row>
 
-                                            </p:panelGrid>
+
 
 
                                         </p:tab>

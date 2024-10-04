@@ -13,7 +13,7 @@
             <ui:define name="subcontent">
                 <h:form  >
                     <h:panelGroup >
-                        <p:panel rendered="#{!agentPaymentRecieveBillController.printPreview}" >
+                        <p:panel rendered="#{!agentAndCcPaymentController.printPreview}" >
                             <f:facet name="header" >
                                 <div class="d-flex justify-content-between">
                                     <h:outputLabel value="Agency Payment" class="mt-2"/>
@@ -23,7 +23,7 @@
                                             value="Settle" 
                                             class="ui-button-success"
                                             icon="fa fa-check"
-                                            action="#{agentPaymentRecieveBillController.collectingCentrePaymentRecieveSettleBill}" 
+                                            action="#{agentAndCcPaymentController.agencyPaymentRecieveSettleBill}" 
                                             ajax="false"  
                                             style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" >
                                         </p:commandButton> 
@@ -33,7 +33,7 @@
                                             ajax="false" 
                                             icon="fa fa-plus"
                                             class="ui-button-warning"
-                                            action="#{agentPaymentRecieveBillController.prepareNewBill()}"  >
+                                            action="#{agentAndCcPaymentController.prepareNewBill()}"  >
                                         </p:commandButton>
                                     </div>
 
@@ -48,8 +48,8 @@
                                     <p:autoComplete 
                                         id="creditCom" 
                                         forceSelection="true" 
-                                        value="#{agentPaymentRecieveBillController.current.fromInstitution}"  
-                                        completeMethod="#{institutionController.completeCollectingCenter}" 
+                                        value="#{agentAndCcPaymentController.current.fromInstitution}"  
+                                        completeMethod="#{institutionController.completeAgency}" 
                                         var="ix" 
                                         class="w-100"
                                         inputStyleClass="form-control"
@@ -70,7 +70,7 @@
                                 </div>
                             </div>
 
-                            <div class="row my-2">
+                            <div class="row my-2 d-flex align-items-center">
                                 <div class="col-md-2">
                                     <p:outputLabel value="Payment" />
                                 </div>
@@ -78,32 +78,48 @@
                                     <p:selectOneMenu  
                                         id="cmbPs" 
                                         class="w-100"
-                                        value="#{agentPaymentRecieveBillController.current.paymentMethod}"> 
+                                        value="#{agentAndCcPaymentController.current.paymentMethod}"> 
                                         <f:selectItem itemLabel="Select Payment Method"></f:selectItem>
-                                        <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
+                                        <f:selectItems value="#{enumController.getPaymentMethodsforAgencyManagement()}"/>
                                         <p:ajax process="@this" update="paymentDetails" event="change" />
                                     </p:selectOneMenu>
                                 </div>
-                                <div class="col-md-5">
-                                    <h:panelGroup id="paymentDetails">
-                                        <h:panelGroup id="creditCard"  rendered="#{agentPaymentRecieveBillController.current.paymentMethod eq 'Card'}">
-                                            <pa:creditCard paymentMethodData="#{agentPaymentRecieveBillController.paymentMethodData}"/>
-                                        </h:panelGroup>
 
-                                        <h:panelGroup id="cheque"  rendered="#{agentPaymentRecieveBillController.current.paymentMethod eq 'Cheque'}">
-                                            <pa:cheque paymentMethodData="#{agentPaymentRecieveBillController.paymentMethodData}"/>
-                                        </h:panelGroup>
+                            </div>
+                            <div class="row my-2">
+                                <div class="col-md-2"></div>
+                                <div class="col-md-7">
+                                    <div>
+                                        <h:panelGroup id="paymentDetails">
+                                            <h:panelGroup id="creditCard" rendered="#{agentAndCcPaymentController.current.paymentMethod eq 'Card'}">
+                                                <pa:creditCard paymentMethodData="#{agentAndCcPaymentController.paymentMethodData}"/>
+                                            </h:panelGroup>
 
-                                        <h:panelGroup id="slip" rendered="#{agentPaymentRecieveBillController.current.paymentMethod eq 'Slip'}">
-                                            <pa:slip paymentMethodData="#{agentPaymentRecieveBillController.paymentMethodData}"/>
-                                        </h:panelGroup>
+                                            <h:panelGroup id="cheque" rendered="#{agentAndCcPaymentController.current.paymentMethod eq 'Cheque'}">
+                                                <pa:cheque paymentMethodData="#{agentAndCcPaymentController.paymentMethodData}"/>
+                                            </h:panelGroup>
 
-                                        <h:panelGroup id="cash"  rendered="#{agentPaymentRecieveBillController.current.paymentMethod eq 'Cash'}">
-                                            <p:inputText autocomplete="off" value="#{agentPaymentRecieveBillController.current.netTotal}"/> 
+                                            <h:panelGroup id="slip" rendered="#{agentAndCcPaymentController.current.paymentMethod eq 'Slip'}">
+                                                <pa:slip paymentMethodData="#{agentAndCcPaymentController.paymentMethodData}"/>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup id="cash"  rendered="#{agentAndCcPaymentController.current.paymentMethod eq 'Cash'}">
+                                                <p:inputText autocomplete="off" value="#{agentAndCcPaymentController.current.netTotal}"/> 
+                                            </h:panelGroup>
+                                 
                                         </h:panelGroup>
-                                    </h:panelGroup>
+                                    </div>
                                 </div>
                             </div>
+
+
+                            <div class="row my-2">
+                                <div class="col-md-2"></div>
+
+
+                            </div>
+
+
 
                             <div class="row">
                                 <div class="col-md-2">
@@ -112,7 +128,7 @@
                                 <div class="col-md-7">
                                     <p:inputTextarea 
                                         class="w-100"
-                                        value="#{agentPaymentRecieveBillController.current.comments}"/>    
+                                        value="#{agentAndCcPaymentController.current.comments}"/>    
                                 </div>
                             </div>
 
@@ -123,7 +139,7 @@
                                 <div class="col-md-7">
                                     <p:inputText 
                                         class="w-100"
-                                        value="#{agentPaymentRecieveBillController.comment}" 
+                                        value="#{agentAndCcPaymentController.comment}" 
                                         id="comment"/>
                                 </div>
                             </div>
@@ -131,7 +147,7 @@
                     </h:panelGroup>
 
 
-                    <p:panel rendered="#{agentPaymentRecieveBillController.printPreview}" >     
+                    <p:panel rendered="#{agentAndCcPaymentController.printPreview}" >     
                         <f:facet name="header">
                             <div class="d-flex justify-content-between">
                                 <h:outputText value="Agency Payment Bill"/> 
@@ -148,14 +164,14 @@
                                         ajax="false" 
                                         icon="fa fa-plus"
                                         class="ui-button-warning"
-                                        action="#{agentPaymentRecieveBillController.prepareNewBill()}"  >
+                                        action="#{agentAndCcPaymentController.prepareNewBill()}"  >
                                     </p:commandButton>
                                 </div>
                             </div>
 
                         </f:facet>
                         <h:panelGroup id="gpBillPreview">
-                            <bi:cc_payment_receipt_bill billController="#{agentPaymentRecieveBillController}"  bill="#{agentPaymentRecieveBillController.current}" dup="false"/>     
+                            <bi:cc_payment_receipt_bill billController="#{agentAndCcPaymentController}"  bill="#{agentAndCcPaymentController.current}" dup="false"/>     
                         </h:panelGroup>
 
                     </p:panel>        

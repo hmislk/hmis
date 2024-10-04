@@ -625,22 +625,22 @@
                                     </f:facet>
 
                                     <h:panelGroup id="centerBillPriview">
-
-                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" >
+                                        
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Bill for Collecting Center(CC) size is POS paper')}" >
                                             <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
                                                 <bi:posCCBill_CC bill="#{pp}" duplicate="false"/>                        
                                             </ui:repeat>
                                         </h:panelGroup>
-
-                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
+                                        
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Bill For Collecting Center(CC) size is FiveFive paper')}" >
                                             <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
-                                                <bi:fiveFiveCCBill_CC bill="#{pp}" duplicate="false"/>                        
+                                                <bi:fiveFiveCCBill_CC bill="#{pp}" duplicate="false"/>                           
                                             </ui:repeat>
                                         </h:panelGroup>
                                         
-                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}" >
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Bill For Collecting Center(CC) size is FiveFiveCustom1 paper')}" >
                                             <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
-                                                <bi:fiveFiveCCBill_CC_Custom1 bill="#{pp}" duplicate="false"/>                        
+                                               <bi:fiveFiveCCBill_CC_Custom1 bill="#{pp}" duplicate="false"/>                           
                                             </ui:repeat>
                                         </h:panelGroup>
 
@@ -651,7 +651,7 @@
                             <div class="col-md-6">
                                 <p:panel>
                                     <f:facet name="header">
-                                        <p:outputLabel value="Bill for Patinet " class="mt-2"/>
+                                        <p:outputLabel value="Bill for Patient " class="mt-2"/>
                                         <p:commandButton 
                                             value="Print Patient" 
                                             class="ui-button-info m-1"
@@ -665,23 +665,22 @@
                                         </p:commandButton>
                                     </f:facet>
                                     <h:panelGroup id="parinetBillPriview">
-
-                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" >
+                                        
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Bill for Patient by CC is POS paper')}" >
                                             <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
                                                 <bi:posCCBill_Patient bill="#{pp}" duplicate="false"/>                        
                                             </ui:repeat>
                                         </h:panelGroup>
-
-                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
+                                        
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Bill for Patient by CC is FiveFive paper')}" >
                                             <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
-                                                <bi:fiveFiveCCBill_Patient bill="#{pp}" duplicate="false"/>                        
+                                                 <bi:fiveFiveCCBill_Patient bill="#{pp}" duplicate="false"/>                        
                                             </ui:repeat>
                                         </h:panelGroup>
                                         
-                                        
-                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}" >
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Bill for Patient by CC is FiveFiveCustom1 paper')}" >
                                             <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
-                                                <bi:fiveFiveCCBill_Patient_Custom1 bill="#{pp}" duplicate="false"/>                        
+                                                <bi:fiveFiveCCBill_Patient_Custom1 bill="#{pp}" duplicate="false"/>                         
                                             </ui:repeat>
                                         </h:panelGroup>
 

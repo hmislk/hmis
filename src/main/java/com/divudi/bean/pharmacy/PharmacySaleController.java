@@ -5,6 +5,8 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.cashTransaction.DrawerController;
+import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.CommonFunctionsController;
@@ -115,7 +117,8 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     ConfigOptionController configOptionController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
-
+    @Inject
+    FinancialTransactionController financialTransactionController;
     @Inject
     SessionController sessionController;
     @Inject
@@ -126,6 +129,8 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     @Inject
     TokenController tokenController;
+    @Inject
+    DrawerController drawerController;
 ////////////////////////
     @EJB
     private BillFacade billFacade;
@@ -655,8 +660,23 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     public String navigateToPharmacyRetailSale() {
-        resetAll();
-        return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true";
+        Boolean pharmacyBillingAfterShiftStart = configOptionApplicationController.getBooleanValueByKey("Pharmacy billing can be done after shift start", false);
+
+        if (pharmacyBillingAfterShiftStart) {
+            financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+            if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
+                resetAll();
+                return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true";
+            } else {
+                JsfUtil.addErrorMessage("Start Your Shift First !");
+                return "/cashier/index?faces-redirect=true";
+            }
+        } 
+        else {
+            resetAll();
+            return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true";
+        }
+
     }
 
     public void resetAll() {
@@ -1637,7 +1657,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         return false;
 
     }
-    
+
     public void settlePharmacyToken() {
         currentToken = new Token();
         currentToken.setTokenType(TokenType.PHARMACY_TOKEN);
@@ -1695,7 +1715,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             JsfUtil.addErrorMessage("No Items added to bill to sale");
             return;
         }
-        
+
         if (!getPreBill().getBillItems().isEmpty()) {
             for (BillItem bi : getPreBill().getBillItems()) {
                 if (!userStockController.isStockAvailable(bi.getPharmaceuticalBillItem().getStock(), bi.getQty(), getSessionController().getLoggedUser())) {
@@ -2106,7 +2126,8 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         savePreBillItemsFinally(tmpBillItems);
 
         saveSaleBill();
-        createPaymentsForBill(getSaleBill());
+        List<Payment> payments = createPaymentsForBill(getSaleBill());
+        drawerController.updateDrawerForIns(payments);
         saveSaleBillItems(tmpBillItems);
 
 //        getPreBill().getCashBillsPre().add(getSaleBill());
@@ -2130,7 +2151,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             }
 
         }
-
+        
         resetAll();
 
         billPreview = true;

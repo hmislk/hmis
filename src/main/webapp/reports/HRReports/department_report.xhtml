@@ -10,31 +10,38 @@
             <ui:define name="subcontent">
                 <h:form >
                     <p:panel header="Department Report" >
-                        <h:panelGrid columns="2">
+                        <h:panelGrid columns="4">
+                            <h:panelGroup>
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Institution" class="mx-2" >
+                                </p:outputLabel>
+                            </h:panelGroup>
 
-                            <p:outputLabel value="Institution" class="mx-2" >
-                            </p:outputLabel>
                             <p:selectOneMenu
                                 value="#{reportController.fromInstitution}" 
+                                style="width: 400px;"
                                 filter="true"
-                                class="w-100 ">
+                                class=" mx-2 ">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems value="#{institutionController.collectingCentresAndManagedInstitutions}"
                                                var="d"
                                                itemLabel="#{d.name}"
                                                itemValue="#{d}" ></f:selectItems>
                             </p:selectOneMenu>
+
+                            
+                                <p:commandButton class="m-2 ui-button-warning" style="width:150px" icon="fas fa-cogs" ajax="false" value="Process" action="null" >
+                                </p:commandButton>
+                                <p:commandButton class="m-2" style="width: 150px" ajax="false" value="Download"
+                                                 action="null">
+                                </p:commandButton>
+                        
                         </h:panelGrid>
-                        <div class="d-flex align-items-center my-2">
-                            <p:commandButton class="m-2" ajax="false" value="Process" action="null" >
-                            </p:commandButton>
-                            <p:commandButton class="m-2" ajax="false" value="Download"
-                                             action="null">
-                            </p:commandButton>
-                        </div>
+                        <br></br>
 
                         <p:dataTable id="tbl" value="" 
                                      paginator="true"
+                                     paginatorPosition="bottom"
                                      rows="10">
                             <p:column headerText="No">
                                 <h:outputText value="" />

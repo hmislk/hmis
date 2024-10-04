@@ -120,12 +120,12 @@
                                         rowsPerPageTemplate="50,100,200">
 
                                         <!-- Bill Number and Date Column -->
-                                        
+
                                         <p:column headerText="S.No" style="vertical-align: top; width: 4em; padding: 8px;">
                                             <h:outputLabel value="#{rowIndex + 1}" />
                                         </p:column>
-                                        
-                                        <p:column headerText="Patient" style="vertical-align: top; padding: 8px; display: flex;" filterBy="#{b.patient.person.nameWithTitle}" filterMatchMode="contains">
+
+                                        <p:column headerText="Patient" style=" padding: 8px; " filterBy="#{b.patient.person.nameWithTitle}" filterMatchMode="contains">
                                             <i class="fas fa-user text-primary"></i>
                                             <h:outputLabel value="#{b.patient.person.nameWithTitle}" class="mx-3" />
                                         </p:column>
@@ -133,15 +133,15 @@
                                         <p:column headerText="MRN" style="vertical-align: top;  width: 10em; padding: 8px;">
                                             <h:outputLabel value="#{b.patient.phn}" />
                                         </p:column>
-                                        
+
                                         <p:column headerText="Age" style="vertical-align: top;  width: 7em; padding: 8px;">
                                             <h:outputLabel value="#{b.patient.ageYears} Years" />
                                         </p:column>
-                                        
+
                                         <p:column headerText="CC Code" style="vertical-align: top; width: 5em; padding: 8px;">
                                             <h:outputLabel value="#{b.collectingCentre.code}"/><br/>
                                         </p:column>
-                                        
+
                                         <p:column headerText="CC Name" style="vertical-align: top; padding: 8px;">
                                             <i class="fas fa-hospital text-info"></i>
                                             <h:outputLabel value="#{b.collectingCentre.name}" class="mx-2"/><br/>
@@ -160,7 +160,7 @@
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
                                             </h:outputLabel>
                                         </p:column>
-                                        
+
                                         <p:column headerText="Actions" style="vertical-align: top;  width: 13em; padding: 8px;">
                                             <p:commandButton
                                                 value="To Patient Reports"
@@ -170,7 +170,7 @@
                                                 class="ui-button-warning ">
                                             </p:commandButton>
                                         </p:column>
-                                        
+
                                     </p:dataTable>
                                 </h:panelGroup>
 
@@ -231,34 +231,61 @@
                                             <h:outputLabel value="#{patientInvestigation.investigation.name}" class="mx-2"/>
                                         </p:column>
 
-                                        <p:column  style="vertical-align: top; width: 20em; padding: 8px;" >
+                                        <p:column  style="vertical-align: top; width: 8em; padding: 8px;" >
+                                            <f:facet name="header">
+                                                <div class="d-flex justify-content-center">
+                                                    <h:outputText value="Reporting Status" style="text-align: center; display: block;" />
+                                                </div>
+                                            </f:facet>
+
+                                            <div class="d-flex justify-content-center">
+                                                <p:badge rendered="#{patientInvestigation.status eq 'ORDERED'}" value="Ordered" severity="info" styleClass="mr-2"></p:badge>
+                                                <p:badge rendered="#{patientInvestigation.status eq 'SAMPLE_GENERATED'}" value="Ordered" severity="warning" styleClass="mr-2"></p:badge>
+                                                <p:badge rendered="#{patientInvestigation.status eq 'SAMPLE_COLLECTED'}" value="Ordered" severity="info" styleClass="mr-2"></p:badge>
+                                                <p:badge rendered="#{patientInvestigation.status eq 'SAMPLE_SENT'}" value="Ordered" severity="info" styleClass="mr-2"></p:badge>
+                                                <p:badge rendered="#{patientInvestigation.status eq 'SAMPLE_ACCEPTED'}" value="Ordered" severity="success" styleClass="mr-2"></p:badge>
+                                                <p:badge rendered="#{patientInvestigation.status eq 'SAMPLE_REJECTED'}"  value="Rejected" severity="danger" styleClass="mr-2"></p:badge>
+                                                <p:badge rendered="#{patientInvestigation.status eq 'SAMPLE_REVERTED'}" value="Ordered" severity="warning" styleClass="mr-2"></p:badge>
+                                                <p:badge rendered="#{patientInvestigation.status eq 'SAMPLE_RESENT'}" value="Resent" severity="info" styleClass="mr-2"></p:badge>
+                                                <p:badge rendered="#{patientInvestigation.status eq 'SAMPLE_RECOLLECTED'}" value="Recollected" severity="info" styleClass="mr-2"></p:badge>
+                                                <p:badge rendered="#{patientInvestigation.status eq 'SAMPLE_INTERFACED'}" value="Interfaced" severity="success" styleClass="mr-2"></p:badge>
+                                                <p:badge rendered="#{patientInvestigation.status eq 'SAMPLE_APPROVED'}" value="Approved" severity="success" styleClass="mr-2"></p:badge>
+                                                <p:badge rendered="#{patientInvestigation.status eq 'SAMPLE_REPEATED'}" value="Repeated" severity="warning" styleClass="mr-2"></p:badge>
+                                                <p:badge rendered="#{patientInvestigation.status eq 'SAMPLE_APPROVED_AND_REPEATED'}" value="Sample Approved and Repeated" severity="success" styleClass="mr-2"></p:badge>
+                                                <p:badge rendered="#{patientInvestigation.status eq 'REPORT_PRINTED'}"  value="Printed" severity="info" styleClass="mr-2"></p:badge>
+                                                <p:badge rendered="#{patientInvestigation.status eq 'REPORT_DISTRIBUTED'}" value="Distributed" severity="info" styleClass="mr-2"></p:badge>
+                                                <p:badge rendered="#{patientInvestigation.status eq 'REPORT_REACHED_COLLECTING_CENTRE'}" size="large" value="Report Reached Collecting Centre" severity="success" styleClass="mr-2"></p:badge>
+                                                <p:badge rendered="#{patientInvestigation.status eq 'REPORT_HANDED_OVER'}"  value="Handed Over" severity="success" styleClass="mr-2"></p:badge>
+                                                <p:badge rendered="#{patientInvestigation.status eq 'REPORT_CREATED'}"  value="Created" severity="info" styleClass="mr-2"></p:badge>
+                                                <p:badge rendered="#{patientInvestigation.status eq 'REPORT_APPROVED'}" value="Approved" severity="success" styleClass="mr-2"></p:badge>
+                                            </div>
+
+
+                                        </p:column>
+                                        <p:column  style="vertical-align: top; width: 10em; padding: 8px;" >
                                             <f:facet name="header">
                                                 <div class="d-flex justify-content-between">
-                                                    <h:outputText value="Reporting Status" style="text-align: center; display: block; width: 10em" />
                                                     <h:outputText value="Action" style="text-align: center; display: block; width: 10em" />
                                                 </div>
                                             </f:facet>
                                             <ui:repeat value="#{patientReportController.patientReports(patientInvestigation)}" var="dpr">
                                                 <div class="d-flex justify-content-between">
-                                                    <div style="display: flex; justify-content: center; align-items: center; flex-direction: column;  width: 10em">
-                                                        <p:badge rendered="#{dpr.patientInvestigation.status ne 'SAMPLE_ACCEPTED' and !dpr.approved}" size="large" value="Pending" severity="danger" styleClass="mr-2"></p:badge>
-                                                        <p:badge rendered="#{dpr.patientInvestigation.status eq 'SAMPLE_ACCEPTED' and !dpr.approved}" size="large" value="Processing" severity="warning" styleClass="mr-2"></p:badge>
-                                                        <p:badge rendered="#{dpr.approved}" value="Aproved" severity="success"  size="large" styleClass="mr-2"></p:badge>
-                                                    </div>
+
                                                     <div style="display: flex; justify-content: center; align-items: center; flex-direction: row; width: 10em" class="gap-3">
                                                         <p:graphicImage 
                                                             id="imgApproved" 
                                                             library="image" 
                                                             name="approved_icon.png" 
-                                                            style="height: 30px; width: 30px; #{dpr.approved ? '':'opacity: 0.1;'}" >
+                                                            style="height: 25px; width: 25px; #{dpr.approved ? '':'opacity: 0.1;'}" >
                                                         </p:graphicImage>
+
                                                         <p:commandLink 
                                                             id="cmdOldReportPrint1" 
                                                             ajax="false" 
                                                             action="/collecting_centre/courier/patient_report_print?faces-redirect=true" 
                                                             disabled="#{!dpr.approved}" 
                                                             rendered="#{!sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed}">
-                                                            <p:graphicImage library="image" name="print.jpg" styleClass="standedicon" ></p:graphicImage>
+                                                            <p:graphicImage library="image" style="height: 25px; width: 25px;" name="print.jpg" styleClass="standedicon" ></p:graphicImage>
                                                             <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}">
                                                             </f:setPropertyActionListener>
                                                         </p:commandLink>
@@ -268,16 +295,20 @@
                                                             action="/collecting_centre/courier/patient_report_print?faces-redirect=true" 
                                                             disabled="#{!dpr.approved or dpr.patientInvestigation.billItem.bill.backwardReferenceBill.balance ne 0}" 
                                                             rendered="#{sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed}">
-                                                            <p:graphicImage library="image" name="print.jpg" styleClass="standedicon" ></p:graphicImage>
+                                                            <p:graphicImage style="height: 25px; width: 25px;" library="image" name="print.jpg" styleClass="standedicon" ></p:graphicImage>
                                                             <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}">
                                                             </f:setPropertyActionListener>
                                                         </p:commandLink>
+                                                        <p:graphicImage 
+                                                            rendered="false"
+                                                            id="imgPrinted" 
+                                                            library="image" 
+                                                            name="print_ok.png" 
+                                                            style="height: 25px; width: 25px; #{dpr.approved ? '':'opacity: 0.1;'}" >
+                                                        </p:graphicImage>
                                                     </div>
                                                 </div>
 
-                                                <div class="d-flex gap-3 mt-1">
-
-                                                </div>
                                             </ui:repeat>
                                         </p:column>
 

@@ -7,86 +7,69 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
-
         <ui:composition template="./index.xhtml">
             <ui:define name="subcontent">
                 <h:form>
-                    <div style="width: 100%; height: 100%; display: flex; justify-content: center; align-items: center;">
-                        <h:panelGroup rendered="#{financialTransactionController.nonClosedShiftStartFundBill eq null}"  style="text-align: center; width: 100%; height: 100%;">
-                            <div class="mt-5">
-                                <div>
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="width: 128px; height: 128px;">
-                                        <path fill="red" d="M256 32c14.2 0 27.3 7.5 34.5 19.8l216 368c7.3 12.4 7.3 27.7 .2 40.1S486.3 480 472 480H40c-14.3 0-27.6-7.7-34.7-20.1s-7-27.8 .2-40.1l216-368C228.7 39.5 241.8 32 256 32zm0 128c-13.3 0-24 10.7-24 24V296c0 13.3 10.7 24 24 24s24-10.7 24-24V184c0-13.3-10.7-24-24-24zm32 224a32 32 0 1 0 -64 0 32 32 0 1 0 64 0z"/>
-                                    </svg>
-                                </div>
-                                <div style="font-size: 2em">
-                                    No Handover Bills Available to Accept
-                                </div>
-                            </div>
-                        </h:panelGroup>
-                    </div>
-                    <p:panel rendered="#{financialTransactionController.nonClosedShiftStartFundBill ne null}" >
-                        <p:panel header="Funds" >
+
+                    <p:dataTable
+                        id="tblbill"
+                        value="#{financialTransactionController.handovertBillsToReceive}" 
+                        var="bp" 
+                        rowKey="#{bp.id}"
+                        selectionMode="single"
+                        selection="#{financialTransactionController.selectedBill}">
+
+                        <p:column headerText="Username">
+                            <h:outputText value="#{bp.fromWebUser.name}" />
+                        </p:column>
+
+                        
+                        <p:column headerText="Staff Name">
+                            <h:outputText value="#{bp.staff.person.nameWithTitle}" />
+                        </p:column>
+
+                        <p:column headerText="Created At">
+                            <h:outputText value="#{bp.createdAt}" >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                            </h:outputText>
+                        </p:column>
+
+                        <p:column headerText="Value">
+                            <h:outputText value="#{bp.netTotal}" >
+                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            </h:outputText>
+                        </p:column>
+
+                        <p:column headerText="Actions">
                             <p:commandButton 
                                 value="To Receive"
                                 action="#{financialTransactionController.navigateToReceiveNewHandoverBill()}"
                                 ajax="false"
-                                class="my-2 ui-button-success"
-                                >
-
+                                class="m-1 ui-button-success"
+                                icon="pi pi-check-circle">
+                                <f:setPropertyActionListener value="#{bp}" target="#{financialTransactionController.selectedBill}"></f:setPropertyActionListener>
                             </p:commandButton>
 
-
-                            <p:dataTable
-                                id="tblbill"
-                                value="#{financialTransactionController.handovertBillsToReceive}" 
-                                var="bp" 
-                                rowKey="#{bp.id}"
-                                selectionMode="single"
-                                selection="#{financialTransactionController.selectedBill}">
-
-                                <p:column headerText="Staff">
-                                    <h:outputText value="#{bp.staff.person.nameWithTitle}" />
-                                </p:column>
-
-                                <p:column headerText="Created At">
-                                    <h:outputText value="#{bp.createdAt}" />
-                                </p:column>
-
-                                <p:column headerText="Payment Method">
-                                    <h:outputText value="#{bp.paymentMethod}" />
-                                </p:column>
-
-<!--                                <p:column headerText="Net Total">
-                                    <h:outputText value="#{bp.netTotal}" />
-                                </p:column>
-
-                                 Subtable Column 
-                                <p:column headerText="Payments">
-                                    <p:dataTable
-                                        id="subTblbill"
-                                        value="#{bp.payments}" 
-                                        var="payment" 
-                                        rowKey="#{payment.id}">
-                                        <p:column headerText="Payment Method">
-                                            <h:outputText value="#{payment.paymentMethod}" />
-                                        </p:column>
-                                        <p:column headerText="Paid Value">
-                                            <h:outputText value="#{payment.paidValue}" />
-                                        </p:column>
-
-                                         Add more columns for payment details if needed 
-
-                                    </p:dataTable>
-                                </p:column>-->
-
-                            </p:dataTable>
+                            <p:commandButton 
+                                value="Reject"
+                                action="#{financialTransactionController.rejectToReceiveHandoverBill()}"
+                                ajax="false"
+                                onclick="if (!confirm('Are you sure you want to Reject this record?'))
+                                            return false;" 
+                                class="m-1 ui-button-danger"
+                                icon="pi pi-times-circle">
+                                <f:setPropertyActionListener value="#{bp}" target="#{financialTransactionController.selectedBill}"></f:setPropertyActionListener>
+                            </p:commandButton>
+                        </p:column>
 
 
-                        </p:panel>
 
 
-                    </p:panel>
+
+                    </p:dataTable>
+
+
+
                 </h:form>
             </ui:define>
         </ui:composition>

@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.divudi.entity.cashTransaction;
 
 import com.divudi.data.PaymentMethod;
@@ -31,7 +27,7 @@ public class CashBookEntry implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    
+
     private String name;
     @ManyToOne
     private Bill bill;
@@ -45,21 +41,24 @@ public class CashBookEntry implements Serializable {
     private Double institutionBalance;
     private Double departmentBalance;
     private Double siteBalance;
-    
+
     @ManyToOne
     private Institution institution;
     @ManyToOne
     private Institution site;
     @ManyToOne
     private Department department;
-    
-    
+    @ManyToOne
+    private WebUser webUser;
+    @Temporal(javax.persistence.TemporalType.DATE)
+    private Date cashbookDate;
+
     //Created Properties
     @ManyToOne
     private WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date createdAt;
-    
+
     //Retairing properties 
     private boolean retired;
     @ManyToOne
@@ -67,12 +66,52 @@ public class CashBookEntry implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date retiredAt;
     private String retireComments;
-    
+
     //Editer Properties
     @ManyToOne
     private WebUser editer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date editedAt;
+
+    // Balances before the entry
+    private Double onCallBalanceBefore;
+    private Double cashBalanceBefore;
+    private Double cardBalanceBefore;
+    private Double multiplePaymentMethodsBalanceBefore;
+    private Double staffBalanceBefore;
+    private Double creditBalanceBefore;
+    private Double staffWelfareBalanceBefore;
+    private Double voucherBalanceBefore;
+    private Double iouBalanceBefore;
+    private Double agentBalanceBefore;
+    private Double chequeBalanceBefore;
+    private Double slipBalanceBefore;
+    private Double ewalletBalanceBefore;
+    private Double patientDepositBalanceBefore;
+    private Double patientPointsBalanceBefore;
+    private Double onlineSettlementBalanceBefore;
+    private Double noneBalanceBefore;
+    private Double youOweMeBalanceBefore;
+
+// Balances after the entry
+    private Double onCallBalanceAfter;
+    private Double cashBalanceAfter;
+    private Double cardBalanceAfter;
+    private Double multiplePaymentMethodsBalanceAfter;
+    private Double staffBalanceAfter;
+    private Double creditBalanceAfter;
+    private Double staffWelfareBalanceAfter;
+    private Double voucherBalanceAfter;
+    private Double iouBalanceAfter;
+    private Double agentBalanceAfter;
+    private Double chequeBalanceAfter;
+    private Double slipBalanceAfter;
+    private Double ewalletBalanceAfter;
+    private Double patientDepositBalanceAfter;
+    private Double patientPointsBalanceAfter;
+    private Double onlineSettlementBalanceAfter;
+    private Double noneBalanceAfter;
+    private Double youOweMeBalanceAfter;
 
     public Long getId() {
         return id;
@@ -266,5 +305,311 @@ public class CashBookEntry implements Serializable {
     public void setSiteBalance(Double siteBalance) {
         this.siteBalance = siteBalance;
     }
+
+    public WebUser getWebUser() {
+        return webUser;
+    }
+
+    public void setWebUser(WebUser webUser) {
+        this.webUser = webUser;
+    }
+
+    public Date getCashbookDate() {
+        return cashbookDate;
+    }
+
+    public void setCashbookDate(Date cashbookDate) {
+        this.cashbookDate = cashbookDate;
+    }
+
+    public Double getOnCallBalanceBefore() {
+        return onCallBalanceBefore;
+    }
+
+    public void setOnCallBalanceBefore(Double onCallBalanceBefore) {
+        this.onCallBalanceBefore = onCallBalanceBefore;
+    }
+
+    public Double getCashBalanceBefore() {
+        return cashBalanceBefore;
+    }
+
+    public void setCashBalanceBefore(Double cashBalanceBefore) {
+        this.cashBalanceBefore = cashBalanceBefore;
+    }
+
+    public Double getCardBalanceBefore() {
+        return cardBalanceBefore;
+    }
+
+    public void setCardBalanceBefore(Double cardBalanceBefore) {
+        this.cardBalanceBefore = cardBalanceBefore;
+    }
+
+    public Double getMultiplePaymentMethodsBalanceBefore() {
+        return multiplePaymentMethodsBalanceBefore;
+    }
+
+    public void setMultiplePaymentMethodsBalanceBefore(Double multiplePaymentMethodsBalanceBefore) {
+        this.multiplePaymentMethodsBalanceBefore = multiplePaymentMethodsBalanceBefore;
+    }
+
+    public Double getStaffBalanceBefore() {
+        return staffBalanceBefore;
+    }
+
+    public void setStaffBalanceBefore(Double staffBalanceBefore) {
+        this.staffBalanceBefore = staffBalanceBefore;
+    }
+
+    public Double getCreditBalanceBefore() {
+        return creditBalanceBefore;
+    }
+
+    public void setCreditBalanceBefore(Double creditBalanceBefore) {
+        this.creditBalanceBefore = creditBalanceBefore;
+    }
+
+    public Double getStaffWelfareBalanceBefore() {
+        return staffWelfareBalanceBefore;
+    }
+
+    public void setStaffWelfareBalanceBefore(Double staffWelfareBalanceBefore) {
+        this.staffWelfareBalanceBefore = staffWelfareBalanceBefore;
+    }
+
+    public Double getVoucherBalanceBefore() {
+        return voucherBalanceBefore;
+    }
+
+    public void setVoucherBalanceBefore(Double voucherBalanceBefore) {
+        this.voucherBalanceBefore = voucherBalanceBefore;
+    }
+
+    public Double getIouBalanceBefore() {
+        return iouBalanceBefore;
+    }
+
+    public void setIouBalanceBefore(Double iouBalanceBefore) {
+        this.iouBalanceBefore = iouBalanceBefore;
+    }
+
+    public Double getAgentBalanceBefore() {
+        return agentBalanceBefore;
+    }
+
+    public void setAgentBalanceBefore(Double agentBalanceBefore) {
+        this.agentBalanceBefore = agentBalanceBefore;
+    }
+
+    public Double getChequeBalanceBefore() {
+        return chequeBalanceBefore;
+    }
+
+    public void setChequeBalanceBefore(Double chequeBalanceBefore) {
+        this.chequeBalanceBefore = chequeBalanceBefore;
+    }
+
+    public Double getSlipBalanceBefore() {
+        return slipBalanceBefore;
+    }
+
+    public void setSlipBalanceBefore(Double slipBalanceBefore) {
+        this.slipBalanceBefore = slipBalanceBefore;
+    }
+
+    public Double getEwalletBalanceBefore() {
+        return ewalletBalanceBefore;
+    }
+
+    public void setEwalletBalanceBefore(Double ewalletBalanceBefore) {
+        this.ewalletBalanceBefore = ewalletBalanceBefore;
+    }
+
+    public Double getPatientDepositBalanceBefore() {
+        return patientDepositBalanceBefore;
+    }
+
+    public void setPatientDepositBalanceBefore(Double patientDepositBalanceBefore) {
+        this.patientDepositBalanceBefore = patientDepositBalanceBefore;
+    }
+
+    public Double getPatientPointsBalanceBefore() {
+        return patientPointsBalanceBefore;
+    }
+
+    public void setPatientPointsBalanceBefore(Double patientPointsBalanceBefore) {
+        this.patientPointsBalanceBefore = patientPointsBalanceBefore;
+    }
+
+    public Double getOnlineSettlementBalanceBefore() {
+        return onlineSettlementBalanceBefore;
+    }
+
+    public void setOnlineSettlementBalanceBefore(Double onlineSettlementBalanceBefore) {
+        this.onlineSettlementBalanceBefore = onlineSettlementBalanceBefore;
+    }
+
+    public Double getNoneBalanceBefore() {
+        return noneBalanceBefore;
+    }
+
+    public void setNoneBalanceBefore(Double noneBalanceBefore) {
+        this.noneBalanceBefore = noneBalanceBefore;
+    }
+
+    public Double getYouOweMeBalanceBefore() {
+        return youOweMeBalanceBefore;
+    }
+
+    public void setYouOweMeBalanceBefore(Double youOweMeBalanceBefore) {
+        this.youOweMeBalanceBefore = youOweMeBalanceBefore;
+    }
+
+    public Double getOnCallBalanceAfter() {
+        return onCallBalanceAfter;
+    }
+
+    public void setOnCallBalanceAfter(Double onCallBalanceAfter) {
+        this.onCallBalanceAfter = onCallBalanceAfter;
+    }
+
+    public Double getCashBalanceAfter() {
+        return cashBalanceAfter;
+    }
+
+    public void setCashBalanceAfter(Double cashBalanceAfter) {
+        this.cashBalanceAfter = cashBalanceAfter;
+    }
+
+    public Double getCardBalanceAfter() {
+        return cardBalanceAfter;
+    }
+
+    public void setCardBalanceAfter(Double cardBalanceAfter) {
+        this.cardBalanceAfter = cardBalanceAfter;
+    }
+
+    public Double getMultiplePaymentMethodsBalanceAfter() {
+        return multiplePaymentMethodsBalanceAfter;
+    }
+
+    public void setMultiplePaymentMethodsBalanceAfter(Double multiplePaymentMethodsBalanceAfter) {
+        this.multiplePaymentMethodsBalanceAfter = multiplePaymentMethodsBalanceAfter;
+    }
+
+    public Double getStaffBalanceAfter() {
+        return staffBalanceAfter;
+    }
+
+    public void setStaffBalanceAfter(Double staffBalanceAfter) {
+        this.staffBalanceAfter = staffBalanceAfter;
+    }
+
+    public Double getCreditBalanceAfter() {
+        return creditBalanceAfter;
+    }
+
+    public void setCreditBalanceAfter(Double creditBalanceAfter) {
+        this.creditBalanceAfter = creditBalanceAfter;
+    }
+
+    public Double getStaffWelfareBalanceAfter() {
+        return staffWelfareBalanceAfter;
+    }
+
+    public void setStaffWelfareBalanceAfter(Double staffWelfareBalanceAfter) {
+        this.staffWelfareBalanceAfter = staffWelfareBalanceAfter;
+    }
+
+    public Double getVoucherBalanceAfter() {
+        return voucherBalanceAfter;
+    }
+
+    public void setVoucherBalanceAfter(Double voucherBalanceAfter) {
+        this.voucherBalanceAfter = voucherBalanceAfter;
+    }
+
+    public Double getIouBalanceAfter() {
+        return iouBalanceAfter;
+    }
+
+    public void setIouBalanceAfter(Double iouBalanceAfter) {
+        this.iouBalanceAfter = iouBalanceAfter;
+    }
+
+    public Double getAgentBalanceAfter() {
+        return agentBalanceAfter;
+    }
+
+    public void setAgentBalanceAfter(Double agentBalanceAfter) {
+        this.agentBalanceAfter = agentBalanceAfter;
+    }
+
+    public Double getChequeBalanceAfter() {
+        return chequeBalanceAfter;
+    }
+
+    public void setChequeBalanceAfter(Double chequeBalanceAfter) {
+        this.chequeBalanceAfter = chequeBalanceAfter;
+    }
+
+    public Double getSlipBalanceAfter() {
+        return slipBalanceAfter;
+    }
+
+    public void setSlipBalanceAfter(Double slipBalanceAfter) {
+        this.slipBalanceAfter = slipBalanceAfter;
+    }
+
+    public Double getEwalletBalanceAfter() {
+        return ewalletBalanceAfter;
+    }
+
+    public void setEwalletBalanceAfter(Double ewalletBalanceAfter) {
+        this.ewalletBalanceAfter = ewalletBalanceAfter;
+    }
+
+    public Double getPatientDepositBalanceAfter() {
+        return patientDepositBalanceAfter;
+    }
+
+    public void setPatientDepositBalanceAfter(Double patientDepositBalanceAfter) {
+        this.patientDepositBalanceAfter = patientDepositBalanceAfter;
+    }
+
+    public Double getPatientPointsBalanceAfter() {
+        return patientPointsBalanceAfter;
+    }
+
+    public void setPatientPointsBalanceAfter(Double patientPointsBalanceAfter) {
+        this.patientPointsBalanceAfter = patientPointsBalanceAfter;
+    }
+
+    public Double getOnlineSettlementBalanceAfter() {
+        return onlineSettlementBalanceAfter;
+    }
+
+    public void setOnlineSettlementBalanceAfter(Double onlineSettlementBalanceAfter) {
+        this.onlineSettlementBalanceAfter = onlineSettlementBalanceAfter;
+    }
+
+    public Double getNoneBalanceAfter() {
+        return noneBalanceAfter;
+    }
+
+    public void setNoneBalanceAfter(Double noneBalanceAfter) {
+        this.noneBalanceAfter = noneBalanceAfter;
+    }
+
+    public Double getYouOweMeBalanceAfter() {
+        return youOweMeBalanceAfter;
+    }
+
+    public void setYouOweMeBalanceAfter(Double youOweMeBalanceAfter) {
+        this.youOweMeBalanceAfter = youOweMeBalanceAfter;
+    }
+
+    
     
 }

@@ -4,6 +4,7 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
+      xmlns:pe="http://primefaces.org/ui/extensions"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
@@ -15,51 +16,99 @@
                         <p:panel header="Collection Center Balance Report" >
                             <h:panelGrid columns="4">
                                 <div class="col-md-2 w-100">
-                                    <p:outputLabel value="From Date" >
-                                    </p:outputLabel>
-                                </div>
-                                <div class="col-md-4 w-100 mx-2">
-                                    <p:datePicker value="#{reportController.fromDate}" 
-                                                  style=" max-width: 100%; overflow-x: auto; "
-                                                  class="w-100"
-                                                  pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
-                                </div>
-
-                                <div class="col-md-2 w-100">
-                                    <p:outputLabel value="To Date" >
-                                    </p:outputLabel>
+                                    <h:panelGroup >
+                                        <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
+                                        <h:outputLabel value="Date"  class="mx-3"/>
+                                    </h:panelGroup>
                                 </div>
                                 <div class="col-md-4 mx-2">
-                                    <p:datePicker value="#{reportController.toDate}"
+                                    <p:datePicker value="#{reportController.fromDate}"
                                                   style=" max-width: 100%; overflow-x: auto; "
                                                   class="w-100"
+                                                  inputStyleClass="w-100"
                                                   pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
                                 </div>
                                 <div class="col-md-3">
-                                    <p:outputLabel value="Collection Center Name"></p:outputLabel>
+                                    <h:panelGroup >
+                                        <h:outputText value="&#xf1ad;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                        <h:outputLabel value="Collection Center Name"  class="mx-3"/>
+                                        <p:outputLabel  />
+                                    </h:panelGroup>
                                 </div>
-                                <div class="col-md-4">
-                                    <p:selectOneMenu value="#{reportController.collectingCentre}">
-                                        <f:selectItems var="r" itemLabel="#{r.name}" value="#{collectingCentreController.items}" itemValue="#{r}"/>
-                                    </p:selectOneMenu>
+                                <div class="col-md-4 w-50 " >
+                                    
+                                     <p:autoComplete 
+                                        id="creditCom" 
+                                        forceSelection="true" 
+                                        value="#{reportController.collectingCentre}" 
+                                        completeMethod="#{institutionController.completeCollectingCenter}" 
+                                        var="ix" 
+                                        class="w-100"
+                                        inputStyleClass="form-control"
+                                        itemLabel="#{ix.name}" 
+                                        itemValue="#{ix}" 
+                                        size="30" 
+                                        maxResults="20"                                
+                                        >
+                                        <f:ajax  event="itemSelect" execute="creditCom"  />
+                                        <p:column headerText="Code" style="padding: 5px; width: 150px;">#{ix.institutionCode}</p:column>
+                                        <p:column headerText="Collecting Centre Name" style="padding: 5px;">#{ix.name}</p:column>
+                                        <p:column headerText="Balance" style="padding: 5px; width: 150px; text-align: right;">
+                                            <p:outputLabel value="#{ix.ballance}" >
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </p:outputLabel>
+                                        </p:column>
+                                    </p:autoComplete>
+
                                 </div>
                             </h:panelGrid>
 
-                            <div class="row mb-2">
+                            <div class="row mb-2 my-3">
                                 <div class="col-md-2">
-                                    <p:commandButton ajax="false" value="Process" action="#{reportController.processCollectionCenterBalance}" >
+                                    <p:commandButton ajax="false" 
+                                                     value="Process" 
+                                                     style="width: 150px"
+                                                     action="#{reportController.processCollectionCenterBalance()}" 
+                                                     class="mx-2 ui-button-warning"
+                                                     icon="fas fa-cogs">
                                     </p:commandButton>
                                 </div>
+                                <div  class="col-md-2">
+                                    <p:commandButton id="btnPrint" class="mx-2 ui-button-info"
+                                                     icon="fas fa-file-excel"
+                                                     style="width: 150px"
+                                                     ajax="false" value="Print">
+                                        <p:printer target="agentHistoriesTable" />
+                                    </p:commandButton>
+
+                                </div>
+                                
+                                <div  class="col-md-2">
+                                    <p:commandButton id="btnExcel" class="mx-2 ui-button-success"
+                                                     style="width: 150px"
+                                                     icon="fas fa-file-excel"
+                                                     ajax="false" value="Excel">
+
+                                    </p:commandButton>
+
+                                </div>
+                                <div  class="col-md-2">
+                                    <p:commandButton class="mx-2 ui-button-danger" style="width: 150px" value="PDF" icon="pi pi-file-pdf" ajax="false">
+                                        <p:dataExporter
+                                            type="pdf" target="agentHistoriesTable" fileName="agent_histories_report" />
+                                    </p:commandButton>
+
+
+
+                                </div>
+                                
                             </div>
 
 
-                            <h:panelGrid columns="2">
-                                <h:outputLabel value="From Date :  "/>
-                                <h:outputLabel value="#{reportController.fromDate}"  >
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                                </h:outputLabel>
+                            <h:panelGrid columns="2" class="my-4">
 
-                                <h:outputLabel value="To Date :  "/>
+
+                                <h:outputLabel value="Date :  "/>
                                 <h:outputLabel value="#{reportController.toDate}"  >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                 </h:outputLabel>
@@ -72,30 +121,47 @@
 
                             <p:spacer height="5"></p:spacer>
 
-                            <p:dataTable value="#{reportController.collectionCenters}" var="c">
-                                <p:column headerText="S. No" >
-                                    <h:outputText value="" ></h:outputText>
+                            <p:dataTable id="agentHistoriesTable" value="#{reportController.bundle.reportTemplateRows}"  var="ah" rowIndexVar="i">
+                                <p:column headerText="S. No" width="20">
+                                    <h:outputText value="#{i+1}" />
                                 </p:column>
+
                                 <p:column headerText="CC Name" >
-                                    <h:outputText value="#{c.name}" ></h:outputText>
+                                    <h:outputText value="#{ah.agentHistory.agency.name}" />
                                 </p:column>
-                                <p:column headerText="CC Route" >
-                                    <h:outputText value="#{c.route.name}" ></h:outputText>
+
+                                <p:column headerText="CC Route">
+                                    <h:outputText value="#{ah.agentHistory.agency.route.name}" />
                                 </p:column>
-                                <p:column headerText="CC Phone No" >
-                                    <h:outputText value="#{c.phone}" ></h:outputText>
+
+                                <p:column headerText="CC Code" >
+                                    <h:outputText value="#{ah.agentHistory.agency.code}" />
                                 </p:column>
-                                <p:column headerText="CC Credit Limit" >
-                                    <h:outputText value="#{c.maxCreditLimit}" ></h:outputText>
+
+                                <p:column headerText="CC Phone No">
+                                    <h:outputText value="#{ah.agentHistory.agency.phone}" />
                                 </p:column>
-                                <p:column headerText="Max Credit Limit" >
-                                    <h:outputText value="#{c.maxCreditLimit}" ></h:outputText>
+
+                                <p:column headerText="CC Credit Limit" style="text-align: right">
+                                    <h:outputText value="#{ah.agentHistory.agency.maxCreditLimit}">
+                                        <f:convertNumber groupingUsed="true" maxFractionDigits="2" minFractionDigits="2" />
+                                    </h:outputText>
                                 </p:column>
-                                <p:column headerText="CC Balance" >
-                                    <h:outputText value="#{c.ballance}" ></h:outputText>
+
+                                <p:column headerText="Max Credit Limit" style="text-align: right">
+                                    <h:outputText value="#{ah.agentHistory.agency.maxCreditLimit}">
+                                        <f:convertNumber groupingUsed="true" maxFractionDigits="2" minFractionDigits="2" />
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="CC Balance" style="text-align: right">
+                                    <h:outputText value="#{ah.agentHistory.balanceAfterTransaction}">
+                                        <f:convertNumber groupingUsed="true" maxFractionDigits="2" minFractionDigits="2" />
+                                    </h:outputText>
                                 </p:column>
 
                             </p:dataTable>
+
 
                             <p:spacer height="5"></p:spacer>
 

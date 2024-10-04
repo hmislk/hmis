@@ -126,7 +126,32 @@
                                                 value="Add Bill Type Atomics" 
                                                 onclick="if (!confirm('Really want to do that?'))
                                                             return false"/>
-                                            
+                                             
+                                             
+                                             <p:commandButton 
+                                                ajax="false"
+                                                action="#{paymentController.addMissingPaymentDates()}"
+                                                rendered="true"
+                                                class="w-100 m-1"
+                                                value="Add Missing Payment Dates" 
+                                                onclick="if (!confirm('Really want to do that?'))
+                                                            return false"/>
+                                             
+                                              <p:commandButton 
+                                                ajax="false"
+                                                action="#{billController.addMissingRefundStatusForCcRefunds()}"
+                                                rendered="true"
+                                                class="w-100 m-1"
+                                                value="Add Missing Refund Status to CC Bills" 
+                                                onclick="if (!confirm('Really want to do that?'))
+                                                            return false"/>
+                                             <p:commandButton 
+                                                ajax="false"
+                                                action="#{billController.addMissingValuesForCcCancellationBillItems()}"
+                                                rendered="true"
+                                                class="w-100 m-1"
+                                                value="Add Missing CC Fees Bills" 
+                                                />
                                             
                                             
                                         </div>

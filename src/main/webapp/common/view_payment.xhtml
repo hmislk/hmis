@@ -13,12 +13,20 @@
                 <h:form>
                     <p:panel  >
                         <f:facet name="header" >
-                            <h:outputText value="View Payment Details" ></h:outputText>
+                            <h:outputText styleClass="fas fa-eye" />
+                            <h:outputText value="View Payment Details" class="mx-3" ></h:outputText>
+                            <p:commandButton 
+                                    ajax="false" 
+                                    value="Back" 
+                                    class="ui-button-warning"
+                                    icon="fas fa-arrow-left"
+                                    style="float: right"
+                                    action="/opd/view/opd_batch_bill?faces-redirect=true"></p:commandButton>
                         </f:facet>
-                        <p:panelGrid columns="2" layout="tabular">
+                        <p:panelGrid columns="2" class="mb-2 w-75" layout="tabular">
                             <f:facet name="header">
                                 <div class="d-flex justify-content-between">
-                                    <p:outputLabel value="View Payment" class="mt-2"></p:outputLabel>
+                                    <p:outputLabel value="Payment" class="mt-2"></p:outputLabel>
                                 </div> 
                             </f:facet>
 
@@ -34,8 +42,9 @@
                             <h:outputText value="Bill No" ></h:outputText>
                             <p:commandButton 
                                 value="#{billSearch.payment.bill.deptId}" 
+                                class="ui-button-secondary"
                                 ajax="false"
-                                action="#{billSearch.navigateViewBillByBillTypeAtomic()}">
+                                action="#{billSearch.navigateToViewBillByAtomicBillType()}">
                                 <f:setPropertyActionListener 
                                     value="#{billSearch.payment.bill}" 
                                     target="#{billSearch.bill}" ></f:setPropertyActionListener>
@@ -45,10 +54,13 @@
 
 
                         <p:panelGrid columns="2"
+                                     class="w-75"
                                      rendered="#{billSearch.payment.paymentMethod eq 'Cash'}"
                                      layout="tabular">
-                            <f:facet name="header" >
-                                <h:outputText value="Cash" ></h:outputText>
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between">
+                                    <p:outputLabel value="Cash"></p:outputLabel>
+                                </div> 
                             </f:facet>
                             <p:outputLabel value="Tendered" ></p:outputLabel>
                             <h:outputText value="#{billSearch.payment.bill.cashPaid}" >
@@ -58,10 +70,13 @@
 
 
                         <p:panelGrid columns="2"
+                                     class="w-75"
                                      rendered="#{billSearch.payment.paymentMethod eq 'Card'}"
                                      layout="tabular">
-                            <f:facet name="header" >
-                                <h:outputText value="Card" ></h:outputText>
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between">
+                                    <p:outputLabel value="Credit Card"></p:outputLabel>
+                                </div> 
                             </f:facet>
                             <p:outputLabel value="Bank" ></p:outputLabel>
                             <h:outputText value="#{billSearch.payment.bank.name}" ></h:outputText>
@@ -76,10 +91,13 @@
                         </p:panelGrid>
                         
                         <p:panelGrid columns="2"
+                                     class="w-75"
                                      rendered="#{billSearch.payment.paymentMethod eq 'Cheque'}"
                                      layout="tabular">
-                            <f:facet name="header" >
-                                <h:outputText value="Cheque" ></h:outputText>
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between">
+                                    <p:outputLabel value="Cheque"></p:outputLabel>
+                                </div> 
                             </f:facet>
                             <p:outputLabel value="Bank" ></p:outputLabel>
                             <h:outputText value="#{billSearch.payment.bank.name}" ></h:outputText>
