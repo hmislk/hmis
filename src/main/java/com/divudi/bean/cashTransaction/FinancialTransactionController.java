@@ -4180,6 +4180,45 @@ public class FinancialTransactionController implements Serializable {
 
         return "/cashier/shift_end_summery_bill_print?faces-redirect=true";
     }
+    
+    public String completeHandover() {
+        if (user == null) {
+            JsfUtil.addErrorMessage("Please select a user to handover the shift.");
+            return null;
+        }
+        if (bundle == null) {
+            JsfUtil.addErrorMessage("Error - Null Bundle");
+            return null;
+        }
+        if (bundle.getBundles() == null) {
+            JsfUtil.addErrorMessage("No Payments");
+            return null;
+        }
+        if (bundle.getBundles().isEmpty()) {
+            JsfUtil.addErrorMessage("No Payments to Handover");
+            return null;
+        }
+        if (bundle.getStartBill()==null) {
+            JsfUtil.addErrorMessage("No Start");
+            return null;
+        }
+        if (bundle.getStartBill().getReferenceBill()==null) {
+            JsfUtil.addErrorMessage("Shift NOT ended. Can not complete Handover");
+            return null;
+        }
+        if (bundle.getEndBill()==null) {
+            JsfUtil.addErrorMessage("Shift NOT ended. Can not complete Handover");
+            return null;
+        }
+        
+        bundle.getStartBill().setCompleted(true);
+        bundle.getStartBill().setCompletedAt(new Date());
+        bundle.getStartBill().setCompletedBy(sessionController.getLoggedUser());
+
+        billController.save(bundle.getStartBill());
+
+        return navigateToMyShifts();
+    }
 
     public String settleHandoverStartBill() {
         if (user == null) {
