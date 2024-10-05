@@ -4183,6 +4183,32 @@ public class SearchController implements Serializable {
 
     }
 
+    public void createShiftShortageBillsTable() {
+        bills = null;
+        bills = new ArrayList<>();
+        String sql;
+        Map m = new HashMap();
+
+        sql = "Select b From Bill b where "
+                + " b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false "
+                + " and b.billTypeAtomic=:bTA "
+                + " and b.billType=:bT ";
+
+        m.put("fromDate", fromDate);        
+        m.put("toDate", toDate);
+        m.put("bTA", BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL);
+        m.put("bT", BillType.ShiftShortage);
+        bills = getBillFacade().findByJpql(sql, m);
+
+        if (bills == null || bills.isEmpty()) {
+            System.err.println("No bills found");
+        } else {
+            System.err.println("Bills found: " + bills.size());
+        }
+
+    }
+
     public void createApprovedPharmacy() {
         Date startTime = new Date();
 
