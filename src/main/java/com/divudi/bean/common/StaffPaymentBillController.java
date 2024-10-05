@@ -276,11 +276,13 @@ public class StaffPaymentBillController implements Serializable {
                 + " where bf.retired=false "
                 + " and bf.bill.billTypeAtomic in :btcs "
                 + " and bf.bill.cancelled=:bc "
+                + " and bf.bill.refunded=:brfnd "
                 + " and bf.bill.createdAt between :fd and :td "
                 + " and (bf.feeValue - bf.paidValue) > 0 "
                 + " and bf.staff=:staff ";
         params.put("btcs", btcs);
         params.put("bc", false);
+        params.put("brfnd", false);
         params.put("fd", fromDate);
         params.put("td", toDate);
         params.put("staff", currentStaff);

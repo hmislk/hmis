@@ -900,7 +900,7 @@ public class SearchController implements Serializable {
         bundle = new ReportTemplateRowBundle();
         return "/reports/cashier_reports/cashier_detailed?faces-redirect=true";
     }
-    
+
     public String navigateToAllCashierDrawersDetails() {
         return "/reports/cashier_reports/all_cashiers_drawer_details?faces-redirect=true";
     }
@@ -1860,7 +1860,7 @@ public class SearchController implements Serializable {
     }
 
     public void setOpdAnalyticsIndex(int opdAnalyticsIndex) {
-        this.opdAnalyticsIndex = opdAnalyticsIndex;    
+        this.opdAnalyticsIndex = opdAnalyticsIndex;
     }
 
     public List<Drawer> getDrawerList() {
@@ -4030,6 +4030,18 @@ public class SearchController implements Serializable {
         sql += " order by bi.id desc  ";
 
         billItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP, 50);
+
+    }
+
+    public void createPaymentHistoryTable() {
+        bills = new ArrayList<>();  // Initialize to avoid null issues
+        String sql;
+        Map<String, Object> m = new HashMap<>();
+
+        sql = "select bi from Bill bi where bi.billTypeAtomic = :bType ";
+        m.put("bType", BillTypeAtomic.SUPPLEMENTARY_INCOME);
+
+        bills = getBillFacade().findByJpql(sql, m);
 
     }
 
@@ -12592,18 +12604,18 @@ public class SearchController implements Serializable {
         bundle.calculateTotalsByChildBundles();
 
     }
-    
-    public void genarateDrawerDetailsForCashiers(){
+
+    public void genarateDrawerDetailsForCashiers() {
         String jpql;
         Map<String, Object> params = new HashMap<>();
-        
+
         jpql = "select d from Drawer d "
                 + " where d.createdAt BETWEEN :fd AND :td ";
-        
+
         params.put("fd", getFromDate());
         params.put("td", getToDate());
-        
-        if(webUser != null){
+
+        if (webUser != null) {
             jpql += " AND d.drawerUser = :du ";
             params.put("du", webUser);
         }

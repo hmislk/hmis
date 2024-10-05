@@ -15,122 +15,119 @@
                         <f:facet name="header">
                             <i class="fa fa-money-bill-wave mt-2"/>
                             <p:outputLabel value="Record Income" class="mx-2 mt-2"></p:outputLabel>
+                            <p:commandButton 
+                                icon="pi pi-play"
+                                class="ui-button-success"
+                                value="Settle Income" 
+                                ajax="false" 
+                                style="float: right;"
+                                action="#{financialTransactionController.settleIncomeBill()}" >
+                            </p:commandButton>
                         </f:facet>
 
 
 
-                        <p:panelGrid layout="tabular" columns="1" class="w-100" >
-                            <f:facet name="header" >
-                                <p:outputLabel value="Income" class="font-weight-bold" ></p:outputLabel>
 
-                                <p:commandButton 
-                                    icon="pi pi-play"
-                                    class="ui-button-success"
-                                    value="Settle Income" 
-                                    ajax="false" 
-                                    action="#{financialTransactionController.settleIncomeBill()}" >
-                                </p:commandButton>
-                            </f:facet>
+                        <!--                            <f:facet name="header" >
+                                                        <p:outputLabel value="Income" class="font-weight-bold" ></p:outputLabel>
+                        
+                                                        
+                                                    </f:facet>-->
 
 
-                            <p:panel header="Payment Method Details"  >
+                        <p:panel header="Payment Method Details"  class="my-2">
 
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <p:outputLabel value="Payment Method" ></p:outputLabel>
-                                        <p:selectOneMenu 
-                                            class="mx-2"
-                                            style="width: 16em"
-                                            id="cmdPayment" 
-                                            value="#{financialTransactionController.currentPayment.paymentMethod}" >
-                                            <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
-                                            <f:selectItems value="#{enumController.paymentMethods}" ></f:selectItems>
-                                            <p:ajax process="cmdPayment" update="paymentDetails" ></p:ajax>
-                                        </p:selectOneMenu>
-                                    </div>
-                                    <div class="col-md-1">
-                                        <p:inputTextarea value="#{financialTransactionController.currentPayment.comments}" ></p:inputTextarea>
-                                    </div>
-                                    <div class="col-md-6" >
-                                        <h:panelGroup id="paymentDetails" >
-                                            <h:panelGroup
-                                                class="d-flex"
-                                                layout="block" 
-                                                id="cheque" 
-                                                rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'Cheque'}" >
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <p:outputLabel value="Payment Method" ></p:outputLabel>
+                                    <p:selectOneMenu 
+                                        class="mx-2"
+                                        style="width: 16em"
+                                        id="cmdPayment" 
+                                        value="#{financialTransactionController.currentPayment.paymentMethod}" >
+                                        <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
+                                        <f:selectItems value="#{enumController.paymentMethods}" ></f:selectItems>
+                                        <p:ajax process="cmdPayment" update="paymentDetails" ></p:ajax>
+                                    </p:selectOneMenu>
+                                </div>
 
-                                                <div class="d-flex">
-                                                    <p:inputText autocomplete="off"   value="#{financialTransactionController.currentPayment.paidValue}"  id="txtVal">
-                                                        <p:ajax process="@this" ></p:ajax>
-                                                    </p:inputText>
+                                <div class="col-md-6" >
+                                    <h:panelGroup id="paymentDetails" >
+                                        <h:panelGroup
+                                            class="d-flex"
+                                            layout="block" 
+                                            id="cheque" 
+                                            rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'Cheque'}" >
 
-                                                    <p:inputText class="mx-2" autocomplete="off"  value="#{financialTransactionController.currentPayment.chequeRefNo}" id="chequNo">
-                                                        <p:ajax process="@this" ></p:ajax>
-                                                    </p:inputText>
-
-                                                    <p:selectOneMenu  value="#{financialTransactionController.currentPayment.bank}" style="width: 10em;">
-                                                        <f:selectItem itemLabel="Select Bank"/>
-                                                        <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
-                                                        <p:ajax process="@this" ></p:ajax>
-                                                    </p:selectOneMenu>
-
-                                                    <p:calendar class="mx-2" value="#{financialTransactionController.currentPayment.chequeDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" id="ChequeDate">                            
-                                                        <p:ajax process="@this" ></p:ajax>
-                                                    </p:calendar>
-                                                </div>
-
-                                            </h:panelGroup>
-
-                                            <h:panelGroup
-                                                class="d-flex"
-                                                layout="block" 
-                                                id="cash"  
-                                                rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'Cash'}" >
-                                                <p:outputLabel value="Value" class="mt-2"></p:outputLabel>
-                                                <p:inputText 
-                                                    class="mx-3"
-                                                    id="txtCashValue" 
-                                                    value="#{financialTransactionController.currentPayment.paidValue}" >
+                                            <div class="d-flex">
+                                                <p:inputText autocomplete="off"   value="#{financialTransactionController.currentPayment.paidValue}"  id="txtVal">
+                                                    <p:ajax process="@this" ></p:ajax>
                                                 </p:inputText>
 
-                                            </h:panelGroup>
-
-                                            <h:panelGroup
-                                                class="d-flex"
-                                                layout="block" 
-                                                id="card"  
-                                                rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'Card'}" >
-                                                <p:outputLabel value="Value" class="mt-2"></p:outputLabel>
-                                                <p:inputText 
-                                                    class="mx-3"
-                                                    id="txtCardValue" 
-                                                    value="#{financialTransactionController.currentPayment.paidValue}" >
+                                                <p:inputText class="mx-2" autocomplete="off"  value="#{financialTransactionController.currentPayment.chequeRefNo}" id="chequNo">
+                                                    <p:ajax process="@this" ></p:ajax>
                                                 </p:inputText>
 
-                                            </h:panelGroup>
+                                                <p:selectOneMenu  value="#{financialTransactionController.currentPayment.bank}" style="width: 10em;">
+                                                    <f:selectItem itemLabel="Select Bank"/>
+                                                    <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
+                                                    <p:ajax process="@this" ></p:ajax>
+                                                </p:selectOneMenu>
+
+                                                <p:calendar class="mx-2" value="#{financialTransactionController.currentPayment.chequeDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" id="ChequeDate">                            
+                                                    <p:ajax process="@this" ></p:ajax>
+                                                </p:calendar>
+                                            </div>
 
                                         </h:panelGroup>
 
+                                        <h:panelGroup
+                                            class="d-flex"
+                                            layout="block" 
+                                            id="cash"  
+                                            rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'Cash'}" >
+                                            <p:outputLabel value="Value" class="mt-2"></p:outputLabel>
+                                            <p:inputText 
+                                                class="mx-3"
+                                                id="txtCashValue" 
+                                                value="#{financialTransactionController.currentPayment.paidValue}" >
+                                            </p:inputText>
 
-                                    </div>
+                                        </h:panelGroup>
 
-                                    <div class="col-md-1">
-                                        <p:commandButton
-                                            id="btnAdd"
-                                            style="float: right;"
-                                            value="Add"
-                                            ajax="false"
-                                            action="#{financialTransactionController.addPaymentToIncomeBill()}" >
-                                        </p:commandButton>
-                                    </div>
+                                        <h:panelGroup
+                                            class="d-flex"
+                                            layout="block" 
+                                            id="card"  
+                                            rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'Card'}" >
+                                            <p:outputLabel value="Value" class="mt-2"></p:outputLabel>
+                                            <p:inputText 
+                                                class="mx-3"
+                                                id="txtCardValue" 
+                                                value="#{financialTransactionController.currentPayment.paidValue}" >
+                                            </p:inputText>
+
+                                        </h:panelGroup>
+
+                                    </h:panelGroup>
+
                                 </div>
-                                <p:messages ></p:messages>
-                            </p:panel>
+                                <!--                                    <div class="col-md-1">
+                                                                        <p:inputTextarea value="#{financialTransactionController.currentPayment.comments}" ></p:inputTextarea>
+                                                                    </div>-->
 
-
-
-
-                        </p:panelGrid>
+                                <div class="col-md-1">
+                                    <p:commandButton
+                                        id="btnAdd"
+                                        style="float: right;"
+                                        value="Add"
+                                        ajax="false"
+                                        action="#{financialTransactionController.addPaymentToIncomeBill()}" >
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                            <p:messages ></p:messages>
+                        </p:panel>
 
                         <p:panel  header="Funds" >
                             <f:facet name="header">
@@ -164,7 +161,7 @@
                                         <h:outputLabel value="Cheque Date : #{bp.chequeDate}" >
                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"  ></f:convertDateTime>
                                         </h:outputLabel>
-                                        ෆ                                    </h:panelGroup>
+                                    </h:panelGroup>
                                 </p:column>
 
                                 <p:column headerText="Value" width="20%">
@@ -191,10 +188,6 @@
 
 
                     </p:panel>
-
-
-
-
                 </h:form>
             </ui:define>
         </ui:composition>
