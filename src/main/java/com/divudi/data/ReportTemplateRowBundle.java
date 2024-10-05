@@ -99,6 +99,7 @@ public class ReportTemplateRowBundle implements Serializable {
 
     private double onCallHandoverValue;
     private double cashHandoverValue;
+    private double denominatorValue;
     private double cardHandoverValue;
     private double multiplePaymentMethodsHandoverValue;
     private double staffHandoverValue;
@@ -140,6 +141,8 @@ public class ReportTemplateRowBundle implements Serializable {
     private List<Department> departments;
     private Bill startBill;
     private Bill endBill;
+
+    private boolean selected;
 
     public ReportTemplateRowBundle() {
         this.id = UUID.randomUUID();
@@ -186,6 +189,7 @@ public class ReportTemplateRowBundle implements Serializable {
 
         onCallHandoverValue = 0.0;
         cashHandoverValue = 0.0;
+        denominatorValue = 0.0;
         cardHandoverValue = 0.0;
         multiplePaymentMethodsHandoverValue = 0.0;
         staffHandoverValue = 0.0;
@@ -269,22 +273,24 @@ public class ReportTemplateRowBundle implements Serializable {
                 onlineSettlementValue += childBundle.onlineSettlementValue;
 
                 // Handover values
-                onCallHandoverValue += childBundle.onCallHandoverValue;
-                cashHandoverValue += childBundle.cashHandoverValue;
-                cardHandoverValue += childBundle.cardHandoverValue;
-                multiplePaymentMethodsHandoverValue += childBundle.multiplePaymentMethodsHandoverValue;
-                staffHandoverValue += childBundle.staffHandoverValue;
-                creditHandoverValue += childBundle.creditHandoverValue;
-                staffWelfareHandoverValue += childBundle.staffWelfareHandoverValue;
-                voucherHandoverValue += childBundle.voucherHandoverValue;
-                iouHandoverValue += childBundle.iouHandoverValue;
-                agentHandoverValue += childBundle.agentHandoverValue;
-                chequeHandoverValue += childBundle.chequeHandoverValue;
-                slipHandoverValue += childBundle.slipHandoverValue;
-                eWalletHandoverValue += childBundle.eWalletHandoverValue;
-                patientDepositHandoverValue += childBundle.patientDepositHandoverValue;
-                patientPointsHandoverValue += childBundle.patientPointsHandoverValue;
-                onlineSettlementHandoverValue += childBundle.onlineSettlementHandoverValue;
+                if (this.selected) {
+                    onCallHandoverValue += childBundle.onCallHandoverValue;
+                    cashHandoverValue += childBundle.cashHandoverValue;
+                    cardHandoverValue += childBundle.cardHandoverValue;
+                    multiplePaymentMethodsHandoverValue += childBundle.multiplePaymentMethodsHandoverValue;
+                    staffHandoverValue += childBundle.staffHandoverValue;
+                    creditHandoverValue += childBundle.creditHandoverValue;
+                    staffWelfareHandoverValue += childBundle.staffWelfareHandoverValue;
+                    voucherHandoverValue += childBundle.voucherHandoverValue;
+                    iouHandoverValue += childBundle.iouHandoverValue;
+                    agentHandoverValue += childBundle.agentHandoverValue;
+                    chequeHandoverValue += childBundle.chequeHandoverValue;
+                    slipHandoverValue += childBundle.slipHandoverValue;
+                    eWalletHandoverValue += childBundle.eWalletHandoverValue;
+                    patientDepositHandoverValue += childBundle.patientDepositHandoverValue;
+                    patientPointsHandoverValue += childBundle.patientPointsHandoverValue;
+                    onlineSettlementHandoverValue += childBundle.onlineSettlementHandoverValue;
+                }
 
                 // Aggregate flags
                 hasOnCallTransaction |= childBundle.hasOnCallTransaction;
@@ -360,6 +366,7 @@ public class ReportTemplateRowBundle implements Serializable {
                 return cardHandoverValue;
             case Cash:
                 return cashHandoverValue;
+//                return denominatorValue;
             case Cheque:
                 return chequeHandoverValue;
             case Credit:
@@ -449,7 +456,7 @@ public class ReportTemplateRowBundle implements Serializable {
     }
 
     public void calculateTotals() {
-        System.out.println("calculateTotals = " );
+        System.out.println("calculateTotals = ");
         resetTotalsAndFlags();
 
         // Check if the list of rows is not null and not empty
@@ -1522,6 +1529,8 @@ public class ReportTemplateRowBundle implements Serializable {
         this.cashHandoverValue = cashHandoverValue;
     }
 
+    
+    
     public double getCardHandoverValue() {
         return cardHandoverValue;
     }
@@ -1651,7 +1660,7 @@ public class ReportTemplateRowBundle implements Serializable {
     }
 
     public void calculateTotalHandoverByDenominationQuantities() {
-        cashHandoverValue = 0.0;
+        denominatorValue = 0.0;
         if (denominationTransactions == null || denominationTransactions.isEmpty()) {
             return;
         }
@@ -1665,7 +1674,7 @@ public class ReportTemplateRowBundle implements Serializable {
             } else {
                 Double dv = dt.getDenomination().getDenominationValue() * dt.getDenominationQty();
                 dt.setDenominationValue(dv);
-                cashHandoverValue += dv;
+                denominatorValue += dv;
             }
         }
     }
@@ -1703,6 +1712,22 @@ public class ReportTemplateRowBundle implements Serializable {
 
     public void setToUser(WebUser toUser) {
         this.toUser = toUser;
+    }
+
+    public boolean isSelected() {
+        return selected;
+    }
+
+    public void setSelected(boolean selected) {
+        this.selected = selected;
+    }
+
+    public double getDenominatorValue() {
+        return denominatorValue;
+    }
+
+    public void setDenominatorValue(double denominatorValue) {
+        this.denominatorValue = denominatorValue;
     }
 
 }
