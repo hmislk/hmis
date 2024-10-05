@@ -2238,7 +2238,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         } else {
             getFacade().edit(newBill);
         }
-
         
         switch (sessionController.getDepartmentPreference().getOpdTokenNumberGenerationStrategy()) {
             case NO_TOKEN_GENERATION:
