@@ -41,17 +41,44 @@
                                 inputStyleClass="w-100 form-control" 
                                 id="toDate" 
                                 value="#{financialTransactionController.toDate}" 
-                                navigator="false" 
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
                                 />
-                            
-                            <p:spacer ></p:spacer>
-                            <p:commandButton 
-                                value="List My Shifts"
-                                ajax="false"
-                                action="#{financialTransactionController.fillMyShifts}"></p:commandButton>
 
                         </p:panelGrid>
+                        <p:panelGrid columns="1" styleClass="m-3">
+                            <h:panelGroup layout="block" styleClass="form-group">
+
+                                <!-- Button to List All Shifts -->
+                                <p:commandButton 
+                                    value="List All My Shifts"
+                                    action="#{financialTransactionController.fillMyShifts}"
+                                    ajax="false"
+                                    styleClass="ui-button-success m-1"
+                                    icon="pi pi-list"
+                                   ></p:commandButton>
+
+                                <!-- Button to List Handover Completed Bills -->
+                                <p:commandButton 
+                                    value="List Handover Completed Bills"
+                                    action="#{financialTransactionController.fillCompletedBillsByPeriod}"
+                                    icon="pi pi-check" 
+                                    ajax="false"
+                                    styleClass="ui-button-success m-1"
+                                   ></p:commandButton>
+
+                                <!-- Button to List Handover Uncompleted Bills -->
+                                <p:commandButton 
+                                    value="List Handover Uncompleted Bills"
+                                    action="#{financialTransactionController.fillUncompletedBillsByPeriod}"
+                                    icon="pi pi-times" 
+                                    ajax="false"
+                                    styleClass="ui-button-danger m-1"
+                                   ></p:commandButton>
+
+                            </h:panelGroup>
+                        </p:panelGrid>
+
+
 
 
 
@@ -106,6 +133,7 @@
                                     ajax="false"
                                     class="ui-button-warning m-1" 
                                     value="Start Handover" 
+                                    disabled="#{ssb.bill.completed}"
                                     icon="pi pi-play" 
                                     action="#{financialTransactionController.navigateToHandoverCreateBillForSelectedShift(ssb.bill)}">
                                 </p:commandButton>

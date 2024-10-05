@@ -270,7 +270,12 @@
                                     paginatorPosition="top">
 
                                     <p:column  width="5em" headerText="Selected">
-                                        <p:selectBooleanCheckbox value="#{summary.selected}" ></p:selectBooleanCheckbox>
+                                        <p:selectBooleanCheckbox value="#{summary.selected}" >
+                                            <p:ajax 
+                                                listener="#{financialTransactionController.bundle.calculateTotalsByChildBundles()}" 
+                                                update=":#{p:resolveFirstComponentWithId('txtCashHandover',view).clientId} :#{p:resolveFirstComponentWithId('tblCashier',view).clientId} " 
+                                                ></p:ajax>
+                                        </p:selectBooleanCheckbox>
                                     </p:column>
                                     
                                     <p:column headerText="Institution" >
@@ -297,7 +302,7 @@
 
 
 
-                                    <p:column class="text-end" headerText="Cash Collected ***" rendered="#{financialTransactionController.bundle.hasCashTransaction}">
+                                    <p:column class="text-end" headerText="Cash Collected" rendered="#{financialTransactionController.bundle.hasCashTransaction}">
                                         <h:outputText value="#{summary.cashValue}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>

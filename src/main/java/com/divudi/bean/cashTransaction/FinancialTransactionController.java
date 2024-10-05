@@ -1215,11 +1215,11 @@ public class FinancialTransactionController implements Serializable {
         prepareToAddNewShiftExcessRecord();
         return "/cashier/record_shift_excess?faces-redirect=true";
     }
-    
+
     public String navigateToCashierShiftBillSearch() {
         return "/cashier/cashier_shift_bill_search?faces-redirect=true";
     }
-    
+
     // Method to navigate to the Transfer Payment Method page
     public String navigateToTransferPaymentMethod() {
         resetClassVariables();
@@ -2492,32 +2492,59 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public void fillMyShifts() {
-        fillMyShifts(null);
+        fillMyShifts(null, null, null, null);
     }
 
     public void fillMyShifts(Integer count) {
+        fillMyShifts(count, null, null, null);
+    }
+
+    public void fillMyShifts(Integer count, Boolean completed, Date fromDate, Date toDate) {
         String jpql = "Select new com.divudi.data.ReportTemplateRow(b) "
                 + " from Bill b "
                 + " where b.retired=:ret "
                 + " and b.billTypeAtomic=:bta "
                 + " and b.creater=:user ";
-        Map params = new HashMap();
+
+        Map<String, Object> params = new HashMap<>();
         params.put("ret", false);
         params.put("user", sessionController.getLoggedUser());
         params.put("bta", BillTypeAtomic.FUND_SHIFT_START_BILL);
-        if (count == null) {
-            jpql += " and b.createdAt between :fd and :td ";
-            params.put("fd", getFromDate());
-            params.put("td", getToDate());
+
+        if (completed != null) {
+            jpql += " and b.completed=:completed ";
+            params.put("completed", completed);
         }
+
+        if (fromDate != null && toDate != null) {
+            jpql += " and b.createdAt between :fd and :td ";
+            params.put("fd", fromDate);
+            params.put("td", toDate);
+        } else if (count != null) {
+            // count specified but no date range
+        }
+
         jpql += " order by b.id ";
         List<ReportTemplateRow> rows;
-        if (count == null) {
-            rows = (List<ReportTemplateRow>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
-        } else {
+
+        if (count != null) {
             rows = (List<ReportTemplateRow>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, count);
+        } else {
+            rows = (List<ReportTemplateRow>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
         }
         bundle.setReportTemplateRows(rows);
+    }
+
+    public void fillCompletedBillsByPeriod() {
+        fillMyShifts(null, true, fromDate, toDate);
+    }
+
+    public void fillUncompletedBillsByPeriod() {
+        fillMyShifts(null, false, fromDate, toDate);
+    }
+
+    public void listLastUncompletedBills() {
+        fillMyShifts(10, false, null, null);
     }
 
     public String navigateToDayEndSummary() {
