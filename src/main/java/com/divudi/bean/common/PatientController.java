@@ -1078,6 +1078,72 @@ public class PatientController implements Serializable, ControllerWithPatient {
 //        patientInvestigations = getPatientInvestigationFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         // patientInvestigations=
     }
+    
+    public void setBillNetTotal(){
+        if (bill.getPaymentMethod() == PaymentMethod.Card) {
+            bill.setNetTotal(getPaymentMethodData().getCreditCard().getTotalValue());
+        } else if (bill.getPaymentMethod() == PaymentMethod.Cheque) {
+            bill.setNetTotal(getPaymentMethodData().getCheque().getTotalValue());
+        } else if (bill.getPaymentMethod() == PaymentMethod.ewallet) {
+            bill.setNetTotal(getPaymentMethodData().getEwallet().getTotalValue());
+        } else if (bill.getPaymentMethod() == PaymentMethod.Slip) {
+            bill.setNetTotal(getPaymentMethodData().getSlip().getTotalValue());
+        } else if (bill.getPaymentMethod() == PaymentMethod.Credit) {
+           bill.setNetTotal(getPaymentMethodData().getCredit().getTotalValue());   
+        }
+    }
+    
+    public boolean validatePaymentMethodData() {
+        boolean error = false;
+
+        if (bill.getPaymentMethod() == PaymentMethod.Card) {
+            if (getPaymentMethodData().getCreditCard().getComment().trim().equals("") && configOptionApplicationController.getBooleanValueByKey("Patient Deposit - CreditCard Comment is Mandatory", false)) {
+                JsfUtil.addErrorMessage("Please Enter a Credit Card Comment..");
+                error = true;
+            }
+            if(getPaymentMethodData().getCreditCard().getTotalValue() <= 0){
+                JsfUtil.addErrorMessage("Entered Value is Wrong..");
+                error = true;
+            }
+        } else if (bill.getPaymentMethod() == PaymentMethod.Cheque) {
+            if (getPaymentMethodData().getCheque().getComment().trim().equals("") && configOptionApplicationController.getBooleanValueByKey("Patient Deposit - Cheque Comment is Mandatory", false)) {
+                JsfUtil.addErrorMessage("Please Enter a Cheque Comment..");
+                error = true;
+            }
+            if(getPaymentMethodData().getCheque().getTotalValue() <= 0){
+                JsfUtil.addErrorMessage("Entered Value is Wrong..");
+                error = true;
+            }
+        } else if (bill.getPaymentMethod() == PaymentMethod.ewallet) {
+            if (getPaymentMethodData().getEwallet().getComment().trim().equals("") && configOptionApplicationController.getBooleanValueByKey("Patient Deposit - E-Wallet Comment is Mandatory", false)) {
+                JsfUtil.addErrorMessage("Please Enter a E-Wallet Comment..");
+                error = true;
+            }
+            if(getPaymentMethodData().getEwallet().getTotalValue() <= 0){
+                JsfUtil.addErrorMessage("Entered Value is Wrong..");
+                error = true;
+            }
+        } else if (bill.getPaymentMethod() == PaymentMethod.Slip) {
+            if (getPaymentMethodData().getSlip().getComment().trim().equals("") && configOptionApplicationController.getBooleanValueByKey("Patient Deposit - Slip Comment is Mandatory", false)) {
+                JsfUtil.addErrorMessage("Please Enter a Slip Comment..");
+                error = true;
+            }
+            if(getPaymentMethodData().getSlip().getTotalValue() <= 0){
+                JsfUtil.addErrorMessage("Entered Value is Wrong..");
+                error = true;
+            }
+        } else if (bill.getPaymentMethod() == PaymentMethod.Credit) {
+            if (getPaymentMethodData().getCredit().getComment().trim().equals("") && configOptionApplicationController.getBooleanValueByKey("Patient Deposit - Credit Comment is Mandatory", false)) {
+                JsfUtil.addErrorMessage("Please Enter a Credit Comment..");
+                error = true;
+            }
+            if(getPaymentMethodData().getCredit().getTotalValue() <= 0){
+                JsfUtil.addErrorMessage("Entered Value is Wrong..");
+                error = true;
+            }
+        }
+        return error;
+    }
 
     public void settlePatientDepositReceive() {
         if (getBill().getPaymentMethod() == null) {
@@ -1301,10 +1367,12 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return 4;
         }
 
-        if (getBill().getComments().trim().equalsIgnoreCase("")) {
+        if(getBill().getPaymentMethod() == PaymentMethod.Cash){
+            if (getBill().getComments().trim().equalsIgnoreCase("")) {
             JsfUtil.addErrorMessage("Please Add Comment");
             System.out.println("erior 5");
             return 5;
+        }
         }
 
         if (paymentSchemeController.checkPaymentMethodError(getBill().getPaymentMethod(), paymentMethodData)) {

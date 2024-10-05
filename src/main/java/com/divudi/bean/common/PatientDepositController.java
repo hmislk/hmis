@@ -60,6 +60,8 @@ public class PatientDepositController implements Serializable, ControllerWithPat
     ReportController reportController;
     @Inject
     DrawerController drawerController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
     @EJB
     private PatientDepositFacade patientDepositFacade;
     @EJB
@@ -152,6 +154,10 @@ public class PatientDepositController implements Serializable, ControllerWithPat
             JsfUtil.addErrorMessage("Please Select a Patient");
             return;
         }
+        if (patientController.validatePaymentMethodData()) {
+            return;
+        }
+        patientController.setBillNetTotal();
         int code = patientController.settlePatientDepositReceiveNew();
 
         if (code == 1) {
@@ -201,6 +207,10 @@ public class PatientDepositController implements Serializable, ControllerWithPat
             JsfUtil.addErrorMessage("Please Select a Patient");
             return;
         }
+        if (patientController.validatePaymentMethodData()) {
+            return;
+        }
+        patientController.setBillNetTotal();
         if (current.getBalance() < patientController.getBill().getNetTotal()) {
             JsfUtil.addErrorMessage("Can't Refund a Total More that Deposit");
             return;
