@@ -1171,8 +1171,10 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public void updateForPaymentHandoverSelectionAtCreate() {
-        selectedBundle.markSelectedAtHandover();
-        selectedBundle.calculateTotalsByPaymentsAndDenominations();
+        if (selectedBundle != null) {
+            selectedBundle.markSelectedAtHandover();
+            selectedBundle.calculateTotalsByPaymentsAndDenominations();
+        }
         bundle.aggregateTotalsFromChildBundles();
     }
 
@@ -4168,7 +4170,7 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("No Payments to Handover");
             return null;
         }
-        if (Math.abs(bundle.getCashValue() - bundle.getCashHandoverValue()) > 1) {
+        if (Math.abs(bundle.getDenominatorValue() - bundle.getCashHandoverValue()) > 1) {
             JsfUtil.addErrorMessage("Cash Value Collected and the cash value Handing over are different. Cannot handover.");
             return null;
         }
