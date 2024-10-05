@@ -604,7 +604,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         Bill printingBill = createBillForChannelReshedule(bs);
         BillItem savingBillItem = createSessionItemForReshedule(printingBill);
         if (printingBill.getBillType() == BillType.ChannelResheduleWithPayment) {
-            createPayment(printingBill, paymentMethod);
+            List<Payment> p = createPayment(printingBill, paymentMethod);
+            drawerController.updateDrawerForIns(p);
         }
 
         newBillSession.copy(bs);
@@ -2544,6 +2545,15 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 return true;
             }
         }
+        if(getCancelPaymentMethod() == null){
+             JsfUtil.addErrorMessage("Can't Cancel Bill Without a Payement method");
+                return true;
+        }
+        
+        if(getCancelPaymentMethod() == PaymentMethod.MultiplePaymentMethods){
+             JsfUtil.addErrorMessage("Can't Cancel Bill under Multiple Payment method");
+                return true;
+        }
 
         if (getBillSession().getBill().isCancelled()) {
             JsfUtil.addErrorMessage("Already Cancelled");
@@ -2654,7 +2664,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         } else {
             CancelledBill cb = createCancelBill(bill);
-            createPaymentForCancellationsAndRefunds(cb, bill.getPaidBill().getPaymentMethod());
+            Payment p = createPaymentForCancellationsAndRefunds(cb, bill.getPaidBill().getPaymentMethod());
+            drawerController.updateDrawerForOuts(p);
             BillItem cItem = cancelBillItems(billItem, cb);
             BillSession cbs = cancelBillSession(billSession, cb, cItem);
             bill.setCancelled(true);
@@ -2879,6 +2890,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         CancelledBill cb = new CancelledBill();
 
         cb.copy(bill);
+        cb.setPaymentMethod(cancelPaymentMethod);
         cb.invertValue(bill);
         cb.setBilledBill(bill);
         cb.setBillDate(new Date());
@@ -2906,7 +2918,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         cb.setBillTypeAtomic(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
         getBillFacade().create(cb);
 
-        if (bill.getPaymentMethod() == PaymentMethod.Agent || bill.getPaymentMethod() == PaymentMethod.Card) {
+        if (bill.getPaymentMethod() == PaymentMethod.Agent || bill.getPaymentMethod() == PaymentMethod.Card || bill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
             //cb.setPaymentMethod(cancelPaymentMethod);
             //this is temp solution
             cb.setPaymentMethod(PaymentMethod.Cash);
@@ -6208,6 +6220,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
         billToCaclculate.setDiscount(calculatingGrossBillTotal - calculatingNetBillTotal);
         billToCaclculate.setNetTotal(calculatingNetBillTotal);
+        System.out.println(calculatingNetBillTotal+" g "+ calculatingGrossBillTotal);
         billToCaclculate.setTotal(calculatingGrossBillTotal);
         getBillFacade().edit(billToCaclculate);
     }
@@ -7233,7 +7246,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         b.setSingleBillSession(bs);
         getBillFacade().editAndCommit(b);
 
-        createPayment(b, settlePaymentMethod);
+        List<Payment> p = createPayment(b, settlePaymentMethod);
+        drawerController.updateDrawerForIns(p);
 
         if (toStaff != null && settlePaymentMethod == PaymentMethod.Staff_Welfare) {
             staffBean.updateStaffWelfare(toStaff, getBillSession().getBill().getTotal());
@@ -7608,6 +7622,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             BillItem rBilItm = refundBillItems(billItem, rb);
             createReturnBillFee(billFees, rb, rBilItm);
             Payment p = createPaymentForCancellationsAndRefunds(rb, rb.getPaymentMethod());
+            drawerController.updateDrawerForOuts(p);
             BillSession rSession = refundBillSession(billSession, rb, rBilItm);
 
             billSession.setReferenceBillSession(rSession);
@@ -7634,6 +7649,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             BillItem rBilItm = refundBillItems(billItem, rb);
             createReturnBillFee(billFees, rb, rBilItm);
             Payment p = createPaymentForCancellationsAndRefunds(rb, bill.getPaidBill().getPaymentMethod());
+            drawerController.updateDrawerForOuts(p);
             BillSession rSession = refundBillSession(billSession, rb, rBilItm);
 
             billSession.setReferenceBillSession(rSession);
@@ -8393,11 +8409,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public PaymentMethod getCancelPaymentMethod() {
-        if (selectedBillSession != null) {
-            if (selectedBillSession.getBillItem().getBill() != null) {
-                cancelPaymentMethod = selectedBillSession.getBillItem().getBill().getPaymentMethod();
-            }
-        }
         return cancelPaymentMethod;
     }
 
