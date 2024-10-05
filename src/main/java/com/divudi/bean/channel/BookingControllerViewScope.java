@@ -6220,6 +6220,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
         billToCaclculate.setDiscount(calculatingGrossBillTotal - calculatingNetBillTotal);
         billToCaclculate.setNetTotal(calculatingNetBillTotal);
+        System.out.println(calculatingNetBillTotal+" g "+ calculatingGrossBillTotal);
         billToCaclculate.setTotal(calculatingGrossBillTotal);
         getBillFacade().edit(billToCaclculate);
     }

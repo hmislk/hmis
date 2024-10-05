@@ -1171,8 +1171,10 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public void updateForPaymentHandoverSelectionAtCreate() {
-        selectedBundle.markSelectedAtHandover();
-        selectedBundle.calculateTotalsByPaymentsAndDenominations();
+        if (selectedBundle != null) {
+            selectedBundle.markSelectedAtHandover();
+            selectedBundle.calculateTotalsByPaymentsAndDenominations();
+        }
         bundle.aggregateTotalsFromChildBundles();
     }
 
@@ -1213,7 +1215,12 @@ public class FinancialTransactionController implements Serializable {
         prepareToAddNewShiftExcessRecord();
         return "/cashier/record_shift_excess?faces-redirect=true";
     }
-
+    
+    public String navigateToCashierShiftBillSearch() {
+        resetClassVariables();
+        return "/cashier/cashier_shift_bill_search?faces-redirect=true";
+    }
+    
     // Method to navigate to the Transfer Payment Method page
     public String navigateToTransferPaymentMethod() {
         resetClassVariables();
@@ -1897,7 +1904,7 @@ public class FinancialTransactionController implements Serializable {
         nonClosedShiftStartFundBill = null;
         paymentsFromShiftSratToNow = null;
         department = null;
-
+        searchController.setBills(null);
     }
 
     public void resetClassVariablesForAcceptHandoverBill() {
@@ -4164,7 +4171,7 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("No Payments to Handover");
             return null;
         }
-        if (Math.abs(bundle.getCashValue() - bundle.getCashHandoverValue()) > 1) {
+        if (Math.abs(bundle.getDenominatorValue() - bundle.getCashHandoverValue()) > 1) {
             JsfUtil.addErrorMessage("Cash Value Collected and the cash value Handing over are different. Cannot handover.");
             return null;
         }

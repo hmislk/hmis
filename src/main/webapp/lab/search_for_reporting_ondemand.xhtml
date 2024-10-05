@@ -311,6 +311,16 @@
                                                 <f:setPropertyActionListener value="#{pi.investigation}" target="#{investigationController.current}"  />
                                             </p:commandButton>
                                         </h:outputLabel>
+                                        
+                                        <ui:repeat value="#{patientInvestigationController.getPatientSampleComponentsByInvestigation(pi)}" var="psc">
+                                                <div class="ui-g d-grid" style="margin-bottom: 10px;">
+                                                    <div class="ui-g-6">
+                                                        <i class="fa fa-vial"></i>
+                                                        <h:outputText value="#{psc.patientSample.id}" class="text-primary" />
+                                                    </div>
+                                                </div>
+                                            </ui:repeat>
+                                        
                                     </p:column>
 
                                     <p:column rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow Local Number For Opd Billing')}" headerText="Local Number"  styleClass="alignTop" style="width: 32em;">

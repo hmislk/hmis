@@ -3155,8 +3155,13 @@ public class BillSearch implements Serializable {
         return "/channel/channel_payment_bill_reprint?faces-redirect=true;";
     }
     
-    public String navigateToViewSupplimentaryIncomeBill(){
+    public String navigateToViewSupplimentaryIncomeBill(Bill bill){
+        loadBillDetails(bill);
         return "/cashier/income_bill_reprint?faces-redirect=true;";
+    }
+    public String navigateToViewCashierShiftShortageBill(Bill bill){
+        loadBillDetails(bill);        
+        return "/cashier/shift_shortage_bill_reprint?faces-redirect=true;";
     }
 //    //to do
 //    public String navigateToViewOpdProfessionalPaymentBill() {
@@ -3346,7 +3351,9 @@ public class BillSearch implements Serializable {
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION:
                 return navigateToViewChannelingProfessionalPaymentBill();
             case SUPPLEMENTARY_INCOME:
-                return navigateToViewSupplimentaryIncomeBill();
+                return navigateToViewSupplimentaryIncomeBill(bill);
+            case FUND_SHIFT_SHORTAGE_BILL:
+                return navigateToViewCashierShiftShortageBill(bill);
 
         }
 
