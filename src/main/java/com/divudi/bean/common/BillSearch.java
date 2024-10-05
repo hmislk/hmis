@@ -3152,9 +3152,12 @@ public class BillSearch implements Serializable {
         }
         channelSearchController.setBill(bill);
         channelSearchController.setPrintPreview(true);
-        return "/channel/channel_payment_bill_reprint.xhtml?faces-redirect=true;";
+        return "/channel/channel_payment_bill_reprint?faces-redirect=true;";
     }
-
+    
+    public String navigateToViewSupplimentaryIncomeBill(){
+        return "/cashier/income_bill_reprint?faces-redirect=true;";
+    }
 //    //to do
 //    public String navigateToViewOpdProfessionalPaymentBill() {
 //        if (bill == null) {
@@ -3342,6 +3345,8 @@ public class BillSearch implements Serializable {
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN:
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION:
                 return navigateToViewChannelingProfessionalPaymentBill();
+            case SUPPLEMENTARY_INCOME:
+                return navigateToViewSupplimentaryIncomeBill();
 
         }
 
