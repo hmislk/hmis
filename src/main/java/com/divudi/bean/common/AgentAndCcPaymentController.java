@@ -173,11 +173,6 @@ public class AgentAndCcPaymentController implements Serializable {
             JsfUtil.addErrorMessage("Select a Payement method");
             return true;
         }
-        
-        if (getCurrent().getNetTotal()<= 0) {
-            JsfUtil.addErrorMessage("Add Valid Amount");
-            return true;
-        }
 
         if (getPaymentSchemeController().checkPaymentMethodError(getCurrent().getPaymentMethod(), paymentMethodData)) {
             return true;
@@ -332,6 +327,12 @@ public class AgentAndCcPaymentController implements Serializable {
             return;
         }
         addPaymentMethordValueToTotal(current, getCurrent().getPaymentMethod());
+        
+        if (getCurrent().getNetTotal() <= 0) {
+            JsfUtil.addErrorMessage("Add Valid Amount");
+            return;
+        }
+        
         createAndAddBillItemToCcPaymentReceiptBill();
         getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
 

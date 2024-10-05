@@ -24,6 +24,8 @@
             <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}"/>
             <p:inputText autocomplete="off" value="#{searchController.searchKeyword.code}"/>
         </h:panelGrid>
+        
+        <p:spacer height="20"/>
         <p:dataTable rowIndexVar="i" id="tblBills" value="#{searchController.bills}" var="bill" >
             <f:facet name="header">
                 <h:outputLabel value="PURCHASE ORDER REQUEST"/>
