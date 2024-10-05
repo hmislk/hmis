@@ -60,6 +60,8 @@ import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -1201,7 +1203,6 @@ public class ReportController implements Serializable {
             jpql += " AND (i.billItem.bill.collectingCentre is not null OR i.billItem.bill.fromInstitution.institutionType=:ccType) ";
             params.put("ccType", InstitutionType.CollectingCentre);
         }
-        
 
         if (route != null) {
             jpql += " AND (i.billItem.bill.collectingCentre.route = :route OR i.billItem.bill.fromInstitution.route = :route) ";
@@ -1841,11 +1842,11 @@ public class ReportController implements Serializable {
         }
         return "/reports/lab/turn_around_time_details?faces-redirect=true";
     }
-    
+
     public String navigateToTestWiseCountReports() {
         return "/reports/lab/test_wise_count_report?faces-redirect=true";
     }
-    
+
     public String navigateToLabBillItemList() {
         return "/reports/lab/lab_bill_item_list?faces-redirect=true";
     }
@@ -2654,56 +2655,103 @@ public class ReportController implements Serializable {
 
     }
 
-     public void processLabTestWiseCountReport() {
-        String jpql = "select new  com.divudi.data.TestWiseCountReport("
-                + "bi.item.name, "
-                + "count(bi.item.name), "
-                + "sum(bi.hospitalFee) , "
-                + "sum(bi.collectingCentreFee), "
-                + "sum(bi.staffFee), "
-                + "sum(bi.netValue)"
-                + ") "
-                + " from BillItem bi "
-                + " where bi.retired=:ret"
-                + " and bi.bill.billDate between :fd and :td "
-                + " and bi.bill.billType != :bType ";
+    public void processLabTestWiseCountReport() {
+    String jpql = "select new com.divudi.data.TestWiseCountReport("
+            + "bi.item.name, "
+            + "count(bi.item.name), "
+            + "sum(bi.hospitalFee), "
+            + "sum(bi.collectingCentreFee), "
+            + "sum(bi.staffFee), "
+            + "sum(bi.netValue) "
+            + ") "
+            + "from BillItem bi "
+            + "where bi.retired = :ret "
+            + "and bi.bill.billDate between :fd and :td "
+            + "and bi.bill.billTypeAtomic IN :bType " // Corrected IN clause
+            + "and type(bi.item) = :invType ";
 
-        if (false) {
-            BillItem bi = new BillItem();
-            bi.getItem();
-            bi.getHospitalFee();
-            bi.getCollectingCentreFee();
-            bi.getStaffFee();
-            bi.getNetValue();
-        }
-
-        Map<String, Object> m = new HashMap<>();
-        m.put("ret", false);
-        m.put("fd", fromDate);
-        m.put("td", toDate);
-        m.put("bType", BillType.CollectingCentreBill);
-
-        if (institution != null) {
-            jpql += " and bi.bill.institution = :ins ";
-            m.put("ins", institution);
-        }
-
-        if (department != null) {
-            jpql += " and bi.bill.department = :dep ";
-            m.put("dep", department);
-        }
-        
-        if (site != null) {
-            jpql += " and bi.bill.department.site = :site ";
-            m.put("site", site);
-        }
-
-        jpql += " group by bi.item.name";
-
-        testWiseCounts = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m);
-
+    // Adding filters for institution, department, site
+    if (institution != null) {
+        jpql += "and bi.bill.institution = :ins ";
     }
-    
+    if (department != null) {
+        jpql += "and bi.bill.department = :dep ";
+    }
+    if (site != null) {
+        jpql += "and bi.bill.department.site = :site ";
+    }
+    jpql += "group by bi.item.name";
+
+    Map<String, Object> m = new HashMap<>();
+    m.put("ret", false);
+    m.put("fd", fromDate);
+    m.put("td", toDate);
+
+    // Handle multiple bill types
+    List<BillTypeAtomic> bTypes = Arrays.asList(
+            BillTypeAtomic.OPD_BILL_WITH_PAYMENT,
+            BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER
+    );
+    m.put("bType", bTypes);  // Use 'bType' for IN clause
+
+    m.put("invType", Investigation.class);
+
+    if (institution != null) {
+        m.put("ins", institution);
+    }
+    if (department != null) {
+        m.put("dep", department);
+    }
+    if (site != null) {
+        m.put("site", site);
+    }
+
+    // Fetch results for OpdBill
+    List<TestWiseCountReport> positiveResults = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m);
+
+    // Now fetch results for OpdBillCancel (use a list for single bType)
+    m.put("bType", Collections.singletonList(BillTypeAtomic.OPD_BILL_CANCELLATION));
+    List<TestWiseCountReport> cancelResults = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m);
+
+    // Now fetch results for OpdBillRefund (use a list for single bType)
+    m.put("bType", Collections.singletonList(BillTypeAtomic.OPD_BILL_REFUND));
+    List<TestWiseCountReport> refundResults = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m);
+
+    // Subtract cancel and refund results from the main results
+    Map<String, TestWiseCountReport> resultMap = new HashMap<>();
+
+    for (TestWiseCountReport posResult : positiveResults) {
+        resultMap.put(posResult.getTestName(), posResult);
+    }
+
+    // Subtract cancel results
+    for (TestWiseCountReport cancelResult : cancelResults) {
+        TestWiseCountReport posResult = resultMap.get(cancelResult.getTestName());
+        if (posResult != null) {
+            posResult.setCount(posResult.getCount() - Math.abs(cancelResult.getCount()));
+            posResult.setHosFee(posResult.getHosFee() - Math.abs(cancelResult.getHosFee()));
+            posResult.setCcFee(posResult.getCcFee() - Math.abs(cancelResult.getCcFee()));
+            posResult.setProFee(posResult.getProFee() - Math.abs(cancelResult.getProFee()));
+            posResult.setTotal(posResult.getTotal() - Math.abs(cancelResult.getTotal()));
+        }
+    }
+
+    // Subtract refund results
+    for (TestWiseCountReport refundResult : refundResults) {
+        TestWiseCountReport posResult = resultMap.get(refundResult.getTestName());
+        if (posResult != null) {
+            posResult.setCount(posResult.getCount() - Math.abs(refundResult.getCount()));
+            posResult.setHosFee(posResult.getHosFee() - Math.abs(refundResult.getHosFee()));
+            posResult.setCcFee(posResult.getCcFee() - Math.abs(refundResult.getCcFee()));
+            posResult.setProFee(posResult.getProFee() - Math.abs(refundResult.getProFee()));
+            posResult.setTotal(posResult.getTotal() - Math.abs(refundResult.getTotal()));
+        }
+    }
+
+    testWiseCounts = new ArrayList<>(resultMap.values());
+}
+
+
     private List<TestWiseCountReport> testWiseCounts;
 
     public List<TestWiseCountReport> getTestWiseCounts() {

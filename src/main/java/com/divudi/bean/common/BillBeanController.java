@@ -4020,6 +4020,8 @@ public class BillBeanController implements Serializable {
         if (ptIx.getId() == null) {
             getPatientInvestigationFacade().create(ptIx);
         }
+        
+        
 
     }
 

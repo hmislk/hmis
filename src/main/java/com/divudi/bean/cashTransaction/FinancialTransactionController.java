@@ -1217,6 +1217,7 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String navigateToCashierShiftBillSearch() {
+        resetClassVariables();
         return "/cashier/cashier_shift_bill_search?faces-redirect=true";
     }
 
@@ -1903,7 +1904,7 @@ public class FinancialTransactionController implements Serializable {
         nonClosedShiftStartFundBill = null;
         paymentsFromShiftSratToNow = null;
         department = null;
-
+        searchController.setBills(null);
     }
 
     public void resetClassVariablesForAcceptHandoverBill() {
