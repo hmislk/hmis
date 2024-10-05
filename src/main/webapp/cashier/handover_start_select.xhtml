@@ -424,7 +424,7 @@
                                     </p:column>
                                     <p:column  headerText="Select to Handover">
                                         <p:selectBooleanCheckbox id="checkCardSelected" value="#{cardPayment.payment.selectedForHandover}" >
-                                            <p:ajax update="checkCardSelected" ></p:ajax>
+                                            <p:ajax process="checkCardSelected" ></p:ajax>
                                         </p:selectBooleanCheckbox>
                                     </p:column>
                                 </p:dataTable>
