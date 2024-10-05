@@ -84,7 +84,6 @@ public class SessionInstanceController implements Serializable {
         List<SessionInstance> sessionInstances;
         Map<String, Object> m = new HashMap<>();
         StringBuilder jpql = new StringBuilder("select i from SessionInstance i where i.retired=:ret ");
-
         // Handle sessionDate equality check
         if (sessionDate != null) {
             jpql.append(" and i.sessionDate = :sd ");
