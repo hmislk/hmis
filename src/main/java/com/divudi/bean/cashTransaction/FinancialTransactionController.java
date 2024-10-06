@@ -3548,7 +3548,11 @@ public class FinancialTransactionController implements Serializable {
         bundleToHoldDeptUserDayBundle.setBundles(new ArrayList<>(groupedBundles.values()));
         bundleToHoldDeptUserDayBundle.setStartBill(startBill);
         bundleToHoldDeptUserDayBundle.setEndBill(endBill);
-        bundleToHoldDeptUserDayBundle.setUser(startBill.getCreater());
+        if (startBill != null) {
+            bundleToHoldDeptUserDayBundle.setUser(startBill.getCreater());
+        } else {
+            bundleToHoldDeptUserDayBundle.setUser(sessionController.getLoggedUser());
+        }
 
         return bundleToHoldDeptUserDayBundle;
     }
