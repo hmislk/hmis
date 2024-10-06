@@ -12325,6 +12325,11 @@ public class SearchController implements Serializable {
         b.calculateTotals();
         return b;
     }
+    
+    public void generateMyCashierSummary() {
+        webUser =sessionController.getLoggedUser();
+        generateCashierSummary();
+    }
 
     public void generateCashierSummary() {
         bundle = new ReportTemplateRowBundle();
