@@ -3082,6 +3082,26 @@ public class BillSearch implements Serializable {
         }
         return "/opd/view/cancelled_opd_bill?faces-redirect=true;";
     }
+    
+    public String navigateToReprintOpdProfessionalPaymentBill() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Nothing to cancel");
+            return "";
+        }
+        return "/opd/professional_payments/payment_bill_reprint?faces-redirect=true;";
+    }
+    
+    public String navigateToViewOpdProfessionalPaymentsDone() {
+        return "/opd/professional_payments/opd_search_professional_payment_done?faces-redirect=true;";
+    }
+    
+    public String navigateToViewOpdProfessionalPaymentsDue() {
+        return "/opd/professional_payments/opd_search_professional_payment_due?faces-redirect=true;";
+    }
+    
+    public String navigateToViewOpdPayProfessionalPayments() {
+        return "/opd/professional_payments/payment_staff_bill?faces-redirect=true;";
+    }
 
     public String navigateToViewCancallationOpdbATCHBill() {
         if (viewingBill == null) {
