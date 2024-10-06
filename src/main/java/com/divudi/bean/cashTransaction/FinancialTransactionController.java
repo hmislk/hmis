@@ -2509,7 +2509,7 @@ public class FinancialTransactionController implements Serializable {
         params.put("bta", BillTypeAtomic.FUND_SHIFT_START_BILL);
 
         if (completed != null) {
-            jpql += " and b.completed=:completed ";
+            jpql += " and b.referenceBill.completed=:completed ";
             params.put("completed", completed);
         }
 
