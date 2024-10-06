@@ -251,7 +251,7 @@ public class Bill implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date checkeAt;
     //Retairing properties
-    boolean retired;
+    private boolean retired;
     @ManyToOne(fetch = FetchType.LAZY)
     private WebUser retirer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
@@ -395,6 +395,11 @@ public class Bill implements Serializable {
         if (status == null) {
             status = PatientInvestigationStatus.ORDERED;
         }
+        completed=false;
+        retired=false;
+        reactivated=false;
+        refunded=false;
+        cancelled=false;
     }
 
     private void generateBillPrintFromBillTemplate() {

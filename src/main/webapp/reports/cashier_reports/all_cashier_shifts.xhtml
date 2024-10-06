@@ -4,13 +4,11 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:ezb="http://xmlns.jcp.org/jsf/composite/ezcomp/bundles"
-      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
 
-        <ui:composition template="/cashier/index.xhtml">
+        <ui:composition template="/reports/index.xhtml">
 
             <ui:define name="subcontent">
                 <h:form>
@@ -44,6 +42,28 @@
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
                                 />
 
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="User" for="acStaff" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:autoComplete
+                                completeMethod="#{webUserController.completeUser}"
+                                class="w-100"
+                                id="acStaff" 
+                                inputStyleClass="w-100"
+                                value="#{financialTransactionController.user}" 
+                                var="user"
+                                scrollHeight="450"
+                                itemLabel="#{user.webUserPerson.name}" 
+                                itemValue="#{user}" >
+                                <p:column headerText="Username" >
+                                    <h:outputText value="#{user.name}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Name" >
+                                    <h:outputText value="#{user.webUserPerson.name}" ></h:outputText>
+                                </p:column>
+                            </p:autoComplete>
+
                         </p:panelGrid>
                         <p:panelGrid columns="1" styleClass="m-3">
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -51,7 +71,7 @@
                                 <!-- Button to List All Shifts -->
                                 <p:commandButton 
                                     value="List All My Shifts"
-                                    action="#{financialTransactionController.fillMyShifts}"
+                                    action="#{financialTransactionController.fillUserShifts}"
                                     ajax="false"
                                     styleClass="ui-button-success m-1"
                                     icon="pi pi-list"
@@ -60,7 +80,7 @@
                                 <!-- Button to List Handover Completed Bills -->
                                 <p:commandButton 
                                     value="List Handover Completed Bills"
-                                    action="#{financialTransactionController.fillMyCompletedShifts}"
+                                    action="#{financialTransactionController.fillUserCompletedShifts}"
                                     icon="pi pi-check" 
                                     ajax="false"
                                     styleClass="ui-button-success m-1"
@@ -69,7 +89,7 @@
                                 <!-- Button to List Handover Uncompleted Bills -->
                                 <p:commandButton 
                                     value="List Handover Uncompleted Bills"
-                                    action="#{financialTransactionController.fillMyUncompletedShifts}"
+                                    action="#{financialTransactionController.fillUserUncompletedShifts}"
                                     icon="pi pi-times" 
                                     ajax="false"
                                     styleClass="ui-button-danger m-1"
@@ -150,14 +170,6 @@
                             </p:column>
 
                             <p:column headerText="Actions">
-                                <p:commandButton 
-                                    ajax="false"
-                                    class="ui-button-warning m-1" 
-                                    value="Start Handover" 
-                                    disabled="#{ssb.bill.referenceBill.completed}"
-                                    icon="pi pi-play" 
-                                    action="#{financialTransactionController.navigateToHandoverCreateBillForSelectedShift(ssb.bill)}">
-                                </p:commandButton>
                                 <p:commandButton 
                                     ajax="false"
                                     class="ui-button-success m-1" 
