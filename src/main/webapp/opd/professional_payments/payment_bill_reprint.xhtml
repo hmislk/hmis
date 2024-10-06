@@ -8,22 +8,27 @@
       xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill">
 
     <h:body>
-        <ui:composition template="/resources/template/template.xhtml">
-            <ui:define name="content">
+        <ui:composition template="/payments/pay_index.xhtml">
+            <ui:define name="admin">
                 <h:form>
                     <p:panel header="Reprint" >
                         <f:facet name="header" >
                             <div class="d-flex align-items-center justify-content-between">
                                 <div>
-                                      <h:outputLabel value="Reprint" ></h:outputLabel>
+                                    <h:outputLabel value="Reprint" ></h:outputLabel>
                                 </div>
                                 <div>
-                                    <p:commandButton ajax="false" class="ui-button-danger" icon="fas fa-ban" value="To Cancel" action="payment_staff_bill_cancel" >                           
-                            </p:commandButton>
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        class="ui-button-danger" 
+                                        icon="fas fa-ban" 
+                                        value="To Cancel" 
+                                        action="#{billSearch.navigateToCancelOpdProfessionalPaymentBill()}  " >                           
+                                    </p:commandButton>
                                 </div>
                             </div>
                         </f:facet>
-                         <div class="row">
+                        <div class="row">
                             <div class="col-md-6">
                                 <p:panel header="Patient Detail">
                                     <f:facet name="header">
@@ -85,22 +90,22 @@
                                 </p:panel>
                             </div>
                         </div>
-                            <p:panel header="Bill Fee Details" class="my-2">
-                                <p:dataTable value="#{billSearch.bill.billItems}" var="bip21" emptyMessage="No Items" >
-                                    <p:column headerText="Bill No">
-                                        <h:outputLabel value="#{bip21.referenceBill.deptId}" />
-                                    </p:column>
-                                    <p:column headerText="Date">
-                                        <h:outputLabel value="#{bip21.referenceBill.createdAt}" />
-                                    </p:column>
-                                    <p:column headerText="Test/Service">
-                                        <h:outputLabel value="#{bip21.paidForBillFee.billItem.item.name}" />
-                                    </p:column>
-                                    <p:column headerText="Fee" >
-                                        <h:outputLabel value="#{bip21.netValue}" />
-                                    </p:column>
-                                </p:dataTable>
-                            </p:panel>
+                        <p:panel header="Bill Fee Details" class="my-2">
+                            <p:dataTable value="#{billSearch.bill.billItems}" var="bip21" emptyMessage="No Items" >
+                                <p:column headerText="Bill No">
+                                    <h:outputLabel value="#{bip21.referenceBill.deptId}" />
+                                </p:column>
+                                <p:column headerText="Date">
+                                    <h:outputLabel value="#{bip21.referenceBill.createdAt}" />
+                                </p:column>
+                                <p:column headerText="Test/Service">
+                                    <h:outputLabel value="#{bip21.paidForBillFee.billItem.item.name}" />
+                                </p:column>
+                                <p:column headerText="Fee" >
+                                    <h:outputLabel value="#{bip21.netValue}" />
+                                </p:column>
+                            </p:dataTable>
+                        </p:panel>
                     </p:panel>
 
 
@@ -115,7 +120,7 @@
                     </p:commandButton>
                     <h:panelGroup id="profpaybill">
                         <bi:staffBill_1  bill="#{billSearch.bill}" dup="true" controller="#{billSearch}" >
-                    </bi:staffBill_1>
+                        </bi:staffBill_1>
                     </h:panelGroup>
                 </h:form>
 

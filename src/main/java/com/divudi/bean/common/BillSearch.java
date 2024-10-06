@@ -3085,10 +3085,18 @@ public class BillSearch implements Serializable {
     
     public String navigateToReprintOpdProfessionalPaymentBill() {
         if (bill == null) {
-            JsfUtil.addErrorMessage("Nothing to cancel");
+            JsfUtil.addErrorMessage("Nothing to Reprint");
             return "";
         }
         return "/opd/professional_payments/payment_bill_reprint?faces-redirect=true;";
+    }
+    
+    public String navigateToCancelOpdProfessionalPaymentBill() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Nothing to cancel");
+            return "";
+        }
+        return "/opd/professional_payments/payment_staff_bill_cancel?faces-redirect=true;";
     }
     
     public String navigateToViewOpdProfessionalPaymentsDone() {
