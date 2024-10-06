@@ -12325,6 +12325,11 @@ public class SearchController implements Serializable {
         b.calculateTotals();
         return b;
     }
+    
+    public void generateMyCashierSummary() {
+        webUser =sessionController.getLoggedUser();
+        generateCashierSummary();
+    }
 
     public void generateCashierSummary() {
         bundle = new ReportTemplateRowBundle();
@@ -12650,6 +12655,11 @@ public class SearchController implements Serializable {
             params.put("du", webUser);
         }
         drawerList = drawerFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+    
+    public void generateMyCashierDetailed() {
+        webUser= sessionController.getLoggedUser();
+        generateCashierDetailed();
     }
 
     public void generateCashierDetailed() {

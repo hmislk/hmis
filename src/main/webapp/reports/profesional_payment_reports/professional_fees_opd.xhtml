@@ -296,9 +296,23 @@
 
                             <p:column class="text-end">
                                 <f:facet name="header">
-                                    <h:outputText value="Paid Value" />
+                                    <h:outputText value="Customer Paid Value" />
                                 </f:facet>
                                 <h:outputText value="#{row.billFee.paidValue}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{searchController.bundle.total}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+                            
+                            <p:column class="text-end">
+                                <f:facet name="header">
+                                    <h:outputText value="Paid Value to Professional" />
+                                </f:facet>
+                                <h:outputText value="#{row.billFee.settleValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer">

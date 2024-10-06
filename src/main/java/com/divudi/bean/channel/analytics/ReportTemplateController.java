@@ -1366,7 +1366,7 @@ public class ReportTemplateController implements Serializable {
                 + " where bill.retired<>:br ";
         parameters.put("br", true);
 
-        if (btas != null) {
+        if (btas != null && !btas.isEmpty()) {
             jpql += " and bill.billTypeAtomic in :btas ";
             parameters.put("btas", btas);
         }
@@ -1377,22 +1377,22 @@ public class ReportTemplateController implements Serializable {
         }
 
         if (paramToDate != null) {
-            jpql += " and bill.billDate < :td ";
+            jpql += " and bill.billDate<:td ";
             parameters.put("td", paramToDate);
         }
 
         if (paramFromDate != null) {
-            jpql += " and bill.billDate > :fd ";
+            jpql += " and bill.billDate>:fd ";
             parameters.put("fd", paramFromDate);
         }
 
         if (paramStartId != null) {
-            jpql += " and bill.id > :sid ";
+            jpql += " and bill.id>:sid ";
             parameters.put("sid", paramStartId);
         }
 
         if (paramEndId != null) {
-            jpql += " and bill.id < :eid ";
+            jpql += " and bill.id<:eid ";
             parameters.put("eid", paramEndId);
         }
 
@@ -1443,6 +1443,9 @@ public class ReportTemplateController implements Serializable {
             jpql += " and bill.creater=:wu ";
             parameters.put("wu", paramUser);
         }
+        
+        System.out.println("jpql = " + jpql);
+        System.out.println("parameters = " + parameters);
 
         Double sumResult = ejbFacade.findSingleResultByJpql(jpql, parameters, TemporalType.DATE);
 

@@ -1264,6 +1264,14 @@ public class FinancialTransactionController implements Serializable {
     public String navigateToCashierSummary() {
         return "/cashier/cashier_summary?faces-redirect=true";
     }
+    
+    public String navigateToMyCashierSummary() {
+        return "/cashier/my_cashier_summary?faces-redirect=true";
+    }
+    
+    public String navigateToMyCashierDetails() {
+        return "/cashier/my_cashier_detailed?faces-redirect=true";
+    }
 
     public String navigateToCashierReport() {
         processShiftEndReport();
@@ -3548,7 +3556,11 @@ public class FinancialTransactionController implements Serializable {
         bundleToHoldDeptUserDayBundle.setBundles(new ArrayList<>(groupedBundles.values()));
         bundleToHoldDeptUserDayBundle.setStartBill(startBill);
         bundleToHoldDeptUserDayBundle.setEndBill(endBill);
-        bundleToHoldDeptUserDayBundle.setUser(startBill.getCreater());
+        if (startBill != null) {
+            bundleToHoldDeptUserDayBundle.setUser(startBill.getCreater());
+        } else {
+            bundleToHoldDeptUserDayBundle.setUser(sessionController.getLoggedUser());
+        }
 
         return bundleToHoldDeptUserDayBundle;
     }
