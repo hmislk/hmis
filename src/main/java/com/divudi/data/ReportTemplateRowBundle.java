@@ -462,8 +462,6 @@ public class ReportTemplateRowBundle implements Serializable {
         this.total=0.0;
         this.totalIn=0.0;
         this.totalOut=0.0;
-
-        // Check if the list of rows is not null and not empty
         if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
             for (ReportTemplateRow row : this.reportTemplateRows) {
                 if (row.getBillFee() == null) {
