@@ -2493,28 +2493,27 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public void fillMyShifts() {
-        fillMyShifts(null, null, null, null);
+        fillShifts(null, null, null, null, sessionController.getLoggedUser());
     }
 
-    public void fillMyShifts(Integer count) {
-        fillMyShifts(count, null, null, null);
-    }
-
-    public void fillMyShifts(Integer count, Boolean completed, Date fromDate, Date toDate) {
+    public void fillShifts(Integer count, Boolean completed, Date fromDate, Date toDate, WebUser paramUser) {
         String jpql = "Select new com.divudi.data.ReportTemplateRow(b) "
                 + " from Bill b "
                 + " where b.retired=:ret "
-                + " and b.billTypeAtomic=:bta "
-                + " and b.creater=:user ";
+                + " and b.billTypeAtomic=:bta ";
 
         Map<String, Object> params = new HashMap<>();
         params.put("ret", false);
-        params.put("user", sessionController.getLoggedUser());
         params.put("bta", BillTypeAtomic.FUND_SHIFT_START_BILL);
 
         if (completed != null) {
             jpql += " and b.completed=:completed ";
             params.put("completed", completed);
+        }
+
+        if (paramUser != null) {
+            jpql += " and b.creater=:user ";
+            params.put("user", paramUser);
         }
 
         if (fromDate != null && toDate != null) {
@@ -2536,17 +2535,31 @@ public class FinancialTransactionController implements Serializable {
         bundle.setReportTemplateRows(rows);
     }
 
-    public void fillCompletedBillsByPeriod() {
-        fillMyShifts(null, true, fromDate, toDate);
+    public void fillMyShifts(Integer count) {
+        fillShifts(count, null, null, null, sessionController.getLoggedUser());
     }
 
-    public void fillUncompletedBillsByPeriod() {
-        fillMyShifts(null, false, fromDate, toDate);
+    public void fillMyCompletedShifts() {
+        fillShifts(null, true, fromDate, toDate, sessionController.getLoggedUser());
     }
 
-    public void listLastUncompletedBills() {
-        fillMyShifts(10, false, null, null);
+    public void fillMyUncompletedShifts() {
+        fillShifts(null, false, fromDate, toDate, sessionController.getLoggedUser());
     }
+
+
+    public void fillUserShifts() {
+        fillShifts(null, null, null, null, user);
+    }
+
+    public void fillUserCompletedShifts() {
+        fillShifts(null, true, fromDate, toDate, user);
+    }
+
+    public void fillUserUncompletedShifts() {
+        fillShifts(null, false, fromDate, toDate, user);
+    }
+
 
     public String navigateToDayEndSummary() {
         return "/analytics/day_end_summery?faces-redirect=true";
@@ -4180,7 +4193,7 @@ public class FinancialTransactionController implements Serializable {
 
         return "/cashier/shift_end_summery_bill_print?faces-redirect=true";
     }
-    
+
     public String completeHandover() {
         if (user == null) {
             JsfUtil.addErrorMessage("Please select a user to handover the shift.");
@@ -4198,19 +4211,19 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("No Payments to Handover");
             return null;
         }
-        if (bundle.getStartBill()==null) {
+        if (bundle.getStartBill() == null) {
             JsfUtil.addErrorMessage("No Start");
             return null;
         }
-        if (bundle.getStartBill().getReferenceBill()==null) {
+        if (bundle.getStartBill().getReferenceBill() == null) {
             JsfUtil.addErrorMessage("Shift NOT ended. Can not complete Handover");
             return null;
         }
-        if (bundle.getEndBill()==null) {
+        if (bundle.getEndBill() == null) {
             JsfUtil.addErrorMessage("Shift NOT ended. Can not complete Handover");
             return null;
         }
-        
+
         bundle.getStartBill().setCompleted(true);
         bundle.getStartBill().setCompletedAt(new Date());
         bundle.getStartBill().setCompletedBy(sessionController.getLoggedUser());
