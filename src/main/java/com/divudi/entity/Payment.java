@@ -5,6 +5,7 @@
 package com.divudi.entity;
 
 import com.divudi.data.Denomination;
+import com.divudi.data.PaymentHandover;
 import com.divudi.data.PaymentMethod;
 import com.divudi.entity.cashTransaction.CashBook;
 import com.divudi.entity.cashTransaction.CashBookEntry;
@@ -172,6 +173,8 @@ public class Payment implements Serializable {
     private Payment cancelledPayment;
     @ManyToOne
     private Bill cancelledBill;
+    
+    private PaymentHandover transientPaymentHandover;
 
     public Payment() {
         cashbookEntryStated = false;
@@ -785,6 +788,15 @@ public class Payment implements Serializable {
     public void setHandingOverCompleted(boolean handingOverCompleted) {
         this.handingOverCompleted = handingOverCompleted;
     }
+
+    public PaymentHandover getTransientPaymentHandover() {
+        return transientPaymentHandover;
+    }
+
+    public void setTransientPaymentHandover(PaymentHandover transientPaymentHandover) {
+        this.transientPaymentHandover = transientPaymentHandover;
+    }
+    
     
     
 

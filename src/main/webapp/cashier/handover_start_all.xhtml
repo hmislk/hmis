@@ -27,15 +27,16 @@
                         <h:panelGroup id="gpPrint" >
                             <div class="row mx-2" >
                                 <div class="col-6">
-                                    <p:panelGrid layout="tabular" columns="2" class="w-100" >
-                                        <f:facet name="header" >
-                                            <p:outputLabel value="Shift" class="font-weight-bold" ></p:outputLabel>
+                                    <p:panelGrid layout="tabular" columns="2" class="w-100">
+                                        <f:facet name="header">
+                                            <p:outputLabel value="Shift" class="font-weight-bold" style="float:left;"/>
                                             <p:commandButton 
-                                                class="ui-button-success mx-2" 
-                                                ajax="false" 
-                                                value="&nbsp;&nbsp;Complete" 
-                                                icon="fa fa-handshake"
-                                                action="#{financialTransactionController.completeHandover()}" />
+                                                value="Mark Shift Handover Complete"
+                                                action="#{financialTransactionController.completeHandover()}"
+                                                icon="pi pi-check-circle"
+                                                style="float: right;"
+                                                styleClass="ui-button-success float-right"
+                                                ajax="false" />
                                         </f:facet>
                                         <!-- User with Icon -->
                                         <h:panelGroup>
@@ -289,6 +290,10 @@
                                                 update=":#{p:resolveFirstComponentWithId('txtCashHandover',view).clientId} :#{p:resolveFirstComponentWithId('tblCashier',view).clientId} " 
                                                 ></p:ajax>
                                         </p:selectBooleanCheckbox>
+                                    </p:column>
+                                    
+                                     <p:column headerText="Type" >
+                                         <h:outputText value="#{summary.paymentHandover.description}" />
                                     </p:column>
 
                                     <p:column headerText="Institution" >

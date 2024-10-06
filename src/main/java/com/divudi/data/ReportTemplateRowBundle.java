@@ -141,6 +141,8 @@ public class ReportTemplateRowBundle implements Serializable {
     private List<Department> departments;
     private Bill startBill;
     private Bill endBill;
+    
+    private PaymentHandover paymentHandover;
 
     private boolean selected;
 
@@ -1729,5 +1731,15 @@ public class ReportTemplateRowBundle implements Serializable {
     public void setDenominatorValue(double denominatorValue) {
         this.denominatorValue = denominatorValue;
     }
+
+    public PaymentHandover getPaymentHandover() {
+        return paymentHandover;
+    }
+
+    public void setPaymentHandover(PaymentHandover paymentHandover) {
+        this.paymentHandover = paymentHandover;
+    }
+    
+    
 
 }
