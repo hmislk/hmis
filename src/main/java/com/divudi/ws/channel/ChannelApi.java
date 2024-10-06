@@ -433,7 +433,7 @@ public class ChannelApi {
         return Response.status(Response.Status.ACCEPTED).entity(response).build();
     }
 
-    @GET
+    @POST
     @Path("/searchData")
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchDoctors(
@@ -483,24 +483,21 @@ public class ChannelApi {
                 .build();
     }
 
-    @Path("/testAPI")
-    public class SimpleTestService {
+    @POST
+    @Path("/test")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response testAPI() {
+        System.out.println("API test method called");
 
-        @GET
-        @Produces(MediaType.APPLICATION_JSON)
-        public Response testAPI() {
-            System.out.println("API test method called");
+        // Create a simple JSON object to return as response
+        JSONObject responseObject = new JSONObject();
+        responseObject.put("status", "success");
+        responseObject.put("message", "API is reachable and responding successfully.");
 
-            // Create a simple JSON object to return as response
-            JSONObject responseObject = new JSONObject();
-            responseObject.put("status", "success");
-            responseObject.put("message", "API is reachable and responding successfully.");
-
-            // Return a 200 OK response with the JSON object
-            return Response.status(Response.Status.OK)
-                    .entity(responseObject.toString())
-                    .build();
-        }
+        // Return a 200 OK response with the JSON object
+        return Response.status(Response.Status.OK)
+                .entity(responseObject.toString())
+                .build();
     }
 
     private JSONObject searchDoctor(
@@ -514,14 +511,16 @@ public class ChannelApi {
         // Parse the sessionDate
         System.out.println("searchDoctor");
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        Date fromDate;
-        try {
-            fromDate = dateFormat.parse(sessionDate);
-        } catch (ParseException e) {
-            System.err.println("Invalid date format: " + sessionDate);
-            return new JSONObject().put("error", "Invalid date format");
+        Date date = null;
+
+        if (sessionDate != null) {
+            try {
+                date = dateFormat.parse(sessionDate);
+            } catch (ParseException e) {
+                System.err.println("Invalid date format: " + sessionDate);
+                return new JSONObject().put("error", "Invalid date format");
+            }
         }
-        Date toDate = fromDate; // Set toDate as same as fromDate for single day search
 
         // Fetch necessary entities based on IDs
         Institution hospital = institutionController.findInstitution(hosID);
@@ -532,25 +531,31 @@ public class ChannelApi {
         List<Speciality> specialities = (speciality != null) ? Arrays.asList(speciality) : null;
 
         // Call the method to find session instances
-        List<SessionInstance> sessions = sessionInstanceController.findSessionInstance(hospital, specialities, consultant, fromDate, toDate);
+        List<SessionInstance> sessions = sessionInstanceController.findSessionInstance(hospital, specialities, consultant, null, null, date);
 
         // Process the results
         JSONArray hospitalArray = new JSONArray();
-        JSONObject hospitalObject = new JSONObject();
-        hospitalObject.put("hosId", hosID.toString());
-        hospitalObject.put("displayName", hospital != null ? hospital.getName() : "N/A");
 
         JSONArray doctorArray = new JSONArray();
         for (SessionInstance session : sessions) {
+            JSONObject hospitalObject = new JSONObject();
+            if (hosID != null) {
+                hospitalObject.put("hosId", session.getOriginatingSession().getInstitution().getId() != null ? session.getOriginatingSession().getInstitution().getId().toString() : "N/A");
+            }
+            if (hospital != null) {
+                hospitalObject.put("displayName", session.getOriginatingSession().getInstitution() != null ? session.getOriginatingSession().getInstitution().getName() : "N/A");
+            }
+
             JSONObject doctor = new JSONObject();
-            doctor.put("docNo", consultant != null ? consultant.getId().toString() : "N/A");
-            doctor.put("displayName", consultant != null ? consultant.getPerson().getNameWithTitle() : "N/A");
-            doctor.put("title", consultant != null ? consultant.getPerson().getTitle() : "N/A");
+            doctor.put("docNo", session.getOriginatingSession().getStaff().getPerson().getNameWithTitle() != null ? session.getOriginatingSession().getStaff().getId().toString() : "N/A");
+            doctor.put("displayName", session.getOriginatingSession().getStaff().getPerson().getNameWithTitle() != null ? session.getOriginatingSession().getStaff().getPerson().getNameWithTitle() : "N/A");
+            doctor.put("title", session.getOriginatingSession().getStaff().getPerson().getTitle() != null ? session.getOriginatingSession().getStaff().getPerson().getTitle().toString() : "N/A");
             doctor.put("nextAvailableDate", dateFormat.format(session.getSessionDate()));
             doctorArray.put(doctor);
+            hospitalObject.put("doctor", doctorArray);
+            hospitalArray.put(hospitalObject);
+
         }
-        hospitalObject.put("doctor", doctorArray);
-        hospitalArray.put(hospitalObject);
 
         JSONObject results = new JSONObject();
         results.put("totalCount", sessions.size()); // Total count of sessions

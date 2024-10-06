@@ -904,6 +904,10 @@ public class SearchController implements Serializable {
     public String navigateToAllCashierDrawersDetails() {
         return "/reports/cashier_reports/all_cashiers_drawer_details?faces-redirect=true";
     }
+    
+    public String navigateToAllCashierHandovers() {
+        return "/reports/cashier_reports/all_cashier_shifts?faces-redirect=true";
+    }
 
     public String navigatToReportDoctorPaymentOpd() {
         FacesContext context = FacesContext.getCurrentInstance();
@@ -4180,6 +4184,32 @@ public class SearchController implements Serializable {
         tmp.put("insTp", institutionType);
         tmp.put("bTp", bt);
         bills = getBillFacade().findByJpqlWithoutCache(sql, tmp, TemporalType.TIMESTAMP, maxResult);
+
+    }
+
+    public void createShiftShortageBillsTable() {
+        bills = null;
+        bills = new ArrayList<>();
+        String sql;
+        Map m = new HashMap();
+
+        sql = "Select b From Bill b where "
+                + " b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false "
+                + " and b.billTypeAtomic=:bTA "
+                + " and b.billType=:bT ";
+
+        m.put("fromDate", fromDate);        
+        m.put("toDate", toDate);
+        m.put("bTA", BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL);
+        m.put("bT", BillType.ShiftShortage);
+        bills = getBillFacade().findByJpql(sql, m);
+
+        if (bills == null || bills.isEmpty()) {
+            System.err.println("No bills found");
+        } else {
+            System.err.println("Bills found: " + bills.size());
+        }
 
     }
 
@@ -12295,6 +12325,11 @@ public class SearchController implements Serializable {
         b.calculateTotals();
         return b;
     }
+    
+    public void generateMyCashierSummary() {
+        webUser =sessionController.getLoggedUser();
+        generateCashierSummary();
+    }
 
     public void generateCashierSummary() {
         bundle = new ReportTemplateRowBundle();
@@ -12620,6 +12655,11 @@ public class SearchController implements Serializable {
             params.put("du", webUser);
         }
         drawerList = drawerFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+    
+    public void generateMyCashierDetailed() {
+        webUser= sessionController.getLoggedUser();
+        generateCashierDetailed();
     }
 
     public void generateCashierDetailed() {
@@ -13130,11 +13170,12 @@ public class SearchController implements Serializable {
 
             if (bi.getBill() == null) {
                 continue;
-            } else if (bi.getBill().getPaymentMethod() == null) {
-                continue;
-            } else if (bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.NONE) {
-                continue;
-            }
+            } 
+//            else if (bi.getBill().getPaymentMethod() == null) {
+//                continue;
+//            } else if (bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.NONE) {
+//                continue;
+//            }
 
             String categoryName = bi.getItem() != null && bi.getItem().getCategory() != null ? bi.getItem().getCategory().getName() : "No Category";
             String itemName = bi.getItem() != null ? bi.getItem().getName() : "No Item";
@@ -13331,6 +13372,8 @@ public class SearchController implements Serializable {
                     rtr.setSpeciality(speciality);
                 });
 
+        oiBundle.calculateTotalsForProfessionalFees();
+        
         return oiBundle;
     }
 

@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="./index.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel>
+                        <f:facet name="header">
+                            <div class="">
+                                <h:outputText styleClass="fas fa-search" />
+                                <h:outputLabel value="Shift Shortage Bill Search " class="mx-4"/>
+                            </div>
+                        </f:facet>
+                        <h:panelGroup>
+                            <div class="row">
+                                <div class="col-6">
+                                    <h:outputLabel value="From Date"/>
+                                    <p:calendar id="fromDate" 
+                                                value="#{searchController.fromDate}" 
+                                                navigator="false" 
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                                styleClass="dateTimePicker" 
+                                                class="w-100" 
+                                                inputStyleClass="form-control"
+                                                maxdate="#{commonController.endOfDayOnCurrentDate}">      
+                                    </p:calendar>
+                                </div>
+                                <div class="col-6">
+                                    <h:outputLabel value="To Date"/>
+                                    <p:calendar id="toDate"
+                                                value="#{searchController.toDate}"
+                                                navigator="false" 
+                                                styleClass="dateTimePicker"
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                                class="w-100"
+                                                inputStyleClass="form-control">                                                                              
+                                    </p:calendar>
+                                </div>
+
+                            </div>
+                            <p:commandButton class="ui-button-success"
+                                             icon="fas fa-search"
+                                             value="Search"
+                                             action="#{searchController.createShiftShortageBillsTable()}"
+                                             update="tb">
+                            </p:commandButton>
+                        </h:panelGroup>
+
+                        <p:dataTable id="tb"
+                                     value="#{searchController.bills}"
+                                     var="bill"
+                                     rows ="10"
+                                     paginator="true"
+                                     paginatorPosition="bottom"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="5,10,25,50">
+                            <p:column 
+                                headerText="No" 
+                                filterBy="#{bill.id}" 
+                                filterMatchMode="contains"
+                                sortBy="#{bill.id}"
+                                rendered="false"
+                                styleClass="alignTop" 
+                                width="15">
+                                <h:outputLabel value="#{bill.id}"/>
+                            </p:column>
+                            <p:column headerText="Bill No*" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}" filterMatchMode="contains">                                
+                                <div>
+                                    <p:commandLink 
+                                        id="billNo" 
+                                        ajax="false" 
+                                        value="#{bill.idStr}" 
+                                        action="#{billSearch.navigateToViewCashierShiftShortageBill(bill)}">
+                                        <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
+                                    </p:commandLink>
+                                </div>
+                                <div>
+                                    <p:commandLink
+                                        id="CancelBillNo"
+                                        ajax="false"
+                                        value="#{bill.cancelledBill.deptId}"
+                                        action="#{billSearch.navigateToViewSingleOpdBill()}"
+                                        rendered="#{bill.cancelled}" style="color: red">
+                                        <f:setPropertyActionListener value="#{bill.cancelledBill}" target="#{billSearch.bill}"/>
+                                    </p:commandLink>
+                                    <p:commandLink
+                                        id="RefundBillNo"
+                                        ajax="false"
+                                        value="#{bill.refundedBill.deptId}"
+                                        action="#{billSearch.navigateToViewSingleOpdBill()}"
+                                        rendered="#{bill.refunded}" style="color: orange">
+                                        <f:setPropertyActionListener value="#{bill.refundedBill}" target="#{billSearch.bill}"/>
+                                    </p:commandLink>
+                                </div>
+
+                            </p:column>
+                            <p:column headerText="Billed At" filterBy="#{bill.billDate}" sortBy="#{bill.billDate}">
+                                <h:panelGroup >
+                                    <p:outputLabel id="billTime1" value="#{bill.createdAt}" >
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
+                                    </p:outputLabel>
+
+                                </h:panelGroup>
+                            </p:column>
+
+                            <p:column headerText="Billed by" 
+                                      sortBy="#{bill.creater.name}" 
+                                      filterMatchMode="contains"
+                                      filterBy="#{bill.creater.name}">
+                                <h:outputLabel value="#{bill.creater.webUserPerson.name}" ></h:outputLabel>
+                                <h:panelGroup rendered="#{bill.cancelled or bill.refunded}" style="display: grid">
+                                    <h:outputLabel value="#{bill.cancelledBill.creater.webUserPerson.name}" style="color: red" rendered="#{bill.cancelled}"></h:outputLabel>
+                                    <h:outputLabel value="#{bill.refundedBill.creater.webUserPerson.name}" style="color: orange" rendered="#{bill.refunded}"></h:outputLabel>
+                                </h:panelGroup>
+                            </p:column>   
+
+                            <p:column headerText="Remarks" >  
+                                <h:panelGroup id="remark">
+
+                                </h:panelGroup>
+
+                                <p:tooltip for="remark" value="df" rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD - Display Bill Details in Tooltip')}" >
+                                    <h:panelGrid columns="3" >
+                                        <h:outputText value="Creater" ></h:outputText>
+                                        <p:spacer width="15" height="1" ></p:spacer>
+                                        <h:panelGroup>
+                                            <h:outputText value="#{bill.cancelledBill.creater.webUserPerson.name}" rendered="#{bill.cancelled}"></h:outputText>
+                                            <h:outputText value="#{bill.refundedBill.creater.webUserPerson.name}" rendered="#{bill.refunded}"></h:outputText>
+                                        </h:panelGroup>
+
+                                        <h:outputText value="Created At" ></h:outputText>
+                                        <p:spacer width="15" height="1" ></p:spacer>
+                                        <h:panelGroup>
+                                            <h:outputText value="#{bill.cancelledBill.createdAt}" rendered="#{bill.cancelled}">
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                            </h:outputText>
+                                            <h:outputText value="#{bill.refundedBill.createdAt}" rendered="#{bill.refunded}">
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                            </h:outputText>
+                                        </h:panelGroup>
+                                        <h:outputText value="Department" ></h:outputText>
+                                        <p:spacer width="15" height="1" ></p:spacer>
+                                        <h:panelGroup>
+                                            <h:outputText value="#{bill.cancelledBill.department.name}" rendered="#{bill.cancelled}"></h:outputText>
+                                            <h:outputText value="#{bill.refundedBill.department.name}" rendered="#{bill.refunded}"></h:outputText>
+                                        </h:panelGroup>
+                                    </h:panelGrid>
+                                </p:tooltip>
+                            </p:column>
+
+                            <p:column headerText="Value" sortBy="#{bill.total}" 
+                                      styleClass="averageNumericColumn">
+                                <h:outputLabel value="#{bill.total}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column>
+
+
+                            <p:column headerText="Actions">
+                                <p:commandButton icon="pi pi-wallet" styleClass="m-1" ajax="false" title="Manage Bill" action="#{billSearch.navigateToManageBillByAtomicBillType()}">
+                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
+                                </p:commandButton>
+                                <p:commandButton icon="pi pi-search" styleClass="m-1" ajax="false" title="View Bill" action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
+                                </p:commandButton>
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

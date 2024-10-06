@@ -27,39 +27,46 @@
                         <h:panelGroup id="gpPrint" >
                             <div class="row mx-2" >
                                 <div class="col-6">
-                                    <p:panelGrid layout="tabular" columns="2" class="w-100" >
-                                        <f:facet name="header" >
-                                            <p:outputLabel value="Shift" class="font-weight-bold" ></p:outputLabel>
+                                    <p:panelGrid layout="tabular" columns="2" class="w-100">
+                                        <f:facet name="header">
+                                            <p:outputLabel value="Shift" class="font-weight-bold" style="float:left;"/>
+                                            <p:commandButton 
+                                                value="Mark Shift Handover Complete"
+                                                action="#{financialTransactionController.completeHandover()}"
+                                                icon="pi pi-check-circle"
+                                                style="float: right;"
+                                                styleClass="ui-button-success float-right"
+                                                ajax="false" />
                                         </f:facet>
                                         <!-- User with Icon -->
                                         <h:panelGroup>
                                             <i class="pi pi-user" style="margin-right:5px; color: #007bff;"></i>
                                             <p:outputLabel value="User" />
                                         </h:panelGroup>
-                                        <p:badge value="#{financialTransactionController.bundle.user.webUserPerson.nameWithTitle}" styleClass="ui-badge-primary"></p:badge>
-
+                                        <h:panelGroup>
+                                            <p:outputLabel value="#{financialTransactionController.bundle.user.webUserPerson.nameWithTitle}" ></p:outputLabel>
+                                            <p:spacer width="10" ></p:spacer>
+                                            <p:outputLabel value="(#{financialTransactionController.bundle.user.name})" ></p:outputLabel>
+                                        </h:panelGroup>
                                         <!-- Shift Start with Icon -->
                                         <h:panelGroup>
                                             <i class="pi pi-clock" style="margin-right:5px; color: #28a745;"></i>
                                             <p:outputLabel value="Shift Start" />
                                         </h:panelGroup>
                                         <h:panelGroup>
-                                            <p:panelGrid columns="2">
-                                                <h:panelGroup>
-                                                    <i class="pi pi-list" style="margin-right:5px; color: #17a2b8;"></i>
-                                                    <p:outputLabel value="Shift Start Bill ID" />
-                                                </h:panelGroup>
-                                                <p:outputLabel value="#{financialTransactionController.bundle.startBill.deptId}" />
-                                                <h:panelGroup>
-                                                    <i class="pi pi-calendar-plus" style="margin-right:5px; color: #ffc107;"></i>
-                                                    <p:outputLabel value="Shift Started At" />
-                                                </h:panelGroup>
-                                                <p:outputLabel value="#{financialTransactionController.bundle.startBill.createdAt}">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                                </p:outputLabel>
-                                            </p:panelGrid>
-                                        </h:panelGroup>
+                                            <h:panelGroup>
+                                                <i class="pi pi-calendar-plus" style="color: #ffc107;"></i>
+                                            </h:panelGroup>
+                                            <p:outputLabel value="#{financialTransactionController.bundle.startBill.createdAt}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </p:outputLabel>
+                                            <p:spacer width="10"></p:spacer>
+                                            <h:panelGroup>
+                                                <i class="pi pi-list" style="margin-right:5px; color: #17a2b8;"></i>
+                                            </h:panelGroup>
+                                            <p:outputLabel value="#{financialTransactionController.bundle.startBill.deptId}" />
 
+                                        </h:panelGroup>
                                         <!-- Shift End with Icon -->
                                         <h:panelGroup>
                                             <i class="pi pi-clock" style="margin-right:5px; color: #dc3545;"></i>
@@ -71,21 +78,20 @@
                                                      styleClass="ui-badge-danger" 
                                                      icon="pi pi-times">
                                             </p:badge>
-
-                                            <p:panelGrid columns="2" rendered="#{financialTransactionController.bundle.endBill ne null}">
-                                                <h:panelGroup>
-                                                    <i class="pi pi-list" style="margin-right:5px; color: #17a2b8;"></i>
-                                                    <p:outputLabel value="Shift End Bill ID" />
-                                                </h:panelGroup>
-                                                <p:outputLabel value="#{financialTransactionController.bundle.endBill.deptId}" />
+                                            <h:panelGroup rendered="#{financialTransactionController.bundle.endBill ne null}">
                                                 <h:panelGroup>
                                                     <i class="pi pi-calendar-minus" style="margin-right:5px; color: #ffc107;"></i>
-                                                    <p:outputLabel value="Shift Ended At" />
                                                 </h:panelGroup>
                                                 <p:outputLabel value="#{financialTransactionController.bundle.endBill.createdAt}">
                                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </p:outputLabel>
-                                            </p:panelGrid>
+                                                <p:spacer width="10" ></p:spacer>
+                                                <h:panelGroup>
+                                                    <i class="pi pi-list" style="margin-right:5px; color: #17a2b8;"></i>
+                                                </h:panelGroup>
+                                                <p:outputLabel value="#{financialTransactionController.bundle.endBill.deptId}" />
+
+                                            </h:panelGroup>
                                         </h:panelGroup>
 
                                         <!-- Total Handover Value with Icon -->
@@ -94,6 +100,14 @@
                                             <p:outputLabel value="Total Collected Value" />
                                         </h:panelGroup>
                                         <p:outputLabel value="#{financialTransactionController.bundle.total}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel>
+
+                                        <h:panelGroup>
+                                            <i class="pi pi-dollar" style="margin-right:5px; color: #17a2b8;"></i>
+                                            <p:outputLabel value="Total Handed over Value" />
+                                        </h:panelGroup>
+                                        <p:outputLabel value="#{financialTransactionController.bundle.totalOut}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </p:outputLabel>
                                     </p:panelGrid>
@@ -270,9 +284,18 @@
                                     paginatorPosition="top">
 
                                     <p:column  width="5em" headerText="Selected">
-                                        <p:selectBooleanCheckbox value="#{summary.selected}" ></p:selectBooleanCheckbox>
+                                        <p:selectBooleanCheckbox value="#{summary.selected}" >
+                                            <p:ajax 
+                                                listener="#{financialTransactionController.bundle.calculateTotalsByChildBundles()}" 
+                                                update=":#{p:resolveFirstComponentWithId('txtCashHandover',view).clientId} :#{p:resolveFirstComponentWithId('tblCashier',view).clientId} " 
+                                                ></p:ajax>
+                                        </p:selectBooleanCheckbox>
                                     </p:column>
                                     
+                                     <p:column headerText="Type" >
+                                         <h:outputText value="#{summary.paymentHandover.description}" />
+                                    </p:column>
+
                                     <p:column headerText="Institution" >
                                         <h:outputText value="#{summary.department.institution.name}" />
                                     </p:column>
@@ -297,7 +320,7 @@
 
 
 
-                                    <p:column class="text-end" headerText="Cash Collected ***" rendered="#{financialTransactionController.bundle.hasCashTransaction}">
+                                    <p:column class="text-end" headerText="Cash Collected" rendered="#{financialTransactionController.bundle.hasCashTransaction}">
                                         <h:outputText value="#{summary.cashValue}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
