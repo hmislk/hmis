@@ -237,11 +237,9 @@
                             </p:column>
 
 
-                            <p:column headerText="Bill No" style="text-align: left;" >
+                            <p:column headerText="Bill" style="text-align: left;" >
                                 <p:outputLabel value="#{row.billFee.billItem.referanceBillItem.bill.deptId}" >
                                 </p:outputLabel>
-
-
                                 <p:commandLink 
                                     ajax="false"
                                     class="m-1"
@@ -264,14 +262,13 @@
                                 </p:commandLink>
 
                             </p:column>
-                            
-                             <p:column 
+                            <p:column 
                                 headerText="Patient" 
-                                sortBy="#{row.billFee.bill.toStaff.person.name}"
-                                filterBy="#{row.billFee.bill.toStaff.person.name}"
+                                sortBy="#{row.billFee.referenceBillFee.bill.patient.person.nameWithTitle}"
+                                filterBy="#{row.billFee.referenceBillFee.bill.patient.person.nameWithTitle}"
                                 filterMatchMode="contains"
                                 style="text-align: left;">
-                                 <h:outputLabel value="#{row.billFee.referenceBillFee.bill.patient.person.nameWithTitle}" />
+                                <h:outputLabel value="#{row.billFee.referenceBillFee.bill.patient.person.nameWithTitle}" />
                             </p:column>
 
                             <p:column 
@@ -291,7 +288,7 @@
                                     <h:outputText value="#{searchController.bundle.total}" ></h:outputText>
                                 </f:facet>
                             </p:column>
-                            
+
                             <p:column headerText="Paid Value" width="100" style="text-align: right;">                              
                                 <h:outputLabel value="#{row.billFee.paidValue}" >
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
