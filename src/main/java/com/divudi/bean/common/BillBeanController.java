@@ -4812,6 +4812,19 @@ public class BillBeanController implements Serializable {
         fetchingBillFees = billFeeFacade.findByJpql(jpql, params);
         return fetchingBillFees;
     }
+    
+    public List<BillFee> fetchBillFees(BillItem billItem) {
+        List<BillFee> fetchingBillFees;
+        String jpql;
+        Map params = new HashMap();
+        jpql = "Select bf "
+                + " from BillFee bf "
+                + "where bf.billItem=:bi "
+                + "order by bf.billItem.id";
+        params.put("bi", billItem);
+        fetchingBillFees = billFeeFacade.findByJpql(jpql, params);
+        return fetchingBillFees;
+    }
 
     public List<BillComponent> fetchBillComponents(Bill bill) {
         System.out.println("bill = " + bill);

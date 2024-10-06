@@ -2025,7 +2025,8 @@ public class BillSearch implements Serializable {
         searchKeyword = null;
     }
 
-    private void cancelBillComponents(Bill can, BillItem bt) {
+    @Deprecated // NOT a Useful Method
+    private void cancelBillComponents(Bill cancellationProfessionalPaymentBill, BillItem cancellationProfessionalBillItem) {
         for (BillComponent nB : getBillComponents()) {
             BillComponent bC = new BillComponent();
             bC.setCatId(nB.getCatId());
@@ -2040,8 +2041,8 @@ public class BillSearch implements Serializable {
             bC.setSpeciality(nB.getSpeciality());
             bC.setStaff(nB.getStaff());
 
-            bC.setBill(can);
-            bC.setBillItem(bt);
+            bC.setBill(cancellationProfessionalPaymentBill);
+            bC.setBillItem(cancellationProfessionalBillItem);
             bC.setCreatedAt(new Date());
             bC.setCreater(getSessionController().getLoggedUser());
             getBillCommponentFacade().create(bC);
@@ -2235,13 +2236,18 @@ public class BillSearch implements Serializable {
         return false;
     }
 
-    private boolean errorsPresentOnProfessionalPaymentBillCancellation() {
-        if (getBill().isCancelled()) {
+    private boolean errorsPresentOnProfessionalPaymentBillCancellation(Bill originalBill) {
+        originalBill = billFacade.findWithoutCache(originalBill.getId());
+        if (originalBill == null) {
+            JsfUtil.addErrorMessage("No Original Bill");
+            return true;
+        }
+        if (originalBill.isCancelled()) {
             JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
             return true;
         }
 
-        if (getBill().isRefunded()) {
+        if (originalBill.isRefunded()) {
             JsfUtil.addErrorMessage("Already Returned. Can not cancel.");
             return true;
         }
@@ -2382,9 +2388,8 @@ public class BillSearch implements Serializable {
                 bill.getNetTotal(),
                 HistoryType.CollectingCentreBillingCancel,
                 cancellationBill);
-        
-//        drawerController.updateDrawerForOuts(p);
 
+//        drawerController.updateDrawerForOuts(p);
         bill = billFacade.find(bill.getId());
         printPreview = true;
         comment = null;
@@ -2513,41 +2518,40 @@ public class BillSearch implements Serializable {
         }
     }
 
-    public void cancelPaymentBill() {
-        if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
-            if (errorsPresentOnProfessionalPaymentBillCancellation()) {
-                return;
-            }
-            CancelledBill cb = createProfessionalPaymentCancelBill(bill);
-            //Copy & paste
-
-            getBillFacade().create(cb);
-            Payment p = getOpdPreSettleController().createPaymentForCancellationsAndRefunds(cb, paymentMethod);
-//            cancelBillItems(cb);
-            cancelBillItems(cb, p);
-            cancelPaymentItems(bill);
-            getBill().setCancelled(true);
-            getBill().setCancelledBill(cb);
-            getBillFacade().edit(getBill());
-            JsfUtil.addSuccessMessage("Cancelled");
-
-            WebUser wb = getCashTransactionBean().saveBillCashInTransaction(cb, getSessionController().getLoggedUser());
-            getSessionController().setLoggedUser(wb);
-            printPreview = true;
-
-        } else {
-            JsfUtil.addErrorMessage("No Bill to cancel");
+    public void cancelProfessionalPaymentBill() {
+        if (bill == null || bill.getId() == null && bill.getId() == 0) {
+            JsfUtil.addErrorMessage("No Professional Payment Bill to cancel");
             return;
         }
+        if (errorsPresentOnProfessionalPaymentBillCancellation(bill)) {
+            return;
+        }
+
+        CancelledBill cancellationProfessionalPaymentBill = createProfessionalPaymentCancelBill(bill);
+        getBillFacade().create(cancellationProfessionalPaymentBill);
+        Payment cancellationBillPayment = getOpdPreSettleController().createPaymentForCancellationsAndRefunds(cancellationProfessionalPaymentBill, paymentMethod);
+//            cancelBillItems(cb);
+        drawerController.updateDrawerForIns(cancellationBillPayment);
+        cancelProfessionalPaymentBillItems(cancellationProfessionalPaymentBill, bill, cancellationBillPayment);
+        cancelPaymentItems(bill);
+        getBill().setCancelled(true);
+        getBill().setCancelledBill(cancellationProfessionalPaymentBill);
+        getBillFacade().edit(getBill());
+        JsfUtil.addSuccessMessage("Cancelled");
+
+        WebUser wb = getCashTransactionBean().saveBillCashInTransaction(cancellationProfessionalPaymentBill, getSessionController().getLoggedUser());
+        getSessionController().setLoggedUser(wb);
+        printPreview = true;
+
     }
 
-    private void cancelPaymentItems(Bill pb) {
-        List<BillItem> pbis;
-        pbis = getBillItemFacede().findByJpql("SELECT b FROM BillItem b WHERE b.retired=false and b.bill.id=" + pb.getId());
-        for (BillItem pbi : pbis) {
-            if (pbi.getPaidForBillFee() != null) {
-                pbi.getPaidForBillFee().setPaidValue(0.0);
-                getBillFeeFacade().edit(pbi.getPaidForBillFee());
+    private void cancelPaymentItems(Bill originalBill) {
+        List<BillItem> originalBillItems;
+        originalBillItems = getBillItemFacede().findByJpql("SELECT b FROM BillItem b WHERE b.retired=false and b.bill.id=" + originalBill.getId());
+        for (BillItem originalBillItem : originalBillItems) {
+            if (originalBillItem.getPaidForBillFee() != null) {
+                originalBillItem.getPaidForBillFee().setPaidValue(0.0);
+                getBillFeeFacade().edit(originalBillItem.getPaidForBillFee());
             }
         }
     }
@@ -2633,13 +2637,12 @@ public class BillSearch implements Serializable {
 
             getBillItemFacede().create(b);
 
-            cancelBillComponents(can, b);
-
+//            cancelBillComponents(can, b);
             String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + nB.getId();
-            List<BillFee> tmp = getBillFeeFacade().findByJpql(sql);
-////////////////////////
 
-            cancelBillFee(can, b, tmp);
+            List<BillFee> originalBillFeesOfBillItem = getBillFeeFacade().findByJpql(sql);
+
+            cancelBillFee(can, b, originalBillFeesOfBillItem);
 
             list.add(b);
 
@@ -2648,55 +2651,54 @@ public class BillSearch implements Serializable {
         return list;
     }
 
-    private List<BillItem> cancelBillItems(Bill can, Payment p) {
-        List<BillItem> list = new ArrayList<>();
-        for (BillItem nB : getBillItems()) {
-            BillItem b = new BillItem();
-            b.setBill(can);
+    private List<BillItem> cancelProfessionalPaymentBillItems(Bill cancellationProfessionalPaymentBill, Bill originalPaymentBill, Payment cancellationBillPayments) {
+        List<BillItem> originalProfessionalPaymentBillItems = billBean.fetchBillItems(originalPaymentBill);
+        List<BillItem> newlyCreatedCancellationBillItems = new ArrayList<>();
+        if (originalProfessionalPaymentBillItems == null) {
+            return newlyCreatedCancellationBillItems;
+        }
+        for (BillItem originalProfessionalPaymentBillItem : originalProfessionalPaymentBillItems) {
+            BillItem cancellationProfessionalBillItem = new BillItem();
+            cancellationProfessionalBillItem.setBill(cancellationProfessionalPaymentBill);
 
-            if (can.getBillType() != BillType.PaymentBill) {
-                b.setItem(nB.getItem());
-            } else {
-                b.setReferanceBillItem(nB.getReferanceBillItem());
-            }
+            cancellationProfessionalBillItem.setReferanceBillItem(originalProfessionalPaymentBillItem.getReferanceBillItem());
 
-            b.setNetValue(0 - nB.getNetValue());
-            b.setGrossValue(0 - nB.getGrossValue());
-            b.setRate(0 - nB.getRate());
-            b.setVat(0 - nB.getVat());
-            b.setVatPlusNetValue(0 - nB.getVatPlusNetValue());
+            cancellationProfessionalBillItem.setNetValue(0 - originalProfessionalPaymentBillItem.getNetValue());
+            cancellationProfessionalBillItem.setGrossValue(0 - originalProfessionalPaymentBillItem.getGrossValue());
+            cancellationProfessionalBillItem.setRate(0 - originalProfessionalPaymentBillItem.getRate());
+            cancellationProfessionalBillItem.setVat(0 - originalProfessionalPaymentBillItem.getVat());
+            cancellationProfessionalBillItem.setVatPlusNetValue(0 - originalProfessionalPaymentBillItem.getVatPlusNetValue());
 
-            b.setCatId(nB.getCatId());
-            b.setDeptId(nB.getDeptId());
-            b.setInsId(nB.getInsId());
-            b.setDiscount(0 - nB.getDiscount());
-            b.setQty(1.0);
-            b.setRate(nB.getRate());
+            cancellationProfessionalBillItem.setCatId(originalProfessionalPaymentBillItem.getCatId());
+            cancellationProfessionalBillItem.setDeptId(originalProfessionalPaymentBillItem.getDeptId());
+            cancellationProfessionalBillItem.setInsId(originalProfessionalPaymentBillItem.getInsId());
+            cancellationProfessionalBillItem.setDiscount(0 - originalProfessionalPaymentBillItem.getDiscount());
+            cancellationProfessionalBillItem.setQty(1.0);
+            cancellationProfessionalBillItem.setRate(originalProfessionalPaymentBillItem.getRate());
 
-            b.setCreatedAt(new Date());
-            b.setCreater(getSessionController().getLoggedUser());
+            cancellationProfessionalBillItem.setCreatedAt(new Date());
+            cancellationProfessionalBillItem.setCreater(getSessionController().getLoggedUser());
 
-            b.setPaidForBillFee(nB.getPaidForBillFee());
+            cancellationProfessionalBillItem.setPaidForBillFee(originalProfessionalPaymentBillItem.getPaidForBillFee());
 
-            getBillItemFacede().create(b);
+            getBillItemFacede().create(cancellationProfessionalBillItem);
 
-            cancelBillComponents(can, b);
+//            cancelBillComponents(cancellationProfessionalPaymentBill, cancellationProfessionalBillItem);
+//            String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + originalProfessionalPaymentBillItem.getId();
+            List<BillFee> originalProfessionalPaymentFeesForBillItem = billBean.fetchBillFees(originalProfessionalPaymentBillItem);
 
-            String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + nB.getId();
-            List<BillFee> tmp = getBillFeeFacade().findByJpql(sql);
-            cancelBillFee(can, b, tmp);
+            cancelBillFee(cancellationProfessionalPaymentBill, cancellationProfessionalBillItem, originalProfessionalPaymentFeesForBillItem);
 
-            //create BillFeePayments For cancel
-            sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + b.getId();
-            List<BillFee> tmpC = getBillFeeFacade().findByJpql(sql);
-            getOpdPreSettleController().createOpdCancelRefundBillFeePayment(can, tmpC, p);
-            //
-
-            list.add(b);
+//            //create BillFeePayments For cancel
+//            sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + cancellationProfessionalBillItem.getId();
+//            List<BillFee> tmpC = getBillFeeFacade().findByJpql(sql);
+//            getOpdPreSettleController().createOpdCancelRefundBillFeePayment(cancellationProfessionalPaymentBill, tmpC, cancellationBillPayments);
+//            //
+            newlyCreatedCancellationBillItems.add(cancellationProfessionalBillItem);
 
         }
 
-        return list;
+        return newlyCreatedCancellationBillItems;
     }
 
     private List<BillItem> cancelBillItems(Bill originalBill, Bill cancellationBill, Payment p) {
@@ -2710,7 +2712,7 @@ public class BillSearch implements Serializable {
             } else {
                 b.setReferanceBillItem(nB.getReferanceBillItem());
             }
-            
+
             b.setHospitalFee(0 - nB.getHospitalFee());
             b.setCollectingCentreFee(0 - nB.getCollectingCentreFee());
             b.setStaffFee(0 - nB.getStaffFee());
@@ -2753,7 +2755,7 @@ public class BillSearch implements Serializable {
 
         return list;
     }
-    
+
     private List<BillItem> cancelCcBillItems(Bill originalBill, Bill cancellationBill) {
         List<BillItem> list = new ArrayList<>();
         for (BillItem nB : originalBill.getBillItems()) {
@@ -2765,7 +2767,7 @@ public class BillSearch implements Serializable {
             } else {
                 b.setReferanceBillItem(nB.getReferanceBillItem());
             }
-            
+
             b.setHospitalFee(0 - nB.getHospitalFee());
             b.setCollectingCentreFee(0 - nB.getCollectingCentreFee());
             b.setStaffFee(0 - nB.getStaffFee());
@@ -2803,30 +2805,32 @@ public class BillSearch implements Serializable {
         return list;
     }
 
-    public void cancelBillFee(Bill can, BillItem bt, List<BillFee> tmp) {
-        for (BillFee nB : tmp) {
-            BillFee bf = new BillFee();
-            bf.setFee(nB.getFee());
-            bf.setPatienEncounter(nB.getPatienEncounter());
-            bf.setPatient(nB.getPatient());
-            bf.setDepartment(nB.getDepartment());
-            bf.setInstitution(nB.getInstitution());
-            bf.setSpeciality(nB.getSpeciality());
-            bf.setStaff(nB.getStaff());
+    public void cancelBillFee(Bill cancellationProfessionalPaymentBill,
+            BillItem cancellationProfessionalBillItem,
+            List<BillFee> originalProfessionalPaymentFeesForBillItem) {
+        for (BillFee originalProfessionalPaymentFeeForBillItem : originalProfessionalPaymentFeesForBillItem) {
+            BillFee newCancellingBillFee = new BillFee();
+            newCancellingBillFee.setFee(originalProfessionalPaymentFeeForBillItem.getFee());
+            newCancellingBillFee.setPatienEncounter(originalProfessionalPaymentFeeForBillItem.getPatienEncounter());
+            newCancellingBillFee.setPatient(originalProfessionalPaymentFeeForBillItem.getPatient());
+            newCancellingBillFee.setDepartment(originalProfessionalPaymentFeeForBillItem.getDepartment());
+            newCancellingBillFee.setInstitution(originalProfessionalPaymentFeeForBillItem.getInstitution());
+            newCancellingBillFee.setSpeciality(originalProfessionalPaymentFeeForBillItem.getSpeciality());
+            newCancellingBillFee.setStaff(originalProfessionalPaymentFeeForBillItem.getStaff());
 
-            bf.setBill(can);
-            bf.setBillItem(bt);
-            bf.setFeeValue(0 - nB.getFeeValue());
-            bf.setFeeGrossValue(0 - nB.getFeeGrossValue());
-            bf.setFeeDiscount(0 - nB.getFeeDiscount());
-            bf.setSettleValue(0 - nB.getSettleValue());
-            bf.setFeeVat(0 - nB.getFeeVat());
-            bf.setFeeVatPlusValue(0 - nB.getFeeVatPlusValue());
+            newCancellingBillFee.setBill(cancellationProfessionalPaymentBill);
+            newCancellingBillFee.setBillItem(cancellationProfessionalBillItem);
+            newCancellingBillFee.setFeeValue(0 - originalProfessionalPaymentFeeForBillItem.getFeeValue());
+            newCancellingBillFee.setFeeGrossValue(0 - originalProfessionalPaymentFeeForBillItem.getFeeGrossValue());
+            newCancellingBillFee.setFeeDiscount(0 - originalProfessionalPaymentFeeForBillItem.getFeeDiscount());
+            newCancellingBillFee.setSettleValue(0 - originalProfessionalPaymentFeeForBillItem.getSettleValue());
+            newCancellingBillFee.setFeeVat(0 - originalProfessionalPaymentFeeForBillItem.getFeeVat());
+            newCancellingBillFee.setFeeVatPlusValue(0 - originalProfessionalPaymentFeeForBillItem.getFeeVatPlusValue());
 
-            bf.setCreatedAt(new Date());
-            bf.setCreater(getSessionController().getLoggedUser());
+            newCancellingBillFee.setCreatedAt(new Date());
+            newCancellingBillFee.setCreater(getSessionController().getLoggedUser());
 
-            getBillFeeFacade().create(bf);
+            getBillFeeFacade().create(newCancellingBillFee);
         }
     }
 
@@ -3154,13 +3158,14 @@ public class BillSearch implements Serializable {
         channelSearchController.setPrintPreview(true);
         return "/channel/channel_payment_bill_reprint?faces-redirect=true;";
     }
-    
-    public String navigateToViewSupplimentaryIncomeBill(Bill bill){
+
+    public String navigateToViewSupplimentaryIncomeBill(Bill bill) {
         loadBillDetails(bill);
         return "/cashier/income_bill_reprint?faces-redirect=true;";
     }
-    public String navigateToViewCashierShiftShortageBill(Bill bill){
-        loadBillDetails(bill);        
+
+    public String navigateToViewCashierShiftShortageBill(Bill bill) {
+        loadBillDetails(bill);
         return "/cashier/shift_shortage_bill_reprint?faces-redirect=true;";
     }
 //    //to do
@@ -3173,6 +3178,7 @@ public class BillSearch implements Serializable {
 //        printPreview = true;
 //        return "/payment_bill_reprint.xhtml?faces-redirect=true;";
 //    }
+
     public String navigateToDownloadBillsAndBillItems() {
         return "/analytics/download_bills?faces-redirect=true;";
     }
@@ -3274,7 +3280,7 @@ public class BillSearch implements Serializable {
 
         return "";
     }
-    
+
     public String navigateToManageBillByAtomicBillType() {
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill is Selected");
@@ -4175,7 +4181,7 @@ public class BillSearch implements Serializable {
         m.put("bta", billTypeAtomic);
         return billFacade.findByJpql(j, m);
     }
-    
+
     public Bill fetchReferredBill(BillTypeAtomic billTypeAtomic, Bill rb) {
         Map m = new HashMap();
         String j;
