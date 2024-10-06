@@ -16,29 +16,35 @@
                         <h:form>
                             <p:accordionPanel activeIndex="#{searchController.managePaymentIndex}">
                                 <p:ajax process="@this"></p:ajax>
-                                <p:tab title="Professional Payments - OPD" >
+                                <p:tab title="Professional Payments - OPD">
                                     <div class="d-grid gap-2">
                                         <p:commandButton  
                                             class="w-100"
                                             ajax="false" 
-                                            value="Make Professional Payments"
+                                            value="Initiate Professional Payments"
                                             action="#{billSearch.navigateToViewOpdPayProfessionalPayments()}" 
+                                            icon="fa fa-money-bill-wave"
                                             rendered="#{webUserController.hasPrivilege('PaymentBilling')}" />
                                         <p:commandButton  
                                             class="w-100"
                                             ajax="false" 
                                             action="#{billSearch.navigateToViewOpdProfessionalPaymentsDue()}" 
                                             actionListener="#{searchController.makeListNull}" 
-                                            value="Payments Due Search" 
+                                            value="Search Outstanding Professinal Payments" 
+                                            icon="fa fa-search-dollar"
                                             rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}" />
                                         <p:commandButton  
                                             class="w-100" 
                                             ajax="false" 
-                                            value="Payment Done Search" 
+                                            value="List Completed Professional Payments" 
                                             action="#{billSearch.navigateToViewOpdProfessionalPaymentsDone()}" 
-                                            actionListener="#{searchController.makeListNull}" rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}"/>
+                                            actionListener="#{searchController.makeListNull}"
+                                            icon="fa fa-check-circle"
+                                            rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}"/>
                                     </div>
                                 </p:tab>
+
+
                                 <p:tab title="Professional Payments - Inward" >
                                     <div class="d-grid gap-2">
                                         <p:commandButton  class="w-100" ajax="false" value="Pay Doctor / Staff" action="/inward/inward_bill_staff_payment?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PaymentBilling')}" />
