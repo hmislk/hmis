@@ -629,6 +629,21 @@ public class SearchController implements Serializable {
         return "/analytics/index?faces-redirect=true";
     }
 
+    public String navigateToProfessionalFees() {
+        bundle = new ReportTemplateRowBundle(sessionController);
+        return "/reports/professional_payment_reports/professional_fees_opd?faces-redirect=true";
+    }
+
+    public String navigateToProfessionalFeePayments() {
+        bundle = new ReportTemplateRowBundle(sessionController);
+        return "/reports/professional_payment_reports/professional_fee_payments_opd?faces-redirect=true";
+    }
+
+    public String navigateToProfessionalPayments() {
+        bundle = new ReportTemplateRowBundle(sessionController);
+        return "/reports/professional_payment_reports/professional_payments_opd?faces-redirect=true";
+    }
+    
     public String navigateToOpdBillList() {
         return "/analytics/opd_bill_list?faces-redirect=true";
     }
@@ -7618,7 +7633,7 @@ public class SearchController implements Serializable {
         billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN);
         billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL);
         billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL_RETURN);
-        bundle = createBundleByKeyword(billTypesAtomics, institution, department, null, null, null, null);
+        bundle = createBundleByKeywordForBills(billTypesAtomics, institution, department, null, null, null, null);
         bundle.calculateTotalByBills();
     }
 
@@ -7749,8 +7764,8 @@ public class SearchController implements Serializable {
         billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL_RETURN);
         billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES);
         billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN);
-        createTableByKeywordForBillFees(billTypesAtomics, institution, department, null, null, null, null, category);
-
+        bundle = createBundleByKeywordForBillFees(billTypesAtomics, institution, department, null, null, null, null, category);
+        bundle.calculateTotalsForProfessionalFees();
     }
 
     public String searchOpdProfessionalPayments() {
@@ -8237,7 +8252,7 @@ public class SearchController implements Serializable {
         createTableByKeyword(billType, ins, dep, null, null, null, null);
     }
 
-    public ReportTemplateRowBundle createBundleByKeyword(List<BillTypeAtomic> billTypesAtomics,
+    public ReportTemplateRowBundle createBundleByKeywordForBills(List<BillTypeAtomic> billTypesAtomics,
             Institution ins, Department dep,
             Institution fromIns,
             Department fromDep,
@@ -8565,6 +8580,95 @@ public class SearchController implements Serializable {
             Institution toIns,
             Department toDep) {
         createTableByKeywordForBillFees(billTypesAtomics, ins, dep, fromIns, fromDep, toIns, toDep, null);
+    }
+
+    public ReportTemplateRowBundle createBundleByKeywordForBillFees(List<BillTypeAtomic> billTypesAtomics,
+            Institution ins, Department dep,
+            Institution fromIns,
+            Department fromDep,
+            Institution toIns,
+            Department toDep,
+            Category cat) {
+        ReportTemplateRowBundle outputBundle = new ReportTemplateRowBundle();
+        List<ReportTemplateRow> outputRows;
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select new com.divudi.data.ReportTemplateRow(bf) "
+                + " from BillFee bf "
+                + " where bf.bill.billTypeAtomic in :billTypesAtomics "
+                + " and bf.bill.createdAt between :fromDate and :toDate "
+                + " and bf.bill.retired=false ";
+
+        if (ins != null) {
+            sql += " and bf.bill.institution=:ins ";
+            temMap.put("ins", ins);
+        }
+
+        if (dep != null) {
+            sql += " and bf.bill.department=:dep ";
+            temMap.put("dep", dep);
+        }
+
+        if (toDep != null) {
+            sql += " and bf.bill.toDepartment=:todep ";
+            temMap.put("todep", toDep);
+        }
+
+        if (fromDep != null) {
+            sql += " and bf.bill.fromDepartment=:fromdep ";
+            temMap.put("fromdep", fromDep);
+        }
+
+        if (fromIns != null) {
+            sql += " and bf.bill.fromInstitution=:fromins ";
+            temMap.put("fromins", fromIns);
+        }
+
+        if (toIns != null) {
+            sql += " and bf.bill.toInstitution=:toins ";
+            temMap.put("toins", toIns);
+        }
+
+        if (cat != null) {
+            sql += " and bf.referenceBillFee.billItem.bill.category=:rbfcc ";
+            temMap.put("rbfcc", cat);
+        }
+
+        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
+            sql += " and  ((bf.bill.patient.person.name) like :patientName )";
+            temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
+            sql += " and  ((bf.bill.patient.person.phone) like :patientPhone )";
+            temMap.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and  bf.bill.deptId like :billNo";
+            temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
+            sql += " and  ((bf.bill.netTotal) like :netTotal )";
+            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
+            sql += " and  ((bf.bill.total) like :total )";
+            temMap.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+        }
+
+        sql += " order by bf.bill.createdAt desc  ";
+
+        temMap.put("billTypesAtomics", billTypesAtomics);
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+
+        outputRows = (List<ReportTemplateRow>) getBillFacade().findLightsByJpql(sql, temMap, TemporalType.TIMESTAMP);
+        outputBundle.setReportTemplateRows(outputRows);
+        return outputBundle;
     }
 
     public void createTableByKeywordForBillFees(List<BillTypeAtomic> billTypesAtomics,

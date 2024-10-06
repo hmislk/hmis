@@ -146,22 +146,28 @@
                                     </div>
                                 </p:tab>
                                 <p:tab title="Professional Payment Reports">
-                                    <p:commandButton   
-                                        class="w-100 my-2"  
-                                        ajax="false" 
-                                        action="/reports/profesional_payment_reports/professional_fees_opd?faces-redirect=true"
-                                        value="Professional Fees" />
-                                    <p:commandButton   
-                                        class="w-100 my-2"  
-                                        action="/reports/profesional_payment_reports/professional_fee_payments_opd?faces-redirect=true"
-                                        ajax="false" value="Professional Fee Payments" />
-                                    <p:commandButton   
-                                        class="w-100 my-2"  
-                                        action="/reports/profesional_payment_reports/professional_payments_opd?faces-redirect=true"
-                                        ajax="false" value="Professional Payments" />
+                                    <p:commandButton 
+                                        class="w-100 my-2" 
+                                        action="#{searchController.navigateToProfessionalFees}" 
+                                        value="Professional Fees" 
+                                        icon="fa fa-fw fa-cash-register"
+                                        ajax="false" />
 
+                                    <p:commandButton 
+                                        class="w-100 my-2" 
+                                        action="#{searchController.navigateToProfessionalFeePayments}" 
+                                        value="Professional Fee Payments" 
+                                        icon="fa fa-credit-card" 
+                                        ajax="false" />
 
+                                    <p:commandButton 
+                                        class="w-100 my-2" 
+                                        action="#{searchController.navigateToProfessionalPayments}" 
+                                        value="Professional Payments" 
+                                        icon="fa fa-user-circle"
+                                        ajax="false" />
                                 </p:tab>
+
 
                                 <p:tab title="HR Reports">
                                     <p:accordionPanel>
@@ -308,7 +314,7 @@
                                         <p:commandButton   class="w-100"  ajax="false" value="External Laboratary Work load" action="#{reportController.navigateToExternalLaborataryWorkloadReport()}"/>
                                         <p:commandButton   class="w-100"  ajax="false" value="Investigation Month End Summary" action="#{reportController.navigateToInvestigationMonthEndSummery()}"/>
                                         <p:commandButton   class="w-100"  ajax="false" value="Investigation Month End Details" action="#{reportController.navigateToInvestigationMonthEndDetails()}"/>
-                                        
+
                                         <p:commandButton   class="w-100"  ajax="false" value="Lab Register" action="#{reportController.navigateToLabRegisterReport()}"/>
                                         <p:commandButton   class="w-100"  ajax="false" value="Collection center statement" action="#{reportController.navigateToCollectionCenterStatement()}"/>
                                     </div>
