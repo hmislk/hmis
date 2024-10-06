@@ -467,16 +467,16 @@ public class ReportTemplateRowBundle implements Serializable {
                 if (row.getBillFee() == null) {
                     continue;
                 }
-                if (row.getBillFee().getBill().isCancelled()) {
-                    continue;
-                }
-                if (row.getBillFee().getBillItem().isRefunded()) {
-                    continue;
-                }
-                //TODO: Remove
-                if (row.getBillFee().getBill().isRefunded()) {
-                    continue;
-                }
+//                if (row.getBillFee().getBill().isCancelled()) {
+//                    continue;
+//                }
+//                if (row.getBillFee().getBillItem().isRefunded()) {
+//                    continue;
+//                }
+//                //TODO: Remove
+//                if (row.getBillFee().getBill().isRefunded()) {
+//                    continue;
+//                }
                 this.total += row.getBillFee().getFeeValue();
                 this.totalIn+= row.getBillFee().getSettleValue();
                 this.totalOut+= row.getBillFee().getPaidValue();

@@ -169,29 +169,32 @@
                                     itemLabel="#{staff.person.nameWithTitle}" 
                                     itemValue="#{staff}" />
                             </p:selectOneMenu>
-
                         </h:panelGrid>
 
 
+                        <p:commandButton 
+                            id="btnSearch" 
+                            class="m-1 ui-button-danger"
+                            icon="fas fa-list"
+                            ajax="false" 
+                            value="View List"
+                            action="#{searchController.searchOpdProfessionalPaymentBills()}"/>
+                        <p:commandButton 
+                            id="btnPrint" 
+                            class="m-1 ui-button-primary"
+                            icon="fas fa-print"
+                            ajax="false"
+                            value="Print Table">
+                            <p:printer target="tbl" />
+                        </p:commandButton>
+                        <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" id="btnExcel" ajax="false" value="Excel" >
+                            <p:dataExporter fileName="OPD Professional Payment Bills" type="xls" target="tbl" ></p:dataExporter>
+                        </p:commandButton>
 
-
-
-                        <h:panelGrid columns="2" class="my-2" >
-                            <p:commandButton 
-                                class="ui-button-warning" 
-                                icon="fas fa-magnifying-glass" 
-                                id="btnSearch" 
-                                ajax="false" 
-                                value="List" 
-                                action="#{searchController.searchOpdProfessionalPaymentBills()}"/>
-                            <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" id="btnExcel" ajax="false" value="Excel" >
-                                <p:dataExporter fileName="OPD Professional Payment Bills" type="xls" target="tblBills" ></p:dataExporter>
-                            </p:commandButton>
-                        </h:panelGrid>
 
                         <p:dataTable 
                             rowIndexVar="i" 
-                            id="tblBills" 
+                            id="tbl" 
                             value="#{searchController.bills}" 
                             var="bill" 
                             class="w-100"
@@ -205,8 +208,34 @@
                             scrollWidth="100%">
 
 
-                            <p:column headerText="ID" width="3em" style="text-align: right;" sortBy="#{bill.id}" filterBy="#{bill.id}">
-                                <p:outputLabel value="#{bill.id}" />
+                            <p:column headerText="ID" width="8em" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}">
+                                <p:outputLabel value="#{bill.deptId}" />
+
+                                <p:commandLink 
+                                    ajax="false"
+                                    class="m-1"
+                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                                    <i class="pi pi-eye" style="font-size:14px;" title="View Bill"></i> 
+                                    <f:setPropertyActionListener 
+                                        value="#{bill}" 
+                                        target="#{billSearch.bill}" />
+                                </p:commandLink>
+                                <p:commandLink 
+                                    ajax="false"
+                                    class="m-1"
+                                    action="#{billSearch.navigateToManageBillByAtomicBillType()}">
+                                    <i class="pi pi-pencil" style="font-size:14px;" title="Manage Bill"></i> 
+                                    <f:setPropertyActionListener 
+                                        value="#{bill}" 
+                                        target="#{billSearch.bill}" />
+                                </p:commandLink>
+                                <p:badge value="Cancelled" rendered="#{bill.cancelled}" styleClass="ui-badge-danger"></p:badge>
+                                <p:badge value="Refunded" rendered="#{bill.refunded}" styleClass="ui-badge-secondary"></p:badge>
+                            </p:column>
+
+                            <p:column headerText="Type" width="10em"  >
+                                <p:outputLabel value="#{bill.billTypeAtomic}" >
+                                </p:outputLabel>
                             </p:column>
 
                             <p:column headerText="Date" width="6em" style="text-align: center;" sortBy="#{bill.billDate}" >
@@ -214,6 +243,8 @@
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                 </p:outputLabel>
                             </p:column>
+
+
 
                             <p:column headerText="Time" width="5em" style="text-align: center;" sortBy="#{bill.billTime}">
                                 <p:outputLabel value="#{bill.billTime}" >
