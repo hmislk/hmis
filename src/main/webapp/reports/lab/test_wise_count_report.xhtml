@@ -47,6 +47,7 @@
                                                var="i"
                                                itemLabel="#{i.name}"
                                                itemValue="#{i}" />
+                                 <p:ajax process="@this" update="dept" event="itemSelect" />
                             </p:selectOneMenu>
 
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -71,8 +72,8 @@
                                 <p:outputLabel  />
                             </h:panelGroup>
                             <p:selectOneMenu id="dept" value="#{reportController.department}" style=" max-width: 100%; overflow-x: auto;" class="w-100" filter="true" filterMatchMode="contains">
-                                <f:selectItem itemLabel="Select" ></f:selectItem>
-                                <f:selectItems value="#{departmentController.getInstitutionDepartments(reportController.site)}"
+                                <f:selectItem itemLabel="All Departments" ></f:selectItem>
+                                <f:selectItems value="#{departmentController.getInstitutionDepartmentsWithSite(reportController.institution,reportController.site)}"
                                                var="i"
                                                itemLabel="#{i.name}"
                                                itemValue="#{i}" ></f:selectItems>
@@ -149,16 +150,24 @@
                                 <h:outputText value="#{c.count}" ></h:outputText>
                             </p:column>
                             <p:column headerText="Hos Fee" >
-                                <h:outputText value="#{c.hosFee}" ></h:outputText>
+                                <h:outputText value="#{c.hosFee}" >
+                                     <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
                             </p:column>
                             <p:column headerText="CC Fee" >
-                                <h:outputText value="#{c.ccFee}" ></h:outputText>
+                                <h:outputText value="#{c.ccFee}" >
+                                     <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
                             </p:column>
                             <p:column headerText="Professional Fee" >
-                                <h:outputText value="#{c.proFee}" ></h:outputText>
+                                <h:outputText value="#{c.proFee}" >
+                                     <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
                             </p:column>
                             <p:column headerText="Total Amount" >
-                                <h:outputText value="#{c.total}" ></h:outputText>
+                                <h:outputText value="#{c.total}" >
+                                     <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
                             </p:column>
 
                         </p:dataTable>

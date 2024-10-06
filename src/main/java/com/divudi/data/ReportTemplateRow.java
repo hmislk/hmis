@@ -145,6 +145,8 @@ public class ReportTemplateRow implements Serializable {
     private UUID id;
 
     private List<DenominationTransaction> denominationTransactions;
+    
+    private PaymentHandover paymentHandover;
 
     // Constructor to generate a new UUID when an object is created
     public ReportTemplateRow() {
@@ -1213,5 +1215,15 @@ public class ReportTemplateRow implements Serializable {
     public void setAgentHistory(AgentHistory agentHistory) {
         this.agentHistory = agentHistory;
     }
+
+    public PaymentHandover getPaymentHandover() {
+        return paymentHandover;
+    }
+
+    public void setPaymentHandover(PaymentHandover paymentHandover) {
+        this.paymentHandover = paymentHandover;
+    }
+    
+    
 
 }

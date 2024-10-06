@@ -67,12 +67,19 @@
                             <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
                             <h:outputLabel class="mx-3" value=" Institution"/>
                         </h:panelGroup>
-
-
-                        <p:autoComplete class="w-100" id="acPIns" value="#{patientInvestigationController.performingInstitution}" inputStyleClass="w-100"
-                                        completeMethod="#{institutionController.completeIns}" var="pi" itemLabel="#{pi.name}" itemValue="#{pi}">
-                            <p:ajax process="acPIns" update="gpPDept"></p:ajax>
-                        </p:autoComplete>
+                        
+                        <p:selectOneMenu filter="true" id="cmdInstitution"
+                                             filterMatchMode="contains"
+                                             style=" max-width: 100%; overflow-x: auto; "
+                                             class="w-100"
+                                             value="#{patientInvestigationController.performingInstitution}">
+                                <f:selectItem itemLabel="All" />
+                                <f:selectItems value="#{institutionController.companies}"
+                                               var="i"
+                                               itemLabel="#{i.name}"
+                                               itemValue="#{i}" />
+                                 <p:ajax process="@this" update="dept" event="itemSelect" />
+                            </p:selectOneMenu>
                         
                          <h:panelGroup >
                             <h:outputText value="&#xf1ad;" styleClass="fa mr-2" />
@@ -80,21 +87,16 @@
                         </h:panelGroup>
 
 
-                        <p:autoComplete 
-                            converter="deal" 
-                            value="#{patientInvestigationController.site}"
-                            id="acCollectionCenter"
-                            completeMethod="#{institutionController.completeSite}" 
-                            var="vt" 
-                            itemLabel="#{vt.name}" 
-                            itemValue="#{vt}" 
-                            maxResults="15" 
-                            class="w-100 mb-1"
-                            forceSelection="true"
-                            inputStyleClass="form-control">
-                            <p:column style="padding: 6px;">#{vt.code}</p:column>
-                            <p:column style="padding: 6px;">#{vt.name}</p:column>
-                        </p:autoComplete>
+                        <p:selectOneMenu
+                                id="siteMenu"
+                                styleClass="w-100 form-control"  
+                                value="#{patientInvestigationController.site}" 
+                                filter="true"
+                                filterMatchMode="contains">
+                                <f:selectItem itemLabel="All Sites" />
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                <p:ajax process="@this" update="dept" event="itemSelect" />
+                            </p:selectOneMenu>
 
                         <h:panelGroup class="mx-2">
                             <i class="fa fa-hospital" aria-hidden="true"></i>
@@ -103,9 +105,9 @@
                         
 
                         <h:panelGroup id="gpPDept">
-                            <p:selectOneMenu value="#{patientInvestigationController.performingDepartment}" class="w-100" style="max-width: 100%">
+                            <p:selectOneMenu id="dept" value="#{patientInvestigationController.performingDepartment}" class="w-100" style="max-width: 100%">
                                 <f:selectItem itemLabel="Any"></f:selectItem>
-                                <f:selectItems value="#{departmentController.getInstitutionDepartments(patientInvestigationController.performingInstitution)}" var="pdpt" itemLabel="#{pdpt.name}" itemValue="#{pdpt}"></f:selectItems>
+                                <f:selectItems value="#{departmentController.getInstitutionDepartmentsWithSite(patientInvestigationController.performingInstitution,patientInvestigationController.site)}" var="pdpt" itemLabel="#{pdpt.name}" itemValue="#{pdpt}"></f:selectItems>
                             </p:selectOneMenu>
                         </h:panelGroup>
 
@@ -214,9 +216,9 @@
 
 
                     <!-- Collecting Centre Column -->
-                    <p:column headerText="Collecting Centre" filterBy="#{billItem.bill.collectingCentre.name}" sortBy="#{billItem.bill.collectingCentre.name}">
+<!--                    <p:column headerText="Collecting Centre" filterBy="#{billItem.bill.collectingCentre.name}" sortBy="#{billItem.bill.collectingCentre.name}">
                         <h:outputLabel value="#{billItem.bill.collectingCentre.name}" />
-                    </p:column>
+                    </p:column>-->
 
                     <!-- Lab Institution Column -->
                     <p:column headerText="Lab" filterBy="#{billItem.bill.toInstitution.name}" sortBy="#{billItem.bill.toInstitution.name}">
