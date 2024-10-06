@@ -11,7 +11,7 @@
         <ui:composition template="/reports/index.xhtml" class="w-100 border">
             <ui:define name="subcontent">
                 <h:form class="w-100">
-                    <p:panel header="Income Category Wise Report" class="w-100">
+                    <p:panel header="Processional Fees" class="w-100">
                         <div class="row">
                             <div class="col-md-12">
                                 <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
@@ -171,30 +171,38 @@
                                 </h:panelGrid>
 
                                 <p:commandButton 
-                                    id="btnList" class="m-1 ui-button-danger"
+                                    id="btnList" 
+                                    class="m-1 ui-button-danger"
                                     icon="fas fa-list"
-                                    ajax="false" value="View List"
+                                    ajax="false" 
+                                    value="View List"
                                     action="#{searchController.createProfessionalFees()}" />
 
-                                <p:commandButton id="btnPdf" class="m-1 ui-button-info"
-                                                 ajax="false"
-                                                 rendered="false"
-                                                 icon="fas fa-file-pdf"
-                                                 value="Export as PDF">
-                                    <p:dataExporter type="pdf" target="tbl" fileName="itemized_sale_summary" />
+                                <p:commandButton 
+                                    id="btnPdf" 
+                                    class="m-1 ui-button-info"
+                                    ajax="false"
+                                    rendered="true"
+                                    icon="fas fa-file-pdf"
+                                    value="Export as PDF">
+                                    <p:dataExporter type="pdf" target="tbl" fileName="processional_fees" />
                                 </p:commandButton>
 
-                                <p:commandButton id="btnPrint" class="m-1 ui-button-primary"
-                                                 icon="fas fa-print"
-                                                 ajax="false"
-                                                 value="Print Table">
+                                <p:commandButton 
+                                    id="btnPrint" 
+                                    class="m-1 ui-button-primary"
+                                    icon="fas fa-print"
+                                    ajax="false"
+                                    value="Print Table">
                                     <p:printer target="tbl" />
                                 </p:commandButton>
 
-                                <p:commandButton id="btnExcel" class="m-1 ui-button-success"
-                                                 icon="fas fa-file-excel"
-                                                 ajax="false" value="Export to Excel">
-                                    <p:dataExporter type="xlsx" target="tbl" fileName="itemized_sale_summary" />
+                                <p:commandButton 
+                                    id="btnExcel" 
+                                    class="m-1 ui-button-success"
+                                    icon="fas fa-file-excel"
+                                    ajax="false" value="Export to Excel">
+                                    <p:dataExporter type="xlsx" target="tbl" fileName="professional_fees" />
                                 </p:commandButton>
 
 
@@ -364,7 +372,7 @@
 
 
 
-                           
+
                         </p:dataTable>
 
                     </p:panel>
