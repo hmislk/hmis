@@ -264,6 +264,15 @@
                                 </p:commandLink>
 
                             </p:column>
+                            
+                             <p:column 
+                                headerText="Patient" 
+                                sortBy="#{row.billFee.bill.toStaff.person.name}"
+                                filterBy="#{row.billFee.bill.toStaff.person.name}"
+                                filterMatchMode="contains"
+                                style="text-align: left;">
+                                 <h:outputLabel value="#{row.billFee.referenceBillFee.bill.patient.person.nameWithTitle}" />
+                            </p:column>
 
                             <p:column 
                                 headerText="Professional" 
@@ -278,8 +287,8 @@
                                 <h:outputLabel value="#{row.billFee.feeValue}" >
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputLabel>
-                                <f:facet name="header" >
-                                    <h:outputText value="#{searchController.bundle.totalIn}" ></h:outputText>
+                                <f:facet name="footer" >
+                                    <h:outputText value="#{searchController.bundle.total}" ></h:outputText>
                                 </f:facet>
                             </p:column>
                             
@@ -287,7 +296,7 @@
                                 <h:outputLabel value="#{row.billFee.paidValue}" >
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputLabel>
-                                <f:facet name="header" >
+                                <f:facet name="footer" >
                                     <h:outputText value="#{searchController.bundle.totalOut}" ></h:outputText>
                                 </f:facet>
                             </p:column>
