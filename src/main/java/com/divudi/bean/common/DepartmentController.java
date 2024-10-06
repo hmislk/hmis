@@ -244,27 +244,19 @@ public class DepartmentController implements Serializable {
         Map<String, Object> parameters = new HashMap<>();
         StringBuilder jpql = new StringBuilder("SELECT d FROM Department d WHERE d.retired = :ret ");
         parameters.put("ret", false);
-        parameters.put("route", Route.class); // Ensure Route class objects are excluded
-
         if (ins != null) {
             jpql.append(" AND d.institution = :ins");
             parameters.put("ins", ins);
         }
-
         if (site != null) {
             jpql.append(" AND d.site = :site");
             parameters.put("site", site);
         }
-        
         if(ins==null && site==null){
             return new ArrayList<>();
         }
-
         jpql.append(" ORDER BY d.name");
-        System.out.println("jpql = " + jpql);
-        System.out.println("parameters = " + parameters);
         List<Department> currentInsDepartments = getFacade().findByJpql(jpql.toString(), parameters);
-
         return currentInsDepartments != null ? currentInsDepartments : new ArrayList<>();
     }
 

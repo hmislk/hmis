@@ -2142,6 +2142,7 @@ public class BillSearch implements Serializable {
             cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), originalBill.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.PROCAN));
             cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), originalBill.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.PROCAN));
         }
+        cb.setBillTypeAtomic(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN);
         cb.setBalance(0.0);
         cb.setPaymentMethod(paymentMethod);
         cb.setBilledBill(originalBill);
@@ -3096,6 +3097,7 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage("Nothing to cancel");
             return "";
         }
+        printPreview=false;
         return "/opd/professional_payments/payment_staff_bill_cancel?faces-redirect=true;";
     }
     
@@ -3133,6 +3135,14 @@ public class BillSearch implements Serializable {
             return "";
         }
         return "/opd/view/opd_professional_payment?faces-redirect=true;";
+    }
+    
+    public String navigateToViewOpdProfessionalPaymentCancelledBill() {
+        if (viewingBill == null) {
+            JsfUtil.addErrorMessage("Not Cancelled Yet");
+            return "";
+        }
+        return "/opd/professional_payments/payment_staff_bill_cancel?faces-redirect=true;";
     }
 
     public String navigateToManageOpdBill() {
@@ -3259,6 +3269,9 @@ public class BillSearch implements Serializable {
 
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES:
                 return navigateToViewOpdProfessionalPaymentBill();
+                
+            case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN:
+                return navigateToViewOpdProfessionalPaymentCancelledBill();
             case CHANNEL_BOOKING_WITH_PAYMENT:
                 return "";
             case CC_BILL:
