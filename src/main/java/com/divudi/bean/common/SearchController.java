@@ -13372,6 +13372,8 @@ public class SearchController implements Serializable {
                     rtr.setSpeciality(speciality);
                 });
 
+        oiBundle.calculateTotalsForProfessionalFees();
+        
         return oiBundle;
     }
 
