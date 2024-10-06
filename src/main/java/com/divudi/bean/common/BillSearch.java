@@ -3134,6 +3134,14 @@ public class BillSearch implements Serializable {
         }
         return "/opd/view/opd_professional_payment?faces-redirect=true;";
     }
+    
+    public String navigateToViewOpdProfessionalPaymentCancelledBill() {
+        if (viewingBill == null) {
+            JsfUtil.addErrorMessage("Not Cancelled Yet");
+            return "";
+        }
+        return "/opd/professional_payments/payment_staff_bill_cancel?faces-redirect=true;";
+    }
 
     public String navigateToManageOpdBill() {
         if (bill == null) {
@@ -3259,6 +3267,9 @@ public class BillSearch implements Serializable {
 
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES:
                 return navigateToViewOpdProfessionalPaymentBill();
+                
+            case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN:
+                return navigateToViewOpdProfessionalPaymentCancelledBill();
             case CHANNEL_BOOKING_WITH_PAYMENT:
                 return "";
             case CC_BILL:
