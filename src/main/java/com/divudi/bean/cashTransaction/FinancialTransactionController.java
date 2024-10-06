@@ -69,6 +69,7 @@ import javax.faces.event.AjaxBehaviorEvent;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
 import kotlin.collections.ArrayDeque;
+import org.hl7.fhir.r5.model.Bundle;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -2497,6 +2498,7 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public void fillShifts(Integer count, Boolean completed, Date fromDate, Date toDate, WebUser paramUser) {
+        bundle=new ReportTemplateRowBundle();
         String jpql = "Select new com.divudi.data.ReportTemplateRow(b) "
                 + " from Bill b "
                 + " where b.retired=:ret "
