@@ -99,6 +99,7 @@ public class ReportTemplateRowBundle implements Serializable {
 
     private double onCallHandoverValue;
     private double cashHandoverValue;
+    private double denominatorValue;
     private double cardHandoverValue;
     private double multiplePaymentMethodsHandoverValue;
     private double staffHandoverValue;
@@ -188,6 +189,7 @@ public class ReportTemplateRowBundle implements Serializable {
 
         onCallHandoverValue = 0.0;
         cashHandoverValue = 0.0;
+        denominatorValue = 0.0;
         cardHandoverValue = 0.0;
         multiplePaymentMethodsHandoverValue = 0.0;
         staffHandoverValue = 0.0;
@@ -289,7 +291,7 @@ public class ReportTemplateRowBundle implements Serializable {
                     patientPointsHandoverValue += childBundle.patientPointsHandoverValue;
                     onlineSettlementHandoverValue += childBundle.onlineSettlementHandoverValue;
                 }
-                
+
                 // Aggregate flags
                 hasOnCallTransaction |= childBundle.hasOnCallTransaction;
                 hasCashTransaction |= childBundle.hasCashTransaction;
@@ -364,6 +366,7 @@ public class ReportTemplateRowBundle implements Serializable {
                 return cardHandoverValue;
             case Cash:
                 return cashHandoverValue;
+//                return denominatorValue;
             case Cheque:
                 return chequeHandoverValue;
             case Credit:
@@ -1526,6 +1529,8 @@ public class ReportTemplateRowBundle implements Serializable {
         this.cashHandoverValue = cashHandoverValue;
     }
 
+    
+    
     public double getCardHandoverValue() {
         return cardHandoverValue;
     }
@@ -1655,7 +1660,7 @@ public class ReportTemplateRowBundle implements Serializable {
     }
 
     public void calculateTotalHandoverByDenominationQuantities() {
-        cashHandoverValue = 0.0;
+        denominatorValue = 0.0;
         if (denominationTransactions == null || denominationTransactions.isEmpty()) {
             return;
         }
@@ -1669,7 +1674,7 @@ public class ReportTemplateRowBundle implements Serializable {
             } else {
                 Double dv = dt.getDenomination().getDenominationValue() * dt.getDenominationQty();
                 dt.setDenominationValue(dv);
-                cashHandoverValue += dv;
+                denominatorValue += dv;
             }
         }
     }
@@ -1715,6 +1720,14 @@ public class ReportTemplateRowBundle implements Serializable {
 
     public void setSelected(boolean selected) {
         this.selected = selected;
+    }
+
+    public double getDenominatorValue() {
+        return denominatorValue;
+    }
+
+    public void setDenominatorValue(double denominatorValue) {
+        this.denominatorValue = denominatorValue;
     }
 
 }
