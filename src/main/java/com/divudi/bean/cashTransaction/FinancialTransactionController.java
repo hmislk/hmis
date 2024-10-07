@@ -3548,7 +3548,7 @@ public class FinancialTransactionController implements Serializable {
 
             // Calculate totals for each bundle
             for (ReportTemplateRowBundle tmpBundle : groupedBundles.values()) {
-                tmpBundle.calculateTotalsByPayments();
+                tmpBundle.calculateTotalsBySelectedPayments();
             }
         }
 
@@ -3625,7 +3625,7 @@ public class FinancialTransactionController implements Serializable {
 
         // Calculate totals once all payments have been grouped
         for (ReportTemplateRowBundle tmpBundle : groupedBundles.values()) {
-            tmpBundle.calculateTotalsByPayments();
+            tmpBundle.calculateTotalsBySelectedPayments();
         }
 
         ReportTemplateRowBundle bundleToHoldDeptUserDayBundle = new ReportTemplateRowBundle();

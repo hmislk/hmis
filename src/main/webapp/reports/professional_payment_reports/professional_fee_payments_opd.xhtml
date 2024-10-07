@@ -237,11 +237,9 @@
                             </p:column>
 
 
-                            <p:column headerText="Bill No" style="text-align: left;" >
+                            <p:column headerText="Bill" style="text-align: left;" >
                                 <p:outputLabel value="#{row.billFee.billItem.referanceBillItem.bill.deptId}" >
                                 </p:outputLabel>
-
-
                                 <p:commandLink 
                                     ajax="false"
                                     class="m-1"
@@ -264,12 +262,15 @@
                                 </p:commandLink>
 
                             </p:column>
+                            <p:column 
+                                headerText="Patient"
+                                filterMatchMode="contains"
+                                style="text-align: left;">
+                                <h:outputLabel value="#{row.billFee.referenceBillFee.bill.patient.person.nameWithTitle}" />
+                            </p:column>
 
                             <p:column 
                                 headerText="Professional" 
-                                sortBy="#{row.billFee.bill.toStaff.person.name}"
-                                filterBy="#{row.billFee.bill.toStaff.person.name}"
-                                filterMatchMode="contains"
                                 style="text-align: left;">
                                 <h:outputLabel value="#{row.billFee.bill.toStaff.person.name}" />
                             </p:column>
@@ -278,19 +279,13 @@
                                 <h:outputLabel value="#{row.billFee.feeValue}" >
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputLabel>
-                                <f:facet name="header" >
-                                    <h:outputText value="#{searchController.bundle.totalIn}" ></h:outputText>
+                                <f:facet name="footer" >
+                                    <h:outputText value="#{searchController.bundle.total}" >
+                                        <f:convertNumber pattern="#,##0.00"  ></f:convertNumber>
+                                    </h:outputText>
                                 </f:facet>
                             </p:column>
-                            
-                            <p:column headerText="Paid Value" width="100" style="text-align: right;">                              
-                                <h:outputLabel value="#{row.billFee.paidValue}" >
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                </h:outputLabel>
-                                <f:facet name="header" >
-                                    <h:outputText value="#{searchController.bundle.totalOut}" ></h:outputText>
-                                </f:facet>
-                            </p:column>
+                           
 
                         </p:dataTable>
 
