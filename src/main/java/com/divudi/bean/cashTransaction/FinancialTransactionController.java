@@ -1215,7 +1215,11 @@ public class FinancialTransactionController implements Serializable {
         prepareToAddNewShiftExcessRecord();
         return "/cashier/record_shift_excess?faces-redirect=true";
     }
-
+    
+    public String navigateToCashierShiftBillSearch() {
+        return "/cashier/cashier_shift_bill_search?faces-redirect=true";
+    }
+    
     // Method to navigate to the Transfer Payment Method page
     public String navigateToTransferPaymentMethod() {
         resetClassVariables();
