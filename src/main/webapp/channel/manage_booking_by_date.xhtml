@@ -1296,7 +1296,7 @@
                                         value="Cancel Booking"  
                                         class="ui-button-danger" 
                                         icon="fas fa-cancel"
-                                        disabled="#{bookingControllerViewScope.selectedBillSession.bill.refunded==true
+                                        disabled="#{ bookingControllerViewScope.selectedBillSession.bill.refunded==true
                                                     or bookingControllerViewScope.selectedBillSession.bill.cancelled==true}"
                                         onclick="PF('confirmationDialog').show();">
                                     </p:commandButton>

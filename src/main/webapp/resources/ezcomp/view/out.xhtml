@@ -1,0 +1,69 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bill" type="com.divudi.entity.Bill"/>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <p:panelGrid columns="2" layout="tabular">
+            <f:facet name="header" >
+                <p:outputLabel value="Bill Details" ></p:outputLabel>
+            </f:facet>
+            <p:outputLabel value="Bill ID" ></p:outputLabel>
+            <p:outputLabel value="#{cc.attrs.bill.id}" ></p:outputLabel>
+
+            <p:outputLabel value="Dept ID" ></p:outputLabel>
+            <p:outputLabel value="#{cc.attrs.bill.deptId}" ></p:outputLabel>
+
+            <p:outputLabel value="Ins ID" ></p:outputLabel>
+            <p:outputLabel value="#{cc.attrs.bill.insId}" ></p:outputLabel>
+
+            <p:outputLabel value="Bill Type" ></p:outputLabel>
+            <p:outputLabel value="#{cc.attrs.bill.billType}" ></p:outputLabel>
+
+            <p:outputLabel value="Bill Type Atomic" ></p:outputLabel>
+            <p:outputLabel value="#{cc.attrs.bill.billTypeAtomic}" ></p:outputLabel>
+
+            <h:outputLabel value="Bill No" />
+            <h:outputLabel value="#{billSearch.viewingBill.deptId}" ></h:outputLabel>
+
+            <h:outputLabel value="Payment Type " ></h:outputLabel>
+            <h:outputLabel value="#{billSearch.viewingBill.paymentMethod}" />
+
+            <h:outputLabel value="Total" ></h:outputLabel>
+            <h:outputLabel value="#{billSearch.viewingBill.total}" ></h:outputLabel>
+
+            <h:outputLabel value="Discount" ></h:outputLabel>
+            <h:outputLabel value="#{billSearch.viewingBill.discount}" ></h:outputLabel>
+
+            <h:outputLabel value="Net Total" ></h:outputLabel>
+            <h:outputLabel value="#{billSearch.viewingBill.netTotal}" ></h:outputLabel>
+
+            <p:separator/>
+            <p:separator/>
+
+            <h:outputLabel value="Credit Company" ></h:outputLabel>
+            <p:autoComplete value="#{billSearch.viewingBill.creditCompany}" completeMethod="#{institutionController.completeIns}" var="i" itemLabel="#{i.name}"
+                            itemValue="#{i}" rendered="false"></p:autoComplete><h:outputLabel value="#{billSearch.viewingBill.creditCompany.name}" rendered="true"></h:outputLabel>
+
+            <h:outputLabel value="Referred By" ></h:outputLabel>
+            <h:outputLabel value="#{billSearch.viewingBill.referredBy.person.nameWithTitle}" ></h:outputLabel>
+
+            <h:outputLabel value="Referring Institution" ></h:outputLabel>
+            <h:outputLabel value="#{billSearch.viewingBill.referenceInstitution.name}" ></h:outputLabel>
+
+            <h:outputLabel value="ID" ></h:outputLabel>
+            <h:outputLabel value="#{billSearch.viewingBill.id}" ></h:outputLabel>
+
+        </p:panelGrid>
+
+    </cc:implementation>
+</html>

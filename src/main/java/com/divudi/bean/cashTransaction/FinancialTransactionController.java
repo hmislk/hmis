@@ -1264,6 +1264,14 @@ public class FinancialTransactionController implements Serializable {
     public String navigateToCashierSummary() {
         return "/cashier/cashier_summary?faces-redirect=true";
     }
+    
+    public String navigateToMyCashierSummary() {
+        return "/cashier/my_cashier_summary?faces-redirect=true";
+    }
+    
+    public String navigateToMyCashierDetails() {
+        return "/cashier/my_cashier_detailed?faces-redirect=true";
+    }
 
     public String navigateToCashierReport() {
         processShiftEndReport();
@@ -3540,7 +3548,7 @@ public class FinancialTransactionController implements Serializable {
 
             // Calculate totals for each bundle
             for (ReportTemplateRowBundle tmpBundle : groupedBundles.values()) {
-                tmpBundle.calculateTotalsByPayments();
+                tmpBundle.calculateTotalsBySelectedPayments();
             }
         }
 
@@ -3548,7 +3556,11 @@ public class FinancialTransactionController implements Serializable {
         bundleToHoldDeptUserDayBundle.setBundles(new ArrayList<>(groupedBundles.values()));
         bundleToHoldDeptUserDayBundle.setStartBill(startBill);
         bundleToHoldDeptUserDayBundle.setEndBill(endBill);
-        bundleToHoldDeptUserDayBundle.setUser(startBill.getCreater());
+        if (startBill != null) {
+            bundleToHoldDeptUserDayBundle.setUser(startBill.getCreater());
+        } else {
+            bundleToHoldDeptUserDayBundle.setUser(sessionController.getLoggedUser());
+        }
 
         return bundleToHoldDeptUserDayBundle;
     }
@@ -3613,7 +3625,7 @@ public class FinancialTransactionController implements Serializable {
 
         // Calculate totals once all payments have been grouped
         for (ReportTemplateRowBundle tmpBundle : groupedBundles.values()) {
-            tmpBundle.calculateTotalsByPayments();
+            tmpBundle.calculateTotalsBySelectedPayments();
         }
 
         ReportTemplateRowBundle bundleToHoldDeptUserDayBundle = new ReportTemplateRowBundle();
@@ -5047,9 +5059,13 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setBillDate(new Date());
         currentBill.setBillTime(new Date());
 
-        billController.save(currentBill);
         Double netTotal = currentBill.getNetTotal();
+        if (loggedUserDrawer.getCashInHandValue() < netTotal) {
+                JsfUtil.addErrorMessage("Not Enough Cash in the Drawer");
+                return "";
+            }
         currentBill.setNetTotal(0 - Math.abs(netTotal));
+        billController.save(currentBill);
         for (Payment p : getCurrentBillPayments()) {
             p.setBill(currentBill);
             p.setDepartment(sessionController.getDepartment());

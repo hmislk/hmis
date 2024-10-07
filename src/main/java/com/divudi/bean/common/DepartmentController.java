@@ -13,6 +13,7 @@ import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.entity.Route;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -188,10 +189,10 @@ public class DepartmentController implements Serializable {
             jpql += " and d.institution=:ins ";
             m.put("ins", ins);
         }
-        
+
         jpql += " and TYPE(d) <> Route "
                 + " order by d.name ";
-        
+
         deps = getFacade().findByJpql(jpql, m);
 
         return deps;
@@ -233,6 +234,30 @@ public class DepartmentController implements Serializable {
             currentInsDepartments = new ArrayList<>();
         }
         return currentInsDepartments;
+    }
+
+    public List<Department> getDepartmentsOfInstitutionAndSite(Institution ins, Institution site) {
+        System.out.println("getDepartmentsOfInstitutionAndSite = " );
+        if(ins==null && site==null){
+            return new ArrayList<>();
+        }
+        Map<String, Object> parameters = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("SELECT d FROM Department d WHERE d.retired = :ret ");
+        parameters.put("ret", false);
+        if (ins != null) {
+            jpql.append(" AND d.institution = :ins");
+            parameters.put("ins", ins);
+        }
+        if (site != null) {
+            jpql.append(" AND d.site = :site");
+            parameters.put("site", site);
+        }
+        if(ins==null && site==null){
+            return new ArrayList<>();
+        }
+        jpql.append(" ORDER BY d.name");
+        List<Department> currentInsDepartments = getFacade().findByJpql(jpql.toString(), parameters);
+        return currentInsDepartments != null ? currentInsDepartments : new ArrayList<>();
     }
 
     public String toListDepartments() {
