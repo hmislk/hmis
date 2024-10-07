@@ -273,7 +273,7 @@ public class ReportTemplateRowBundle implements Serializable {
                 onlineSettlementValue += childBundle.onlineSettlementValue;
 
                 // Handover values
-                if (this.selected) {
+                if (childBundle.isSelected()) {
                     onCallHandoverValue += childBundle.onCallHandoverValue;
                     cashHandoverValue += childBundle.cashHandoverValue;
                     cardHandoverValue += childBundle.cardHandoverValue;
