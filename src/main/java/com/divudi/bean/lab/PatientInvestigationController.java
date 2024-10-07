@@ -3043,8 +3043,8 @@ public class PatientInvestigationController implements Serializable {
             jpql += " AND i.performDepartment = :peformingDepartment ";
             params.put("peformingDepartment", getPerformingDepartment());
         }
-        
-        if(site != null){
+
+        if (site != null) {
             jpql += " AND i.performDepartment.site = :site ";
             params.put("site", getSite());
         }
@@ -3093,7 +3093,10 @@ public class PatientInvestigationController implements Serializable {
             jpql += " AND b.bill.toDepartment = :department ";
             params.put("department", getDepartment());
         }
-
+        
+        jpql += " and type(b.item) = :invType ";
+        params.put("invType", Investigation.class);
+        
         jpql += " AND b.bill.billTypeAtomic in :bts ";
         params.put("bts", btas);
 
@@ -3124,11 +3127,19 @@ public class PatientInvestigationController implements Serializable {
                 grossFeeTotal += billItem.getGrossValue();
                 discountTotal += billItem.getDiscount();
                 netTotal += billItem.getNetValue();
+
+                if (billItem.getBill().isCancelled() || billItem.getBill().isRefunded()) {
+                    hospitalFeeTotal -= Math.abs(billItem.getHospitalFee());
+                    ccFeeTotal -= Math.abs(billItem.getCollectingCentreFee());
+                    staffFeeTotal -= Math.abs(billItem.getStaffFee());
+                    grossFeeTotal -= Math.abs(billItem.getGrossValue());
+                    discountTotal -= Math.abs(billItem.getDiscount());
+                    netTotal -= Math.abs(billItem.getNetValue());
+                }
             }
         }
     }
 
-    
     public void searchPatientInvestigationsWithSampleId() {
 //        System.out.println("searchPatientInvestigations");
         listingEntity = ListingEntity.PATIENT_INVESTIGATIONS;
