@@ -904,6 +904,10 @@ public class SearchController implements Serializable {
     public String navigateToAllCashierDrawersDetails() {
         return "/reports/cashier_reports/all_cashiers_drawer_details?faces-redirect=true";
     }
+    
+    public String navigateToAllCashierHandovers() {
+        return "/reports/cashier_reports/all_cashier_shifts?faces-redirect=true";
+    }
 
     public String navigatToReportDoctorPaymentOpd() {
         FacesContext context = FacesContext.getCurrentInstance();
@@ -12321,6 +12325,11 @@ public class SearchController implements Serializable {
         b.calculateTotals();
         return b;
     }
+    
+    public void generateMyCashierSummary() {
+        webUser =sessionController.getLoggedUser();
+        generateCashierSummary();
+    }
 
     public void generateCashierSummary() {
         bundle = new ReportTemplateRowBundle();
@@ -12646,6 +12655,11 @@ public class SearchController implements Serializable {
             params.put("du", webUser);
         }
         drawerList = drawerFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+    
+    public void generateMyCashierDetailed() {
+        webUser= sessionController.getLoggedUser();
+        generateCashierDetailed();
     }
 
     public void generateCashierDetailed() {
@@ -13358,6 +13372,8 @@ public class SearchController implements Serializable {
                     rtr.setSpeciality(speciality);
                 });
 
+        oiBundle.calculateTotalsForProfessionalFees();
+        
         return oiBundle;
     }
 

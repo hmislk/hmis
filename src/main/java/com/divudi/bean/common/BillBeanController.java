@@ -4020,6 +4020,8 @@ public class BillBeanController implements Serializable {
         if (ptIx.getId() == null) {
             getPatientInvestigationFacade().create(ptIx);
         }
+        
+        
 
     }
 
@@ -4807,6 +4809,19 @@ public class BillBeanController implements Serializable {
                 + "where bf.bill=:bill "
                 + "order by bf.billItem.id";
         params.put("bill", bill);
+        fetchingBillFees = billFeeFacade.findByJpql(jpql, params);
+        return fetchingBillFees;
+    }
+    
+    public List<BillFee> fetchBillFees(BillItem billItem) {
+        List<BillFee> fetchingBillFees;
+        String jpql;
+        Map params = new HashMap();
+        jpql = "Select bf "
+                + " from BillFee bf "
+                + "where bf.billItem=:bi "
+                + "order by bf.billItem.id";
+        params.put("bi", billItem);
         fetchingBillFees = billFeeFacade.findByJpql(jpql, params);
         return fetchingBillFees;
     }
