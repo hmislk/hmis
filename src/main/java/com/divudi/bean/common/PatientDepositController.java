@@ -197,7 +197,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         }
 
         updateBalance(patientController.getCancelBill(), current);
-        List<Payment> p = billBeanController.createPayment(patientController.getBill(),
+        List<Payment> p = billBeanController.createPayment(patientController.getCancelBill(),
                 patientController.getCancelBill().getPaymentMethod(),
                 patientController.getPaymentMethodData());
         drawerController.updateDrawerForOuts(p);
