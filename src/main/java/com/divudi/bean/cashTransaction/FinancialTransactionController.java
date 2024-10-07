@@ -1268,6 +1268,10 @@ public class FinancialTransactionController implements Serializable {
     public String navigateToMyCashierSummary() {
         return "/cashier/my_cashier_summary?faces-redirect=true";
     }
+    
+    public String navigateToMyCashierDetails() {
+        return "/cashier/my_cashier_detailed?faces-redirect=true";
+    }
 
     public String navigateToCashierReport() {
         processShiftEndReport();

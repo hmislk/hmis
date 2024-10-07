@@ -12656,6 +12656,11 @@ public class SearchController implements Serializable {
         }
         drawerList = drawerFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
+    
+    public void generateMyCashierDetailed() {
+        webUser= sessionController.getLoggedUser();
+        generateCashierDetailed();
+    }
 
     public void generateCashierDetailed() {
         bundle = new ReportTemplateRowBundle();
