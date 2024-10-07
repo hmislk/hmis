@@ -185,6 +185,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     PatientController patientController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    PatientDepositController patientDepositController;
 
     /**
      *
@@ -1092,6 +1094,25 @@ public class PatientController implements Serializable, ControllerWithPatient {
            bill.setNetTotal(getPaymentMethodData().getCredit().getTotalValue());   
         }
     }
+    
+    public void listnerForPaymentMethodChange(){
+       if(patientDepositController.getCurrent() != null){
+            if (bill.getPaymentMethod() == PaymentMethod.Card) {
+            getPaymentMethodData().getCreditCard().setTotalValue(patientDepositController.getCurrent().getBalance());
+        } else if (bill.getPaymentMethod() == PaymentMethod.Cheque) {
+            getPaymentMethodData().getCheque().setTotalValue(patientDepositController.getCurrent().getBalance());
+        } else if (bill.getPaymentMethod() == PaymentMethod.ewallet) {
+            getPaymentMethodData().getEwallet().setTotalValue(patientDepositController.getCurrent().getBalance());
+        } else if (bill.getPaymentMethod() == PaymentMethod.Slip) {
+            getPaymentMethodData().getSlip().setTotalValue(patientDepositController.getCurrent().getBalance());
+        } else if (bill.getPaymentMethod() == PaymentMethod.Credit) {
+           getPaymentMethodData().getCredit().setTotalValue(patientDepositController.getCurrent().getBalance());
+        } else{
+            bill.setNetTotal(patientDepositController.getCurrent().getBalance());
+        }
+       }
+    }
+
     
     public boolean validatePaymentMethodData() {
         boolean error = false;
