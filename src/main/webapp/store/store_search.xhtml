@@ -51,7 +51,7 @@
                                             autoWidth="false">
                                             <f:selectItem itemLabel="Select Bill Type"/>
                                             <f:selectItems value="#{enumController.storeBillTypes}" var="i" itemLabel="#{i.label}" itemValue="#{i}" />
-                                            <f:ajax  event="change" execute="@this" render="detail" listener="#{searchController.makeNull}"/>
+                                            <f:ajax  event="change" execute="@this" render="detail textF" listener="#{searchController.makeNull}"/>
                                         </p:selectOneMenu>
                                         <p:inputText 
                                             autocomplete="off" 
@@ -67,6 +67,175 @@
                                             class="ui-button-warning w-100 my-2"/>
                                         <p:commandButton ajax="false" value="Search in All Department" action="#{searchController.createTableByBillTypeAllDepartment}" rendered="false"/>                                
                                     </h:panelGroup>
+                                    <h:panelGroup id="textF" class="w-100">
+
+                                        <h:panelGroup rendered="#{searchController.billType eq 'StoreGrnBill'}" class="w-100">
+                                            <h:panelGrid columns="1" class="w-100">         
+                                                <h:outputLabel value="Po No"/> 
+                                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.refBillNo}" class="w-100"/>
+                                                <h:outputLabel value="GRN No"/>
+                                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="w-100"/>
+                                                <h:outputLabel value="Invoice No"/> 
+                                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.number}" class="w-100"/>
+                                                <h:outputLabel value="Supplier Name"/>
+                                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.fromInstitution}" class="w-100"/>         
+                                                <h:outputLabel value="Item Name"/>
+                                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}" class="w-100"/>
+                                                <h:outputLabel value="Item Code"/>
+                                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.code}" class="w-100"/>
+                                                <h:outputLabel value="Net Total"/>
+                                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}" class="w-100"/>
+                                            </h:panelGrid>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{searchController.billType eq 'StoreGrnReturn'}" class="w-100">
+                                            <h:panelGrid columns="1" class="w-100">         
+                                                <h:outputLabel value="GRN Return No"/> 
+                                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="w-100"/>
+                                                <h:outputLabel value="Grn No"/>
+                                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.refBillNo}" class="w-100"/>
+                                                <h:outputLabel value="Supplier Name"/>
+                                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.toInstitution}" class="w-100"/>
+                                                <h:outputLabel value="Net Total"/>
+                                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}" class="w-100"/>
+                                                <h:outputLabel value="Item Name"/>
+                                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}" class="w-100"/>
+                                                <h:outputLabel value="Item Code"/>
+                                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.code}" class="w-100"/>    
+                                            </h:panelGrid>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{searchController.billType eq 'StoreOrder'}" class="w-100">
+                                            <h:panelGrid columns="1" class="w-100">         
+                                                <h:outputLabel value="Req No"/>
+                                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="w-100"/>
+                                                <h:outputLabel value="Supplier Name"/>
+                                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.toInstitution}" class="w-100"/>
+                                                <h:outputLabel value="Net Total"/>
+                                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}" class="w-100"/>
+                                                <h:outputLabel value="Item Name"/>
+                                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}" class="w-100"/>
+                                                <h:outputLabel value="Item Code"/>
+                                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.code}" class="w-100"/>  
+                                            </h:panelGrid>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{searchController.billType eq 'StoreTransferRequest'}" class="w-100">
+                                            <h:panelGrid columns="1" class="w-100">         
+                                                <h:outputLabel value="Req No"/>
+                                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="w-100"/>
+                                                <h:outputLabel value="To Department"/>
+                                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.toDepartment}" class="w-100"/>
+                                                <h:outputLabel value="Net Total"/>
+                                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}" class="w-100"/>
+                                                <h:outputLabel value="Item Name"/>
+                                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}" class="w-100"/>
+                                                <h:outputLabel value="Item Code"/>
+                                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.code}" class="w-100"/> 
+                                            </h:panelGrid>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{searchController.billType eq 'StoreTransferIssue'}" class="w-100">
+                                            <h:panelGrid columns="1" class="w-100">         
+                                                <h:outputLabel value="Req No"/>
+                                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="w-100"/>
+                                                <h:outputLabel value="Supplier Name"/>
+                                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.fromDepartment}" class="w-100"/>
+                                                <h:outputLabel value="Net Total"/>
+                                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}" class="w-100"/>
+                                                <h:outputLabel value="Item Name"/>
+                                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}" class="w-100"/>
+                                                <h:outputLabel value="Item Code"/>
+                                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.code}" class="w-100"/>
+                                            </h:panelGrid>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{searchController.billType eq 'StoreOrderApprove'}" class="w-100">
+                                            <h:panelGrid columns="1" class="w-100">         
+                                                <h:outputLabel value="Po No"/> 
+                                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="w-100"/>
+                                                <h:outputLabel value="Requested No"/>  
+                                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.refBillNo}" class="w-100"/>
+                                                <h:outputLabel value="Supplier Name"/>
+                                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.toInstitution}" class="w-100"/>
+                                                <h:outputLabel value="Net Total"/>
+                                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}" class="w-100"/>
+                                                <h:outputLabel value="Item Name"/>
+                                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}" class="w-100"/>
+                                                <h:outputLabel value="Item Code"/>
+                                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.code}" class="w-100"/>      
+                                            </h:panelGrid>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{searchController.billType eq 'StorePre'}" class="w-100">
+                                            <h:panelGrid columns="1" class="w-100">         
+                                                <h:outputLabel value="Bill No"/>
+                                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="w-100"/>
+                                                <h:outputLabel value="Net Total"/>
+                                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}" class="w-100"/>
+                                                <h:outputLabel value="Item Name"/>
+                                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}" class="w-100"/>
+                                                <h:outputLabel value="Item Code"/>
+                                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.code}" class="w-100"/> 
+                                            </h:panelGrid>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{searchController.billType eq 'StorePurchase'}" class="w-100">
+                                            <h:panelGrid columns="1" class="w-100">         
+                                                <h:outputLabel value="Bill No"/>
+                                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="w-100"/>
+                                                <h:outputLabel value="Net Total"/>
+                                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}" class="w-100"/>
+                                                <h:outputLabel value="Item Name"/>
+                                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}" class="w-100"/>
+                                                <h:outputLabel value="Item Code"/>
+                                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.code}" class="w-100"/>
+                                            </h:panelGrid>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{searchController.billType eq 'StorePurchaseReturn'}" class="w-100">
+                                            <h:panelGrid columns="1" class="w-100"> 
+                                                <h:outputLabel value="Return Note No"/> 
+                                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="w-100"/>
+                                                <h:outputLabel value="Purchase No"/>  
+                                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.refBillNo}" class="w-100"/>
+                                                <h:outputLabel value="Supplier Name"/>
+                                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.toInstitution}" class="w-100"/>
+                                                <h:outputLabel value="Net Total"/>
+                                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}" class="w-100"/>     
+                                                <h:outputLabel value="Item Name"/>
+                                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}" class="w-100"/>
+                                                <h:outputLabel value="Item Code"/>
+                                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.code}" class="w-100"/>                     
+                                            </h:panelGrid>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{searchController.billType eq 'StoreSale'}" class="w-100">
+                                            <h:panelGrid columns="1" class="w-100">         
+                                                <h:outputLabel value="Bill No"/>
+                                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="w-100"/>
+                                                <h:outputLabel value="Net Total"/>
+                                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}" class="w-100"/>
+                                                <h:outputLabel value="Item Name"/>
+                                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}" class="w-100"/>
+                                                <h:outputLabel value="Item Code"/>
+                                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.code}" class="w-100"/>
+                                            </h:panelGrid>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{searchController.billType eq 'StoreAdjustment'}" class="w-100">
+                                            <h:panelGrid columns="1" class="w-100">         
+                                                <h:outputLabel value="Bill No"/>
+                                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="w-100"/>
+                                                <h:outputLabel value="Item Name"/>
+                                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}" class="w-100"/>
+                                                <h:outputLabel value="Item Code"/>
+                                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.code}" class="w-100"/>
+                                            </h:panelGrid>
+                                        </h:panelGroup>
+
+                                    </h:panelGroup>
+
                                 </div>
                             </div>
                             <div class="col-md-10">
@@ -91,8 +260,6 @@
                                     <h:panelGroup rendered="#{searchController.billType eq 'StoreTransferIssue'}" >
                                         <se:transfer_issue />
                                     </h:panelGroup>
-
-
 
                                     <h:panelGroup rendered="#{searchController.billType eq 'StoreOrderApprove'}" >
                                         <se:po_approve />
