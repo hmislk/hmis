@@ -11,7 +11,7 @@
         <ui:composition template="/reports/index.xhtml" class="w-100 border">
             <ui:define name="subcontent">
                 <h:form class="w-100">
-                    <p:panel header="Processional Fees" class="w-100">
+                    <p:panel header="OPD Processional Fees" class="w-100">
                         <div class="row">
                             <div class="col-md-12">
                                 <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
@@ -182,7 +182,7 @@
                                     id="btnPdf" 
                                     class="m-1 ui-button-info"
                                     ajax="false"
-                                    rendered="true"
+                                    rendered="false"
                                     icon="fas fa-file-pdf"
                                     value="Export as PDF">
                                     <p:dataExporter type="pdf" target="tbl" fileName="processional_fees" />
@@ -236,7 +236,7 @@
                                     class="m-1"
                                     rendered="#{row.billFee ne null}"
                                     action="#{billSearch.navigateToViewBillByAtomicBillType()}">
-                                    <i class="pi pi-eye" style="font-size:14px;" title="View Bill"></i> <!-- Using PrimeIcons -->
+                                    <i class="pi pi-eye" style="font-size:14px;" title="View Bill"></i> 
                                     <f:setPropertyActionListener 
                                         value="#{row.billFee.bill}" 
                                         target="#{billSearch.bill}" />
@@ -246,7 +246,7 @@
                                     class="m-1"
                                     rendered="#{row.billFee ne null}"
                                     action="#{billSearch.navigateToManageBillByAtomicBillType()}">
-                                    <i class="pi pi-pencil" style="font-size:14px;" title="Manage Bill"></i> <!-- Using PrimeIcons for editing/manage -->
+                                    <i class="pi pi-pencil" style="font-size:14px;" title="Manage Bill"></i> 
                                     <f:setPropertyActionListener 
                                         value="#{row.billFee.bill}" 
                                         target="#{billSearch.bill}" />
@@ -356,11 +356,29 @@
                                     class="m-1"
                                     rendered="#{row.billFee ne null}"
                                     action="#{billSearch.navigateToViewBillByAtomicBillType()}">
-                                    <i class="pi pi-eye" style="font-size:14px;" title="View Payment Bill"></i> <!-- Using PrimeIcons -->
+                                    <i class="pi pi-eye" style="font-size:14px;" title="View Payment Bill"></i> 
                                     <f:setPropertyActionListener 
                                         value="#{row.billFee.referenceBillFee.bill}" 
                                         target="#{billSearch.bill}" />
                                 </p:commandLink>
+
+                                <h:panelGroup rendered="#{row.billFee.referenceBillFee.bill.cancelled}" >
+                                    <p:badge severity="warning" value="Cancelled" ></p:badge>
+                                    <p:commandLink 
+                                        ajax="false"
+                                        class="m-1 ui-button-danger"
+                                        rendered="#{row.billFee ne null}"
+                                        action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                                        <i class="pi pi-eye" style="font-size:14px;" title="View Payment Bill"></i> 
+                                        <f:setPropertyActionListener 
+                                            value="#{row.billFee.referenceBillFee.bill.cancelledBill}" 
+                                            target="#{billSearch.bill}" />
+                                    </p:commandLink>
+
+                                </h:panelGroup>
+
+                            </p:column>
+
 
                                 <h:panelGroup rendered="#{row.billFee.referenceBillFee.bill.cancelled}" >
                                     <p:badge severity="warning" value="Cancelled" ></p:badge>
@@ -381,7 +399,7 @@
 
 
 
-
+                           
                         </p:dataTable>
 
                     </p:panel>
