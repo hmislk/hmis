@@ -67,6 +67,7 @@ import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.SmsFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.bean.lab.PatientInvestigationController;
 import com.divudi.data.BillFeeBundleEntry;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.OptionScope;
@@ -201,6 +202,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     PatientDepositController patientDepositController;
     @Inject
     DrawerController drawerController;
+    @Inject
+    PatientInvestigationController patientInvestigationController;
     /**
      * Class Variables
      */
@@ -605,8 +608,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         duplicatePrint = true;
         return "/opd/opd_batch_bill_print?faces-redirect=true;";
     }
-    
-    
+
     public String navigateToViewOpdBatchBill(Bill bb) {
         if (bb == null) {
             JsfUtil.addErrorMessage("Nothing selected");
@@ -1895,6 +1897,13 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         JsfUtil.addSuccessMessage("Bill Saved");
         setPrintigBill();
         checkBillValues();
+
+        boolean generateBarcodesForSampleTubesAtBilling = configOptionApplicationController.getBooleanValueByKey("Need to Generate Barcodes for Sample Tubes at OPD Billing Automatically", false);
+        if (generateBarcodesForSampleTubesAtBilling) {
+            for (Bill b : getBills()) {
+                patientInvestigationController.generateBarcodesForSelectedBill(b);
+            }
+        }
         duplicatePrint = false;
         return true;
     }
@@ -2211,7 +2220,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             String creditRefNo = paymentMethodData.getCredit().getReferenceNo();
             newBill.setReferenceNumber(creditRefNo);
         }
-
+        String deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(bt, BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
 //        newBill.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(patient, getSessionController().getApplicationPreference().isMembershipExpires()));
         newBill.setPaymentScheme(getPaymentScheme());
         newBill.setPaymentMethod(paymentMethod);
@@ -2220,20 +2229,16 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
         //SETTING INS ID
         recurseCount = 0;
-        String insId = generateBillNumberInsId(newBill);
 
-        if (insId.equals("")) {
-            return null;
-        }
-        newBill.setInsId(insId);
+        newBill.setInsId(deptId);
+        newBill.setDeptId(deptId);
+        
         if (newBill.getId() == null) {
             getFacade().create(newBill);
         } else {
             getFacade().edit(newBill);
         }
-
-        String deptId = getBillNumberGenerator().departmentBillNumberGenerator(newBill.getDepartment(), newBill.getToDepartment(), newBill.getBillType(), BillClassType.BilledBill);
-        newBill.setDeptId(deptId);
+        
         switch (sessionController.getDepartmentPreference().getOpdTokenNumberGenerationStrategy()) {
             case NO_TOKEN_GENERATION:
                 newBill.setSessionId(null);
@@ -3508,8 +3513,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
     public void calculateBillfeePayments(List<BillFee> billFees, Payment p) {
         for (BillFee bf : billFees) {
-            
-            if(bf.getId() == null){
+
+            if (bf.getId() == null) {
                 continue;
             }
 
@@ -3633,7 +3638,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             getPaymentMethodData().getPatient_deposit().setPatient(patient);
             getPaymentMethodData().getPatient_deposit().setTotalValue(netTotal);
             PatientDeposit pd = patientDepositController.checkDepositOfThePatient(patient, sessionController.getDepartment());
-            if(pd.getId() != null){
+            if (pd.getId() != null) {
                 getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(true);
                 getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
             }

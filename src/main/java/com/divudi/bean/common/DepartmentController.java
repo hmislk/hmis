@@ -175,6 +175,28 @@ public class DepartmentController implements Serializable {
         return deps;
     }
 
+    public List<Department> getInstitutionDepartmentsWithSite(Institution ins, Institution site) {
+        List<Department> deps;
+        Map<String, Object> m = new HashMap<>();
+        String jpql = "Select d From Department d "
+                + " where d.retired=false ";
+        if (site != null) {
+            jpql += " and d.site=:site ";
+            m.put("site", site);
+        }
+        if (ins != null) {
+            jpql += " and d.institution=:ins ";
+            m.put("ins", ins);
+        }
+        
+        jpql += " and TYPE(d) <> Route "
+                + " order by d.name ";
+        
+        deps = getFacade().findByJpql(jpql, m);
+
+        return deps;
+    }
+
     public List<Department> getInstitutionRoutes(Institution ins) {
         List<Department> deps;
         if (ins == null) {
