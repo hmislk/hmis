@@ -13130,11 +13130,12 @@ public class SearchController implements Serializable {
 
             if (bi.getBill() == null) {
                 continue;
-            } else if (bi.getBill().getPaymentMethod() == null) {
-                continue;
-            } else if (bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.NONE) {
-                continue;
-            }
+            } 
+//            else if (bi.getBill().getPaymentMethod() == null) {
+//                continue;
+//            } else if (bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.NONE) {
+//                continue;
+//            }
 
             String categoryName = bi.getItem() != null && bi.getItem().getCategory() != null ? bi.getItem().getCategory().getName() : "No Category";
             String itemName = bi.getItem() != null ? bi.getItem().getName() : "No Item";

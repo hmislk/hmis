@@ -141,6 +141,8 @@ public class ReportTemplateRowBundle implements Serializable {
     private Bill startBill;
     private Bill endBill;
 
+    private boolean selected;
+
     public ReportTemplateRowBundle() {
         this.id = UUID.randomUUID();
     }
@@ -269,23 +271,25 @@ public class ReportTemplateRowBundle implements Serializable {
                 onlineSettlementValue += childBundle.onlineSettlementValue;
 
                 // Handover values
-                onCallHandoverValue += childBundle.onCallHandoverValue;
-                cashHandoverValue += childBundle.cashHandoverValue;
-                cardHandoverValue += childBundle.cardHandoverValue;
-                multiplePaymentMethodsHandoverValue += childBundle.multiplePaymentMethodsHandoverValue;
-                staffHandoverValue += childBundle.staffHandoverValue;
-                creditHandoverValue += childBundle.creditHandoverValue;
-                staffWelfareHandoverValue += childBundle.staffWelfareHandoverValue;
-                voucherHandoverValue += childBundle.voucherHandoverValue;
-                iouHandoverValue += childBundle.iouHandoverValue;
-                agentHandoverValue += childBundle.agentHandoverValue;
-                chequeHandoverValue += childBundle.chequeHandoverValue;
-                slipHandoverValue += childBundle.slipHandoverValue;
-                eWalletHandoverValue += childBundle.eWalletHandoverValue;
-                patientDepositHandoverValue += childBundle.patientDepositHandoverValue;
-                patientPointsHandoverValue += childBundle.patientPointsHandoverValue;
-                onlineSettlementHandoverValue += childBundle.onlineSettlementHandoverValue;
-
+                if (this.selected) {
+                    onCallHandoverValue += childBundle.onCallHandoverValue;
+                    cashHandoverValue += childBundle.cashHandoverValue;
+                    cardHandoverValue += childBundle.cardHandoverValue;
+                    multiplePaymentMethodsHandoverValue += childBundle.multiplePaymentMethodsHandoverValue;
+                    staffHandoverValue += childBundle.staffHandoverValue;
+                    creditHandoverValue += childBundle.creditHandoverValue;
+                    staffWelfareHandoverValue += childBundle.staffWelfareHandoverValue;
+                    voucherHandoverValue += childBundle.voucherHandoverValue;
+                    iouHandoverValue += childBundle.iouHandoverValue;
+                    agentHandoverValue += childBundle.agentHandoverValue;
+                    chequeHandoverValue += childBundle.chequeHandoverValue;
+                    slipHandoverValue += childBundle.slipHandoverValue;
+                    eWalletHandoverValue += childBundle.eWalletHandoverValue;
+                    patientDepositHandoverValue += childBundle.patientDepositHandoverValue;
+                    patientPointsHandoverValue += childBundle.patientPointsHandoverValue;
+                    onlineSettlementHandoverValue += childBundle.onlineSettlementHandoverValue;
+                }
+                
                 // Aggregate flags
                 hasOnCallTransaction |= childBundle.hasOnCallTransaction;
                 hasCashTransaction |= childBundle.hasCashTransaction;
@@ -449,7 +453,7 @@ public class ReportTemplateRowBundle implements Serializable {
     }
 
     public void calculateTotals() {
-        System.out.println("calculateTotals = " );
+        System.out.println("calculateTotals = ");
         resetTotalsAndFlags();
 
         // Check if the list of rows is not null and not empty
@@ -1703,6 +1707,14 @@ public class ReportTemplateRowBundle implements Serializable {
 
     public void setToUser(WebUser toUser) {
         this.toUser = toUser;
+    }
+
+    public boolean isSelected() {
+        return selected;
+    }
+
+    public void setSelected(boolean selected) {
+        this.selected = selected;
     }
 
 }
