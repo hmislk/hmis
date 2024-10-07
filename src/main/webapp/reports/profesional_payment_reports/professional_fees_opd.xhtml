@@ -371,8 +371,26 @@
                             </p:column>
 
 
+                                <h:panelGroup rendered="#{row.billFee.referenceBillFee.bill.cancelled}" >
+                                    <p:badge severity="warning" value="Cancelled" ></p:badge>
+                                    <p:commandLink 
+                                        ajax="false"
+                                        class="m-1 ui-button-danger"
+                                        rendered="#{row.billFee ne null}"
+                                        action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                                        <i class="pi pi-eye" style="font-size:14px;" title="View Payment Bill"></i> <!-- Using PrimeIcons -->
+                                        <f:setPropertyActionListener 
+                                            value="#{row.billFee.referenceBillFee.bill.cancelledBill}" 
+                                            target="#{billSearch.bill}" />
+                                    </p:commandLink>
+
+                                </h:panelGroup>
+
+                            </p:column>
 
 
+
+                           
                         </p:dataTable>
 
                     </p:panel>
