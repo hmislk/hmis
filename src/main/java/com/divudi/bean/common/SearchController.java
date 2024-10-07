@@ -12417,6 +12417,7 @@ public class SearchController implements Serializable {
         netCashCollection -= getSafeTotal(inwardProfessionalPayments);
 
         ReportTemplateRowBundle cardPayments = generateCreditCardPayments();
+        cardPayments.calculateTotalByPayments();
         bundle.getBundles().add(cardPayments);
         netCashCollection -= getSafeTotal(cardPayments);
 

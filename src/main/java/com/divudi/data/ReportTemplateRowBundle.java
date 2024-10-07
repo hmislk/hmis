@@ -565,7 +565,7 @@ public class ReportTemplateRowBundle implements Serializable {
         }
     }
 
-    public void calculateTotalsByPayments() {
+    public void calculateTotalsBySelectedPayments() {
         resetTotalsAndFlags();
 
         if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
@@ -683,6 +683,19 @@ public class ReportTemplateRowBundle implements Serializable {
                     continue;
                 }
                 Double amount = safeDouble(row.getBill().getNetTotal());
+                total += amount;
+            }
+        }
+    }
+    
+     public void calculateTotalByPayments() {
+        total = 0.0;
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getPayment() == null) {
+                    continue;
+                }
+                Double amount = safeDouble(row.getPayment().getPaidValue());
                 total += amount;
             }
         }
