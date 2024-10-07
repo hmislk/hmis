@@ -91,7 +91,7 @@
                                         <!-- Total Handover Value with Icon -->
                                         <h:panelGroup>
                                             <i class="pi pi-dollar" style="margin-right:5px; color: #17a2b8;"></i>
-                                            <p:outputLabel value="Total Handover Value" />
+                                            <p:outputLabel value="Total Collected Value" />
                                         </h:panelGroup>
                                         <p:outputLabel value="#{financialTransactionController.bundle.total}">
                                             <f:convertNumber pattern="#,##0.00" />
@@ -216,7 +216,7 @@
                                                         event="blur"
                                                         process="txtDenoQtyHandover" 
                                                         listener="#{financialTransactionController.bundle.calculateTotalHandoverByDenominationQuantities()}"
-                                                        update=":#{p:resolveFirstComponentWithId('txtCashHandover',view).clientId} txtDenoVal" ></p:ajax>
+                                                        update=":#{p:resolveFirstComponentWithId('txtCashHandover',view).clientId} txtDenoVal :#{p:resolveFirstComponentWithId('tblCashier',view).clientId} " ></p:ajax>
                                                 </p:inputText>  
                                             </p:column>
                                             <p:column >
@@ -269,6 +269,10 @@
                                     currentPageReportTemplate="(Page {currentPage} of {totalPages})"
                                     paginatorPosition="top">
 
+                                    <p:column  width="5em" headerText="Selected">
+                                        <p:selectBooleanCheckbox value="#{summary.selected}" ></p:selectBooleanCheckbox>
+                                    </p:column>
+                                    
                                     <p:column headerText="Institution" >
                                         <h:outputText value="#{summary.department.institution.name}" />
                                     </p:column>
