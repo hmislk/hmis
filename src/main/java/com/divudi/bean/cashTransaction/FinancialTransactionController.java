@@ -21,11 +21,13 @@ import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.CountedServiceType;
 import com.divudi.data.Denomination;
 import com.divudi.data.FinancialReport;
+import com.divudi.data.PaymentHandover;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.PaymentMethodValues;
 import com.divudi.data.PaymentSelectionMode;
 import static com.divudi.data.PaymentSelectionMode.SELECT_FOR_HANDOVER_RECEIPT;
 import static com.divudi.data.PaymentSelectionMode.SELECT_FOR_HANDOVER_RECORD;
+import com.divudi.data.PaymentType;
 import com.divudi.data.ReportTemplateRow;
 import com.divudi.data.ReportTemplateRowBundle;
 import com.divudi.data.ServiceType;
@@ -62,6 +64,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.ejb.EJB;
@@ -2445,10 +2448,25 @@ public class FinancialTransactionController implements Serializable {
         System.out.println("startBill = " + startBill);
 
         List<Payment> shiftPayments = fetchPaymentsFromShiftStartToEndByDateAndDepartment(startBill, startBill.getReferenceBill());
+        if (shiftPayments != null) {
+            shiftPayments.stream()
+                    .forEach(p -> p.setTransientPaymentHandover(PaymentHandover.USER_COLLECTED));
+        }
+
         List<Payment> shiftFloats = fetchShiftFloatsFromShiftStartToEnd(startBill, startBill.getReferenceBill(), sessionController.getLoggedUser());
+        if (shiftFloats != null) {
+            shiftFloats.stream()
+                    .forEach(p -> p.setTransientPaymentHandover(PaymentHandover.FLOATS));
+        }
+
         List<Payment> othersPayments = fetchAllPaymentInMyHold(sessionController.getLoggedUser());
+        if (othersPayments != null) {
+            othersPayments.stream()
+                    .forEach(p -> p.setTransientPaymentHandover(PaymentHandover.OTHER_USERS_COLLECTED_AND_HANDED_OVER));
+        }
 
         Set<Payment> uniquePaymentSet = new HashSet<>();
+
         if (shiftPayments != null) {
             uniquePaymentSet.addAll(shiftPayments);
         }
@@ -2460,7 +2478,6 @@ public class FinancialTransactionController implements Serializable {
         }
 
         List<Payment> allUniquePayments = new ArrayList<>(uniquePaymentSet);
-
         boolean selectAllHandoverPayments = configOptionApplicationController.getBooleanValueByKey("Select all payments by default for Handing over of the shift.", false);
 
         if (selectAllHandoverPayments) {
@@ -2498,7 +2515,7 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public void fillShifts(Integer count, Boolean completed, Date fromDate, Date toDate, WebUser paramUser) {
-        bundle=new ReportTemplateRowBundle();
+        bundle = new ReportTemplateRowBundle();
         String jpql = "Select new com.divudi.data.ReportTemplateRow(b) "
                 + " from Bill b "
                 + " where b.retired=:ret "
@@ -2549,7 +2566,6 @@ public class FinancialTransactionController implements Serializable {
         fillShifts(null, false, fromDate, toDate, sessionController.getLoggedUser());
     }
 
-
     public void fillUserShifts() {
         fillShifts(null, null, null, null, user);
     }
@@ -2561,7 +2577,6 @@ public class FinancialTransactionController implements Serializable {
     public void fillUserUncompletedShifts() {
         fillShifts(null, false, fromDate, toDate, user);
     }
-
 
     public String navigateToDayEndSummary() {
         return "/analytics/day_end_summery?faces-redirect=true";
@@ -3461,13 +3476,17 @@ public class FinancialTransactionController implements Serializable {
 
         if (shiftPayments != null) {
             for (Payment p : shiftPayments) {
+                // Retrieve the payment handover type
+                PaymentHandover ph = p.getTransientPaymentHandover(); // Assuming a getter that returns the enum
+
                 // Generate key with fallback values
                 String dateKey = (p.getCreatedAt() != null) ? sdf.format(p.getCreatedAt()) : "No Date";
                 String deptKey = (p.getDepartment() != null && p.getDepartment().getId() != null) ? p.getDepartment().getId().toString() : "No Department";
                 String userKey = (p.getCreater() != null && p.getCreater().getId() != null) ? p.getCreater().getId().toString() : "No User";
                 String webUserKey = (p.getCurrentHolder() != null && p.getCurrentHolder().getId() != null) ? p.getCurrentHolder().getId().toString() : "No WebUser";
+                String handoverKey = (ph != null) ? ph.name() : "No Handover"; // Use the enum name as part of the key
 
-                String key = dateKey + "-" + deptKey + "-" + userKey + "-" + webUserKey;
+                String key = String.join("-", dateKey, deptKey, userKey, webUserKey, handoverKey);
 
                 ReportTemplateRowBundle b = groupedBundles.getOrDefault(key, new ReportTemplateRowBundle());
                 if (b.getSessionController() == null) {
@@ -3477,6 +3496,7 @@ public class FinancialTransactionController implements Serializable {
                 b.setDate(p.getCreatedAt() != null ? p.getCreatedAt() : new Date());
                 b.setDepartment(p.getDepartment() != null ? p.getDepartment() : new Department());
                 b.setUser(p.getCreater() != null ? p.getCreater() : new WebUser());
+                b.setPaymentHandover(ph);  // Set the payment handover attribute
 
                 ReportTemplateRow r = new ReportTemplateRow();
                 r.setPayment(p);
@@ -4197,20 +4217,8 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String completeHandover() {
-        if (user == null) {
-            JsfUtil.addErrorMessage("Please select a user to handover the shift.");
-            return null;
-        }
         if (bundle == null) {
             JsfUtil.addErrorMessage("Error - Null Bundle");
-            return null;
-        }
-        if (bundle.getBundles() == null) {
-            JsfUtil.addErrorMessage("No Payments");
-            return null;
-        }
-        if (bundle.getBundles().isEmpty()) {
-            JsfUtil.addErrorMessage("No Payments to Handover");
             return null;
         }
         if (bundle.getStartBill() == null) {
