@@ -12,7 +12,7 @@
                 <h:form>
                     <p:panel>
                         <f:facet name="header">
-                            <div class="justify-content-between d-flex">
+                            <div class="">
                                 <h:outputText styleClass="fas fa-search" />
                                 <h:outputLabel value="Shift Shortage Bill Search " class="mx-4"/>
                             </div>
@@ -42,37 +42,24 @@
                                                 inputStyleClass="form-control">                                                                              
                                     </p:calendar>
                                 </div>
-                                <!--                                <div class="col-12">
-                                                                    <h:outputLabel value="User"/> 
-                                                                    <p:autoComplete
-                                                                        completeMethod="#{webUserController.completeUser}"
-                                                                        class="w-100"
-                                
-                                                                        value="#{searchController.webUser}" 
-                                                                        var="user"
-                                                                        scrollHeight="450"
-                                                                        itemLabel="#{user.webUserPerson.name}" 
-                                                                        itemValue="#{user}" >
-                                                                        <p:column headerText="Username" >
-                                                                            <h:outputText value="#{user.name}" ></h:outputText>
-                                                                        </p:column>
-                                                                        <p:column headerText="Name" >
-                                                                            <h:outputText value="#{user.webUserPerson.name}" ></h:outputText>
-                                                                        </p:column>
-                                                                    </p:autoComplete>
-                                                                </div>-->
 
                             </div>
                             <p:commandButton class="ui-button-success"
+                                             icon="fas fa-search"
                                              value="Search"
                                              action="#{searchController.createShiftShortageBillsTable()}"
                                              update="tb">
                             </p:commandButton>
                         </h:panelGroup>
+
                         <p:dataTable id="tb"
                                      value="#{searchController.bills}"
                                      var="bill"
-                                     >
+                                     rows ="10"
+                                     paginator="true"
+                                     paginatorPosition="bottom"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="5,10,25,50">
                             <p:column 
                                 headerText="No" 
                                 filterBy="#{bill.id}" 
@@ -89,7 +76,7 @@
                                         id="billNo" 
                                         ajax="false" 
                                         value="#{bill.idStr}" 
-                                        action="#{billSearch.navigateToViewSupplimentaryIncomeBill()}">
+                                        action="#{billSearch.navigateToViewCashierShiftShortageBill(bill)}">
                                         <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                     </p:commandLink>
                                 </div>
@@ -188,6 +175,5 @@
                 </h:form>
             </ui:define>
         </ui:composition>
-        <div>TODO write content</div>
     </h:body>
 </html>
