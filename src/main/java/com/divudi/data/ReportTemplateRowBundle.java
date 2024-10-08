@@ -43,7 +43,8 @@ public class ReportTemplateRowBundle implements Serializable {
     // UUID field to uniquely identify each object
     private UUID id;
 
-    private SessionController sessionController;
+//    private SessionController sessionController;
+    private List<com.divudi.entity.cashTransaction.Denomination> denominations;
 
     private List<ReportTemplateRowBundle> bundles;
     List<DenominationTransaction> denominationTransactions;
@@ -150,15 +151,20 @@ public class ReportTemplateRowBundle implements Serializable {
         this.id = UUID.randomUUID();
     }
 
-    public ReportTemplateRowBundle(SessionController sessionController) {
-        this();
-        this.sessionController = sessionController;
-    }
-
+//    public ReportTemplateRowBundle(SessionController sessionController) {
+//        this();
+//        this.sessionController = sessionController;
+//    }
     private double nullSafeDouble(Double value) {
         return value != null ? value : 0.0;
     }
 
+    public void selectAllChildBundles(){
+        for(ReportTemplateRowBundle b:getBundles()){
+            b.setSelected(true);
+        }
+    }
+    
     private void resetTotals() {
         grossTotal = 0.0;
         discount = 0.0;
@@ -315,9 +321,10 @@ public class ReportTemplateRowBundle implements Serializable {
         }
     }
 
-//    public void prepareDenominations(){
-//        denominationTransactions = createDefaultDenominationTransaction(PaymentMethod.Cash);
-//    }
+    public void prepareDenominations() {
+        denominationTransactions = createDefaultDenominationTransaction(PaymentMethod.Cash);
+    }
+
     public Double getPaymentValue(PaymentMethod pm) {
         switch (pm) {
             case Agent:
@@ -687,8 +694,8 @@ public class ReportTemplateRowBundle implements Serializable {
             }
         }
     }
-    
-     public void calculateTotalByPayments() {
+
+    public void calculateTotalByPayments() {
         total = 0.0;
         if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
             for (ReportTemplateRow row : this.reportTemplateRows) {
@@ -1696,14 +1703,13 @@ public class ReportTemplateRowBundle implements Serializable {
         this.onlineSettlementHandoverValue = onlineSettlementHandoverValue;
     }
 
-    public SessionController getSessionController() {
-        return sessionController;
-    }
-
-    public void setSessionController(SessionController sessionController) {
-        this.sessionController = sessionController;
-    }
-
+//    public SessionController getSessionController() {
+//        return sessionController;
+//    }
+//
+//    public void setSessionController(SessionController sessionController) {
+//        this.sessionController = sessionController;
+//    }
     public List<DenominationTransaction> getDenominationTransactions() {
         return denominationTransactions;
     }
@@ -1732,17 +1738,21 @@ public class ReportTemplateRowBundle implements Serializable {
         }
     }
 
-//    private List<DenominationTransaction> createDefaultDenominationTransaction(PaymentMethod pm) {
-//        List<DenominationTransaction> dts = new ArrayList<>();
+    private List<DenominationTransaction> createDefaultDenominationTransaction(PaymentMethod pm) {
+        List<DenominationTransaction> dts = new ArrayList<>();
+        if (denominations == null) {
+            return dts;
+        }
 //        List<com.divudi.entity.cashTransaction.Denomination> denominations = sessionController.findDefaultDenominations();
-//        for (com.divudi.entity.cashTransaction.Denomination d : denominations) {
-//            DenominationTransaction dt = new DenominationTransaction();
-//            dt.setDenomination(d);
-//            dt.setPaymentMethod(pm);
-//            dts.add(dt);
-//        }
-//        return dts;
-//    }
+        for (com.divudi.entity.cashTransaction.Denomination d : denominations) {
+            DenominationTransaction dt = new DenominationTransaction();
+            dt.setDenomination(d);
+            dt.setPaymentMethod(pm);
+            dts.add(dt);
+        }
+        return dts;
+    }
+
     public PaymentMethod getPaymentMethod() {
         return paymentMethod;
     }
@@ -1789,6 +1799,14 @@ public class ReportTemplateRowBundle implements Serializable {
 
     public void setPaymentHandover(PaymentHandover paymentHandover) {
         this.paymentHandover = paymentHandover;
+    }
+
+    public List<com.divudi.entity.cashTransaction.Denomination> getDenominations() {
+        return denominations;
+    }
+
+    public void setDenominations(List<com.divudi.entity.cashTransaction.Denomination> denominations) {
+        this.denominations = denominations;
     }
 
 }
