@@ -757,7 +757,7 @@ public class SessionController implements Serializable, HttpSessionListener {
             JsfUtil.addErrorMessage("Please enter a username");
             return false;
         }
-        if (isFirstVisit()) {
+        if (getFirstLogin()) {
             prepareFirstVisit();
             return true;
         } else {
@@ -2124,7 +2124,13 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public Boolean getFirstLogin() {
         if (firstLogin == null) {
-            firstLogin = isFirstVisit();
+            if(applicationController.getFirstLogin()==null){
+                firstLogin = isFirstVisit();
+                applicationController.setFirstLogin(firstLogin);
+            }else{
+                firstLogin=applicationController.getFirstLogin();
+            }
+            
         }
         return firstLogin;
     }
@@ -2241,10 +2247,10 @@ public class SessionController implements Serializable, HttpSessionListener {
         this.loggedSite = loggedSite;
     }
 
-//    
-//    public List<Denomination> findDefaultDenominations() {
-//        return denominationController.getDenominations();
-//    }
+    
+    public List<Denomination> findDefaultDenominations() {
+        return denominationController.getDenominations();
+    }
 
     public Drawer getLoggedUserDrawer() {
         return loggedUserDrawer;
