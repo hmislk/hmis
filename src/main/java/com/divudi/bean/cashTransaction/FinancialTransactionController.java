@@ -1264,11 +1264,11 @@ public class FinancialTransactionController implements Serializable {
     public String navigateToCashierSummary() {
         return "/cashier/cashier_summary?faces-redirect=true";
     }
-    
+
     public String navigateToMyCashierSummary() {
         return "/cashier/my_cashier_summary?faces-redirect=true";
     }
-    
+
     public String navigateToMyCashierDetails() {
         return "/cashier/my_cashier_detailed?faces-redirect=true";
     }
@@ -1667,7 +1667,8 @@ public class FinancialTransactionController implements Serializable {
 
         // Recreate data holder objects from persisted objects
         for (Bill b : shiftHandoverCompletionBills) {
-            ReportTemplateRowBundle childBundle = new ReportTemplateRowBundle(sessionController);
+            ReportTemplateRowBundle childBundle = new ReportTemplateRowBundle();
+            childBundle.setDenominations(sessionController.findDefaultDenominations());
             childBundle.setDepartment(b.getDepartment());
             childBundle.setUser(b.getFromWebUser());
             childBundle.setDate(b.getBillDate());
@@ -2299,7 +2300,8 @@ public class FinancialTransactionController implements Serializable {
 
         List<Payment> allUniquePayments = new ArrayList<>(uniquePaymentSet);
 
-        bundle = new ReportTemplateRowBundle(sessionController);
+        bundle = new ReportTemplateRowBundle();
+        bundle.setDenominations(sessionController.findDefaultDenominations());
         boolean selectAllHandoverPayments = configOptionApplicationController.getBooleanValueByKey("Select All Payments for Handovers", handoverValuesCreated);
         if (selectAllHandoverPayments) { // This seems to be always true, could be simplified or clarified if needed
             bundle = generatePaymentBundleForHandovers(startBill, null, allUniquePayments, PaymentSelectionMode.SELECT_ALL_FOR_HANDOVER_CREATION);
@@ -2360,13 +2362,37 @@ public class FinancialTransactionController implements Serializable {
         resetClassVariables();
         findNonClosedShiftStartFundBillIsAvailable();
         handoverValuesCreated = false;
-        bundle = new ReportTemplateRowBundle(sessionController);
+        bundle = new ReportTemplateRowBundle();
+        bundle.setDenominations(sessionController.findDefaultDenominations());
 
-        List<Payment> shiftPayments = fetchPaymentsFromShiftStartToEndByDateAndDepartment(nonClosedShiftStartFundBill, null);
-        List<Payment> shiftFloats = fetchShiftFloatsFromShiftStartToEnd(nonClosedShiftStartFundBill, null, sessionController.getLoggedUser());
+        resetClassVariables();
+        handoverValuesCreated = false;
+        bundle = new ReportTemplateRowBundle();
+        bundle.setDenominations(sessionController.findDefaultDenominations());
+        Bill startBill = nonClosedShiftStartFundBill;
+        
+        System.out.println("startBill = " + startBill);
+
+        List<Payment> shiftPayments = fetchPaymentsFromShiftStartToEndByDateAndDepartment(startBill, startBill.getReferenceBill());
+        if (shiftPayments != null) {
+            shiftPayments.stream()
+                    .forEach(p -> p.setTransientPaymentHandover(PaymentHandover.USER_COLLECTED));
+        }
+
+        List<Payment> shiftFloats = fetchShiftFloatsFromShiftStartToEnd(startBill, startBill.getReferenceBill(), sessionController.getLoggedUser());
+        if (shiftFloats != null) {
+            shiftFloats.stream()
+                    .forEach(p -> p.setTransientPaymentHandover(PaymentHandover.FLOATS));
+        }
+
         List<Payment> othersPayments = fetchAllPaymentInMyHold(sessionController.getLoggedUser());
+        if (othersPayments != null) {
+            othersPayments.stream()
+                    .forEach(p -> p.setTransientPaymentHandover(PaymentHandover.OTHER_USERS_COLLECTED_AND_HANDED_OVER));
+        }
 
         Set<Payment> uniquePaymentSet = new HashSet<>();
+
         if (shiftPayments != null) {
             uniquePaymentSet.addAll(shiftPayments);
         }
@@ -2378,8 +2404,19 @@ public class FinancialTransactionController implements Serializable {
         }
 
         List<Payment> allUniquePayments = new ArrayList<>(uniquePaymentSet);
-
         boolean selectAllHandoverPayments = configOptionApplicationController.getBooleanValueByKey("Select all payments by default for Handing over of the shift.", false);
+
+        if (shiftPayments != null) {
+            uniquePaymentSet.addAll(shiftPayments);
+        }
+        if (shiftFloats != null) {
+            uniquePaymentSet.addAll(shiftFloats);
+        }
+        if (othersPayments != null) {
+            uniquePaymentSet.addAll(othersPayments);
+        }
+
+        allUniquePayments = new ArrayList<>(uniquePaymentSet);
 
         if (selectAllHandoverPayments) {
             bundle = generatePaymentBundleForHandovers(nonClosedShiftStartFundBill,
@@ -2397,7 +2434,7 @@ public class FinancialTransactionController implements Serializable {
         bundle.setUser(sessionController.getLoggedUser());
         bundle.aggregateTotalsFromChildBundles();
         bundle.setDenominationTransactions(denominationTransactionController.createDefaultDenominationTransaction());
-        bundle.setCashHandoverValue(0.0);
+//        bundle.setCashHandoverValue(0.0);
         return "/cashier/handover_start_all?faces-redirect=true";
     }
 
@@ -2409,7 +2446,8 @@ public class FinancialTransactionController implements Serializable {
         resetClassVariables();
         findNonClosedShiftStartFundBillIsAvailable();
         handoverValuesCreated = false;
-        bundle = new ReportTemplateRowBundle(sessionController);
+        bundle = new ReportTemplateRowBundle();
+        bundle.setDenominations(sessionController.findDefaultDenominations());
 
         List<Payment> shiftPayments = fetchPaymentsFromShiftStartToEndByDateAndDepartment(fromDate, toDate, sessionController.getLoggedUser());
         List<Payment> shiftFloats = fetchShiftFloatsFromShiftStartToEnd(fromDate, toDate, sessionController.getLoggedUser());
@@ -2452,7 +2490,8 @@ public class FinancialTransactionController implements Serializable {
     public String navigateToHandoverCreateBillForSelectedShift(Bill startBill) {
         resetClassVariables();
         handoverValuesCreated = false;
-        bundle = new ReportTemplateRowBundle(sessionController);
+        bundle = new ReportTemplateRowBundle();
+        bundle.setDenominations(sessionController.findDefaultDenominations());
         System.out.println("startBill = " + startBill);
 
         List<Payment> shiftPayments = fetchPaymentsFromShiftStartToEndByDateAndDepartment(startBill, startBill.getReferenceBill());
@@ -2503,6 +2542,10 @@ public class FinancialTransactionController implements Serializable {
         }
 //        bundle = generatePaymentsFromShiftStartToEndToEnterToCashbookFilteredByDateAndDepartment(startBill, startBill.getReferenceBill());
         bundle.setUser(sessionController.getLoggedUser());
+        
+        bundle.setDenominations(sessionController.findDefaultDenominations());
+        bundle.prepareDenominations();
+        bundle.selectAllChildBundles();
         bundle.aggregateTotalsFromChildBundles();
 //        currentBill = new Bill();
 //        currentBill.setBillType(BillType.CashHandoverCreateBill);
@@ -3497,9 +3540,7 @@ public class FinancialTransactionController implements Serializable {
                 String key = String.join("-", dateKey, deptKey, userKey, webUserKey, handoverKey);
 
                 ReportTemplateRowBundle b = groupedBundles.getOrDefault(key, new ReportTemplateRowBundle());
-                if (b.getSessionController() == null) {
-                    b.setSessionController(sessionController);
-                }
+                b.setDenominations(sessionController.findDefaultDenominations());
 
                 b.setDate(p.getCreatedAt() != null ? p.getCreatedAt() : new Date());
                 b.setDepartment(p.getDepartment() != null ? p.getDepartment() : new Department());
@@ -5061,9 +5102,9 @@ public class FinancialTransactionController implements Serializable {
 
         Double netTotal = currentBill.getNetTotal();
         if (loggedUserDrawer.getCashInHandValue() < netTotal) {
-                JsfUtil.addErrorMessage("Not Enough Cash in the Drawer");
-                return "";
-            }
+            JsfUtil.addErrorMessage("Not Enough Cash in the Drawer");
+            return "";
+        }
         currentBill.setNetTotal(0 - Math.abs(netTotal));
         billController.save(currentBill);
         for (Payment p : getCurrentBillPayments()) {

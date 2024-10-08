@@ -630,17 +630,17 @@ public class SearchController implements Serializable {
     }
 
     public String navigateToProfessionalFees() {
-        bundle = new ReportTemplateRowBundle(sessionController);
+        bundle = new ReportTemplateRowBundle();
         return "/reports/professional_payment_reports/professional_fees_opd?faces-redirect=true";
     }
 
     public String navigateToProfessionalFeePayments() {
-        bundle = new ReportTemplateRowBundle(sessionController);
+        bundle = new ReportTemplateRowBundle();
         return "/reports/professional_payment_reports/professional_fee_payments_opd?faces-redirect=true";
     }
 
     public String navigateToProfessionalPayments() {
-        bundle = new ReportTemplateRowBundle(sessionController);
+        bundle = new ReportTemplateRowBundle();
         return "/reports/professional_payment_reports/professional_payments_opd?faces-redirect=true";
     }
     
