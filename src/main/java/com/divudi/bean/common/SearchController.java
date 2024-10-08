@@ -12399,47 +12399,47 @@ public class SearchController implements Serializable {
         // Deduct various payments from net cash collection
         ReportTemplateRowBundle pettyCashPayments = generatePettyCashPayments();
         bundle.getBundles().add(pettyCashPayments);
-        netCashCollection -= getSafeTotal(pettyCashPayments);
+        netCashCollection -= Math.abs(getSafeTotal(pettyCashPayments));
 
         // Generate OPD professional payments and add to the main bundle
         ReportTemplateRowBundle opdProfessionalPayments = generateOpdProfessionalPayments();
         bundle.getBundles().add(opdProfessionalPayments);
-        netCashCollection -= getSafeTotal(opdProfessionalPayments);
+        netCashCollection -= Math.abs(getSafeTotal(opdProfessionalPayments));
 
         // Generate channelling professional payments and add to the main bundle
         ReportTemplateRowBundle channellingProfessionalPayments = generateChannellingProfessionalPayments();
         bundle.getBundles().add(channellingProfessionalPayments);
-        netCashCollection -= getSafeTotal(channellingProfessionalPayments);
+        netCashCollection -= Math.abs(getSafeTotal(channellingProfessionalPayments));
 
         // Generate inward professional payments and add to the main bundle
         ReportTemplateRowBundle inwardProfessionalPayments = generateInwardProfessionalPayments();
         bundle.getBundles().add(inwardProfessionalPayments);
-        netCashCollection -= getSafeTotal(inwardProfessionalPayments);
+        netCashCollection -= Math.abs(getSafeTotal(inwardProfessionalPayments));
 
         ReportTemplateRowBundle cardPayments = generateCreditCardPayments();
         cardPayments.calculateTotalByPayments();
         bundle.getBundles().add(cardPayments);
-        netCashCollection -= getSafeTotal(cardPayments);
+        netCashCollection -= Math.abs(getSafeTotal(cardPayments));
 
         ReportTemplateRowBundle staffPayments = generateStaffPayments();
         bundle.getBundles().add(staffPayments);
-        netCashCollection -= getSafeTotal(staffPayments);
+        netCashCollection -= Math.abs(getSafeTotal(staffPayments));
 
         ReportTemplateRowBundle voucherPayments = generateVoucherPayments();
         bundle.getBundles().add(voucherPayments);
-        netCashCollection -= getSafeTotal(voucherPayments);
+        netCashCollection -= Math.abs(getSafeTotal(voucherPayments));
 
         ReportTemplateRowBundle chequePayments = generateChequePayments();
         bundle.getBundles().add(chequePayments);
-        netCashCollection -= getSafeTotal(chequePayments);
+        netCashCollection -= Math.abs(getSafeTotal(chequePayments));
 
         ReportTemplateRowBundle ewalletPayments = generateEwalletPayments();
         bundle.getBundles().add(ewalletPayments);
-        netCashCollection -= getSafeTotal(ewalletPayments);
+        netCashCollection -= Math.abs(getSafeTotal(ewalletPayments));
 
         ReportTemplateRowBundle slipPayments = generateSlipPayments();
         bundle.getBundles().add(slipPayments);
-        netCashCollection -= getSafeTotal(slipPayments);
+        netCashCollection -= Math.abs(getSafeTotal(slipPayments));
 
         // Final net cash for the day
         ReportTemplateRowBundle netCashForTheDayBundle = new ReportTemplateRowBundle();
