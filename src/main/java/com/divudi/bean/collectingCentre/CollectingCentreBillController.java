@@ -241,7 +241,11 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             return;
         }
         fillAvailableAgentReferanceNumbers(collectingCentre);
-        opdItems = itemFeeManager.fillItemLightsForCc(collectingCentre);
+        if (collectingCentre.getFeeListType() != null) {
+            opdItems = itemFeeManager.fillItemLightsForCc(collectingCentre);
+        } else {
+            opdItems = fillOpdItems();
+        }
         itemController.setCcInstitutionItems(itemController.fillItemsByInstitution(collectingCentre));
     }
 
