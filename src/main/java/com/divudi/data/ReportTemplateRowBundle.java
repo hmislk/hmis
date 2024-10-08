@@ -159,6 +159,12 @@ public class ReportTemplateRowBundle implements Serializable {
         return value != null ? value : 0.0;
     }
 
+    public void selectAllChildBundles(){
+        for(ReportTemplateRowBundle b:getBundles()){
+            b.setSelected(true);
+        }
+    }
+    
     private void resetTotals() {
         grossTotal = 0.0;
         discount = 0.0;

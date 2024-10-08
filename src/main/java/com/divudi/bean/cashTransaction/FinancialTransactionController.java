@@ -2542,9 +2542,11 @@ public class FinancialTransactionController implements Serializable {
         }
 //        bundle = generatePaymentsFromShiftStartToEndToEnterToCashbookFilteredByDateAndDepartment(startBill, startBill.getReferenceBill());
         bundle.setUser(sessionController.getLoggedUser());
-        bundle.aggregateTotalsFromChildBundles();
+        
         bundle.setDenominations(sessionController.findDefaultDenominations());
         bundle.prepareDenominations();
+        bundle.selectAllChildBundles();
+        bundle.aggregateTotalsFromChildBundles();
 //        currentBill = new Bill();
 //        currentBill.setBillType(BillType.CashHandoverCreateBill);
 //        currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE);
