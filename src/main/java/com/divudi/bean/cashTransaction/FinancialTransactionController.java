@@ -2369,6 +2369,8 @@ public class FinancialTransactionController implements Serializable {
         handoverValuesCreated = false;
         bundle = new ReportTemplateRowBundle();
         bundle.setDenominations(sessionController.findDefaultDenominations());
+        Bill startBill = nonClosedShiftStartFundBill;
+        
         System.out.println("startBill = " + startBill);
 
         List<Payment> shiftPayments = fetchPaymentsFromShiftStartToEndByDateAndDepartment(startBill, startBill.getReferenceBill());
@@ -2432,7 +2434,7 @@ public class FinancialTransactionController implements Serializable {
         bundle.setUser(sessionController.getLoggedUser());
         bundle.aggregateTotalsFromChildBundles();
         bundle.setDenominationTransactions(denominationTransactionController.createDefaultDenominationTransaction());
-        bundle.setCashHandoverValue(0.0);
+//        bundle.setCashHandoverValue(0.0);
         return "/cashier/handover_start_all?faces-redirect=true";
     }
 
