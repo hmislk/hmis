@@ -5,6 +5,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.DrawerController;
+import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.channel.ChannelSearchController;
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.bean.lab.PatientInvestigationController;
@@ -213,6 +214,8 @@ public class BillSearch implements Serializable {
     AgentAndCcApplicationController collectingCentreApplicationController;
     @Inject
     DrawerController drawerController;
+    @Inject
+    FinancialTransactionController financialTransactionController;
     /**
      * Class Variables
      */
@@ -1648,9 +1651,9 @@ public class BillSearch implements Serializable {
         }
 
         if (refundingBill.getBillItems() != null) {
-            for (BillItem bi : refundingBill.getBillItems()) {
-                for (BillFee bf : bi.getBillFees()) {
-                    if (bf.getReferenceBillFee().getFeeValue() < bf.getFeeValue()) {
+            for (BillItem refundingBillItemTmp : refundingBill.getBillItems()) {
+                for (BillFee refundingBillFeeTmp : refundingBillItemTmp.getBillFees()) {
+                    if (refundingBillFeeTmp.getReferenceBillFee().getFeeValue() < refundingBillFeeTmp.getFeeValue()) {
                         JsfUtil.addErrorMessage("Pleace Enter Correct Value");
                         return "";
                     }
@@ -1770,7 +1773,7 @@ public class BillSearch implements Serializable {
         }
         Date bd = Calendar.getInstance().getTime();
         rb.setBillTypeAtomic(BillTypeAtomic.OPD_BILL_REFUND);
-        rb.setBillType(billType.PaymentBill);
+        rb.setBillType(billType.OpdBill);
         rb.setBillDate(bd);
         rb.setBillTime(bd);
         rb.setCreatedAt(bd);
@@ -1779,18 +1782,18 @@ public class BillSearch implements Serializable {
         rb.setInstitution(getSessionController().getLoggedUser().getInstitution());
         rb.setComments(comment);
         rb.setPaymentMethod(paymentMethod);
-        rb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getBill().getToDepartment(), BillType.OpdBill, BillClassType.RefundBill, BillNumberSuffix.RF));
-        rb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), getBill().getToDepartment(), BillType.OpdBill, BillClassType.RefundBill, BillNumberSuffix.RF));
-        rb.setRefunded(Boolean.TRUE);
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.OPD_BILL_REFUND);
+        rb.setInsId(deptId);
+        rb.setDeptId(deptId);
         rb.setReferenceBill(bill);
         rb.setBilledBill(bill);
         billController.save(rb);
         currentRefundBill = rb;
-        for (BillItem bi : rb.getBillItems()) {
-            for (BillFee bf : bi.getBillFees()) {
-                billController.saveBillFee(bf);
+        for (BillItem rbi : rb.getBillItems()) {
+            for (BillFee rbf : rbi.getBillFees()) {
+                billController.saveBillFee(rbf);
             }
-            billController.saveBillItem(bi);
+            billController.saveBillItem(rbi);
         }
 
         List<Bill> refundBills = new ArrayList<>();
@@ -1838,49 +1841,48 @@ public class BillSearch implements Serializable {
 
     }
 
-    public String returnBill() {
-        if (refundingItems.isEmpty()) {
-            JsfUtil.addErrorMessage("There is no item to Refund");
-            return "";
-
-        }
-        if (refundAmount == 0.0) {
-            JsfUtil.addErrorMessage("There is no item to Refund");
-            return "";
-        }
-        if (comment == null || comment.trim().equals("")) {
-            JsfUtil.addErrorMessage("Please enter a comment");
-            return "";
-        }
-
-        if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
-            if (getBill().isCancelled()) {
-                JsfUtil.addErrorMessage("Already Cancelled. Can not Refund again");
-                return "";
-            }
-            if (!calculateRefundTotal()) {
-                return "";
-            }
-
-            RefundBill rb = (RefundBill) createReturnBill();
-
-            refundBillItems(rb);
-
-            getBill().setRefunded(true);
-            getBill().setRefundedBill(rb);
-            getBillFacade().edit(getBill());
-
-            printPreview = true;
-            //JsfUtil.addSuccessMessage("Refunded");
-
-        } else {
-            JsfUtil.addErrorMessage("No Bill to refund");
-            return "";
-        }
-        //  recreateModel();
-        return "";
-    }
-
+//    public String returnBill() {
+//        if (refundingItems.isEmpty()) {
+//            JsfUtil.addErrorMessage("There is no item to Refund");
+//            return "";
+//
+//        }
+//        if (refundAmount == 0.0) {
+//            JsfUtil.addErrorMessage("There is no item to Refund");
+//            return "";
+//        }
+//        if (comment == null || comment.trim().equals("")) {
+//            JsfUtil.addErrorMessage("Please enter a comment");
+//            return "";
+//        }
+//
+//        if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
+//            if (getBill().isCancelled()) {
+//                JsfUtil.addErrorMessage("Already Cancelled. Can not Refund again");
+//                return "";
+//            }
+//            if (!calculateRefundTotal()) {
+//                return "";
+//            }
+//
+//            RefundBill rb = (RefundBill) createReturnBill();
+//
+//            refundBillItems(rb);
+//
+//            getBill().setRefunded(true);
+//            getBill().setRefundedBill(rb);
+//            getBillFacade().edit(getBill());
+//
+//            printPreview = true;
+//            //JsfUtil.addSuccessMessage("Refunded");
+//
+//        } else {
+//            JsfUtil.addErrorMessage("No Bill to refund");
+//            return "";
+//        }
+//        //  recreateModel();
+//        return "";
+//    }
     private Bill createReturnBill() {
         RefundBill rb = new RefundBill();
         rb.setBilledBill(getBill());
@@ -2142,6 +2144,7 @@ public class BillSearch implements Serializable {
             cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), originalBill.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.PROCAN));
             cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), originalBill.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.PROCAN));
         }
+        cb.setBillTypeAtomic(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN);
         cb.setBalance(0.0);
         cb.setPaymentMethod(paymentMethod);
         cb.setBilledBill(originalBill);
@@ -2279,6 +2282,11 @@ public class BillSearch implements Serializable {
         }
 
         if (errorsPresentOnOpdBillCancellation()) {
+            return;
+        }
+        
+        if (financialTransactionController.getLoggedUserDrawer().getCashInHandValue() < getBill().getBillTotal()){
+            JsfUtil.addErrorMessage("Not enough cash in the Drawer");
             return;
         }
 
@@ -2491,6 +2499,7 @@ public class BillSearch implements Serializable {
     }
 
     private void returnBillFee(Bill rb, BillItem bt, List<BillFee> tmp) {
+        System.out.println("returnBillFee");
         for (BillFee nB : tmp) {
             BillFee bf = new BillFee();
             bf.copy(nB);
@@ -2810,6 +2819,7 @@ public class BillSearch implements Serializable {
             List<BillFee> originalProfessionalPaymentFeesForBillItem) {
         for (BillFee originalProfessionalPaymentFeeForBillItem : originalProfessionalPaymentFeesForBillItem) {
             BillFee newCancellingBillFee = new BillFee();
+            System.out.println("addind new fee under cancelBillFee " );
             newCancellingBillFee.setFee(originalProfessionalPaymentFeeForBillItem.getFee());
             newCancellingBillFee.setPatienEncounter(originalProfessionalPaymentFeeForBillItem.getPatienEncounter());
             newCancellingBillFee.setPatient(originalProfessionalPaymentFeeForBillItem.getPatient());
@@ -3082,7 +3092,7 @@ public class BillSearch implements Serializable {
         }
         return "/opd/view/cancelled_opd_bill?faces-redirect=true;";
     }
-    
+
     public String navigateToReprintOpdProfessionalPaymentBill() {
         if (bill == null) {
             JsfUtil.addErrorMessage("Nothing to Reprint");
@@ -3090,23 +3100,24 @@ public class BillSearch implements Serializable {
         }
         return "/opd/professional_payments/payment_bill_reprint?faces-redirect=true;";
     }
-    
+
     public String navigateToCancelOpdProfessionalPaymentBill() {
         if (bill == null) {
             JsfUtil.addErrorMessage("Nothing to cancel");
             return "";
         }
+        printPreview = false;
         return "/opd/professional_payments/payment_staff_bill_cancel?faces-redirect=true;";
     }
-    
+
     public String navigateToViewOpdProfessionalPaymentsDone() {
         return "/opd/professional_payments/opd_search_professional_payment_done?faces-redirect=true;";
     }
-    
+
     public String navigateToViewOpdProfessionalPaymentsDue() {
         return "/opd/professional_payments/opd_search_professional_payment_due?faces-redirect=true;";
     }
-    
+
     public String navigateToViewOpdPayProfessionalPayments() {
         return "/opd/professional_payments/payment_staff_bill?faces-redirect=true;";
     }
@@ -3134,7 +3145,7 @@ public class BillSearch implements Serializable {
         }
         return "/opd/view/opd_professional_payment?faces-redirect=true;";
     }
-    
+
     public String navigateToViewOpdProfessionalPaymentCancelledBill() {
         if (viewingBill == null) {
             JsfUtil.addErrorMessage("Not Cancelled Yet");
@@ -3267,7 +3278,7 @@ public class BillSearch implements Serializable {
 
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES:
                 return navigateToViewOpdProfessionalPaymentBill();
-                
+
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN:
                 return navigateToViewOpdProfessionalPaymentCancelledBill();
             case CHANNEL_BOOKING_WITH_PAYMENT:
@@ -3612,6 +3623,8 @@ public class BillSearch implements Serializable {
 
         // Set unique properties for refundingBill
         refundingBill.setBillClassType(BillClassType.RefundBill);
+        refundingBill.setBillType(BillType.OpdBill);
+        refundingBill.setBillTypeAtomic(BillTypeAtomic.OPD_BILL_REFUND);
         refundingBill.setBillDate(new Date());
         refundingBill.setBillTime(new Date());
         refundingBill.setCreatedAt(new Date());
@@ -3648,6 +3661,7 @@ public class BillSearch implements Serializable {
             nbi.setReferanceBillItem(bi);
             nbi.setReferenceBill(bill);
             nbi.setId(null);
+            nbi.setReferanceBillItem(bi);
             nbi.setBillFees(new ArrayList<>());
 
             List<BillFee> billBillFees = billController.billFeesOfBillItem(bi);
