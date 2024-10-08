@@ -5,6 +5,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.DrawerController;
+import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.channel.ChannelSearchController;
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.bean.lab.PatientInvestigationController;
@@ -213,6 +214,8 @@ public class BillSearch implements Serializable {
     AgentAndCcApplicationController collectingCentreApplicationController;
     @Inject
     DrawerController drawerController;
+    @Inject
+    FinancialTransactionController financialTransactionController;
     /**
      * Class Variables
      */
@@ -2279,6 +2282,11 @@ public class BillSearch implements Serializable {
         }
 
         if (errorsPresentOnOpdBillCancellation()) {
+            return;
+        }
+        
+        if (financialTransactionController.getLoggedUserDrawer().getCashInHandValue() < getBill().getBillTotal()){
+            JsfUtil.addErrorMessage("Not enough cash in the Drawer");
             return;
         }
 
