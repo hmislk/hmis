@@ -1622,6 +1622,13 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage("Already Cancelled. Can not Refund again");
             return "";
         }
+               
+        
+        if (financialTransactionController.getLoggedUserDrawer().getCashInHandValue() < refundingBill.getNetTotal()){
+            JsfUtil.addErrorMessage("Not enough cash in the Drawer");
+            return "";
+        }
+        
 
         if (!getWebUserController().hasPrivilege("LabBillRefundSpecial")) {
             if (configOptionApplicationController.getBooleanValueByKey("Immediate Refund Request for OPO Bills of Any Status", true)) {
