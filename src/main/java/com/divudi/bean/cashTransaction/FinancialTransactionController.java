@@ -1264,11 +1264,11 @@ public class FinancialTransactionController implements Serializable {
     public String navigateToCashierSummary() {
         return "/cashier/cashier_summary?faces-redirect=true";
     }
-    
+
     public String navigateToMyCashierSummary() {
         return "/cashier/my_cashier_summary?faces-redirect=true";
     }
-    
+
     public String navigateToMyCashierDetails() {
         return "/cashier/my_cashier_detailed?faces-redirect=true";
     }
@@ -2365,11 +2365,32 @@ public class FinancialTransactionController implements Serializable {
         bundle = new ReportTemplateRowBundle();
         bundle.setDenominations(sessionController.findDefaultDenominations());
 
-        List<Payment> shiftPayments = fetchPaymentsFromShiftStartToEndByDateAndDepartment(nonClosedShiftStartFundBill, null);
-        List<Payment> shiftFloats = fetchShiftFloatsFromShiftStartToEnd(nonClosedShiftStartFundBill, null, sessionController.getLoggedUser());
+        resetClassVariables();
+        handoverValuesCreated = false;
+        bundle = new ReportTemplateRowBundle();
+        bundle.setDenominations(sessionController.findDefaultDenominations());
+        System.out.println("startBill = " + startBill);
+
+        List<Payment> shiftPayments = fetchPaymentsFromShiftStartToEndByDateAndDepartment(startBill, startBill.getReferenceBill());
+        if (shiftPayments != null) {
+            shiftPayments.stream()
+                    .forEach(p -> p.setTransientPaymentHandover(PaymentHandover.USER_COLLECTED));
+        }
+
+        List<Payment> shiftFloats = fetchShiftFloatsFromShiftStartToEnd(startBill, startBill.getReferenceBill(), sessionController.getLoggedUser());
+        if (shiftFloats != null) {
+            shiftFloats.stream()
+                    .forEach(p -> p.setTransientPaymentHandover(PaymentHandover.FLOATS));
+        }
+
         List<Payment> othersPayments = fetchAllPaymentInMyHold(sessionController.getLoggedUser());
+        if (othersPayments != null) {
+            othersPayments.stream()
+                    .forEach(p -> p.setTransientPaymentHandover(PaymentHandover.OTHER_USERS_COLLECTED_AND_HANDED_OVER));
+        }
 
         Set<Payment> uniquePaymentSet = new HashSet<>();
+
         if (shiftPayments != null) {
             uniquePaymentSet.addAll(shiftPayments);
         }
@@ -2381,8 +2402,19 @@ public class FinancialTransactionController implements Serializable {
         }
 
         List<Payment> allUniquePayments = new ArrayList<>(uniquePaymentSet);
-
         boolean selectAllHandoverPayments = configOptionApplicationController.getBooleanValueByKey("Select all payments by default for Handing over of the shift.", false);
+
+        if (shiftPayments != null) {
+            uniquePaymentSet.addAll(shiftPayments);
+        }
+        if (shiftFloats != null) {
+            uniquePaymentSet.addAll(shiftFloats);
+        }
+        if (othersPayments != null) {
+            uniquePaymentSet.addAll(othersPayments);
+        }
+
+        allUniquePayments = new ArrayList<>(uniquePaymentSet);
 
         if (selectAllHandoverPayments) {
             bundle = generatePaymentBundleForHandovers(nonClosedShiftStartFundBill,
@@ -2509,6 +2541,7 @@ public class FinancialTransactionController implements Serializable {
 //        bundle = generatePaymentsFromShiftStartToEndToEnterToCashbookFilteredByDateAndDepartment(startBill, startBill.getReferenceBill());
         bundle.setUser(sessionController.getLoggedUser());
         bundle.aggregateTotalsFromChildBundles();
+        bundle.setDenominations(sessionController.findDefaultDenominations());
         bundle.prepareDenominations();
 //        currentBill = new Bill();
 //        currentBill.setBillType(BillType.CashHandoverCreateBill);
@@ -5065,9 +5098,9 @@ public class FinancialTransactionController implements Serializable {
 
         Double netTotal = currentBill.getNetTotal();
         if (loggedUserDrawer.getCashInHandValue() < netTotal) {
-                JsfUtil.addErrorMessage("Not Enough Cash in the Drawer");
-                return "";
-            }
+            JsfUtil.addErrorMessage("Not Enough Cash in the Drawer");
+            return "";
+        }
         currentBill.setNetTotal(0 - Math.abs(netTotal));
         billController.save(currentBill);
         for (Payment p : getCurrentBillPayments()) {
