@@ -1667,7 +1667,8 @@ public class FinancialTransactionController implements Serializable {
 
         // Recreate data holder objects from persisted objects
         for (Bill b : shiftHandoverCompletionBills) {
-            ReportTemplateRowBundle childBundle = new ReportTemplateRowBundle(sessionController);
+            ReportTemplateRowBundle childBundle = new ReportTemplateRowBundle();
+            childBundle.setDenominations(sessionController.findDefaultDenominations());
             childBundle.setDepartment(b.getDepartment());
             childBundle.setUser(b.getFromWebUser());
             childBundle.setDate(b.getBillDate());
@@ -2299,7 +2300,8 @@ public class FinancialTransactionController implements Serializable {
 
         List<Payment> allUniquePayments = new ArrayList<>(uniquePaymentSet);
 
-        bundle = new ReportTemplateRowBundle(sessionController);
+        bundle = new ReportTemplateRowBundle();
+        bundle.setDenominations(sessionController.findDefaultDenominations());
         boolean selectAllHandoverPayments = configOptionApplicationController.getBooleanValueByKey("Select All Payments for Handovers", handoverValuesCreated);
         if (selectAllHandoverPayments) { // This seems to be always true, could be simplified or clarified if needed
             bundle = generatePaymentBundleForHandovers(startBill, null, allUniquePayments, PaymentSelectionMode.SELECT_ALL_FOR_HANDOVER_CREATION);
@@ -2360,7 +2362,8 @@ public class FinancialTransactionController implements Serializable {
         resetClassVariables();
         findNonClosedShiftStartFundBillIsAvailable();
         handoverValuesCreated = false;
-        bundle = new ReportTemplateRowBundle(sessionController);
+        bundle = new ReportTemplateRowBundle();
+        bundle.setDenominations(sessionController.findDefaultDenominations());
 
         List<Payment> shiftPayments = fetchPaymentsFromShiftStartToEndByDateAndDepartment(nonClosedShiftStartFundBill, null);
         List<Payment> shiftFloats = fetchShiftFloatsFromShiftStartToEnd(nonClosedShiftStartFundBill, null, sessionController.getLoggedUser());
@@ -2409,7 +2412,8 @@ public class FinancialTransactionController implements Serializable {
         resetClassVariables();
         findNonClosedShiftStartFundBillIsAvailable();
         handoverValuesCreated = false;
-        bundle = new ReportTemplateRowBundle(sessionController);
+        bundle = new ReportTemplateRowBundle();
+        bundle.setDenominations(sessionController.findDefaultDenominations());
 
         List<Payment> shiftPayments = fetchPaymentsFromShiftStartToEndByDateAndDepartment(fromDate, toDate, sessionController.getLoggedUser());
         List<Payment> shiftFloats = fetchShiftFloatsFromShiftStartToEnd(fromDate, toDate, sessionController.getLoggedUser());
@@ -2452,7 +2456,8 @@ public class FinancialTransactionController implements Serializable {
     public String navigateToHandoverCreateBillForSelectedShift(Bill startBill) {
         resetClassVariables();
         handoverValuesCreated = false;
-        bundle = new ReportTemplateRowBundle(sessionController);
+        bundle = new ReportTemplateRowBundle();
+        bundle.setDenominations(sessionController.findDefaultDenominations());
         System.out.println("startBill = " + startBill);
 
         List<Payment> shiftPayments = fetchPaymentsFromShiftStartToEndByDateAndDepartment(startBill, startBill.getReferenceBill());
@@ -2504,6 +2509,7 @@ public class FinancialTransactionController implements Serializable {
 //        bundle = generatePaymentsFromShiftStartToEndToEnterToCashbookFilteredByDateAndDepartment(startBill, startBill.getReferenceBill());
         bundle.setUser(sessionController.getLoggedUser());
         bundle.aggregateTotalsFromChildBundles();
+        bundle.prepareDenominations();
 //        currentBill = new Bill();
 //        currentBill.setBillType(BillType.CashHandoverCreateBill);
 //        currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE);
@@ -3497,9 +3503,7 @@ public class FinancialTransactionController implements Serializable {
                 String key = String.join("-", dateKey, deptKey, userKey, webUserKey, handoverKey);
 
                 ReportTemplateRowBundle b = groupedBundles.getOrDefault(key, new ReportTemplateRowBundle());
-                if (b.getSessionController() == null) {
-                    b.setSessionController(sessionController);
-                }
+                b.setDenominations(sessionController.findDefaultDenominations());
 
                 b.setDate(p.getCreatedAt() != null ? p.getCreatedAt() : new Date());
                 b.setDepartment(p.getDepartment() != null ? p.getDepartment() : new Department());
