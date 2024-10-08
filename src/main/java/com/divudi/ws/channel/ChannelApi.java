@@ -484,6 +484,53 @@ public class ChannelApi {
     }
 
     @POST
+    @Path("/doctorSessions")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getDoctorSessions(@Context HttpServletRequest requestContext, Map<String, String> requestBody) {
+        String key = requestContext.getHeader("Finance");
+        if (!isValidKey(key)) {
+            JSONObject responseError = new JSONObject();
+            responseError = errorMessageNotValidKey();
+            String json = responseError.toString();
+            return Response.status(Response.Status.ACCEPTED).entity(responseError.toString()).build();
+        }
+        
+        int hosId = Integer.parseInt(requestBody.get("hostID"));
+        int docNo = Integer.parseInt(requestBody.get("docNo"));
+        String bookingChannel = requestBody.get("bookingChannel");
+
+        Institution hospital = institutionController.findInstitution(hosId);
+        Speciality speciality = specialityController.findSpeciality(docNo);
+        Consultant consultant = consultantController.getConsultantById(docNo);
+
+        // Call the method to find session instances
+        List<SessionInstance> sessions = sessionInstanceController.findSessionInstance(hospital, speciality, consultant, null, null);
+
+        Map<String, Object > sessionData = new HashMap<>();
+        
+        for(SessionInstance s: sessions){
+            Map<String, Object> session = new HashMap<>();
+            session.put("sessionID", s.getId());
+            session.put("amount", s.getChannelHosFee());
+            
+            sessionData.put(s.getId().toString(), s);
+        }
+        
+        Map<String, Object> sessionResults = new HashMap<>();
+        sessionResults.put("result", sessionData);
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("code", "202");
+        response.put("message", "Accepted");
+        response.put("data", sessionResults);
+        response.put("detailMessage", "Succeess");
+        
+        return Response.status(Response.Status.ACCEPTED).entity(response).build();
+        
+    }
+
+    @POST
     @Path("/test")
     @Produces(MediaType.TEXT_PLAIN)
     public Response testAPI() {
