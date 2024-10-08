@@ -12437,6 +12437,7 @@ public class SearchController implements Serializable {
         bundle.getBundles().add(ewalletPayments);
         netCashCollection -= Math.abs(getSafeTotal(ewalletPayments));
 
+        
         ReportTemplateRowBundle slipPayments = generateSlipPayments();
         bundle.getBundles().add(slipPayments);
         netCashCollection -= Math.abs(getSafeTotal(slipPayments));
