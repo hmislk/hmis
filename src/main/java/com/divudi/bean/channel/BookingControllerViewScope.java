@@ -79,6 +79,7 @@ import com.divudi.data.BillFinanceType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.OptionScope;
 import static com.divudi.data.PaymentMethod.Cash;
+import static com.divudi.data.PaymentMethod.MultiplePaymentMethods;
 import static com.divudi.data.PaymentMethod.OnlineSettlement;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.ejb.StaffBean;
@@ -2390,17 +2391,28 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 //        System.out.println("getPaymentMethod = " + getCancelPaymentMethod());
         switch (selectedBillSession.getBill().getPaymentMethod()) {
             case Cash:
-                if (financialTransactionController.getLoggedUserDrawer().getTotalInHand() == 0 || financialTransactionController.getLoggedUserDrawer().getTotalInHand() == null) {
+                if (financialTransactionController.getLoggedUserDrawer().getCashInHandValue() == 0 || financialTransactionController.getLoggedUserDrawer().getCashInHandValue() < selectedBillSession.getBill().getPaidAmount()) {
                     JsfUtil.addErrorMessage("No Enough Money in the Drawer");
                     return;
                 }
                 break;
             case Card:
-                if (financialTransactionController.getLoggedUserDrawer().getTotalInHand() == 0 || financialTransactionController.getLoggedUserDrawer().getTotalInHand() == null) {
+                if (financialTransactionController.getLoggedUserDrawer().getCashInHandValue() == 0 || financialTransactionController.getLoggedUserDrawer().getCashInHandValue() < selectedBillSession.getBill().getPaidAmount()) {
+                    JsfUtil.addErrorMessage("No Enough Money in the Drawer");
+                    return;
+                }
+            case MultiplePaymentMethods:
+                if (financialTransactionController.getLoggedUserDrawer().getCashInHandValue() == 0 || financialTransactionController.getLoggedUserDrawer().getCashInHandValue() < selectedBillSession.getBill().getPaidAmount()) {
                     JsfUtil.addErrorMessage("No Enough Money in the Drawer");
                     return;
                 }
                 break;    
+            case Cheque:
+                if (financialTransactionController.getLoggedUserDrawer().getCashInHandValue() == 0 || financialTransactionController.getLoggedUserDrawer().getCashInHandValue() < selectedBillSession.getBill().getPaidAmount()) {
+                    JsfUtil.addErrorMessage("No Enough Money in the Drawer");
+                    return;
+                }
+                break;     
         }
 
         if (selectedBillSession.getBill().getBillType() == BillType.ChannelAgent) {
