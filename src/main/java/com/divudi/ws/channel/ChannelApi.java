@@ -83,6 +83,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import sun.security.krb5.internal.PaPacOptions;
 
 /**
  * REST Web Service
@@ -639,13 +640,29 @@ public class ChannelApi {
     @Path("/save")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response createBooking(@Context HttpServletRequest requestContext, Map<String, String> requestBody) {
+    public Response createBooking(@Context HttpServletRequest requestContext, Map<String, Object> requestBody) {
         String key = requestContext.getHeader("Finance");
         if (!isValidKey(key)) {
             JSONObject responseError = new JSONObject();
             responseError = errorMessageNotValidKey();
             String json = responseError.toString();
             return Response.status(Response.Status.ACCEPTED).entity(responseError.toString()).build();
+        }
+        
+        JSONObject patientDetails =  new JSONObject();
+        patientDetails = (JSONObject)requestBody.get("patient");
+        
+        if(patientDetails == null || patientDetails.isEmpty()){
+            JSONObject response = new JSONObject();
+            response.put("Code", "401");
+            response.put("type", "error");
+            response.put("message", "No patient details");
+            return Response.status(Response.Status.ACCEPTED).entity(response).build();
+        }
+        
+        if(false){
+            Patient p = new Patient();
+            
         }
 
         return Response.status(Response.Status.ACCEPTED).entity("create Booking Api").build();
