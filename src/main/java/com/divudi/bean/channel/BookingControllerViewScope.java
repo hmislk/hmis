@@ -7474,6 +7474,33 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void channelBookingRefund() {
+        
+        switch (selectedBillSession.getBill().getPaymentMethod()) {
+            case Cash:
+                if (financialTransactionController.getLoggedUserDrawer().getCashInHandValue() == 0 || financialTransactionController.getLoggedUserDrawer().getCashInHandValue() < selectedBillSession.getBill().getRefundAmount()) {
+                    JsfUtil.addErrorMessage("No Enough Money in the Drawer");
+                    return;
+                }
+                break;
+            case Card:
+                if (financialTransactionController.getLoggedUserDrawer().getCashInHandValue() == 0 || financialTransactionController.getLoggedUserDrawer().getCashInHandValue() < selectedBillSession.getBill().getRefundAmount()) {
+                    JsfUtil.addErrorMessage("No Enough Money in the Drawer");
+                    return;
+                }
+            case MultiplePaymentMethods:
+                if (financialTransactionController.getLoggedUserDrawer().getCashInHandValue() == 0 || financialTransactionController.getLoggedUserDrawer().getCashInHandValue() < selectedBillSession.getBill().getRefundAmount()) {
+                    JsfUtil.addErrorMessage("No Enough Money in the Drawer");
+                    return;
+                }
+                break;    
+            case Cheque:
+                if (financialTransactionController.getLoggedUserDrawer().getCashInHandValue() == 0 || financialTransactionController.getLoggedUserDrawer().getCashInHandValue() < selectedBillSession.getBill().getRefundAmount()) {
+                    JsfUtil.addErrorMessage("No Enough Money in the Drawer");
+                    return;
+                }
+                break;     
+        }
+        
         if (refundableTotal > 0.0) {
             if (selectedBillSession.getBillItem().getBill().getPaymentMethod() == PaymentMethod.Agent) {
                 refundAgentBill();
