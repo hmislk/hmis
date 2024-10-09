@@ -307,8 +307,13 @@ public class SearchController implements Serializable {
     private int opdAnalyticsIndex;
 
     public String navigateToPettyCashBillApprove() {
-        createPettyApproveTable();
+        createPettyCashToApproveTable();
         return "/petty_cash_bill_to_approve?faces-redirect=true";
+    }
+    
+    public String navigateToPettyCashCancelBillApprove() {
+        createPettyApproveTable();
+        return "/petty_cash_cancel_bill_to_approve?faces-redirect=true";
     }
 
     public String navigateTobill(Bill bill) {
@@ -630,17 +635,17 @@ public class SearchController implements Serializable {
     }
 
     public String navigateToProfessionalFees() {
-        bundle = new ReportTemplateRowBundle(sessionController);
+        bundle = new ReportTemplateRowBundle();
         return "/reports/professional_payment_reports/professional_fees_opd?faces-redirect=true";
     }
 
     public String navigateToProfessionalFeePayments() {
-        bundle = new ReportTemplateRowBundle(sessionController);
+        bundle = new ReportTemplateRowBundle();
         return "/reports/professional_payment_reports/professional_fee_payments_opd?faces-redirect=true";
     }
 
     public String navigateToProfessionalPayments() {
-        bundle = new ReportTemplateRowBundle(sessionController);
+        bundle = new ReportTemplateRowBundle();
         return "/reports/professional_payment_reports/professional_payments_opd?faces-redirect=true";
     }
     
@@ -11953,7 +11958,25 @@ public class SearchController implements Serializable {
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("billTypes", billTypes);
-        bills = getBillFacade().findByJpql(sql, temMap);
+        bills = getBillFacade().findByJpql(sql, temMap,TemporalType.TIMESTAMP);
+
+    }
+    
+    public void createPettyCashToApproveTable() {
+        List<BillTypeAtomic> billTypes = new ArrayList<>();
+        billTypes.add(BillTypeAtomic.PETTY_CASH_ISSUE);
+
+        bills = null;
+        String sql;
+        Map temMap = new HashMap();
+        System.out.println("getFromDate() = " + getFromDate());
+        System.out.println("getToDate() = " + getToDate());
+        sql = "select b from Bill b where b.billTypeAtomic IN :billTypes and b.createdAt between :fromDate and :toDate and b.retired=false";
+        System.out.println("sql = " + sql);
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("billTypes", billTypes);
+        bills = getBillFacade().findByJpql(sql, temMap,TemporalType.TIMESTAMP);
 
     }
 
@@ -12399,47 +12422,48 @@ public class SearchController implements Serializable {
         // Deduct various payments from net cash collection
         ReportTemplateRowBundle pettyCashPayments = generatePettyCashPayments();
         bundle.getBundles().add(pettyCashPayments);
-        netCashCollection -= getSafeTotal(pettyCashPayments);
+        netCashCollection -= Math.abs(getSafeTotal(pettyCashPayments));
 
         // Generate OPD professional payments and add to the main bundle
         ReportTemplateRowBundle opdProfessionalPayments = generateOpdProfessionalPayments();
         bundle.getBundles().add(opdProfessionalPayments);
-        netCashCollection -= getSafeTotal(opdProfessionalPayments);
+        netCashCollection -= Math.abs(getSafeTotal(opdProfessionalPayments));
 
         // Generate channelling professional payments and add to the main bundle
         ReportTemplateRowBundle channellingProfessionalPayments = generateChannellingProfessionalPayments();
         bundle.getBundles().add(channellingProfessionalPayments);
-        netCashCollection -= getSafeTotal(channellingProfessionalPayments);
+        netCashCollection -= Math.abs(getSafeTotal(channellingProfessionalPayments));
 
         // Generate inward professional payments and add to the main bundle
         ReportTemplateRowBundle inwardProfessionalPayments = generateInwardProfessionalPayments();
         bundle.getBundles().add(inwardProfessionalPayments);
-        netCashCollection -= getSafeTotal(inwardProfessionalPayments);
+        netCashCollection -= Math.abs(getSafeTotal(inwardProfessionalPayments));
 
         ReportTemplateRowBundle cardPayments = generateCreditCardPayments();
         cardPayments.calculateTotalByPayments();
         bundle.getBundles().add(cardPayments);
-        netCashCollection -= getSafeTotal(cardPayments);
+        netCashCollection -= Math.abs(getSafeTotal(cardPayments));
 
         ReportTemplateRowBundle staffPayments = generateStaffPayments();
         bundle.getBundles().add(staffPayments);
-        netCashCollection -= getSafeTotal(staffPayments);
+        netCashCollection -= Math.abs(getSafeTotal(staffPayments));
 
         ReportTemplateRowBundle voucherPayments = generateVoucherPayments();
         bundle.getBundles().add(voucherPayments);
-        netCashCollection -= getSafeTotal(voucherPayments);
+        netCashCollection -= Math.abs(getSafeTotal(voucherPayments));
 
         ReportTemplateRowBundle chequePayments = generateChequePayments();
         bundle.getBundles().add(chequePayments);
-        netCashCollection -= getSafeTotal(chequePayments);
+        netCashCollection -= Math.abs(getSafeTotal(chequePayments));
 
         ReportTemplateRowBundle ewalletPayments = generateEwalletPayments();
         bundle.getBundles().add(ewalletPayments);
-        netCashCollection -= getSafeTotal(ewalletPayments);
+        netCashCollection -= Math.abs(getSafeTotal(ewalletPayments));
 
+        
         ReportTemplateRowBundle slipPayments = generateSlipPayments();
         bundle.getBundles().add(slipPayments);
-        netCashCollection -= getSafeTotal(slipPayments);
+        netCashCollection -= Math.abs(getSafeTotal(slipPayments));
 
         // Final net cash for the day
         ReportTemplateRowBundle netCashForTheDayBundle = new ReportTemplateRowBundle();

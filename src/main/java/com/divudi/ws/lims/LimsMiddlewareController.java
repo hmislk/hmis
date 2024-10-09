@@ -1067,70 +1067,103 @@ public class LimsMiddlewareController {
                             System.out.println("data bundle and componant are the same");
                             System.out.println("ps.getInvestigationComponant() = " + ps.getInvestigationComponant());
                             System.out.println("priv.getInvestigationItem().getSampleComponent() = " + priv.getInvestigationItem().getSampleComponent());
-                            if (ps.getInvestigationComponant() == null || priv.getInvestigationItem().getSampleComponent() == null) {
-                                System.out.println("1 result = " + result);
-                                priv.setStrValue(result);
-                                Double dbl = 0d;
-                                try {
-                                    dbl = Double.parseDouble(result);
-                                } catch (Exception e) {
-                                }
-                                priv.setDoubleValue(dbl);
-                                System.out.println("1 priv.getDoubleValue() = " + priv.getDoubleValue());
-                                System.out.println("priv = " + priv.getId());
-                                System.out.println("priv double value " + priv.getDoubleValue());
-                                System.out.println("priv Str value = " + priv.getStrValue());
-                                if (priv.getId() == null) {
-                                    patientReportItemValueFacade.create(priv);
-                                    System.out.println("1 new priv created = " + dbl);
-                                } else {
-                                    System.out.println("1 new priv Updates = " + dbl);
-                                    patientReportItemValueFacade.edit(priv);
-                                }
-                                valueToSave = true;
-                                temFlag = true;
-                            } else if (priv.getInvestigationItem().getSampleComponent().equals(ps.getInvestigationComponant())) {
-                                System.out.println("2 result = " + result);
-                                priv.setStrValue(result);
+                            for (PatientSampleComponant patientSampleComponant : pscs) {
+                                Item investigationComponentFromPatientSampleComponant = patientSampleComponant.getInvestigationComponant();
+                                Item investigationComponentFromPatientReportItem = priv.getInvestigationItem().getSampleComponent();
+                                if (investigationComponentFromPatientSampleComponant != null
+                                        && investigationComponentFromPatientReportItem != null
+                                        && investigationComponentFromPatientSampleComponant.equals(investigationComponentFromPatientReportItem)) {
 
-                                Double dbl = 0d;
-                                try {
-                                    dbl = Double.parseDouble(result);
-                                    System.out.println("2 dbl = " + dbl);
-                                } catch (Exception e) {
-                                }
-                                priv.setDoubleValue(dbl);
-                                System.out.println("2 priv.getDoubleValue() = " + priv.getDoubleValue());
-                                if (priv.getId() == null) {
-                                    System.out.println("2 new priv created = " + dbl);
-                                    patientReportItemValueFacade.create(priv);
-                                } else {
-                                    System.out.println("2 new priv Updates = " + dbl);
-                                    patientReportItemValueFacade.edit(priv);
-                                }
-                                temFlag = true;
-                                valueToSave = true;
-                            } else {
-                                System.out.println("3 result = " + result);
-                                priv.setStrValue(result);
+                                    System.out.println("0 result = " + result);
+                                    priv.setStrValue(result);
 
-                                Double dbl = 0d;
-                                try {
-                                    dbl = Double.parseDouble(result);
-                                    System.out.println("3 dbl = " + dbl);
-                                } catch (Exception e) {
+                                    Double dbl = 0d;
+                                    try {
+                                        dbl = Double.parseDouble(result);
+                                        System.out.println("0 dbl = " + dbl);
+                                    } catch (Exception e) {
+                                    }
+                                    priv.setDoubleValue(dbl);
+                                    System.out.println("0 priv.getDoubleValue() = " + priv.getDoubleValue());
+                                    if (priv.getId() == null) {
+                                        System.out.println("0 new priv created = " + dbl);
+                                        patientReportItemValueFacade.create(priv);
+                                    } else {
+                                        System.out.println("0 new priv Updates = " + dbl);
+                                        patientReportItemValueFacade.edit(priv);
+                                    }
+                                    temFlag = true;
+                                    valueToSave = true;
+
                                 }
-                                priv.setDoubleValue(dbl);
-                                System.out.println("3 priv.getDoubleValue() = " + priv.getDoubleValue());
-                                if (priv.getId() == null) {
-                                    System.out.println("3 new priv created = " + dbl);
-                                    patientReportItemValueFacade.create(priv);
+                            }
+
+                            if (valueToSave == false) {
+                                if (ps.getInvestigationComponant() == null || priv.getInvestigationItem().getSampleComponent() == null) {
+                                    System.out.println("1 result = " + result);
+                                    priv.setStrValue(result);
+                                    Double dbl = 0d;
+                                    try {
+                                        dbl = Double.parseDouble(result);
+                                    } catch (Exception e) {
+                                    }
+                                    priv.setDoubleValue(dbl);
+                                    System.out.println("1 priv.getDoubleValue() = " + priv.getDoubleValue());
+                                    System.out.println("priv = " + priv.getId());
+                                    System.out.println("priv double value " + priv.getDoubleValue());
+                                    System.out.println("priv Str value = " + priv.getStrValue());
+                                    if (priv.getId() == null) {
+                                        patientReportItemValueFacade.create(priv);
+                                        System.out.println("1 new priv created = " + dbl);
+                                    } else {
+                                        System.out.println("1 new priv Updates = " + dbl);
+                                        patientReportItemValueFacade.edit(priv);
+                                    }
+                                    valueToSave = true;
+                                    temFlag = true;
+                                } else if (priv.getInvestigationItem().getSampleComponent().equals(ps.getInvestigationComponant())) {
+                                    System.out.println("2 result = " + result);
+                                    priv.setStrValue(result);
+
+                                    Double dbl = 0d;
+                                    try {
+                                        dbl = Double.parseDouble(result);
+                                        System.out.println("2 dbl = " + dbl);
+                                    } catch (Exception e) {
+                                    }
+                                    priv.setDoubleValue(dbl);
+                                    System.out.println("2 priv.getDoubleValue() = " + priv.getDoubleValue());
+                                    if (priv.getId() == null) {
+                                        System.out.println("2 new priv created = " + dbl);
+                                        patientReportItemValueFacade.create(priv);
+                                    } else {
+                                        System.out.println("2 new priv Updates = " + dbl);
+                                        patientReportItemValueFacade.edit(priv);
+                                    }
+                                    temFlag = true;
+                                    valueToSave = true;
                                 } else {
-                                    System.out.println("3 new priv Updates = " + dbl);
-                                    patientReportItemValueFacade.edit(priv);
+                                    System.out.println("3 result = " + result);
+                                    priv.setStrValue(result);
+
+                                    Double dbl = 0d;
+                                    try {
+                                        dbl = Double.parseDouble(result);
+                                        System.out.println("3 dbl = " + dbl);
+                                    } catch (Exception e) {
+                                    }
+                                    priv.setDoubleValue(dbl);
+                                    System.out.println("3 priv.getDoubleValue() = " + priv.getDoubleValue());
+                                    if (priv.getId() == null) {
+                                        System.out.println("3 new priv created = " + dbl);
+                                        patientReportItemValueFacade.create(priv);
+                                    } else {
+                                        System.out.println("3 new priv Updates = " + dbl);
+                                        patientReportItemValueFacade.edit(priv);
+                                    }
+                                    temFlag = true;
+                                    valueToSave = true;
                                 }
-                                temFlag = true;
-                                valueToSave = true;
                             }
 
                         }
@@ -1882,11 +1915,16 @@ public class LimsMiddlewareController {
                     ms.setSpecimanName(sampleTypeName);
                     if (tii.getItem().isHasMoreThanOneComponant()) {
                         System.out.println("more than one componant");
-                        System.out.println("tti = " + tii.getName());
+                        System.out.println("tii = " + tii.getName());
+                        System.out.println("tii.getTest() = " + tii.getTest());
                         if (tii.getTest() != null && !tii.getTest().getName().trim().equals("")) {
-                            if (tii.getSampleComponent().equals(ps.getInvestigationComponant())) {
+                            System.out.println("tii.getSampleComponent() = " + tii.getSampleComponent());
+                            System.out.println("c.getInvestigationComponant() = " + c.getInvestigationComponant());
+                            if (tii.getSampleComponent().equals(c.getInvestigationComponant())) {
                                 System.out.println("going to check analyzer equal");
                                 if (tii.getMachine().getName().equalsIgnoreCase(sendingAnalyzerName)) {
+                                    System.out.println("tii.getTest().getCode() = " + tii.getTest().getCode());
+                                    System.out.println("c.getInvestigationComponant().getName() = " + c.getInvestigationComponant().getName());
                                     tests.add(tii.getTest().getCode());
                                     updateStatusToPeformed(c);
                                     System.out.println("1. tii.getTest().getCode() = " + tii.getTest().getCode());
@@ -1913,7 +1951,9 @@ public class LimsMiddlewareController {
             }
         }
         System.out.println("tests = " + tests);
-        return tests;
+        Set<String> uniqueTests = new HashSet<>(tests);
+        List<String> uniqueTestList = new ArrayList<>(uniqueTests);
+        return uniqueTestList;
     }
 
     public void updateStatusToPeformed(PatientSampleComponant psc) {

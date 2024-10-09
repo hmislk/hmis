@@ -51,6 +51,7 @@ import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.ServiceSessionFacade;
+import com.divudi.facade.SessionInstanceFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.java.CommonFunctions;
 import java.text.DateFormat;
@@ -125,6 +126,8 @@ public class ChannelApi {
     private BillNumberGenerator billNumberBean;
     @EJB
     private ServiceSessionBean serviceSessionBean;
+    @EJB
+    private SessionInstanceFacade sessionInstanceFacade;
 
     @Inject
     private BillBeanController billBeanController;
@@ -240,6 +243,15 @@ public class ChannelApi {
         return jSONObjectOut;
     }
 
+    private JSONObject notValidId() {
+        JSONObject jSONObjectOut = new JSONObject();
+        jSONObjectOut.put("code", 401);
+        jSONObjectOut.put("type", "error");
+        String e = "Not a valid code.";
+        jSONObjectOut.put("message", e);
+        return jSONObjectOut;
+    }
+
     @POST
     @Path("/hospitals")
     @Produces(MediaType.APPLICATION_JSON)
@@ -297,7 +309,15 @@ public class ChannelApi {
     @Path("/doctors")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getDoctorList(Map<String, String> requestBody) {
+    public Response getDoctorList(@Context HttpServletRequest requestContext, Map<String, String> requestBody) {
+
+        String key = requestContext.getHeader("Finance");
+        if (!isValidKey(key)) {
+            JSONObject responseError = new JSONObject();
+            responseError = errorMessageNotValidKey();
+            String json = responseError.toString();
+            return Response.status(Response.Status.ACCEPTED).entity(responseError.toString()).build();
+        }
 
         String type = requestBody.get("type");
         String bookingChannel = requestBody.get("bookingChannel");
@@ -445,6 +465,7 @@ public class ChannelApi {
             @QueryParam("offset") Integer offset,
             @QueryParam("page") Integer page,
             @QueryParam("sessionDate") String sessionDate) {
+
         System.out.println("searchDoctors");
         // Validate the input parameters
         if (hosID == null && docNo == null && docName == null && specID == null && (offset == null || page == null)) {
@@ -481,6 +502,233 @@ public class ChannelApi {
         return Response.status(Response.Status.OK)
                 .entity(response.toString())
                 .build();
+    }
+
+    @POST
+    @Path("/doctorSessions")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getDoctorSessions(@Context HttpServletRequest requestContext, Map<String, String> requestBody) {
+        String key = requestContext.getHeader("Finance");
+        if (!isValidKey(key)) {
+            JSONObject responseError = new JSONObject();
+            responseError = errorMessageNotValidKey();
+            String json = responseError.toString();
+            return Response.status(Response.Status.ACCEPTED).entity(responseError.toString()).build();
+        }
+        long hosId;
+        long docNo;
+
+        try {
+            hosId = Integer.parseInt(requestBody.get("hosID"));
+            docNo = Integer.parseInt(requestBody.get("docNo"));
+        } catch (Exception e) {
+            JSONObject json = notValidId();
+            return Response.status(Response.Status.ACCEPTED).entity(json).build();
+        }
+
+        String bookingChannel = requestBody.get("bookingChannel");
+
+        Institution hospital = institutionController.findInstitution(hosId);
+        Speciality speciality = specialityController.findSpeciality(docNo);
+        Consultant consultant = consultantController.getConsultantById(docNo);
+        
+        if(hospital == null || consultant == null){
+            JSONObject json = notValidId();
+        }
+
+        List<SessionInstance> sessions = sessionInstanceController.findSessionInstance(hospital, speciality, consultant, null, null);
+        
+        Map<String, Object> sessionData = new HashMap<>();
+
+        for (SessionInstance s : sessions) {
+            Map<String, Object> session = new HashMap<>();
+            sessionData.put("sessionID", s.getId());
+            sessionData.put("hosFee", s.getHospitalFee());
+            sessionData.put("docName", s.getStaff().getName());
+            sessionData.put("docNo", s.getStaff().getId());
+            sessionData.put("foreignAmount", s.getTotalForForeigner());
+            sessionData.put("hosId", s.getInstitution().getId());
+            sessionData.put("hosFee", s.getHospitalFee());
+            sessionData.put("docFee", s.getProfessionalFee());
+            sessionData.put("startTime", s.getStartingTime());
+            sessionData.put("amount", s.getTotalFee());
+            sessionData.put("appDate", s.getSessionDate());
+            sessionData.put("maxPatient", s.getMaxNo());
+            sessionData.put("appDay", s.getDayString());
+            sessionData.put("nextNo", s.getNextAvailableAppointmentNumber());
+
+            sessionData.put(s.getId().toString(), s);
+        }
+
+        Map<String, Object> sessionResults = new HashMap<>();
+        sessionResults.put("result", sessionData);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("code", "202");
+        response.put("message", "Accepted");
+        response.put("data", sessionResults);
+        response.put("detailMessage", "Succeess");
+
+        return Response.status(Response.Status.ACCEPTED).entity(response).build();
+
+    }
+
+    @POST
+    @Path("/doctorSession")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getDoctorSession(@Context HttpServletRequest requestContext, Map<String, String> requestBody) {
+        String key = requestContext.getHeader("Finance");
+        if (!isValidKey(key)) {
+            JSONObject responseError = new JSONObject();
+            responseError = errorMessageNotValidKey();
+            String json = responseError.toString();
+            return Response.status(Response.Status.ACCEPTED).entity(responseError.toString()).build();
+        }
+        long sessionId;
+        try {
+            sessionId = Integer.parseInt(requestBody.get("sessionID"));
+        } catch (Exception e) {
+            JSONObject responseError = notValidId();
+            return Response.status(Response.Status.ACCEPTED).entity(responseError.toString()).build();
+        }
+
+        String bookingChannel = requestBody.get("bookingChannel;");
+
+        System.out.println(sessionId);
+
+        SessionInstance session = sessionInstanceFacade.find(sessionId);
+        System.out.println(session);
+
+        if (session == null) {
+            JSONObject responseError = notValidId();
+            return Response.status(Response.Status.ACCEPTED).entity(responseError.toString()).build();
+        }
+
+        Map<String, Object> sessionData = new HashMap<>();
+        sessionData.put("sessionID", session.getId());
+        sessionData.put("hosFee", session.getHospitalFee());
+        sessionData.put("docName", session.getStaff().getName());
+        sessionData.put("docNo", session.getStaff().getId());
+        sessionData.put("foreignAmount", session.getTotalForForeigner());
+        sessionData.put("hosId", session.getInstitution().getId());
+        sessionData.put("hosFee", session.getHospitalFee());
+        sessionData.put("docFee", session.getProfessionalFee());
+        sessionData.put("startTime", session.getStartingTime());
+        sessionData.put("amount", session.getTotalFee());
+        sessionData.put("appDate", session.getSessionDate());
+        sessionData.put("maxPatient", session.getMaxNo());
+        sessionData.put("appDay", session.getDayString());
+        sessionData.put("nextNo", session.getNextAvailableAppointmentNumber());
+
+        Map<String, Object> allSessionData = new HashMap<>();
+        allSessionData.put("result", sessionData);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("code", "202");
+        response.put("message", "Accepted");
+        response.put("data", allSessionData);
+        response.put("detailMessage", "Success");
+
+        return Response.status(Response.Status.ACCEPTED).entity(response).build();
+
+    }
+
+    @POST
+    @Path("/save")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response createBooking(@Context HttpServletRequest requestContext, Map<String, String> requestBody) {
+        String key = requestContext.getHeader("Finance");
+        if (!isValidKey(key)) {
+            JSONObject responseError = new JSONObject();
+            responseError = errorMessageNotValidKey();
+            String json = responseError.toString();
+            return Response.status(Response.Status.ACCEPTED).entity(responseError.toString()).build();
+        }
+
+        return Response.status(Response.Status.ACCEPTED).entity("create Booking Api").build();
+    }
+
+    @POST
+    @Path("/edit")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response editBooking(@Context HttpServletRequest requestContext, Map<String, String> requestBody) {
+        String key = requestContext.getHeader("Finance");
+        if (!isValidKey(key)) {
+            JSONObject responseError = new JSONObject();
+            responseError = errorMessageNotValidKey();
+            String json = responseError.toString();
+            return Response.status(Response.Status.ACCEPTED).entity(responseError.toString()).build();
+        }
+
+        return Response.status(Response.Status.ACCEPTED).entity("edit Booking Api").build();
+    }
+
+    @POST
+    @Path("/complete")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response completeBooking(@Context HttpServletRequest requestContext, Map<String, String> requestBody) {
+        String key = requestContext.getHeader("Finance");
+        if (!isValidKey(key)) {
+            JSONObject responseError = new JSONObject();
+            responseError = errorMessageNotValidKey();
+            String json = responseError.toString();
+            return Response.status(Response.Status.ACCEPTED).entity(responseError.toString()).build();
+        }
+
+        return Response.status(Response.Status.ACCEPTED).entity("Complete Booking Api").build();
+    }
+
+    @POST
+    @Path("/channelHistoryList")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getAppointmentList(@Context HttpServletRequest requestContext, Map<String, String> requestBody) {
+        String key = requestContext.getHeader("Finance");
+        if (!isValidKey(key)) {
+            JSONObject responseError = new JSONObject();
+            responseError = errorMessageNotValidKey();
+            String json = responseError.toString();
+            return Response.status(Response.Status.ACCEPTED).entity(responseError.toString()).build();
+        }
+
+        return Response.status(Response.Status.ACCEPTED).entity("view Appointment Api").build();
+    }
+
+    @POST
+    @Path("/channelHistoryByRef")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getBookingDetails(@Context HttpServletRequest requestContext, Map<String, String> requestBody) {
+        String key = requestContext.getHeader("Finance");
+        if (!isValidKey(key)) {
+            JSONObject responseError = new JSONObject();
+            responseError = errorMessageNotValidKey();
+            String json = responseError.toString();
+            return Response.status(Response.Status.ACCEPTED).entity(responseError.toString()).build();
+        }
+
+        return Response.status(Response.Status.ACCEPTED).entity("view Booking details Api").build();
+    }
+
+    @POST
+    @Path("/cancellation")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response cancelBooking(@Context HttpServletRequest requestContext, Map<String, String> requestBody) {
+        String key = requestContext.getHeader("Finance");
+        if (!isValidKey(key)) {
+            JSONObject responseError = new JSONObject();
+            responseError = errorMessageNotValidKey();
+            String json = responseError.toString();
+            return Response.status(Response.Status.ACCEPTED).entity(responseError.toString()).build();
+        }
+
+        return Response.status(Response.Status.ACCEPTED).entity("Cancel booking Api").build();
     }
 
     @POST

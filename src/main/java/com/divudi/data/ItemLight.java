@@ -424,6 +424,9 @@ public class ItemLight {
     }
 
     public String getCode() {
+        if(code==null){
+            code=name;
+        }
         return code;
     }
 
