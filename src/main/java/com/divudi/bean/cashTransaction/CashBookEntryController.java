@@ -8,7 +8,6 @@ package com.divudi.bean.cashTransaction;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.CashBookEntryData;
-import com.divudi.data.DateAndListOfSitesGroupedIntoInstitutions;
 import com.divudi.data.PaymentMethod;
 import static com.divudi.data.PaymentMethod.Card;
 import static com.divudi.data.PaymentMethod.Cash;
@@ -33,8 +32,10 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -70,72 +71,61 @@ public class CashBookEntryController implements Serializable {
     private List<CashBookEntry> cashBookEntryList;
 
     boolean doNotWriteCashBookEntriesAtBillingForAnyPaymentMethod = true;
-    
-    private List<DateAndListOfSitesGroupedIntoInstitutions> dailyCashbookSummaries;
+    private List<SitesGroupedIntoInstitutions> sitesGroupedIntoInstitutionses;
+    private List<Date> dates;
 
     private Date fromDate;
     private Date toDate;
-    
-    
-    
+
     public void generateDailyCashbookSummary() {
-    // Initialize the list
-    dailyCashbookSummaries = new ArrayList<>();
-    
-    // Fetch the list of departments from CashBookEntries within the date range
-    List<Department> departmentsFromCashBookEntries = fetchToDepartmentsFromCashbookEntries(fromDate, toDate);
-    
-    // Create a map to hold SitesGroupedIntoInstitutions by institution name
-    Map<String, SitesGroupedIntoInstitutions> institutionMap = new HashMap<>();
-    
-    for (Department d : departmentsFromCashBookEntries) {
-        Institution institution = d.getInstitution();
-        Institution site = d.getSite();
+        // Initialize the list for sitesGroupedIntoInstitutionses
+        sitesGroupedIntoInstitutionses = new ArrayList<>();
 
-        // Retrieve or create the SitesGroupedIntoInstitutions object for the institution
-        SitesGroupedIntoInstitutions sitesGrouped = institutionMap.computeIfAbsent(
-            institution.getName(),
-            k -> {
-                SitesGroupedIntoInstitutions newGroup = new SitesGroupedIntoInstitutions();
-                newGroup.setInstitution(institution);
-                newGroup.setSites(new ArrayList<>());
-                return newGroup;
-            }
-        );
+        // Fetch departments that have cashbook entries between fromDate and toDate
+        List<Department> departmentsFromCashBookEntries = fetchToDepartmentsFromCashbookEntries(fromDate, toDate);
 
-        // Add the site to the list if it isn't already present
-        if (!sitesGrouped.getSites().contains(site)) {
-            sitesGrouped.getSites().add(site);
+        // A map to track institutions and their grouped sites
+        Map<Institution, List<Institution>> institutionToSitesMap = new HashMap<>();
+
+        // Group sites under their respective institutions
+        for (Department d : departmentsFromCashBookEntries) {
+            Institution institution = d.getInstitution();
+            Institution site = d.getSite();
+
+            // Add site to the institution's site list
+            institutionToSitesMap
+                    .computeIfAbsent(institution, k -> new ArrayList<>())
+                    .add(site);
         }
-    }
-    
-    // Get the list of all dates between fromDate and toDate
-    List<Date> datesInRange = getDatesInRange(fromDate, toDate);
 
-    // For each date, create a DateAndListOfSitesGroupedIntoInstitutions object
-    for (Date date : datesInRange) {
-        DateAndListOfSitesGroupedIntoInstitutions summary = new DateAndListOfSitesGroupedIntoInstitutions();
-        summary.setDate(date);
-        summary.setListOfSitesGroupedIntoInstitutionses(new ArrayList<>(institutionMap.values()));
-        dailyCashbookSummaries.add(summary);
-    }
-}
+        // Transform the map into a list of SitesGroupedIntoInstitutions
+        for (Map.Entry<Institution, List<Institution>> entry : institutionToSitesMap.entrySet()) {
+            SitesGroupedIntoInstitutions grouped = new SitesGroupedIntoInstitutions();
+            grouped.setInstitution(entry.getKey());
+            // Use a Set to remove duplicate sites, then convert it back to a List
+            List<Institution> uniqueSites = new ArrayList<>(new HashSet<>(entry.getValue()));
+            grouped.setSites(uniqueSites);
+            sitesGroupedIntoInstitutionses.add(grouped);
+        }
 
-// Helper method to get a list of dates between two dates
-private List<Date> getDatesInRange(Date fromDate, Date toDate) {
-    List<Date> dates = new ArrayList<>();
-    Calendar calendar = Calendar.getInstance();
-    calendar.setTime(fromDate);
-
-    while (!calendar.getTime().after(toDate)) {
-        dates.add(calendar.getTime());
-        calendar.add(Calendar.DATE, 1);
+        // Generate the list of dates between fromDate and toDate
+        dates = getDatesInRange(fromDate, toDate);
     }
-    
-    return dates;
-}
-    
-    public List<Department> fetchToDepartmentsFromCashbookEntries(Date fd, Date td){
+
+    private List<Date> getDatesInRange(Date fromDate, Date toDate) {
+        List<Date> dates = new ArrayList<>();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(fromDate);
+
+        while (!calendar.getTime().after(toDate)) {
+            dates.add(calendar.getTime());
+            calendar.add(Calendar.DATE, 1);
+        }
+
+        return dates;
+    }
+
+    public List<Department> fetchToDepartmentsFromCashbookEntries(Date fd, Date td) {
         String jpql = "select d "
                 + " from CashBookEntry cbe, "
                 + " cbe.toDepartment d "
@@ -148,7 +138,65 @@ private List<Date> getDatesInRange(Date fromDate, Date toDate) {
         params.put("td", td);
         return departmentFacade.findByJpql(jpql, params);
     }
-    
+
+    public Double fetchStartingBalanceForToSite(Date date, Institution site) {
+        String jpql = "select cbe.toSiteBalanceAfter "
+                + " from CashBookEntry cbe, "
+                + " cbe.toDepartment d "
+                + " where cbe.retired=:ret "
+                + " and cbe.toSite=:site"
+                + " and cbe.createdAt>:ed"
+                + " order by cbe.id";
+        Map params = new HashMap();
+        params.put("ret", false);
+        params.put("site", site);
+        params.put("ed", CommonFunctions.getStartOfDay(date));
+        System.out.println("params = " + params);
+        System.out.println("jpql = " + jpql);
+        Double result = departmentFacade.findDoubleByJpql(jpql, params, TemporalType.TIMESTAMP);
+        System.out.println("result = " + result);
+        return result;
+    }
+
+    public Double fetchEndingBalanceForToSite(Date date, Institution site) {
+        String jpql = "select cbe.toSiteBalanceAfter "
+                + " from CashBookEntry cbe, "
+                + " cbe.toDepartment d "
+                + " where cbe.retired=:ret "
+                + " and cbe.toSite=:site"
+                + " and cbe.createdAt<:ed"
+                + " order by cbe.id desc";
+        Map params = new HashMap();
+        params.put("ret", false);
+        params.put("site", site);
+        params.put("ed", CommonFunctions.getEndOfDay(date));
+        System.out.println("params = " + params);
+        System.out.println("jpql = " + jpql);
+        Double result = departmentFacade.findDoubleByJpql(jpql, params, TemporalType.TIMESTAMP);
+        System.out.println("result = " + result);
+        return result;
+    }
+
+    public Double fetchSumOfEntryValuesForToSite(Date date, Institution site) {
+        String jpql = "select sum(cbe.entryValue) "
+                + " from CashBookEntry cbe, "
+                + " cbe.toDepartment d "
+                + " where cbe.retired=:ret "
+                + " and cbe.toSite=:site"
+                + " and cbe.createdAt>:eds"
+                + " and cbe.createdAt<:ede";
+        Map params = new HashMap();
+        params.put("ret", false);
+        params.put("site", site);
+        params.put("eds", CommonFunctions.getStartOfDay(date));
+        params.put("ede", CommonFunctions.getEndOfDay(date));
+        System.out.println("params = " + params);
+        System.out.println("jpql = " + jpql);
+        Double result = departmentFacade.findDoubleByJpql(jpql, params, TemporalType.TIMESTAMP);
+        System.out.println("result = " + result);
+        return result;
+    }
+
     public void writeCashBookEntryAtPaymentCreation(Payment p) {
         if (p == null) {
             JsfUtil.addErrorMessage("Cashbook Entry Error !");
@@ -521,9 +569,6 @@ private List<Date> getDatesInRange(Date fromDate, Date toDate) {
         cbe.setToSiteOnlineSettlementBalanceAfter(cbe.getToSiteOnlineSettlementBalanceBefore() + entryData.getOnlineSettlementValue());
 
     }
-    
-    
-    
 
     private Double getBalanceByPaymentMethod(CashBook cashBook, PaymentMethod pm) {
         switch (pm) {
@@ -1047,14 +1092,6 @@ private List<Date> getDatesInRange(Date fromDate, Date toDate) {
 
     }
 
-    public List<DateAndListOfSitesGroupedIntoInstitutions> getDailyCashbookSummaries() {
-        return dailyCashbookSummaries;
-    }
-
-    public void setDailyCashbookSummaries(List<DateAndListOfSitesGroupedIntoInstitutions> dailyCashbookSummaries) {
-        this.dailyCashbookSummaries = dailyCashbookSummaries;
-    }
-
     public CashBookEntry getCurrent() {
         return current;
     }
@@ -1075,7 +1112,7 @@ private List<Date> getDatesInRange(Date fromDate, Date toDate) {
     }
 
     public Date getToDate() {
-        if(toDate==null){
+        if (toDate == null) {
             toDate = CommonFunctions.getEndOfDay();
         }
         return toDate;
@@ -1084,8 +1121,22 @@ private List<Date> getDatesInRange(Date fromDate, Date toDate) {
     public void setToDate(Date toDate) {
         this.toDate = toDate;
     }
-    
-    
+
+    public List<SitesGroupedIntoInstitutions> getSitesGroupedIntoInstitutionses() {
+        return sitesGroupedIntoInstitutionses;
+    }
+
+    public void setSitesGroupedIntoInstitutionses(List<SitesGroupedIntoInstitutions> sitesGroupedIntoInstitutionses) {
+        this.sitesGroupedIntoInstitutionses = sitesGroupedIntoInstitutionses;
+    }
+
+    public List<Date> getDates() {
+        return dates;
+    }
+
+    public void setDates(List<Date> dates) {
+        this.dates = dates;
+    }
 
     /**
      *
