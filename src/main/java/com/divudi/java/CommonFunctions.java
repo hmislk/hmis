@@ -35,7 +35,6 @@ import org.joda.time.Period;
 import org.joda.time.PeriodType;
 import java.util.UUID;
 
-
 /**
  *
  * @author buddhika
@@ -894,6 +893,20 @@ public class CommonFunctions {
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
         cal.set(cal.get(Calendar.YEAR), 0, 1, 0, 0, 0);
+        return cal.getTime();
+    }
+
+    public static Date getNextDateStart(Date fromDate) {
+        if (fromDate == null) {
+            fromDate = new Date();
+        }
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(fromDate);
+        cal.add(Calendar.DAY_OF_MONTH, 1); // Move to the next day
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
         return cal.getTime();
     }
 

@@ -694,6 +694,17 @@ public class EnumController implements Serializable {
         }
         return paymentMethod;
     }
+    
+    public PaymentMethod[] getPaymentMethodsforAgencyManagement(){
+        PaymentMethod[] pm = {
+            PaymentMethod.Card,
+            PaymentMethod.Cash,
+            PaymentMethod.Cheque,
+            PaymentMethod.Slip
+        };
+        
+        return pm;
+    }
 
     public PaymentMethod[] getCollectingCentrePaymentMethods() {
         PaymentMethod[] p = {
@@ -707,6 +718,22 @@ public class EnumController implements Serializable {
             PaymentMethod.Cheque,
             PaymentMethod.Slip,
             PaymentMethod.MultiplePaymentMethods};
+        return p;
+    }
+    
+    public PaymentMethod[] getPaymentMethodsForIou() {
+        PaymentMethod[] p = {PaymentMethod.Cash,
+            PaymentMethod.Cheque,
+            PaymentMethod.Slip};
+        return p;
+    }
+    
+    public PaymentMethod[] getPaymentMethodsForIouSettle() {
+        PaymentMethod[] p = {PaymentMethod.Cash,
+            PaymentMethod.Cheque,
+            PaymentMethod.IOU,
+            PaymentMethod.Voucher,
+            PaymentMethod.Slip};
         return p;
     }
 

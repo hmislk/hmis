@@ -10,11 +10,19 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
+                
+                <h1>File Has Moved to OPD Professional Payments Folder. This will be deleted soon</h1>
+                
                 <h:form>
                     <p:panel header="OPD Search Professional Payments Done" >
                         <f:facet name="header">
                             <h:outputLabel value="OPD Search Professional Payments Done"/>
-                            <p:commandButton value="Back" icon="fas fa-arrow-left" class="ui-button-warning" style="float: right;" action="/payments/pay_index?faces-redirect=true" ajax="false"/>     
+                            <p:commandButton 
+                                value="Back" 
+                                icon="fas fa-arrow-left"
+                                class="ui-button-warning" 
+                                style="float: right;" 
+                                action="/payments/pay_index?faces-redirect=true" ajax="false"/>     
                         </f:facet>
                         <div class="row">
                             <div class="col-2">
@@ -153,7 +161,12 @@
 
                                     </p:column>
                                     <p:column headerText="Action">
-                                        <p:commandButton class="ui-button-primary" icon="fas fa-eye" ajax="false" value="View Bill" action="payment_bill_reprint">
+                                        <p:commandButton 
+                                            class="ui-button-primary" 
+                                            icon="fas fa-eye" 
+                                            ajax="false" 
+                                            value="View Bill" 
+                                            action="#{billSearch.navigateToReprintOpdProfessionalPaymentBill()}">
                                             <f:setPropertyActionListener value="#{bi.bill}" target="#{billSearch.bill}"/>                   
                                         </p:commandButton>
                                     </p:column>

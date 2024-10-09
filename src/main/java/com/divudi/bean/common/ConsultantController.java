@@ -301,6 +301,40 @@ public class ConsultantController implements Serializable {
         m.put("name", name);
         return getFacade().findFirstByJpql(jpql, m);
     }
+    
+    // Method to find a consultant by Long ID
+    public Consultant getConsultantById(Long id) {
+        if (id == null) {
+            return null;
+        }
+        String jpql = "select c from Consultant c where c.retired=:ret and c.id=:id";
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("id", id);
+        return getFacade().findFirstByJpql(jpql, params);
+    }
+
+    // Overloaded method to handle String input
+    public Consultant getConsultantById(String idString) {
+        if (idString == null || idString.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            Long id = Long.parseLong(idString);
+            return getConsultantById(id);
+        } catch (NumberFormatException e) {
+            System.err.println("Invalid consultant ID format: " + idString);
+            return null;
+        }
+    }
+
+    // Overloaded method to handle Integer input
+    public Consultant getConsultantById(Integer id) {
+        if (id == null) {
+            return null;
+        }
+        return getConsultantById(Long.valueOf(id));
+    }
 
     public Consultant getCurrent() {
         if (current == null) {

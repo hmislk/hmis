@@ -89,8 +89,16 @@ public class BillFee implements Serializable {
     double feeMargin;
     double feeAdjusted;
 
+    //This records the payment made for the payment due staff or institution
     double paidValue = 0.0;
+    //This records the value paid out of the total from the customer
     double settleValue = 0.0;
+
+    // Indicates if the bill is fully settled by the client
+    private Boolean fullySettled;
+
+    // Indicates if the payment has been completed to the professional or institution
+    private Boolean completedPayment;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private BillItem referenceBillItem;
@@ -672,6 +680,31 @@ public class BillFee implements Serializable {
     public double getAbsoluteFeeValue() {
         absoluteFeeValue = Math.abs(feeValue);
         return absoluteFeeValue;
+    }
+
+    public Boolean getFullySettled() {
+        if (fullySettled == null) {
+            fullySettled = (feeValue - settleValue) < 1;
+        }
+        return fullySettled;
+    }
+
+    public void setFullySettled(Boolean fullySettled) {
+        this.fullySettled = fullySettled;
+    }
+
+    public Boolean getCompletedPayment() {
+        if (completedPayment == null) {
+            double absolutePaidValue = Math.abs(paidValue);
+            double absoluteFeeValue = Math.abs(feeValue);
+            double difference = Math.abs(absolutePaidValue - absoluteFeeValue);
+            completedPayment = difference < 1;
+        }
+        return completedPayment;
+    }
+
+    public void setCompletedPayment(Boolean completedPayment) {
+        this.completedPayment = completedPayment;
     }
 
 }

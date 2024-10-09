@@ -233,7 +233,7 @@
                                                            onIcon="pi pi-check" 
                                                            offIcon="pi pi-times"
                                                            styleClass="#{f.discountAllowed ? 'ui-button-success' : 'ui-button-danger'}">
-                                        <p:ajax process="@this" listener="#{itemFeeManager.updateFee(f)}" />
+                                        <p:ajax process="@this" listener="#{itemFeeManager.updateFeeForSites(f)}" />
                                     </p:selectBooleanButton>
 
 
@@ -265,16 +265,16 @@
                                 </p:column>
                                 <p:column headerText="Value" >
                                     <p:inputText id="txtFeeVal" value="#{f.fee}" class="w-100" >
-                                        <p:ajax process="txtFeeVal" event="blur" listener="#{itemFeeManager.updateFee(f)}" update=":#{p:resolveFirstComponentWithId('localFee',view).clientId} :#{p:resolveFirstComponentWithId('foreignerFee',view).clientId}" ></p:ajax>
+                                        <p:ajax process="txtFeeVal" event="blur" listener="#{itemFeeManager.updateFeeForSites(f)}" update=":#{p:resolveFirstComponentWithId('localFee',view).clientId} :#{p:resolveFirstComponentWithId('foreignerFee',view).clientId}" ></p:ajax>
                                     </p:inputText>
                                 </p:column>
                                 <p:column headerText="Value for Foreigners" >
                                     <p:inputText id="txtFfeeVal" value="#{f.ffee}"  class="w-100" >
-                                        <p:ajax process="txtFfeeVal" event="blur" listener="#{itemFeeManager.updateFee(f)}"  update=":#{p:resolveFirstComponentWithId('foreignerFee',view).clientId} :#{p:resolveFirstComponentWithId('foreignerFee',view).clientId}"></p:ajax>
+                                        <p:ajax process="txtFfeeVal" event="blur" listener="#{itemFeeManager.updateFeeForSites(f)}"  update=":#{p:resolveFirstComponentWithId('foreignerFee',view).clientId} :#{p:resolveFirstComponentWithId('foreignerFee',view).clientId}"></p:ajax>
                                     </p:inputText>
                                 </p:column>
                                 <p:column headerText="Actions" >
-                                    <p:commandButton id="cmdRemove" value="Remove" ajax="false" action="#{itemFeeManager.removeFee()}" >
+                                    <p:commandButton id="cmdRemove" value="Remove" ajax="false" action="#{itemFeeManager.removeFeeForSiteFees()}" >
                                         <f:setPropertyActionListener value="#{f}" target="#{itemFeeManager.removingFee}" ></f:setPropertyActionListener>
                                     </p:commandButton>
                                 </p:column>

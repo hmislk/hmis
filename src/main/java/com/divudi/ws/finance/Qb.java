@@ -1733,32 +1733,32 @@ public class Qb {
 //        }
 //
 //        for (BillItem bi : bis) {
-            String invType = "invType";
-            String invClass = "invClass";
-            String item = "Advance Payment";
-            Double amount = 1000.0000;
-            String itemName = "Advance Payment";
+        String invType = "invType";
+        String invClass = "invClass";
+        String item = "Advance Payment";
+        Double amount = 1000.0000;
+        String itemName = "Advance Payment";
 
-            JSONObject bijo = new JSONObject();
+        JSONObject bijo = new JSONObject();
 
-            if (b.getBillType() != null) {
-                invType = b.getBillType().getLabel();
-                itemName = b.getBillType().getLabel();
-            }
+        if (b.getBillType() != null) {
+            invType = b.getBillType().getLabel();
+            itemName = b.getBillType().getLabel();
+        }
 
-            if (b.getDepartment() != null) {
-                invClass = b.getDepartment().getName();
-            }
+        if (b.getDepartment() != null) {
+            invClass = b.getDepartment().getName();
+        }
 
-            amount = Math.abs(b.getNetTotal());
+        amount = Math.abs(b.getNetTotal());
 
-            bijo.put("item", itemName);
-            bijo.put("qty", 1);
-            bijo.put("amount", amount);
-            bijo.put("invType", invType);
-            bijo.put("invClass", invClass);
+        bijo.put("item", itemName);
+        bijo.put("qty", 1);
+        bijo.put("amount", amount);
+        bijo.put("invType", invType);
+        bijo.put("invClass", invClass);
 
-            bija.put(bijo);
+        bija.put(bijo);
 //        }
         jSONObject.put("header", headerJo);
         jSONObject.put("grid", bija);
@@ -2754,9 +2754,9 @@ public class Qb {
                     if (bi.getRate() != 0.0) {
                         joBi.put("Rate", bi.getRate());
                     }
-                    if (bi.getRefunded() != null) {
-                        joBi.put("Refunded", bi.getRefunded());
-                    }
+
+                    joBi.put("Refunded", bi.isRefunded());
+
                     if (bi.getSearialNo() != 0.0) {
                         joBi.put("SearialNo", bi.getSearialNo());
                     }

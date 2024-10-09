@@ -21,8 +21,13 @@ import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.CountedServiceType;
 import com.divudi.data.Denomination;
 import com.divudi.data.FinancialReport;
+import com.divudi.data.PaymentHandover;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.PaymentMethodValues;
+import com.divudi.data.PaymentSelectionMode;
+import static com.divudi.data.PaymentSelectionMode.SELECT_FOR_HANDOVER_RECEIPT;
+import static com.divudi.data.PaymentSelectionMode.SELECT_FOR_HANDOVER_RECORD;
+import com.divudi.data.PaymentType;
 import com.divudi.data.ReportTemplateRow;
 import com.divudi.data.ReportTemplateRowBundle;
 import com.divudi.data.ServiceType;
@@ -30,13 +35,20 @@ import com.divudi.data.analytics.ReportTemplateType;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.entity.BillComponent;
+import com.divudi.entity.BillItem;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
+import com.divudi.entity.cashTransaction.CashBook;
+import com.divudi.entity.cashTransaction.CashBookEntry;
+import com.divudi.entity.cashTransaction.DenominationTransaction;
+import com.divudi.entity.cashTransaction.DetailedFinancialBill;
+import com.divudi.entity.cashTransaction.Drawer;
 import com.divudi.facade.BillComponentFacade;
+import com.divudi.facade.DrawerFacade;
 import com.divudi.facade.PaymentMethodValueFacade;
 import com.divudi.java.CommonFunctions;
 import javax.inject.Named;
@@ -52,6 +64,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.ejb.EJB;
@@ -59,6 +72,7 @@ import javax.faces.event.AjaxBehaviorEvent;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
 import kotlin.collections.ArrayDeque;
+import org.hl7.fhir.r5.model.Bundle;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -81,6 +95,8 @@ public class FinancialTransactionController implements Serializable {
     private PaymentMethodValueFacade paymentMethodValueFacade;
     @EJB
     BillNumberGenerator billNumberGenerator;
+    @EJB
+    DrawerFacade drawerFacade;
     // </editor-fold>  
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
@@ -88,6 +104,8 @@ public class FinancialTransactionController implements Serializable {
     private SessionController sessionController;
     @Inject
     private CashBookEntryController cashBookEntryController;
+    @Inject
+    CashBookController cashBookController;
     @Inject
     private ReportTemplateController reportTemplateController;
     @Inject
@@ -100,10 +118,17 @@ public class FinancialTransactionController implements Serializable {
     private BillSearch billSearch;
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    DetailedFinancialBillController detailedFinancialBillController;
+    @Inject
+    private DenominationTransactionController denominationTransactionController;
+    @Inject
+    private DrawerController drawerController;
     // </editor-fold>  
 
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private Bill currentBill;
+    private DetailedFinancialBill currentDetailedFinancialBill;
     private List<BillComponent> currentBillComponents;
     private ReportTemplateType reportTemplateType;
     private ReportTemplateRowBundle reportTemplateRowBundle;
@@ -154,6 +179,8 @@ public class FinancialTransactionController implements Serializable {
     private ReportTemplateRowBundle cardTransactionPaymentBundle;
 
     private ReportTemplateRowBundle bundle;
+    private ReportTemplateRowBundle selectedBundle;
+    private PaymentMethod selectedPaymentMethod;
 
     @Deprecated
     private PaymentMethodValues paymentMethodValues;
@@ -207,6 +234,8 @@ public class FinancialTransactionController implements Serializable {
     private Date cashbookDate;
     private Department cashbookDepartment;
     private List<Date> cashbookDates;
+    private List<BillItem> billItems;
+    private BillItem removingBillItem;
     private List<Department> cashbookDepartments;
     private List<PaymentMethodValue> handingOverPaymentMethodValues;
 
@@ -222,6 +251,12 @@ public class FinancialTransactionController implements Serializable {
 
     private int tabIndex;
 
+    private Drawer loggedUserDrawer;
+
+    private List<DenominationTransaction> denominationTransactions;
+    private DenominationTransaction dt;
+    private double totalCashFund;
+
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Constructors">
     public FinancialTransactionController() {
@@ -233,6 +268,31 @@ public class FinancialTransactionController implements Serializable {
         resetClassVariables();
         fillFundTransferBillsForMeToReceive();
         return "/cashier/index?faces-redirect=true;";
+    }
+
+    public String navigateToNewIncomeBill() {
+        resetClassVariables();
+        currentBill = new Bill();
+        currentBill.setBillType(BillType.SUPPLEMENTARY_INCOME);
+        currentBill.setBillTypeAtomic(BillTypeAtomic.SUPPLEMENTARY_INCOME);
+        return "/cashier/income_bill?faces-redirect=true;";
+    }
+
+    public String navigateToNewExpenseBill() {
+        resetClassVariables();
+        fillFundTransferBillsForMeToReceive();
+        return "/cashier/expense_bill?faces-redirect=true;";
+    }
+
+    public String navigateToTraceIncomeExpenseBills() {
+        resetClassVariables();
+        fillFundTransferBillsForMeToReceive();
+        return "/cashier/trace_income_expenses?faces-redirect=true;";
+    }
+
+    public String navigateToMyDrawer() {
+        loggedUserDrawer = null;
+        return "/cashier/my_drawer?faces-redirect=true;";
     }
 
     public String navigateToCreateNewInitialFundBill() {
@@ -1086,6 +1146,54 @@ public class FinancialTransactionController implements Serializable {
         shiaftStartBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
+    public String navigateToSelectPaymentsForHandoverCreate(ReportTemplateRowBundle inputBundle, PaymentMethod inputPaymentMethod) {
+        if (inputBundle == null) {
+            JsfUtil.addErrorMessage("No Bundle Selected");
+            return null;
+        }
+        selectedBundle = inputBundle;
+        selectedPaymentMethod = inputPaymentMethod;
+        return "/cashier/handover_start_select?faces-redirect=true";
+    }
+
+    @Deprecated
+    public String navigateToSelectPaymentsForHandoverAccept(ReportTemplateRowBundle inputBundle, PaymentMethod inputPaymentMethod) {
+        if (inputBundle == null) {
+            JsfUtil.addErrorMessage("No Bundle Selected");
+            return null;
+        }
+        selectedBundle = inputBundle;
+        selectedPaymentMethod = inputPaymentMethod;
+        return "/cashier/handover_accept_select?faces-redirect=true";
+    }
+
+    public String navigateBackToPaymentHandoverCreate() {
+        selectedBundle.markSelectedAtHandover();
+        selectedBundle.calculateTotalsByPaymentsAndDenominations();
+        bundle.aggregateTotalsFromChildBundles();
+        return "/cashier/handover_start_all?faces-redirect=true";
+    }
+
+    public void updateForPaymentHandoverSelectionAtCreate() {
+        if (selectedBundle != null) {
+            selectedBundle.markSelectedAtHandover();
+            selectedBundle.calculateTotalsByPaymentsAndDenominations();
+        }
+        bundle.aggregateTotalsFromChildBundles();
+    }
+
+    public void selectAllForPaymentHandoverSelectionAtCreate() {
+        selectedBundle.markAllAtHandover(selectedPaymentMethod);
+        selectedBundle.calculateTotalsByPaymentsAndDenominations();
+        bundle.aggregateTotalsFromChildBundles();
+    }
+
+    public String navigateBackToPaymentHandoverAccept() {
+        selectedBundle.calculateTotalsByPaymentsAndDenominations();
+        bundle.aggregateTotalsFromChildBundles();
+        return "/cashier/handover_accept?faces-redirect=true";
+    }
+
     public String navigateToFundTransferBill() {
         resetClassVariables();
         prepareToAddNewFundTransferBill();
@@ -1110,6 +1218,11 @@ public class FinancialTransactionController implements Serializable {
         resetClassVariables();
         prepareToAddNewShiftExcessRecord();
         return "/cashier/record_shift_excess?faces-redirect=true";
+    }
+
+    public String navigateToCashierShiftBillSearch() {
+        resetClassVariables();
+        return "/cashier/cashier_shift_bill_search?faces-redirect=true";
     }
 
     // Method to navigate to the Transfer Payment Method page
@@ -1150,6 +1263,14 @@ public class FinancialTransactionController implements Serializable {
 
     public String navigateToCashierSummary() {
         return "/cashier/cashier_summary?faces-redirect=true";
+    }
+    
+    public String navigateToMyCashierSummary() {
+        return "/cashier/my_cashier_summary?faces-redirect=true";
+    }
+    
+    public String navigateToMyCashierDetails() {
+        return "/cashier/my_cashier_detailed?faces-redirect=true";
     }
 
     public String navigateToCashierReport() {
@@ -1508,6 +1629,146 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String navigateToReceiveNewHandoverBill() {
+        // Check for null or invalid selected bill
+        if (selectedBill == null) {
+            JsfUtil.addErrorMessage("Please select a bill.");
+            return null;
+        }
+        if (selectedBill.getBillTypeAtomic() != BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE) {
+            JsfUtil.addErrorMessage("Wrong Bill Type.");
+            return null;
+        }
+
+        // Reset class variables for accepting handover bill
+        resetClassVariablesForAcceptHandoverBill();
+
+        bundle = new ReportTemplateRowBundle();
+        bundle.setUser(selectedBill.getFromWebUser());
+        bundle.setStartBill(selectedBill.getReferenceBill());
+        if (selectedBill.getReferenceBill() != null) {
+            bundle.setEndBill(selectedBill.getReferenceBill().getReferenceBill());
+        }
+
+        Bill denoBill = billSearch.fetchReferredBill(BillTypeAtomic.FUND_SHIFT_DENOMINATION_HANDOVER_CREATE, selectedBill);
+        System.out.println("denoBill = " + denoBill);
+        List<DenominationTransaction> dts = denominationTransactionController.fetchDenominationTransactionFromBill(denoBill);
+        System.out.println("dts = " + dts);
+        if (dts != null && !dts.isEmpty()) {
+            bundle.setDenominationTransactions(dts);
+            bundle.setCashHandoverValue(denoBill.getNetTotal());
+        }
+
+        // Fetch and process shift handover component bills
+        List<Bill> shiftHandoverCompletionBills = billSearch.fetchReferredBills(BillTypeAtomic.FUND_SHIFT_COMPONANT_HANDOVER_CREATE, selectedBill);
+        if (shiftHandoverCompletionBills == null || shiftHandoverCompletionBills.isEmpty()) {
+            JsfUtil.addErrorMessage("No component bills found.");
+            return null;
+        }
+
+        // Recreate data holder objects from persisted objects
+        for (Bill b : shiftHandoverCompletionBills) {
+            ReportTemplateRowBundle childBundle = new ReportTemplateRowBundle(sessionController);
+            childBundle.setDepartment(b.getDepartment());
+            childBundle.setUser(b.getFromWebUser());
+            childBundle.setDate(b.getBillDate());
+
+            List<Payment> payments = fetchPaymentsForSummaryHandoverCreation(b);
+            if (payments != null && !payments.isEmpty()) {
+                for (Payment p : payments) {
+                    ReportTemplateRow row = new ReportTemplateRow();
+                    row.setPayment(p);
+                    row.setSelected(true);
+                    childBundle.getReportTemplateRows().add(row);
+                }
+            }
+
+            childBundle.calculateTotalsByPaymentsAndDenominations();
+            bundle.getBundles().add(childBundle);
+        }
+
+        bundle.aggregateTotalsFromChildBundles();
+        bundle.collectDepartments();
+
+        // Create and configure the current bill
+        currentBill = new Bill();
+        currentBill.setBillType(BillType.CashHandoverAcceptBill);
+        currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_HANDOVER_ACCEPT);
+        currentBill.setBillClassType(BillClassType.Bill);
+        currentBill.setReferenceBill(selectedBill);
+        currentBill.setFromDepartment(selectedBill.getFromDepartment());
+        currentBill.setFromDate(selectedBill.getFromDate());
+        currentBill.setDepartment(sessionController.getDepartment());
+        currentBill.setInstitution(sessionController.getInstitution());
+        currentBill.setStaff(sessionController.getLoggedUser().getStaff());
+        currentBill.setWebUser(sessionController.getLoggedUser());
+        currentBill.setToWebUser(sessionController.getLoggedUser());
+        currentBill.setFromWebUser(selectedBill.getCreater());
+        currentBill.setCreatedAt(new Date());
+        currentBill.setCreater(sessionController.getLoggedUser());
+        currentBill.setBillDate(new Date());
+        currentBill.setBillTime(new Date());
+        currentBill.setTotal(bundle.getTotal());
+        currentBill.setNetTotal(bundle.getTotal());
+
+        // Save the current bill
+        billController.save(currentBill);
+
+        return "/cashier/handover_accept?faces-redirect=true";
+    }
+
+    public String rejectToReceiveHandoverBill() {
+        if (selectedBill == null) {
+            JsfUtil.addErrorMessage("Please select a bill.");
+            return null;
+        }
+        if (selectedBill.getBillTypeAtomic() != BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE) {
+            JsfUtil.addErrorMessage("Wrong Bill Type.");
+            return null;
+        }
+
+        selectedBill.setCancelled(true);
+        selectedBill.setCompleted(true);
+        selectedBill.setCompletedAt(new Date());
+        selectedBill.setCompletedBy(sessionController.getLoggedUser());
+        billController.save(selectedBill);
+
+        Bill denoBill = billSearch.fetchReferredBill(BillTypeAtomic.FUND_SHIFT_DENOMINATION_HANDOVER_CREATE, selectedBill);
+        List<DenominationTransaction> dts = denominationTransactionController.fetchDenominationTransactionFromBill(denoBill);
+        if (dts != null && !dts.isEmpty()) {
+            for (DenominationTransaction dt : dts) {
+                dt.setCancelled(true);
+                dt.setCancelledAt(new Date());
+                dt.setCancelledBy(sessionController.getLoggedUser());
+                denominationTransactionController.save(dt);
+            }
+        }
+        List<Bill> shiftHandoverCompletionBills = billSearch.fetchReferredBills(BillTypeAtomic.FUND_SHIFT_COMPONANT_HANDOVER_CREATE, selectedBill);
+        if (shiftHandoverCompletionBills != null) {
+            for (Bill b : shiftHandoverCompletionBills) {
+                b.setCancelled(true);
+                b.setCompleted(true);
+                b.setCompletedAt(new Date());
+                b.setCompletedBy(sessionController.getLoggedUser());
+                billController.save(b);
+
+                List<Payment> payments = fetchPaymentsForSummaryHandoverCreation(b);
+                if (payments != null && !payments.isEmpty()) {
+                    for (Payment p : payments) {
+                        p.setHandingOverCompleted(false);
+                        p.setHandingOverStarted(false);
+                        p.setHandoverCreatedBill(null);
+                        p.setHandoverShiftBill(null);
+                        p.setHandoverShiftComponantBill(null);
+                        paymentController.save(p);
+                    }
+                }
+            }
+        }
+        return navigateToReceiveHandoverBillsForMe();
+    }
+
+    @Deprecated
+    public String navigateToReceiveNewHandoverBill(boolean old) {
         if (selectedBill == null) {
             JsfUtil.addErrorMessage("Please select a bill");
             return "";
@@ -1519,12 +1780,14 @@ public class FinancialTransactionController implements Serializable {
         resetClassVariablesForAcceptHandoverBill();
 
         List<Payment> paymentsToAcceptForHandover = fillPaymentsFromViewHandoverAcceptBill();
+        Boolean selectAllHandoverPayments = null;
         bundle = generatePaymentBundleForHandovers(selectedBill.getReferenceBill(),
                 selectedBill.getReferenceBill().getReferenceBill(),
-                paymentsToAcceptForHandover);
-        bundle.aggregateTotals();
+                paymentsToAcceptForHandover,
+                PaymentSelectionMode.SELECT_FOR_HANDOVER_RECEIPT);
+        bundle.aggregateTotalsFromChildBundles();
         bundle.collectDepartments();
-        
+
 //        
 //        
 //         fillPaymentsFromViewHandoverAcceptBill();
@@ -1535,7 +1798,7 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setReferenceBill(selectedBill);
         currentBill.setFromDepartment(selectedBill.getFromDepartment());
         currentBill.setFromDate(selectedBill.getFromDate());
-        return "/cashier/handover_bill_view?faces-redirect=true";
+        return "/cashier/handover_accept?faces-redirect=true";
     }
 
     public String navigateToRejectNewHandoverBill() {
@@ -1576,6 +1839,32 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_START_BILL);
         currentBill.setBillClassType(BillClassType.Bill);
         currentBill.setStaff(sessionController.getLoggedUser().getStaff());
+
+        if (configOptionApplicationController.getBooleanValueByKey("Allow to Denomination for shift Starting Process", false)) {
+            denominationTransactions = new ArrayList<>();
+            denominationTransactions = denominationTransactionController.createDefaultDenominationTransaction();
+        }
+    }
+
+    public void calculateTotalCashDenomination() {
+        totalCashFund = 0.0;
+        if (denominationTransactions == null || denominationTransactions.isEmpty()) {
+            return;
+        }
+        for (DenominationTransaction dt : denominationTransactions) {
+            if (dt == null || dt.getDenomination() == null || dt.getDenomination().getDenominationValue() == null) {
+                continue;
+            }
+            if (dt.getDenominationQty() == null) {
+                dt.setDenominationQty(0l);
+                dt.setDenominationValue(null);
+            } else {
+                Double dv = dt.getDenomination().getDenominationValue() * dt.getDenominationQty();
+                dt.setDenominationValue(dv);
+                totalCashFund += dv;
+            }
+        }
+        System.out.println("Value = " + totalCashFund);
     }
 
     private void prepareToAddNewFundTransferBill() {
@@ -1627,7 +1916,7 @@ public class FinancialTransactionController implements Serializable {
         nonClosedShiftStartFundBill = null;
         paymentsFromShiftSratToNow = null;
         department = null;
-
+        searchController.setBills(null);
     }
 
     public void resetClassVariablesForAcceptHandoverBill() {
@@ -1684,10 +1973,20 @@ public class FinancialTransactionController implements Serializable {
         }
         getCurrentBillPayments().add(currentPayment);
         calculateInitialFundBillTotal();
+
+        if (configOptionApplicationController.getBooleanValueByKey("Allow to Denomination for shift Starting Process", false)) {
+            for (DenominationTransaction dt : getDenominationTransactions()) {
+                dt.setBill(currentBill);
+                dt.setPayment(currentPayment);
+                dt.setPaymentMethod(currentPayment.getPaymentMethod());
+            }
+        }
+
         currentPayment = null;
         getCurrentPayment();
         getCurrentPayment().setCurrencyDenominations(null);
         getCurrentPayment().setCurrencyDenominationsJson("");
+
     }
 
     public void addPaymentToFundTransferBill() {
@@ -1810,16 +2109,16 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setDepartment(sessionController.getDepartment());
         currentBill.setInstitution(sessionController.getInstitution());
         currentBill.setStaff(sessionController.getLoggedUser().getStaff());
-
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.FUND_SHIFT_START_BILL);
         currentBill.setBillDate(new Date());
         currentBill.setBillTime(new Date());
-
+        currentBill.setDeptId(deptId);
+        currentBill.setInsId(deptId);
         findNonClosedShiftStartFundBillIsAvailable();
         if (nonClosedShiftStartFundBill != null) {
             JsfUtil.addErrorMessage("A shift start fund bill is already available for closure.");
             return "";
         }
-
         billController.save(currentBill);
         for (Payment p : getCurrentBillPayments()) {
             p.setBill(currentBill);
@@ -1829,7 +2128,45 @@ public class FinancialTransactionController implements Serializable {
             p.serializeDenominations();
             paymentController.save(p);
         }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Allow to Denomination for shift Starting Process", false)) {
+            for (DenominationTransaction dt : getDenominationTransactions()) {
+
+                denominationTransactionController.save(dt);
+            }
+        }
+
         return "/cashier/initial_fund_bill_print?faces-redirect=true";
+    }
+
+    public String settleIncomeBill() {
+        if (currentBill == null) {
+            JsfUtil.addErrorMessage("Error");
+            return "";
+        }
+        if (currentBill.getBillType() != BillType.SUPPLEMENTARY_INCOME) {
+            JsfUtil.addErrorMessage("Error");
+            return "";
+        }
+        currentBill.setDepartment(sessionController.getDepartment());
+        currentBill.setInstitution(sessionController.getInstitution());
+        currentBill.setStaff(sessionController.getLoggedUser().getStaff());
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.SUPPLEMENTARY_INCOME);
+        currentBill.setBillDate(new Date());
+        currentBill.setBillTime(new Date());
+        currentBill.setDeptId(deptId);
+        currentBill.setInsId(deptId);
+        billController.save(currentBill);
+        for (Payment p : getCurrentBillPayments()) {
+            p.setBill(currentBill);
+            p.setDepartment(sessionController.getDepartment());
+            p.setInstitution(sessionController.getInstitution());
+            // Serialize denominations before saving
+            p.serializeDenominations();
+            paymentController.save(p);
+        }
+        drawerController.updateDrawerForIns(getCurrentBillPayments());
+        return "/cashier/income_bill_print?faces-redirect=true";
     }
 
     public String settleFundTransferBill() {
@@ -1841,25 +2178,32 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Error");
             return "";
         }
-        if (currentBill.getToStaff() == null) {
+        if (currentBill.getToWebUser() == null) {
             JsfUtil.addErrorMessage("Select to whom to transfer");
             return "";
         }
+        currentBill.setToStaff(currentBill.getToWebUser().getStaff());
         currentBill.setDepartment(sessionController.getDepartment());
         currentBill.setInstitution(sessionController.getInstitution());
         currentBill.setStaff(sessionController.getLoggedUser().getStaff());
         currentBill.setFromStaff(sessionController.getLoggedUser().getStaff());
-
+        currentBill.setFromWebUser(sessionController.getLoggedUser());
         currentBill.setBillDate(new Date());
         currentBill.setBillTime(new Date());
 
         billController.save(currentBill);
         for (Payment p : getCurrentBillPayments()) {
             p.setBill(currentBill);
-            p.setDepartment(sessionController.getDepartment());
-            p.setInstitution(sessionController.getInstitution());
+            p.setCreatedAt(new Date());
+            p.setCreater(sessionController.getLoggedUser());
+            p.setInstitution(null);
+            p.setDepartment(null);
+            p.setPaidValue(0 - Math.abs(p.getPaidValue()));
             paymentController.save(p);
+
+            drawerController.updateDrawerForOuts(p);
         }
+
         currentBill.getPayments().addAll(currentBillPayments);
         billController.save(currentBill);
         return "/cashier/fund_transfer_bill_print?faces-redirect=true";
@@ -1916,11 +2260,64 @@ public class FinancialTransactionController implements Serializable {
         return "/cashier/shift_end_summery_bill?faces-redirect=true";
     }
 
+    public String navigateToCreateShiftEndSummaryBillForHandover() {
+        resetClassVariables();
+        Bill startBill = findNonClosedShiftStartFundBill(sessionController.getLoggedUser());
+        nonClosedShiftStartFundBill = startBill;
+
+        if (nonClosedShiftStartFundBill == null) {
+            JsfUtil.addErrorMessage("No Shift to End");
+            return null; // Early exit if no shift to end
+        }
+
+        // Initializing the current bill with relevant details
+        currentBill = new Bill();
+        currentBill.setBillType(BillType.ShiftEndFundBill);
+        currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_END_BILL);
+        currentBill.setBillClassType(BillClassType.Bill);
+        currentBill.setReferenceBill(nonClosedShiftStartFundBill);
+
+        // Fetching payments from various sources
+        List<Payment> shiftPayments = fetchPaymentsFromShiftStartToEndByDateAndDepartment(startBill, null);
+        List<Payment> shiftFloats = fetchShiftFloatsFromShiftStartToEnd(startBill, null, sessionController.getLoggedUser());
+        List<Payment> othersPayments = fetchAllPaymentInMyHold(sessionController.getLoggedUser());
+        List<Payment> bankPayments = fetchBankPayments(startBill, null, sessionController.getLoggedUser());
+
+        Set<Payment> uniquePaymentSet = new HashSet<>();
+        if (shiftPayments != null) {
+            uniquePaymentSet.addAll(shiftPayments);
+        }
+        if (shiftFloats != null) {
+            uniquePaymentSet.addAll(shiftFloats);
+        }
+        if (othersPayments != null) {
+            uniquePaymentSet.addAll(othersPayments);
+        }
+        if (bankPayments != null) {
+            uniquePaymentSet.addAll(bankPayments);
+        }
+
+        List<Payment> allUniquePayments = new ArrayList<>(uniquePaymentSet);
+
+        bundle = new ReportTemplateRowBundle(sessionController);
+        boolean selectAllHandoverPayments = configOptionApplicationController.getBooleanValueByKey("Select All Payments for Handovers", handoverValuesCreated);
+        if (selectAllHandoverPayments) { // This seems to be always true, could be simplified or clarified if needed
+            bundle = generatePaymentBundleForHandovers(startBill, null, allUniquePayments, PaymentSelectionMode.SELECT_ALL_FOR_HANDOVER_CREATION);
+        } else {
+            bundle = generatePaymentBundleForHandovers(startBill, null, allUniquePayments, PaymentSelectionMode.SELECT_NONE_FOR_HANDOVER_CREATION);
+        }
+        bundle.setUser(sessionController.getLoggedUser());
+        bundle.aggregateTotalsFromChildBundles();
+        bundle.collectDepartments();
+
+        return "/cashier/shift_end_for_handover?faces-redirect=true";
+    }
+
     public String navigateToHandoverCreateBill() {
         resetClassVariables();
         handoverValuesCreated = false;
         findNonClosedShiftStartFundBillIsAvailable();
-        fillPaymentsFromShiftStartToNowNotYetStartedToEntereToCashbook();
+        fillPaymentsFromViewHandoverAcceptBillOld();
         currentBill = new Bill();
         currentBill.setBillType(BillType.CashHandoverCreateBill);
         currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE);
@@ -1929,33 +2326,184 @@ public class FinancialTransactionController implements Serializable {
         return "/cashier/handover_start?faces-redirect=true";
     }
 
-    public String navigateToHandoverCreateBillForAllDaysAndDepartmentsForCurrentShift() {
+//    
+//    public String navigateToHandoverCreateBillForAllDaysAndDepartmentsForCurrentShift() {
+//        resetClassVariables();
+//        handoverValuesCreated = false;
+//        Bill startBill = findNonClosedShiftStartFundBill(sessionController.getLoggedUser());
+//        if (startBill == null) {
+//            JsfUtil.addErrorMessage("No Shift Start");
+//            return null;
+//        }
+//        List<Payment> allPayments = new ArrayList<>();
+//        List<Payment> shiftPayments = fetchPaymentsFromShiftStartToEndByDateAndDepartment(startBill, null);
+//        List<Payment> shiftFloatsAndOthersPayments = fetchPaymentsFromShiftStartToEndByDateAndDepartment(startBill, null);
+//        if (shiftPayments != null) {
+//            allPayments.addAll(shiftPayments);
+//        }
+//        if (shiftFloatsAndOthersPayments != null) {
+//            allPayments.addAll(shiftFloatsAndOthersPayments);
+//        }
+//        boolean selectAllHandoverPayments = configOptionApplicationController.getBooleanValueByKey("Select all payments by default for Handing over of the shift.", false);
+//        if (selectAllHandoverPayments) {
+//            bundle = generatePaymentBundleForHandovers(startBill, null, allPayments, PaymentSelectionMode.SELECT_ALL_FOR_HANDOVER_CREATION);
+//        } else {
+//            bundle = generatePaymentBundleForHandovers(startBill, null, allPayments, PaymentSelectionMode.SELECT_NONE_FOR_HANDOVER_CREATION);
+//        }
+//        bundle.setUser(sessionController.getLoggedUser());
+//        bundle.aggregateTotalsFromChildBundles();
+//        bundle.collectDepartments();
+//        return "/cashier/handover_start_all?faces-redirect=true";
+//    }
+//
+    public String navigateToHandoverCreateBillForCurrentShift() {
         resetClassVariables();
+        findNonClosedShiftStartFundBillIsAvailable();
         handoverValuesCreated = false;
-        Bill startBill = findNonClosedShiftStartFundBill(sessionController.getLoggedUser());
-        List<Payment> shiftPayments = generatePaymentsFromShiftStartToEndByDateAndDepartment(startBill, null);
-        bundle = generatePaymentBundleForHandovers(startBill, null, shiftPayments);
-//        bundle = generatePaymentsFromShiftStartToEndToEnterToCashbookFilteredByDateAndDepartment(startBill, null);
+        bundle = new ReportTemplateRowBundle(sessionController);
+
+        List<Payment> shiftPayments = fetchPaymentsFromShiftStartToEndByDateAndDepartment(nonClosedShiftStartFundBill, null);
+        List<Payment> shiftFloats = fetchShiftFloatsFromShiftStartToEnd(nonClosedShiftStartFundBill, null, sessionController.getLoggedUser());
+        List<Payment> othersPayments = fetchAllPaymentInMyHold(sessionController.getLoggedUser());
+
+        Set<Payment> uniquePaymentSet = new HashSet<>();
+        if (shiftPayments != null) {
+            uniquePaymentSet.addAll(shiftPayments);
+        }
+        if (shiftFloats != null) {
+            uniquePaymentSet.addAll(shiftFloats);
+        }
+        if (othersPayments != null) {
+            uniquePaymentSet.addAll(othersPayments);
+        }
+
+        List<Payment> allUniquePayments = new ArrayList<>(uniquePaymentSet);
+
+        boolean selectAllHandoverPayments = configOptionApplicationController.getBooleanValueByKey("Select all payments by default for Handing over of the shift.", false);
+
+        if (selectAllHandoverPayments) {
+            bundle = generatePaymentBundleForHandovers(nonClosedShiftStartFundBill,
+                    null,
+                    allUniquePayments,
+                    PaymentSelectionMode.SELECT_ALL_FOR_HANDOVER_CREATION
+            );
+        } else {
+            bundle = generatePaymentBundleForHandovers(nonClosedShiftStartFundBill,
+                    null,
+                    allUniquePayments,
+                    PaymentSelectionMode.SELECT_NONE_FOR_HANDOVER_CREATION
+            );
+        }
         bundle.setUser(sessionController.getLoggedUser());
-        bundle.aggregateTotals();
-        bundle.collectDepartments();
-//        currentBill = new Bill();
-//        currentBill.setBillType(BillType.CashHandoverCreateBill);
-//        currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE);
-//        currentBill.setBillClassType(BillClassType.PreBill);
-//        currentBill.setReferenceBill(null);
+        bundle.aggregateTotalsFromChildBundles();
+        bundle.setDenominationTransactions(denominationTransactionController.createDefaultDenominationTransaction());
+        bundle.setCashHandoverValue(0.0);
         return "/cashier/handover_start_all?faces-redirect=true";
+    }
+
+    public String navigateToHandoverCreateBillForSelectedPeriod() {
+        return "/cashier/handover_start_for_period?faces-redirect=true";
+    }
+
+    public void processToHandoverCreateBillForSelectedPeriod() {
+        resetClassVariables();
+        findNonClosedShiftStartFundBillIsAvailable();
+        handoverValuesCreated = false;
+        bundle = new ReportTemplateRowBundle(sessionController);
+
+        List<Payment> shiftPayments = fetchPaymentsFromShiftStartToEndByDateAndDepartment(fromDate, toDate, sessionController.getLoggedUser());
+        List<Payment> shiftFloats = fetchShiftFloatsFromShiftStartToEnd(fromDate, toDate, sessionController.getLoggedUser());
+        List<Payment> othersPayments = fetchAllPaymentInMyHold(sessionController.getLoggedUser());
+
+        Set<Payment> uniquePaymentSet = new HashSet<>();
+        if (shiftPayments != null) {
+            uniquePaymentSet.addAll(shiftPayments);
+        }
+        if (shiftFloats != null) {
+            uniquePaymentSet.addAll(shiftFloats);
+        }
+        if (othersPayments != null) {
+            uniquePaymentSet.addAll(othersPayments);
+        }
+
+        List<Payment> allUniquePayments = new ArrayList<>(uniquePaymentSet);
+
+        boolean selectAllHandoverPayments = configOptionApplicationController.getBooleanValueByKey("Select all payments by default for Handing over of the shift.", false);
+
+        if (selectAllHandoverPayments) {
+            bundle = generatePaymentBundleForHandovers(nonClosedShiftStartFundBill,
+                    null,
+                    allUniquePayments,
+                    PaymentSelectionMode.SELECT_ALL_FOR_HANDOVER_CREATION
+            );
+        } else {
+            bundle = generatePaymentBundleForHandovers(nonClosedShiftStartFundBill,
+                    null,
+                    allUniquePayments,
+                    PaymentSelectionMode.SELECT_NONE_FOR_HANDOVER_CREATION
+            );
+        }
+        bundle.setUser(sessionController.getLoggedUser());
+        bundle.aggregateTotalsFromChildBundles();
+        bundle.setDenominationTransactions(denominationTransactionController.createDefaultDenominationTransaction());
+        bundle.setCashHandoverValue(0.0);
     }
 
     public String navigateToHandoverCreateBillForSelectedShift(Bill startBill) {
         resetClassVariables();
         handoverValuesCreated = false;
+        bundle = new ReportTemplateRowBundle(sessionController);
         System.out.println("startBill = " + startBill);
-        List<Payment> shiftPayments = generatePaymentsFromShiftStartToEndByDateAndDepartment(startBill, startBill.getReferenceBill());
-        bundle = generatePaymentBundleForHandovers(startBill, startBill.getReferenceBill(), shiftPayments);
+
+        List<Payment> shiftPayments = fetchPaymentsFromShiftStartToEndByDateAndDepartment(startBill, startBill.getReferenceBill());
+        if (shiftPayments != null) {
+            shiftPayments.stream()
+                    .forEach(p -> p.setTransientPaymentHandover(PaymentHandover.USER_COLLECTED));
+        }
+
+        List<Payment> shiftFloats = fetchShiftFloatsFromShiftStartToEnd(startBill, startBill.getReferenceBill(), sessionController.getLoggedUser());
+        if (shiftFloats != null) {
+            shiftFloats.stream()
+                    .forEach(p -> p.setTransientPaymentHandover(PaymentHandover.FLOATS));
+        }
+
+        List<Payment> othersPayments = fetchAllPaymentInMyHold(sessionController.getLoggedUser());
+        if (othersPayments != null) {
+            othersPayments.stream()
+                    .forEach(p -> p.setTransientPaymentHandover(PaymentHandover.OTHER_USERS_COLLECTED_AND_HANDED_OVER));
+        }
+
+        Set<Payment> uniquePaymentSet = new HashSet<>();
+
+        if (shiftPayments != null) {
+            uniquePaymentSet.addAll(shiftPayments);
+        }
+        if (shiftFloats != null) {
+            uniquePaymentSet.addAll(shiftFloats);
+        }
+        if (othersPayments != null) {
+            uniquePaymentSet.addAll(othersPayments);
+        }
+
+        List<Payment> allUniquePayments = new ArrayList<>(uniquePaymentSet);
+        boolean selectAllHandoverPayments = configOptionApplicationController.getBooleanValueByKey("Select all payments by default for Handing over of the shift.", false);
+
+        if (selectAllHandoverPayments) {
+            bundle = generatePaymentBundleForHandovers(startBill,
+                    startBill.getReferenceBill(),
+                    allUniquePayments,
+                    PaymentSelectionMode.SELECT_ALL_FOR_HANDOVER_CREATION
+            );
+        } else {
+            bundle = generatePaymentBundleForHandovers(startBill,
+                    startBill.getReferenceBill(),
+                    allUniquePayments,
+                    PaymentSelectionMode.SELECT_NONE_FOR_HANDOVER_CREATION
+            );
+        }
 //        bundle = generatePaymentsFromShiftStartToEndToEnterToCashbookFilteredByDateAndDepartment(startBill, startBill.getReferenceBill());
         bundle.setUser(sessionController.getLoggedUser());
-        bundle.aggregateTotals();
+        bundle.aggregateTotalsFromChildBundles();
 //        currentBill = new Bill();
 //        currentBill.setBillType(BillType.CashHandoverCreateBill);
 //        currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE);
@@ -1971,32 +2519,71 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public void fillMyShifts() {
-        fillMyShifts(null);
+        fillShifts(null, null, null, null, sessionController.getLoggedUser());
     }
 
-    public void fillMyShifts(Integer count) {
+    public void fillShifts(Integer count, Boolean completed, Date fromDate, Date toDate, WebUser paramUser) {
+        bundle = new ReportTemplateRowBundle();
         String jpql = "Select new com.divudi.data.ReportTemplateRow(b) "
                 + " from Bill b "
                 + " where b.retired=:ret "
-                + " and b.billTypeAtomic=:bta "
-                + " and b.creater=:user ";
-        Map params = new HashMap();
+                + " and b.billTypeAtomic=:bta ";
+
+        Map<String, Object> params = new HashMap<>();
         params.put("ret", false);
-        params.put("user", sessionController.getLoggedUser());
         params.put("bta", BillTypeAtomic.FUND_SHIFT_START_BILL);
-        if (count == null) {
-            jpql += " and b.createdAt between :fd and :td ";
-            params.put("fd", getFromDate());
-            params.put("td", getToDate());
+
+        if (completed != null) {
+            jpql += " and b.referenceBill.completed=:completed ";
+            params.put("completed", completed);
         }
+
+        if (paramUser != null) {
+            jpql += " and b.creater=:user ";
+            params.put("user", paramUser);
+        }
+
+        if (fromDate != null && toDate != null) {
+            jpql += " and b.createdAt between :fd and :td ";
+            params.put("fd", fromDate);
+            params.put("td", toDate);
+        } else if (count != null) {
+            // count specified but no date range
+        }
+
         jpql += " order by b.id ";
         List<ReportTemplateRow> rows;
-        if (count == null) {
-            rows = (List<ReportTemplateRow>) billFacade.findLightsByJpql(jpql, params, TemporalType.DATE);
+
+        if (count != null) {
+            rows = (List<ReportTemplateRow>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, count);
         } else {
-            rows = (List<ReportTemplateRow>) billFacade.findLightsByJpql(jpql, params, TemporalType.DATE, count);
+            rows = (List<ReportTemplateRow>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
         }
         bundle.setReportTemplateRows(rows);
+    }
+
+    public void fillMyShifts(Integer count) {
+        fillShifts(count, null, null, null, sessionController.getLoggedUser());
+    }
+
+    public void fillMyCompletedShifts() {
+        fillShifts(null, true, fromDate, toDate, sessionController.getLoggedUser());
+    }
+
+    public void fillMyUncompletedShifts() {
+        fillShifts(null, false, fromDate, toDate, sessionController.getLoggedUser());
+    }
+
+    public void fillUserShifts() {
+        fillShifts(null, null, null, null, user);
+    }
+
+    public void fillUserCompletedShifts() {
+        fillShifts(null, true, fromDate, toDate, user);
+    }
+
+    public void fillUserUncompletedShifts() {
+        fillShifts(null, false, fromDate, toDate, user);
     }
 
     public String navigateToDayEndSummary() {
@@ -2159,6 +2746,64 @@ public class FinancialTransactionController implements Serializable {
 //        calculateTotalFundsFromShiftStartToNow();
         financialReportByPayments = new FinancialReport(atomicBillTypeTotalsByPayments);
 
+    }
+
+    public void fillPaymentsFromViewHandoverAcceptBillOld() {
+        paymentsFromShiftSratToNow = new ArrayList<>();
+        Map<String, Object> m = new HashMap<>();
+        String jpql = "SELECT p "
+                + "FROM Payment p "
+                + "WHERE p.retired = :ret "
+                + "AND p.handoverCreatedBill = :hcb ";
+        m.put("hcb", selectedBill);
+
+        jpql += "ORDER BY p.id DESC";
+
+        m.put("ret", false);
+        System.out.println("jpql = " + jpql);
+        paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m);
+
+        atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
+        currentBillPayments = paymentsFromShiftSratToNow;
+        Set<Department> uniqueDepartments = new HashSet<>();
+        Set<LocalDate> uniqueDates = new HashSet<>();
+
+        for (Payment p : paymentsFromShiftSratToNow) {
+            Bill bill = p.getBill();
+            if (bill == null) {
+                continue;
+            }
+
+            if (bill.getBillTypeAtomic() == null) {
+            } else {
+                Department dept = bill.getDepartment();
+                if (dept != null) {
+                    uniqueDepartments.add(dept);
+                } else {
+                }
+
+                if (p.getCreatedAt() != null) {
+                    LocalDate createdDateOnly = p.getCreatedAt().toInstant()
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate();
+                    uniqueDates.add(createdDateOnly);
+                } else {
+                }
+
+                atomicBillTypeTotalsByPayments.addOrUpdateAtomicRecord(bill.getBillTypeAtomic(), p.getPaymentMethod(), p.getPaidValue());
+            }
+        }
+
+        cashbookDepartments = new ArrayList<>(uniqueDepartments);
+
+        // Convert Set<LocalDate> to List<Date>
+        cashbookDates = new ArrayList<>();
+        for (LocalDate localDate : uniqueDates) {
+            Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+            cashbookDates.add(date); // Add converted Date to the list
+        }
+
+        financialReportByPayments = new FinancialReport(atomicBillTypeTotalsByPayments);
     }
 
     public void fillPaymentsFromShiftStartToNowNotYetStartedToEntereToCashbook() {
@@ -2413,86 +3058,514 @@ public class FinancialTransactionController implements Serializable {
         return null;
     }
 
-    public String navigateToMarkShortagesForShiftForHandover() {
-        return null;
+    public Double shortageBillTotal(ReportTemplateRowBundle paramBundle, PaymentMethod pm) {
+        String jpql = "Select sum(p.paidValue) "
+                + " from Payment p "
+                + " where p.retired=:ret "
+                + " and p.bill.retired=:br"
+                + " and p.bill.cancelled=:can"
+                + " and p.bill.webUser=:u"
+                + " and p.paymentDate=:pd "
+                + " and p.department=:dep "
+                + " and p.paymentMethod=:pm "
+                + " and p.bill.billTypeAtomic=:bta";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("br", false);
+        m.put("can", false);
+        m.put("u", paramBundle.getUser());
+        m.put("pd", paramBundle.getDate());
+        m.put("dep", paramBundle.getDepartment());
+        m.put("pm", pm);
+        m.put("bta", BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL);
+        Double dbl = billFacade.findDoubleByJpql(jpql, m, TemporalType.DATE);
+        return dbl;
     }
 
-    public List<Payment> generatePaymentsFromShiftStartToEndByDateAndDepartment(
+    public String navigateToMarkShortagesForShiftForHandover() {
+        if (bundle == null) {
+            JsfUtil.addErrorMessage("No Bundle available for processing.");
+            return null;
+        }
+
+        prepareToAddNewShiftShortageRecord();
+        currentBillPayments = new ArrayList<>();
+        boolean hasShortages = false;
+        double valueCollected = bundle.getCardValue();
+        double valueAvailable = bundle.getCashHandoverValue();
+        double difference = valueCollected - valueAvailable;
+
+        // Handle cash shortage/surplus initially if there's a difference.
+        if (Math.abs(difference) > 0) {
+            Payment pc = new Payment();
+            pc.setPaymentMethod(PaymentMethod.Cash);
+            pc.setBill(currentBill);
+            pc.setPaidValue(0 - Math.abs(difference));
+            pc.setCreatedAt(new Date());
+            currentBillPayments.add(pc);
+        }
+
+        // Process non-cash payments while avoiding null pointers and using the built-in clone method for payment.
+        for (ReportTemplateRowBundle cb : bundle.getBundles()) {
+            if (cb == null || cb.getPaymentMethod() == null || cb.getPaymentMethod() == PaymentMethod.Cash) {
+                continue; // Skip null bundles or cash payments as it's already processed.
+            }
+
+            if (cb.getReportTemplateRows() != null) {
+                for (ReportTemplateRow r : cb.getReportTemplateRows()) {
+                    if (r == null || r.getPayment() == null || r.getPayment().isSelectedForHandover()) {
+                        continue; // Skip null rows, payments, or those already selected for handover.
+                    }
+                    hasShortages = true;
+                    Payment newPaymentForShortageBill = r.getPayment().clonePaymentForNewBill();
+                    newPaymentForShortageBill.setPaidValue(0 - Math.abs(newPaymentForShortageBill.getPaidValue()));
+                    newPaymentForShortageBill.setCreatedAt(new Date());
+                    currentBillPayments.add(newPaymentForShortageBill);
+                }
+            }
+        }
+
+        calculateShortageBillTotal();
+        return "/cashier/record_shift_shortage"; // Navigation case
+    }
+
+    public List<Payment> fetchPaymentsFromShiftStartToEndByDateAndDepartment(
             Bill startBill, Bill endBill) {
+        System.out.println("startBill = " + startBill);
+        System.out.println("endBill = " + endBill);
+        if (startBill == null || startBill.getId() == null || startBill.getCreater() == null) {
+            System.out.println("Exiting 1");
+            return null;
+        }
+        WebUser paymentUser = startBill.getCreater();
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_IN));
+        btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_OUT));
+        Map<String, Object> m = new HashMap<>();
+
+        StringBuilder jpqlBuilder = new StringBuilder("SELECT p ")
+                .append("FROM Payment p ")
+                .append("JOIN p.bill b ")
+                .append("WHERE p.creater=:cr ")
+                .append("AND p.retired=:ret AND p.id>:sid ")
+                .append("AND b.billTypeAtomic IN :btas ");
+        m.put("cr", paymentUser);
+        m.put("ret", false);
+        m.put("sid", startBill.getId());
+        m.put("btas", btas);
+        if (endBill != null && endBill.getId() != null) {
+            jpqlBuilder.append("AND p.id<:eid ");
+            m.put("eid", endBill.getId());
+        }
+        jpqlBuilder
+                .append("AND p.cashbookEntryStated =:cbes ")
+                .append("AND p.handingOverStarted =:hos ")
+                .append("ORDER BY p.createdAt, b.department, p.creater");
+        m.put("cbes", false);
+        m.put("hos", false);
+
+        String jpql = jpqlBuilder.toString();
+
+        List<Payment> shiftPayments = paymentFacade.findByJpql(jpql, m);
+        System.out.println("shiftPayments = " + shiftPayments);
+        List<Payment> shiftPaymentsToEnd = new ArrayList<>();
+        for (Payment p : shiftPayments) {
+            WebUser u = p.getCurrentHolder();
+            if (u == null) {
+                p.setCurrentHolder(paymentUser);
+                shiftPaymentsToEnd.add(p);
+            } else if (paymentUser.equals(u)) {
+                shiftPaymentsToEnd.add(p);
+            }
+        }
+        return shiftPaymentsToEnd;
+    }
+
+    public List<Payment> fetchPaymentsFromShiftStartToEndByDateAndDepartment(
+            Long startBillId, Long endBillId, WebUser wu) {
+
+        if (startBillId == null) {
+            System.out.println("Exiting 1");
+            return null;
+        }
+
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_IN));
+        btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_OUT));
+        Map<String, Object> m = new HashMap<>();
+
+        StringBuilder jpqlBuilder = new StringBuilder("SELECT p ")
+                .append("FROM Payment p ")
+                .append("JOIN p.bill b ")
+                .append("WHERE p.creater=:cr ")
+                .append("AND p.retired=:ret AND p.id>:sid ")
+                .append("AND b.billTypeAtomic IN :btas ");
+        m.put("cr", wu);
+        m.put("ret", false);
+        m.put("sid", startBillId);
+        m.put("btas", btas);
+        if (endBillId != null) {
+            jpqlBuilder.append("AND p.id<:eid ");
+            m.put("eid", endBillId);
+        }
+        jpqlBuilder
+                .append("AND p.cashbookEntryStated =:cbes ")
+                .append("AND p.handingOverStarted =:hos ")
+                .append("ORDER BY p.createdAt, b.department, p.creater");
+        m.put("cbes", false);
+        m.put("hos", false);
+
+        String jpql = jpqlBuilder.toString();
+
+        List<Payment> shiftPayments = paymentFacade.findByJpql(jpql, m);
+        System.out.println("shiftPayments = " + shiftPayments);
+        List<Payment> shiftPaymentsToEnd = new ArrayList<>();
+        for (Payment p : shiftPayments) {
+            WebUser u = p.getCurrentHolder();
+            if (u == null) {
+                p.setCurrentHolder(wu);
+                shiftPaymentsToEnd.add(p);
+            } else if (wu.equals(u)) {
+                shiftPaymentsToEnd.add(p);
+            }
+        }
+        return shiftPaymentsToEnd;
+    }
+
+    public List<Payment> fetchPaymentsFromShiftStartToEndByDateAndDepartment(
+            Date fromDate, Date toDate, WebUser wu) {
+
+        if (fromDate == null) {
+            System.out.println("Exiting 1");
+            return null;
+        }
+
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_IN));
+        btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_OUT));
+        Map<String, Object> m = new HashMap<>();
+
+        StringBuilder jpqlBuilder = new StringBuilder("SELECT p ")
+                .append("FROM Payment p ")
+                .append("JOIN p.bill b ")
+                .append("WHERE p.creater=:cr ")
+                .append("AND p.retired=:ret AND p.bill.createdAt>:sid ")
+                .append("AND b.billTypeAtomic IN :btas ");
+        m.put("cr", wu);
+        m.put("ret", false);
+        m.put("sid", fromDate);
+        m.put("btas", btas);
+        if (toDate != null) {
+            jpqlBuilder.append("AND p.bill.createdAt<:eid ");
+            m.put("eid", toDate);
+        }
+        jpqlBuilder
+                .append("AND p.cashbookEntryStated =:cbes ")
+                .append("AND p.handingOverStarted =:hos ")
+                .append("ORDER BY p.createdAt, b.department, p.creater");
+        m.put("cbes", false);
+        m.put("hos", false);
+
+        String jpql = jpqlBuilder.toString();
+
+        List<Payment> shiftPayments = paymentFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        System.out.println("shiftPayments = " + shiftPayments);
+        List<Payment> shiftPaymentsToEnd = new ArrayList<>();
+        for (Payment p : shiftPayments) {
+            WebUser u = p.getCurrentHolder();
+            if (u == null) {
+                p.setCurrentHolder(wu);
+                shiftPaymentsToEnd.add(p);
+            } else if (wu.equals(u)) {
+                shiftPaymentsToEnd.add(p);
+            }
+        }
+        return shiftPaymentsToEnd;
+    }
+
+    public List<Payment> fetchShiftFloatsFromShiftStartToEnd(
+            Bill startBill, Bill endBill, WebUser wu) {
         System.out.println("startBill = " + startBill);
         System.out.println("endBill = " + endBill);
         if (startBill == null || startBill.getId() == null || startBill.getCreater() == null) {
             return null;
         }
 
-        WebUser user = startBill.getCreater();
+        WebUser paymentUser = startBill.getCreater();
 
         List<BillTypeAtomic> btas = new ArrayList<>();
-        btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_IN));
-        btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_OUT));
+        btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.FLOAT_CLOSING_BALANCE));
+        btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.FLOAT_DECREASE));
+        btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.FLOAT_INCREASE));
+        btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.FLOAT_CHANGE));
+        btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.FLOAT_STARTING_BALANCE));
 
         Map<String, Object> m = new HashMap<>();
-        m.put("btas", btas);
-        m.put("started", false);
-        m.put("cr", user);
-        m.put("ret", false);
-        m.put("sid", startBill.getId());
 
-        StringBuilder jpqlBuilder = new StringBuilder("SELECT p FROM Payment p JOIN p.bill b WHERE p.creater = :cr ")
-                .append("AND p.retired = :ret AND p.id > :sid ");
+        StringBuilder jpqlBuilder = new StringBuilder("SELECT p ")
+                .append("FROM Payment p JOIN p.bill b ")
+                .append("WHERE p.retired=:pr ")
+                .append("AND b.retired=:br ")
+                .append("AND b.billTypeAtomic IN :btas  ")
+                .append("AND p.creater=:cr ")
+                .append("AND p.cancelled=:can ")
+                .append("AND p.id > :sid ");
+        m.put("btas", btas);
+        m.put("cr", paymentUser);
+        m.put("pr", false);
+        m.put("br", false);
+        m.put("can", false);
+        m.put("sid", startBill.getId());
 
         if (endBill != null && endBill.getId() != null) {
             jpqlBuilder.append("AND p.id < :eid ");
             m.put("eid", endBill.getId());
         }
-
-        jpqlBuilder.append("AND b.billTypeAtomic IN :btas AND p.cashbookEntryStated = :started ")
-                .append("ORDER BY p.createdAt, b.department, p.creater");
-
+        jpqlBuilder.append("ORDER BY p.createdAt, b.department, p.creater");
         String jpql = jpqlBuilder.toString();
+        System.out.println("jpql = " + jpql);
+        System.out.println("m = " + m);
+        List<Payment> allFloats = paymentFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        System.out.println("allFloats = " + allFloats);
+        List<Payment> myFloats = new ArrayList<>();
+        for (Payment p : allFloats) {
+            System.out.println("p = " + p);
+            WebUser u = p.getCurrentHolder();
+            if (u == null) {
+                p.setCurrentHolder(paymentUser);
+                myFloats.add(p);
+            } else if (paymentUser.equals(u)) {
+                myFloats.add(p);
+            }
+        }
+        return myFloats;
+    }
 
-        List<Payment> shiftPayments = paymentFacade.findByJpql(jpql, m);
-        System.out.println("shiftPayments = " + shiftPayments);
-        return shiftPayments;
+    public List<Payment> fetchBankPayments(
+            Bill startBill, Bill endBill, WebUser wu) {
+        System.out.println("startBill = " + startBill);
+        System.out.println("endBill = " + endBill);
+        if (startBill == null || startBill.getId() == null || startBill.getCreater() == null) {
+            return null;
+        }
+
+        WebUser paymentUser = startBill.getCreater();
+
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.BANK_IN));
+        btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.BANK_OUT));
+
+        Map<String, Object> m = new HashMap<>();
+
+        StringBuilder jpqlBuilder = new StringBuilder("SELECT p ")
+                .append("FROM Payment p JOIN p.bill b ")
+                .append("WHERE p.retired=:pr ")
+                .append("AND b.retired=:br ")
+                .append("AND b.billTypeAtomic IN :btas  ")
+                .append("AND p.creater=:cr ")
+                .append("AND p.cancelled=:can ")
+                .append("AND p.id > :sid ");
+        m.put("btas", btas);
+        m.put("cr", paymentUser);
+        m.put("pr", false);
+        m.put("br", false);
+        m.put("can", false);
+        m.put("sid", startBill.getId());
+
+        if (endBill != null && endBill.getId() != null) {
+            jpqlBuilder.append("AND p.id < :eid ");
+            m.put("eid", endBill.getId());
+        }
+        jpqlBuilder.append("ORDER BY p.createdAt, b.department, p.creater");
+        String jpql = jpqlBuilder.toString();
+        System.out.println("jpql = " + jpql);
+        System.out.println("m = " + m);
+        List<Payment> bankPayments = paymentFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        System.out.println("allFloats = " + bankPayments);
+        List<Payment> myBankPayments = new ArrayList<>();
+        for (Payment p : bankPayments) {
+            System.out.println("p = " + p);
+            WebUser u = p.getCurrentHolder();
+            if (u == null) {
+                p.setCurrentHolder(paymentUser);
+                myBankPayments.add(p);
+            } else if (paymentUser.equals(u)) {
+                myBankPayments.add(p);
+            }
+        }
+        return myBankPayments;
+    }
+
+    public List<Payment> fetchShiftFloatsFromShiftStartToEnd(
+            Date fromDate, Date toDate, WebUser wu) {
+        System.out.println("startBill = " + fromDate);
+        if (fromDate == null) {
+            return null;
+        }
+
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.FLOAT_CLOSING_BALANCE));
+        btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.FLOAT_DECREASE));
+        btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.FLOAT_INCREASE));
+        btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.FLOAT_CHANGE));
+        btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.FLOAT_STARTING_BALANCE));
+
+        Map<String, Object> m = new HashMap<>();
+
+        StringBuilder jpqlBuilder = new StringBuilder("SELECT p ")
+                .append("FROM Payment p JOIN p.bill b ")
+                .append("WHERE p.retired=:pr ")
+                .append("AND b.retired=:br ")
+                .append("AND b.billTypeAtomic IN :btas  ")
+                .append("AND p.creater=:cr ")
+                .append("AND p.cancelled=:can ")
+                .append("AND p.bill.createdAt > :sid ");
+        m.put("btas", btas);
+        m.put("cr", wu);
+        m.put("pr", false);
+        m.put("br", false);
+        m.put("can", false);
+        m.put("sid", fromDate);
+
+        if (toDate != null) {
+            jpqlBuilder.append("AND p.bill.createdAt < :eid ");
+            m.put("eid", toDate);
+        }
+        jpqlBuilder.append("ORDER BY p.createdAt, b.department, p.creater");
+        String jpql = jpqlBuilder.toString();
+        System.out.println("jpql = " + jpql);
+        System.out.println("m = " + m);
+        List<Payment> allFloats = paymentFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        System.out.println("allFloats = " + allFloats);
+        List<Payment> myFloats = new ArrayList<>();
+        for (Payment p : allFloats) {
+            System.out.println("p = " + p);
+            WebUser u = p.getCurrentHolder();
+            if (u == null) {
+                p.setCurrentHolder(wu);
+                myFloats.add(p);
+            } else if (wu.equals(u)) {
+                myFloats.add(p);
+            }
+        }
+        return myFloats;
+    }
+
+    public List<Payment> fetchAllPaymentInMyHold(WebUser wu) {
+        WebUser paymentUser = wu;
+        StringBuilder jpqlBuilder = new StringBuilder("SELECT p ")
+                .append("FROM Payment p ")
+                .append("JOIN p.bill b ")
+                .append("WHERE p.retired=:pret ")
+                .append("AND p.currentHolder=:cr ")
+                .append("AND p.retired=:bret ")
+                .append("AND p.cancelled=:can ")
+                .append("AND p.handingOverStarted=:hs ")
+                .append("ORDER BY p.createdAt, b.department, p.creater");
+        Map<String, Object> params = new HashMap<>();
+        params.put("cr", paymentUser);
+        params.put("pret", false);
+        params.put("bret", false);
+        params.put("can", false);
+        params.put("hs", false);
+        String jpql = jpqlBuilder.toString();
+        List<Payment> othersPayments = paymentFacade.findByJpql(jpql, params);
+        return othersPayments;
     }
 
     public ReportTemplateRowBundle generatePaymentBundleForHandovers(
-            Bill startBill, Bill endBill, List<Payment> shiftPayments) {
+            Bill startBill,
+            Bill endBill,
+            List<Payment> shiftPayments,
+            PaymentSelectionMode selectionMode) {
+
         Map<String, ReportTemplateRowBundle> groupedBundles = new HashMap<>();
-
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        
 
-        for (Payment p : shiftPayments) {
-            String key = sdf.format(p.getCreatedAt()) + "-" + p.getDepartment().getId() + "-" + p.getCreater().getId();
+        if (shiftPayments != null) {
+            for (Payment p : shiftPayments) {
+                // Retrieve the payment handover type
+                PaymentHandover ph = p.getTransientPaymentHandover(); // Assuming a getter that returns the enum
 
-            ReportTemplateRowBundle b = groupedBundles.getOrDefault(key, new ReportTemplateRowBundle());
-            b.setUser(startBill.getCreater());
-            b.setDate(p.getCreatedAt());
-            b.setDepartment(p.getDepartment());
+                // Generate key with fallback values
+                String dateKey = (p.getCreatedAt() != null) ? sdf.format(p.getCreatedAt()) : "No Date";
+                String deptKey = (p.getDepartment() != null && p.getDepartment().getId() != null) ? p.getDepartment().getId().toString() : "No Department";
+                String userKey = (p.getCreater() != null && p.getCreater().getId() != null) ? p.getCreater().getId().toString() : "No User";
+                String webUserKey = (p.getCurrentHolder() != null && p.getCurrentHolder().getId() != null) ? p.getCurrentHolder().getId().toString() : "No WebUser";
+                String handoverKey = (ph != null) ? ph.name() : "No Handover"; // Use the enum name as part of the key
 
-            ReportTemplateRow r = new ReportTemplateRow();
-            r.setPayment(p);
-            b.getReportTemplateRows().add(r);
+                String key = String.join("-", dateKey, deptKey, userKey, webUserKey, handoverKey);
 
-            // Temporarily store the bundle
-            groupedBundles.put(key, b);
-        }
+                ReportTemplateRowBundle b = groupedBundles.getOrDefault(key, new ReportTemplateRowBundle());
+                if (b.getSessionController() == null) {
+                    b.setSessionController(sessionController);
+                }
 
-        // Calculate totals once all payments have been grouped
-        for (ReportTemplateRowBundle tmpBundle : groupedBundles.values()) {
-            tmpBundle.calculateTotalsByPayments();
+                b.setDate(p.getCreatedAt() != null ? p.getCreatedAt() : new Date());
+                b.setDepartment(p.getDepartment() != null ? p.getDepartment() : new Department());
+                b.setUser(p.getCreater() != null ? p.getCreater() : new WebUser());
+                b.setPaymentHandover(ph);  // Set the payment handover attribute
+
+                ReportTemplateRow r = new ReportTemplateRow();
+                r.setPayment(p);
+                Boolean selected = null;
+
+                switch (selectionMode) {
+                    case SELECT_ALL_FOR_HANDOVER_CREATION:
+                        p.setSelectedForHandover(true);
+                        selected = true;
+                        break;
+                    case SELECT_NONE_FOR_HANDOVER_CREATION:
+                        selected = false;
+                        p.setSelectedForHandover(false);
+                        break;
+                    case SELECT_FOR_HANDOVER_RECEIPT:
+                        selected = p.isSelectedForHandover();
+                        p.setSelectedForCashbookEntry(selected);
+                        break;
+                    case SELECT_FOR_HANDOVER_RECORD:
+                        selected = p.isSelectedForRecording();
+                        break;
+                    case SELECT_FOR_HANDOVER_RECORD_CONFIRMATION:
+                        selected = p.isSelectedForRecordingConfirmation();
+                        break;
+                    case NONE:
+                        break;
+                }
+
+                if (p.getPaymentMethod() == PaymentMethod.Cash) {
+                    r.setSelected(true);
+                } else {
+                    if (selected != null) {
+                        r.setSelected(selected);
+                    }
+                }
+                b.getReportTemplateRows().add(r);
+
+                // Store the bundle in the map
+                groupedBundles.put(key, b);
+            }
+
+            // Calculate totals for each bundle
+            for (ReportTemplateRowBundle tmpBundle : groupedBundles.values()) {
+                tmpBundle.calculateTotalsBySelectedPayments();
+            }
         }
 
         ReportTemplateRowBundle bundleToHoldDeptUserDayBundle = new ReportTemplateRowBundle();
         bundleToHoldDeptUserDayBundle.setBundles(new ArrayList<>(groupedBundles.values()));
         bundleToHoldDeptUserDayBundle.setStartBill(startBill);
         bundleToHoldDeptUserDayBundle.setEndBill(endBill);
-        bundleToHoldDeptUserDayBundle.setUser(startBill.getCreater());
+        if (startBill != null) {
+            bundleToHoldDeptUserDayBundle.setUser(startBill.getCreater());
+        } else {
+            bundleToHoldDeptUserDayBundle.setUser(sessionController.getLoggedUser());
+        }
+
         return bundleToHoldDeptUserDayBundle;
     }
 
-    @Deprecated // Use generatePaymentsFromShiftStartToEndByDateAndDepartment and generatePaymentBundleForHandovers
+    @Deprecated // Use fetchPaymentsFromShiftStartToEndByDateAndDepartment and generatePaymentBundleForHandovers
     public ReportTemplateRowBundle generatePaymentsFromShiftStartToEndToEnterToCashbookFilteredByDateAndDepartment(
             Bill startBill, Bill endBill) {
         System.out.println("startBill = " + startBill);
@@ -2552,7 +3625,7 @@ public class FinancialTransactionController implements Serializable {
 
         // Calculate totals once all payments have been grouped
         for (ReportTemplateRowBundle tmpBundle : groupedBundles.values()) {
-            tmpBundle.calculateTotalsByPayments();
+            tmpBundle.calculateTotalsBySelectedPayments();
         }
 
         ReportTemplateRowBundle bundleToHoldDeptUserDayBundle = new ReportTemplateRowBundle();
@@ -2901,6 +3974,72 @@ public class FinancialTransactionController implements Serializable {
 
     }
 
+    public String settleShiftEnd() {
+        boolean fundTransferBillTocollect = false;
+
+        if (currentBill == null) {
+            JsfUtil.addErrorMessage("Error");
+            return "";
+        }
+        if (currentBill.getBillType() != BillType.ShiftEndFundBill) {
+            JsfUtil.addErrorMessage("Error");
+            return "";
+        }
+        if (currentBill.getReferenceBill() == null) {
+            JsfUtil.addErrorMessage("Error");
+            return "";
+        }
+
+        nonClosedShiftStartFundBill = currentBill.getReferenceBill();
+        if (fundTransferBillsToReceive != null && !fundTransferBillsToReceive.isEmpty()) {
+            fundTransferBillTocollect = true;
+        }
+
+        if (fundTransferBillTocollect) {
+            JsfUtil.addErrorMessage("Please collect funds transferred to you before closing.");
+            return "";
+        }
+
+        currentBill.setDepartment(sessionController.getDepartment());
+        currentBill.setInstitution(sessionController.getInstitution());
+        currentBill.setStaff(sessionController.getLoggedUser().getStaff());
+        currentBill.setWebUser(sessionController.getLoggedUser());
+        currentBill.setBillDate(new Date());
+        currentBill.setBillTime(new Date());
+        currentBill.setTotal(bundle.getTotal());
+        currentBill.setNetTotal(bundle.getTotal());
+        billController.save(currentBill);
+        DetailedFinancialBill fb = new DetailedFinancialBill();
+        fb.setBill(currentBill);
+
+        fb.setAgentValue(bundle.getAgentValue());
+        fb.setCashValue(bundle.getCashValue());
+        fb.setCardValue(bundle.getCardValue());
+        fb.setChequeValue(bundle.getChequeValue());
+        fb.setSlipValue(bundle.getSlipValue());
+        fb.setEwalletValue(bundle.getEwalletValue());
+        fb.setOnCallValue(bundle.getOnCallValue());
+        fb.setMultiplePaymentMethodsValue(bundle.getMultiplePaymentMethodsValue());
+        fb.setStaffValue(bundle.getStaffValue());
+        fb.setCreditValue(bundle.getCreditValue());
+        fb.setStaffWelfareValue(bundle.getStaffWelfareValue());
+        fb.setVoucherValue(bundle.getVoucherValue());
+        fb.setIouValue(bundle.getIouValue());
+        fb.setPatientDepositValue(bundle.getPatientDepositValue());
+        fb.setPatientPointsValue(bundle.getPatientPointsValue());
+        fb.setOnlineSettlementValue(bundle.getOnlineSettlementValue());
+
+        detailedFinancialBillController.save(fb);
+
+        currentDetailedFinancialBill = fb;
+
+        nonClosedShiftStartFundBill.setReferenceBill(currentBill);
+        nonClosedShiftStartFundBill.setCompleted(true);
+        billController.save(nonClosedShiftStartFundBill);
+
+        return "/cashier/shift_end_print?faces-redirect=true";
+    }
+
     public String settleShiftEndFundBill() {
         boolean fundTransferBillTocollect = false;
 
@@ -3089,7 +4228,38 @@ public class FinancialTransactionController implements Serializable {
         return "/cashier/shift_end_summery_bill_print?faces-redirect=true";
     }
 
+    public String completeHandover() {
+        if (bundle == null) {
+            JsfUtil.addErrorMessage("Error - Null Bundle");
+            return null;
+        }
+        if (bundle.getStartBill() == null) {
+            JsfUtil.addErrorMessage("No Start");
+            return null;
+        }
+        if (bundle.getStartBill().getReferenceBill() == null) {
+            JsfUtil.addErrorMessage("Shift NOT ended. Can not complete Handover");
+            return null;
+        }
+        if (bundle.getEndBill() == null) {
+            JsfUtil.addErrorMessage("Shift NOT ended. Can not complete Handover");
+            return null;
+        }
+
+        bundle.getStartBill().setCompleted(true);
+        bundle.getStartBill().setCompletedAt(new Date());
+        bundle.getStartBill().setCompletedBy(sessionController.getLoggedUser());
+
+        billController.save(bundle.getStartBill());
+
+        return navigateToMyShifts();
+    }
+
     public String settleHandoverStartBill() {
+        if (user == null) {
+            JsfUtil.addErrorMessage("Please select a user to handover the shift.");
+            return null;
+        }
         if (bundle == null) {
             JsfUtil.addErrorMessage("Error - Null Bundle");
             return null;
@@ -3102,61 +4272,145 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("No Payments to Handover");
             return null;
         }
+        if (Math.abs(bundle.getDenominatorValue() - bundle.getCashHandoverValue()) > 1) {
+            JsfUtil.addErrorMessage("Cash Value Collected and the cash value Handing over are different. Cannot handover.");
+            return null;
+        }
+        boolean hasSelectedBundles = false;
+        for (ReportTemplateRowBundle b : bundle.getBundles()) {
+            if (b.isSelected()) {
+                hasSelectedBundles = true;
+            }
+        }
+        if (!hasSelectedBundles) {
+            JsfUtil.addErrorMessage("No Payments to Handover");
+            return null;
+        }
+
+        bundle.setFromUser(sessionController.getLoggedUser());
+        bundle.setToUser(user);
+
         currentBill = new Bill();
+
+        String cbDeptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE);
+
+        currentBill.setDeptId(cbDeptId);
+        currentBill.setInsId(cbDeptId);
+
         currentBill.setBillType(BillType.CashHandoverCreateBill);
         currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE);
         currentBill.setBillClassType(BillClassType.PreBill);
+
         currentBill.setReferenceBill(bundle.getStartBill());
-        currentBill.setDepartment(sessionController.getDepartment());
+
         currentBill.setInstitution(sessionController.getInstitution());
         currentBill.setFromDate(cashbookDate);
+
+        currentBill.setDepartment(sessionController.getDepartment());
         currentBill.setFromDepartment(cashbookDepartment);
+
         currentBill.setStaff(sessionController.getLoggedUser().getStaff());
+        currentBill.setFromStaff(sessionController.getLoggedUser().getStaff());
+        currentBill.setToStaff(user.getStaff());
+
         currentBill.setToWebUser(user);
         currentBill.setFromWebUser(sessionController.getLoggedUser());
-        currentBill.setCreatedAt(new Date());
-        currentBill.setCreater(sessionController.getLoggedUser());
+        currentBill.setWebUser(sessionController.getLoggedUser());
+
         currentBill.setBillDate(new Date());
         currentBill.setBillTime(new Date());
         currentBill.setTotal(bundle.getTotal());
         currentBill.setNetTotal(bundle.getTotal());
+
+        currentBill.setCreatedAt(new Date());
+        currentBill.setCreater(sessionController.getLoggedUser());
+
         billController.save(currentBill);
 
-        for (ReportTemplateRowBundle shiftBundle : bundle.getBundles()) {
-            String id = billNumberGenerator.departmentBillNumberGeneratorYearly(department, BillTypeAtomic.FUND_SHIFT_COMPONANT_HANDOVER_CREATE);
-            Bill shiftHandoverComponantBill = new Bill();
-            shiftHandoverComponantBill.setDepartment(shiftBundle.getDepartment());
-            shiftHandoverComponantBill.setInstitution(shiftBundle.getDepartment().getInstitution());
-            shiftHandoverComponantBill.setCreater(sessionController.getLoggedUser());
-            shiftHandoverComponantBill.setBillDate(shiftBundle.getDate());
-            shiftHandoverComponantBill.setStaff(shiftBundle.getUser().getStaff());
-            shiftHandoverComponantBill.setBillType(BillType.FUND_SHIFT_COMPONANT_HANDOVER_CREATE);
-            shiftHandoverComponantBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_COMPONANT_HANDOVER_CREATE);
-            shiftHandoverComponantBill.setDeptId(id);
-            shiftHandoverComponantBill.setInsId(id);
-            shiftHandoverComponantBill.setFromWebUser(sessionController.getLoggedUser());
-            shiftHandoverComponantBill.setToWebUser(user);
-            shiftHandoverComponantBill.setReferenceBill(currentBill);
-            shiftHandoverComponantBill.setCreatedAt(new Date());
-            billFacade.create(shiftHandoverComponantBill);
-            System.out.println("shiftBundle = " + shiftBundle);
-            System.out.println("shiftBundle.getStartBill() = " + shiftBundle.getStartBill());
-            for (ReportTemplateRow row : shiftBundle.getReportTemplateRows()) {
-                System.out.println("row = " + row);
-                if (row.getPayment() == null) {
-                    System.out.println("row.getPayment() = " + row.getPayment());
-                    continue;
+        Bill denos = new Bill();
+        denos.setDepartment(sessionController.getDepartment());
+        denos.setInstitution(sessionController.getDepartment().getInstitution());
+        denos.setCreater(sessionController.getLoggedUser());
+        denos.setBillDate(new Date());
+        denos.setStaff(sessionController.getLoggedUser().getStaff());
+        denos.setBillType(BillType.FUND_SHIFT_COMPONANT_HANDOVER_CREATE);
+        denos.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_DENOMINATION_HANDOVER_CREATE);
+        denos.setDeptId("");
+        denos.setInsId("");
+        denos.setFromWebUser(sessionController.getLoggedUser());
+        denos.setToWebUser(user);
+        denos.setReferenceBill(currentBill);
+        denos.setCreatedAt(new Date());
+        billFacade.create(denos);
+        Double cashHandover = 0.0;
+        if (bundle.getDenominationTransactions() != null) {
+            for (DenominationTransaction dt : bundle.getDenominationTransactions()) {
+                dt.setBill(denos);
+                if (dt.getDenominationValue() != null) {
+                    cashHandover += dt.getDenominationValue();
                 }
-                Payment p = row.getPayment();
-                System.out.println("p = " + p);
-                p.setHandoverCreatedBill(currentBill);
-                p.setHandoverShiftComponantBill(shiftHandoverComponantBill);
-                p.setHandoverShiftBill(shiftBundle.getStartBill());
+                denominationTransactionController.save(dt);
+            }
+        }
+        denos.setTotal(cashHandover);
+        denos.setNetTotal(cashHandover);
+        billFacade.edit(denos);
 
-                p.setCashbookEntryStated(true);
-                p.setCashbookEntryCompleted(false);
+        for (ReportTemplateRowBundle shiftBundle : bundle.getBundles()) {
+            if (shiftBundle.isSelected()) {
+                String id = billNumberGenerator.departmentBillNumberGeneratorYearly(department, BillTypeAtomic.FUND_SHIFT_COMPONANT_HANDOVER_CREATE);
+                Bill shiftHandoverComponantBill = new Bill();
+                System.out.println("1");
+                shiftHandoverComponantBill.setDeptId(id);
+                shiftHandoverComponantBill.setInsId(id);
+                System.out.println("2");
+                billController.save(shiftHandoverComponantBill);
+                System.out.println("shiftHandoverComponantBill = " + shiftHandoverComponantBill);
+                System.out.println("3");
+                shiftHandoverComponantBill.setDepartment(shiftBundle.getDepartment());
+                shiftHandoverComponantBill.setInstitution(shiftBundle.getDepartment().getInstitution());
+                shiftHandoverComponantBill.setCreater(sessionController.getLoggedUser());
+                shiftHandoverComponantBill.setBillDate(shiftBundle.getDate());
+                billController.save(shiftHandoverComponantBill);
+                shiftHandoverComponantBill.setStaff(shiftBundle.getUser().getStaff());
+                shiftHandoverComponantBill.setBillType(BillType.FUND_SHIFT_COMPONANT_HANDOVER_CREATE);
+                shiftHandoverComponantBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_COMPONANT_HANDOVER_CREATE);
+                billController.save(shiftHandoverComponantBill);
+                shiftHandoverComponantBill.setDeptId(id);
+                shiftHandoverComponantBill.setInsId(id);
+                shiftHandoverComponantBill.setFromWebUser(sessionController.getLoggedUser());
+                shiftHandoverComponantBill.setToWebUser(user);
+                billController.save(shiftHandoverComponantBill);
+                shiftHandoverComponantBill.setReferenceBill(currentBill);
+                billController.save(shiftHandoverComponantBill);
+                shiftHandoverComponantBill.setCreatedAt(new Date());
+                billController.save(shiftHandoverComponantBill);
 
-                paymentController.save(p);
+                Double componantTotal = 0.0;
+
+                for (ReportTemplateRow row : shiftBundle.getReportTemplateRows()) {
+                    System.out.println("row = " + row);
+                    if (row.getPayment() == null) {
+                        System.out.println("row.getPayment() = " + row.getPayment());
+                        continue;
+                    }
+                    Payment p = row.getPayment();
+                    System.out.println("p = " + p);
+
+                    p.setHandoverCreatedBill(currentBill);
+                    p.setHandoverShiftComponantBill(shiftHandoverComponantBill);
+                    p.setHandoverShiftBill(shiftBundle.getStartBill());
+
+                    p.setHandingOverStarted(true);
+                    p.setHandingOverCompleted(false);
+
+                    componantTotal += p.getPaidValue();
+
+                    paymentController.save(p);
+                }
+                shiftHandoverComponantBill.setTotal(componantTotal);
+                shiftHandoverComponantBill.setNetTotal(componantTotal);
+                billFacade.edit(shiftHandoverComponantBill);
             }
         }
 
@@ -3194,12 +4448,13 @@ public class FinancialTransactionController implements Serializable {
                 + "from Bill s "
                 + "where s.retired=:ret "
                 + "and s.billType=:btype "
-                + "and s.toStaff=:logStaff "
+                + "and (s.toStaff=:logStaff or s.toWebUser=:logUsr) "
                 + "and s.referenceBill is null "
                 + "order by s.createdAt ";
         tempMap.put("btype", BillType.FundTransferBill);
         tempMap.put("ret", false);
         tempMap.put("logStaff", sessionController.getLoggedUser().getStaff());
+        tempMap.put("logUsr", sessionController.getLoggedUser());
         fundTransferBillsToReceive = billFacade.findByJpql(sql, tempMap);
         fundTransferBillsToReceiveCount = fundTransferBillsToReceive.size();
 
@@ -3216,10 +4471,12 @@ public class FinancialTransactionController implements Serializable {
                 + "and s.billTypeAtomic=:btype "
                 + "and s.toWebUser=:user "
                 + "and s.completed=:com "
+                + "and s.cancelled=:can "
                 + "order by s.createdAt ";
         tempMap.put("btype", BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE);
         tempMap.put("ret", false);
         tempMap.put("com", false);
+        tempMap.put("can", false);
         tempMap.put("user", sessionController.getLoggedUser());
         handovertBillsToReceive = billFacade.findByJpql(sql, tempMap);
 
@@ -3283,10 +4540,15 @@ public class FinancialTransactionController implements Serializable {
         billController.save(currentBill);
         for (Payment p : currentBillPayments) {
             p.setBill(currentBill);
-            p.setDepartment(sessionController.getDepartment());
-            p.setInstitution(sessionController.getInstitution());
+            p.setCurrentHolder(sessionController.getLoggedUser());
+            p.setDepartment(null);
+            p.setInstitution(null);
+            p.setPaidValue(Math.abs(p.getPaidValue()));
             paymentController.save(p);
         }
+
+        drawerController.updateDrawerForIns(currentBillPayments);
+
         currentBill.getReferenceBill().setReferenceBill(currentBill);
         billController.save(currentBill.getReferenceBill());
 
@@ -3294,77 +4556,296 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String acceptHandoverBill() {
-        if (currentBill == null) {
-            JsfUtil.addErrorMessage("Error");
-            return "";
+        if (bundle == null) {
+            JsfUtil.addErrorMessage("Error - Null Bundle");
+            return null;
         }
-        if (currentBill.getReferenceBill() == null) {
-            JsfUtil.addErrorMessage("Error");
-            return "";
+        if (bundle.getBundles() == null) {
+            JsfUtil.addErrorMessage("No Payments");
+            return null;
         }
-
-        if (currentBill.getBillType() != BillType.CashHandoverAcceptBill) {
-            JsfUtil.addErrorMessage("Error - bill type");
-            return "";
+        if (bundle.getBundles().isEmpty()) {
+            JsfUtil.addErrorMessage("No Payments to Handover");
+            return null;
         }
-
-        if (currentBill.getReferenceBill().getBillType() != BillType.CashHandoverCreateBill) {
-            JsfUtil.addErrorMessage("Error - Reference bill type");
-            return "";
-        }
+        currentBill = new Bill();
+        currentBill.setBillType(BillType.CashHandoverAcceptBill);
+        currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_HANDOVER_ACCEPT);
+        currentBill.setBillClassType(BillClassType.PreBill);
+        currentBill.setReferenceBill(selectedBill);
 
         currentBill.setDepartment(sessionController.getDepartment());
+        currentBill.setFromDepartment(cashbookDepartment);
+        currentBill.setToDepartment(sessionController.getDepartment());
+
         currentBill.setInstitution(sessionController.getInstitution());
+        currentBill.setFromInstitution(sessionController.getInstitution());
+        currentBill.setToInstitution(sessionController.getInstitution());
+
+        currentBill.setFromDate(cashbookDate);
+
         currentBill.setStaff(sessionController.getLoggedUser().getStaff());
-        currentBill.setToStaff(sessionController.getLoggedUser().getStaff());
-        currentBill.setFromStaff(currentBill.getReferenceBill().getFromStaff());
-        currentBill.setFromDate(currentBill.getReferenceBill().getFromDate());
-        currentBill.setFromDepartment(currentBill.getReferenceBill().getFromDepartment());
-        double total = 0.0;
+        currentBill.setToWebUser(user);
+        currentBill.setFromWebUser(sessionController.getLoggedUser());
+        currentBill.setCreatedAt(new Date());
+        currentBill.setCreater(sessionController.getLoggedUser());
+        currentBill.setBillDate(new Date());
+        currentBill.setBillTime(new Date());
+        currentBill.setTotal(bundle.getTotal());
+        currentBill.setNetTotal(bundle.getTotal());
         billController.save(currentBill);
 
-        Map<PaymentMethod, Double> paymentMethodTotals = new HashMap<>();
+        for (ReportTemplateRowBundle shiftBundle : bundle.getBundles()) {
+            String id = billNumberGenerator.departmentBillNumberGeneratorYearly(department, BillTypeAtomic.FUND_SHIFT_COMPONANT_HANDOVER_CREATE);
+            Bill shiftHandoverComponantAcceptBill = new Bill();
+            shiftHandoverComponantAcceptBill.setDepartment(shiftBundle.getDepartment());
+            shiftHandoverComponantAcceptBill.setInstitution(shiftBundle.getDepartment().getInstitution());
+            shiftHandoverComponantAcceptBill.setCreater(sessionController.getLoggedUser());
+            shiftHandoverComponantAcceptBill.setBillDate(shiftBundle.getDate());
+            shiftHandoverComponantAcceptBill.setStaff(shiftBundle.getUser().getStaff());
+            shiftHandoverComponantAcceptBill.setBillType(BillType.FUND_SHIFT_COMPONANT_HANDOVER_ACCEPT);
+            shiftHandoverComponantAcceptBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_COMPONANT_HANDOVER_ACCEPT);
+            shiftHandoverComponantAcceptBill.setDeptId(id);
+            shiftHandoverComponantAcceptBill.setInsId(id);
+            shiftHandoverComponantAcceptBill.setFromWebUser(sessionController.getLoggedUser());
+            shiftHandoverComponantAcceptBill.setToWebUser(user);
+            shiftHandoverComponantAcceptBill.setReferenceBill(currentBill);
+            shiftHandoverComponantAcceptBill.setCreatedAt(new Date());
+            billFacade.create(shiftHandoverComponantAcceptBill);
+            System.out.println("shiftBundle = " + shiftBundle);
+            System.out.println("shiftBundle.getStartBill() = " + shiftBundle.getStartBill());
 
-        for (Payment p : currentBillPayments) {
-            PaymentMethod method = p.getPaymentMethod();
-            Double amount = p.getPaidValue();
-            p.setCashbookEntryCompleted(true);
-            p.setHandoverAcceptBill(currentBill);
-            paymentController.save(p);
-            paymentMethodTotals.put(method, paymentMethodTotals.getOrDefault(method, 0.0) + amount);
-            cashBookEntryController.writeCashBookEntryAtHandover(p);
+            for (ReportTemplateRow row : shiftBundle.getReportTemplateRows()) {
+                System.out.println("row = " + row);
+                if (row.getPayment() == null) {
+                    System.out.println("row.getPayment() = " + row.getPayment());
+                    continue;
+                }
+
+                if (!row.getPayment().isSelectedForCashbookEntry()) {
+                    continue;
+                }
+                Payment p = row.getPayment();
+                p.setCashbookEntryCompleted(false);
+                p.setHandoverAcceptBill(currentBill);
+                p.setHandoverAcceptComponantBill(shiftHandoverComponantAcceptBill);
+                p.setCurrentHolder(sessionController.getLoggedUser());
+                p.setHandingOverCompleted(true);
+                p.setHandingOverStarted(false);
+                p.setCashbookEntryStated(false);
+                p.setCashbookEntryCompleted(false);
+
+                paymentController.save(p);
+            }
         }
 
-        // Create the list of PaymentMethodValue
-        List<PaymentMethodValue> pmvs = new ArrayList<>();
-        for (Map.Entry<PaymentMethod, Double> entry : paymentMethodTotals.entrySet()) {
-            PaymentMethodValue pmv = new PaymentMethodValue();
-            pmv.setPaymentMethod(entry.getKey());
-            pmv.setAmount(entry.getValue());
-            pmv.setCreatedAt(new Date());
-            paymentMethodValueFacade.create(pmv);
-            pmvs.add(pmv);
+        billController.save(currentBill);
 
-            BillComponent bc = new BillComponent();
-            bc.setName("Collected  " + pmv.getPaymentMethod().getLabel());
-            bc.setComponentValue(pmv.getAmount());
-            bc.setPaymentMethodValue(pmv);
-            bc.setBill(currentBill);
-            billComponentFacade.create(bc);
+        selectedBill.setCompleted(true);
+        selectedBill.setCompletedAt(new Date());
+        selectedBill.setCompletedBy(sessionController.getLoggedUser());
+        billController.save(selectedBill);
 
-            currentBill.getBillComponents().add(bc);
-
-        }
-
-        handingOverPaymentMethodValues = pmvs;
-
-        currentBill.getReferenceBill().setReferenceBill(currentBill);
-        currentBill.setNetTotal(total);
-        billController.save(currentBill.getReferenceBill());
-
-        return "/cashier/handover_receive_bill_print?faces-redirect=true";
+        return "/cashier/handover_creation_bill_print?faces-redirect=true";
     }
 
+    public String acceptHandoverBillAndWriteToCashbook() {
+        if (bundle == null) {
+            JsfUtil.addErrorMessage("Error - Null Bundle");
+            return null;
+        }
+        if (bundle.getBundles() == null) {
+            JsfUtil.addErrorMessage("No Payments");
+            return null;
+        }
+        if (bundle.getBundles().isEmpty()) {
+            JsfUtil.addErrorMessage("No Payments to Handover");
+            return null;
+        }
+        currentBill = new Bill();
+        currentBill.setBillType(BillType.CashHandoverAcceptBill);
+        currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_HANDOVER_ACCEPT);
+        currentBill.setBillClassType(BillClassType.PreBill);
+        currentBill.setReferenceBill(selectedBill);
+
+        currentBill.setDepartment(sessionController.getDepartment());
+        currentBill.setFromDepartment(cashbookDepartment);
+        currentBill.setToDepartment(sessionController.getDepartment());
+
+        currentBill.setInstitution(sessionController.getInstitution());
+        currentBill.setFromInstitution(sessionController.getInstitution());
+        currentBill.setToInstitution(sessionController.getInstitution());
+
+        currentBill.setFromDate(cashbookDate);
+
+        currentBill.setStaff(sessionController.getLoggedUser().getStaff());
+        currentBill.setToWebUser(user);
+        currentBill.setFromWebUser(sessionController.getLoggedUser());
+        currentBill.setCreatedAt(new Date());
+        currentBill.setCreater(sessionController.getLoggedUser());
+        currentBill.setBillDate(new Date());
+        currentBill.setBillTime(new Date());
+        currentBill.setTotal(bundle.getTotal());
+        currentBill.setNetTotal(bundle.getTotal());
+        billController.save(currentBill);
+
+        for (ReportTemplateRowBundle shiftBundle : bundle.getBundles()) {
+
+            System.out.println("shiftBundle = " + shiftBundle);
+            CashBook bundleCb = cashBookController.findAndSaveCashBookBySite(shiftBundle.getDepartment().getSite(), shiftBundle.getDepartment().getInstitution(), shiftBundle.getDepartment());
+            System.out.println("bundleCb = " + bundleCb);
+            String id = billNumberGenerator.departmentBillNumberGeneratorYearly(department, BillTypeAtomic.FUND_SHIFT_COMPONANT_HANDOVER_CREATE);
+            Bill shiftHandoverComponantAcceptBill = new Bill();
+            shiftHandoverComponantAcceptBill.setDepartment(shiftBundle.getDepartment());
+            shiftHandoverComponantAcceptBill.setInstitution(shiftBundle.getDepartment().getInstitution());
+            shiftHandoverComponantAcceptBill.setCreater(sessionController.getLoggedUser());
+            shiftHandoverComponantAcceptBill.setBillDate(shiftBundle.getDate());
+            shiftHandoverComponantAcceptBill.setStaff(shiftBundle.getUser().getStaff());
+            shiftHandoverComponantAcceptBill.setBillType(BillType.FUND_SHIFT_COMPONANT_HANDOVER_ACCEPT);
+            shiftHandoverComponantAcceptBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_COMPONANT_HANDOVER_ACCEPT);
+            shiftHandoverComponantAcceptBill.setDeptId(id);
+            shiftHandoverComponantAcceptBill.setInsId(id);
+            shiftHandoverComponantAcceptBill.setFromWebUser(sessionController.getLoggedUser());
+            shiftHandoverComponantAcceptBill.setToWebUser(user);
+            shiftHandoverComponantAcceptBill.setReferenceBill(currentBill);
+            shiftHandoverComponantAcceptBill.setCreatedAt(new Date());
+            billFacade.create(shiftHandoverComponantAcceptBill);
+            System.out.println("shiftBundle = " + shiftBundle);
+            System.out.println("shiftBundle.getStartBill() = " + shiftBundle.getStartBill());
+
+            List<CashBookEntry> cbEntries = new ArrayList<>();
+            if (shiftBundle.getDepartment() != null) {
+                cbEntries = cashBookEntryController.writeCashBookEntryAtHandover(shiftBundle, shiftHandoverComponantAcceptBill, bundleCb);
+            }
+
+            for (ReportTemplateRow row : shiftBundle.getReportTemplateRows()) {
+                System.out.println("row = " + row);
+                if (row.getPayment() == null) {
+                    System.out.println("row.getPayment() = " + row.getPayment());
+                    continue;
+                }
+
+                if (!row.getPayment().isSelectedForCashbookEntry()) {
+                    continue;
+                }
+                Payment p = row.getPayment();
+                p.setCashbook(bundleCb);
+                p.setCashbookEntry(findCashbookEntry(p, cbEntries));
+                p.setCashbookEntryCompleted(true);
+                p.setHandoverAcceptBill(currentBill);
+                p.setHandoverAcceptComponantBill(shiftHandoverComponantAcceptBill);
+                p.setCurrentHolder(sessionController.getLoggedUser());
+                p.setHandingOverCompleted(true);
+                p.setHandingOverStarted(false);
+                p.setCashbookEntryStated(true);
+                p.setCashbookEntryCompleted(true);
+
+                paymentController.save(p);
+            }
+        }
+
+        billController.save(currentBill);
+
+        selectedBill.setCompleted(true);
+        selectedBill.setCompletedAt(new Date());
+        selectedBill.setCompletedBy(sessionController.getLoggedUser());
+        billController.save(selectedBill);
+
+        return "/cashier/handover_creation_bill_print?faces-redirect=true";
+    }
+
+    private CashBookEntry findCashbookEntry(Payment p, List<CashBookEntry> cbEntries) {
+        if (p == null) {
+            return null;
+        }
+        if (p.getPaymentMethod() == null) {
+            return null;
+        }
+        if (cbEntries == null) {
+            return null;
+        }
+        for (CashBookEntry cbe : cbEntries) {
+            if (cbe.getPaymentMethod() == null) {
+                continue;
+            }
+            if (cbe.getPaymentMethod().equals(p)) {
+                return cbe;
+            }
+        }
+        return null;
+    }
+
+//    public String acceptHandoverBill() {
+//        if (currentBill == null) {
+//            JsfUtil.addErrorMessage("Error");
+//            return "";
+//        }
+//        if (currentBill.getReferenceBill() == null) {
+//            JsfUtil.addErrorMessage("Error");
+//            return "";
+//        }
+//
+//        if (currentBill.getBillType() != BillType.CashHandoverAcceptBill) {
+//            JsfUtil.addErrorMessage("Error - bill type");
+//            return "";
+//        }
+//
+//        if (currentBill.getReferenceBill().getBillType() != BillType.CashHandoverCreateBill) {
+//            JsfUtil.addErrorMessage("Error - Reference bill type");
+//            return "";
+//        }
+//
+//        currentBill.setDepartment(sessionController.getDepartment());
+//        currentBill.setInstitution(sessionController.getInstitution());
+//        currentBill.setStaff(sessionController.getLoggedUser().getStaff());
+//        currentBill.setToStaff(sessionController.getLoggedUser().getStaff());
+//        currentBill.setFromStaff(currentBill.getReferenceBill().getFromStaff());
+//        currentBill.setFromDate(currentBill.getReferenceBill().getFromDate());
+//        currentBill.setFromDepartment(currentBill.getReferenceBill().getFromDepartment());
+//        double total = 0.0;
+//        billController.save(currentBill);
+//
+//        Map<PaymentMethod, Double> paymentMethodTotals = new HashMap<>();
+//
+//        for (Payment p : currentBillPayments) {
+//            PaymentMethod method = p.getPaymentMethod();
+//            Double amount = p.getPaidValue();
+//            p.setCashbookEntryCompleted(true);
+//            p.setHandoverAcceptBill(currentBill);
+//            paymentController.save(p);
+//            paymentMethodTotals.put(method, paymentMethodTotals.getOrDefault(method, 0.0) + amount);
+//            cashBookEntryController.writeCashBookEntryAtHandover(p);
+//        }
+//
+//        // Create the list of PaymentMethodValue
+//        List<PaymentMethodValue> pmvs = new ArrayList<>();
+//        for (Map.Entry<PaymentMethod, Double> entry : paymentMethodTotals.entrySet()) {
+//            PaymentMethodValue pmv = new PaymentMethodValue();
+//            pmv.setPaymentMethod(entry.getKey());
+//            pmv.setAmount(entry.getValue());
+//            pmv.setCreatedAt(new Date());
+//            paymentMethodValueFacade.create(pmv);
+//            pmvs.add(pmv);
+//
+//            BillComponent bc = new BillComponent();
+//            bc.setName("Collected  " + pmv.getPaymentMethod().getLabel());
+//            bc.setComponentValue(pmv.getAmount());
+//            bc.setPaymentMethodValue(pmv);
+//            bc.setBill(currentBill);
+//            billComponentFacade.create(bc);
+//
+//            currentBill.getBillComponents().add(bc);
+//
+//        }
+//
+//        handingOverPaymentMethodValues = pmvs;
+//
+//        currentBill.getReferenceBill().setReferenceBill(currentBill);
+//        currentBill.setNetTotal(total);
+//        billController.save(currentBill.getReferenceBill());
+//
+//        return "/cashier/handover_receive_bill_print?faces-redirect=true";
+//    }
     // </editor-fold>      
     // <editor-fold defaultstate="collapsed" desc="DepositFundBill">
     //Lawan
@@ -3387,6 +4868,28 @@ public class FinancialTransactionController implements Serializable {
         }
         getCurrentBillPayments().add(currentPayment);
         calculateFundDepositBillTotal();
+        currentPayment = null;
+    }
+
+    public void addPaymentToIncomeBill() {
+        if (currentBill == null) {
+            JsfUtil.addErrorMessage("Error");
+            return;
+        }
+        if (currentBill.getBillTypeAtomic() != BillTypeAtomic.SUPPLEMENTARY_INCOME) {
+            JsfUtil.addErrorMessage("Error");
+            return;
+        }
+        if (currentPayment == null) {
+            JsfUtil.addErrorMessage("Error");
+            return;
+        }
+        if (currentPayment.getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Select a Payment Method");
+            return;
+        }
+        getCurrentBillPayments().add(currentPayment);
+        calculateIncometBillTotal();
         currentPayment = null;
     }
 
@@ -3469,22 +4972,29 @@ public class FinancialTransactionController implements Serializable {
 
         // Set attributes specific to this kind of bill
         currentBill.setBillType(BillType.ShiftShortage);
-        currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_START_BILL);
+        currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL);
         currentBill.setBillDate(new Date());
         currentBill.setBillTime(new Date());
 
         // Set the department, institution, and staff from session
-        currentBill.setDepartment(sessionController.getDepartment());
-        currentBill.setInstitution(sessionController.getInstitution());
-        currentBill.setStaff(sessionController.getLoggedUser().getStaff());
+        currentBill.setDepartment(null);
+        currentBill.setInstitution(null);
+        currentBill.setStaff(null);
+        currentBill.setWebUser(null);
+
+        currentBill.setFromDepartment(sessionController.getDepartment());
+        currentBill.setFromInstitution(sessionController.getInstitution());
+        currentBill.setFromStaff(sessionController.getLoggedUser().getStaff());
+        currentBill.setFromWebUser(sessionController.getLoggedUser());
 
         try {
             billController.save(currentBill);  // Save the bill
             // Save each payment linked to this bill
             for (Payment p : currentBillPayments) {
                 p.setBill(currentBill);
-                p.setDepartment(sessionController.getDepartment());
-                p.setInstitution(sessionController.getInstitution());
+                p.setDepartment(null);
+                p.setInstitution(null);
+                p.setCurrentHolder(sessionController.getLoggedUser());
                 paymentController.save(p);
             }
 
@@ -3523,6 +5033,15 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setNetTotal(total);
     }
 
+    private void calculateIncometBillTotal() {
+        double total = 0.0;
+        for (Payment p : getCurrentBillPayments()) {
+            total += p.getPaidValue();
+        }
+        currentBill.setTotal(total);
+        currentBill.setNetTotal(total);
+    }
+
     public String settleFundDepositBill() {
         if (currentBill == null) {
             JsfUtil.addErrorMessage("Error");
@@ -3536,15 +5055,23 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setInstitution(sessionController.getInstitution());
         currentBill.setStaff(sessionController.getLoggedUser().getStaff());
 
+        currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_DEPOSIT_BILL);
         currentBill.setBillDate(new Date());
         currentBill.setBillTime(new Date());
 
+        Double netTotal = currentBill.getNetTotal();
+        if (loggedUserDrawer.getCashInHandValue() < netTotal) {
+                JsfUtil.addErrorMessage("Not Enough Cash in the Drawer");
+                return "";
+            }
+        currentBill.setNetTotal(0 - Math.abs(netTotal));
         billController.save(currentBill);
         for (Payment p : getCurrentBillPayments()) {
             p.setBill(currentBill);
             p.setDepartment(sessionController.getDepartment());
             p.setInstitution(sessionController.getInstitution());
             paymentController.save(p);
+            drawerController.updateDrawerForOuts(p);
         }
         return "/cashier/deposit_funds_print?faces-redirect=true";
     }
@@ -3595,6 +5122,12 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setNetTotal(totalValue);
         handoverValuesCreated = true;
         // Now pmvs contains the total amounts for each payment method
+    }
+
+    public void updateCashTaralFromDenomination() {
+        double denominationTotal = reportTemplateRowBundle.getCashValue();
+        System.out.println("Denomination Total = " + denominationTotal);
+        currentPayment.setPaidValue(denominationTotal);
     }
 
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
@@ -4510,6 +6043,98 @@ public class FinancialTransactionController implements Serializable {
 
     public void setBundle(ReportTemplateRowBundle bundle) {
         this.bundle = bundle;
+    }
+
+    public ReportTemplateRowBundle getSelectedBundle() {
+        return selectedBundle;
+    }
+
+    public void setSelectedBundle(ReportTemplateRowBundle selectedBundle) {
+        this.selectedBundle = selectedBundle;
+    }
+
+    public PaymentMethod getSelectedPaymentMethod() {
+        return selectedPaymentMethod;
+    }
+
+    public void setSelectedPaymentMethod(PaymentMethod selectedPaymentMethod) {
+        this.selectedPaymentMethod = selectedPaymentMethod;
+    }
+
+    public DetailedFinancialBill getCurrentDetailedFinancialBill() {
+        return currentDetailedFinancialBill;
+    }
+
+    public void setCurrentDetailedFinancialBill(DetailedFinancialBill currentDetailedFinancialBill) {
+        this.currentDetailedFinancialBill = currentDetailedFinancialBill;
+    }
+
+    private List<Payment> fetchPaymentsForSummaryHandoverCreation(Bill b) {
+        String jpql = "Select p "
+                + " from Payment p "
+                + " where p.retired=:ret "
+                + " and p.handoverShiftComponantBill=:b";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("b", b);
+        return paymentFacade.findByJpql(jpql, m);
+    }
+
+    public Drawer getLoggedUserDrawer() {
+        if (loggedUserDrawer == null) {
+            if (sessionController.getLoggedUserDrawer() != null) {
+                loggedUserDrawer = drawerFacade.find(sessionController.getLoggedUserDrawer().getId());
+            } else {
+                loggedUserDrawer = null;
+            }
+        }
+        return loggedUserDrawer;
+    }
+
+    public void setLoggedUserDrawer(Drawer loggedUserDrawer) {
+        this.loggedUserDrawer = loggedUserDrawer;
+    }
+
+    // <editor-fold defaultstate="collapsed" desc="Damitha's Edit">
+    // </editor-fold>
+    public List<DenominationTransaction> getDenominationTransactions() {
+        return denominationTransactions;
+    }
+
+    public void setDenominationTransactions(List<DenominationTransaction> denominationTransactions) {
+        this.denominationTransactions = denominationTransactions;
+    }
+
+    public DenominationTransaction getDt() {
+        return dt;
+    }
+
+    public void setDt(DenominationTransaction dt) {
+        this.dt = dt;
+    }
+
+    public double getTotalCashFund() {
+        return totalCashFund;
+    }
+
+    public void setTotalCashFund(double totalCashFund) {
+        this.totalCashFund = totalCashFund;
+    }
+
+    public List<BillItem> getBillItems() {
+        return billItems;
+    }
+
+    public void setBillItems(List<BillItem> billItems) {
+        this.billItems = billItems;
+    }
+
+    public BillItem getRemovingBillItem() {
+        return removingBillItem;
+    }
+
+    public void setRemovingBillItem(BillItem removingBillItem) {
+        this.removingBillItem = removingBillItem;
     }
 
 }

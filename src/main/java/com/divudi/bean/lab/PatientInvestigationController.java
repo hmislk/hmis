@@ -51,8 +51,10 @@ import com.divudi.facade.PatientSampleFacade;
 import com.divudi.facade.ReportItemFacade;
 import com.divudi.facade.SmsFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.InvestigationItemValueType;
 import com.divudi.data.ReportItemType;
+import com.divudi.data.ServiceType;
 import com.divudi.data.lab.Analyzer;
 import com.divudi.data.lab.BillBarcode;
 import com.divudi.data.lab.ListingEntity;
@@ -180,6 +182,7 @@ public class PatientInvestigationController implements Serializable {
     List<InvestigationItem> currentInvestigationItems;
     private List<PatientInvestigation> items = null;
     private List<Bill> bills = null;
+    private List<BillItem> billItems = null;
     private List<PatientReport> patientReports = null;
     private List<PatientReport> selectedPatientReports = null;
     private List<Bill> selectedBills = null;
@@ -253,7 +256,15 @@ public class PatientInvestigationController implements Serializable {
     private List<BillBarcode> billBarcodes;
     private List<BillBarcode> selectedBillBarcodes;
 
+    private Double hospitalFeeTotal;
+    private Double ccFeeTotal;
+    private Double staffFeeTotal;
+    private Double grossFeeTotal;
+    private Double discountTotal;
+    private Double netTotal;
+
     private ListingEntity listingEntity;
+    private Institution site;
 
     public String navigateToPrintBarcodeFromMenu() {
         return "/lab/sample_barcode_printing?faces-redirect=true";
@@ -432,8 +443,6 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public boolean addResultsToReportsForDimension(String sampleId, String testStr, String result, String unit, String error) {
-        //System.out.println("sampleId = " + sampleId);
-        //System.out.println("testStr = " + testStr);
         boolean temFlag = false;
         Long sid;
         try {
@@ -710,17 +719,13 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public boolean sampledForAnyItemInTheBill(Bill bill) {
-        ////System.out.println("bill = " + bill);
         String jpql;
         jpql = "select pi from PatientInvestigation pi where pi.billItem.bill=:b";
         Map m = new HashMap();
         m.put("b", bill);
         List<PatientInvestigation> pis = getFacade().findByJpql(jpql, m);
-        ////System.out.println("pis = " + pis);
         for (PatientInvestigation pi : pis) {
-            ////System.out.println("pi = " + pi);
             if (pi.getCollected() == true || pi.getReceived() == true || pi.getDataEntered() == true) {
-                ////System.out.println("can not cancel now." );
                 return true;
             }
         }
@@ -728,17 +733,13 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public boolean sampledForBillItem(BillItem billItem) {
-        ////System.out.println("bill = " + billItem);
         String jpql;
         jpql = "select pi from PatientInvestigation pi where pi.billItem=:b";
         Map m = new HashMap();
         m.put("b", billItem);
         List<PatientInvestigation> pis = getFacade().findByJpql(jpql, m);
-        ////System.out.println("pis = " + pis);
         for (PatientInvestigation pi : pis) {
-            ////System.out.println("pi = " + pi);
             if (pi.getReceived() == true || pi.getDataEntered() == true) {
-                ////System.out.println("can not return." );
                 return true;
             }
         }
@@ -773,11 +774,9 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public List<PatientInvestigation> getSelectedToReceive() {
-//        //////System.out.println("selected to receive");
         if (selectedToReceive != null) {
             for (PatientInvestigation pi : selectedToReceive) {
                 for (ReportItem ri : pi.getInvestigation().getReportItems()) {
-//                    //////System.out.println("ri is " + ri.getName());
                 }
             }
         } else {
@@ -1155,9 +1154,6 @@ public class PatientInvestigationController implements Serializable {
             } else {
                 temSql = "SELECT i FROM PatientInvestigation i where i.retired=false and i.collected = true and i.received=false and i.sampledAt between :fromDate and :toDate and i.receiveDepartment.id = " + getSessionController().getDepartment().getId();
             }
-//            //////System.out.println("Sql to get the receive list is " + temSql);
-//            //////System.out.println("FromDate to get the receive list is " + getFromDate());
-//            //////System.out.println("ToDate to get the receive list is " + getToDate());
             temMap.put("toDate", getToDate());
             temMap.put("fromDate", getFromDate());
             lstToReceive = getFacade().findByJpql(temSql, temMap, TemporalType.TIMESTAMP);
@@ -1171,7 +1167,6 @@ public class PatientInvestigationController implements Serializable {
 
     public List<PatientInvestigation> getLstToReceiveSearch() {
         if (lstToReceiveSearch == null) {
-//            //////System.out.println("getting lst to receive search");
             String temSql;
             Map temMap = new HashMap();
             if (selectText == null || selectText.trim().equals("")) {
@@ -1183,17 +1178,14 @@ public class PatientInvestigationController implements Serializable {
                 temSql = "select pi from PatientInvestigation pi join pi.investigation i join pi.billItem.bill b join b.patient.person p   where ((p.name) like '%" + selectText.toUpperCase() + "%' or (b.insId) like '%" + selectText.toUpperCase() + "%' or p.phone like '%" + selectText + "%' or (i.name) like '%" + selectText.toUpperCase() + "%' )  and pi.retired=false and b.createdAt between :fromDate and :toDate and pi.receiveDepartment.id = " + getSessionController().getDepartment().getId();
                 temMap.put("toDate", getToDate());
                 temMap.put("fromDate", getFromDate());
-//                //////System.out.println("sql is " + temSql);
                 lstToReceiveSearch = getFacade().findByJpql(temSql, temMap, TemporalType.TIMESTAMP);
 
             }
 
         }
         if (lstToReceiveSearch == null) {
-//            //////System.out.println("lstToReceiveSearch is null");
             lstToReceiveSearch = new ArrayList<PatientInvestigation>();
         }
-//        //////System.out.println("size is " + lstToReceiveSearch.size());
         return lstToReceiveSearch;
     }
 
@@ -1292,9 +1284,7 @@ public class PatientInvestigationController implements Serializable {
         listingEntity = ListingEntity.BILL_BARCODES;
         for (Bill b : selectedBills) {
             BillBarcode bb = new BillBarcode(b);
-            System.out.println("bb = " + b);
             List<Bill> bs = billBeanController.findValidBillsForSampleCollection(b);
-            System.out.println("bs = " + bs);
             List<PatientSampleWrapper> psws = new ArrayList<>();
             List<PatientSample> pss = prepareSampleCollectionByBillsForPhlebotomyRoom(bs, sessionController.getLoggedUser());
             if (pss != null) {
@@ -1324,10 +1314,6 @@ public class PatientInvestigationController implements Serializable {
             return;
         }
 
-//        if (billForBarcode.getStatus() != patientInvestigationStatus.ORDERED) {
-//            JsfUtil.addErrorMessage("This Bill has has Already Barcode Genatared");
-//            return;
-//        }
         BillBarcode bb = new BillBarcode(billForBarcode);
         List<PatientSampleWrapper> psws = new ArrayList<>();
         List<PatientSample> pss = prepareSampleCollectionByBillsForPhlebotomyRoom(billForBarcode, sessionController.getLoggedUser());
@@ -1382,13 +1368,6 @@ public class PatientInvestigationController implements Serializable {
             JsfUtil.addErrorMessage("No Patient Investigations are Selected");
             return;
         }
-//
-//        for (PatientInvestigation pi : selectedItems) {
-//            if (pi.getBillItem().getBill().getStatus() != patientInvestigationStatus.ORDERED) {
-//                JsfUtil.addErrorMessage("Barcode is already generated for Selected " + pi.getBillItem().getItem().getName() + " Investigation");
-//                return;
-//            }
-//        }
 
         // Create a set to track unique bills
         Set<Bill> uniqueBills = new HashSet<>();
@@ -1851,8 +1830,6 @@ public class PatientInvestigationController implements Serializable {
 
         params.put("ret", false);
 
-        System.out.println("params = " + params);
-
         bills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
@@ -1922,8 +1899,6 @@ public class PatientInvestigationController implements Serializable {
         jpql += " ORDER BY pi.billItem.bill.createdAt DESC";
 
         params.put("ret", false);
-
-        System.out.println("params = " + params);
 
         bills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
@@ -2046,8 +2021,6 @@ public class PatientInvestigationController implements Serializable {
         jpql += " ORDER BY b.id DESC";
 
         params.put("ret", false);
-
-        System.out.println("params = " + params);
 
         bills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
@@ -2375,8 +2348,6 @@ public class PatientInvestigationController implements Serializable {
 
         params.put("ret", false);
 
-        System.out.println("params = " + params);
-
         bills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
@@ -2430,7 +2401,6 @@ public class PatientInvestigationController implements Serializable {
 
         params.put("ret", false);
 
-        
         jpql += " AND i.billItem.bill.cancelled=:cancel ";
         params.put("cancel", false);
 
@@ -2538,13 +2508,10 @@ public class PatientInvestigationController implements Serializable {
 
         params.put("ret", false);
 
-        System.out.println("params = " + params);
-
         items = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     public void searchPatientInvestigationsWithoutSampleId() {
-        System.out.println("searchPatientInvestigations");
         listingEntity = ListingEntity.PATIENT_INVESTIGATIONS;
         String jpql;
         Map<String, Object> params = new HashMap<>();
@@ -2679,13 +2646,502 @@ public class PatientInvestigationController implements Serializable {
 
         params.put("ret", false);
 
-        System.out.println("params = " + params);
-
         items = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
+    public void listPatientInvestigationsForCcs() {
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+
+        jpql = "SELECT i "
+                + " FROM PatientInvestigation i "
+                + " WHERE i.retired = :ret ";
+
+        if (searchDateType == null) {
+            searchDateType = SearchDateType.ORDERED_DATE;
+        }
+
+        switch (searchDateType) {
+            case ORDERED_DATE:
+                jpql += " AND i.billItem.bill.createdAt BETWEEN :fd AND :td ";
+                params.put("fd", getFromDate());
+                params.put("td", getToDate());
+                break;
+            case REPORT_AUTHORIZED:
+                jpql += " AND i.approveAt BETWEEN :fd AND :td ";
+                params.put("fd", getFromDate());
+                params.put("td", getToDate());
+                break;
+            case REPORT_PRINTED:
+                jpql += " AND i.printingAt BETWEEN :fd AND :td ";
+                params.put("fd", getFromDate());
+                params.put("td", getToDate());
+                break;
+            case SAMPLE_ACCEPTED_DATE:
+                jpql += " AND i.sampleAcceptedAt BETWEEN :fd AND :td ";
+                params.put("fd", getFromDate());
+                params.put("td", getToDate());
+                break;
+            case SAMPLE_COLLECTED_DATE:
+                jpql += " AND i.sampleCollectedAt BETWEEN :fd AND :td ";
+                params.put("fd", getFromDate());
+                params.put("td", getToDate());
+                break;
+            case SAMPLE_GENERATED_DATE:
+                jpql += " AND i.sampleGeneratedAt BETWEEN :fd AND :td ";
+                params.put("fd", getFromDate());
+                params.put("td", getToDate());
+                break;
+            case SAMPLE_SENT_DATE:
+                jpql += " AND i.sampleSentAt BETWEEN :fd AND :td ";
+                params.put("fd", getFromDate());
+                params.put("td", getToDate());
+                break;
+        }
+
+        if (orderedInstitution != null) {
+            jpql += " AND i.billItem.bill.institution = :orderedInstitution ";
+            params.put("orderedInstitution", getOrderedInstitution());
+        }
+
+        if (orderedDepartment != null) {
+            jpql += " AND i.billItem.bill.department = :orderedDepartment ";
+            params.put("orderedDepartment", getOrderedDepartment());
+        }
+
+        if (performingInstitution != null) {
+            jpql += " AND i.performInstitution = :peformingInstitution ";
+            params.put("peformingInstitution", getPerformingInstitution());
+        }
+
+        if (performingDepartment != null) {
+            jpql += " AND i.performDepartment = :peformingDepartment ";
+            params.put("peformingDepartment", getPerformingDepartment());
+        }
+
+        if (collectionCenter != null) {
+            jpql += " AND (i.billItem.bill.collectingCentre = :collectionCenter OR i.billItem.bill.fromInstitution = :collectionCenter) ";
+            params.put("collectionCenter", getCollectionCenter());
+        } else {
+            jpql += " AND i.billItem.bill.collectingCentre is not null ";
+        }
+
+        if (route != null) {
+            jpql += " AND (i.billItem.bill.collectingCentre.route = :route OR i.billItem.bill.fromInstitution.route = :route) ";
+            params.put("route", getRoute());
+        }
+
+        if (priority != null) {
+            jpql += " AND i.billItem.priority = :priority ";
+            params.put("priority", getPriority());
+        }
+
+        if (specimen != null) {
+            jpql += " AND i.investigation.sample = :specimen ";
+            params.put("specimen", getSpecimen());
+        }
+
+        if (patientName != null && !patientName.trim().isEmpty()) {
+            jpql += " AND i.billItem.bill.patient.person.name LIKE :patientName ";
+            params.put("patientName", "%" + getPatientName().trim() + "%");
+        }
+
+        if (type != null && !type.trim().isEmpty()) {
+            jpql += " AND i.billItem.bill.ipOpOrCC = :tp ";
+            params.put("tp", getType().trim());
+        }
+
+        if (externalDoctor != null && !externalDoctor.trim().isEmpty()) {
+            jpql += " AND i.billItem.bill.referredByName = :externalDoctor ";
+            params.put("externalDoctor", getExternalDoctor().trim());
+        }
+
+        if (equipment != null) {
+            jpql += " AND i.investigation.machine = :equipment ";
+            params.put("equipment", getEquipment());
+        }
+
+        if (referringDoctor != null) {
+            jpql += " AND i.billItem.bill.referringDoctor = :referringDoctor ";
+            params.put("referringDoctor", getReferringDoctor());
+        }
+
+        if (investigation != null) {
+            jpql += " AND i.investigation = :investigation ";
+            params.put("investigation", getInvestigation());
+        }
+
+        if (department != null) {
+            jpql += " AND i.billItem.bill.toDepartment = :department ";
+            params.put("department", getDepartment());
+        }
+
+        jpql += " AND i.billItem.bill.cancelled<>:can ";
+        params.put("can", true);
+
+//        jpql += " AND i.billItem.refunded<>:ref ";
+//        params.put("ref", true);
+        if (patientInvestigationStatus != null) {
+            jpql += " AND i.status = :patientInvestigationStatus ";
+            params.put("patientInvestigationStatus", getPatientInvestigationStatus());
+        }
+
+        jpql += " ORDER BY i.id DESC";
+
+        params.put("ret", false);
+
+        System.out.println("params = " + params);
+        System.out.println("jpql = " + jpql);
+
+        items = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        System.out.println("items = " + items);
+
+        // Initialize totals
+        hospitalFeeTotal = 0.0;
+        ccFeeTotal = 0.0;
+        staffFeeTotal = 0.0;
+        grossFeeTotal = 0.0;
+        discountTotal = 0.0;
+        netTotal = 0.0;
+
+        List<PatientInvestigation> newItems = new ArrayList<>();
+
+        if (items != null) {
+            for (PatientInvestigation pi : items) {
+                if (pi.getBillItem() == null) {
+                    continue;
+                }
+                if (pi.getBillItem().isRefunded()) {
+                    continue;
+                }
+                newItems.add(pi);
+                hospitalFeeTotal += pi.getBillItem().getHospitalFee();
+                ccFeeTotal += pi.getBillItem().getCollectingCentreFee();
+                staffFeeTotal += pi.getBillItem().getStaffFee();
+                grossFeeTotal += pi.getBillItem().getGrossValue();
+                discountTotal += pi.getBillItem().getDiscount();
+                netTotal += pi.getBillItem().getNetValue();
+            }
+        }
+        items = newItems;
+    }
+
+    public void listBillItemsForCcs() {
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.CC_BILL);
+        btas.add(BillTypeAtomic.CC_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.CC_BILL_REFUND);
+        // Starting from BillItem and joining to PatientInvestigation if needed
+        jpql = "SELECT b "
+                + " FROM BillItem b "
+                + " LEFT JOIN b.patientInvestigation i "
+                + " WHERE b.retired = :ret ";
+
+        if (searchDateType == null) {
+            searchDateType = SearchDateType.ORDERED_DATE;
+        }
+
+        switch (searchDateType) {
+            case ORDERED_DATE:
+                jpql += " AND b.bill.createdAt BETWEEN :fd AND :td ";
+                break;
+            case REPORT_AUTHORIZED:
+                jpql += " AND i.approveAt BETWEEN :fd AND :td ";
+                break;
+            case REPORT_PRINTED:
+                jpql += " AND i.printingAt BETWEEN :fd AND :td ";
+                break;
+            case SAMPLE_ACCEPTED_DATE:
+                jpql += " AND i.sampleAcceptedAt BETWEEN :fd AND :td ";
+                break;
+            case SAMPLE_COLLECTED_DATE:
+                jpql += " AND i.sampleCollectedAt BETWEEN :fd AND :td ";
+                break;
+            case SAMPLE_GENERATED_DATE:
+                jpql += " AND i.sampleGeneratedAt BETWEEN :fd AND :td ";
+                break;
+            case SAMPLE_SENT_DATE:
+                jpql += " AND i.sampleSentAt BETWEEN :fd AND :td ";
+                break;
+        }
+        params.put("fd", getFromDate());
+        params.put("td", getToDate());
+
+        if (orderedInstitution != null) {
+            jpql += " AND b.bill.institution = :orderedInstitution ";
+            params.put("orderedInstitution", getOrderedInstitution());
+        }
+
+        if (orderedDepartment != null) {
+            jpql += " AND b.bill.department = :orderedDepartment ";
+            params.put("orderedDepartment", getOrderedDepartment());
+        }
+
+        if (performingInstitution != null) {
+            jpql += " AND i.performInstitution = :peformingInstitution ";
+            params.put("peformingInstitution", getPerformingInstitution());
+        }
+
+        if (performingDepartment != null) {
+            jpql += " AND i.performDepartment = :peformingDepartment ";
+            params.put("peformingDepartment", getPerformingDepartment());
+        }
+
+        if (collectionCenter != null) {
+            jpql += " AND (b.bill.collectingCentre = :collectionCenter OR b.bill.fromInstitution = :collectionCenter) ";
+            params.put("collectionCenter", getCollectionCenter());
+        }
+
+        if (route != null) {
+            jpql += " AND (b.bill.collectingCentre.route = :route OR b.bill.fromInstitution.route = :route) ";
+            params.put("route", getRoute());
+        }
+
+        if (priority != null) {
+            jpql += " AND b.priority = :priority ";
+            params.put("priority", getPriority());
+        }
+
+        if (specimen != null) {
+            jpql += " AND i.investigation.sample = :specimen ";
+            params.put("specimen", getSpecimen());
+        }
+
+        if (patientName != null && !patientName.trim().isEmpty()) {
+            jpql += " AND b.bill.patient.person.name LIKE :patientName ";
+            params.put("patientName", "%" + getPatientName().trim() + "%");
+        }
+
+        if (type != null && !type.trim().isEmpty()) {
+            jpql += " AND b.bill.ipOpOrCC = :tp ";
+            params.put("tp", getType().trim());
+        }
+
+        if (externalDoctor != null && !externalDoctor.trim().isEmpty()) {
+            jpql += " AND b.bill.referredByName = :externalDoctor ";
+            params.put("externalDoctor", getExternalDoctor().trim());
+        }
+
+        if (equipment != null) {
+            jpql += " AND i.investigation.machine = :equipment ";
+            params.put("equipment", getEquipment());
+        }
+
+        if (referringDoctor != null) {
+            jpql += " AND b.bill.referringDoctor = :referringDoctor ";
+            params.put("referringDoctor", getReferringDoctor());
+        }
+
+        if (investigation != null) {
+            jpql += " AND i.investigation = :investigation ";
+            params.put("investigation", getInvestigation());
+        }
+
+        if (department != null) {
+            jpql += " AND b.bill.toDepartment = :department ";
+            params.put("department", getDepartment());
+        }
+
+        jpql += " AND b.bill.billTypeAtomic in :bts ";
+        params.put("bts", btas);
+
+        if (patientInvestigationStatus != null) {
+            jpql += " AND i.status = :patientInvestigationStatus ";
+            params.put("patientInvestigationStatus", getPatientInvestigationStatus());
+        }
+
+        jpql += " ORDER BY b.id DESC";
+
+        params.put("ret", false);
+
+        billItems = billItemFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        // Initialize totals
+        hospitalFeeTotal = 0.0;
+        ccFeeTotal = 0.0;
+        staffFeeTotal = 0.0;
+        grossFeeTotal = 0.0;
+        discountTotal = 0.0;
+        netTotal = 0.0;
+
+        if (billItems != null) {
+            for (BillItem billItem : billItems) {
+                hospitalFeeTotal += billItem.getHospitalFee();
+                ccFeeTotal += billItem.getCollectingCentreFee();
+                staffFeeTotal += billItem.getStaffFee();
+                grossFeeTotal += billItem.getGrossValue();
+                discountTotal += billItem.getDiscount();
+                netTotal += billItem.getNetValue();
+            }
+        }
+    }
+
+    public void listBillItemsForLabs() {
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+        btas.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        btas.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.OPD_BILL_REFUND);
+        // Starting from BillItem and joining to PatientInvestigation if needed
+        jpql = "SELECT b "
+                + " FROM BillItem b "
+                + " LEFT JOIN b.patientInvestigation i "
+                + " WHERE b.retired = :ret "
+                + " and b.patientInvestigation.investigation != null";
+
+        if (searchDateType == null) {
+            searchDateType = SearchDateType.ORDERED_DATE;
+        }
+
+        switch (searchDateType) {
+            case ORDERED_DATE:
+                jpql += " AND b.bill.createdAt BETWEEN :fd AND :td ";
+                break;
+            case REPORT_AUTHORIZED:
+                jpql += " AND i.approveAt BETWEEN :fd AND :td ";
+                break;
+            case REPORT_PRINTED:
+                jpql += " AND i.printingAt BETWEEN :fd AND :td ";
+                break;
+            case SAMPLE_ACCEPTED_DATE:
+                jpql += " AND i.sampleAcceptedAt BETWEEN :fd AND :td ";
+                break;
+            case SAMPLE_COLLECTED_DATE:
+                jpql += " AND i.sampleCollectedAt BETWEEN :fd AND :td ";
+                break;
+            case SAMPLE_GENERATED_DATE:
+                jpql += " AND i.sampleGeneratedAt BETWEEN :fd AND :td ";
+                break;
+            case SAMPLE_SENT_DATE:
+                jpql += " AND i.sampleSentAt BETWEEN :fd AND :td ";
+                break;
+        }
+        params.put("fd", getFromDate());
+        params.put("td", getToDate());
+
+        if (orderedInstitution != null) {
+            jpql += " AND b.bill.institution = :orderedInstitution ";
+            params.put("orderedInstitution", getOrderedInstitution());
+        }
+
+        if (orderedDepartment != null) {
+            jpql += " AND b.bill.department = :orderedDepartment ";
+            params.put("orderedDepartment", getOrderedDepartment());
+        }
+
+        if (performingInstitution != null) {
+            jpql += " AND i.performInstitution = :peformingInstitution ";
+            params.put("peformingInstitution", getPerformingInstitution());
+        }
+
+        if (performingDepartment != null) {
+            jpql += " AND i.performDepartment = :peformingDepartment ";
+            params.put("peformingDepartment", getPerformingDepartment());
+        }
+
+        if (site != null) {
+            jpql += " AND i.performDepartment.site = :site ";
+            params.put("site", getSite());
+        }
+
+        if (priority != null) {
+            jpql += " AND b.priority = :priority ";
+            params.put("priority", getPriority());
+        }
+
+        if (specimen != null) {
+            jpql += " AND i.investigation.sample = :specimen ";
+            params.put("specimen", getSpecimen());
+        }
+
+        if (patientName != null && !patientName.trim().isEmpty()) {
+            jpql += " AND b.bill.patient.person.name LIKE :patientName ";
+            params.put("patientName", "%" + getPatientName().trim() + "%");
+        }
+
+        if (type != null && !type.trim().isEmpty()) {
+            jpql += " AND b.bill.ipOpOrCC = :tp ";
+            params.put("tp", getType().trim());
+        }
+
+        if (externalDoctor != null && !externalDoctor.trim().isEmpty()) {
+            jpql += " AND b.bill.referredByName = :externalDoctor ";
+            params.put("externalDoctor", getExternalDoctor().trim());
+        }
+
+        if (equipment != null) {
+            jpql += " AND i.investigation.machine = :equipment ";
+            params.put("equipment", getEquipment());
+        }
+
+        if (referringDoctor != null) {
+            jpql += " AND b.bill.referringDoctor = :referringDoctor ";
+            params.put("referringDoctor", getReferringDoctor());
+        }
+
+        if (investigation != null) {
+            jpql += " AND i.investigation = :investigation ";
+            params.put("investigation", getInvestigation());
+        }
+
+        if (department != null) {
+            jpql += " AND b.bill.toDepartment = :department ";
+            params.put("department", getDepartment());
+        }
+        
+        jpql += " and type(b.item) = :invType ";
+        params.put("invType", Investigation.class);
+        
+        jpql += " AND b.bill.billTypeAtomic in :bts ";
+        params.put("bts", btas);
+
+        if (patientInvestigationStatus != null) {
+            jpql += " AND i.status = :patientInvestigationStatus ";
+            params.put("patientInvestigationStatus", getPatientInvestigationStatus());
+        }
+
+        jpql += " ORDER BY b.id DESC";
+
+        params.put("ret", false);
+
+        billItems = billItemFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        // Initialize totals
+        hospitalFeeTotal = 0.0;
+        ccFeeTotal = 0.0;
+        staffFeeTotal = 0.0;
+        grossFeeTotal = 0.0;
+        discountTotal = 0.0;
+        netTotal = 0.0;
+
+        if (billItems != null) {
+            for (BillItem billItem : billItems) {
+                hospitalFeeTotal += billItem.getHospitalFee();
+                ccFeeTotal += billItem.getCollectingCentreFee();
+                staffFeeTotal += billItem.getStaffFee();
+                grossFeeTotal += billItem.getGrossValue();
+                discountTotal += billItem.getDiscount();
+                netTotal += billItem.getNetValue();
+
+                if (billItem.getBill().isCancelled() || billItem.getBill().isRefunded()) {
+                    hospitalFeeTotal -= Math.abs(billItem.getHospitalFee());
+                    ccFeeTotal -= Math.abs(billItem.getCollectingCentreFee());
+                    staffFeeTotal -= Math.abs(billItem.getStaffFee());
+                    grossFeeTotal -= Math.abs(billItem.getGrossValue());
+                    discountTotal -= Math.abs(billItem.getDiscount());
+                    netTotal -= Math.abs(billItem.getNetValue());
+                }
+            }
+        }
+    }
+
     public void searchPatientInvestigationsWithSampleId() {
-        System.out.println("searchPatientInvestigations");
+//        System.out.println("searchPatientInvestigations");
         listingEntity = ListingEntity.PATIENT_INVESTIGATIONS;
         String jpql;
         Map<String, Object> params = new HashMap<>();
@@ -2829,13 +3285,11 @@ public class PatientInvestigationController implements Serializable {
 
         params.put("ret", false);
 
-        System.out.println("params = " + params);
-
         items = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     public void searchPatientSamples() {
-        System.out.println("searchPatientInvestigations");
+//        System.out.println("searchPatientInvestigations");
         listingEntity = ListingEntity.PATIENT_SAMPLES;
         String jpql;
         Map<String, Object> params = new HashMap<>();
@@ -2963,13 +3417,11 @@ public class PatientInvestigationController implements Serializable {
 
         params.put("ret", false);
 
-        System.out.println("params = " + params);
-
         patientSamples = patientSampleFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     public List<PatientSampleComponant> getPatientSampleComponentsByInvestigation(PatientInvestigation patientInvestigation) {
-        System.out.println("patientInvestigation = " + patientInvestigation);
+//        System.out.println("patientInvestigation = " + patientInvestigation);
         String jpql = "SELECT psc "
                 + " FROM PatientSampleComponant psc "
                 + " WHERE psc.retired=:retired "
@@ -2977,13 +3429,12 @@ public class PatientInvestigationController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         params.put("retired", false);  // Assuming you want only non-retired records
         params.put("patientInvestigation", patientInvestigation);
-        System.out.println("params = " + params);
         List<PatientSampleComponant> pscs = patientSampleComponantFacade.findByJpql(jpql, params);
         return pscs;
     }
 
     public List<PatientSample> getPatientSamplesByInvestigation(PatientInvestigation patientInvestigation) {
-        System.out.println("patientInvestigation = " + patientInvestigation);
+//        System.out.println("patientInvestigation = " + patientInvestigation);
         String jpql = "SELECT DISTINCT psc.patientSample "
                 + "FROM PatientSampleComponant psc "
                 + "WHERE psc.retired = :retired "
@@ -2991,13 +3442,12 @@ public class PatientInvestigationController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         params.put("retired", false);  // Assuming you want only non-retired records
         params.put("patientInvestigation", patientInvestigation);
-        System.out.println("params = " + params);
         List<PatientSample> patientSamples = patientSampleFacade.findByJpql(jpql, params);
         return patientSamples;
     }
 
     public List<PatientInvestigation> getPatientInvestigationsBySample(PatientSample patientSample) {
-        System.out.println("patientSample = " + patientSample);
+//        System.out.println("patientSample = " + patientSample);
         String jpql = "SELECT psc.patientInvestigation "
                 + "FROM PatientSampleComponant psc "
                 + "WHERE psc.retired = :retired "
@@ -3005,7 +3455,7 @@ public class PatientInvestigationController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         params.put("retired", false);  // Assuming you want only non-retired records
         params.put("patientSample", patientSample);
-        System.out.println("params = " + params);
+//        System.out.println("params = " + params);
         List<PatientInvestigation> patientInvestigations = getFacade().findByJpql(jpql, params);
         return patientInvestigations;
     }
@@ -3471,7 +3921,7 @@ public class PatientInvestigationController implements Serializable {
         params.put("sc", sampleCollected);
         params.put("fromDate", fromDate);
         params.put("toDate", toDate);
-        System.out.println("jpql = " + jpql);
+//        System.out.println("jpql = " + jpql);
         pss = patientSampleFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         return pss;
     }
@@ -3528,7 +3978,6 @@ public class PatientInvestigationController implements Serializable {
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("d", getSessionController().getDepartment());
-//        //////System.out.println("Sql is " + temSql);
         toReceive = getFacade().findByJpql(temSql, temMap, TemporalType.TIMESTAMP);
 
     }
@@ -3555,7 +4004,6 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public void markSelectedAsReceived() {
-//        //////System.out.println("going to mark as received");
         for (PatientInvestigation pi : getSelectedToReceive()) {
             pi.setReceived(Boolean.TRUE);
             pi.setReceivedAt(new Date());
@@ -3581,7 +4029,6 @@ public class PatientInvestigationController implements Serializable {
             } else {
                 temSql = "SELECT i FROM PatientInvestigation i where i.retired=false and i.received=true and i.dataEntered=false  and i.sampledAt between :fromDate and :toDate and i.performDepartment.id = " + getSessionController().getDepartment().getId();
             }
-//            //////System.out.println(temSql);
             temMap.put("toDate", getToDate());
             temMap.put("fromDate", getFromDate());
             lstToEnterData = getFacade().findByJpql(temSql, temMap, TemporalType.TIMESTAMP);
@@ -3638,7 +4085,6 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public List<PatientReport> getLstToPrint() {
-//        //////System.out.println("getting lst to print");
 
         String temSql;
         temSql = "SELECT i FROM PatientReport i";
@@ -4214,6 +4660,70 @@ public class PatientInvestigationController implements Serializable {
         this.testDetails = testDetails;
     }
 
+    public List<BillItem> getBillItems() {
+        return billItems;
+    }
+
+    public void setBillItems(List<BillItem> billItems) {
+        this.billItems = billItems;
+    }
+
+    public Double getHospitalFeeTotal() {
+        return hospitalFeeTotal;
+    }
+
+    public void setHospitalFeeTotal(Double hospitalFeeTotal) {
+        this.hospitalFeeTotal = hospitalFeeTotal;
+    }
+
+    public Double getCcFeeTotal() {
+        return ccFeeTotal;
+    }
+
+    public void setCcFeeTotal(Double ccFeeTotal) {
+        this.ccFeeTotal = ccFeeTotal;
+    }
+
+    public Double getStaffFeeTotal() {
+        return staffFeeTotal;
+    }
+
+    public void setStaffFeeTotal(Double staffFeeTotal) {
+        this.staffFeeTotal = staffFeeTotal;
+    }
+
+    public Double getGrossFeeTotal() {
+        return grossFeeTotal;
+    }
+
+    public void setGrossFeeTotal(Double grossFeeTotal) {
+        this.grossFeeTotal = grossFeeTotal;
+    }
+
+    public Double getDiscountTotal() {
+        return discountTotal;
+    }
+
+    public void setDiscountTotal(Double discountTotal) {
+        this.discountTotal = discountTotal;
+    }
+
+    public Double getNetTotal() {
+        return netTotal;
+    }
+
+    public void setNetTotal(Double netTotal) {
+        this.netTotal = netTotal;
+    }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
+    }
+
     /**
      *
      */
@@ -4273,16 +4783,12 @@ public class PatientInvestigationController implements Serializable {
         params.put("ret", false);
         params.put("bill", bill);
 
-        System.out.println("params = " + params);
-        System.out.println("jpql = " + jpql);
-
         items = getFacade().findByJpql(jpql, params);
     }
 
     public void navigateToSamplesFromSelectedBill(Bill bill) {
-        System.out.println("navigate To Samples From Selected Bill");
+//        System.out.println("navigate To Samples From Selected Bill");
         patientSamples = new ArrayList<>();
-        System.out.println("searchPatientInvestigations");
         listingEntity = ListingEntity.PATIENT_SAMPLES;
         String jpql;
         Map<String, Object> params = new HashMap<>();
@@ -4298,16 +4804,12 @@ public class PatientInvestigationController implements Serializable {
         params.put("ret", false);
         params.put("bill", bill);
 
-        System.out.println("params = " + params);
-        System.out.println("jpql = " + jpql);
-
         patientSamples = patientSampleFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
     }
-    
+
     public void navigateToPatientReportsFromSelectedInvestigation(PatientInvestigation patientInvestigation) {
         patientReports = new ArrayList<>();
-        System.out.println("navigate To Patient Report From Selected Investigation");
         listingEntity = ListingEntity.PATIENT_REPORTS;
         String jpql;
         Map<String, Object> params = new HashMap<>();
@@ -4324,7 +4826,6 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public void navigateToPatientReportsFromSelectedBill(Bill bill) {
-        System.out.println("navigate To Patient Report From Selected Bill");
         patientReports = new ArrayList<>();
         listingEntity = ListingEntity.PATIENT_REPORTS;
         String jpql;
@@ -4351,7 +4852,6 @@ public class PatientInvestigationController implements Serializable {
 
     @Deprecated
     public List<PatientSample> prepareSampleCollectionByBillsForPhlebotomyRoom(List<Bill> bills, WebUser wu) {
-        System.out.println("wu = " + wu);
         String j = "";
         Map m;
         Map<Long, PatientSample> rPatientSamplesMap = new HashMap<>();
@@ -4934,4 +5434,75 @@ public class PatientInvestigationController implements Serializable {
         return iis;
     }
 
+//    public String getPatientInvestigationCurrentStatus(PatientInvestigation pi) {
+//        String status = "";
+//        List<PatientReport> reports = patientReportController.patientReports(pi);
+//
+//        for(PatientReport pr : reports){
+//            if(status == "Approved"){
+//                continue;
+//            }
+//            
+//            switch (pr.getPatientInvestigation().getStatus()) {
+//                case ORDERED:
+//                    status = "Ordered";
+//                    break;
+//                case SAMPLE_GENERATED:
+//                    status = "Ordered";
+//                    break;
+//                case SAMPLE_COLLECTED:
+//                    status = "Ordered";
+//                    break;
+//                case SAMPLE_SENT:
+//                    status = "Ordered";
+//                    break;
+//                case SAMPLE_ACCEPTED:
+//                    status = "Ordered";
+//                    break;
+//                case SAMPLE_REJECTED:
+//                    status = "Rejected";
+//                    break;
+//                case SAMPLE_REVERTED:
+//                    status = "Ordered";
+//                    break;
+//                case SAMPLE_RESENT:
+//                    status = "Resent";
+//                    break;
+//                case SAMPLE_RECOLLECTED:
+//                    status = "Recollected";
+//                    break;
+//                case SAMPLE_INTERFACED:
+//                    status = "Interfaced";
+//                    break;
+//                case SAMPLE_APPROVED:
+//                    status = "Ordered";
+//                    break;
+//                case SAMPLE_REPEATED:
+//                    status = "Repeated";
+//                    break;
+//                case REPORT_PRINTED:
+//                    status = "Printed";
+//                    break;
+//                case REPORT_DISTRIBUTED:
+//                    status = "Distributed";
+//                    break;
+//                case REPORT_REACHED_COLLECTING_CENTRE:
+//                    status = "Report Reached Collecting Centre";
+//                    break;
+//                case REPORT_HANDED_OVER:
+//                    status = "Report Handed Over";
+//                    break;
+//                case REPORT_CREATED:
+//                    status = "Created";
+//                    break;
+//                case REPORT_APPROVED:
+//                    status = "Approved";
+//                    break;
+//                default:
+//                    status = "Unknown";
+//                    break;
+//            }
+//        }
+//        return status;
+//    }
 }

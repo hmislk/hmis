@@ -9,11 +9,15 @@
 package com.divudi.bean.cashTransaction;
 
 import com.divudi.bean.common.*;
+import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.entity.BillItem;
 import com.divudi.entity.Payment;
 import com.divudi.facade.PaymentFacade;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -53,7 +57,41 @@ public class PaymentController implements Serializable {
         }
     }
 
-   
+    public void addMissingPaymentDates() {
+        String jpql = "select p "
+                + " from Payment p "
+                + " where p.paymentDate is null";
+        List<Payment> ps = getFacade().findByJpql(jpql, 1000);
+        if (ps == null) {
+            JsfUtil.addErrorMessage("Nothing to add missing payments");
+            return;
+        }
+        if (ps.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing to add missing payments");
+            return;
+        }
+        for (Payment p : ps) {
+            if (p.getBill() != null) {
+                if (p.getBill().getCreatedAt() != null) {
+                    p.setPaymentDate(p.getBill().getCreatedAt());
+                    getFacade().edit(p);
+                    System.out.println("payment date added from Bill Created at");
+                } else {
+                    p.setPaymentDate(new Date());
+                    getFacade().edit(p);
+                    System.out.println("New Date added as there is no Bill Created date for " + p.getBill());
+                }
+            } else {
+                p.setPaymentDate(new Date());
+                getFacade().edit(p);
+                System.out.println("New Date added as there is no Bill for Payment " + p);
+            }
+        }
+    }
+
+    
+    
+    
     public PaymentFacade getEjbFacade() {
         return ejbFacade;
     }
@@ -80,12 +118,9 @@ public class PaymentController implements Serializable {
         this.current = current;
     }
 
-
-
     private PaymentFacade getFacade() {
         return ejbFacade;
     }
-
 
     /**
      *

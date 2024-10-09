@@ -12,13 +12,13 @@
             <ui:define name="subcontent">
                 <p:panel>
                     <f:facet name="header" >
-                        <h:outputLabel value="OPD Professional Payments"/>                          
+                        <h:outputLabel value="OPD Professional Fee Payments"/>                          
                     </f:facet>
 
                     <h:form>
 
 
-                        <h:panelGrid columns="5" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
+                        <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
                                 <h:outputLabel value="From" for="fromDate" class="mx-3"/>
@@ -46,7 +46,10 @@
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
                                 />
 
+                            <p:spacer width="50" ></p:spacer>
 
+                            <p:spacer width="50" ></p:spacer>
+                            <p:spacer width="50" ></p:spacer>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
@@ -64,19 +67,6 @@
 
                             <p:spacer ></p:spacer>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
-                                <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu
-                                id="cmbDept"
-                                styleClass="w-100 form-control"  
-                                value="#{searchController.department}" 
-                                filter="true">
-                                <f:selectItem itemLabel="All Departments" />
-                                <f:selectItems value="#{departmentController.getInsDepartments(searchController.institution)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
-                            </p:selectOneMenu>
-
 
 
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -90,11 +80,26 @@
                                 filter="true">
                                 <f:selectItem itemLabel="All Sites" />
                                 <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                <p:ajax process="siteMenu" update="cmbDept" />
                             </p:selectOneMenu>
 
+
                             <p:spacer ></p:spacer>
-                            <p:spacer ></p:spacer>
-                            <p:spacer ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="cmbDept"
+                                styleClass="w-100 form-control"  
+                                value="#{searchController.department}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Departments" />
+                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                            </p:selectOneMenu>
+
+
 
 
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -125,6 +130,10 @@
                                             itemValue="#{item}">
                             </p:autoComplete>
 
+                            <p:spacer width="50" ></p:spacer>
+
+                            <p:spacer width="50" ></p:spacer>
+                            <p:spacer width="50" ></p:spacer>
 
                             <!-- New Speciality Field with Icon -->
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -162,24 +171,33 @@
                                     itemLabel="#{staff.person.nameWithTitle}" 
                                     itemValue="#{staff}" />
                             </p:selectOneMenu>
-
                         </h:panelGrid>
 
 
-                        <h:panelGrid columns="2" class="my-2" >
-                            <p:commandButton class="ui-button-warning" icon="fas fa-magnifying-glass" id="btnSearch" ajax="false" value="Search" 
-                                             action="#{searchController.searchOpdProfessionalPaymentBillFees()}"/>
-                            <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" id="btnExcel" ajax="false" value="Excel" >
-                                <p:dataExporter fileName="OPD Professional Payments by Patient" type="xls" target="tblBills" ></p:dataExporter>
-                            </p:commandButton>
-                        </h:panelGrid>
+
+                        <p:commandButton 
+                            id="btnSearch" 
+                            class="m-1 ui-button-danger"
+                            icon="fas fa-list"
+                            ajax="false" 
+                            value="View List"
+                            action="#{searchController.searchOpdProfessionalPaymentBillFees()}"/>
+                        <p:commandButton 
+                            class="ui-button-success mx-2" 
+                            icon="fas fa-file-excel"
+                            id="btnExcel" 
+                            ajax="false" 
+                            value="Excel" >
+                            <p:dataExporter fileName="OPD Professional Payments by Patient" type="xls" target="tblBills" ></p:dataExporter>
+                        </p:commandButton>
+
 
 
                         <p:dataTable 
                             rowIndexVar="i" 
                             id="tblBills" 
-                            value="#{searchController.billFees}" 
-                            var="billFee" 
+                            value="#{searchController.bundle.reportTemplateRows}" 
+                            var="row" 
                             class="w-100"
                             rows="20"
                             paginator="true" 
@@ -193,59 +211,81 @@
 
 
                             <p:column headerText="Paid Date" style="text-align: left;" >
-                                <p:outputLabel value="#{billFee.bill.billDate}" >
+                                <p:outputLabel value="#{row.billFee.bill.billDate}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                 </p:outputLabel>
                             </p:column>
 
                             <p:column headerText="Payment No" style="text-align: left;">
-                                <p:outputLabel value="#{billFee.bill.deptId}" />
-                                <p:outputLabel value="#{billFee.bill.billTypeAtomic}" />
+                                <p:outputLabel value="#{row.billFee.bill.deptId}" />
+                                <p:outputLabel value="#{row.billFee.bill.billTypeAtomic}" />
                                 <p:commandLink 
                                     ajax="false"
-                                    action="#{billSearch.navigateViewBillByBillTypeAtomic()}">
+                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}">
                                     <h:outputText title="View Bill" styleClass="fa fa-eye" />
                                     <f:setPropertyActionListener 
-                                        value="#{billFee.bill}" 
+                                        value="#{row.billFee.bill}" 
                                         target="#{billSearch.bill}" >
                                     </f:setPropertyActionListener>
                                 </p:commandLink>
                             </p:column>
 
                             <p:column headerText="Billed Date" style="text-align: left;" >
-                                <p:outputLabel value="#{billFee.billItem.referanceBillItem.bill.createdAt}" >
+                                <p:outputLabel value="#{row.billFee.billItem.referanceBillItem.bill.createdAt}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                 </p:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Bill No" style="text-align: left;" >
-                                <p:outputLabel value="#{billFee.billItem.referanceBillItem.bill.deptId}" >
+
+                            <p:column headerText="Bill" style="text-align: left;" >
+                                <p:outputLabel value="#{row.billFee.billItem.referanceBillItem.bill.deptId}" >
                                 </p:outputLabel>
                                 <p:commandLink 
                                     ajax="false"
-                                    action="#{billSearch.navigateViewBillByBillTypeAtomic()}">
-                                    <h:outputText title="View Bill" styleClass="fa fa-eye" />
+                                    class="m-1"
+                                    rendered="#{row.billFee ne null}"
+                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                                    <i class="pi pi-eye" style="font-size:14px;" title="View Bill"></i> 
                                     <f:setPropertyActionListener 
-                                        value="#{billFee.billItem.referanceBillItem.bill}" 
-                                        target="#{billSearch.bill}" >
-                                    </f:setPropertyActionListener>
+                                        value="#{row.billFee.billItem.referanceBillItem.bill}" 
+                                        target="#{billSearch.bill}" />
                                 </p:commandLink>
+                                <p:commandLink 
+                                    ajax="false"
+                                    class="m-1"
+                                    rendered="#{row.billFee ne null}"
+                                    action="#{billSearch.navigateToManageBillByAtomicBillType()}">
+                                    <i class="pi pi-pencil" style="font-size:14px;" title="Manage Bill"></i> 
+                                    <f:setPropertyActionListener 
+                                        value="#{row.billFee.billItem.referanceBillItem.bill}" 
+                                        target="#{billSearch.bill}" />
+                                </p:commandLink>
+
+                            </p:column>
+                            <p:column 
+                                headerText="Patient"
+                                filterMatchMode="contains"
+                                style="text-align: left;">
+                                <h:outputLabel value="#{row.billFee.referenceBillFee.bill.patient.person.nameWithTitle}" />
                             </p:column>
 
                             <p:column 
                                 headerText="Professional" 
-                                sortBy="#{billFee.bill.toStaff.person.name}"
-                                filterBy="#{billFee.bill.toStaff.person.name}"
-                                filterMatchMode="contains"
                                 style="text-align: left;">
-                                <h:outputLabel value="#{billFee.bill.toStaff.person.name}" />
+                                <h:outputLabel value="#{row.billFee.bill.toStaff.person.name}" />
                             </p:column>
 
-                            <p:column headerText="Value" width="100" style="text-align: right;">                              
-                                <h:outputLabel value="#{billFee.feeValue}" >
+                            <p:column headerText="Fee Value" width="100" style="text-align: right;">                              
+                                <h:outputLabel value="#{row.billFee.feeValue}" >
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputLabel>
+                                <f:facet name="footer" >
+                                    <h:outputText value="#{searchController.bundle.total}" >
+                                        <f:convertNumber pattern="#,##0.00"  ></f:convertNumber>
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
+                           
 
                         </p:dataTable>
 

@@ -5,37 +5,53 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
-    <h:body>
-        <ui:composition template="/reports/index.xhtml">
+    <h:body class="w-100 border">
+        <ui:composition template="/reports/index.xhtml" class="w-100 border">
             <ui:define name="subcontent">
-                <h:form >
-                    <p:panel header="Discount Report" >
+                <h:form class="w-100">
+                    <p:panel header="Discount Report" class="w-100">
+                        <h:panelGrid columns="5" class="w-100" >
 
 
-
-                        <p:panelGrid columns="4" class="w-100" >
-                            
-
-                            <p:outputLabel value=" Invoice Date From" >
-                            </p:outputLabel>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
+                                <p:outputLabel value=" Invoice Date From"  class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:datePicker value="#{reportController.fromDate}" 
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"
-                                          class=" w-100" ></p:datePicker>
+                                          class=" w-100" inputStyleClass="w-100" ></p:datePicker>
 
-                            <p:outputLabel value="Invoice Date To" >
-                            </p:outputLabel>
+
+                            <p:spacer width="20"></p:spacer>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Invoice Date To" class="mx-3" >
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:datePicker value="#{reportController.toDate}"
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"
-                                          class=""></p:datePicker>
-                            
-                            <p:outputLabel value="Discount Amount" >
-                            </p:outputLabel>
-                            <p:inputText></p:inputText>
+                                          class="w-100" inputStyleClass="w-100"></p:datePicker>
 
-                            <p:outputLabel value="Visit Type" >
-                            </p:outputLabel>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf53d;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Discount Amount" class="mx-3" >
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:inputText class="w-100"></p:inputText>
+
+
+                            <p:spacer width="20"></p:spacer>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf007;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Visit Type" class="mx-3" >
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:selectOneMenu 
-
                                 value="" 
                                 filter="true"
                                 class="w-100 ">
@@ -46,9 +62,11 @@
                                                itemValue="#{d}" ></f:selectItems>
                             </p:selectOneMenu>
 
-
-                            <p:outputLabel value="Invoice Category" >
-                            </p:outputLabel>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf02b;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Invoice Category" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:selectOneMenu value="" filter="true" class="w-100 ">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems value=""
@@ -59,8 +77,14 @@
                             </p:selectOneMenu>
 
 
-                            <p:outputLabel value="Discount Plan" >
-                            </p:outputLabel>
+                            <p:spacer width="20"></p:spacer>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf543;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Discount Plan" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:selectOneMenu value="" filter="true"  class="w-100 " >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems value=""
@@ -68,22 +92,35 @@
                                                itemLabel=""
                                                itemValue=""
                                                ></f:selectItems>
-                            </p:selectOneMenu>
+                            </p:selectOneMenu>   
 
-                            <p:outputLabel value=" Discharge Date" >
-                            </p:outputLabel>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
+                                <p:outputLabel value=" Discharge Date" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:datePicker value="#{reportController.fromDate}" 
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"
-                                          class=" w-100" ></p:datePicker>
+                                          class=" w-100" inputStyleClass="w-100" ></p:datePicker>
 
-                            <p:outputLabel value="Added Date" >
-                            </p:outputLabel>
+                            <p:spacer width="20"></p:spacer>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf271;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Added Date" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:datePicker value="#{reportController.toDate}"
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"
-                                          class=""></p:datePicker>
-                            
-                            <p:outputLabel value="Remarks" >
-                            </p:outputLabel>
+                                          class="w-100" inputStyleClass="w-100"></p:datePicker>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf075;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Remarks" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
                             <p:selectOneMenu value="" filter="true"  class="w-100 " >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems value=""
@@ -92,15 +129,22 @@
                                                itemValue=""
                                                ></f:selectItems>
                             </p:selectOneMenu>
-                        </p:panelGrid>
+
+
+
+                        </h:panelGrid><br/>
 
                         <div class="d-flex align-items-center">
-                            <p:commandButton class="m-2" ajax="false" value="Process" action="#{reportController.processLabTestCount()}" >
+                            <p:commandButton class="ui-button-warning mx-1" ajax="false" value="Process" icon="fas fa-cogs" action="#{reportController.processLabTestCount()}" >
                             </p:commandButton>
-                            <p:commandButton class="m-2" ajax="false" value="Download"
-                                             action="#{reportController.downloadLabTestCount}">
+                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download" action="#{reportController.downloadLabTestCount}">
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-danger mx-1" icon= "fas fa-file-pdf" ajax="false" value="PDF">
                             </p:commandButton>
                         </div>
+
 
                         <p:dataTable id="tbl" value="" 
                                      paginator="true"
@@ -144,7 +188,7 @@
                             <p:column headerText="Billed By">
                                 <h:outputText value="" />
                             </p:column>
-                            
+
 
 
                         </p:dataTable>

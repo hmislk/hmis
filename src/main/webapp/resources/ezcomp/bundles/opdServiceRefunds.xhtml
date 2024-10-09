@@ -1,0 +1,240 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bundle" type="com.divudi.data.ReportTemplateRowBundle" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+
+
+
+        <p:dataTable id="tbl"
+                     class="w-100 m-2"
+                     value="#{cc.attrs.bundle.reportTemplateRows}"
+                     var="row"
+                     paginator="true"
+                     rows="10"
+                     rowIndexVar="n"
+                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                     rowsPerPageTemplate="5,10,20"
+                     rowKey="#{row.id}">
+
+            <f:facet name="header">
+                <h:outputText value="#{cc.attrs.bundle.name}" />
+            </f:facet>
+
+            <p:column width="2em">
+                <f:facet name="header">
+                    <h:outputText value="Serial" />
+                </f:facet>
+                <h:outputText value="#{n+1}" />
+            </p:column>
+
+
+            <p:column>
+                <f:facet name="header">
+                    <h:outputText value="Date &amp; Time" />
+                </f:facet>
+                <h:outputText value="#{row.bill.createdAt}" >
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
+                </h:outputText>
+            </p:column>
+
+            <p:column>
+                <f:facet name="header">
+                    <h:outputText value="Bill No" />
+                </f:facet>
+                <h:outputText value="#{row.bill}" />
+            </p:column>
+
+            <p:column>
+                <f:facet name="header">
+                    <h:outputText value="Bill Type" />
+                </f:facet>
+                <h:outputText value="#{row.bill.billTypeAtomic}" />
+            </p:column>
+
+            <p:column>
+                <f:facet name="header">
+                    <h:outputText value="Patient" />
+                </f:facet>
+                <h:outputText value="#{row.bill.patient.person.nameWithTitle}">
+                </h:outputText>
+            </p:column>
+
+
+
+            <p:column class="text-end">
+                <f:facet name="header">
+                    <h:outputText value="Net Total" />
+                </f:facet>
+                <h:outputText value="#{row.bill.netTotal}">
+                    <f:convertNumber pattern="#,##0.00" />
+                </h:outputText>
+                <f:facet name="footer">
+                    <h:outputText value="#{cc.attrs.bundle.total}">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </h:outputText>
+                </f:facet>
+            </p:column>
+
+            <p:column class="text-end"  sortBy="#{row.cashValue}" filterBy="#{row.cashValue}"  rendered="#{cc.attrs.bundle.hasCashTransaction}" >
+                <f:facet name="header">
+                    <h:outputText value="Cash" />
+                </f:facet>
+                <h:outputText value="#{row.cashValue}">
+                    <f:convertNumber pattern="#,##0.00" />
+                </h:outputText>
+                <f:facet name="footer">
+                    <h:outputText value="#{cc.attrs.bundle.cashValue}">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </h:outputText>
+                </f:facet>
+            </p:column>
+
+            <p:column  class="text-end"  headerText="Card" sortBy="#{row.cardValue}" filterBy="#{row.cardValue}"  rendered="#{cc.attrs.bundle.hasCardTransaction}" >
+                <h:outputText value="#{row.cardValue}" >
+                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                </h:outputText>
+                <f:facet name="footer">
+                    <h:outputText value="#{cc.attrs.bundle.cardValue}">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </h:outputText>
+                </f:facet>
+            </p:column>
+
+            <p:column  class="text-end"  headerText="Credit" sortBy="#{summary.creditValue}" filterBy="#{summary.creditValue}"  rendered="#{cc.attrs.bundle.hasCreditTransaction}" >
+                <h:outputText value="#{summary.creditValue}" >
+                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                </h:outputText>
+                <f:facet name="footer">
+                    <h:outputText value="#{cc.attrs.bundle.creditValue}">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </h:outputText>
+                </f:facet>
+            </p:column>
+
+            <!-- Continuing from Credit -->
+            <p:column  class="text-end"  headerText="Staff Welfare" sortBy="#{summary.staffWelfareValue}" filterBy="#{summary.staffWelfareValue}"  rendered="#{cc.attrs.bundle.hasStaffWelfareTransaction}" >
+                <h:outputText value="#{summary.staffWelfareValue}" >
+                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                </h:outputText>
+                <f:facet name="footer">
+                    <h:outputText value="#{cc.attrs.bundle.staffWelfareValue}">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </h:outputText>
+                </f:facet>
+            </p:column>
+
+            <p:column  class="text-end"  headerText="Voucher" sortBy="#{summary.voucherValue}" filterBy="#{summary.voucherValue}"  rendered="#{cc.attrs.bundle.hasVoucherTransaction}" >
+                <h:outputText value="#{summary.voucherValue}" >
+                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                </h:outputText>
+                <f:facet name="footer">
+                    <h:outputText value="#{cc.attrs.bundle.voucherValue}">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </h:outputText>
+                </f:facet>
+            </p:column>
+
+            <p:column  class="text-end"  headerText="IOU" sortBy="#{summary.iouValue}" filterBy="#{summary.iouValue}"  rendered="#{cc.attrs.bundle.hasIouTransaction}" >
+                <h:outputText value="#{summary.iouValue}" >
+                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                </h:outputText>
+                <f:facet name="footer">
+                    <h:outputText value="#{cc.attrs.bundle.iouValue}">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </h:outputText>
+                </f:facet>
+            </p:column>
+
+            <p:column  class="text-end"  headerText="Agent" sortBy="#{summary.agentValue}" filterBy="#{summary.agentValue}"  rendered="#{cc.attrs.bundle.hasAgentTransaction}" >
+                <h:outputText value="#{summary.agentValue}" >
+                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                </h:outputText>
+                <f:facet name="footer">
+                    <h:outputText value="#{cc.attrs.bundle.agentValue}">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </h:outputText>
+                </f:facet>
+            </p:column>
+
+            <p:column  class="text-end"  headerText="Cheque" sortBy="#{summary.chequeValue}" filterBy="#{summary.chequeValue}"  rendered="#{cc.attrs.bundle.hasChequeTransaction}" >
+                <h:outputText value="#{summary.chequeValue}" >
+                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                </h:outputText>
+                <f:facet name="footer">
+                    <h:outputText value="#{cc.attrs.bundle.chequeValue}">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </h:outputText>
+                </f:facet>
+            </p:column>
+
+            <p:column  class="text-end"  headerText="Slip" sortBy="#{summary.slipValue}" filterBy="#{summary.slipValue}"  rendered="#{cc.attrs.bundle.hasSlipTransaction}" >
+                <h:outputText value="#{summary.slipValue}" >
+                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                </h:outputText>
+                <f:facet name="footer">
+                    <h:outputText value="#{cc.attrs.bundle.slipValue}">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </h:outputText>
+                </f:facet>
+            </p:column>
+
+            <p:column  class="text-end"  headerText="eWallet" sortBy="#{summary.ewalletValue}" filterBy="#{summary.ewalletValue}"  rendered="#{cc.attrs.bundle.hasEWalletTransaction}" >
+                <h:outputText value="#{summary.ewalletValue}" >
+                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                </h:outputText>
+                <f:facet name="footer">
+                    <h:outputText value="#{cc.attrs.bundle.ewalletValue}">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </h:outputText>
+                </f:facet>
+            </p:column>
+
+            <p:column  class="text-end"  headerText="Patient Deposit" sortBy="#{summary.patientDepositValue}" filterBy="#{summary.patientDepositValue}"  rendered="#{cc.attrs.bundle.hasPatientDepositTransaction}" >
+                <h:outputText value="#{summary.patientDepositValue}" >
+                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                </h:outputText>
+                <f:facet name="footer">
+                    <h:outputText value="#{cc.attrs.bundle.patientDepositValue}">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </h:outputText>
+                </f:facet>
+            </p:column>
+
+            <p:column  class="text-end"  headerText="Patient Points" sortBy="#{summary.patientPointsValue}" filterBy="#{summary.patientPointsValue}"  rendered="#{cc.attrs.bundle.hasPatientPointsTransaction}" >
+                <h:outputText value="#{summary.patientPointsValue}" >
+                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                </h:outputText>
+                <f:facet name="footer">
+                    <h:outputText value="#{cc.attrs.bundle.patientPointsValue}">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </h:outputText>
+                </f:facet>
+            </p:column>
+
+            <p:column  class="text-end"  headerText="Online Settlement" sortBy="#{summary.onlineSettlementValue}" filterBy="#{summary.onlineSettlementValue}"  rendered="#{cc.attrs.bundle.hasOnCallTransaction}" >
+                <h:outputText value="#{summary.onlineSettlementValue}" >
+                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                </h:outputText>
+                <f:facet name="footer">
+                    <h:outputText value="#{cc.attrs.bundle.onlineSettlementValue}">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </h:outputText>
+                </f:facet>
+            </p:column>
+
+        </p:dataTable>
+
+    </cc:implementation>
+</html>

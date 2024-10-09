@@ -7,6 +7,7 @@ package com.divudi.ws.channel;
 
 import com.divudi.bean.channel.AgentReferenceBookController;
 import com.divudi.bean.channel.SessionInstanceController;
+import com.divudi.bean.common.ApiKeyController;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ConsultantController;
@@ -23,6 +24,7 @@ import com.divudi.ejb.ChannelBean;
 
 import com.divudi.ejb.ServiceSessionBean;
 import com.divudi.entity.AgentHistory;
+import com.divudi.entity.ApiKey;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
@@ -73,7 +75,9 @@ import javax.ws.rs.Produces;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.POST;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.json.JSONArray;
@@ -136,6 +140,8 @@ public class ChannelApi {
     InstitutionController institutionController;
     @Inject
     SpecialityController specialityController;
+    @Inject
+    ApiKeyController apiKeyController;
 
     /**
      * Creates a new instance of Api
@@ -147,11 +153,17 @@ public class ChannelApi {
     @Path("/specializations")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getSpecializations(String requestBody) {
+    public Response getSpecializations(@Context HttpServletRequest requestContext, String requestBody) {
         JSONObject requestJson = new JSONObject(requestBody);
         String type = requestJson.getString("type");
         String bookingChannel = requestJson.getString("bookingChannel");
-
+        String key = requestContext.getHeader("Finance");
+        JSONObject response = new JSONObject();
+        if (!isValidKey(key)) {
+            response = errorMessageNotValidKey();
+            String json = response.toString();
+            return Response.status(Response.Status.ACCEPTED).entity(response.toString()).build();
+        }
         List<Object[]> specializations = specilityList();
         Map<String, String> specialityMap = new HashMap<>();
 
@@ -162,7 +174,6 @@ public class ChannelApi {
         JSONObject data = new JSONObject();
         data.put("specialityMap", specialityMap);
 
-        JSONObject response = new JSONObject();
         response.put("code", "202");
         response.put("message", "Accepted");
         response.put("data", data);
@@ -170,15 +181,80 @@ public class ChannelApi {
         return Response.status(Response.Status.ACCEPTED).entity(response.toString()).build();
     }
 
+    private boolean isValidKey(String key) {
+        if (key == null || key.trim().equals("")) {
+            return false;
+        }
+        ApiKey k = apiKeyController.findApiKey(key);
+        if (k == null) {
+            return false;
+        }
+        if (k.getWebUser() == null) {
+            return false;
+        }
+        if (k.getWebUser().isRetired()) {
+            return false;
+        }
+        if (!k.getWebUser().isActivated()) {
+            return false;
+        }
+        if (k.getDateOfExpiary().before(new Date())) {
+            return false;
+        }
+        return true;
+    }
+
+    private JSONObject errorMessageNoData() {
+        JSONObject jSONObjectOut = new JSONObject();
+        jSONObjectOut.put("code", 400);
+        jSONObjectOut.put("type", "error");
+        String e = "No Data.";
+        jSONObjectOut.put("message", e);
+        return jSONObjectOut;
+    }
+
+    private JSONObject errorMessageNotValidKey() {
+        JSONObject jSONObjectOut = new JSONObject();
+        jSONObjectOut.put("code", 401);
+        jSONObjectOut.put("type", "error");
+        String e = "Not a valid key.";
+        jSONObjectOut.put("message", e);
+        return jSONObjectOut;
+    }
+
+    private JSONObject errorMessageNotValidPathParameter() {
+        JSONObject jSONObjectOut = new JSONObject();
+        jSONObjectOut.put("code", 401);
+        jSONObjectOut.put("type", "error");
+        String e = "Not a valid path parameter.";
+        jSONObjectOut.put("message", e);
+        return jSONObjectOut;
+    }
+
+    private JSONObject errorMessageNotValidInstitution() {
+        JSONObject jSONObjectOut = new JSONObject();
+        jSONObjectOut.put("code", 401);
+        jSONObjectOut.put("type", "error");
+        String e = "Not a valid institution code.";
+        jSONObjectOut.put("message", e);
+        return jSONObjectOut;
+    }
+
     @POST
     @Path("/hospitals")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response getHospitalList(Map<String, String> requestBody) {
+    public Response getHospitalList(@Context HttpServletRequest requestContext, Map<String, String> requestBody) {
         // Extract the type and bookingChannel from the request body
         String type = requestBody.get("type");
         String bookingChannel = requestBody.get("bookingChannel");
-
+        String key = requestContext.getHeader("Finance");
+        if (!isValidKey(key)) {
+            JSONObject responseError = new JSONObject();
+            responseError = errorMessageNotValidKey();
+            String json = responseError.toString();
+            return Response.status(Response.Status.ACCEPTED).entity(responseError.toString()).build();
+        }
         // Get the list of institutions from the controller
         List<Institution> institutions = institutionController.getCompanies();
 
@@ -279,8 +355,15 @@ public class ChannelApi {
     @Path("/doctorAvailability")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getDoctorAvailabilityList(Map<String, Object> requestBody) {
+    public Response getDoctorAvailabilityList(@Context HttpServletRequest requestContext, Map<String, Object> requestBody) {
         // Extract parameters from the request body
+        String key = requestContext.getHeader("Finance");
+        if (!isValidKey(key)) {
+            JSONObject responseError = new JSONObject();
+            responseError = errorMessageNotValidKey();
+            String json = responseError.toString();
+            return Response.status(Response.Status.ACCEPTED).entity(responseError.toString()).build();
+        }
         String type = (String) requestBody.get("type");
         String bookingChannel = (String) requestBody.get("bookingChannel");
         String hosIdStr = (String) requestBody.get("hosID");
@@ -291,7 +374,6 @@ public class ChannelApi {
 //        Integer offset = (Integer) requestBody.get("offset");
         Long hosId;
         try {
-
             hosId = Long.valueOf(hosIdStr);
         } catch (Exception e) {
             hosId = null;
@@ -325,8 +407,9 @@ public class ChannelApi {
             doctorDetails.put("HosCode", si.getInstitution().getCode());
             doctorDetails.put("AppDate", si.getSessionDate().toString());
             doctorDetails.put("DocName", si.getOriginatingSession().getStaff().getPerson().getNameWithTitle());
+            doctorDetails.put("DoctorNotes", si.getOriginatingSession().getSpecialNotice());
             doctorDetails.put("DoctorNo", si.getId().toString());
-            doctorDetails.put("SessionStart", si.getOriginatingSession().getSessionTime().toString());
+            doctorDetails.put("SessionStart", si.getOriginatingSession().getStartingTime().toString());
             resultMap.put(si.getId().toString(), doctorDetails);
         }
 
@@ -348,6 +431,156 @@ public class ChannelApi {
 
         // Return the response
         return Response.status(Response.Status.ACCEPTED).entity(response).build();
+    }
+
+    @POST
+    @Path("/searchData")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response searchDoctors(
+            @Context HttpServletRequest requestContext,
+            @QueryParam("hosID") Integer hosID,
+            @QueryParam("docNo") Integer docNo,
+            @QueryParam("docName") String docName,
+            @QueryParam("specID") Integer specID,
+            @QueryParam("offset") Integer offset,
+            @QueryParam("page") Integer page,
+            @QueryParam("sessionDate") String sessionDate) {
+        System.out.println("searchDoctors");
+        // Validate the input parameters
+        if (hosID == null && docNo == null && docName == null && specID == null && (offset == null || page == null)) {
+            JSONObject errorResponse = new JSONObject();
+            errorResponse.put("error", "At least one search parameter must be provided, along with offset and page if no specific doctor or hospital is queried.");
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(errorResponse.toString())
+                    .build();
+        }
+        String key = requestContext.getHeader("Finance");
+        if (!isValidKey(key)) {
+            JSONObject responseError = new JSONObject();
+            responseError = errorMessageNotValidKey();
+            String json = responseError.toString();
+            return Response.status(Response.Status.ACCEPTED).entity(responseError.toString()).build();
+        }
+        // Search logic and build the JSON response
+        JSONObject results = searchDoctor(hosID, docNo, docName, specID, offset, page, sessionDate);
+
+        // Constructing the detailed response
+        JSONObject response = new JSONObject();
+        response.put("code", 200);
+        response.put("message", "OK");
+        response.put("data", results);
+        response.put("detailMessage", "Success");
+
+        // Implementing pagination details
+        JSONObject paginationDetails = new JSONObject();
+        paginationDetails.put("currentPage", page);
+        paginationDetails.put("itemsPerPage", 10);  // Assuming a fixed number of items per page
+        paginationDetails.put("totalPages", (int) Math.ceil((double) results.getInt("totalCount") / 10));
+        response.put("pagination", paginationDetails);
+
+        return Response.status(Response.Status.OK)
+                .entity(response.toString())
+                .build();
+    }
+
+    @POST
+    @Path("/test")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response testAPI() {
+        System.out.println("API test method called");
+
+        // Create a simple JSON object to return as response
+        JSONObject responseObject = new JSONObject();
+        responseObject.put("status", "success");
+        responseObject.put("message", "API is reachable and responding successfully.");
+
+        // Return a 200 OK response with the JSON object
+        return Response.status(Response.Status.OK)
+                .entity(responseObject.toString())
+                .build();
+    }
+
+    private JSONObject searchDoctor(
+            Integer hosID,
+            Integer docNo,
+            String docName,
+            Integer specID,
+            Integer offset,
+            Integer page,
+            String sessionDate) {
+        // Parse the sessionDate
+        System.out.println("searchDoctor");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        Date date = null;
+
+        if (sessionDate != null) {
+            try {
+                date = dateFormat.parse(sessionDate);
+            } catch (ParseException e) {
+                System.err.println("Invalid date format: " + sessionDate);
+                return new JSONObject().put("error", "Invalid date format");
+            }
+        }
+
+        // Fetch necessary entities based on IDs
+        Institution hospital = institutionController.findInstitution(hosID);
+        Speciality speciality = specialityController.findSpeciality(specID);
+        Consultant consultant = consultantController.getConsultantById(docNo);
+
+        // Create a list of specialities if needed (assuming single speciality search)
+        List<Speciality> specialities = (speciality != null) ? Arrays.asList(speciality) : null;
+
+        // Call the method to find session instances
+        List<SessionInstance> sessions = sessionInstanceController.findSessionInstance(hospital, specialities, consultant, null, null, date);
+
+        // Process the results
+        JSONArray hospitalArray = new JSONArray();
+
+        JSONArray doctorArray = new JSONArray();
+        for (SessionInstance session : sessions) {
+            JSONObject hospitalObject = new JSONObject();
+            if (hosID != null) {
+                hospitalObject.put("hosId", session.getOriginatingSession().getInstitution().getId() != null ? session.getOriginatingSession().getInstitution().getId().toString() : "N/A");
+            }
+            if (hospital != null) {
+                hospitalObject.put("displayName", session.getOriginatingSession().getInstitution() != null ? session.getOriginatingSession().getInstitution().getName() : "N/A");
+            }
+
+            JSONObject doctor = new JSONObject();
+            doctor.put("docNo", session.getOriginatingSession().getStaff().getPerson().getNameWithTitle() != null ? session.getOriginatingSession().getStaff().getId().toString() : "N/A");
+            doctor.put("displayName", session.getOriginatingSession().getStaff().getPerson().getNameWithTitle() != null ? session.getOriginatingSession().getStaff().getPerson().getNameWithTitle() : "N/A");
+            doctor.put("title", session.getOriginatingSession().getStaff().getPerson().getTitle() != null ? session.getOriginatingSession().getStaff().getPerson().getTitle().toString() : "N/A");
+            doctor.put("nextAvailableDate", dateFormat.format(session.getSessionDate()));
+            doctorArray.put(doctor);
+            hospitalObject.put("doctor", doctorArray);
+            hospitalArray.put(hospitalObject);
+
+        }
+
+        JSONObject results = new JSONObject();
+        results.put("totalCount", sessions.size()); // Total count of sessions
+        results.put("result", hospitalArray);
+
+        return results;
+    }
+
+    // Inner class to encapsulate search results
+    private class SearchResults {
+
+        private List<DoctorDetail> doctors;
+        private Integer totalCount;
+
+        // Assume getters and setters are here
+    }
+
+    // Inner class for Doctor details
+    private class DoctorDetail {
+
+        private String name;
+        private String speciality;
+        private String hospital;
+
+        // Assume getters and setters are here
     }
 
     @GET
@@ -978,19 +1211,18 @@ public class ChannelApi {
     }
 
     public List<Object[]> doctorsListAll() {
-
         List<Object[]> consultants = new ArrayList<>();
-        String sql;
+        String jpql;
         Map m = new HashMap();
-
-        sql = " select pi.staff.id,"
-                + " pi.staff.person.name, "
-                + " pi.staff.speciality.name,"
-                + " pi.staff.code from PersonInstitution pi ";
-
-        sql += " order by pi.staff.speciality.name,pi.staff.person.name ";
-
-        consultants = getStaffFacade().findAggregates(sql);
+        jpql = " select staff.id,"
+                + " staff.person.name, "
+                + " staff.speciality.name,"
+                + " staff.code "
+                + " from Consultant staff ";
+        jpql += " where staff.retired=:ret ";
+        jpql += " order by staff.speciality.name, staff.person.name ";
+        m.put("ret", false);
+        consultants = getStaffFacade().findAggregates(jpql, m);
         return consultants;
     }
 

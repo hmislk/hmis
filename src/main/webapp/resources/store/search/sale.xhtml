@@ -12,16 +12,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <h:panelGrid columns="4">         
-            <h:outputLabel value="Bill No"/>
-            <h:outputLabel value="Net Total"/>
-            <h:outputLabel value="Item Name"/>
-            <h:outputLabel value="Item Code"/>
-            <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
-            <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
-            <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}"/>
-            <p:inputText autocomplete="off" value="#{searchController.searchKeyword.code}"/>
-        </h:panelGrid>
+
         <p:dataTable rowIndexVar="i"  value="#{searchController.bills}" var="bill"  >
             <f:facet name="header">
                 <h:outputLabel value="SALE BILL SEARCH"/>

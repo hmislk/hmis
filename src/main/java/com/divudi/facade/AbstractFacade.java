@@ -7,13 +7,16 @@ package com.divudi.facade;
 import com.divudi.data.dataStructure.ItemQuantityAndValues;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.persistence.CacheRetrieveMode;
 import javax.persistence.EntityManager;
+import javax.persistence.LockModeType;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.Query;
@@ -290,6 +293,17 @@ public abstract class AbstractFacade<T> {
 
     public T find(Object id) {
         return getEntityManager().find(entityClass, id);
+    }
+
+    public T findWithoutCache(Object id) {
+        return getEntityManager().find(entityClass, id,
+                Collections.singletonMap("javax.persistence.cache.retrieveMode", CacheRetrieveMode.BYPASS));
+    }
+
+    public T findWithLock(Object id) {
+        return getEntityManager().find(entityClass, id,
+                LockModeType.PESSIMISTIC_WRITE,
+                Collections.singletonMap("javax.persistence.cache.retrieveMode", CacheRetrieveMode.BYPASS));
     }
 
     public List<T> findAll(boolean withoutRetired) {

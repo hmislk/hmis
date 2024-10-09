@@ -1,0 +1,235 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <h:form>
+            <ui:composition template="./index.xhtml">
+                <ui:define name="subcontent">
+                    <p:panel rendered="#{financialTransactionController.currentBill ne null}">
+                        <f:facet name="header">
+                            <h:outputText value="Shift End Print" />
+                            <p:commandButton value="Print" ajax="false">
+                                <p:printer target="gpSummaryBill" />
+                            </p:commandButton>
+                        </f:facet>
+
+                        <h:panelGroup id="gpSummaryBill">
+                            <div class="container p-4">
+                                <div class="text-center mb-4">
+                                    <h3>Shift End Summary</h3>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-2"><p:outputLabel value="User" /></div>
+                                    <div class="col-md-2 text-end"><p:outputLabel value=":" class="mx-2" /></div>
+                                    <div class="col-md-8"><p:outputLabel value="#{financialTransactionController.currentBill.webUser.webUserPerson.nameWithTitle}" /></div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-2"><p:outputLabel value="User Name" /></div>
+                                    <div class="col-md-2 text-end"><p:outputLabel value=":" class="mx-2" /></div>
+                                    <div class="col-md-8"><p:outputLabel value="#{financialTransactionController.currentBill.webUser.name}" /></div>
+                                </div>
+
+                                <div class="row mt-3">
+                                    <div class="col-md-3"><p:outputLabel value="Shift Start" style="font-weight: 700" /></div>
+                                    <div class="col-md-9"></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-2"><p:outputLabel value="Shift Start Date" /></div>
+                                    <div class="col-md-2 text-end"><p:outputLabel value=":" class="mx-2" /></div>
+                                    <div class="col-md-8"><p:outputLabel value="#{financialTransactionController.currentBill.referenceBill.billDate}">
+                                            <f:convertDateTime pattern="MM/dd/yyyy" />
+                                        </p:outputLabel></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-2"><p:outputLabel value="Shift Start Time" /></div>
+                                    <div class="col-md-2 text-end"><p:outputLabel value=":" class="mx-2" /></div>
+                                    <div class="col-md-8"><p:outputLabel value="#{financialTransactionController.currentBill.referenceBill.billTime}">
+                                            <f:convertDateTime pattern="hh:mm:ss a" />
+                                        </p:outputLabel></div>
+                                </div>
+
+                                <div class="row mt-3">
+                                    <div class="col-md-3"><p:outputLabel value="Shift End" style="font-weight: 700" /></div>
+                                    <div class="col-md-9"></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-2"><p:outputLabel value="Shift End Date" /></div>
+                                    <div class="col-md-2 text-end"><p:outputLabel value=":" class="mx-2" /></div>
+                                    <div class="col-md-8"><p:outputLabel value="#{financialTransactionController.currentBill.billDate}">
+                                            <f:convertDateTime pattern="MM/dd/yyyy" />
+                                        </p:outputLabel></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-2"><p:outputLabel value="Shift End Time" /></div>
+                                    <div class="col-md-2 text-end"><p:outputLabel value=":" class="mx-2" /></div>
+                                    <div class="col-md-8"><p:outputLabel value="#{financialTransactionController.currentBill.billTime}">
+                                            <f:convertDateTime pattern="hh:mm:ss a" />
+                                        </p:outputLabel></div>
+                                </div>
+
+                                <div class="row mt-3">
+                                    <div class="col-md-2"><p:outputLabel value="Total Value" /></div>
+                                    <div class="col-md-2 text-end"><p:outputLabel value=":" class="mx-2" /></div>
+                                    <div class="col-md-8">
+                                        <p:outputLabel value="#{financialTransactionController.currentBill.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel>
+                                    </div>
+                                </div>
+
+                                <hr class="my-4"/>
+
+                                <div class="text-center mb-2">
+                                    <h4>Collected Payments</h4>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-md-3"><p:outputLabel value="Payment Method" class="font-weight-bold" /></div>
+                                    <div class="col-md-3 text-end"><p:outputLabel value="Collected Amount" class="font-weight-bold" /></div>
+                                    <div class="col-md-6"></div>
+                                </div>
+
+                                <div class="row mb-2" rendered="#{financialTransactionController.currentDetailedFinancialBill.cashValuePresent}">
+                                    <div class="col-md-3"><p:outputLabel value="Cash" /></div>
+                                    <div class="col-md-3 text-end"><p:outputLabel value="#{financialTransactionController.currentDetailedFinancialBill.cashValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel></div>
+                                    <div class="col-md-6"></div>
+                                </div>
+
+                                <div class="row mb-2" rendered="#{financialTransactionController.currentDetailedFinancialBill.cardValuePresent}">
+                                    <div class="col-md-3"><p:outputLabel value="Card" /></div>
+                                    <div class="col-md-3 text-end"><p:outputLabel value="#{financialTransactionController.currentDetailedFinancialBill.cardValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel></div>
+                                    <div class="col-md-6"></div>
+                                </div>
+
+                                <div class="row mb-2" rendered="#{financialTransactionController.currentDetailedFinancialBill.chequeValuePresent}">
+                                    <div class="col-md-3"><p:outputLabel value="Cheque" /></div>
+                                    <div class="col-md-3 text-end"><p:outputLabel value="#{financialTransactionController.currentDetailedFinancialBill.chequeValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel></div>
+                                    <div class="col-md-6"></div>
+                                </div>
+
+                                <div class="row mb-2" rendered="#{financialTransactionController.currentDetailedFinancialBill.slipValuePresent}">
+                                    <div class="col-md-3"><p:outputLabel value="Slip" /></div>
+                                    <div class="col-md-3 text-end"><p:outputLabel value="#{financialTransactionController.currentDetailedFinancialBill.slipValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel></div>
+                                    <div class="col-md-6"></div>
+                                </div>
+
+                                <div class="row mb-2" rendered="#{financialTransactionController.currentDetailedFinancialBill.ewalletValuePresent}">
+                                    <div class="col-md-3"><p:outputLabel value="E-Wallet" /></div>
+                                    <div class="col-md-3 text-end"><p:outputLabel value="#{financialTransactionController.currentDetailedFinancialBill.ewalletValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel></div>
+                                    <div class="col-md-6"></div>
+                                </div>
+
+                                <div class="row mb-2" rendered="#{financialTransactionController.currentDetailedFinancialBill.onCallValuePresent}">
+                                    <div class="col-md-3"><p:outputLabel value="On Call" /></div>
+                                    <div class="col-md-3 text-end"><p:outputLabel value="#{financialTransactionController.currentDetailedFinancialBill.onCallValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel></div>
+                                    <div class="col-md-6"></div>
+                                </div>
+
+                                <div class="row mb-2" rendered="#{financialTransactionController.currentDetailedFinancialBill.multiplePaymentMethodsValuePresent}">
+                                    <div class="col-md-3"><p:outputLabel value="Multiple Payment Methods" /></div>
+                                    <div class="col-md-3 text-end"><p:outputLabel value="#{financialTransactionController.currentDetailedFinancialBill.multiplePaymentMethodsValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel></div>
+                                    <div class="col-md-6"></div>
+                                </div>
+
+                                <div class="row mb-2" rendered="#{financialTransactionController.currentDetailedFinancialBill.staffValuePresent}">
+                                    <div class="col-md-3"><p:outputLabel value="Staff" /></div>
+                                    <div class="col-md-3 text-end"><p:outputLabel value="#{financialTransactionController.currentDetailedFinancialBill.staffValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel></div>
+                                    <div class="col-md-6"></div>
+                                </div>
+
+                                <div class="row mb-2" rendered="#{financialTransactionController.currentDetailedFinancialBill.creditValuePresent}">
+                                    <div class="col-md-3"><p:outputLabel value="Credit" /></div>
+                                    <div class="col-md-3 text-end"><p:outputLabel value="#{financialTransactionController.currentDetailedFinancialBill.creditValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel></div>
+                                    <div class="col-md-6"></div>
+                                </div>
+
+                                <div class="row mb-2" rendered="#{financialTransactionController.currentDetailedFinancialBill.staffWelfareValuePresent}">
+                                    <div class="col-md-3"><p:outputLabel value="Staff Welfare" /></div>
+                                    <div class="col-md-3 text-end"><p:outputLabel value="#{financialTransactionController.currentDetailedFinancialBill.staffWelfareValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel></div>
+                                    <div class="col-md-6"></div>
+                                </div>
+
+                                <div class="row mb-2" rendered="#{financialTransactionController.currentDetailedFinancialBill.voucherValuePresent}">
+                                    <div class="col-md-3"><p:outputLabel value="Voucher" /></div>
+                                    <div class="col-md-3 text-end"><p:outputLabel value="#{financialTransactionController.currentDetailedFinancialBill.voucherValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel></div>
+                                    <div class="col-md-6"></div>
+                                </div>
+
+                                <div class="row mb-2" rendered="#{financialTransactionController.currentDetailedFinancialBill.iouValuePresent}">
+                                    <div class="col-md-3"><p:outputLabel value="IOU" /></div>
+                                    <div class="col-md-3 text-end"><p:outputLabel value="#{financialTransactionController.currentDetailedFinancialBill.iouValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel></div>
+                                    <div class="col-md-6"></div>
+                                </div>
+
+                                <div class="row mb-2" rendered="#{financialTransactionController.currentDetailedFinancialBill.agentValuePresent}">
+                                    <div class="col-md-3"><p:outputLabel value="Agent" /></div>
+                                    <div class="col-md-3 text-end"><p:outputLabel value="#{financialTransactionController.currentDetailedFinancialBill.agentValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel></div>
+                                    <div class="col-md-6"></div>
+                                </div>
+
+                                <div class="row mb-2" rendered="#{financialTransactionController.currentDetailedFinancialBill.patientDepositValuePresent}">
+                                    <div class="col-md-3"><p:outputLabel value="Patient Deposit" /></div>
+                                    <div class="col-md-3 text-end"><p:outputLabel value="#{financialTransactionController.currentDetailedFinancialBill.patientDepositValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel></div>
+                                    <div class="col-md-6"></div>
+                                </div>
+
+                                <div class="row mb-2" rendered="#{financialTransactionController.currentDetailedFinancialBill.patientPointsValuePresent}">
+                                    <div class="col-md-3"><p:outputLabel value="Patient Points" /></div>
+                                    <div class="col-md-3 text-end"><p:outputLabel value="#{financialTransactionController.currentDetailedFinancialBill.patientPointsValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel></div>
+                                    <div class="col-md-6"></div>
+                                </div>
+
+                                <div class="row mb-2" rendered="#{financialTransactionController.currentDetailedFinancialBill.onlineSettlementValuePresent}">
+                                    <div class="col-md-3"><p:outputLabel value="Online Settlement" /></div>
+                                    <div class="col-md-3 text-end"><p:outputLabel value="#{financialTransactionController.currentDetailedFinancialBill.onlineSettlementValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel></div>
+                                    <div class="col-md-6"></div>
+                                </div>
+                            </div>
+                        </h:panelGroup>
+                    </p:panel>
+
+
+                </ui:define>
+            </ui:composition>
+        </h:form>
+    </h:body>
+</html>

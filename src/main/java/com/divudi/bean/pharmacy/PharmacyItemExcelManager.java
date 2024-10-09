@@ -17,7 +17,6 @@ import com.divudi.data.dataStructure.PharmacyImportCol;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
@@ -108,6 +107,8 @@ public class PharmacyItemExcelManager implements Serializable {
      * EJBs
      *
      */
+    @EJB
+    BillFeeFacade billFeeFacade;
     @EJB
     AtmFacade atmFacade;
     @EJB
@@ -417,39 +418,40 @@ public class PharmacyItemExcelManager implements Serializable {
         }
     }
 
-    public void upadatePaidValueInBillFee() {
+   
+//    @Deprecated
+//    public void upadatePaidValueInBillFee() {
+//
+//        Map m = new HashMap();
+//
+//        String sql = "select bf,bi"
+//                + " from BillItem bi join  bi.paidForBillFee bf "
+//                + " where bi.retired=false "
+//                + " and bf.retired=false"
+//                + " and (bf.paidValue!=bi.netValue "
+//                + " or bf.paidValue=0 "
+//                + " or bf.staff.speciality is null)"
+//                + " and bi.bill.billType=:btp "
+//                + " and (bf.bill.billType=:refBtp1"
+//                + " or bf.bill.billType=:refBtp2)";
+//
+//        m.put("btp", BillType.PaymentBill);
+//        m.put("refBtp1", BillType.InwardBill);
+//        m.put("refBtp2", BillType.InwardProfessional);
+//
+//        List<Object[]> list2 = billFeeFacade.findObjectsArrayByJpql(sql, m, TemporalType.DATE);
+//
+//        for (Object[] obj : list2) {
+//            BillFee billFee = (BillFee) obj[0];
+//            BillItem billItem = (BillItem) obj[1];
+//
+//            billFee.setPaidValue(billFee.getFeeValue());
+//            billFeeFacade.edit(billFee);
+//        }
+//
+//    }
 
-        Map m = new HashMap();
-
-        String sql = "select bf,bi"
-                + " from BillItem bi join  bi.paidForBillFee bf "
-                + " where bi.retired=false "
-                + " and bf.retired=false"
-                + " and (bf.paidValue!=bi.netValue "
-                + " or bf.paidValue=0 "
-                + " or bf.staff.speciality is null)"
-                + " and bi.bill.billType=:btp "
-                + " and (bf.bill.billType=:refBtp1"
-                + " or bf.bill.billType=:refBtp2)";
-
-        m.put("btp", BillType.PaymentBill);
-        m.put("refBtp1", BillType.InwardBill);
-        m.put("refBtp2", BillType.InwardProfessional);
-
-        List<Object[]> list2 = billFeeFacade.findObjectsArrayByJpql(sql, m, TemporalType.DATE);
-
-        for (Object[] obj : list2) {
-            BillFee billFee = (BillFee) obj[0];
-            BillItem billItem = (BillItem) obj[1];
-
-            billFee.setPaidValue(billFee.getFeeValue());
-            billFeeFacade.edit(billFee);
-        }
-
-    }
-
-    @EJB
-    BillFeeFacade billFeeFacade;
+    
 
     public void resetMarginAndDiscountAndNetTotal() {
         String sql = "Select b from Bill b "
