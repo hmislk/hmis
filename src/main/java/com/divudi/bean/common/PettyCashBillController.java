@@ -282,6 +282,16 @@ public class PettyCashBillController implements Serializable {
     public String navigateToPettyCashReturnBill(){
         return "";
     }
+    
+    public void approveBill(Bill b){
+        if(b == null){
+            JsfUtil.addErrorMessage("No Bill");
+        }
+        b.setApproveAt(new Date());
+        b.setApproveUser(sessionController.getLoggedUser());
+        billFacade.edit(b);
+        JsfUtil.addSuccessMessage("Approved");
+    }
 
     public void settleBill() {
         Date startTime = new Date();
