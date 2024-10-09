@@ -18,13 +18,13 @@
                 <h:outputLabel value="PURCHASE BILL SEARCH"/>
             </f:facet>
 
-            <p:column headerText="BILL NO" >
+            <p:column headerText="Bill No" >
                 <h:commandLink action="store_reprint_purchase" value="#{bill.deptId}">
                     <h:outputLabel  ></h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{storeBillSearch.bill}"/>
                 </h:commandLink>
             </p:column>    
-            <p:column headerText="Billed at"  >
+            <p:column headerText="Billed At"  >
                 <h:commandLink action="store_reprint_purchase" >
                     <h:outputLabel value="#{bill.createdAt}" >
                         <f:convertDateTime pattern="dd MM yyyy hh mm a"/>
@@ -45,7 +45,7 @@
                     </h:outputLabel>
                 </h:panelGroup>
             </p:column>                 
-            <p:column headerText="Billed by" >
+            <p:column headerText="Billed By" >
                 <h:commandLink action="store_reprint_purchase" >
                     <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
                     </h:outputLabel>
@@ -64,7 +64,7 @@
                     </h:outputLabel>
                 </h:panelGroup>
             </p:column>       
-            <p:column headerText="Paymentmethod" >
+            <p:column headerText="Payment Method" >
                 <h:commandLink action="store_reprint_purchase" >
                     <h:outputLabel value="#{bill.paymentMethod}" ></h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{storeBillSearch.bill}"/>
