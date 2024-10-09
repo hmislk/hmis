@@ -1172,8 +1172,8 @@ public class ReportController implements Serializable {
         params.put("td", getToDate());
 
         if (institution != null) {
-            jpql += " AND i.billItem.bill.institution = :orderedInstitution ";
-            params.put("orderedInstitution", institution);
+            jpql += " AND i.billItem.bill.creater.institution.name = :orderedInstitution ";
+            params.put("orderedInstitution", institution.getName());
         }
 
         if (department != null) {
@@ -1182,8 +1182,8 @@ public class ReportController implements Serializable {
         }
 
         if (site != null) {
-            jpql += " AND i.billItem.bill.department = :orderedDepartment ";
-            params.put("orderedDepartment", department);
+            jpql += " AND i.billItem.bill.department.site=:site";
+            params.put("site", site);
         }
 
         if (toInstitution != null) {
@@ -1215,13 +1215,23 @@ public class ReportController implements Serializable {
         }
 
         if (doctor != null) {
-            jpql += " AND i.billItem.bill.referringDoctor = :referringDoctor ";
-            params.put("referringDoctor", doctor);
+            jpql += " AND i.billItem.bill.referredBy.person.name = :referringDoctor ";
+            params.put("referringDoctor", doctor.getPerson().getName());
         }
 
         if (investigation != null) {
             jpql += " AND i.investigation = :investigation ";
             params.put("investigation", getInvestigation());
+        }
+
+        if (category != null) {
+            jpql += " AND i.investigation.category = :cat ";
+            params.put("cat", category);
+        }
+        
+        if (invoiceNumber != null && !invoiceNumber.isEmpty()) {
+            jpql += " AND i.billItem.bill.deptId = :iNo ";
+            params.put("iNo", invoiceNumber);
         }
 
         if (patientInvestigationStatus != null) {
