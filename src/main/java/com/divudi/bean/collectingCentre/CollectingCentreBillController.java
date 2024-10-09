@@ -241,7 +241,11 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             return;
         }
         fillAvailableAgentReferanceNumbers(collectingCentre);
-        opdItems = itemFeeManager.fillItemLightsForCc(collectingCentre);
+        if (collectingCentre.getFeeListType() != null) {
+            opdItems = itemFeeManager.fillItemLightsForCc(collectingCentre);
+        } else {
+            opdItems = fillOpdItems();
+        }
         itemController.setCcInstitutionItems(itemController.fillItemsByInstitution(collectingCentre));
     }
 
@@ -2174,7 +2178,10 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             }
 
             if (matchFound) {
-                FeeValue f = feeValueController.getCollectingCentreFeeValue(opdItem.getId(), collectingCentre);
+                FeeValue f = null;
+                if(collectingCentre.getFeeListType()!=null){
+                    f = feeValueController.getCollectingCentreFeeValue(opdItem.getId(), collectingCentre);
+                }
                 if (f != null) {
                     opdItem.setTotal(f.getTotalValueForLocals());
                     opdItem.setTotalForForeigner(f.getTotalValueForForeigners());

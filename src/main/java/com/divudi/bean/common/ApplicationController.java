@@ -59,6 +59,10 @@ public class ApplicationController {
 
     private boolean hasAwebsiteAsFrontEnd = false;
     private String themeName;
+    
+    private Boolean firstLogin;
+    
+    
 
     private void loadApplicationPreferances() {
         String sql = "select p from UserPreference p where p.institution is null and p.department is null and p.webUser is null order by p.id desc";
@@ -376,6 +380,14 @@ public class ApplicationController {
     public void setThemeName(String themeName) {
         getApplicationPreference().setThemeName(themeName);
         this.themeName = themeName;
+    }
+
+    public Boolean getFirstLogin() {
+        return firstLogin;
+    }
+
+    public void setFirstLogin(Boolean firstLogin) {
+        this.firstLogin = firstLogin;
     }
 
     class InstitutionLastPhn {

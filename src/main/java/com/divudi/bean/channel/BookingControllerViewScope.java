@@ -78,6 +78,8 @@ import com.divudi.bean.opd.OpdBillController;
 import com.divudi.data.BillFinanceType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.OptionScope;
+import static com.divudi.data.PaymentMethod.Cash;
+import static com.divudi.data.PaymentMethod.MultiplePaymentMethods;
 import static com.divudi.data.PaymentMethod.OnlineSettlement;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.ejb.StaffBean;
@@ -2387,6 +2389,32 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 //        System.out.println("Payment Method = " + cancelPaymentMethod);
 
 //        System.out.println("getPaymentMethod = " + getCancelPaymentMethod());
+        switch (selectedBillSession.getBill().getPaymentMethod()) {
+            case Cash:
+                if (financialTransactionController.getLoggedUserDrawer().getCashInHandValue() == 0 || financialTransactionController.getLoggedUserDrawer().getCashInHandValue() < selectedBillSession.getBill().getPaidAmount()) {
+                    JsfUtil.addErrorMessage("No Enough Money in the Drawer");
+                    return;
+                }
+                break;
+            case Card:
+                if (financialTransactionController.getLoggedUserDrawer().getCashInHandValue() == 0 || financialTransactionController.getLoggedUserDrawer().getCashInHandValue() < selectedBillSession.getBill().getPaidAmount()) {
+                    JsfUtil.addErrorMessage("No Enough Money in the Drawer");
+                    return;
+                }
+            case MultiplePaymentMethods:
+                if (financialTransactionController.getLoggedUserDrawer().getCashInHandValue() == 0 || financialTransactionController.getLoggedUserDrawer().getCashInHandValue() < selectedBillSession.getBill().getPaidAmount()) {
+                    JsfUtil.addErrorMessage("No Enough Money in the Drawer");
+                    return;
+                }
+                break;    
+            case Cheque:
+                if (financialTransactionController.getLoggedUserDrawer().getCashInHandValue() == 0 || financialTransactionController.getLoggedUserDrawer().getCashInHandValue() < selectedBillSession.getBill().getPaidAmount()) {
+                    JsfUtil.addErrorMessage("No Enough Money in the Drawer");
+                    return;
+                }
+                break;     
+        }
+
         if (selectedBillSession.getBill().getBillType() == BillType.ChannelAgent) {
             cancelAgentPaidBill();
             return;
@@ -2545,14 +2573,14 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 return true;
             }
         }
-        if(getCancelPaymentMethod() == null){
-             JsfUtil.addErrorMessage("Can't Cancel Bill Without a Payement method");
-                return true;
+        if (getCancelPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Can't Cancel Bill Without a Payement method");
+            return true;
         }
-        
-        if(getCancelPaymentMethod() == PaymentMethod.MultiplePaymentMethods){
-             JsfUtil.addErrorMessage("Can't Cancel Bill under Multiple Payment method");
-                return true;
+
+        if (getCancelPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+            JsfUtil.addErrorMessage("Can't Cancel Bill under Multiple Payment method");
+            return true;
         }
 
         if (getBillSession().getBill().isCancelled()) {
@@ -3463,11 +3491,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             return;
         }
         addChannelBooking(false);
-        
+
         fillBillSessions();
         billingStarted = false;
-        
-        
+
     }
 
     public void addReservedChannelBooking() {
@@ -3601,7 +3628,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         if (printingBill.getBillTypeAtomic()
                 .getBillFinanceType() == BillFinanceType.CASH_IN) {
             List<Payment> p = createPayment(printingBill, paymentMethod);
-            
+
             drawerController.updateDrawerForIns(p);
         }
 
@@ -6120,19 +6147,19 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void calculateBillTotalsFromBillFeesForChangingFeeBeforeBillSettlings(BillFee updatingFee) {
-        System.out.println("calculateBillTotalsFromBillFeesForChangingFeeBeforeBillSettlings" );
-        
-        if(updatingFee==null){
+        System.out.println("calculateBillTotalsFromBillFeesForChangingFeeBeforeBillSettlings");
+
+        if (updatingFee == null) {
             return;
         }
-        
+
         System.out.println("updatingFee = " + updatingFee);
         System.out.println("updatingFee = " + updatingFee.getId());
         System.out.println("updatingFee = " + updatingFee.getFeeValue());
-        
+
         //TODO: Until Discount is finalized
         updatingFee.setFeeValue(updatingFee.getFeeGrossValue());
-        
+
         billFeeFacade.editAndCommit(updatingFee);
 
         selectedBillSession = billSessionFacade.find(selectedBillSession.getId());
@@ -6143,8 +6170,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             System.out.println("bi = " + bi);
             double calculatingGrossBillItemTotal = 0.0;
             double calculatingNetBillItemTotal = 0.0;
-            double billItemHospitalFee =0.0;
-            double billItemStaffFee=0.0;
+            double billItemHospitalFee = 0.0;
+            double billItemStaffFee = 0.0;
             for (BillFee iteratingBillFee : billBeanController.getBillFee(bi)) {
 
                 System.out.println("iteratingBillFee = " + updatingFee);
@@ -6157,14 +6184,13 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 calculatingGrossBillItemTotal += iteratingBillFee.getFeeGrossValue();
                 calculatingGrossBillTotal += iteratingBillFee.getFeeGrossValue();
                 calculatingNetBillTotal += iteratingBillFee.getFeeValue();
-                
-                if(iteratingBillFee.getStaff()!=null || iteratingBillFee.getSpeciality()!=null){
-                    billItemStaffFee+=iteratingBillFee.getFeeGrossValue();
-                }else{
-                    billItemHospitalFee+=iteratingBillFee.getFeeGrossValue();
+
+                if (iteratingBillFee.getStaff() != null || iteratingBillFee.getSpeciality() != null) {
+                    billItemStaffFee += iteratingBillFee.getFeeGrossValue();
+                } else {
+                    billItemHospitalFee += iteratingBillFee.getFeeGrossValue();
                 }
 
-                
             }
             bi.setGrossValue(calculatingGrossBillItemTotal);
             bi.setNetValue(calculatingNetBillItemTotal);
@@ -6176,7 +6202,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         selectedBillSession.getBill().setNetTotal(calculatingNetBillTotal);
         selectedBillSession.getBill().setTotal(calculatingGrossBillTotal);
         getBillFacade().edit(selectedBillSession.getBill());
-        feeTotalForSelectedBill=calculatingNetBillTotal;
+        feeTotalForSelectedBill = calculatingNetBillTotal;
         billSessionFacade.edit(selectedBillSession);
         selectedBillSession = billSessionFacade.find(selectedBillSession.getId());
 
@@ -6220,7 +6246,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
         billToCaclculate.setDiscount(calculatingGrossBillTotal - calculatingNetBillTotal);
         billToCaclculate.setNetTotal(calculatingNetBillTotal);
-        System.out.println(calculatingNetBillTotal+" g "+ calculatingGrossBillTotal);
+        System.out.println(calculatingNetBillTotal + " g " + calculatingGrossBillTotal);
         billToCaclculate.setTotal(calculatingGrossBillTotal);
         getBillFacade().edit(billToCaclculate);
     }
@@ -8434,7 +8460,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public PaymentMethod getSettlePaymentMethod() {
         if (settlePaymentMethod == null) {
-            settlePaymentMethod=paymentMethod.Cash;
+            settlePaymentMethod = paymentMethod.Cash;
         }
         return settlePaymentMethod;
     }

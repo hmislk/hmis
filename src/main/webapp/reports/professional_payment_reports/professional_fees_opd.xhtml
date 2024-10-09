@@ -256,6 +256,15 @@
                                 <p:badge value="Refunded" rendered="#{row.billFee.billItem.refunded}" styleClass="ui-badge-secondary"></p:badge>
                             </p:column>
 
+                            
+                            <p:column width="15em">
+                                <f:facet name="header">
+                                    <h:outputText value="Bill Type" />
+                                </f:facet>
+                                 <h:outputText value="#{row.billFee.bill.billTypeAtomic}"></h:outputText><br/>
+                                 <h:outputText value="#{row.billFee.createdAt}"></h:outputText><br/>
+                                  <h:outputText value="#{row.billFee.id}"></h:outputText><br/>
+                            </p:column>
 
                             <p:column>
                                 <f:facet name="header">
