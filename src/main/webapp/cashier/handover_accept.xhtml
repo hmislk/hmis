@@ -106,21 +106,19 @@
                                                 </div>
                                                 <div class="col-md-8 text-right">
                                                     <p:commandButton 
-                                                        value="Accept Handover as Main Cashier - Can not hanover again" 
+                                                        value="Accept Handover  - No Cashbook Entries" 
                                                         styleClass="ui-button-success mx-1" 
                                                         icon="pi pi-check-circle" 
                                                         ajax="false" 
-                                                        disabled="#{not webUserController.hasPrivilege('ShiftHandoverAcceptAsMainCashier')}"
                                                         onclick="return confirm('Are you sure you want to proceed with the handover?');" 
                                                         action="#{financialTransactionController.acceptHandoverBill()}">
                                                     </p:commandButton>
 
 
                                                     <p:commandButton 
-                                                        value="Accept Handover as Cashier - Need to hanover to main cashier" 
+                                                        value="Accept Handover and write to Cashbook" 
                                                         styleClass="ui-button-success mx-1" 
                                                         icon="pi pi-check-circle" 
-                                                        disabled="#{not webUserController.hasPrivilege('ShiftHandoverAcceptAsCashier')}"
                                                         ajax="false" 
                                                         onclick="return confirm('Are you sure you want to proceed with the handover?');" 
                                                         action="#{financialTransactionController.acceptHandoverBillAndWriteToCashbook()}">

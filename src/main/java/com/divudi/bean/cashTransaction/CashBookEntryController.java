@@ -8,6 +8,7 @@ package com.divudi.bean.cashTransaction;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.CashBookEntryData;
+import com.divudi.data.DateAndListOfSitesGroupedIntoInstitutions;
 import com.divudi.data.PaymentMethod;
 import static com.divudi.data.PaymentMethod.Card;
 import static com.divudi.data.PaymentMethod.Cash;
@@ -63,6 +64,8 @@ public class CashBookEntryController implements Serializable {
     private List<CashBookEntry> cashBookEntryList;
 
     boolean doNotWriteCashBookEntriesAtBillingForAnyPaymentMethod = true;
+    
+    List<DateAndListOfSitesGroupedIntoInstitutions> dailyCashbookSummaries;
 
     public void writeCashBookEntryAtPaymentCreation(Payment p) {
         if (p == null) {
@@ -190,10 +193,12 @@ public class CashBookEntryController implements Serializable {
             // Create a new CashBookEntry for each department combination
             CashBookEntry newCbEntry = new CashBookEntry();
             newCbEntry.setInstitution(bundle.getDepartment().getInstitution());
-            newCbEntry.setDepartment(entryData.getFromDepartment());
+            newCbEntry.setDepartment(bundle.getDepartment());
             newCbEntry.setSite(bundle.getDepartment().getSite());
             newCbEntry.setWebUser(bundle.getUser());
 
+            newCbEntry.setFromDepartment(entryData.getFromDepartment());
+            newCbEntry.setToDepartment(entryData.getToDepartment());
             newCbEntry.setFromInstitution(entryData.getFromDepartment().getInstitution());
             newCbEntry.setToInstitution(entryData.getToDepartment().getInstitution());
             newCbEntry.setFromSite(entryData.getFromDepartment().getSite());
@@ -245,7 +250,8 @@ public class CashBookEntryController implements Serializable {
             newCbEntry.setCashBook(bundleCb);
             cashbookEntryFacade.create(newCbEntry);
             cashbookEntries.add(newCbEntry);
-
+            updateCashbookEntryBalances(entryData, newCbEntry);
+            cashbookEntryFacade.edit(newCbEntry);
             cashbookFacade.editAndCommit(bundleCb); // Update CashBook after balance change
         }
 
@@ -316,7 +322,126 @@ public class CashBookEntryController implements Serializable {
         cbe.setFromSiteAgentBalanceAfter(cbe.getFromSiteAgentBalanceBefore() + entryData.getAgentValue());
         cbe.setToSiteAgentBalanceAfter(cbe.getToSiteAgentBalanceBefore() + entryData.getAgentValue());
 
+        cbe.setFromDepartmentChequeBalanceBefore(lastFromDepartmentEntry != null ? lastFromDepartmentEntry.getFromDepartmentChequeBalanceAfter() : 0.0);
+        cbe.setToDepartmentChequeBalanceBefore(lastToDepartmentEntry != null ? lastToDepartmentEntry.getToDepartmentChequeBalanceAfter() : 0.0);
+        cbe.setFromInstitutionChequeBalanceBefore(lastFromInstitutionEntry != null ? lastFromInstitutionEntry.getFromInstitutionChequeBalanceAfter() : 0.0);
+        cbe.setToInstitutionChequeBalanceBefore(lastToInstitutionEntry != null ? lastToInstitutionEntry.getToInstitutionChequeBalanceAfter() : 0.0);
+        cbe.setFromSiteChequeBalanceBefore(lastFromSiteEntry != null ? lastFromSiteEntry.getFromSiteChequeBalanceAfter() : 0.0);
+        cbe.setToSiteChequeBalanceBefore(lastToSiteEntry != null ? lastToSiteEntry.getToSiteChequeBalanceAfter() : 0.0);
+
+        cbe.setFromDepartmentChequeBalanceAfter(cbe.getFromDepartmentChequeBalanceBefore() + entryData.getChequeValue());
+        cbe.setToDepartmentChequeBalanceAfter(cbe.getToDepartmentChequeBalanceBefore() + entryData.getChequeValue());
+        cbe.setFromInstitutionChequeBalanceAfter(cbe.getFromInstitutionChequeBalanceBefore() + entryData.getChequeValue());
+        cbe.setToInstitutionChequeBalanceAfter(cbe.getToInstitutionChequeBalanceBefore() + entryData.getChequeValue());
+        cbe.setFromSiteChequeBalanceAfter(cbe.getFromSiteChequeBalanceBefore() + entryData.getChequeValue());
+        cbe.setToSiteChequeBalanceAfter(cbe.getToSiteChequeBalanceBefore() + entryData.getChequeValue());
+
+        cbe.setFromDepartmentChequeBalanceBefore(lastFromDepartmentEntry != null ? lastFromDepartmentEntry.getFromDepartmentChequeBalanceAfter() : 0.0);
+        cbe.setToDepartmentChequeBalanceBefore(lastToDepartmentEntry != null ? lastToDepartmentEntry.getToDepartmentChequeBalanceAfter() : 0.0);
+        cbe.setFromInstitutionChequeBalanceBefore(lastFromInstitutionEntry != null ? lastFromInstitutionEntry.getFromInstitutionChequeBalanceAfter() : 0.0);
+        cbe.setToInstitutionChequeBalanceBefore(lastToInstitutionEntry != null ? lastToInstitutionEntry.getToInstitutionChequeBalanceAfter() : 0.0);
+        cbe.setFromSiteChequeBalanceBefore(lastFromSiteEntry != null ? lastFromSiteEntry.getFromSiteChequeBalanceAfter() : 0.0);
+        cbe.setToSiteChequeBalanceBefore(lastToSiteEntry != null ? lastToSiteEntry.getToSiteChequeBalanceAfter() : 0.0);
+
+        cbe.setFromDepartmentChequeBalanceAfter(cbe.getFromDepartmentChequeBalanceBefore() + entryData.getChequeValue());
+        cbe.setToDepartmentChequeBalanceAfter(cbe.getToDepartmentChequeBalanceBefore() + entryData.getChequeValue());
+        cbe.setFromInstitutionChequeBalanceAfter(cbe.getFromInstitutionChequeBalanceBefore() + entryData.getChequeValue());
+        cbe.setToInstitutionChequeBalanceAfter(cbe.getToInstitutionChequeBalanceBefore() + entryData.getChequeValue());
+        cbe.setFromSiteChequeBalanceAfter(cbe.getFromSiteChequeBalanceBefore() + entryData.getChequeValue());
+        cbe.setToSiteChequeBalanceAfter(cbe.getToSiteChequeBalanceBefore() + entryData.getChequeValue());
+
+// Staff
+        cbe.setFromDepartmentStaffBalanceAfter(cbe.getFromDepartmentStaffBalanceBefore() + entryData.getStaffValue());
+        cbe.setToDepartmentStaffBalanceAfter(cbe.getToDepartmentStaffBalanceBefore() + entryData.getStaffValue());
+        cbe.setFromInstitutionStaffBalanceAfter(cbe.getFromInstitutionStaffBalanceBefore() + entryData.getStaffValue());
+        cbe.setToInstitutionStaffBalanceAfter(cbe.getToInstitutionStaffBalanceBefore() + entryData.getStaffValue());
+        cbe.setFromSiteStaffBalanceAfter(cbe.getFromSiteStaffBalanceBefore() + entryData.getStaffValue());
+        cbe.setToSiteStaffBalanceAfter(cbe.getToSiteStaffBalanceBefore() + entryData.getStaffValue());
+
+// Credit
+        cbe.setFromDepartmentCreditBalanceAfter(cbe.getFromDepartmentCreditBalanceBefore() + entryData.getCreditValue());
+        cbe.setToDepartmentCreditBalanceAfter(cbe.getToDepartmentCreditBalanceBefore() + entryData.getCreditValue());
+        cbe.setFromInstitutionCreditBalanceAfter(cbe.getFromInstitutionCreditBalanceBefore() + entryData.getCreditValue());
+        cbe.setToInstitutionCreditBalanceAfter(cbe.getToInstitutionCreditBalanceBefore() + entryData.getCreditValue());
+        cbe.setFromSiteCreditBalanceAfter(cbe.getFromSiteCreditBalanceBefore() + entryData.getCreditValue());
+        cbe.setToSiteCreditBalanceAfter(cbe.getToSiteCreditBalanceBefore() + entryData.getCreditValue());
+
+// Staff_Welfare
+        cbe.setFromDepartmentStaffWelfareBalanceAfter(cbe.getFromDepartmentStaffWelfareBalanceBefore() + entryData.getStaffWelfareValue());
+        cbe.setToDepartmentStaffWelfareBalanceAfter(cbe.getToDepartmentStaffWelfareBalanceBefore() + entryData.getStaffWelfareValue());
+        cbe.setFromInstitutionStaffWelfareBalanceAfter(cbe.getFromInstitutionStaffWelfareBalanceBefore() + entryData.getStaffWelfareValue());
+        cbe.setToInstitutionStaffWelfareBalanceAfter(cbe.getToInstitutionStaffWelfareBalanceBefore() + entryData.getStaffWelfareValue());
+        cbe.setFromSiteStaffWelfareBalanceAfter(cbe.getFromSiteStaffWelfareBalanceBefore() + entryData.getStaffWelfareValue());
+        cbe.setToSiteStaffWelfareBalanceAfter(cbe.getToSiteStaffWelfareBalanceBefore() + entryData.getStaffWelfareValue());
+
+// Voucher
+        cbe.setFromDepartmentVoucherBalanceAfter(cbe.getFromDepartmentVoucherBalanceBefore() + entryData.getVoucherValue());
+        cbe.setToDepartmentVoucherBalanceAfter(cbe.getToDepartmentVoucherBalanceBefore() + entryData.getVoucherValue());
+        cbe.setFromInstitutionVoucherBalanceAfter(cbe.getFromInstitutionVoucherBalanceBefore() + entryData.getVoucherValue());
+        cbe.setToInstitutionVoucherBalanceAfter(cbe.getToInstitutionVoucherBalanceBefore() + entryData.getVoucherValue());
+        cbe.setFromSiteVoucherBalanceAfter(cbe.getFromSiteVoucherBalanceBefore() + entryData.getVoucherValue());
+        cbe.setToSiteVoucherBalanceAfter(cbe.getToSiteVoucherBalanceBefore() + entryData.getVoucherValue());
+
+// IOU
+        cbe.setFromDepartmentIouBalanceAfter(cbe.getFromDepartmentIouBalanceBefore() + entryData.getIouValue());
+        cbe.setToDepartmentIouBalanceAfter(cbe.getFromDepartmentIouBalanceBefore() + entryData.getIouValue());
+        cbe.setFromInstitutionIouBalanceAfter(cbe.getFromInstitutionIouBalanceBefore() + entryData.getIouValue());
+        cbe.setToInstitutionIouBalanceAfter(cbe.getToInstitutionIouBalanceBefore() + entryData.getIouValue());
+        cbe.setFromSiteIouBalanceAfter(cbe.getFromSiteIouBalanceBefore() + entryData.getIouValue());
+        cbe.setToSiteIouBalanceAfter(cbe.getToSiteIouBalanceBefore() + entryData.getIouValue());
+
+// Agent
+        cbe.setFromDepartmentAgentBalanceAfter(cbe.getFromDepartmentAgentBalanceBefore() + entryData.getAgentValue());
+        cbe.setToDepartmentAgentBalanceAfter(cbe.getToDepartmentAgentBalanceBefore() + entryData.getAgentValue());
+        cbe.setFromInstitutionAgentBalanceAfter(cbe.getFromInstitutionAgentBalanceBefore() + entryData.getAgentValue());
+        cbe.setToInstitutionAgentBalanceAfter(cbe.getToInstitutionAgentBalanceBefore() + entryData.getAgentValue());
+        cbe.setFromSiteAgentBalanceAfter(cbe.getFromSiteAgentBalanceBefore() + entryData.getAgentValue());
+        cbe.setToSiteAgentBalanceAfter(cbe.getToSiteAgentBalanceBefore() + entryData.getAgentValue());
+
+// Slip
+        cbe.setFromDepartmentSlipBalanceAfter(cbe.getFromDepartmentSlipBalanceBefore() + entryData.getSlipValue());
+        cbe.setToDepartmentSlipBalanceAfter(cbe.getToDepartmentSlipBalanceBefore() + entryData.getSlipValue());
+        cbe.setFromInstitutionSlipBalanceAfter(cbe.getFromInstitutionSlipBalanceBefore() + entryData.getSlipValue());
+        cbe.setToInstitutionSlipBalanceAfter(cbe.getToInstitutionSlipBalanceBefore() + entryData.getSlipValue());
+        cbe.setFromSiteSlipBalanceAfter(cbe.getFromSiteSlipBalanceBefore() + entryData.getSlipValue());
+        cbe.setToSiteSlipBalanceAfter(cbe.getToSiteSlipBalanceBefore() + entryData.getSlipValue());
+
+// eWallet
+        cbe.setFromDepartmentEwalletBalanceAfter(cbe.getFromDepartmentEwalletBalanceBefore() + entryData.getEwalletValue());
+        cbe.setToDepartmentEwalletBalanceAfter(cbe.getToDepartmentEwalletBalanceBefore() + entryData.getEwalletValue());
+        cbe.setFromInstitutionEwalletBalanceAfter(cbe.getFromInstitutionEwalletBalanceBefore() + entryData.getEwalletValue());
+        cbe.setToInstitutionEwalletBalanceAfter(cbe.getToInstitutionEwalletBalanceBefore() + entryData.getEwalletValue());
+        cbe.setFromSiteEwalletBalanceAfter(cbe.getFromSiteEwalletBalanceBefore() + entryData.getEwalletValue());
+        cbe.setToSiteEwalletBalanceAfter(cbe.getToSiteEwalletBalanceBefore() + entryData.getEwalletValue());
+
+// Patient Deposit
+        cbe.setFromDepartmentPatientDepositBalanceAfter(cbe.getFromDepartmentPatientDepositBalanceBefore() + entryData.getPatientDepositValue());
+        cbe.setToDepartmentPatientDepositBalanceAfter(cbe.getToDepartmentPatientDepositBalanceBefore() + entryData.getPatientDepositValue());
+        cbe.setFromInstitutionPatientDepositBalanceAfter(cbe.getFromInstitutionPatientDepositBalanceBefore() + entryData.getPatientDepositValue());
+        cbe.setToInstitutionPatientDepositBalanceAfter(cbe.getToInstitutionPatientDepositBalanceBefore() + entryData.getPatientDepositValue());
+        cbe.setFromSitePatientDepositBalanceAfter(cbe.getFromSitePatientDepositBalanceBefore() + entryData.getPatientDepositValue());
+        cbe.setToSitePatientDepositBalanceAfter(cbe.getToSitePatientDepositBalanceBefore() + entryData.getPatientDepositValue());
+
+// Patient Points
+        cbe.setFromDepartmentPatientPointsBalanceAfter(cbe.getFromDepartmentPatientPointsBalanceBefore() + entryData.getPatientPointsValue());
+        cbe.setToDepartmentPatientPointsBalanceAfter(cbe.getToDepartmentPatientPointsBalanceBefore() + entryData.getPatientPointsValue());
+        cbe.setFromInstitutionPatientPointsBalanceAfter(cbe.getFromInstitutionPatientPointsBalanceBefore() + entryData.getPatientPointsValue());
+        cbe.setToInstitutionPatientPointsBalanceAfter(cbe.getToInstitutionPatientPointsBalanceBefore() + entryData.getPatientPointsValue());
+        cbe.setFromSitePatientPointsBalanceAfter(cbe.getFromSitePatientPointsBalanceBefore() + entryData.getPatientPointsValue());
+        cbe.setToSitePatientPointsBalanceAfter(cbe.getToSitePatientPointsBalanceBefore() + entryData.getPatientPointsValue());
+
+// Online Settlement
+        cbe.setFromDepartmentOnlineSettlementBalanceAfter(cbe.getFromDepartmentOnlineSettlementBalanceBefore() + entryData.getOnlineSettlementValue());
+        cbe.setToDepartmentOnlineSettlementBalanceAfter(cbe.getToDepartmentOnlineSettlementBalanceBefore() + entryData.getOnlineSettlementValue());
+        cbe.setFromInstitutionOnlineSettlementBalanceAfter(cbe.getFromInstitutionOnlineSettlementBalanceBefore() + entryData.getOnlineSettlementValue());
+        cbe.setToInstitutionOnlineSettlementBalanceAfter(cbe.getToInstitutionOnlineSettlementBalanceBefore() + entryData.getOnlineSettlementValue());
+        cbe.setFromSiteOnlineSettlementBalanceAfter(cbe.getFromSiteOnlineSettlementBalanceBefore() + entryData.getOnlineSettlementValue());
+        cbe.setToSiteOnlineSettlementBalanceAfter(cbe.getToSiteOnlineSettlementBalanceBefore() + entryData.getOnlineSettlementValue());
+
     }
+    
+    
+    
 
     private Double getBalanceByPaymentMethod(CashBook cashBook, PaymentMethod pm) {
         switch (pm) {
