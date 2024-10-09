@@ -12317,6 +12317,11 @@ public class SearchController implements Serializable {
         cashBookEntries = new ArrayList<>();
         return "/cashier/cash_book_entry";
     }
+    
+    public String navigateToListCashBookEntrySiteSummary() {
+        cashBookEntries = new ArrayList<>();
+        return "/cashier/cash_book_summery_site";
+    }
 
     public void genarateCashBookEntries() {
         cashBookEntries = cashBookEntryController.genarateCashBookEntries(fromDate, toDate, site, institution, department);
