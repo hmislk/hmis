@@ -307,8 +307,13 @@ public class SearchController implements Serializable {
     private int opdAnalyticsIndex;
 
     public String navigateToPettyCashBillApprove() {
-        createPettyApproveTable();
+        createPettyCashToApproveTable();
         return "/petty_cash_bill_to_approve?faces-redirect=true";
+    }
+    
+    public String navigateToPettyCashCancelBillApprove() {
+        createPettyApproveTable();
+        return "/petty_cash_cancel_bill_to_approve?faces-redirect=true";
     }
 
     public String navigateTobill(Bill bill) {
@@ -11953,7 +11958,25 @@ public class SearchController implements Serializable {
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("billTypes", billTypes);
-        bills = getBillFacade().findByJpql(sql, temMap);
+        bills = getBillFacade().findByJpql(sql, temMap,TemporalType.TIMESTAMP);
+
+    }
+    
+    public void createPettyCashToApproveTable() {
+        List<BillTypeAtomic> billTypes = new ArrayList<>();
+        billTypes.add(BillTypeAtomic.PETTY_CASH_ISSUE);
+
+        bills = null;
+        String sql;
+        Map temMap = new HashMap();
+        System.out.println("getFromDate() = " + getFromDate());
+        System.out.println("getToDate() = " + getToDate());
+        sql = "select b from Bill b where b.billTypeAtomic IN :billTypes and b.createdAt between :fromDate and :toDate and b.retired=false";
+        System.out.println("sql = " + sql);
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("billTypes", billTypes);
+        bills = getBillFacade().findByJpql(sql, temMap,TemporalType.TIMESTAMP);
 
     }
 

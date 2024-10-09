@@ -37,6 +37,7 @@
                                     <p:commandButton 
                                         class="my-1 w-100 ui-button-danger"
                                         value="End Shift - OLD"
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Legacy Handover is enabled')}"
                                         icon="pi pi-power-off" 
                                         ajax="false" 
                                         action="#{financialTransactionController.navigateToCreateShiftEndSummaryBill()}" >
@@ -45,6 +46,7 @@
                                     <p:commandButton 
                                         class="my-1 w-100 ui-button-primary"
                                         value="Handover (OLD)"
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Legacy Handover is enabled')}"
                                         icon="pi pi-forward"
                                         ajax="false" 
                                         action="#{financialTransactionController.navigateToHandoverCreateBill()}" >
@@ -64,6 +66,7 @@
                                         value="Handover Current Shift"
                                         icon="pi pi-forward"
                                         ajax="false" 
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Current Shift Handover is enabled')}"
                                         action="#{financialTransactionController.navigateToHandoverCreateBillForCurrentShift()}" >
                                     </p:commandButton>
 
@@ -71,6 +74,7 @@
                                         class="my-1 w-100 ui-button-primary"
                                         value="Handover By Period"
                                         icon="pi pi-forward"
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Period Handover is enabled')}"
                                         ajax="false" 
                                         action="#{financialTransactionController.navigateToHandoverCreateBillForSelectedPeriod()}" >
                                     </p:commandButton>
@@ -80,6 +84,7 @@
                                         class="my-1 w-100 ui-button-secondary"
                                         value="Handover Shift (OLD)"
                                         icon="pi pi-forward"
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Legacy Handover is enabled')}"
                                         ajax="false" 
                                         action="#{financialTransactionController.navigateToHandoverCreateBill()}" >
                                     </p:commandButton>
@@ -88,6 +93,7 @@
                                         class="my-1 w-100 ui-button-info"
                                         value="My Shifts"
                                         icon="pi pi-map-marker"
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Completed Shift Handover is enabled')}"
                                         ajax="false" 
                                         action="#{financialTransactionController.navigateToMyShifts}">
                                     </p:commandButton>
@@ -96,6 +102,7 @@
                                         class="my-1 w-100 ui-button-danger"
                                         value="Record Shift Shortage"
                                         icon="pi pi-minus"
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Shift Shortage Bills are enabled')}"
                                         ajax="false" 
                                         action="#{financialTransactionController.navigateToRecordShiftShortage()}" >
                                     </p:commandButton>
@@ -103,6 +110,7 @@
                                     <p:commandButton 
                                         class="my-1 w-100 ui-button-info"
                                         value="Record Shift Excess"
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Shift Excess Bills are enabled')}"
                                         icon="pi pi-plus"
                                         ajax="false" 
                                         action="#{financialTransactionController.navigateToRecordShiftExcess()}" >
@@ -111,6 +119,7 @@
                                     <p:commandButton 
                                         class="my-1 w-100 ui-button-warning"
                                         value="Shift Shortage Bill Search"
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Shift Shortage Bills are enabled')}"
                                         icon="fa fa-search"
                                         ajax="false" 
                                         action="#{financialTransactionController.navigateToCashierShiftBillSearch()}" >
