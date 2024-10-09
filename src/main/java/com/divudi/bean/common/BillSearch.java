@@ -1622,6 +1622,13 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage("Already Cancelled. Can not Refund again");
             return "";
         }
+               
+        
+        if (financialTransactionController.getLoggedUserDrawer().getCashInHandValue() < refundingBill.getNetTotal()){
+            JsfUtil.addErrorMessage("Not enough cash in the Drawer");
+            return "";
+        }
+        
 
         if (!getWebUserController().hasPrivilege("LabBillRefundSpecial")) {
             if (configOptionApplicationController.getBooleanValueByKey("Immediate Refund Request for OPO Bills of Any Status", true)) {
@@ -3084,6 +3091,14 @@ public class BillSearch implements Serializable {
         }
         return "/opd/view/opd_bill?faces-redirect=true;";
     }
+    
+    public String navigateToViewOpdRefundBill() {
+        if (viewingBill == null) {
+            JsfUtil.addErrorMessage("No Bill to Dsiplay");
+            return "";
+        }
+        return "/opd/view/opd_refund_bill?faces-redirect=true;";
+    }
 
     public String navigateToViewCancallationOpdBill() {
         if (viewingBill == null) {
@@ -3195,6 +3210,7 @@ public class BillSearch implements Serializable {
 
         return "/opd/bill_reprint?faces-redirect=true;";
     }
+    
 
     public String navigateToViewChannelingProfessionalPaymentBill() {
         if (bill == null) {
@@ -3262,7 +3278,7 @@ public class BillSearch implements Serializable {
                 pharmacyBillSearch.setBill(bill);
                 return pharmacyBillSearch.navigateToViewPharmacyGrn();
             case OPD_BILL_REFUND:
-                return navigateToManageOpdBill();
+                return navigateToViewOpdRefundBill();
             case OPD_BILL_CANCELLATION:
                 return navigateToManageOpdBill();
             case OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER:

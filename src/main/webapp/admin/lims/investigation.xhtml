@@ -383,6 +383,7 @@
                                         ajax="false" 
                                         value="Manage Valuesets" 
                                         action="#{investigationController.navigateToManageValueSetsForAdmin()}" >
+                                        <f:setPropertyActionListener value="#{investigationController.current}" target="#{investigationItemController.currentInvestigation}" ></f:setPropertyActionListener>
                                     </p:commandButton>
 
                                     <p:commandButton 
