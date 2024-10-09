@@ -7,10 +7,13 @@ package com.divudi.bean.cashTransaction;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.CashBookEntryData;
 import com.divudi.data.PaymentMethod;
 import static com.divudi.data.PaymentMethod.Card;
+import static com.divudi.data.PaymentMethod.Cash;
 import static com.divudi.data.PaymentMethod.OnCall;
 import static com.divudi.data.PaymentMethod.PatientDeposit;
+import com.divudi.data.ReportTemplateRow;
 import com.divudi.data.ReportTemplateRowBundle;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Department;
@@ -93,114 +96,226 @@ public class CashBookEntryController implements Serializable {
         System.out.println("writeCashBookEntryAtHandover by Bundle");
 
         if (bundle == null) {
-            JsfUtil.addErrorMessage("Cashbook Entry Error !");
+            JsfUtil.addErrorMessage("Cashbook Entry Error - No bundle !");
             return null;
         }
         if (bundleCb == null) {
-            JsfUtil.addErrorMessage("Cashbook Entry Error !");
+            JsfUtil.addErrorMessage("Cashbook Entry Error - No cashbook!");
             return null;
+        }
+        if (bundle.getUser() == null) {
+            JsfUtil.addErrorMessage("Cashbook Entry Error  - No user !");
+            return null;
+        }
+
+        Map<String, CashBookEntryData> cashbookEntryDataMap = new HashMap<>();
+
+        for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
+            if (row.getPayment() == null || row.getPayment().getPaymentMethod() == null || row.getPayment().getBill() == null || row.getPayment().getBill().getBillTypeAtomic() == null) {
+                continue;
+            }
+            if (row.getPayment().getCashbookEntryCompleted()) {
+                continue;
+            }
+
+            Department fromDepartment = row.getPayment().getBill().getFromDepartment() != null ? row.getPayment().getBill().getFromDepartment() : sessionController.getDepartment();
+            Department toDepartment = row.getPayment().getBill().getToDepartment() != null ? row.getPayment().getBill().getToDepartment() : sessionController.getDepartment();
+
+            String departmentKey = fromDepartment.getId() + "-" + toDepartment.getId();
+
+            CashBookEntryData entryData = cashbookEntryDataMap.getOrDefault(departmentKey, new CashBookEntryData(fromDepartment, toDepartment));
+
+            PaymentMethod pm = row.getPayment().getPaymentMethod();
+            double paidValue = row.getPayment().getPaidValue();
+
+            switch (pm) {
+                case Cash:
+                    entryData.setCashValue(entryData.getCashValue() + paidValue);
+                    break;
+                case Card:
+                    entryData.setCardValue(entryData.getCardValue() + paidValue);
+                    break;
+                case Agent:
+                    entryData.setAgentValue(entryData.getAgentValue() + paidValue);
+                    break;
+                case Cheque:
+                    entryData.setChequeValue(entryData.getChequeValue() + paidValue);
+                    break;
+                case Credit:
+                    entryData.setCreditValue(entryData.getCreditValue() + paidValue);
+                    break;
+                case IOU:
+                    entryData.setIouValue(entryData.getIouValue() + paidValue);
+                    break;
+                case MultiplePaymentMethods:
+                    entryData.setMultiplePaymentMethodsValue(entryData.getMultiplePaymentMethodsValue() + paidValue);
+                    break;
+                case OnCall:
+                    entryData.setOnCallValue(entryData.getOnCallValue() + paidValue);
+                    break;
+                case OnlineSettlement:
+                    entryData.setOnlineSettlementValue(entryData.getOnlineSettlementValue() + paidValue);
+                    break;
+                case PatientDeposit:
+                    entryData.setPatientDepositValue(entryData.getPatientDepositValue() + paidValue);
+                    break;
+                case PatientPoints:
+                    entryData.setPatientPointsValue(entryData.getPatientPointsValue() + paidValue);
+                    break;
+                case Slip:
+                    entryData.setSlipValue(entryData.getSlipValue() + paidValue);
+                    break;
+                case Staff:
+                    entryData.setStaffValue(entryData.getStaffValue() + paidValue);
+                    break;
+                case Staff_Welfare:
+                    entryData.setStaffWelfareValue(entryData.getStaffWelfareValue() + paidValue);
+                    break;
+                case Voucher:
+                    entryData.setVoucherValue(entryData.getVoucherValue() + paidValue);
+                    break;
+                case ewallet:
+                    entryData.setEwalletValue(entryData.getEwalletValue() + paidValue);
+                    break;
+            }
+
+            cashbookEntryDataMap.put(departmentKey, entryData);
         }
 
         List<CashBookEntry> cashbookEntries = new ArrayList<>();
 
-        bundleCb = cashbookFacade.findWithLock(bundleCb.getId());
+        for (CashBookEntryData entryData : cashbookEntryDataMap.values()) {
+            bundleCb = cashbookFacade.findWithLock(bundleCb.getId());
 
-        for (PaymentMethod pm : PaymentMethod.asList()) {
-            Double value = 0.0;
-            switch (pm) {
-                case Cash:
-                    value = bundle.getCashValue();
-                    break;
-                case Card:
-                    value = bundle.getCardValue();
-                    break;
-                case Agent:
-                    value = bundle.getAgentValue();
-                    break;
-                case Cheque:
-                    value = bundle.getChequeValue();
-                    break;
-                case Credit:
-                    value = bundle.getCreditValue();
-                    break;
-                case IOU:
-                    value = bundle.getIouValue();
-                    break;
-                case MultiplePaymentMethods:
-                    value = bundle.getMultiplePaymentMethodsValue();
-                    break;
-                case OnCall:
-                    value = bundle.getOnCallValue();
-                    break;
-                case OnlineSettlement:
-                    value = bundle.getOnlineSettlementValue();
-                    break;
-                case PatientDeposit:
-                    value = bundle.getPatientDepositValue();
-                    break;
-                case PatientPoints:
-                    value = bundle.getPatientPointsValue();
-                    break;
-                case Slip:
-                    value = bundle.getSlipValue();
-                    break;
-                case Staff:
-                    value = bundle.getStaffValue();
-                    break;
-                case Staff_Welfare:
-                    value = bundle.getStaffWelfareValue();
-                    break;
-                case Voucher:
-                    value = bundle.getVoucherValue();
-                    break;
-                case ewallet:
-                    value = bundle.getEwalletValue();
-                    break;
-                default:
-                    continue; // Skip the rest if not applicable
-            }
-
-            if (value == 0.0) {
-                continue;
-            }
-
-            // Create a new CashBookEntry
+            // Create a new CashBookEntry for each department combination
             CashBookEntry newCbEntry = new CashBookEntry();
             newCbEntry.setInstitution(bundle.getDepartment().getInstitution());
-            newCbEntry.setDepartment(bundle.getDepartment());
+            newCbEntry.setDepartment(entryData.getFromDepartment());
             newCbEntry.setSite(bundle.getDepartment().getSite());
             newCbEntry.setWebUser(bundle.getUser());
+
+            newCbEntry.setFromInstitution(entryData.getFromDepartment().getInstitution());
+            newCbEntry.setToInstitution(entryData.getToDepartment().getInstitution());
+            newCbEntry.setFromSite(entryData.getFromDepartment().getSite());
+            newCbEntry.setToSite(entryData.getFromDepartment().getSite());
+
             newCbEntry.setCashbookDate(bundle.getDate());
             newCbEntry.setCreater(sessionController.getLoggedUser());
             newCbEntry.setCreatedAt(new Date());
-            newCbEntry.setPaymentMethod(pm);
-            newCbEntry.setEntryValue(value);
             newCbEntry.setBill(bill);
+
+            newCbEntry.setCashValue(entryData.getCashValue());
+            newCbEntry.setCardValue(entryData.getCardValue());
+            newCbEntry.setAgentValue(entryData.getAgentValue());
+            newCbEntry.setChequeValue(entryData.getChequeValue());
+            newCbEntry.setCreditValue(entryData.getCreditValue());
+            newCbEntry.setIouValue(entryData.getIouValue());
+            newCbEntry.setMultiplePaymentMethodsValue(entryData.getMultiplePaymentMethodsValue());
+            newCbEntry.setOnCallValue(entryData.getOnCallValue());
+            newCbEntry.setOnlineSettlementValue(entryData.getOnlineSettlementValue());
+            newCbEntry.setPatientDepositValue(entryData.getPatientDepositValue());
+            newCbEntry.setPatientPointsValue(entryData.getPatientPointsValue());
+            newCbEntry.setSlipValue(entryData.getSlipValue());
+            newCbEntry.setStaffValue(entryData.getStaffValue());
+            newCbEntry.setStaffWelfareValue(entryData.getStaffWelfareValue());
+            newCbEntry.setVoucherValue(entryData.getVoucherValue());
+            newCbEntry.setEwalletValue(entryData.getEwalletValue());
+
+            double totalEntryValue
+                    = entryData.getCashValue()
+                    + entryData.getCardValue()
+                    + entryData.getAgentValue()
+                    + entryData.getChequeValue()
+                    + entryData.getCreditValue()
+                    + entryData.getIouValue()
+                    + entryData.getMultiplePaymentMethodsValue()
+                    + entryData.getOnCallValue()
+                    + entryData.getOnlineSettlementValue()
+                    + entryData.getPatientDepositValue()
+                    + entryData.getPatientPointsValue()
+                    + entryData.getSlipValue()
+                    + entryData.getStaffValue()
+                    + entryData.getStaffWelfareValue()
+                    + entryData.getVoucherValue()
+                    + entryData.getEwalletValue();
+            entryData.setTotal(totalEntryValue);
+
+            newCbEntry.setEntryValue(totalEntryValue);
+
             newCbEntry.setCashBook(bundleCb);
-
-            // Get the current balance from CashBook and set it in CashBookEntry before entry
-            Double balanceBefore = getBalanceByPaymentMethod(bundleCb, pm);
-            if (balanceBefore == null) {
-                balanceBefore = 0.0;
-            }
-            setBalanceBefore(newCbEntry, pm, balanceBefore);
-
-            // Update the CashBook balance with the new value
-            Double newBalance = balanceBefore + value;
-            updateCashBookBalance(bundleCb, pm, newBalance);
-
-            // Set the balance after the entry in CashBookEntry
-            setBalanceAfter(newCbEntry, pm, newBalance);
-
-            // Persist the changes
             cashbookEntryFacade.create(newCbEntry);
             cashbookEntries.add(newCbEntry);
-            cashbookFacade.editAndCommit(bundleCb); // Update CashBook after balance change
 
-            System.out.println("newCbEntry = " + newCbEntry);
+            cashbookFacade.editAndCommit(bundleCb); // Update CashBook after balance change
         }
 
         return cashbookEntries;
+    }
+
+    private void updateCashbookEntryBalances(CashBookEntryData entryData, CashBookEntry cbe) {
+        CashBookEntry lastFromDepartmentEntry = fetchLastCashbookEntryForFromDepartment(entryData.getFromDepartment());
+        CashBookEntry lastToDepartmentEntry = fetchLastCashbookEntryForToDepartment(entryData.getToDepartment());
+        CashBookEntry lastFromInstitutionEntry = fetchLastCashbookEntryForFromInstitution(entryData.getFromDepartment().getInstitution());
+        CashBookEntry lastToInstitutionEntry = fetchLastCashbookEntryForToInstitution(entryData.getToDepartment().getInstitution());
+        CashBookEntry lastFromSiteEntry = fetchLastCashbookEntryForFromSite(entryData.getFromDepartment().getSite());
+        CashBookEntry lastToSiteEntry = fetchLastCashbookEntryForToSite(entryData.getToDepartment().getSite());
+
+        cbe.setFromDepartmentBalanceBefore(lastFromDepartmentEntry != null ? lastFromDepartmentEntry.getFromDepartmentBalanceAfter() : 0.0);
+        cbe.setToDepartmentBalanceBefore(lastToDepartmentEntry != null ? lastToDepartmentEntry.getFromDepartmentBalanceAfter() : 0.0);
+        cbe.setFromInstitutionBalanceBefore(lastFromInstitutionEntry != null ? lastFromInstitutionEntry.getFromInstitutionBalanceAfter() : 0.0);
+        cbe.setToInstitutionBalanceBefore(lastToInstitutionEntry != null ? lastToInstitutionEntry.getToInstitutionBalanceAfter() : 0.0);
+        cbe.setFromSiteBalanceBefore(lastFromSiteEntry != null ? lastFromSiteEntry.getFromSiteBalanceAfter() : 0.0);
+        cbe.setToSiteBalanceBefore(lastToSiteEntry != null ? lastToSiteEntry.getToSiteBalanceAfter() : 0.0);
+
+        cbe.setFromDepartmentBalanceAfter(cbe.getFromDepartmentBalanceBefore() + entryData.getTotal());
+        cbe.setToDepartmentBalanceAfter(cbe.getToDepartmentBalanceBefore() + entryData.getTotal());
+        cbe.setFromInstitutionBalanceAfter(cbe.getFromInstitutionBalanceBefore() + entryData.getTotal());
+        cbe.setToInstitutionBalanceAfter(cbe.getToInstitutionBalanceBefore() + entryData.getTotal());
+        cbe.setFromSiteBalanceAfter(cbe.getFromSiteBalanceBefore() + entryData.getTotal());
+        cbe.setToSiteBalanceAfter(cbe.getToSiteBalanceBefore() + entryData.getTotal());
+
+        cbe.setFromDepartmentCashBalanceBefore(lastFromDepartmentEntry != null ? lastFromDepartmentEntry.getFromDepartmentCashBalanceAfter() : 0.0);
+        cbe.setToDepartmentCashBalanceBefore(lastToDepartmentEntry != null ? lastToDepartmentEntry.getToDepartmentCashBalanceAfter() : 0.0);
+        cbe.setFromInstitutionCashBalanceBefore(lastFromInstitutionEntry != null ? lastFromInstitutionEntry.getFromInstitutionCashBalanceAfter() : 0.0);
+        cbe.setToInstitutionCashBalanceBefore(lastToInstitutionEntry != null ? lastToInstitutionEntry.getToInstitutionCashBalanceAfter() : 0.0);
+        cbe.setFromSiteCashBalanceBefore(lastFromSiteEntry != null ? lastFromSiteEntry.getFromSiteCashBalanceAfter() : 0.0);
+        cbe.setToSiteCashBalanceBefore(lastToSiteEntry != null ? lastToSiteEntry.getToSiteCashBalanceAfter() : 0.0);
+
+        cbe.setFromDepartmentCashBalanceAfter(cbe.getFromDepartmentCashBalanceBefore() + entryData.getCashValue());
+        cbe.setToDepartmentCashBalanceAfter(cbe.getToDepartmentCashBalanceBefore() + entryData.getCashValue());
+        cbe.setFromInstitutionCashBalanceAfter(cbe.getFromInstitutionCashBalanceBefore() + entryData.getCashValue());
+        cbe.setToInstitutionCashBalanceAfter(cbe.getToInstitutionCashBalanceBefore() + entryData.getCashValue());
+        cbe.setFromSiteCashBalanceAfter(cbe.getFromSiteCashBalanceBefore() + entryData.getCashValue());
+        cbe.setToSiteCashBalanceAfter(cbe.getToSiteCashBalanceBefore() + entryData.getCashValue());
+
+        cbe.setFromDepartmentCardBalanceBefore(lastFromDepartmentEntry != null ? lastFromDepartmentEntry.getFromDepartmentCardBalanceAfter() : 0.0);
+        cbe.setToDepartmentCardBalanceBefore(lastToDepartmentEntry != null ? lastToDepartmentEntry.getToDepartmentCardBalanceAfter() : 0.0);
+        cbe.setFromInstitutionCardBalanceBefore(lastFromInstitutionEntry != null ? lastFromInstitutionEntry.getFromInstitutionCardBalanceAfter() : 0.0);
+        cbe.setToInstitutionCardBalanceBefore(lastToInstitutionEntry != null ? lastToInstitutionEntry.getToInstitutionCardBalanceAfter() : 0.0);
+        cbe.setFromSiteCardBalanceBefore(lastFromSiteEntry != null ? lastFromSiteEntry.getFromSiteCardBalanceAfter() : 0.0);
+        cbe.setToSiteCardBalanceBefore(lastToSiteEntry != null ? lastToSiteEntry.getToSiteCardBalanceAfter() : 0.0);
+
+        cbe.setFromDepartmentCardBalanceAfter(cbe.getFromDepartmentCardBalanceBefore() + entryData.getCardValue());
+        cbe.setToDepartmentCardBalanceAfter(cbe.getToDepartmentCardBalanceBefore() + entryData.getCardValue());
+        cbe.setFromInstitutionCardBalanceAfter(cbe.getFromInstitutionCardBalanceBefore() + entryData.getCardValue());
+        cbe.setToInstitutionCardBalanceAfter(cbe.getToInstitutionCardBalanceBefore() + entryData.getCardValue());
+        cbe.setFromSiteCardBalanceAfter(cbe.getFromSiteCardBalanceBefore() + entryData.getCardValue());
+        cbe.setToSiteCardBalanceAfter(cbe.getToSiteCardBalanceBefore() + entryData.getCardValue());
+
+        cbe.setFromDepartmentAgentBalanceBefore(lastFromDepartmentEntry != null ? lastFromDepartmentEntry.getFromDepartmentAgentBalanceAfter() : 0.0);
+        cbe.setToDepartmentAgentBalanceBefore(lastToDepartmentEntry != null ? lastToDepartmentEntry.getToDepartmentAgentBalanceAfter() : 0.0);
+        cbe.setFromInstitutionAgentBalanceBefore(lastFromInstitutionEntry != null ? lastFromInstitutionEntry.getFromInstitutionAgentBalanceAfter() : 0.0);
+        cbe.setToInstitutionAgentBalanceBefore(lastToInstitutionEntry != null ? lastToInstitutionEntry.getToInstitutionAgentBalanceAfter() : 0.0);
+        cbe.setFromSiteAgentBalanceBefore(lastFromSiteEntry != null ? lastFromSiteEntry.getFromSiteAgentBalanceAfter() : 0.0);
+        cbe.setToSiteAgentBalanceBefore(lastToSiteEntry != null ? lastToSiteEntry.getToSiteAgentBalanceAfter() : 0.0);
+
+        cbe.setFromDepartmentAgentBalanceAfter(cbe.getFromDepartmentAgentBalanceBefore() + entryData.getAgentValue());
+        cbe.setToDepartmentAgentBalanceAfter(cbe.getToDepartmentAgentBalanceBefore() + entryData.getAgentValue());
+        cbe.setFromInstitutionAgentBalanceAfter(cbe.getFromInstitutionAgentBalanceBefore() + entryData.getAgentValue());
+        cbe.setToInstitutionAgentBalanceAfter(cbe.getToInstitutionAgentBalanceBefore() + entryData.getAgentValue());
+        cbe.setFromSiteAgentBalanceAfter(cbe.getFromSiteAgentBalanceBefore() + entryData.getAgentValue());
+        cbe.setToSiteAgentBalanceAfter(cbe.getToSiteAgentBalanceBefore() + entryData.getAgentValue());
+
     }
 
     private Double getBalanceByPaymentMethod(CashBook cashBook, PaymentMethod pm) {
@@ -297,114 +412,186 @@ public class CashBookEntryController implements Serializable {
         }
     }
 
+    public CashBookEntry fetchLastCashbookEntryForFromDepartment(Department dept) {
+        String jpql = "select e "
+                + " from CashBookEntry e "
+                + " where e.retired=:ret "
+                + " and e.fromDepartment=:dep"
+                + " order by e.id desc";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("dep", dept);
+        return cashbookEntryFacade.findFirstByJpql(jpql, m);
+    }
+
+    public CashBookEntry fetchLastCashbookEntryForToDepartment(Department dept) {
+        String jpql = "select e "
+                + " from CashBookEntry e "
+                + " where e.retired=:ret "
+                + " and e.toDepartment=:dep"
+                + " order by e.id desc";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("dep", dept);
+        return cashbookEntryFacade.findFirstByJpql(jpql, m);
+    }
+
+    public CashBookEntry fetchLastCashbookEntryForFromInstitution(Institution institution) {
+        String jpql = "select e "
+                + " from CashBookEntry e "
+                + " where e.retired = :ret "
+                + " and e.fromInstitution = :inst "
+                + " order by e.id desc";
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("inst", institution);
+        return cashbookEntryFacade.findFirstByJpql(jpql, m);
+    }
+
+    public CashBookEntry fetchLastCashbookEntryForToInstitution(Institution institution) {
+        String jpql = "select e "
+                + " from CashBookEntry e "
+                + " where e.retired = :ret "
+                + " and e.toInstitution = :inst "
+                + " order by e.id desc";
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("inst", institution);
+        return cashbookEntryFacade.findFirstByJpql(jpql, m);
+    }
+
+    public CashBookEntry fetchLastCashbookEntryForFromSite(Institution site) {
+        String jpql = "select e "
+                + " from CashBookEntry e "
+                + " where e.retired = :ret "
+                + " and e.fromSite = :site "
+                + " order by e.id desc";
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("site", site);
+        return cashbookEntryFacade.findFirstByJpql(jpql, m);
+    }
+
+    public CashBookEntry fetchLastCashbookEntryForToSite(Institution site) {
+        String jpql = "select e "
+                + " from CashBookEntry e "
+                + " where e.retired = :ret "
+                + " and e.toSite = :site "
+                + " order by e.id desc";
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("site", site);
+        return cashbookEntryFacade.findFirstByJpql(jpql, m);
+    }
+
     private void setBalanceBefore(CashBookEntry cashBookEntry, PaymentMethod pm, Double balanceBefore) {
-        switch (pm) {
-            case Cash:
-                cashBookEntry.setCashBalanceBefore(balanceBefore);
-                break;
-            case Card:
-                cashBookEntry.setCardBalanceBefore(balanceBefore);
-                break;
-            case Agent:
-                cashBookEntry.setAgentBalanceBefore(balanceBefore);
-                break;
-            case Cheque:
-                cashBookEntry.setChequeBalanceBefore(balanceBefore);
-                break;
-            case Credit:
-                cashBookEntry.setCreditBalanceBefore(balanceBefore);
-                break;
-            case IOU:
-                cashBookEntry.setIouBalanceBefore(balanceBefore);
-                break;
-            case MultiplePaymentMethods:
-                cashBookEntry.setMultiplePaymentMethodsBalanceBefore(balanceBefore);
-                break;
-            case OnCall:
-                cashBookEntry.setOnCallBalanceBefore(balanceBefore);
-                break;
-            case OnlineSettlement:
-                cashBookEntry.setOnlineSettlementBalanceBefore(balanceBefore);
-                break;
-            case PatientDeposit:
-                cashBookEntry.setPatientDepositBalanceBefore(balanceBefore);
-                break;
-            case PatientPoints:
-                cashBookEntry.setPatientPointsBalanceBefore(balanceBefore);
-                break;
-            case Slip:
-                cashBookEntry.setSlipBalanceBefore(balanceBefore);
-                break;
-            case Staff:
-                cashBookEntry.setStaffBalanceBefore(balanceBefore);
-                break;
-            case Staff_Welfare:
-                cashBookEntry.setStaffWelfareBalanceBefore(balanceBefore);
-                break;
-            case Voucher:
-                cashBookEntry.setVoucherBalanceBefore(balanceBefore);
-                break;
-            case ewallet:
-                cashBookEntry.setEwalletBalanceBefore(balanceBefore);
-                break;
-            default:
-                break;
-        }
+//        switch (pm) {
+//            case Cash:
+//                cashBookEntry.setCashBalanceBefore(balanceBefore);
+//                break;
+//            case Card:
+//                cashBookEntry.setCardBalanceBefore(balanceBefore);
+//                break;
+//            case Agent:
+//                cashBookEntry.setAgentBalanceBefore(balanceBefore);
+//                break;
+//            case Cheque:
+//                cashBookEntry.setChequeBalanceBefore(balanceBefore);
+//                break;
+//            case Credit:
+//                cashBookEntry.setCreditBalanceBefore(balanceBefore);
+//                break;
+//            case IOU:
+//                cashBookEntry.setIouBalanceBefore(balanceBefore);
+//                break;
+//            case MultiplePaymentMethods:
+//                cashBookEntry.setMultiplePaymentMethodsBalanceBefore(balanceBefore);
+//                break;
+//            case OnCall:
+//                cashBookEntry.setOnCallBalanceBefore(balanceBefore);
+//                break;
+//            case OnlineSettlement:
+//                cashBookEntry.setOnlineSettlementBalanceBefore(balanceBefore);
+//                break;
+//            case PatientDeposit:
+//                cashBookEntry.setPatientDepositBalanceBefore(balanceBefore);
+//                break;
+//            case PatientPoints:
+//                cashBookEntry.setPatientPointsBalanceBefore(balanceBefore);
+//                break;
+//            case Slip:
+//                cashBookEntry.setSlipBalanceBefore(balanceBefore);
+//                break;
+//            case Staff:
+//                cashBookEntry.setStaffBalanceBefore(balanceBefore);
+//                break;
+//            case Staff_Welfare:
+//                cashBookEntry.setStaffWelfareBalanceBefore(balanceBefore);
+//                break;
+//            case Voucher:
+//                cashBookEntry.setVoucherBalanceBefore(balanceBefore);
+//                break;
+//            case ewallet:
+//                cashBookEntry.setEwalletBalanceBefore(balanceBefore);
+//                break;
+//            default:
+//                break;
+//        }
     }
 
     private void setBalanceAfter(CashBookEntry cashBookEntry, PaymentMethod pm, Double balanceAfter) {
-        switch (pm) {
-            case Cash:
-                cashBookEntry.setCashBalanceAfter(balanceAfter);
-                break;
-            case Card:
-                cashBookEntry.setCardBalanceAfter(balanceAfter);
-                break;
-            case Agent:
-                cashBookEntry.setAgentBalanceAfter(balanceAfter);
-                break;
-            case Cheque:
-                cashBookEntry.setChequeBalanceAfter(balanceAfter);
-                break;
-            case Credit:
-                cashBookEntry.setCreditBalanceAfter(balanceAfter);
-                break;
-            case IOU:
-                cashBookEntry.setIouBalanceAfter(balanceAfter);
-                break;
-            case MultiplePaymentMethods:
-                cashBookEntry.setMultiplePaymentMethodsBalanceAfter(balanceAfter);
-                break;
-            case OnCall:
-                cashBookEntry.setOnCallBalanceAfter(balanceAfter);
-                break;
-            case OnlineSettlement:
-                cashBookEntry.setOnlineSettlementBalanceAfter(balanceAfter);
-                break;
-            case PatientDeposit:
-                cashBookEntry.setPatientDepositBalanceAfter(balanceAfter);
-                break;
-            case PatientPoints:
-                cashBookEntry.setPatientPointsBalanceAfter(balanceAfter);
-                break;
-            case Slip:
-                cashBookEntry.setSlipBalanceAfter(balanceAfter);
-                break;
-            case Staff:
-                cashBookEntry.setStaffBalanceAfter(balanceAfter);
-                break;
-            case Staff_Welfare:
-                cashBookEntry.setStaffWelfareBalanceAfter(balanceAfter);
-                break;
-            case Voucher:
-                cashBookEntry.setVoucherBalanceAfter(balanceAfter);
-                break;
-            case ewallet:
-                cashBookEntry.setEwalletBalanceAfter(balanceAfter);
-                break;
-            default:
-                break;
-        }
+//        switch (pm) {
+//            case Cash:
+//                cashBookEntry.setCashBalanceAfter(balanceAfter);
+//                break;
+//            case Card:
+//                cashBookEntry.setCardBalanceAfter(balanceAfter);
+//                break;
+//            case Agent:
+//                cashBookEntry.setAgentBalanceAfter(balanceAfter);
+//                break;
+//            case Cheque:
+//                cashBookEntry.setChequeBalanceAfter(balanceAfter);
+//                break;
+//            case Credit:
+//                cashBookEntry.setCreditBalanceAfter(balanceAfter);
+//                break;
+//            case IOU:
+//                cashBookEntry.setIouBalanceAfter(balanceAfter);
+//                break;
+//            case MultiplePaymentMethods:
+//                cashBookEntry.setMultiplePaymentMethodsBalanceAfter(balanceAfter);
+//                break;
+//            case OnCall:
+//                cashBookEntry.setOnCallBalanceAfter(balanceAfter);
+//                break;
+//            case OnlineSettlement:
+//                cashBookEntry.setOnlineSettlementBalanceAfter(balanceAfter);
+//                break;
+//            case PatientDeposit:
+//                cashBookEntry.setPatientDepositBalanceAfter(balanceAfter);
+//                break;
+//            case PatientPoints:
+//                cashBookEntry.setPatientPointsBalanceAfter(balanceAfter);
+//                break;
+//            case Slip:
+//                cashBookEntry.setSlipBalanceAfter(balanceAfter);
+//                break;
+//            case Staff:
+//                cashBookEntry.setStaffBalanceAfter(balanceAfter);
+//                break;
+//            case Staff_Welfare:
+//                cashBookEntry.setStaffWelfareBalanceAfter(balanceAfter);
+//                break;
+//            case Voucher:
+//                cashBookEntry.setVoucherBalanceAfter(balanceAfter);
+//                break;
+//            case ewallet:
+//                cashBookEntry.setEwalletBalanceAfter(balanceAfter);
+//                break;
+//            default:
+//                break;
+//        }
     }
 
     public void writeCashBookEntryAtHandover(Payment p, CashBook cb) {
@@ -472,33 +659,8 @@ public class CashBookEntryController implements Serializable {
             lastInstitutionBalance = 0.0;
             lastSiteBalance = 0.0;
         } else {
-            if (lastCashBookEntry.getDepartmentBalance() != null) {
-                lastDepartmentBalance = lastCashBookEntry.getDepartmentBalance();
-            } else {
-                lastDepartmentBalance = 0.0;
-            }
 
-            if (lastCashBookEntry.getInstitutionBalance() != null) {
-                lastInstitutionBalance = lastCashBookEntry.getInstitutionBalance();
-            } else {
-                lastInstitutionBalance = 0.0;
-            }
-
-            if (lastCashBookEntry.getSiteBalance() != null) {
-                lastSiteBalance = lastCashBookEntry.getSiteBalance();
-            } else {
-                lastSiteBalance = 0.0;
-            }
         }
-
-        Double newDepartmentBalance = lastDepartmentBalance + Value;
-        Double newInstitutionBalance = lastInstitutionBalance + Value;
-        Double newSiteBalance = lastSiteBalance + Value;
-
-        cbe.setDepartmentBalance(newDepartmentBalance);
-        cbe.setInstitutionBalance(newInstitutionBalance);
-        cbe.setSiteBalance(newSiteBalance);
-
     }
 
     public boolean chackPaymentMethodForCashBookEntryAtPaymentMethodCreation(PaymentMethod pm) {
@@ -675,6 +837,7 @@ public class CashBookEntryController implements Serializable {
 
     public void setCashBookEntryList(List<CashBookEntry> cashBookEntryList) {
         this.cashBookEntryList = cashBookEntryList;
+
     }
 
     /**
