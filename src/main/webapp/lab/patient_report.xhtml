@@ -179,10 +179,10 @@
                                                             <h:outputLabel value="#{pvcal.investigationItem.name}" ></h:outputLabel>
                                                         </td>
                                                         <td >
-                                                            <h:inputText autocomplete="off" value="#{pvcal.strValue}" disabled="#{patientReportController.currentPatientReport.approved}"
+                                                            <p:inputText autocomplete="off" value="#{pvcal.strValue}" disabled="#{patientReportController.currentPatientReport.approved}"
                                                                          rendered="#{pvcal.investigationItem.ixItemValueType eq 'Varchar'}" >
                                                                 <f:ajax execute="@this" event="blur" listener="#{patientReportController.savePatientReportItemValues()}"></f:ajax>
-                                                            </h:inputText>
+                                                            </p:inputText>
                                                             <p:inputText autocomplete="off" value="#{pvcal.doubleValue}" disabled="#{patientReportController.currentPatientReport.approved}"
                                                                          rendered="#{pvcal.investigationItem.ixItemValueType eq 'Double'}" >
                                                                 <f:convertNumber pattern="0.0" ></f:convertNumber>

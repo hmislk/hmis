@@ -367,6 +367,12 @@
                                                 <p:column headerText="Bill Type">
                                                     <h:outputText value="#{cashRow.payment.bill.billTypeAtomic.label}" />
                                                 </p:column>
+                                                
+                                                <p:column headerText="From">
+                                                    <h:outputText value="#{cashRow.payment.bill.fromWebUser.name}" />
+                                                     <h:outputText value="#{cashRow.payment.bill.toWebUser.name}" />
+                                                     <h:outputText rendered="#{cashRow.payment.bill.billTypeAtomic eq ''}" value="#{cashRow.payment.bill.completed?'Completed':'Pending'}" />
+                                                </p:column>
 
                                                 <p:column headerText="Value" class="text-end">
                                                     <h:outputText value="#{cashRow.payment.paidValue}">

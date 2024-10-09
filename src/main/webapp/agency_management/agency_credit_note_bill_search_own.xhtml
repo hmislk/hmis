@@ -12,33 +12,51 @@
         <ui:composition template="/agency_management/index.xhtml">
             <ui:define name="subcontent">
                 <h:form>
-                    <p:panel header="AGENT CREDIT NOTE BILL SEARCH" >
+                    <p:panel>
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h:outputText styleClass="fas fa-search" />
+                                    <h:outputLabel value="Agent Credit Note Bill Search" class="mx-2"/>
+                                </div>
+                            </div>
+                        </f:facet>
                         <div class="row">
                             <div class="col-md-2">
-                                <h:outputLabel value="From Date"/>
-                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}"
-                                            navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
-                                </p:calendar>
-                                <h:outputLabel value="To Date"/>
-                                <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
-                                </p:calendar>
-                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createCollectingCenterCreditNoteTable}" />
-                                <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
-
-                                <h:outputLabel value="Bill No"/>
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
-                                <h:outputLabel value="Agent"/>
-                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.fromInstitution}" />
-                                <h:outputLabel value="Agent Code"/>
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.number}" />
-                                <h:outputLabel value="Value"/> 
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.netTotal}" />
-                                <h:outputLabel/>
-
-
-
-
-                                <h:outputLabel/>
+                                <h:panelGroup class="d-flex flex-column">
+                                    <h:outputLabel value="From Date"/>
+                                    <p:calendar 
+                                        styleClass="dateTimePicker" 
+                                        id="fromDate" 
+                                        value="#{searchController.fromDate}"
+                                        navigator="false"
+                                        class="w-100"
+                                        inputStyleClass="form-control"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}">      
+                                    </p:calendar>
+                                    <h:outputLabel value="To Date"/>
+                                    <p:calendar 
+                                        id="toDate" 
+                                        value="#{searchController.toDate}" 
+                                        navigator="false"
+                                        class="w-100"
+                                        inputStyleClass="form-control"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}">                                                                              
+                                    </p:calendar>
+                                    <p:commandButton 
+                                        id="btnSearch" 
+                                        ajax="false" 
+                                        value="Search"
+                                        icon="fa fa-search"
+                                        class="ui-button-success mt-2"
+                                        action="#{searchController.createCollectingCenterCreditNoteTable}" />
+                                    <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
+                                    <p:inputText autocomplete="off" placeholder="Bill No" class="my-1" value="#{searchController.searchKeyword.billNo}" />
+                                    <p:inputText autocomplete="off" placeholder="Agent" class="my-1" value="#{searchController.searchKeyword.fromInstitution}" />
+                                    <p:inputText autocomplete="off" placeholder="Agent Code" class="my-1" value="#{searchController.searchKeyword.number}" /> 
+                                    <p:inputText autocomplete="off" placeholder="Value" class="my-1" value="#{searchController.searchKeyword.netTotal}" />
+                                    <h:outputLabel/>
+                                </h:panelGroup>
                             </div>
 
                             <div class="col-md-10">
