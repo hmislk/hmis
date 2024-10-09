@@ -83,7 +83,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import sun.security.krb5.internal.PaPacOptions;
+
 
 /**
  * REST Web Service
@@ -662,6 +662,7 @@ public class ChannelApi {
         
         if(false){
             Patient p = new Patient();
+            p.getPerson().getName();
             
         }
 
