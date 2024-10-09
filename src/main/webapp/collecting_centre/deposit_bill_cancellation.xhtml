@@ -12,7 +12,6 @@
         <ui:composition template="/collecting_centre/index.xhtml">
             <ui:define name="subcontent">
                 <h:form>
-
                     <h:panelGroup rendered="#{!agentPaymentReceiveSearchController.printPreview}" style="vertical-align: top;">
                         <p:panelGrid layout="tabular" columns="2" class="w-100" style="vertical-align: top;">
                             <p:panel header="Bill Detail">
@@ -46,6 +45,7 @@
                                     <p:commandButton
                                         value="Cancel Bill" 
                                         icon="fa fa-cancel"
+                                        ajax="false"
                                         style="float: right"
                                         class="ui-button-danger" 
                                         action="#{agentPaymentReceiveSearchController.cancelCollectingCentreDepositBill()}"
