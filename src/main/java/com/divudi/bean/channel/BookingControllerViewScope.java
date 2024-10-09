@@ -78,7 +78,9 @@ import com.divudi.bean.opd.OpdBillController;
 import com.divudi.data.BillFinanceType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.OptionScope;
+import static com.divudi.data.PaymentMethod.Card;
 import static com.divudi.data.PaymentMethod.Cash;
+import static com.divudi.data.PaymentMethod.Cheque;
 import static com.divudi.data.PaymentMethod.MultiplePaymentMethods;
 import static com.divudi.data.PaymentMethod.OnlineSettlement;
 import com.divudi.data.dataStructure.ComponentDetail;
@@ -2389,30 +2391,19 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 //        System.out.println("Payment Method = " + cancelPaymentMethod);
 
 //        System.out.println("getPaymentMethod = " + getCancelPaymentMethod());
-        switch (selectedBillSession.getBill().getPaymentMethod()) {
+        switch (getCancelPaymentMethod()) {
             case Cash:
-                if (financialTransactionController.getLoggedUserDrawer().getCashInHandValue() == 0 || financialTransactionController.getLoggedUserDrawer().getCashInHandValue() < selectedBillSession.getBill().getPaidAmount()) {
+                if (financialTransactionController.getLoggedUserDrawer().getCashInHandValue() < selectedBillSession.getBill().getPaidAmount()) {
                     JsfUtil.addErrorMessage("No Enough Money in the Drawer");
                     return;
                 }
                 break;
             case Card:
-                if (financialTransactionController.getLoggedUserDrawer().getCashInHandValue() == 0 || financialTransactionController.getLoggedUserDrawer().getCashInHandValue() < selectedBillSession.getBill().getPaidAmount()) {
+                if (financialTransactionController.getLoggedUserDrawer().getCardInHandValue() < selectedBillSession.getBill().getPaidAmount()) {
                     JsfUtil.addErrorMessage("No Enough Money in the Drawer");
                     return;
                 }
-            case MultiplePaymentMethods:
-                if (financialTransactionController.getLoggedUserDrawer().getCashInHandValue() == 0 || financialTransactionController.getLoggedUserDrawer().getCashInHandValue() < selectedBillSession.getBill().getPaidAmount()) {
-                    JsfUtil.addErrorMessage("No Enough Money in the Drawer");
-                    return;
-                }
-                break;    
-            case Cheque:
-                if (financialTransactionController.getLoggedUserDrawer().getCashInHandValue() == 0 || financialTransactionController.getLoggedUserDrawer().getCashInHandValue() < selectedBillSession.getBill().getPaidAmount()) {
-                    JsfUtil.addErrorMessage("No Enough Money in the Drawer");
-                    return;
-                }
-                break;     
+                break;
         }
 
         if (selectedBillSession.getBill().getBillType() == BillType.ChannelAgent) {
@@ -2946,14 +2937,18 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         cb.setBillTypeAtomic(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
         getBillFacade().create(cb);
 
-        if (bill.getPaymentMethod() == PaymentMethod.Agent || bill.getPaymentMethod() == PaymentMethod.Card || bill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+        if (bill.getPaymentMethod() == PaymentMethod.Agent || bill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
             //cb.setPaymentMethod(cancelPaymentMethod);
             //this is temp solution
             cb.setPaymentMethod(PaymentMethod.Cash);
 //            if (cancelPaymentMethod == PaymentMethod.Agent) {
 //                updateBallance(cb.getCreditCompany(), Math.abs(bill.getNetTotal()), HistoryType.ChannelBooking, cb, selectedBillSession.getBillItem(), selectedBillSession, selectedBillSession.getBill().getReferralNumber());
 //            }
-        } else {
+        } 
+        else if(bill.getPaymentMethod() == PaymentMethod.Card){
+            cb.setPaymentMethod(bill.getPaymentMethod());
+        }
+        else {
             cb.setPaymentMethod(bill.getPaymentMethod());
         }
 
@@ -7474,33 +7469,22 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void channelBookingRefund() {
-        
-        switch (selectedBillSession.getBill().getPaymentMethod()) {
+
+        switch (getRefundPaymentMethod()) {
             case Cash:
-                if (financialTransactionController.getLoggedUserDrawer().getCashInHandValue() == 0 || financialTransactionController.getLoggedUserDrawer().getCashInHandValue() < selectedBillSession.getBill().getRefundAmount()) {
+                if (financialTransactionController.getLoggedUserDrawer().getCashInHandValue() < getRefundableTotal()) {
                     JsfUtil.addErrorMessage("No Enough Money in the Drawer");
                     return;
                 }
                 break;
             case Card:
-                if (financialTransactionController.getLoggedUserDrawer().getCashInHandValue() == 0 || financialTransactionController.getLoggedUserDrawer().getCashInHandValue() < selectedBillSession.getBill().getRefundAmount()) {
+                if (financialTransactionController.getLoggedUserDrawer().getCardInHandValue() < getRefundableTotal()) {
                     JsfUtil.addErrorMessage("No Enough Money in the Drawer");
                     return;
                 }
-            case MultiplePaymentMethods:
-                if (financialTransactionController.getLoggedUserDrawer().getCashInHandValue() == 0 || financialTransactionController.getLoggedUserDrawer().getCashInHandValue() < selectedBillSession.getBill().getRefundAmount()) {
-                    JsfUtil.addErrorMessage("No Enough Money in the Drawer");
-                    return;
-                }
-                break;    
-            case Cheque:
-                if (financialTransactionController.getLoggedUserDrawer().getCashInHandValue() == 0 || financialTransactionController.getLoggedUserDrawer().getCashInHandValue() < selectedBillSession.getBill().getRefundAmount()) {
-                    JsfUtil.addErrorMessage("No Enough Money in the Drawer");
-                    return;
-                }
-                break;     
+                break;
         }
-        
+
         if (refundableTotal > 0.0) {
             if (selectedBillSession.getBillItem().getBill().getPaymentMethod() == PaymentMethod.Agent) {
                 refundAgentBill();
@@ -8017,14 +8001,18 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         getBillFacade().create(rb);
 
-        if (bill.getPaymentMethod() == PaymentMethod.Agent || bill.getPaymentMethod() == PaymentMethod.Card) {
+        if (bill.getPaymentMethod() == PaymentMethod.Agent) {
             //rb.setPaymentMethod(refundPaymentMethod);
             //tempsolution
             rb.setPaymentMethod(PaymentMethod.Cash);
 //            if (refundPaymentMethod == PaymentMethod.Agent) {
 //                updateBallance(rb.getCreditCompany(), refundableTotal, HistoryType.ChannelBooking, rb, billSession.getBillItem(), billSession, billSession.getBill().getReferralNumber());
 //            }
-        } else {
+        } 
+        else if(bill.getPaymentMethod() == PaymentMethod.Card){
+            rb.setPaymentMethod(bill.getPaymentMethod());
+        }
+        else {
             rb.setPaymentMethod(bill.getPaymentMethod());
         }
 
