@@ -128,7 +128,6 @@ public class ChannelApi {
     private ServiceSessionBean serviceSessionBean;
     @EJB
     private SessionInstanceFacade sessionInstanceFacade;
-    
 
     @Inject
     private BillBeanController billBeanController;
@@ -517,37 +516,61 @@ public class ChannelApi {
             String json = responseError.toString();
             return Response.status(Response.Status.ACCEPTED).entity(responseError.toString()).build();
         }
+        long hosId;
+        long docNo;
 
-//        int hosId = Integer.parseInt(requestBody.get("hostID"));
-//        int docNo = Integer.parseInt(requestBody.get("docNo"));
-//        String bookingChannel = requestBody.get("bookingChannel");
-//
-//        Institution hospital = institutionController.findInstitution(hosId);
-//        Speciality speciality = specialityController.findSpeciality(docNo);
-//        Consultant consultant = consultantController.getConsultantById(docNo);
-//
-//        // Call the method to find session instances
-//        List<SessionInstance> sessions = sessionInstanceController.findSessionInstance(hospital, speciality, consultant, null, null);
+        try {
+            hosId = Integer.parseInt(requestBody.get("hosID"));
+            docNo = Integer.parseInt(requestBody.get("docNo"));
+        } catch (Exception e) {
+            JSONObject json = notValidId();
+            return Response.status(Response.Status.ACCEPTED).entity(json).build();
+        }
+
+        String bookingChannel = requestBody.get("bookingChannel");
+
+        Institution hospital = institutionController.findInstitution(hosId);
+        Speciality speciality = specialityController.findSpeciality(docNo);
+        Consultant consultant = consultantController.getConsultantById(docNo);
+        
+        if(hospital == null || consultant == null){
+            JSONObject json = notValidId();
+        }
+
+        List<SessionInstance> sessions = sessionInstanceController.findSessionInstance(hospital, speciality, consultant, null, null);
+        
         Map<String, Object> sessionData = new HashMap<>();
 
-//        for(SessionInstance s: sessions){
-//            Map<String, Object> session = new HashMap<>();
-//            session.put("sessionID", s.getId());
-//            session.put("amount", s.getChannelHosFee());
-//            
-//            sessionData.put(s.getId().toString(), s);
-//        }
-//        
-//        Map<String, Object> sessionResults = new HashMap<>();
-//        sessionResults.put("result", sessionData);
-//        
-//        Map<String, Object> response = new HashMap<>();
-//        response.put("code", "202");
-//        response.put("message", "Accepted");
-//        response.put("data", sessionResults);
-//        response.put("detailMessage", "Succeess");
-//        
-        return Response.status(Response.Status.ACCEPTED).entity("Test is ok").build();
+        for (SessionInstance s : sessions) {
+            Map<String, Object> session = new HashMap<>();
+            sessionData.put("sessionID", s.getId());
+            sessionData.put("hosFee", s.getHospitalFee());
+            sessionData.put("docName", s.getStaff().getName());
+            sessionData.put("docNo", s.getStaff().getId());
+            sessionData.put("foreignAmount", s.getTotalForForeigner());
+            sessionData.put("hosId", s.getInstitution().getId());
+            sessionData.put("hosFee", s.getHospitalFee());
+            sessionData.put("docFee", s.getProfessionalFee());
+            sessionData.put("startTime", s.getStartingTime());
+            sessionData.put("amount", s.getTotalFee());
+            sessionData.put("appDate", s.getSessionDate());
+            sessionData.put("maxPatient", s.getMaxNo());
+            sessionData.put("appDay", s.getDayString());
+            sessionData.put("nextNo", s.getNextAvailableAppointmentNumber());
+
+            sessionData.put(s.getId().toString(), s);
+        }
+
+        Map<String, Object> sessionResults = new HashMap<>();
+        sessionResults.put("result", sessionData);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("code", "202");
+        response.put("message", "Accepted");
+        response.put("data", sessionResults);
+        response.put("detailMessage", "Succeess");
+
+        return Response.status(Response.Status.ACCEPTED).entity(response).build();
 
     }
 
@@ -598,7 +621,7 @@ public class ChannelApi {
         sessionData.put("maxPatient", session.getMaxNo());
         sessionData.put("appDay", session.getDayString());
         sessionData.put("nextNo", session.getNextAvailableAppointmentNumber());
-        
+
         Map<String, Object> allSessionData = new HashMap<>();
         allSessionData.put("result", sessionData);
 
