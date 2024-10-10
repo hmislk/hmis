@@ -170,11 +170,14 @@ public class BillSearch implements Serializable {
     private StaffFacade staffFacade;
     @EJB
     private PatientFacade patientFacade;
-    @EJB
-    BillItemController billItemController;
     /**
      * Controllers
      */
+    @Inject
+    BillItemController billItemController;
+    @Inject
+    BillFeeController billFeeController;
+
     @Inject
     private CollectingCentreBillController collectingCentreBillController;
     @Inject
@@ -1720,14 +1723,11 @@ public class BillSearch implements Serializable {
         return "";
     }
 
-    
-
     public void saveViewingBillData() {
-        if (viewingBill == null) {
-            return;
-        }
         billController.save(viewingBill);
-        if(viewingBillItems!=null) billItemController.setSelected(selected);
+        billItemController.save(viewingBillItems);
+        billFeeController.save(viewingBillFees);
+        
     }
 
     public boolean sampleHasBeenCollected(Bill rf) {

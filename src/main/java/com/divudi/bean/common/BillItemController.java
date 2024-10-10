@@ -11,9 +11,11 @@ package com.divudi.bean.common;
 import com.divudi.entity.BillItem;
 import com.divudi.facade.BillItemFacade;
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
@@ -32,8 +34,11 @@ import javax.inject.Named;
 @SessionScoped
 public class BillItemController implements Serializable {
 
-    @Inject
+    @EJB
     BillItemFacade billItemFacade;
+
+    @Inject
+    SessionController sessionController;
 
     private List<BillItem> items = null;
     private BillItem selected;
@@ -50,11 +55,25 @@ public class BillItemController implements Serializable {
         if (sbi == null) {
             return;
         }
-        if(sbi.getId()==null){
-            
+        if (sbi.getId() == null) {
+            if (sbi.getCreatedAt() == null) {
+                sbi.setCreatedAt(new Date());
+            }
+            if (sbi.getCreater() == null) {
+                sbi.setCreater(sessionController.getLoggedUser());
+            }
             getFacade().create(sbi);
-        }else{
+        } else {
             getFacade().edit(sbi);
+        }
+    }
+
+    public void save(List<BillItem> billItems) {
+        if (billItems == null || billItems.isEmpty()) {
+            return;
+        }
+        for (BillItem sbi : billItems) {
+            save(sbi);
         }
     }
 
