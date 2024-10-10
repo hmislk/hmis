@@ -141,7 +141,7 @@
                                 <ez:voucherPayments bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportVoucher'}"/>
                                 <ez:chequePayments bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportCheque'}"/>
                                 <ez:ewalletPayments bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportEwallet'}"/>
-
+                                <ez:slipPayments bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportSlip'}"/>
 
                                 <p:panel collapsed="false" toggleable="true" rendered="#{myBundle.bundleType eq 'netCash'}">
                                     <ez:netCashForTheDay bundle="#{myBundle}"/>
