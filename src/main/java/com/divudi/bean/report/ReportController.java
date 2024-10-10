@@ -145,6 +145,9 @@ public class ReportController implements Serializable {
     private WebUser webUser;
 
     private double investigationResult;
+    
+    private double totalCredit;
+    private double totalDebit;
 
     private String visitType;
     private Patient patient;
@@ -780,8 +783,50 @@ public class ReportController implements Serializable {
         m.put("toDate", getToDate());
 
         patientDepositHistories = patientDepositHistoryFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+
+        calculateTotals();
     }
 
+    
+    private void calculateTotals() {
+
+    // Check if patientDepositHistories contains data
+    if (patientDepositHistories == null || patientDepositHistories.isEmpty()) {        
+        return;
+    }
+
+    
+
+    
+    totalCredit = 0.0;  
+    totalDebit = 0.0;  
+
+    
+    for (PatientDepositHistory pdh : patientDepositHistories) {
+        double transactionValue = pdh.getTransactionValue();
+
+        // Add to totalCredit if transactionValue > 0
+        if (transactionValue > 0) {
+            totalCredit += transactionValue;
+        } 
+        // Add to totalDebit if transactionValue < 0
+        else if (transactionValue < 0) {
+            totalDebit += transactionValue;
+        }
+    }
+
+   
+}
+    
+    public double getTotalCredit() {
+        return totalCredit;
+    }
+
+    public double getTotalDebit() {
+        return totalDebit;
+    }
+    
+    
     public void processCollectionCenterBalance() {
         bundle = new ReportTemplateRowBundle();
         String jpql;
