@@ -18,7 +18,7 @@
                 <h:outputLabel value="PURCHASE ORDER REQUEST"/>
             </f:facet>
 
-            <p:column headerText="Req No" >
+            <p:column headerText="Request No" >
                 <h:commandLink action="store_reprint_order_request" value="#{bill.deptId}">
                     <h:outputLabel  ></h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{storeBillSearch.bill}"/>
@@ -30,13 +30,13 @@
                     <f:setPropertyActionListener value="#{bill}" target="#{storeBillSearch.bill}"/>
                 </h:commandLink>
             </p:column>                 
-            <p:column headerText="Delaor Name"  >
+            <p:column headerText="Dealer Name"  >
                 <h:commandLink action="store_reprint_order_request" value="#{bill.toInstitution.name}">
                     <h:outputLabel  ></h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{storeBillSearch.bill}"/>
                 </h:commandLink>
             </p:column>
-            <p:column headerText="Billed at"  >
+            <p:column headerText="Billed At"  >
                 <h:commandLink action="store_reprint_order_request" >
                     <h:outputLabel value="#{bill.createdAt}" >
                         <f:convertDateTime pattern="dd MM yyyy hh mm a"/>
@@ -57,7 +57,7 @@
                     </h:outputLabel>
                 </h:panelGroup>
             </p:column>                 
-            <p:column headerText="Requested by" >
+            <p:column headerText="Requested By" >
                 <h:commandLink action="store_reprint_order_request" >
                     <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
                     </h:outputLabel>
@@ -77,7 +77,7 @@
                 </h:panelGroup>
             </p:column>                       
 
-            <p:column headerText="Paymentmethod">
+            <p:column headerText="Payment Method">
                 <h:commandLink action="store_reprint_order_request" >
                     <h:outputLabel value="#{bill.paymentMethod}" ></h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{storeBillSearch.bill}"/>
