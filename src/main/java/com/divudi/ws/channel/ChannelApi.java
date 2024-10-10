@@ -126,6 +126,9 @@ public class ChannelApi {
     private BillNumberGenerator billNumberBean;
     @EJB
     private ServiceSessionBean serviceSessionBean;
+    @EJB
+    private SessionInstanceFacade sessionInstanceFacade;
+    
 
     @Inject
     private BillBeanController billBeanController;
@@ -560,41 +563,52 @@ public class ChannelApi {
             String json = responseError.toString();
             return Response.status(Response.Status.ACCEPTED).entity(responseError.toString()).build();
         }
-//        int sessionId;
-//        try {
-//            sessionId = Integer.parseInt(requestBody.get("sessionID"));
-//        } catch (Exception e) {
-//            JSONObject responseError = notValidId();
-//            return Response.status(Response.Status.ACCEPTED).entity(responseError.toString()).build();
-//        }
-//
-//        String bookingChannel = requestBody.get("bookingChannel;");
-//
-//        SessionInstanceFacade ss = new SessionInstanceFacade();
-//        System.out.print(sessionId);
-//
-//        SessionInstance session = ss.find(sessionId);
-//        System.out.print(session);
-//
-//        if (session == null) {
-//            JSONObject responseError = notValidId();
-//            return Response.status(Response.Status.ACCEPTED).entity(responseError.toString()).build();
-//        }
-//
-//        Map<String, Object> sessionData = new HashMap<>();
-//        sessionData.put("sessionID", session.getId());
-//        sessionData.put("hosFee", session.getHospitalFee());
-//
-//        Map<String, Object> allSessionData = new HashMap<>();
-//        allSessionData.put("result", sessionData);
-//
-//        Map<String, Object> response = new HashMap<>();
-//        response.put("code", "202");
-//        response.put("message", "Accepted");
-//        response.put("data", allSessionData);
-//        response.put("detailMessage", "Success");
+        long sessionId;
+        try {
+            sessionId = Integer.parseInt(requestBody.get("sessionID"));
+        } catch (Exception e) {
+            JSONObject responseError = notValidId();
+            return Response.status(Response.Status.ACCEPTED).entity(responseError.toString()).build();
+        }
 
-        return Response.status(Response.Status.ACCEPTED).entity("Doctor Session detail api").build();
+        String bookingChannel = requestBody.get("bookingChannel;");
+
+        System.out.println(sessionId);
+
+        SessionInstance session = sessionInstanceFacade.find(sessionId);
+        System.out.println(session);
+
+        if (session == null) {
+            JSONObject responseError = notValidId();
+            return Response.status(Response.Status.ACCEPTED).entity(responseError.toString()).build();
+        }
+
+        Map<String, Object> sessionData = new HashMap<>();
+        sessionData.put("sessionID", session.getId());
+        sessionData.put("hosFee", session.getHospitalFee());
+        sessionData.put("docName", session.getStaff().getName());
+        sessionData.put("docNo", session.getStaff().getId());
+        sessionData.put("foreignAmount", session.getTotalForForeigner());
+        sessionData.put("hosId", session.getInstitution().getId());
+        sessionData.put("hosFee", session.getHospitalFee());
+        sessionData.put("docFee", session.getProfessionalFee());
+        sessionData.put("startTime", session.getStartingTime());
+        sessionData.put("amount", session.getTotalFee());
+        sessionData.put("appDate", session.getSessionDate());
+        sessionData.put("maxPatient", session.getMaxNo());
+        sessionData.put("appDay", session.getDayString());
+        sessionData.put("nextNo", session.getNextAvailableAppointmentNumber());
+        
+        Map<String, Object> allSessionData = new HashMap<>();
+        allSessionData.put("result", sessionData);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("code", "202");
+        response.put("message", "Accepted");
+        response.put("data", allSessionData);
+        response.put("detailMessage", "Success");
+
+        return Response.status(Response.Status.ACCEPTED).entity(response).build();
 
     }
 
