@@ -143,41 +143,8 @@
                                 <ez:ewalletPayments bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportEwallet'}"/>
 
 
-                                <p:panel collapsed="false" toggleable="true" rendered="#{myBundle.bundleType eq 'slipPayments'}">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="#{myBundle.name}"></h:outputLabel>
-                                    </f:facet>
-                                    <ez:slipPayments bundle="#{myBundle}"/>
-                                    <f:facet name="footer">
-                                        <div class="d-flex align-items-center justify-content-between">
-                                            <div>
-                                                <h:outputLabel value="Total for #{myBundle.name}" style="font-weight: 600; font-size: 1.2em" ></h:outputLabel>
-                                            </div>
-                                            <div>
-                                                <h:outputLabel value="#{myBundle.total}" style="font-weight: 600; font-size: 1.2em" >
-                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                </h:outputLabel>
-                                            </div>
-                                        </div>
-                                    </f:facet>
-                                </p:panel>
                                 <p:panel collapsed="false" toggleable="true" rendered="#{myBundle.bundleType eq 'netCash'}">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="#{myBundle.name}"></h:outputLabel>
-                                    </f:facet>
                                     <ez:netCashForTheDay bundle="#{myBundle}"/>
-                                    <f:facet name="footer">
-                                        <div class="d-flex align-items-center justify-content-between">
-                                            <div>
-                                                <h:outputLabel value="Total for #{myBundle.name}" style="font-weight: 600; font-size: 1.2em" ></h:outputLabel>
-                                            </div>
-                                            <div>
-                                                <h:outputLabel value="#{myBundle.total}" style="font-weight: 600; font-size: 1.2em" >
-                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                </h:outputLabel>
-                                            </div>
-                                        </div>
-                                    </f:facet>
                                 </p:panel>
 
 
