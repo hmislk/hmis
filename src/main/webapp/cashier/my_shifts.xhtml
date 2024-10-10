@@ -86,67 +86,53 @@
                             value="#{financialTransactionController.bundle.reportTemplateRows}" 
                             var="ssb" 
                             rowKey="#{ssb.id}">
-                            <p:column headerText="Shift"  styleClass="text-center">
-                                <h:outputText value="#{ssb.bill.deptId}" styleClass="font-weight-bold mb-2" />
-                                <p:spacer height="5" />
 
-                                <!-- Badge for 'Started' status -->
+
+                            <p:column headerText="Shift Start">
+                                <h:panelGroup>
+                                    <i class="fa fa-calendar" aria-hidden="true"></i>&nbsp;
+                                    <h:outputText value="#{ssb.bill.billDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    </h:outputText>
+                                    <br />
+                                    <i class="fas fa-clock" aria-hidden="true"></i>&nbsp;
+                                    <h:outputText value="#{ssb.bill.createdAt}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" />
+                                    </h:outputText>
+                                    <br />
+                                    <i class="fa fa-building" aria-hidden="true"></i>&nbsp;
+                                    <h:outputText value="#{ssb.bill.deptId}" rendered="#{ssb.bill.deptId ne null}" />
+                                </h:panelGroup>
+                            </p:column>
+
+                            <p:column headerText="Shift End" rendered="true">
+                                <h:panelGroup rendered="#{ssb.bill.referenceBill ne null}" class="text-success">
+                                    <i class="fa fa-calendar" aria-hidden="true"></i>&nbsp;
+                                    <h:outputText value="#{ssb.bill.referenceBill.billDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    </h:outputText>
+                                    <br />
+                                    <i class="fas fa-clock" aria-hidden="true"></i>&nbsp;
+                                    <h:outputText value="#{ssb.bill.referenceBill.createdAt}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" />
+                                    </h:outputText>
+                                    <br />
+                                    <i class="fa fa-building" aria-hidden="true"></i>&nbsp;
+                                    <h:outputText value="#{ssb.bill.referenceBill.deptId}" rendered="#{ssb.bill.referenceBill.deptId ne null}" />
+                                </h:panelGroup>
+                            </p:column>
+
+                            <p:column headerText="Status"  styleClass="text-center">
                                 <p:badge value="Started" severity="info"  rendered="#{ssb.bill.referenceBill eq null}" styleClass="m-1">
                                 </p:badge>
-
                                 <h:panelGroup rendered="#{ssb.bill.referenceBill ne null}">
-                                    <!-- Badge for 'Shift Ended' -->
                                     <p:badge value="Shift Ended" severity="warning" styleClass="m-1">
                                     </p:badge>
-
-                                    <!-- Badge for 'Handover Completed' -->
                                     <p:badge value="Handover Completed" severity="success" styleClass="m-1" rendered="#{ssb.bill.referenceBill.completed}">
                                     </p:badge>
-
-                                    <!-- Badge for 'Handover NOT Complete' -->
                                     <p:badge value="Handover NOT Complete" severity="danger" styleClass="m-1" rendered="#{not ssb.bill.referenceBill.completed}">
                                     </p:badge>
                                 </h:panelGroup>
-                            </p:column>
-
-                            <p:column headerText="Start Date"  >
-                                <h:outputText value="#{ssb.bill.billDate}" >
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
-                                </h:outputText>
-                            </p:column>
-                            <p:column headerText="Start Time"   >
-                                <h:outputText value="#{ssb.bill.createdAt}" >
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" ></f:convertDateTime>
-                                </h:outputText>
-                            </p:column>
-                            <p:column headerText="Shift Start Referance No"   >
-                                <h:outputText value="#{ssb.bill.deptId}" rendered="#{ssb.bill.deptId ne null}" >
-                                </h:outputText>
-                                <h:outputText value="#{ssb.bill.id}" rendered="#{ssb.bill.deptId eq null}" >
-                                </h:outputText>
-                            </p:column>
-
-                            <p:column headerText="Shift End Date" rendered="true"  >
-                                <h:panelGroup rendered="#{ssb.bill.referenceBill ne null}" class="text-success">
-                                    <h:outputText value="#{ssb.bill.referenceBill.createdAt}" >
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
-                                    </h:outputText>
-                                </h:panelGroup>
-                            </p:column>
-
-                            <p:column headerText="Shift End Time" rendered="true"  >
-                                <h:panelGroup rendered="#{ssb.bill.referenceBill ne null}" class="text-success">
-                                    <h:outputText value="#{ssb.bill.referenceBill.createdAt}" >
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" ></f:convertDateTime>
-                                    </h:outputText>
-                                </h:panelGroup>
-                            </p:column>
-
-                            <p:column headerText="Shift End Referance No"   >
-                                <h:outputText value="#{ssb.bill.referenceBill.deptId}" rendered="#{ssb.bill.referenceBill.deptId ne null}" >
-                                </h:outputText>
-                                <h:outputText value="#{ssb.bill.referenceBill.id}" rendered="#{ssb.bill.referenceBill.deptId eq null}" >
-                                </h:outputText>
                             </p:column>
 
                             <p:column headerText="Actions">
