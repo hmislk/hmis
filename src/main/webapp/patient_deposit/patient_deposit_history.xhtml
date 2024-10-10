@@ -94,6 +94,8 @@
 
         </h:panelGroup>
 
+
+
         <h:panelGroup rendered="#{patientController.current.id ne null}">
             <h:form >
                 <p:panel header="Patient Deposit History" styleClass="w-100">
@@ -160,19 +162,19 @@
                     reflow="true">
 
                     <f:facet name="header">
-                            <h:outputFormat value="Patient Name &emsp;"/>
-                            <h:outputFormat value=": "/>
-                            <h:outputFormat value="#{patientController.current.person.nameWithTitle}"/> <br/>
-                            <h:outputLabel value="From Date &emsp;&emsp; &nbsp;" />
-                            <h:outputFormat value=": "/>
-                            <h:outputLabel value="#{reportController.fromDate}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                            </h:outputLabel><br/>
-                            <h:outputLabel value="To Date &emsp;&emsp;&emsp; &nbsp;&nbsp;" />
-                            <h:outputFormat value=": "/>
-                            <h:outputLabel value="#{reportController.toDate}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                            </h:outputLabel>
+                        <h:outputFormat value="Patient Name &emsp;"/>
+                        <h:outputFormat value=": "/>
+                        <h:outputFormat value="#{patientController.current.person.nameWithTitle}"/> <br/>
+                        <h:outputLabel value="From Date &emsp;&emsp; &nbsp;" />
+                        <h:outputFormat value=": "/>
+                        <h:outputLabel value="#{reportController.fromDate}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                        </h:outputLabel><br/>
+                        <h:outputLabel value="To Date &emsp;&emsp;&emsp; &nbsp;&nbsp;" />
+                        <h:outputFormat value=": "/>
+                        <h:outputLabel value="#{reportController.toDate}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                        </h:outputLabel>
                     </f:facet>
 
 
@@ -229,12 +231,27 @@
                         <h:outputText value="#{ptDH.transactionValue}" rendered="#{ptDH.transactionValue gt 0}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputText>
+
+                        <f:facet name="footer">
+                            <h:outputText value="#{reportController.totalCredit}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </f:facet>
+
                     </p:column>
 
                     <p:column headerText="Debit" >
                         <h:outputText value="#{ptDH.transactionValue}" rendered="#{ptDH.transactionValue lt 0}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputText>
+
+                        <f:facet name="footer">
+                            <h:outputText value="#{reportController.totalDebit}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </f:facet>
+
+
                     </p:column>
 
                     <p:column headerText="After Balance" >
@@ -244,7 +261,7 @@
                     </p:column>
 
                 </p:dataTable>
-
+                
             </h:form>
         </h:panelGroup>
 
