@@ -31,7 +31,7 @@
             <p:column headerText="From Department">                      
                 <h:outputLabel value="#{bill.toDepartment.name}"/>                          
             </p:column> 
-            <p:column headerText="Requested at"  >
+            <p:column headerText="Requested At"  >
 
                 <h:outputLabel value="#{bill.createdAt}" >
                     <f:convertDateTime pattern="dd MM yyyy hh mm a"/>
@@ -46,7 +46,7 @@
                 </h:panelGroup>
 
             </p:column>                 
-            <p:column headerText="Requested by" >                      
+            <p:column headerText="Requested By" >                      
                 <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
                 </h:outputLabel>                          
                 <br/>
