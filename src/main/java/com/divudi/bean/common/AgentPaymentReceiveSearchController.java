@@ -418,7 +418,7 @@ public class AgentPaymentReceiveSearchController implements Serializable {
         CancelledBill cb = new CancelledBill();
         cb.copy(originalCcDepositBill);
         cb.invertValue(originalCcDepositBill);
-        String deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.CC_BILL);
+        String deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL);
         cb.setDeptId(deptId);
         cb.setInsId(deptId);
         cb.setBillType(BillType.CollectingCentrePaymentMadeBill);

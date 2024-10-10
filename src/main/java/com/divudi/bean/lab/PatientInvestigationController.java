@@ -2992,7 +2992,7 @@ public class PatientInvestigationController implements Serializable {
                 + " FROM BillItem b "
                 + " LEFT JOIN b.patientInvestigation i "
                 + " WHERE b.retired = :ret "
-                + " and b.patientInvestigation.investigation != null";
+                + " and type(b.item) = :invType";
 
         if (searchDateType == null) {
             searchDateType = SearchDateType.ORDERED_DATE;
@@ -3023,6 +3023,7 @@ public class PatientInvestigationController implements Serializable {
         }
         params.put("fd", getFromDate());
         params.put("td", getToDate());
+        params.put("invType", Investigation.class);
 
         if (orderedInstitution != null) {
             jpql += " AND b.bill.institution = :orderedInstitution ";

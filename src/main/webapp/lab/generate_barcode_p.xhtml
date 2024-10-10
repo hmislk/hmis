@@ -589,13 +589,14 @@
                                                     </div>
                                                     <div class="barcode-info">
                                                         <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Barcode in Sample Stickers')}">
-                                                            <p:barcode value="#{psc.patientSample.idStr}" 
-                                                                       cache="false"
-                                                                       hrp="none"
-                                                                       type="#{configOptionApplicationController.getShortTextValueByKey('Sample Sticker - Barcode Type','code128')}" 
-                                                                       height="#{configOptionApplicationController.getShortTextValueByKey('Sample Sticker - Barcode Height in Pixles','80')}"
-                                                                       width="#{configOptionApplicationController.getShortTextValueByKey('Sample Sticker - Barcode Width in Pixles','300')}"
-                                                                       orientation="0"></p:barcode>
+                                                            <p:barcode 
+                                                                value="#{psc.patientSample.idStr}" 
+                                                                cache="false"
+                                                                hrp="none"
+                                                                type="#{configOptionApplicationController.getShortTextValueByKey('Sample Sticker - Barcode Type','code128')}" 
+                                                                height="#{configOptionApplicationController.getShortTextValueByKey('Sample Sticker - Barcode Height in Pixles','80')}"
+                                                                width="#{configOptionApplicationController.getShortTextValueByKey('Sample Sticker - Barcode Width in Pixles','280')}"
+                                                                orientation="0"></p:barcode>
                                                         </h:panelGroup>
                                                     </div>
                                                 </div>
@@ -901,15 +902,15 @@
                                         <!-- Actions Column -->
                                         <p:column headerText="Actions" width="18em" style="vertical-align: top;" >
                                             <p:commandLink id="cmdOldReport" 
-                                                               value="#{dpr.item.name}" 
-                                                               rendered="#{dpr.item ne dpr.patientInvestigation.billItem.item}"
-                                                               ajax="false" action="/lab/patient_report?faces-redirect=true">
-                                                    <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}" />
-                                                </p:commandLink>
-                                            
+                                                           value="#{dpr.item.name}" 
+                                                           rendered="#{dpr.item ne dpr.patientInvestigation.billItem.item}"
+                                                           ajax="false" action="/lab/patient_report?faces-redirect=true">
+                                                <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}" />
+                                            </p:commandLink>
+
                                             <div class="d-flex gap-2">
                                                 <!-- Old Report CommandLink -->
-                                                
+
 
                                                 <!-- Edit Report CommandLink -->
                                                 <p:commandLink id="cmdOldReportEdit" ajax="false" action="/lab/patient_report?faces-redirect=true">
