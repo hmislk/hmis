@@ -396,7 +396,7 @@ public class ReportController implements Serializable {
 
         billAndItemDataRows = new ArrayList<>(billMap.values());
     }
-
+    
     public void ccSummaryReportByItem() {
 
         ReportTemplateRowBundle billedBundle = new ReportTemplateRowBundle();
@@ -934,6 +934,15 @@ public class ReportController implements Serializable {
         fromDate = null;
         toDate = null;
         person = null;
+        clear();
+    }
+    
+    public void clear() {
+        totalHosFee = 0.0;
+        totalCCFee = 0.0;
+        totalProFee = 0.0;
+        totalAmount = 0.0;
+        totalCount = 0.0;
     }
 
     public void processCollectingCentreBillWiseDetailReport() {
@@ -1676,7 +1685,7 @@ public class ReportController implements Serializable {
             m.put("refDoc", doctor);
         }
 
-        bundle.setReportTemplateRows((List<ReportTemplateRow>)billFacade.findLightsByJpql(jpql, m));
+        bundle.setReportTemplateRows((List<ReportTemplateRow>) billFacade.findLightsByJpql(jpql, m));
         bundle.calculateTotalByBills();
     }
 
@@ -2579,7 +2588,7 @@ public class ReportController implements Serializable {
         this.doctor = doctor;
     }
 
-    public void processCollectingCentreTestWiseCountReport() {
+    public void processCollectingCentreTestWiseCountReport() {   
         String jpql = "select new  com.divudi.data.TestWiseCountReport("
                 + "bi.item.name, "
                 + "count(bi.item.name), "
@@ -2590,8 +2599,9 @@ public class ReportController implements Serializable {
                 + ") "
                 + " from BillItem bi "
                 + " where bi.retired=:ret"
+                + " and bi.bill.cancelled=:can"
                 + " and bi.bill.billDate between :fd and :td "
-                + " and bi.bill.billType = :bType ";
+                + " and bi.bill.billTypeAtomic = :billTypeAtomic ";
 
         if (false) {
             BillItem bi = new BillItem();
@@ -2604,9 +2614,10 @@ public class ReportController implements Serializable {
 
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
+        m.put("can", false);
         m.put("fd", fromDate);
         m.put("td", toDate);
-        m.put("bType", BillType.CollectingCentreBill);
+        m.put("billTypeAtomic", BillTypeAtomic.CC_BILL);
 
         if (route != null) {
             jpql += " and bi.bill.fromInstitution.route = :route ";
@@ -2653,11 +2664,26 @@ public class ReportController implements Serializable {
             m.put("status", status);
         }
 
-        jpql += " group by bi.item.name";
+        jpql += " group by bi.item.name ORDER BY bi.item.name ASC";
 
         testWiseCounts = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m);
+        
+        clear();
 
+        for (TestWiseCountReport twcr : testWiseCounts) {
+            totalCount += twcr.getCount();
+            totalCCFee += twcr.getCcFee();
+            totalProFee += twcr.getProFee();
+            totalAmount += twcr.getTotal();
+            totalHosFee += twcr.getHosFee();
+        }
     }
+
+    private double totalHosFee;
+    private double totalCCFee;
+    private double totalProFee;
+    private double totalAmount;
+    private double totalCount;
 
     public void processLabTestWiseCountReport() {
         String jpql = "select new com.divudi.data.TestWiseCountReport("
@@ -2920,6 +2946,46 @@ public class ReportController implements Serializable {
 
     public void setHeaderBillAndItemDataRow(BillAndItemDataRow headerBillAndItemDataRow) {
         this.headerBillAndItemDataRow = headerBillAndItemDataRow;
+    }
+
+    public double getTotalHosFee() {
+        return totalHosFee;
+    }
+
+    public void setTotalHosFee(double totalHosFee) {
+        this.totalHosFee = totalHosFee;
+    }
+
+    public double getTotalCCFee() {
+        return totalCCFee;
+    }
+
+    public void setTotalCCFee(double totalCCFee) {
+        this.totalCCFee = totalCCFee;
+    }
+
+    public double getTotalProFee() {
+        return totalProFee;
+    }
+
+    public void setTotalProFee(double totalProFee) {
+        this.totalProFee = totalProFee;
+    }
+
+    public double getTotalAmount() {
+        return totalAmount;
+    }
+
+    public void setTotalAmount(double totalAmount) {
+        this.totalAmount = totalAmount;
+    }
+
+    public double getTotalCount() {
+        return totalCount;
+    }
+
+    public void setTotalCount(double totalCount) {
+        this.totalCount = totalCount;
     }
 
 }
