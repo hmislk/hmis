@@ -16,7 +16,7 @@
 
                     <p:panel header="Cashbook Summery by Site" >
 
-                        <h:panelGrid columns="2" class="w-100">
+                        <p:panelGrid columns="12" class="w-100" >
                             <h:outputLabel value="From"/>
                             <p:calendar 
                                 class="w-100 " 
@@ -26,6 +26,7 @@
                                 navigator="false" 
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                             </p:calendar>
+                            <p:spacer ></p:spacer>
 
                             <h:outputLabel value="To"/>                                
                             <p:calendar 
@@ -36,75 +37,96 @@
                                 navigator="false" 
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                             </p:calendar>
-
-
-                        </h:panelGrid>
-                        <h:panelGrid columns="3" class="my-2" >
+                            <p:spacer ></p:spacer>
                             <p:commandButton  
                                 value="Process" 
                                 ajax="false"
                                 action="#{cashBookEntryController.generateDailyCashbookSummary}" 
-                                class="ui-button-warning" icon="fas fa-cogs">
+                                styleClass="ui-button-warning" icon="fas fa-cogs">
                             </p:commandButton>
-                        </h:panelGrid>
-                        <p:panel header="Cash book Summaries" >
+
+                            <p:commandButton  
+                                value="Export to Excel" 
+                                ajax="false"
+                                onclick="exportTableToExcel('myTable', 'tableData')"
+                                styleClass="ui-button-success" icon="fas fa-file-excel">
+                            </p:commandButton>
+
+                        </p:panelGrid>
 
 
 
 
-                            <table border="1" style="width:100%; border-collapse:collapse;">
-                                <thead>
-                                    <tr>
-                                        <th>Date</th>
-                                        <ui:repeat value="#{cashBookEntryController.dailyCashbookSummaries}" var="dateGroup">
-                                            <ui:repeat value="#{dateGroup.listOfSitesGroupedIntoInstitutionses}" var="institutionGroup">
-                                                <th colspan="3">#{institutionGroup.institution.name}</th>
-                                            </ui:repeat>
-                                        </ui:repeat>
-                                    </tr>
-                                    <tr>
-                                        <th></th>
-                                        <ui:repeat value="#{cashBookEntryController.dailyCashbookSummaries}" var="dateGroup">
-                                            <ui:repeat value="#{dateGroup.listOfSitesGroupedIntoInstitutionses}" var="institutionGroup">
-                                                <ui:repeat value="#{institutionGroup.sites}" var="site">
-                                                    <th>#{site.name} - Starting Balance</th>
-                                                    <th>#{site.name} - Entry Value</th>
-                                                    <th>#{site.name} - Closing Balance</th>
-                                                </ui:repeat>
-                                            </ui:repeat>
-                                        </ui:repeat>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <ui:repeat value="#{cashBookEntryController.dailyCashbookSummaries}" var="dateGroup">
-                                        <tr>
-                                            <td>
-                                                <h:outputText value="#{dateGroup.date}">
-                                                    <f:convertDateTime pattern="yyyy-MM-dd" />
-                                                </h:outputText>
-                                            </td>
-                                            <ui:repeat value="#{dateGroup.listOfSitesGroupedIntoInstitutionses}" var="institutionGroup">
-                                                <td>#{institutionGroup}</td>
-                                                
-<!--                                                <ui:repeat value="#{institutionGroup.sites}" var="site">
-                                                    <td>
-                                                        <p:inputText value="#{site.startingBalance}" placeholder="Starting Balance" style="width:90%;" />
-                                                    </td>
-                                                    <td>
-                                                        <p:inputText value="#{site.entryValue}" placeholder="Entry Value" style="width:90%;" />
-                                                    </td>
-                                                    <td>
-                                                        <p:inputText value="#{site.closingBalance}" placeholder="Closing Balance" style="width:90%;" />
-                                                    </td>
-                                                </ui:repeat>-->
-                                            </ui:repeat>
-                                        </tr>
+                        <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+                        <table id="myTable" class="ui-widget ui-datatable table table-bordered" style="width: 100%; border-collapse: collapse;">
+                            <thead class="ui-datatable-header ui-widget-header">
+                                <tr>
+                                    <th rowspan="3" class="text-center">Date</th>
+                                    <ui:repeat value="#{cashBookEntryController.sitesGroupedIntoInstitutionses}" var="ins">
+                                        <th colspan="9" class="text-center">#{ins.institution.name}</th>
                                     </ui:repeat>
-                                </tbody>
-                            </table>
+                                </tr>
+                                <tr>
+                                    <ui:repeat value="#{cashBookEntryController.sitesGroupedIntoInstitutionses}" var="sis">
+                                        <ui:repeat value="#{sis.sites}" var="s">
+                                            <th colspan="3" class="text-center">#{s.name}</th>
+                                        </ui:repeat>
+                                    </ui:repeat>
+                                </tr>
+                                <tr>
+                                    <ui:repeat value="#{cashBookEntryController.sitesGroupedIntoInstitutionses}" var="sit">
+                                        <ui:repeat value="#{sit.sites}" var="s">
+                                            <th class="text-end">Starting Balance</th>
+                                            <th class="text-end">Value</th>
+                                            <th class="text-end">Ending Balance</th>
+                                        </ui:repeat>
+                                    </ui:repeat>
+                                </tr>
+                            </thead>
+                            <tbody class="ui-datatable-data ui-widget-content">
+                                <ui:repeat value="#{cashBookEntryController.dates}" var="date">
+                                    <tr>
+                                        <td class="text-center">
+                                            <h:outputText value="#{date}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                            </h:outputText>
+                                        </td>
+                                        <ui:repeat value="#{cashBookEntryController.sitesGroupedIntoInstitutionses}" var="sid">
+                                            <ui:repeat value="#{sid.sites}" var="s">
+                                                <td class="text-end">#{cashBookEntryController.fetchStartingBalanceForToSite(date,s)}</td>
+                                                <td class="text-end">
+                                                    <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForToSite(date,s)}" >
+                                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                    </h:outputText> 
+                                                </td>
+                                                <td class="text-end">#{cashBookEntryController.fetchEndingBalanceForToSite(date,s)}</td>
+                                            </ui:repeat>
+                                        </ui:repeat>
+                                    </tr>
+                                </ui:repeat>
+                            </tbody>
+                        </table>
+
+                        <script>
+                                    function exportTableToExcel(tableID, filename) {
+                                        if (!filename || filename.trim() === "") {
+                                            filename = 'excel_data.xlsx';
+                                        }
+                                        if (!filename.endsWith('.xlsx')) {
+                                            filename += '.xlsx';
+                                        }
+
+                                        var table = document.getElementById(tableID);
+                                        var workbook = XLSX.utils.table_to_book(table, {sheet: "Sheet1"});
+                                        XLSX.writeFile(workbook, filename);
+                                    }
+                        </script>
 
 
-                        </p:panel>
+
+
+
 
                     </p:panel>
 
