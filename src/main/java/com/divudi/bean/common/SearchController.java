@@ -14184,7 +14184,7 @@ public class SearchController implements Serializable {
                 department,
                 site);
         ap.setName("Slip Payments");
-        ap.setBundleType("PaymentReport");
+        ap.setBundleType("paymentReportSlip");
         return ap;
     }
 
