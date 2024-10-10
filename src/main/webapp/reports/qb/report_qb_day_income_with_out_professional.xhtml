@@ -13,7 +13,7 @@
         <h:form id="panelPrint">
 
 
-            <p:panelGrid layout="tabular" columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
+            <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
                 <h:panelGroup layout="block" styleClass="form-group">
                     <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
                     <h:outputLabel value="From" for="fromDate" class="mx-3"/>
@@ -114,7 +114,7 @@
                     <f:ajax event="change" execute="@this" render="tbl pan" listener="#{quickBookReportController.listnerReportNameChange}" />
                 </p:selectOneMenu>
 
-            </p:panelGrid>
+            </h:panelGrid>
 
             <h:panelGrid columns="2"  styleClass="noPrintButton" id="pan">
 
@@ -149,24 +149,42 @@
                 </p:selectBooleanCheckbox>
             </h:panelGrid>
 
-            <p:commandButton value="Process" ajax="false"  styleClass="noPrintButton" 
-                             action="#{quickBookReportController.createQBFormat()}"/>
-            <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton"   >
+            <p:commandButton value="Process" 
+                             icon="fa fa-cogs" 
+                             styleClass="noPrintButton m-1 ui-button-primary" 
+                             ajax="false" 
+                             action="#{quickBookReportController.createQBFormat()}" />
+
+            <p:commandButton value="Print" 
+                             icon="fa fa-print" 
+                             styleClass="noPrintButton m-1 ui-button-secondary" 
+                             ajax="false">
                 <p:printer target="panelPrint" />
             </p:commandButton>
-            <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" rendered="#{quickBookReportController.report ne '2'}">
-                <p:dataExporter type="xlsx" target="tbl" fileName="QB_Export"/>
+
+            <p:commandButton value="Excel" 
+                             icon="fa fa-file-excel" 
+                             styleClass="noPrintButton m-1 ui-button-success" 
+                             ajax="false" 
+                             rendered="#{quickBookReportController.report ne '2'}">
+                <p:dataExporter type="xlsx" target="tbl" fileName="QB_Export" />
             </p:commandButton>
-            <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" rendered="#{quickBookReportController.report eq '2'}">
-                <p:dataExporter type="xlsx" target="tbl1" fileName="QB_Export"/>
+
+            <p:commandButton value="Excel" 
+                             icon="fa fa-file-excel" 
+                             styleClass="noPrintButton m-1 ui-button-success" 
+                             ajax="false" 
+                             rendered="#{quickBookReportController.report eq '2'}">
+                <p:dataExporter type="xlsx" target="tbl1" fileName="QB_Export" />
             </p:commandButton>
+
 
             <p:panel styleClass="noBorder summeryBorder">
                 <p:dataTable id="tbl" value="#{quickBookReportController.quickBookFormats}" editable="true" var="qbf" rendered="#{quickBookReportController.report ne '2'}">
                     <p:columnGroup  type="header" >
                         <p:row>
                             <p:column headerText="!TRANS"/>
-                            <p:column headerText="TRNSTYPE" />
+                            ෆ   <p:column headerText="TRNSTYPE" />
                             <p:column headerText="DATE" />
                             <p:column headerText="ACCNT" />
                             <p:column headerText="NAME" />

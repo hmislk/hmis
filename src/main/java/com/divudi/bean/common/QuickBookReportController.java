@@ -1299,15 +1299,15 @@ public class QuickBookReportController implements Serializable {
                 + " and bf.retired=false ";
 
         if (institution != null) {
-            jpql += "bi.bill.institution=:ins ";
+            jpql += " and bi.bill.institution=:ins ";
             temMap.put("ins", institution);
         }
         if (department != null) {
-            jpql += "bi.bill.department=:dep ";
+            jpql += " and bi.bill.department=:dep ";
             temMap.put("dep", department);
         }
         if(site!=null){
-            jpql +="bi.bill.department.site=:site ";
+            jpql +=" and bi.bill.department.site=:site ";
             temMap.put("site", site);
         }
 
