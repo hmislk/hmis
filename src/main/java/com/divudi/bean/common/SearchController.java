@@ -12340,6 +12340,11 @@ public class SearchController implements Serializable {
         cashBookEntries = new ArrayList<>();
         return "/cashier/cash_book_entry";
     }
+    
+    public String navigateToListCashBookEntrySiteSummary() {
+        cashBookEntries = new ArrayList<>();
+        return "/cashier/cash_book_summery_site";
+    }
 
     public void genarateCashBookEntries() {
         cashBookEntries = cashBookEntryController.genarateCashBookEntries(fromDate, toDate, site, institution, department);
@@ -14179,7 +14184,7 @@ public class SearchController implements Serializable {
                 department,
                 site);
         ap.setName("Slip Payments");
-        ap.setBundleType("PaymentReport");
+        ap.setBundleType("paymentReportSlip");
         return ap;
     }
 

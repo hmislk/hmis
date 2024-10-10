@@ -106,16 +106,16 @@
                                                 </div>
                                                 <div class="col-md-8 text-right">
 
-                                                    <h:panelGroup rendered="#{not webUserController.hasPrivilege('handoverAcceptAsCashier')}" >
+                                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('handoverAcceptAsCashier')}" >
                                                         <p:outputLabel 
                                                             value="You do NOT have privilege to accept handovers" 
                                                             class="ui-message-error"></p:outputLabel>
                                                     </h:panelGroup>
-                                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('handoverAcceptAsCashier')}" >
+                                                    <h:panelGroup  >
 
 
                                                         <p:commandButton 
-                                                            rendered="#{webUserController.hasPrivilege('handoverAcceptAsMainCashier')}" 
+                                                             
                                                             value="Accept Handover - No Cashbook Entries" 
                                                             styleClass="ui-button-warning mx-1" 
                                                             icon="pi pi-check-circle" 

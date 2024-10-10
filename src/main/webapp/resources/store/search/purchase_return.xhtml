@@ -31,7 +31,7 @@
         <h:panelGroup id="gpBill">
             <p:dataTable rowIndexVar="i" id="tblBills" value="#{searchController.bills}" var="bill" >
                 <f:facet name="header">
-                    <h:outputLabel value="Purchase RETURN NOTE"/>
+                    <h:outputLabel value="PURCHASE RETURN NOTE"/>
                 </f:facet>
 
                 <p:column headerText="Return Note No" >
@@ -43,27 +43,27 @@
                         <f:setPropertyActionListener value="#{bill}" target="#{storeBillSearch.bill}"/>
                     </h:commandLink>
                 </p:column>      
-                <p:column headerText="Purchase NO" >
+                <p:column headerText="Purchase No" >
                     <f:facet name="header">
-                        <h:outputLabel value="Purchase NO" />
+                        <h:outputLabel value="Purchase No" />
                     </f:facet>
                     <h:commandLink action="store_reprint_purchase_return" value="#{bill.referenceBill.deptId}">
                         <h:outputLabel  ></h:outputLabel>
                         <f:setPropertyActionListener value="#{bill}" target="#{storeBillSearch.bill}"/>
                     </h:commandLink>
                 </p:column> 
-                <p:column headerText="Delaor Name" >
+                <p:column headerText="Dealer Name" >
                     <f:facet name="header">
-                        <h:outputLabel value="Delaor Name" />
+                        <h:outputLabel value="Dealer Name" />
                     </f:facet>
                     <h:commandLink action="store_reprint_purchase_return" value="#{bill.toInstitution.name}">
                         <h:outputLabel  ></h:outputLabel>
                         <f:setPropertyActionListener value="#{bill}" target="#{storeBillSearch.bill}"/>
                     </h:commandLink>
                 </p:column>
-                <p:column headerText="Billed at"  >
+                <p:column headerText="Billed At"  >
                     <f:facet name="header">
-                        <h:outputLabel value="Billed at" />
+                        <h:outputLabel value="Billed At" />
                     </f:facet>
                     <h:commandLink action="store_reprint_purchase_return" >
                         <h:outputLabel value="#{bill.createdAt}" >
@@ -84,9 +84,9 @@
                         </h:outputLabel>
                     </h:panelGroup>
                 </p:column>                 
-                <p:column headerText="Billed by" >
+                <p:column headerText="Billed By" >
                     <f:facet name="header">
-                        <h:outputLabel value="Billed by" />
+                        <h:outputLabel value="Billed By" />
                     </f:facet>
                     <h:commandLink action="store_reprint_purchase_return" >
                         <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
@@ -105,9 +105,9 @@
                         </h:outputLabel>
                     </h:panelGroup>
                 </p:column>          
-                <p:column headerText="Paymentmethod"  >
+                <p:column headerText="Payment Method"  >
                     <f:facet name="header">
-                        <h:outputLabel value="Paymentmethod" />
+                        <h:outputLabel value="Payment Method" />
                     </f:facet>
                     <h:commandLink action="store_reprint_purchase_return" >
                         <h:outputLabel value="#{bill.paymentMethod}" ></h:outputLabel>

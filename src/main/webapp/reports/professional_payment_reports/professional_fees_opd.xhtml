@@ -256,14 +256,14 @@
                                 <p:badge value="Refunded" rendered="#{row.billFee.billItem.refunded}" styleClass="ui-badge-secondary"></p:badge>
                             </p:column>
 
-                            
+
                             <p:column width="15em">
                                 <f:facet name="header">
                                     <h:outputText value="Bill Type" />
                                 </f:facet>
-                                 <h:outputText value="#{row.billFee.bill.billTypeAtomic}"></h:outputText><br/>
-                                 <h:outputText value="#{row.billFee.createdAt}"></h:outputText><br/>
-                                  <h:outputText value="#{row.billFee.id}"></h:outputText><br/>
+                                <h:outputText value="#{row.billFee.bill.billTypeAtomic}"></h:outputText><br/>
+                                <h:outputText value="#{row.billFee.createdAt}"></h:outputText><br/>
+                                <h:outputText value="#{row.billFee.id}"></h:outputText><br/>
                             </p:column>
 
                             <p:column>
@@ -379,7 +379,7 @@
 
                             </p:column>
 
-
+                            <p:column class="text-end">
                                 <h:panelGroup rendered="#{row.billFee.referenceBillFee.bill.cancelled}" >
                                     <p:badge severity="warning" value="Cancelled" ></p:badge>
                                     <p:commandLink 
@@ -399,7 +399,7 @@
 
 
 
-                           
+
                         </p:dataTable>
 
                     </p:panel>
