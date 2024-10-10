@@ -2830,6 +2830,7 @@ public class BillSearch implements Serializable {
             newCancellingBillFee.setFee(originalProfessionalPaymentFeeForBillItem.getFee());
             newCancellingBillFee.setPatienEncounter(originalProfessionalPaymentFeeForBillItem.getPatienEncounter());
             newCancellingBillFee.setPatient(originalProfessionalPaymentFeeForBillItem.getPatient());
+            newCancellingBillFee.setPatient(originalProfessionalPaymentFeeForBillItem.getReferenceBillFee().getBill().getPatient());
             newCancellingBillFee.setDepartment(originalProfessionalPaymentFeeForBillItem.getDepartment());
             newCancellingBillFee.setInstitution(originalProfessionalPaymentFeeForBillItem.getInstitution());
             newCancellingBillFee.setSpeciality(originalProfessionalPaymentFeeForBillItem.getSpeciality());
