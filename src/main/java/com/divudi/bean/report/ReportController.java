@@ -145,7 +145,10 @@ public class ReportController implements Serializable {
     private WebUser webUser;
 
     private double investigationResult;
-    
+    private double hospitalFeeTotal;
+    private double ccFeeTotal;
+    private double professionalFeeTotal;
+    private double entireTotal;
     private double totalCredit;
     private double totalDebit;
 
@@ -405,7 +408,7 @@ public class ReportController implements Serializable {
 
         billAndItemDataRows = new ArrayList<>(billMap.values());
     }
-    
+
     public void ccSummaryReportByItem() {
 
         ReportTemplateRowBundle billedBundle = new ReportTemplateRowBundle();
@@ -787,37 +790,30 @@ public class ReportController implements Serializable {
         calculateTotals();
     }
 
-    
     private void calculateTotals() {
 
-    // Check if patientDepositHistories contains data
-    if (patientDepositHistories == null || patientDepositHistories.isEmpty()) {        
-        return;
-    }
-
-    
-
-    
-    totalCredit = 0.0;  
-    totalDebit = 0.0;  
-
-    
-    for (PatientDepositHistory pdh : patientDepositHistories) {
-        double transactionValue = pdh.getTransactionValue();
-
-        // Add to totalCredit if transactionValue > 0
-        if (transactionValue > 0) {
-            totalCredit += transactionValue;
-        } 
-        // Add to totalDebit if transactionValue < 0
-        else if (transactionValue < 0) {
-            totalDebit += transactionValue;
+        // Check if patientDepositHistories contains data
+        if (patientDepositHistories == null || patientDepositHistories.isEmpty()) {
+            return;
         }
+
+        totalCredit = 0.0;
+        totalDebit = 0.0;
+
+        for (PatientDepositHistory pdh : patientDepositHistories) {
+            double transactionValue = pdh.getTransactionValue();
+
+            // Add to totalCredit if transactionValue > 0
+            if (transactionValue > 0) {
+                totalCredit += transactionValue;
+            } // Add to totalDebit if transactionValue < 0
+            else if (transactionValue < 0) {
+                totalDebit += transactionValue;
+            }
+        }
+
     }
 
-   
-}
-    
     public double getTotalCredit() {
         return totalCredit;
     }
@@ -825,8 +821,7 @@ public class ReportController implements Serializable {
     public double getTotalDebit() {
         return totalDebit;
     }
-    
-    
+
     public void processCollectionCenterBalance() {
         bundle = new ReportTemplateRowBundle();
         String jpql;
@@ -985,15 +980,6 @@ public class ReportController implements Serializable {
         fromDate = null;
         toDate = null;
         person = null;
-        clear();
-    }
-    
-    public void clear() {
-        totalHosFee = 0.0;
-        totalCCFee = 0.0;
-        totalProFee = 0.0;
-        totalAmount = 0.0;
-        totalCount = 0.0;
     }
 
     public void processCollectingCentreBillWiseDetailReport() {
@@ -2639,7 +2625,7 @@ public class ReportController implements Serializable {
         this.doctor = doctor;
     }
 
-    public void processCollectingCentreTestWiseCountReport() {   
+    public void processCollectingCentreTestWiseCountReport() {
         String jpql = "select new  com.divudi.data.TestWiseCountReport("
                 + "bi.item.name, "
                 + "count(bi.item.name), "
@@ -2650,9 +2636,8 @@ public class ReportController implements Serializable {
                 + ") "
                 + " from BillItem bi "
                 + " where bi.retired=:ret"
-                + " and bi.bill.cancelled=:can"
                 + " and bi.bill.billDate between :fd and :td "
-                + " and bi.bill.billTypeAtomic = :billTypeAtomic ";
+                + " and bi.bill.billType = :bType ";
 
         if (false) {
             BillItem bi = new BillItem();
@@ -2665,10 +2650,9 @@ public class ReportController implements Serializable {
 
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
-        m.put("can", false);
         m.put("fd", fromDate);
         m.put("td", toDate);
-        m.put("billTypeAtomic", BillTypeAtomic.CC_BILL);
+        m.put("bType", BillType.CollectingCentreBill);
 
         if (route != null) {
             jpql += " and bi.bill.fromInstitution.route = :route ";
@@ -2715,22 +2699,24 @@ public class ReportController implements Serializable {
             m.put("status", status);
         }
 
-        jpql += " group by bi.item.name ORDER BY bi.item.name ASC";
+        jpql += " group by bi.item.name";
 
         testWiseCounts = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m);
-        
-        clear();
 
-        for (TestWiseCountReport twcr : testWiseCounts) {
-            totalCount += twcr.getCount();
-            totalCCFee += twcr.getCcFee();
-            totalProFee += twcr.getProFee();
-            totalAmount += twcr.getTotal();
-            totalHosFee += twcr.getHosFee();
+        hospitalFeeTotal = 0.0;
+        ccFeeTotal = 0.0;
+        professionalFeeTotal = 0.0;
+        entireTotal = 0.0;
+
+        if (testWiseCounts != null) {
+            for (TestWiseCountReport report : testWiseCounts) {
+                hospitalFeeTotal += report.getHosFee();
+                ccFeeTotal += report.getCcFee();
+                professionalFeeTotal += report.getProFee();
+                entireTotal += report.getTotal();
+            }
         }
     }
-
-    private double totalAmount;
 
     public void processLabTestWiseCountReport() {
         String jpql = "select new com.divudi.data.TestWiseCountReport("
@@ -3009,44 +2995,76 @@ public class ReportController implements Serializable {
         this.headerBillAndItemDataRow = headerBillAndItemDataRow;
     }
 
-    public double getTotalHosFee() {
-        return totalHosFee;
-    }
-
-    public void setTotalHosFee(double totalHosFee) {
-        this.totalHosFee = totalHosFee;
-    }
-
-    public double getTotalCCFee() {
-        return totalCCFee;
-    }
-
-    public void setTotalCCFee(double totalCCFee) {
-        this.totalCCFee = totalCCFee;
-    }
-
-    public double getTotalProFee() {
-        return totalProFee;
-    }
-
-    public void setTotalProFee(double totalProFee) {
-        this.totalProFee = totalProFee;
-    }
-
-    public double getTotalAmount() {
-        return totalAmount;
-    }
-
-    public void setTotalAmount(double totalAmount) {
-        this.totalAmount = totalAmount;
-    }
-
-    public double getTotalCount() {
+    public Double getTotalCount() {
         return totalCount;
     }
 
-    public void setTotalCount(double totalCount) {
+    public void setTotalCount(Double totalCount) {
         this.totalCount = totalCount;
+    }
+
+    public Double getTotalHosFee() {
+        return totalHosFee;
+    }
+
+    public void setTotalHosFee(Double totalHosFee) {
+        this.totalHosFee = totalHosFee;
+    }
+
+    public Double getTotalCCFee() {
+        return totalCCFee;
+    }
+
+    public void setTotalCCFee(Double totalCCFee) {
+        this.totalCCFee = totalCCFee;
+    }
+
+    public Double getTotalProFee() {
+        return totalProFee;
+    }
+
+    public void setTotalProFee(Double totalProFee) {
+        this.totalProFee = totalProFee;
+    }
+
+    public Double getTotalNetTotal() {
+        return totalNetTotal;
+    }
+
+    public void setTotalNetTotal(Double totalNetTotal) {
+        this.totalNetTotal = totalNetTotal;
+    }
+
+    public double getHospitalFeeTotal() {
+        return hospitalFeeTotal;
+    }
+
+    public void setHospitalFeeTotal(double hospitalFeeTotal) {
+        this.hospitalFeeTotal = hospitalFeeTotal;
+    }
+
+    public double getCcFeeTotal() {
+        return ccFeeTotal;
+    }
+
+    public void setCcFeeTotal(double ccFeeTotal) {
+        this.ccFeeTotal = ccFeeTotal;
+    }
+
+    public double getProfessionalFeeTotal() {
+        return professionalFeeTotal;
+    }
+
+    public void setProfessionalFeeTotal(double professionalFeeTotal) {
+        this.professionalFeeTotal = professionalFeeTotal;
+    }
+
+    public double getEntireTotal() {
+        return entireTotal;
+    }
+
+    public void setEntireTotal(double entireTotal) {
+        this.entireTotal = entireTotal;
     }
 
 }
