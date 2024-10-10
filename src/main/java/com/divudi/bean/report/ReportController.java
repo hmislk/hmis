@@ -200,6 +200,12 @@ public class ReportController implements Serializable {
     private List<BillAndItemDataRow> billAndItemDataRows;
     private BillAndItemDataRow headerBillAndItemDataRow;
 
+    private Double totalCount;
+    private Double totalHosFee;
+    private Double totalCCFee;
+    private Double totalProFee;
+    private Double totalNetTotal;
+
     public void generateItemMovementByBillReport() {
         billAndItemDataRows = new ArrayList<>();
         Map<String, Object> params = new HashMap<>();
@@ -1676,7 +1682,7 @@ public class ReportController implements Serializable {
             m.put("refDoc", doctor);
         }
 
-        bundle.setReportTemplateRows((List<ReportTemplateRow>)billFacade.findLightsByJpql(jpql, m));
+        bundle.setReportTemplateRows((List<ReportTemplateRow>) billFacade.findLightsByJpql(jpql, m));
         bundle.calculateTotalByBills();
     }
 
@@ -2753,6 +2759,20 @@ public class ReportController implements Serializable {
         }
 
         testWiseCounts = new ArrayList<>(resultMap.values());
+
+        totalCount = 0.0;
+        totalHosFee = 0.0;
+        totalCCFee = 0.0;
+        totalProFee = 0.0;
+        totalNetTotal = 0.0;
+
+        for (TestWiseCountReport twc : testWiseCounts) {
+            totalCount += twc.getCount();
+            totalHosFee += twc.getHosFee();
+            totalCCFee += twc.getCcFee();
+            totalProFee += twc.getProFee();
+            totalNetTotal += twc.getTotal();
+        }
     }
 
     private List<TestWiseCountReport> testWiseCounts;
@@ -2920,6 +2940,46 @@ public class ReportController implements Serializable {
 
     public void setHeaderBillAndItemDataRow(BillAndItemDataRow headerBillAndItemDataRow) {
         this.headerBillAndItemDataRow = headerBillAndItemDataRow;
+    }
+
+    public Double getTotalCount() {
+        return totalCount;
+    }
+
+    public void setTotalCount(Double totalCount) {
+        this.totalCount = totalCount;
+    }
+
+    public Double getTotalHosFee() {
+        return totalHosFee;
+    }
+
+    public void setTotalHosFee(Double totalHosFee) {
+        this.totalHosFee = totalHosFee;
+    }
+
+    public Double getTotalCCFee() {
+        return totalCCFee;
+    }
+
+    public void setTotalCCFee(Double totalCCFee) {
+        this.totalCCFee = totalCCFee;
+    }
+
+    public Double getTotalProFee() {
+        return totalProFee;
+    }
+
+    public void setTotalProFee(Double totalProFee) {
+        this.totalProFee = totalProFee;
+    }
+
+    public Double getTotalNetTotal() {
+        return totalNetTotal;
+    }
+
+    public void setTotalNetTotal(Double totalNetTotal) {
+        this.totalNetTotal = totalNetTotal;
     }
 
 }
