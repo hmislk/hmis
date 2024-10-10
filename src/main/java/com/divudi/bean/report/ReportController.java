@@ -145,7 +145,10 @@ public class ReportController implements Serializable {
     private WebUser webUser;
 
     private double investigationResult;
-    
+    private double hospitalFeeTotal;
+    private double ccFeeTotal;
+    private double professionalFeeTotal;
+    private double entireTotal;
     private double totalCredit;
     private double totalDebit;
 
@@ -787,37 +790,30 @@ public class ReportController implements Serializable {
         calculateTotals();
     }
 
-    
     private void calculateTotals() {
 
-    // Check if patientDepositHistories contains data
-    if (patientDepositHistories == null || patientDepositHistories.isEmpty()) {        
-        return;
-    }
-
-    
-
-    
-    totalCredit = 0.0;  
-    totalDebit = 0.0;  
-
-    
-    for (PatientDepositHistory pdh : patientDepositHistories) {
-        double transactionValue = pdh.getTransactionValue();
-
-        // Add to totalCredit if transactionValue > 0
-        if (transactionValue > 0) {
-            totalCredit += transactionValue;
-        } 
-        // Add to totalDebit if transactionValue < 0
-        else if (transactionValue < 0) {
-            totalDebit += transactionValue;
+        // Check if patientDepositHistories contains data
+        if (patientDepositHistories == null || patientDepositHistories.isEmpty()) {
+            return;
         }
+
+        totalCredit = 0.0;
+        totalDebit = 0.0;
+
+        for (PatientDepositHistory pdh : patientDepositHistories) {
+            double transactionValue = pdh.getTransactionValue();
+
+            // Add to totalCredit if transactionValue > 0
+            if (transactionValue > 0) {
+                totalCredit += transactionValue;
+            } // Add to totalDebit if transactionValue < 0
+            else if (transactionValue < 0) {
+                totalDebit += transactionValue;
+            }
+        }
+
     }
 
-   
-}
-    
     public double getTotalCredit() {
         return totalCredit;
     }
@@ -825,8 +821,7 @@ public class ReportController implements Serializable {
     public double getTotalDebit() {
         return totalDebit;
     }
-    
-    
+
     public void processCollectionCenterBalance() {
         bundle = new ReportTemplateRowBundle();
         String jpql;
@@ -2708,6 +2703,19 @@ public class ReportController implements Serializable {
 
         testWiseCounts = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m);
 
+        hospitalFeeTotal = 0.0;
+        ccFeeTotal = 0.0;
+        professionalFeeTotal = 0.0;
+        entireTotal = 0.0;
+
+        if (testWiseCounts != null) {
+            for (TestWiseCountReport report : testWiseCounts) {
+                hospitalFeeTotal += report.getHosFee();
+                ccFeeTotal += report.getCcFee();
+                professionalFeeTotal += report.getProFee();
+                entireTotal += report.getTotal();
+            }
+        }
     }
 
     public void processLabTestWiseCountReport() {
@@ -3025,6 +3033,38 @@ public class ReportController implements Serializable {
 
     public void setTotalNetTotal(Double totalNetTotal) {
         this.totalNetTotal = totalNetTotal;
+    }
+
+    public double getHospitalFeeTotal() {
+        return hospitalFeeTotal;
+    }
+
+    public void setHospitalFeeTotal(double hospitalFeeTotal) {
+        this.hospitalFeeTotal = hospitalFeeTotal;
+    }
+
+    public double getCcFeeTotal() {
+        return ccFeeTotal;
+    }
+
+    public void setCcFeeTotal(double ccFeeTotal) {
+        this.ccFeeTotal = ccFeeTotal;
+    }
+
+    public double getProfessionalFeeTotal() {
+        return professionalFeeTotal;
+    }
+
+    public void setProfessionalFeeTotal(double professionalFeeTotal) {
+        this.professionalFeeTotal = professionalFeeTotal;
+    }
+
+    public double getEntireTotal() {
+        return entireTotal;
+    }
+
+    public void setEntireTotal(double entireTotal) {
+        this.entireTotal = entireTotal;
     }
 
 }
