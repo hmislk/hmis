@@ -200,6 +200,12 @@ public class ReportController implements Serializable {
     private List<BillAndItemDataRow> billAndItemDataRows;
     private BillAndItemDataRow headerBillAndItemDataRow;
 
+    private Double totalCount;
+    private Double totalHosFee;
+    private Double totalCCFee;
+    private Double totalProFee;
+    private Double totalNetTotal;
+
     public void generateItemMovementByBillReport() {
         billAndItemDataRows = new ArrayList<>();
         Map<String, Object> params = new HashMap<>();
@@ -2679,11 +2685,7 @@ public class ReportController implements Serializable {
         }
     }
 
-    private double totalHosFee;
-    private double totalCCFee;
-    private double totalProFee;
     private double totalAmount;
-    private double totalCount;
 
     public void processLabTestWiseCountReport() {
         String jpql = "select new com.divudi.data.TestWiseCountReport("
@@ -2779,6 +2781,20 @@ public class ReportController implements Serializable {
         }
 
         testWiseCounts = new ArrayList<>(resultMap.values());
+
+        totalCount = 0.0;
+        totalHosFee = 0.0;
+        totalCCFee = 0.0;
+        totalProFee = 0.0;
+        totalNetTotal = 0.0;
+
+        for (TestWiseCountReport twc : testWiseCounts) {
+            totalCount += twc.getCount();
+            totalHosFee += twc.getHosFee();
+            totalCCFee += twc.getCcFee();
+            totalProFee += twc.getProFee();
+            totalNetTotal += twc.getTotal();
+        }
     }
 
     private List<TestWiseCountReport> testWiseCounts;

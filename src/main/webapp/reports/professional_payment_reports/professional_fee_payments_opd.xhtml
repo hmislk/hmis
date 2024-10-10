@@ -266,7 +266,8 @@
                                 headerText="Patient"
                                 filterMatchMode="contains"
                                 style="text-align: left;">
-                                <h:outputLabel value="#{row.billFee.referenceBillFee.bill.patient.person.nameWithTitle}" />
+                                <h:outputLabel value="#{row.billFee.referenceBillFee.bill.patient.person.nameWithTitle}" rendered="#{row.billFee.referenceBillFee.bill.patient ne null}" />
+                                <h:outputLabel value="#{row.billFee.patient.person.nameWithTitle}"  rendered="#{row.billFee.referenceBillFee.bill.patient eq null}"/>
                             </p:column>
 
                             <p:column 
