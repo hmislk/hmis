@@ -183,12 +183,12 @@
                         <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 
                         <p:dataTable 
-                            value="#{reportController.bills}"
-                            var="bi" 
+                            value="#{reportController.bundle.reportTemplateRows}"
+                            var="row" 
                             rowIndexVar="i"
                             id="tblData"
                             paginator="true"
-                            rowKey="#{bi.id}"
+                            rowKey="#{row.bill.id}"
                             paginatorPosition="bottom"
                             rows="10"
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
@@ -198,10 +198,10 @@
                                 <h:outputText value="#{i+1}" ></h:outputText>
                             </p:column>
                             <p:column headerText="Type" rendered="#{webUserController.hasPrivilege('Developers')}" >
-                                <h:outputText value="#{bi.billTypeAtomic}" ></h:outputText>
+                                <h:outputText value="#{row.bill.billTypeAtomic}" ></h:outputText>
                             </p:column>
                             <p:column headerText="Bill No" >
-                                <h:outputText value="#{bi.referenceNumber}" ></h:outputText>
+                                <h:outputText value="#{row.bill.referenceNumber}" ></h:outputText>
                                 <p:commandLink 
                                     ajax="false"
                                     action="#{billSearch.navigateToViewBillByAtomicBillType()}">
@@ -223,27 +223,32 @@
 
                             </p:column>
                             <p:column headerText="Billed at" >
-                                <h:outputText value="#{bi.createdAt}" >
+                                <h:outputText value="#{row.bill.createdAt}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
                                 </h:outputText>
                             </p:column>
                             <p:column headerText="Billed By" >
-                                <h:outputText value="#{bi.creater.name}" ></h:outputText>
+                                <h:outputText value="#{row.bill.creater.name}" ></h:outputText>
                             </p:column>
                             <p:column headerText="Payment Method" >
-                                <h:outputText value="#{bi.paymentMethod}" ></h:outputText>
+                                <h:outputText value="#{row.bill.paymentMethod}" ></h:outputText>
                             </p:column>
                             <p:column headerText="Agent Code" >
-                                <h:outputText value="#{bi.fromInstitution.code}" ></h:outputText>
+                                <h:outputText value="#{row.bill.fromInstitution.code}" ></h:outputText>
                             </p:column>
                             <p:column headerText="Agent Name" >
-                                <h:outputText value="#{bi.fromInstitution.name}" ></h:outputText>
+                                <h:outputText value="#{row.bill.fromInstitution.name}" ></h:outputText>
                             </p:column>
-                            <p:column headerText="Amount" >
-                                <h:outputText value="#{bi.total}" ></h:outputText>
+                            <p:column headerText="Amount" class="text-end">
+                                <h:outputText value="#{row.bill.total}" ></h:outputText>
+                                <f:facet name="footer" >
+                                    <h:outputLabel value="#{reportController.bundle.total}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </f:facet>
                             </p:column>
                             <p:column headerText="Comments" >
-                                <h:outputText value="#{bi.comments}" ></h:outputText>
+                                <h:outputText value="#{row.bill.comments}" ></h:outputText>
                             </p:column>
                         </p:dataTable>
 
@@ -262,26 +267,37 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <ui:repeat value="#{reportController.bills}" var="bi" varStatus="status">
+                                <ui:repeat value="#{reportController.bundle.reportTemplateRows}" var="row" varStatus="status">
                                     <tr>
                                         <td>#{status.index + 1}</td>
                                         <td>
-                                            #{bi.referenceNumber}
+                                            #{row.bill.referenceNumber}
                                         </td>
                                         <td>
-                                            <h:outputText value="#{bi.createdAt}">
+                                            <h:outputText value="#{row.bill.createdAt}">
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
                                             </h:outputText>
                                         </td>
-                                        <td>#{bi.creater.name}</td>
-                                        <td>#{bi.paymentMethod}</td>
-                                        <td>#{bi.fromInstitution.code}</td>
-                                        <td>#{bi.fromInstitution.name}</td>
-                                        <td>#{bi.total}</td>
-                                        <td>#{bi.comments}</td>
+                                        <td>#{row.bill.creater.name}</td>
+                                        <td>#{row.bill.paymentMethod}</td>
+                                        <td>#{row.bill.fromInstitution.code}</td>
+                                        <td>#{row.bill.fromInstitution.name}</td>
+                                        <td>#{row.bill.total}</td>
+                                        <td>#{row.bill.comments}</td>
                                     </tr>
                                 </ui:repeat>
                             </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th colspan="7">Total</th>
+                                    <th>
+                                        <h:outputLabel value="#{reportController.bundle.total}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>
+                                    </th>
+                                    <th></th>
+                                </tr>
+                            </tfoot>
                         </table>
 
 
