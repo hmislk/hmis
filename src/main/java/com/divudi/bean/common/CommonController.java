@@ -58,16 +58,16 @@ public class CommonController implements Serializable {
         DecimalFormat decimalFormat = new DecimalFormat(format);
         return decimalFormat.format(number);
     }
-    
+
     public String formatToLongDate(Date date) {
         if (date == null) {
             return "";
         }
-        
+
         // Load the date format from session preferences
         String dateFormat = sessionController.getApplicationPreference().getLongDateFormat();
         SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
-        
+
         return sdf.format(date);
     }
 
@@ -104,9 +104,22 @@ public class CommonController implements Serializable {
         return new Date();
     }
 
+    public Date getDateBeforeThreeMonthsCurrentDateTime() {
+        Calendar calendar = Calendar.getInstance();
+        // Subtract three months from the current date
+        calendar.add(Calendar.MONTH, -3);
+        // Set time to the beginning of the day (optional, based on your requirement)
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        return calendar.getTime();
+    }
+
     public Date getEndOfDayOnCurrentDate() {
         return CommonFunctionsController.getEndOfDay(new Date());
     }
+
     public boolean renderPaginator(List<Object> list, int count) {
         boolean render = false;
         if (list == null) {
@@ -136,16 +149,16 @@ public class CommonController implements Serializable {
         LocalDate secondDate = second.toLocalDate();
         return firstDate.equals(secondDate);
     }
-    
-    public SessionInstance convertToSessionInstance(Object ob){
-        if(ob instanceof SessionInstance){
+
+    public SessionInstance convertToSessionInstance(Object ob) {
+        if (ob instanceof SessionInstance) {
             return (SessionInstance) ob;
         }
         return null;
     }
-    
-    public SessionInstance getSessionInstance(Object ob){
-        if(ob instanceof SessionInstance){
+
+    public SessionInstance getSessionInstance(Object ob) {
+        if (ob instanceof SessionInstance) {
             return (SessionInstance) ob;
         }
         return null;
@@ -162,7 +175,7 @@ public class CommonController implements Serializable {
     }
 
     public double dateDifferenceInMinutes(Date fromDate, Date toDate) {
-        if (fromDate==null||toDate==null){
+        if (fromDate == null || toDate == null) {
             return 0;
         }
         long timeInMs = toDate.getTime() - fromDate.getTime();
@@ -196,7 +209,6 @@ public class CommonController implements Serializable {
         return pat.matcher(email).matches();
     }
 
-   
     public static String getDateFormat(Date date) {
         String s = "";
         DateFormat d = new SimpleDateFormat("YYYY-MM-dd");

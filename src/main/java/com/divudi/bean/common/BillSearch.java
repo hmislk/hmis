@@ -2830,6 +2830,7 @@ public class BillSearch implements Serializable {
             newCancellingBillFee.setFee(originalProfessionalPaymentFeeForBillItem.getFee());
             newCancellingBillFee.setPatienEncounter(originalProfessionalPaymentFeeForBillItem.getPatienEncounter());
             newCancellingBillFee.setPatient(originalProfessionalPaymentFeeForBillItem.getPatient());
+            newCancellingBillFee.setPatient(originalProfessionalPaymentFeeForBillItem.getReferenceBillFee().getBill().getPatient());
             newCancellingBillFee.setDepartment(originalProfessionalPaymentFeeForBillItem.getDepartment());
             newCancellingBillFee.setInstitution(originalProfessionalPaymentFeeForBillItem.getInstitution());
             newCancellingBillFee.setSpeciality(originalProfessionalPaymentFeeForBillItem.getSpeciality());
@@ -3091,6 +3092,14 @@ public class BillSearch implements Serializable {
         }
         return "/opd/view/opd_bill?faces-redirect=true;";
     }
+    
+    public String navigateToViewOpdRefundBill() {
+        if (viewingBill == null) {
+            JsfUtil.addErrorMessage("No Bill to Dsiplay");
+            return "";
+        }
+        return "/opd/view/opd_refund_bill?faces-redirect=true;";
+    }
 
     public String navigateToViewCancallationOpdBill() {
         if (viewingBill == null) {
@@ -3202,6 +3211,7 @@ public class BillSearch implements Serializable {
 
         return "/opd/bill_reprint?faces-redirect=true;";
     }
+    
 
     public String navigateToViewChannelingProfessionalPaymentBill() {
         if (bill == null) {
@@ -3269,7 +3279,7 @@ public class BillSearch implements Serializable {
                 pharmacyBillSearch.setBill(bill);
                 return pharmacyBillSearch.navigateToViewPharmacyGrn();
             case OPD_BILL_REFUND:
-                return navigateToManageOpdBill();
+                return navigateToViewOpdRefundBill();
             case OPD_BILL_CANCELLATION:
                 return navigateToManageOpdBill();
             case OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER:
