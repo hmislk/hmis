@@ -18,8 +18,7 @@
                     <p:panel >
                         <f:facet name="header">
                             <div class="d-flex justify-content-between">
-                                <p:outputLabel value="Edit Refund OPD Bill" class="mt-2"></p:outputLabel>
-                                <p:commandButton value="Update" ajax="false" action="#{billSearch.saveViewingBillData}"
+                                <p:outputLabel value="View Refund OPD Bill" class="mt-2"></p:outputLabel>
                             </div> 
                         </f:facet>
                         <div class="row">
@@ -135,10 +134,11 @@
                                                 <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
                                                 <h:outputLabel value="Bill Details" class="mx-4"></h:outputLabel>
                                             </f:facet>
-                                            <view:bill_edit editable="true" bill="#{billSearch.viewingBill}"/>
+                                            <view:out bill="#{billSearch.viewingBill}"/>
                                         </p:panel>
                                     </p:tab>
                                     <p:tab title="Bill Items" >
+
                                         <p:dataTable value="#{billSearch.viewingBillItems}" var="bi" rowKey="#{bi.id}" >
                                             <p:column >
                                                 <h:outputText value="#{bi.id}" ></h:outputText>

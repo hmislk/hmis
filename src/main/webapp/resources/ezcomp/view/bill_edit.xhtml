@@ -1,0 +1,80 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bill" type="com.divudi.entity.Bill"/>
+        <cc:attribute name="editable" type="java.lang.Boolean" default="false"/>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <p:panelGrid columns="2" layout="tabular">
+            <f:facet name="header">
+                <p:outputLabel value="Bill Details"></p:outputLabel>
+            </f:facet>
+
+            <p:outputLabel value="Bill ID" />
+            <p:outputLabel value="#{cc.attrs.bill.id}" />
+
+            <p:outputLabel value="Dept ID" />
+            <p:inputText value="#{cc.attrs.bill.deptId}" rendered="#{cc.attrs.editable}" />
+            <p:outputLabel value="#{cc.attrs.bill.deptId}" rendered="#{!cc.attrs.editable}" />
+
+            <p:outputLabel value="Ins ID" />
+            <p:inputText value="#{cc.attrs.bill.insId}" rendered="#{cc.attrs.editable}" />
+            <p:outputLabel value="#{cc.attrs.bill.insId}" rendered="#{!cc.attrs.editable}" />
+
+            <p:outputLabel value="Bill Type" />
+            <p:inputText value="#{cc.attrs.bill.billType}" rendered="#{cc.attrs.editable}" />
+            <p:outputLabel value="#{cc.attrs.bill.billType}" rendered="#{!cc.attrs.editable}" />
+
+            <p:outputLabel value="Bill Type Atomic" />
+            <p:inputText value="#{cc.attrs.bill.billTypeAtomic}" rendered="#{cc.attrs.editable}" />
+            <p:outputLabel value="#{cc.attrs.bill.billTypeAtomic}" rendered="#{!cc.attrs.editable}" />
+
+            <p:outputLabel value="Bill No" />
+            <p:inputText value="#{cc.attrs.bill.billNo}" rendered="#{cc.attrs.editable}" />
+            <p:outputLabel value="#{cc.attrs.bill.billNo}" rendered="#{!cc.attrs.editable}" />
+
+            <p:outputLabel value="Payment Type" />
+            <p:inputText value="#{cc.attrs.bill.paymentMethod}" rendered="#{cc.attrs.editable}" />
+            <p:outputLabel value="#{cc.attrs.bill.paymentMethod}" rendered="#{!cc.attrs.editable}" />
+
+            <p:outputLabel value="Total" />
+            <p:inputText value="#{cc.attrs.bill.total}" rendered="#{cc.attrs.editable}" />
+            <p:outputLabel value="#{cc.attrs.bill.total}" rendered="#{!cc.attrs.editable}" />
+
+            <p:outputLabel value="Discount" />
+            <p:inputText value="#{cc.attrs.bill.discount}" rendered="#{cc.attrs.editable}" />
+            <p:outputLabel value="#{cc.attrs.bill.discount}" rendered="#{!cc.attrs.editable}" />
+
+            <p:outputLabel value="Net Total" />
+            <p:inputText value="#{cc.attrs.bill.netTotal}" rendered="#{cc.attrs.editable}" />
+            <p:outputLabel value="#{cc.attrs.bill.netTotal}" rendered="#{!cc.attrs.editable}" />
+
+            <p:separator />
+            <p:separator />
+
+            <p:outputLabel value="Credit Company" />
+            <p:autoComplete value="#{cc.attrs.bill.creditCompany}" 
+                            completeMethod="#{institutionController.completeIns}" 
+                            var="i" itemLabel="#{i.name}" itemValue="#{i}" 
+                            rendered="#{cc.attrs.editable}" />
+            <h:outputLabel value="#{cc.attrs.bill.creditCompany.name}" rendered="#{!cc.attrs.editable}" />
+
+            <p:outputLabel value="Referred By" />
+            <p:inputText value="#{cc.attrs.bill.referredBy.person.nameWithTitle}" rendered="#{cc.attrs.editable}" />
+            <p:outputLabel value="#{cc.attrs.bill.referredBy.person.nameWithTitle}" rendered="#{!cc.attrs.editable}" />
+
+            <p:outputLabel value="Referring Institution" />
+            <p:inputText value="#{cc.attrs.bill.referenceInstitution.name}" rendered="#{cc.attrs.editable}" />
+            <p:outputLabel value="#{cc.attrs.bill.referenceInstitution.name}" rendered="#{!cc.attrs.editable}" />
+        </p:panelGrid>
+    </cc:implementation>
+</html>
