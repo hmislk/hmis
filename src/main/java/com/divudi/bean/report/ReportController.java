@@ -1618,16 +1618,16 @@ public class ReportController implements Serializable {
 
     public void processCollectingCentreReciptReport() {
 
-        List<BillType> billtypes = new ArrayList<>();
-        billtypes.add(BillType.CollectingCentreBill);
-        billtypes.add(BillType.CollectingCentrePaymentMadeBill);
-        billtypes.add(BillType.CollectingCentrePaymentReceiveBill);
+        List<BillTypeAtomic> billtypes = new ArrayList<>();
+        billtypes.add(BillTypeAtomic.CC_PAYMENT_MADE_BILL);
+        billtypes.add(BillTypeAtomic.CC_PAYMENT_MADE_CANCELLATION_BILL);
+        billtypes.add(BillTypeAtomic.CC_PAYMENT_RECEIVED_BILL);
 
         String jpql = "select bill "
                 + " from Bill bill "
                 + " where bill.retired=:ret"
                 + " and bill.billDate between :fd and :td "
-                + " and bill.billType in :bTypes";
+                + " and bill.billTypeAtomic in :bTypes";
 
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
@@ -1636,7 +1636,7 @@ public class ReportController implements Serializable {
         m.put("bTypes", billtypes);
 
         if (site != null) {
-            jpql += " and bill.fromInstitution.route = :route ";
+            jpql += " and bill.department.site = :route ";
             m.put("route", site);
         }
 
@@ -1670,19 +1670,12 @@ public class ReportController implements Serializable {
             m.put("inv", invoiceNumber);
         }
 
-//        if (itemLight != null) {
-//            jpql += " and bi.item.id = :item ";
-//            m.put("item", itemLight.getId());
-//        }
         if (doctor != null) {
             jpql += " and bill.referredBy = :refDoc ";
             m.put("refDoc", doctor);
         }
 
-//        if (status != null) {
-//            jpql += " and billItemStatus = :status ";
-//            m.put("status", status);
-//        }
+
         bills = billFacade.findByJpql(jpql, m);
     }
 
