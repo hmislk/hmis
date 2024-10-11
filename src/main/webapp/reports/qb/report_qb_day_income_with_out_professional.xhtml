@@ -1,104 +1,190 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
+                template="/reports/index.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:ca="http://java.sun.com/jsf/composite/cashSummery"                
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                xmlns:ca="http://java.sun.com/jsf/composite/cashSummery">
 
-    <ui:define name="content">
+    <ui:define name="subcontent">
         <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
 
         <h:form id="panelPrint">
 
-            <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
-            <p:panel>
-                <f:facet name="header" >
-                    <h:outputLabel value="Book Keeping Summary Without Pro (DAY)"  styleClass="noPrintButton" />
-                    <h:panelGrid columns="2"  styleClass="noPrintButton" id="pan">
-                        <h:outputLabel value="Report"/>
-                        <p:selectOneMenu value="#{quickBookReportController.report}" >
-                            <f:selectItem itemLabel="Select Report"/>
-                            <f:selectItem itemLabel="Daily Return" itemValue="1"/>
-                            <f:selectItem itemLabel="Pharmacy GRN and Purchase Bills" itemValue="2"/>
-                            <f:selectItem itemLabel="Store GRN and Purchase Bills" itemValue="3"/>
-                            <f:selectItem itemLabel="Inward Income" itemValue="4"/>
-                            <f:selectItem itemLabel="OPD Credit" itemValue="5"/>
-                            <f:selectItem itemLabel="Pharmacy Credit" itemValue="6"/>
-                            <f:selectItem itemLabel="Cafe R GRN and Purchase Bills" itemValue="7"/>
-                            <f:ajax event="change" execute="@this" render="tbl pan" listener="#{quickBookReportController.listnerReportNameChange}" />
-                        </p:selectOneMenu>
-                        <h:outputLabel value="BHT Type" rendered="#{quickBookReportController.report eq '4'}" />
-                        <p:selectOneMenu   id="cmbBhtType" value="#{quickBookReportController.reportKeyWord.paymentMethod}" rendered="#{quickBookReportController.report eq '4'}" >
-                            <f:selectItem itemLabel="All BHT Types" />                           
-                            <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
-                        </p:selectOneMenu>
-                        <p:outputLabel value="Admission Type" rendered="#{quickBookReportController.report eq '4'}"/>
-                        <p:selectOneMenu value="#{quickBookReportController.reportKeyWord.admissionType}" rendered="#{quickBookReportController.report eq '4'}">
-                            <f:selectItem itemLabel="All Admission Type"/>
-                            <f:selectItems  value="#{inwardReportController.admissionty}" var="myItem" 
-                                            itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
-                        </p:selectOneMenu>
-                        <p:outputLabel value="Income Account" rendered="#{quickBookReportController.report eq '4'}"/>
-                        <p:selectOneRadio id="console" value="#{quickBookReportController.reportKeyWord.string}" rendered="#{quickBookReportController.report eq '4'}" >
-                            <f:selectItem itemLabel="Normal Admission" itemValue="0" />
-                            <f:selectItem itemLabel="Green Sheet" itemValue="1" />
-                            <f:selectItem itemLabel="Dialysis" itemValue="2" />
-                        </p:selectOneRadio>
-                        <h:outputLabel value="From Date"/>
-                        <p:calendar id="frmDate" value="#{quickBookReportController.fromDate}" navigator="true"  
-                                    pattern="dd MM yyyy" />
-                        <h:outputLabel value="To Date" />
-                        <p:calendar id="toDate" value="#{quickBookReportController.toDate}" navigator="true"  
-                                    pattern="dd MM yyyy"/>
-                        <h:outputLabel value="Dialysis" rendered="#{quickBookReportController.report eq '4'}" />
-                        <p:selectBooleanCheckbox value="#{quickBookReportController.reportKeyWord.bool1}" rendered="#{quickBookReportController.report eq '4'}" >
-                            <!--<f:ajax event="change" execute="@this" render="pan" listener="#{quickBookReportController.listnerBool1Change()}" />-->
-                        </p:selectBooleanCheckbox>
-                        <h:outputLabel value="Green Sheet" rendered="#{quickBookReportController.report eq '4'}" />
-                        <p:selectBooleanCheckbox value="#{quickBookReportController.reportKeyWord.bool2}" rendered="#{quickBookReportController.report eq '4'}" >
-                            <!--<f:ajax event="change" execute="@this" render="pan" listener="#{quickBookReportController.listnerBool2Change()}" />-->
-                        </p:selectBooleanCheckbox>
-                        <h:outputLabel value="Cafe R" rendered="#{quickBookReportController.report eq '1'}" />
-                        <p:selectBooleanCheckbox value="#{quickBookReportController.reportKeyWord.bool3}" rendered="#{quickBookReportController.report eq '1'}" >
-                        </p:selectBooleanCheckbox>
-                        <h:outputLabel value="Select Institution"/>
-                        <p:autoComplete completeMethod="#{institutionController.completeCompany}" required="true" 
-                                        forceSelection="true"
-                                        requiredMessage="Please Select Institution" 
-                                        value="#{quickBookReportController.institution}"
-                                        var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" />
-                    </h:panelGrid>
 
-                    <h:panelGrid columns="5">
-                        <p:spacer width="110" height="1"/>
-                        <p:commandButton value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;"
-                                         action="#{quickBookReportController.createQBFormat()}"/>
-                        <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;"  >
-                            <p:printer target="panelPrint" />
-                        </p:commandButton>
-                        <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;" rendered="#{quickBookReportController.report ne '2'}">
-                            <!--<p:dataExporter type="csv" target="tbl" fileName="QB_Export"/>-->
-                            <p:dataExporter type="xlsx" target="tbl" fileName="QB_Export"/>
-                        </p:commandButton>
-                        <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;" rendered="#{quickBookReportController.report eq '2'}">
-                            <!--<p:dataExporter type="csv" target="tbl" fileName="QB_Export"/>-->
-                            <p:dataExporter type="xlsx" target="tbl1" fileName="QB_Export"/>
-                        </p:commandButton>
-                    </h:panelGrid>
+            <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
+                <h:panelGroup layout="block" styleClass="form-group">
+                    <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
+                    <h:outputLabel value="From" for="fromDate" class="mx-3"/>
+                </h:panelGroup>
+                <p:calendar 
+                    styleClass="w-100" 
+                    inputStyleClass="w-100 form-control" 
+                    id="fromDate" 
+                    value="#{quickBookReportController.fromDate}" 
+                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                    />
+
+                <p:spacer width="50" ></p:spacer>
+
+                <h:panelGroup layout="block" styleClass="form-group">
+                    <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
+                    <h:outputLabel value="To" for="toDate" class="mx-3"/>
+                </h:panelGroup>
+                <p:calendar 
+                    styleClass="w-100" 
+                    inputStyleClass="w-100 form-control" 
+                    id="toDate" 
+                    value="#{quickBookReportController.toDate}" 
+                    navigator="false" 
+                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                    />
+
+                <p:spacer width="50" ></p:spacer>
+
+                <p:spacer width="50" ></p:spacer>
+                <p:spacer width="50" ></p:spacer>
+
+                <h:panelGroup layout="block" styleClass="form-group">
+                    <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
+                    <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                </h:panelGroup>
+                <p:selectOneMenu
+                    id="cmbIns"
+                    styleClass="w-100 form-control" 
+                    value="#{quickBookReportController.institution}" 
+                    filter="true">
+                    <f:selectItem itemLabel="All Institutions" />
+                    <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                    <p:ajax process="cmbIns" update="cmbDept" />
+                </p:selectOneMenu>
+
+                <p:spacer ></p:spacer>
 
 
-                </f:facet>
-            </p:panel>
+
+                <h:panelGroup layout="block" styleClass="form-group">
+                    <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
+                    <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
+                </h:panelGroup>
+                <p:selectOneMenu
+                    id="siteMenu"
+                    styleClass="w-100 form-control"  
+                    value="#{searchController.site}" 
+                    filter="true">
+                    <f:selectItem itemLabel="All Sites" />
+                    <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                    <p:ajax process="siteMenu" update="cmbDept" />
+                </p:selectOneMenu>
+
+
+                <p:spacer ></p:spacer>
+
+                <h:panelGroup layout="block" styleClass="form-group">
+                    <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                    <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                </h:panelGroup>
+                <p:selectOneMenu
+                    id="cmbDept"
+                    styleClass="w-100 form-control"  
+                    value="#{searchController.department}" 
+                    filter="true">
+                    <f:selectItem itemLabel="All Departments" />
+                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                </p:selectOneMenu>
+
+
+
+
+
+                <h:panelGroup layout="block" styleClass="form-group">
+                    <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                    <h:outputLabel value="Report" for="mnuReport" class="mx-3"/>
+                </h:panelGroup>
+                <p:selectOneMenu id="mnuReport" value="#{quickBookReportController.report}" >
+                    <f:selectItem itemLabel="Select Report"/>
+                    <f:selectItem itemLabel="Daily Return" itemValue="1"/>
+                    <f:selectItem itemLabel="Pharmacy GRN and Purchase Bills" itemValue="2"/>
+                    <f:selectItem itemLabel="Store GRN and Purchase Bills" itemValue="3"/>
+                    <f:selectItem itemLabel="Inward Income" itemValue="4"/>
+                    <f:selectItem itemLabel="OPD Credit" itemValue="5"/>
+                    <f:selectItem itemLabel="Pharmacy Credit" itemValue="6"/>
+                    <f:selectItem itemLabel="Cafe R GRN and Purchase Bills" itemValue="7"/>
+                    <f:ajax event="change" execute="@this" render="tbl pan" listener="#{quickBookReportController.listnerReportNameChange}" />
+                </p:selectOneMenu>
+
+            </h:panelGrid>
+
+            <h:panelGrid columns="2"  styleClass="noPrintButton" id="pan">
+
+                <h:outputLabel value="BHT Type" rendered="#{quickBookReportController.report eq '4'}" />
+                <p:selectOneMenu   id="cmbBhtType" value="#{quickBookReportController.reportKeyWord.paymentMethod}" rendered="#{quickBookReportController.report eq '4'}" >
+                    <f:selectItem itemLabel="All BHT Types" />                           
+                    <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
+                </p:selectOneMenu>
+                <p:outputLabel value="Admission Type" rendered="#{quickBookReportController.report eq '4'}"/>
+                <p:selectOneMenu value="#{quickBookReportController.reportKeyWord.admissionType}" rendered="#{quickBookReportController.report eq '4'}">
+                    <f:selectItem itemLabel="All Admission Type"/>
+                    <f:selectItems  value="#{inwardReportController.admissionty}" var="myItem" 
+                                    itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
+                </p:selectOneMenu>
+                <p:outputLabel value="Income Account" rendered="#{quickBookReportController.report eq '4'}"/>
+                <p:selectOneRadio id="console" value="#{quickBookReportController.reportKeyWord.string}" rendered="#{quickBookReportController.report eq '4'}" >
+                    <f:selectItem itemLabel="Normal Admission" itemValue="0" />
+                    <f:selectItem itemLabel="Green Sheet" itemValue="1" />
+                    <f:selectItem itemLabel="Dialysis" itemValue="2" />
+                </p:selectOneRadio>
+
+                <h:outputLabel value="Dialysis" rendered="#{quickBookReportController.report eq '4'}" />
+                <p:selectBooleanCheckbox value="#{quickBookReportController.reportKeyWord.bool1}" rendered="#{quickBookReportController.report eq '4'}" >
+                    <!--<f:ajax event="change" execute="@this" render="pan" listener="#{quickBookReportController.listnerBool1Change()}" />-->
+                </p:selectBooleanCheckbox>
+                <h:outputLabel value="Green Sheet" rendered="#{quickBookReportController.report eq '4'}" />
+                <p:selectBooleanCheckbox value="#{quickBookReportController.reportKeyWord.bool2}" rendered="#{quickBookReportController.report eq '4'}" >
+                    <!--<f:ajax event="change" execute="@this" render="pan" listener="#{quickBookReportController.listnerBool2Change()}" />-->
+                </p:selectBooleanCheckbox>
+                <h:outputLabel value="Cafe R" rendered="#{quickBookReportController.report eq '1'}" />
+                <p:selectBooleanCheckbox value="#{quickBookReportController.reportKeyWord.bool3}" rendered="#{quickBookReportController.report eq '1'}" >
+                </p:selectBooleanCheckbox>
+            </h:panelGrid>
+
+            <p:commandButton value="Process" 
+                             icon="fa fa-cogs" 
+                             styleClass="noPrintButton m-1 ui-button-primary" 
+                             ajax="false" 
+                             action="#{quickBookReportController.createQBFormat()}" />
+
+            <p:commandButton value="Print" 
+                             icon="fa fa-print" 
+                             styleClass="noPrintButton m-1 ui-button-secondary" 
+                             ajax="false">
+                <p:printer target="panelPrint" />
+            </p:commandButton>
+
+            <p:commandButton value="Excel" 
+                             icon="fa fa-file-excel" 
+                             styleClass="noPrintButton m-1 ui-button-success" 
+                             ajax="false" 
+                             rendered="#{quickBookReportController.report ne '2'}">
+                <p:dataExporter type="xlsx" target="tbl" fileName="QB_Export" />
+            </p:commandButton>
+
+            <p:commandButton value="Excel" 
+                             icon="fa fa-file-excel" 
+                             styleClass="noPrintButton m-1 ui-button-success" 
+                             ajax="false" 
+                             rendered="#{quickBookReportController.report eq '2'}">
+                <p:dataExporter type="xlsx" target="tbl1" fileName="QB_Export" />
+            </p:commandButton>
+
 
             <p:panel styleClass="noBorder summeryBorder">
                 <p:dataTable id="tbl" value="#{quickBookReportController.quickBookFormats}" editable="true" var="qbf" rendered="#{quickBookReportController.report ne '2'}">
                     <p:columnGroup  type="header" >
                         <p:row>
                             <p:column headerText="!TRANS"/>
-                            <p:column headerText="TRNSTYPE" />
+                            ෆ   <p:column headerText="TRNSTYPE" />
                             <p:column headerText="DATE" />
                             <p:column headerText="ACCNT" />
                             <p:column headerText="NAME" />
