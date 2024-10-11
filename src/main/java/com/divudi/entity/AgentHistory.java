@@ -14,6 +14,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
@@ -82,6 +83,7 @@ public class AgentHistory implements Serializable {
     private Date retiredAt;
     private String retireComments;
     String referenceNumber;
+    @Lob
     String comment;
     @Transient
     double transCumilativeTotal;
