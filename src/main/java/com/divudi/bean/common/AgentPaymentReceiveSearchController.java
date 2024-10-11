@@ -325,6 +325,71 @@ public class AgentPaymentReceiveSearchController implements Serializable {
     public void setCashTransactionBean(CashTransactionBean cashTransactionBean) {
         this.cashTransactionBean = cashTransactionBean;
     }
+    
+     public void cancelAgencyDepositBill() {
+        System.out.println("cancelAgencyDepositBill");
+        System.out.println("agencyDepositCanellationStarted = " + agencyDepositCanellationStarted);
+        if (agencyDepositCanellationStarted) {
+            JsfUtil.addErrorMessage("Already Started");
+            printPreview=false;
+            return;
+        }
+        agencyDepositCanellationStarted = true;
+        System.out.println("getBill() = " + getBill());
+        if (getBill() == null) {
+            JsfUtil.addErrorMessage("No Bill to Calcel");
+            printPreview=false;
+            agencyDepositCanellationStarted = false;
+            return;
+        }
+        Bill origianlBil = billBean.fetchBill(getBill().getId());
+        System.out.println("origianlBil = " + origianlBil);
+        if (origianlBil == null) {
+            JsfUtil.addErrorMessage("No SUch Bill");
+            printPreview=false;
+            agencyDepositCanellationStarted = false;
+            return;
+        }
+        boolean error = errorCheck(origianlBil);
+        System.out.println("error = " + error);
+        if (error) {
+            JsfUtil.addErrorMessage("Error");
+            printPreview=false;
+            agencyDepositCanellationStarted = false;
+            return;
+        }
+        System.out.println("origianlBil.isCancelled() = " + origianlBil.isCancelled());
+        if (origianlBil.isCancelled()) {
+            JsfUtil.addErrorMessage("Already Cancelled");
+            printPreview=false;
+            agencyDepositCanellationStarted = false;
+            return;
+        }
+
+//        cancelBill(BillType.CollectingCentrePaymentReceiveBill, BillNumberSuffix.CCCAN, HistoryType.CollectingCentreDepositCancel, BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL);
+
+        CancelledBill newlyCreatedCancelBill = generateCancelBillForCcDepositBill(origianlBil);
+
+        cancelBillItems(newlyCreatedCancelBill, origianlBil);
+
+        origianlBil.setCancelled(true);
+        origianlBil.setCancelledBill(newlyCreatedCancelBill);
+        getBillFacade().editAndCommit(origianlBil);
+
+        Payment payments = createPayment(newlyCreatedCancelBill, paymentMethod);
+        drawerController.updateDrawerForOuts(payments);
+        agentAndCcApplicationController.updateCcBalance(
+                newlyCreatedCancelBill.getFromInstitution(),
+                0,
+                newlyCreatedCancelBill.getNetTotal(),
+                0,
+                newlyCreatedCancelBill.getNetTotal(),
+                HistoryType.CollectingCentreDepositCancel,
+                newlyCreatedCancelBill, comment);
+        printPreview = true;
+        agencyDepositCanellationStarted = false;
+        JsfUtil.addSuccessMessage("Cancelled");
+    }
 
     public void cancelCollectingCentreDepositBill() {
         if (agencyDepositCanellationStarted) {
@@ -418,7 +483,7 @@ public class AgentPaymentReceiveSearchController implements Serializable {
         String deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL);
         cb.setDeptId(deptId);
         cb.setInsId(deptId);
-        cb.setBillType(BillType.CollectingCentrePaymentMadeBill);
+        cb.setBillType(BillType.CollectingCentrePaymentMadeBill);     
         cb.setBillTypeAtomic(BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL);
         cb.setBilledBill(getBill());
         cb.setPaymentMethod(paymentMethod);

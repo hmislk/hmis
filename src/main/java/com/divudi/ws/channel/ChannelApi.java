@@ -6,6 +6,8 @@
 package com.divudi.ws.channel;
 
 import com.divudi.bean.channel.AgentReferenceBookController;
+import com.divudi.bean.channel.BookingController;
+import com.divudi.bean.channel.BookingControllerViewScope;
 import com.divudi.bean.channel.SessionInstanceController;
 import com.divudi.bean.common.ApiKeyController;
 import com.divudi.bean.common.BillBeanController;
@@ -83,6 +85,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.json.JSONArray;
 import org.json.JSONObject;
+
 
 /**
  * REST Web Service
@@ -639,7 +642,7 @@ public class ChannelApi {
     @Path("/save")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response createBooking(@Context HttpServletRequest requestContext, Map<String, String> requestBody) {
+    public Response createBooking(@Context HttpServletRequest requestContext, Map<String, Object> requestBody) {
         String key = requestContext.getHeader("Finance");
         if (!isValidKey(key)) {
             JSONObject responseError = new JSONObject();
@@ -647,6 +650,40 @@ public class ChannelApi {
             String json = responseError.toString();
             return Response.status(Response.Status.ACCEPTED).entity(responseError.toString()).build();
         }
+         Map<String, String> patientDetails = (Map<String, String>)requestBody.get("patient");
+
+        if(patientDetails == null || patientDetails.isEmpty()){
+            JSONObject response = new JSONObject();
+            response.put("Code", "401");
+            response.put("type", "error");
+            response.put("message", "No patient details");
+            return Response.status(Response.Status.ACCEPTED).entity(response).build();
+        }
+
+//        String patientPhoneNo = patientDetails.get("teleNo");
+//        String patientName = patientDetails.get("patientName");
+//        String patientType = patientDetails.get("foreign");
+//        boolean isForeigner = false;
+//        String patientTitle = patientDetails.get("title");
+//        String nic = patientDetails.get("nid");
+//        
+//        if(patientType.toUpperCase().equals("YES")){
+//            isForeigner = true;
+//        }
+//        
+//       BookingControllerViewScope bookingControllerViewScope = new BookingControllerViewScope();
+//       bookingControllerViewScope.setQuickSearchPhoneNumber(patientPhoneNo);
+//       bookingControllerViewScope.quickSearchPatientLongPhoneNumber();
+//       
+//       if(bookingControllerViewScope.getQuickSearchPatientList() == null || bookingControllerViewScope.getQuickSearchPatientList().isEmpty()){
+//           Patient p = bookingControllerViewScope.getPatient();
+//           p.getPerson().setForeigner(isForeigner);
+//           p.getPerson().setName(patientName);
+//           p.getPerson().setMobile(patientPhoneNo);
+//           p.getPerson().setPhone(patientPhoneNo);          
+//           p.getPerson().setNic(nic);
+//       }
+//       
 
         return Response.status(Response.Status.ACCEPTED).entity("create Booking Api").build();
     }
