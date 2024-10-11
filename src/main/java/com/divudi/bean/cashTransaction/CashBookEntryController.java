@@ -76,6 +76,8 @@ public class CashBookEntryController implements Serializable {
     private Date fromDate;
     private Date toDate;
     
+    
+    
     public void generateDailyCashbookSummary() {
     // Initialize the list
     dailyCashbookSummaries = new ArrayList<>();
