@@ -48,14 +48,21 @@
                             filter="true"
                             filterMatchMode="contains"
                             value="#{ampController.current}" 
+                            var="amp"
                             >
                             <f:selectItems 
-                                value="#{ampController.items}" 
-                                var="myItem" 
-                                itemValue="#{myItem}" 
-                                itemLabel="#{myItem.name}" ></f:selectItems>
-                            <p:ajax update="gpDetail" process="lstSelect" >
-                            </p:ajax>
+                                value="#{ampController.items}"
+                                var="myItem"
+                                itemValue="#{myItem}"
+                                itemLabel="#{myItem.code} - #{myItem.name}" >
+                            </f:selectItems>
+                            <p:column style="padding: 8px; width: 20px;" headerText="Code">
+                                 <h:outputText value="#{amp.code}"/>
+                            </p:column>
+                            <p:column  style="padding: 8px;" headerText="Code">
+                                <h:outputText value="#{amp.name}"/>
+                            </p:column>
+                            <p:ajax update="gpDetail" process="lstSelect" ></p:ajax>
                         </p:selectOneListbox>
 
 
@@ -119,7 +126,7 @@
                                     <f:selectItem itemLabel="Select" ></f:selectItem>
                                     <f:selectItems value="#{enumController.departmentType}" ></f:selectItems>
                                 </p:selectOneMenu>
-                                
+
                                 <h:outputText value="No of days to mark as Short Expiary" >
                                 </h:outputText>
                                 <p:inputText 
