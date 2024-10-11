@@ -10,6 +10,7 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.bean.opd.OpdBillController;
 import com.divudi.bean.report.ReportController;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -62,6 +63,8 @@ public class PatientDepositController implements Serializable, ControllerWithPat
     DrawerController drawerController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    OpdBillController opdBillController;
     @EJB
     private PatientDepositFacade patientDepositFacade;
     @EJB
@@ -131,6 +134,9 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         if (patient == null) {
             return;
         }
+        if (patient.getId() == null){
+            return;
+        }
         current = getDepositOfThePatient(patient, sessionController.getDepartment());
         fillLatestPatientDeposits(current);
         fillLatestPatientDepositHistory(current);
@@ -157,6 +163,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         if (patientController.validatePaymentMethodData()) {
             return;
         }
+        opdBillController.savePatient(patient);
         patientController.setBillNetTotal();
         int code = patientController.settlePatientDepositReceiveNew();
 
@@ -179,6 +186,9 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         if (patient == null) {
             JsfUtil.addErrorMessage("Please Select a Patient");
             return;
+        }
+        if(patient.getId() == null){
+            JsfUtil.addErrorMessage("Entered Patient is Not Registered");
         }
         current = getDepositOfThePatient(patientController.getBill().getPatient(), sessionController.getDepartment());
         if (patientController.getBill().getNetTotal() > current.getBalance()) {
