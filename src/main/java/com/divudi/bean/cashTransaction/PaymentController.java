@@ -45,12 +45,25 @@ public class PaymentController implements Serializable {
         if (payment == null) {
             return;
         }
-        if (payment.getId() != null) {
-            getFacade().edit(payment);
-        } else {
-            payment.setCreatedAt(new Date());
-            payment.setCreater(getSessionController().getLoggedUser());
+        if (payment.getId() == null) {
+            if (payment.getCreatedAt() == null) {
+                payment.setCreatedAt(new Date());
+            }
+            if (payment.getCreater() == null) {
+                payment.setCreater(getSessionController().getLoggedUser());
+            }
             getFacade().create(payment);
+        } else {
+            getFacade().edit(payment);
+        }
+    }
+
+    public void save(List<Payment> payments) {
+        if (payments == null || payments.isEmpty()) {
+            return;
+        }
+        for (Payment payment : payments) {
+            save(payment);
         }
     }
 
@@ -86,9 +99,6 @@ public class PaymentController implements Serializable {
         }
     }
 
-    
-    
-    
     public PaymentFacade getEjbFacade() {
         return ejbFacade;
     }

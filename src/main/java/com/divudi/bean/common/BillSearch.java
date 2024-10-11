@@ -6,6 +6,7 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.cashTransaction.FinancialTransactionController;
+import com.divudi.bean.cashTransaction.PaymentController;
 import com.divudi.bean.channel.ChannelSearchController;
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.bean.lab.PatientInvestigationController;
@@ -177,7 +178,8 @@ public class BillSearch implements Serializable {
     BillItemController billItemController;
     @Inject
     BillFeeController billFeeController;
-
+    @Inject
+    PaymentController paymentController;
     @Inject
     private CollectingCentreBillController collectingCentreBillController;
     @Inject
@@ -1727,7 +1729,7 @@ public class BillSearch implements Serializable {
         billController.save(viewingBill);
         billItemController.save(viewingBillItems);
         billFeeController.save(viewingBillFees);
-        
+        paymentController.save(viewingBillPayments);
     }
 
     public boolean sampleHasBeenCollected(Bill rf) {
