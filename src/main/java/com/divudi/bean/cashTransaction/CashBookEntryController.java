@@ -194,7 +194,7 @@ private List<Date> getDatesInRange(Date fromDate, Date toDate) {
         }
 
         Map<String, CashBookEntryData> cashbookEntryDataMap = new HashMap<>();
-
+          
         for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
             if (row.getPayment() == null || row.getPayment().getPaymentMethod() == null || row.getPayment().getBill() == null || row.getPayment().getBill().getBillTypeAtomic() == null) {
                 continue;
@@ -271,7 +271,6 @@ private List<Date> getDatesInRange(Date fromDate, Date toDate) {
 
         for (CashBookEntryData entryData : cashbookEntryDataMap.values()) {
             bundleCb = cashbookFacade.findWithLock(bundleCb.getId());
-
             // Create a new CashBookEntry for each department combination
             CashBookEntry newCbEntry = new CashBookEntry();
             newCbEntry.setInstitution(bundle.getDepartment().getInstitution());
@@ -328,7 +327,6 @@ private List<Date> getDatesInRange(Date fromDate, Date toDate) {
             entryData.setTotal(totalEntryValue);
 
             newCbEntry.setEntryValue(totalEntryValue);
-
             newCbEntry.setCashBook(bundleCb);
             cashbookEntryFacade.create(newCbEntry);
             cashbookEntries.add(newCbEntry);

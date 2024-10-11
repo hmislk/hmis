@@ -74,6 +74,7 @@ public class ReportKeyWord {
     private String string1 = "0";
     boolean bool1;
     boolean bool2;
+    private boolean bool3;
     String address;
     AdmissionType admissionType;
     Area area;
@@ -531,5 +532,15 @@ public class ReportKeyWord {
     public void setDepartmentFrom(Department departmentFrom) {
         this.departmentFrom = departmentFrom;
     }
+
+    public boolean isBool3() {
+        return bool3;
+    }
+
+    public void setBool3(boolean bool3) {
+        this.bool3 = bool3;
+    }
+
+
 
 }
