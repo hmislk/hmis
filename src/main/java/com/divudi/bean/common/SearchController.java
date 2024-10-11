@@ -221,6 +221,7 @@ public class SearchController implements Serializable {
     private List<PatientReport> patientReports;
     private List<PatientInvestigation> patientInvestigationsSigle;
     private BillTypeAtomic billTypeAtomic;
+    private BillClassType billClassType;
 
     BillSummaryRow billSummaryRow;
     Bill cancellingIssueBill;
@@ -1909,6 +1910,14 @@ public class SearchController implements Serializable {
 
     public void setSelectedDrawer(Drawer selectedDrawer) {
         this.selectedDrawer = selectedDrawer;
+    }
+
+    public BillClassType getBillClassType() {
+        return billClassType;
+    }
+
+    public void setBillClassType(BillClassType billClassType) {
+        this.billClassType = billClassType;
     }
 
     public class billsWithbill {
@@ -9831,6 +9840,19 @@ public class SearchController implements Serializable {
             jpql.append(" and b.creater=:wu ");
             params.put("wu", webUser);
         }
+        
+        if(billClassType!=null){
+            jpql.append(" and type(b)=:billClassType ");
+            switch(billClassType){
+                case Bill:params.put("billClassType", com.divudi.entity.Bill.class); break;
+                case BilledBill:params.put("billClassType", com.divudi.entity.BilledBill.class); break;
+                case CancelledBill:params.put("billClassType", com.divudi.entity.CancelledBill.class); break;
+                case OtherBill:params.put("billClassType", com.divudi.entity.Bill.class); break;
+                case PreBill:params.put("billClassType", com.divudi.entity.PreBill.class); break;
+                case RefundBill:params.put("billClassType", com.divudi.entity.RefundBill.class); break;
+                
+            }
+        }
 
         // Order by bill ID
         jpql.append(" order by b.id ");
@@ -14477,6 +14499,8 @@ public class SearchController implements Serializable {
         bundle.createRowValuesFromBill();
         bundle.calculateTotals();
     }
+    
+    
 
     public void billItemsToItamizedSaleReport(ReportTemplateRowBundle rtrb, List<BillItem> billItems) {
         Map<String, ReportTemplateRow> categoryMap = new HashMap<>();
