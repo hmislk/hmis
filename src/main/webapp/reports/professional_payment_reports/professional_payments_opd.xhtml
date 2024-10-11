@@ -249,7 +249,7 @@
                                     action="#{billSearch.navigateToManageBillByAtomicBillType()}">
                                     <i class="pi pi-pencil" style="font-size:14px;" title="Manage Bill"></i> 
                                     <f:setPropertyActionListener 
-                                        value="#{bill}" 
+                                        value="#{row.bill}" 
                                         target="#{billSearch.bill}" />
                                 </p:commandLink>
                                 <p:badge value="Cancelled" rendered="#{row.bill.cancelled}" styleClass="ui-badge-danger"></p:badge>
