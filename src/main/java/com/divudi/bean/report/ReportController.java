@@ -145,6 +145,12 @@ public class ReportController implements Serializable {
     private WebUser webUser;
 
     private double investigationResult;
+    private double hospitalFeeTotal;
+    private double ccFeeTotal;
+    private double professionalFeeTotal;
+    private double entireTotal;
+    private double totalCredit;
+    private double totalDebit;
 
     private String visitType;
     private Patient patient;
@@ -200,11 +206,11 @@ public class ReportController implements Serializable {
     private List<BillAndItemDataRow> billAndItemDataRows;
     private BillAndItemDataRow headerBillAndItemDataRow;
 
-    private Double totalCount;
-    private Double totalHosFee;
-    private Double totalCCFee;
-    private Double totalProFee;
-    private Double totalNetTotal;
+    private double totalCount;
+    private double totalHosFee;
+    private double totalCCFee;
+    private double totalProFee;
+    private double totalNetTotal;
 
     public void generateItemMovementByBillReport() {
         billAndItemDataRows = new ArrayList<>();
@@ -780,6 +786,40 @@ public class ReportController implements Serializable {
         m.put("toDate", getToDate());
 
         patientDepositHistories = patientDepositHistoryFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+
+        calculateTotals();
+    }
+
+    private void calculateTotals() {
+
+        // Check if patientDepositHistories contains data
+        if (patientDepositHistories == null || patientDepositHistories.isEmpty()) {
+            return;
+        }
+
+        totalCredit = 0.0;
+        totalDebit = 0.0;
+
+        for (PatientDepositHistory pdh : patientDepositHistories) {
+            double transactionValue = pdh.getTransactionValue();
+
+            // Add to totalCredit if transactionValue > 0
+            if (transactionValue > 0) {
+                totalCredit += transactionValue;
+            } // Add to totalDebit if transactionValue < 0
+            else if (transactionValue < 0) {
+                totalDebit += transactionValue;
+            }
+        }
+
+    }
+
+    public double getTotalCredit() {
+        return totalCredit;
+    }
+
+    public double getTotalDebit() {
+        return totalDebit;
     }
 
     public void processCollectionCenterBalance() {
@@ -2596,8 +2636,9 @@ public class ReportController implements Serializable {
                 + ") "
                 + " from BillItem bi "
                 + " where bi.retired=:ret"
+                + " and bi.bill.cancelled=:can"
                 + " and bi.bill.billDate between :fd and :td "
-                + " and bi.bill.billType = :bType ";
+                + " and bi.bill.billTypeAtomic = :billTypeAtomic ";
 
         if (false) {
             BillItem bi = new BillItem();
@@ -2610,9 +2651,10 @@ public class ReportController implements Serializable {
 
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
+        m.put("can", false);
         m.put("fd", fromDate);
         m.put("td", toDate);
-        m.put("bType", BillType.CollectingCentreBill);
+        m.put("billTypeAtomic", BillTypeAtomic.CC_BILL);
 
         if (route != null) {
             jpql += " and bi.bill.fromInstitution.route = :route ";
@@ -2659,10 +2701,25 @@ public class ReportController implements Serializable {
             m.put("status", status);
         }
 
-        jpql += " group by bi.item.name";
+        jpql += " group by bi.item.name ORDER BY bi.item.name ASC";
 
         testWiseCounts = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m);
 
+        totalCount = 0.0;
+        totalHosFee = 0.0;
+        totalCCFee = 0.0;
+        totalProFee = 0.0;
+        totalNetTotal = 0.0;
+
+        if (testWiseCounts != null) {
+            for (TestWiseCountReport report : testWiseCounts) {
+                totalCount += report.getCount();
+                totalHosFee += report.getHosFee();
+                totalCCFee += report.getCcFee();
+                totalProFee += report.getProFee();
+                totalNetTotal += report.getTotal();
+            }
+        }
     }
 
     public void processLabTestWiseCountReport() {
@@ -2980,6 +3037,38 @@ public class ReportController implements Serializable {
 
     public void setTotalNetTotal(Double totalNetTotal) {
         this.totalNetTotal = totalNetTotal;
+    }
+
+    public double getHospitalFeeTotal() {
+        return hospitalFeeTotal;
+    }
+
+    public void setHospitalFeeTotal(double hospitalFeeTotal) {
+        this.hospitalFeeTotal = hospitalFeeTotal;
+    }
+
+    public double getCcFeeTotal() {
+        return ccFeeTotal;
+    }
+
+    public void setCcFeeTotal(double ccFeeTotal) {
+        this.ccFeeTotal = ccFeeTotal;
+    }
+
+    public double getProfessionalFeeTotal() {
+        return professionalFeeTotal;
+    }
+
+    public void setProfessionalFeeTotal(double professionalFeeTotal) {
+        this.professionalFeeTotal = professionalFeeTotal;
+    }
+
+    public double getEntireTotal() {
+        return entireTotal;
+    }
+
+    public void setEntireTotal(double entireTotal) {
+        this.entireTotal = entireTotal;
     }
 
 }
