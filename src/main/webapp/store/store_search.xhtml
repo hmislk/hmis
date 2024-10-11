@@ -92,7 +92,7 @@
                                             <h:panelGrid columns="1" class="w-100">         
                                                 <h:outputLabel value="GRN Return No"/> 
                                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="w-100"/>
-                                                <h:outputLabel value="Grn No"/>
+                                                <h:outputLabel value="GRN No"/>
                                                 <p:inputText autocomplete="off" value="#{searchController.searchKeyword.refBillNo}" class="w-100"/>
                                                 <h:outputLabel value="Supplier Name"/>
                                                 <p:inputText autocomplete="off" value="#{searchController.searchKeyword.toInstitution}" class="w-100"/>
@@ -107,7 +107,7 @@
 
                                         <h:panelGroup rendered="#{searchController.billType eq 'StoreOrder'}" class="w-100">
                                             <h:panelGrid columns="1" class="w-100">         
-                                                <h:outputLabel value="Req No"/>
+                                                <h:outputLabel value="Request No"/>
                                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="w-100"/>
                                                 <h:outputLabel value="Supplier Name"/>
                                                 <p:inputText autocomplete="off" value="#{searchController.searchKeyword.toInstitution}" class="w-100"/>
@@ -122,7 +122,7 @@
 
                                         <h:panelGroup rendered="#{searchController.billType eq 'StoreTransferRequest'}" class="w-100">
                                             <h:panelGrid columns="1" class="w-100">         
-                                                <h:outputLabel value="Req No"/>
+                                                <h:outputLabel value="Request No"/>
                                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="w-100"/>
                                                 <h:outputLabel value="To Department"/>
                                                 <p:inputText autocomplete="off" value="#{searchController.searchKeyword.toDepartment}" class="w-100"/>
@@ -137,7 +137,7 @@
 
                                         <h:panelGroup rendered="#{searchController.billType eq 'StoreTransferIssue'}" class="w-100">
                                             <h:panelGrid columns="1" class="w-100">         
-                                                <h:outputLabel value="Req No"/>
+                                                <h:outputLabel value="Request No"/>
                                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="w-100"/>
                                                 <h:outputLabel value="Supplier Name"/>
                                                 <p:inputText autocomplete="off" value="#{searchController.searchKeyword.fromDepartment}" class="w-100"/>

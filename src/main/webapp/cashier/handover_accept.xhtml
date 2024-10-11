@@ -107,12 +107,15 @@
                                                 <div class="col-md-8 text-right">
 
                                                     <h:panelGroup rendered="#{not webUserController.hasPrivilege('handoverAcceptAsCashier')}" >
+
                                                         <p:outputLabel 
                                                             value="You do NOT have privilege to accept handovers" 
-                                                            class="ui-message-error"></p:outputLabel>
+                                                            class="ui-message-error">
+                                                      </p:outputLabel>
+                                                      
                                                     </h:panelGroup>
+                                                  
                                                     <h:panelGroup rendered="#{webUserController.hasPrivilege('handoverAcceptAsCashier')}" >
-
 
                                                         <p:commandButton 
                                                             rendered="#{webUserController.hasPrivilege('handoverAcceptAsMainCashier')}" 

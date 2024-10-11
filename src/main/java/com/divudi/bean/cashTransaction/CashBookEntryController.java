@@ -16,6 +16,7 @@ import static com.divudi.data.PaymentMethod.OnCall;
 import static com.divudi.data.PaymentMethod.PatientDeposit;
 import com.divudi.data.ReportTemplateRow;
 import com.divudi.data.ReportTemplateRowBundle;
+import com.divudi.data.SitesGroupedIntoInstitutions;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
@@ -24,9 +25,12 @@ import com.divudi.entity.cashTransaction.CashBook;
 import com.divudi.entity.cashTransaction.CashBookEntry;
 import com.divudi.facade.CashBookEntryFacade;
 import com.divudi.facade.CashBookFacade;
+import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.PaymentFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -55,18 +59,94 @@ public class CashBookEntryController implements Serializable {
     private CashBookFacade cashbookFacade;
     @EJB
     PaymentFacade paymentFacade;
+    @EJB
+    DepartmentFacade departmentFacade;
 
     private CashBook cashBook;
     @Inject
     private SessionController sessionController;
 
-    CashBookEntry current;
+    private CashBookEntry current;
     private List<CashBookEntry> cashBookEntryList;
 
     boolean doNotWriteCashBookEntriesAtBillingForAnyPaymentMethod = true;
     
-    List<DateAndListOfSitesGroupedIntoInstitutions> dailyCashbookSummaries;
+    private List<DateAndListOfSitesGroupedIntoInstitutions> dailyCashbookSummaries;
 
+    private Date fromDate;
+    private Date toDate;
+    
+    public void generateDailyCashbookSummary() {
+    // Initialize the list
+    dailyCashbookSummaries = new ArrayList<>();
+    
+    // Fetch the list of departments from CashBookEntries within the date range
+    List<Department> departmentsFromCashBookEntries = fetchToDepartmentsFromCashbookEntries(fromDate, toDate);
+    
+    // Create a map to hold SitesGroupedIntoInstitutions by institution name
+    Map<String, SitesGroupedIntoInstitutions> institutionMap = new HashMap<>();
+    
+    for (Department d : departmentsFromCashBookEntries) {
+        Institution institution = d.getInstitution();
+        Institution site = d.getSite();
+
+        // Retrieve or create the SitesGroupedIntoInstitutions object for the institution
+        SitesGroupedIntoInstitutions sitesGrouped = institutionMap.computeIfAbsent(
+            institution.getName(),
+            k -> {
+                SitesGroupedIntoInstitutions newGroup = new SitesGroupedIntoInstitutions();
+                newGroup.setInstitution(institution);
+                newGroup.setSites(new ArrayList<>());
+                return newGroup;
+            }
+        );
+
+        // Add the site to the list if it isn't already present
+        if (!sitesGrouped.getSites().contains(site)) {
+            sitesGrouped.getSites().add(site);
+        }
+    }
+    
+    // Get the list of all dates between fromDate and toDate
+    List<Date> datesInRange = getDatesInRange(fromDate, toDate);
+
+    // For each date, create a DateAndListOfSitesGroupedIntoInstitutions object
+    for (Date date : datesInRange) {
+        DateAndListOfSitesGroupedIntoInstitutions summary = new DateAndListOfSitesGroupedIntoInstitutions();
+        summary.setDate(date);
+        summary.setListOfSitesGroupedIntoInstitutionses(new ArrayList<>(institutionMap.values()));
+        dailyCashbookSummaries.add(summary);
+    }
+}
+
+// Helper method to get a list of dates between two dates
+private List<Date> getDatesInRange(Date fromDate, Date toDate) {
+    List<Date> dates = new ArrayList<>();
+    Calendar calendar = Calendar.getInstance();
+    calendar.setTime(fromDate);
+
+    while (!calendar.getTime().after(toDate)) {
+        dates.add(calendar.getTime());
+        calendar.add(Calendar.DATE, 1);
+    }
+    
+    return dates;
+}
+    
+    public List<Department> fetchToDepartmentsFromCashbookEntries(Date fd, Date td){
+        String jpql = "select d "
+                + " from CashBookEntry cbe, "
+                + " cbe.toDepartment d "
+                + " where cbe.retired=:ret "
+                + " and cbe.createdAt between :fd and :td"
+                + " group by d";
+        Map params = new HashMap();
+        params.put("ret", false);
+        params.put("fd", fd);
+        params.put("td", td);
+        return departmentFacade.findByJpql(jpql, params);
+    }
+    
     public void writeCashBookEntryAtPaymentCreation(Payment p) {
         if (p == null) {
             JsfUtil.addErrorMessage("Cashbook Entry Error !");
@@ -112,7 +192,7 @@ public class CashBookEntryController implements Serializable {
         }
 
         Map<String, CashBookEntryData> cashbookEntryDataMap = new HashMap<>();
-
+          
         for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
             if (row.getPayment() == null || row.getPayment().getPaymentMethod() == null || row.getPayment().getBill() == null || row.getPayment().getBill().getBillTypeAtomic() == null) {
                 continue;
@@ -189,7 +269,6 @@ public class CashBookEntryController implements Serializable {
 
         for (CashBookEntryData entryData : cashbookEntryDataMap.values()) {
             bundleCb = cashbookFacade.findWithLock(bundleCb.getId());
-
             // Create a new CashBookEntry for each department combination
             CashBookEntry newCbEntry = new CashBookEntry();
             newCbEntry.setInstitution(bundle.getDepartment().getInstitution());
@@ -246,7 +325,6 @@ public class CashBookEntryController implements Serializable {
             entryData.setTotal(totalEntryValue);
 
             newCbEntry.setEntryValue(totalEntryValue);
-
             newCbEntry.setCashBook(bundleCb);
             cashbookEntryFacade.create(newCbEntry);
             cashbookEntries.add(newCbEntry);
@@ -964,6 +1042,46 @@ public class CashBookEntryController implements Serializable {
         this.cashBookEntryList = cashBookEntryList;
 
     }
+
+    public List<DateAndListOfSitesGroupedIntoInstitutions> getDailyCashbookSummaries() {
+        return dailyCashbookSummaries;
+    }
+
+    public void setDailyCashbookSummaries(List<DateAndListOfSitesGroupedIntoInstitutions> dailyCashbookSummaries) {
+        this.dailyCashbookSummaries = dailyCashbookSummaries;
+    }
+
+    public CashBookEntry getCurrent() {
+        return current;
+    }
+
+    public void setCurrent(CashBookEntry current) {
+        this.current = current;
+    }
+
+    public Date getFromDate() {
+        if (fromDate == null) {
+            fromDate = CommonFunctions.getStartOfDay(new Date());
+        }
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        if(toDate==null){
+            toDate = CommonFunctions.getEndOfDay();
+        }
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+    
+    
 
     /**
      *
