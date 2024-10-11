@@ -208,28 +208,9 @@
                             scrollWidth="100%">
 
 
-                            <p:column headerText="ID" width="8em" sortBy="#{row.bill.deptId}" filterBy="#{row.bill.deptId}">
-                                <p:outputLabel value="#{row.bill.deptId}" />
-                                <p:commandLink 
-                                    ajax="false"
-                                    class="m-1"
-                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}">
-                                    <i class="pi pi-eye" style="font-size:14px;" title="View Bill"></i> 
-                                    <f:setPropertyActionListener 
-                                        value="#{bill}" 
-                                        target="#{billSearch.bill}" />
-                                </p:commandLink>
-                                <p:commandLink 
-                                    ajax="false"
-                                    class="m-1"
-                                    action="#{billSearch.navigateToManageBillByAtomicBillType()}">
-                                    <i class="pi pi-pencil" style="font-size:14px;" title="Manage Bill"></i> 
-                                    <f:setPropertyActionListener 
-                                        value="#{bill}" 
-                                        target="#{billSearch.bill}" />
-                                </p:commandLink>
-                                <p:badge value="Cancelled" rendered="#{row.bill.cancelled}" styleClass="ui-badge-danger"></p:badge>
-                                <p:badge value="Refunded" rendered="#{row.bill.refunded}" styleClass="ui-badge-secondary"></p:badge>
+                            <p:column headerText="ID" width="5em" sortBy="#{row.bill.deptId}" filterBy="#{row.bill.deptId}">
+                                <p:outputLabel value="#{row.bill.id}" />
+                                
                             </p:column>
 
                             <p:column headerText="Type" width="10em"  >
@@ -252,7 +233,27 @@
                             </p:column>
 
                             <p:column headerText="Receipt No" width="10em" style="text-align: left;" sortBy="#{row.bill.deptId}" filterBy="#{row.bill.deptId}">
-                                <p:outputLabel value="#{row.bill.deptId}" />
+                                <p:outputLabel value="#{row.bill.deptId}" /><br/>
+                                <p:commandLink 
+                                    ajax="false"
+                                    class="m-1"
+                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                                    <i class="pi pi-eye" style="font-size:14px;" title="View Bill"></i> 
+                                    <f:setPropertyActionListener 
+                                        value="#{row.bill}" 
+                                        target="#{billSearch.bill}" />
+                                </p:commandLink>
+                                <p:commandLink 
+                                    ajax="false"
+                                    class="m-1"
+                                    action="#{billSearch.navigateToManageBillByAtomicBillType()}">
+                                    <i class="pi pi-pencil" style="font-size:14px;" title="Manage Bill"></i> 
+                                    <f:setPropertyActionListener 
+                                        value="#{row.bill}" 
+                                        target="#{billSearch.bill}" />
+                                </p:commandLink>
+                                <p:badge value="Cancelled" rendered="#{row.bill.cancelled}" styleClass="ui-badge-danger"></p:badge>
+                                <p:badge value="Refunded" rendered="#{row.bill.refunded}" styleClass="ui-badge-secondary"></p:badge>
                             </p:column>
 
 
