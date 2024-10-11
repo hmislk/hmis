@@ -158,10 +158,16 @@
                                                         <h:outputText value="#{bf.referenceBillFee.feeValue}" ></h:outputText>
                                                     </td>
                                                     <td >
-                                                        <p:inputText id="txtRefVal" value="#{bf.feeValue}" >
-                                                            <p:ajax event="keyup" process="txtRefVal" 
-                                                                    listener="#{billSearch.calculateRefundTotalForOpdBillForAjex}"
-                                                                    update=":#{p:resolveFirstComponentWithId('panelRefundBillDetails',view).clientId}" ></p:ajax>
+                                                        <p:inputText 
+                                                            id="txtRefVal" 
+                                                            value="#{bf.feeValue}" 
+                                                            disabled="#{configOptionApplicationController.getBooleanValueByKey('OPD - User Must not be able to Edit the Refund Amount',false)}" >
+                                                            <p:ajax 
+                                                                event="keyup" 
+                                                                process="txtRefVal" 
+                                                                listener="#{billSearch.calculateRefundTotalForOpdBillForAjex}"
+                                                                update=":#{p:resolveFirstComponentWithId('panelRefundBillDetails',view).clientId}" >
+                                                            </p:ajax>
                                                         </p:inputText>
                                                     </td>
                                                 </tr>
