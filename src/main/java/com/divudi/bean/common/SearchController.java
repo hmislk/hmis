@@ -198,8 +198,8 @@ public class SearchController implements Serializable {
     private Category category;
     private ReportTemplateType reportTemplateType;
     private SearchKeyword searchKeyword;
-    Date fromDate;
-    Date toDate;
+    private Date fromDate;
+    private Date toDate;
     private Long startBillId;
     private Long endBillId;
     private WebUser webUser;
@@ -213,7 +213,7 @@ public class SearchController implements Serializable {
     private List<BillLight> billLights;
     private List<BillSummaryRow> billSummaryRows;
     private List<Bill> selectedBills;
-    List<Bill> aceptPaymentBills;
+    private List<Bill> aceptPaymentBills;
     private List<BillFee> billFees;
     private List<BillFee> billFeesDone;
     private List<BillItem> billItems;
@@ -222,6 +222,8 @@ public class SearchController implements Serializable {
     private List<PatientInvestigation> patientInvestigationsSigle;
     private BillTypeAtomic billTypeAtomic;
     private BillClassType billClassType;
+
+    private StreamedContent downloadingExcel;
 
     BillSummaryRow billSummaryRow;
     Bill cancellingIssueBill;
@@ -1918,6 +1920,14 @@ public class SearchController implements Serializable {
 
     public void setBillClassType(BillClassType billClassType) {
         this.billClassType = billClassType;
+    }
+
+    public StreamedContent getDownloadingExcel() {
+        return downloadingExcel;
+    }
+
+    public void setDownloadingExcel(StreamedContent downloadingExcel) {
+        this.downloadingExcel = downloadingExcel;
     }
 
     public class billsWithbill {
@@ -13889,7 +13899,7 @@ public class SearchController implements Serializable {
         billToBundleForPatientDeposits(depositCollection, bis);
         depositCollection.setName("Patient Deposit Payments");
         depositCollection.setBundleType("patientDepositPayments");
-        
+
         return depositCollection;
     }
 
@@ -15590,6 +15600,41 @@ public class SearchController implements Serializable {
         } catch (IOException e) {
             e.printStackTrace(); // Handle exceptions properly
         }
+    }
+
+    public StreamedContent createTemplateForCollectingCentreUpload(ReportTemplateRowBundle rootBundle) throws IOException {
+        StreamedContent excelSc;
+
+        XSSFWorkbook workbook = new XSSFWorkbook();
+        XSSFSheet dataSheet = workbook.createSheet(rootBundle.getName());
+
+        Row headerRow = dataSheet.createRow(0);
+        String[] columnHeaders = {"Code", "Agent Name", "Agent Printing Name", "Active", "With Commission Status", "Route Name", "Percentage", "Agent Contact No", "Email Address", "Owner Name", "Agent Address", "Standard Credit Limit", "Allowed Credit Limit", "Max Credit Limit"};
+        for (int i = 0; i < columnHeaders.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(columnHeaders[i]);
+        }
+
+        // Auto-size columns for aesthetics
+        for (int i = 0; i < columnHeaders.length; i++) {
+            dataSheet.autoSizeColumn(i);
+        }
+
+        // Write the output to a byte array
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+
+        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+
+        // Set the downloading file
+        excelSc = DefaultStreamedContent.builder()
+                .name("template_for_collecting_centres_upload.xlsx")
+                .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .stream(() -> inputStream)
+                .build();
+        
+        return excelSc;
     }
 
     public void directPurchaseOrderSearch() {
