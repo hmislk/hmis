@@ -311,7 +311,7 @@ public class SearchController implements Serializable {
         createPettyCashToApproveTable();
         return "/petty_cash_bill_to_approve?faces-redirect=true";
     }
-    
+
     public String navigateToPettyCashCancelBillApprove() {
         createPettyApproveTable();
         return "/petty_cash_cancel_bill_to_approve?faces-redirect=true";
@@ -649,7 +649,7 @@ public class SearchController implements Serializable {
         bundle = new ReportTemplateRowBundle();
         return "/reports/professional_payment_reports/professional_payments_opd?faces-redirect=true";
     }
-    
+
     public String navigateToOpdBillList() {
         return "/analytics/opd_bill_list?faces-redirect=true";
     }
@@ -9840,17 +9840,29 @@ public class SearchController implements Serializable {
             jpql.append(" and b.creater=:wu ");
             params.put("wu", webUser);
         }
-        
-        if(billClassType!=null){
+
+        if (billClassType != null) {
             jpql.append(" and type(b)=:billClassType ");
-            switch(billClassType){
-                case Bill:params.put("billClassType", com.divudi.entity.Bill.class); break;
-                case BilledBill:params.put("billClassType", com.divudi.entity.BilledBill.class); break;
-                case CancelledBill:params.put("billClassType", com.divudi.entity.CancelledBill.class); break;
-                case OtherBill:params.put("billClassType", com.divudi.entity.Bill.class); break;
-                case PreBill:params.put("billClassType", com.divudi.entity.PreBill.class); break;
-                case RefundBill:params.put("billClassType", com.divudi.entity.RefundBill.class); break;
-                
+            switch (billClassType) {
+                case Bill:
+                    params.put("billClassType", com.divudi.entity.Bill.class);
+                    break;
+                case BilledBill:
+                    params.put("billClassType", com.divudi.entity.BilledBill.class);
+                    break;
+                case CancelledBill:
+                    params.put("billClassType", com.divudi.entity.CancelledBill.class);
+                    break;
+                case OtherBill:
+                    params.put("billClassType", com.divudi.entity.Bill.class);
+                    break;
+                case PreBill:
+                    params.put("billClassType", com.divudi.entity.PreBill.class);
+                    break;
+                case RefundBill:
+                    params.put("billClassType", com.divudi.entity.RefundBill.class);
+                    break;
+
             }
         }
 
@@ -11980,10 +11992,10 @@ public class SearchController implements Serializable {
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("billTypes", billTypes);
-        bills = getBillFacade().findByJpql(sql, temMap,TemporalType.TIMESTAMP);
+        bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
-    
+
     public void createPettyCashToApproveTable() {
         List<BillTypeAtomic> billTypes = new ArrayList<>();
         billTypes.add(BillTypeAtomic.PETTY_CASH_ISSUE);
@@ -11998,7 +12010,7 @@ public class SearchController implements Serializable {
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("billTypes", billTypes);
-        bills = getBillFacade().findByJpql(sql, temMap,TemporalType.TIMESTAMP);
+        bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -12362,7 +12374,7 @@ public class SearchController implements Serializable {
         cashBookEntries = new ArrayList<>();
         return "/cashier/cash_book_entry";
     }
-    
+
     public String navigateToListCashBookEntrySiteSummary() {
         cashBookEntries = new ArrayList<>();
         return "/cashier/cash_book_summery_site";
@@ -12433,7 +12445,7 @@ public class SearchController implements Serializable {
         bundle.getBundles().add(channellingCreditCompanyCollection);
         collectionForTheDay += getSafeTotal(channellingCreditCompanyCollection);
 
-        ReportTemplateRowBundle patientDepositPayments = generatePatientDepositPayments();
+        ReportTemplateRowBundle patientDepositPayments = generatePatientDepositCollection();
         bundle.getBundles().add(patientDepositPayments);
         collectionForTheDay += getSafeTotal(patientDepositPayments);
 
@@ -12487,7 +12499,6 @@ public class SearchController implements Serializable {
         bundle.getBundles().add(ewalletPayments);
         netCashCollection -= Math.abs(getSafeTotal(ewalletPayments));
 
-        
         ReportTemplateRowBundle slipPayments = generateSlipPayments();
         bundle.getBundles().add(slipPayments);
         netCashCollection -= Math.abs(getSafeTotal(slipPayments));
@@ -13844,6 +13855,44 @@ public class SearchController implements Serializable {
         return opdServiceCollection;
     }
 
+    public ReportTemplateRowBundle generatePatientDepositCollection() {
+        ReportTemplateRowBundle depositCollection = new ReportTemplateRowBundle();
+        String jpql = "select b "
+                + " from Bill b "
+                + " where b.retired=:br "
+                + " and b.createdAt between :fd and :td ";
+        Map m = new HashMap();
+        m.put("br", false);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        List<BillTypeAtomic> btas = BillTypeAtomic.findByServiceType(ServiceType.PATIENT_DEPOSIT);
+        depositCollection.setDescription("Patient Deposits");
+        if (!btas.isEmpty()) {
+            jpql += " and b.billTypeAtomic in :bts ";
+            m.put("bts", btas);
+        }
+
+        if (department != null) {
+            jpql += " and b.department=:dep ";
+            m.put("dep", department);
+        }
+        if (institution != null) {
+            jpql += " and b.department.institution=:ins ";
+            m.put("ins", institution);
+        }
+        if (site != null) {
+            jpql += " and b.department.site=:site ";
+            m.put("site", site);
+        }
+        List<Bill> bis = billFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        System.out.println("bis = " + bis);
+        billToBundleForPatientDeposits(depositCollection, bis);
+        depositCollection.setName("Patient Deposit Payments");
+        depositCollection.setBundleType("patientDepositPayments");
+        
+        return depositCollection;
+    }
+
     public ReportTemplateRowBundle generatePharmacyCollection() {
         ReportTemplateRowBundle pb;
         List<BillTypeAtomic> pharmacyBillTypesAtomics = BillTypeAtomic.findByServiceTypeAndPaymentCategory(ServiceType.PHARMACY,
@@ -14163,20 +14212,6 @@ public class SearchController implements Serializable {
         return ap;
     }
 
-    public ReportTemplateRowBundle generatePatientDepositPayments() {
-        ReportTemplateRowBundle ap;
-        ap = reportTemplateController.generatePaymentReport(
-                PaymentMethod.PatientDeposit,
-                fromDate,
-                toDate,
-                institution,
-                department,
-                site);
-        ap.setName("Patient Deposit Payments");
-        ap.setBundleType("paymentReportPatientDeposit");
-        return ap;
-    }
-
     public ReportTemplateRowBundle generatePettyCashPayments() {
         ReportTemplateRowBundle ap;
         List<BillTypeAtomic> btas = new ArrayList<>();
@@ -14349,6 +14384,19 @@ public class SearchController implements Serializable {
         rtrb.setTotal(totalOpdServiceCollection);
     }
 
+    public void billToBundleForPatientDeposits(ReportTemplateRowBundle rtrb, List<Bill> bills) {
+        double totalDepositCollection = 0.0;
+        List<ReportTemplateRow> rows = new ArrayList<>();
+        for (Bill b : bills) {
+            ReportTemplateRow row = new ReportTemplateRow();
+            row.setBill(b);
+            totalDepositCollection += b.getNetTotal();
+            rows.add(row);
+        }
+        rtrb.getReportTemplateRows().addAll(rows);
+        rtrb.setTotal(totalDepositCollection);
+    }
+
     public void summarizeBillItemsToIncomeByCategory(ReportTemplateRowBundle reportBundle, List<BillItem> billItems) {
         Map<String, ReportTemplateRow> categoryMap = new HashMap<>();
         List<ReportTemplateRow> rowsToAdd = new ArrayList<>();
@@ -14499,8 +14547,6 @@ public class SearchController implements Serializable {
         bundle.createRowValuesFromBill();
         bundle.calculateTotals();
     }
-    
-    
 
     public void billItemsToItamizedSaleReport(ReportTemplateRowBundle rtrb, List<BillItem> billItems) {
         Map<String, ReportTemplateRow> categoryMap = new HashMap<>();

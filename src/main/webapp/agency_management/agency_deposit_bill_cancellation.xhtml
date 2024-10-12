@@ -9,7 +9,7 @@
       xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill">
 
     <h:body>
-        <ui:composition template="/collecting_centre/index.xhtml">
+        <ui:composition template="/agency_management/index.xhtml">
             <ui:define name="subcontent">
                 <h:form>
 
@@ -17,7 +17,7 @@
                         <p:panelGrid layout="tabular" columns="2" class="w-100" style="vertical-align: top;">
                             <p:panel header="Bill Detail">
                                 <p:panelGrid columns="2">
-                                    <h:outputLabel value="Collelcting Centre:" ></h:outputLabel>
+                                    <h:outputLabel value="Agency Name:" ></h:outputLabel>
                                     <h:outputLabel value="#{agentPaymentReceiveSearchController.bill.fromInstitution.name }" ></h:outputLabel>                                        
                                     <h:outputLabel value="Bill No :" ></h:outputLabel>
                                     <h:outputLabel value="#{agentPaymentReceiveSearchController.bill.deptId}" ></h:outputLabel>                                  
@@ -40,7 +40,7 @@
                                     <p:spacer ></p:spacer>
                                     <p:commandButton
                                         styleClass="w-100 ui-button-warning"
-                                        ajax="false" value="Cancel" action="#{agentPaymentReceiveSearchController.collectingCentreDepositCancelBill}"
+                                        ajax="false" value="Cancel" action="#{agentPaymentReceiveSearchController.cancelAgencyDepositBill}"
                                         onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
                                                     return false;"/>
                                 </p:panelGrid>
@@ -52,10 +52,9 @@
 
                     </h:panelGroup>
                     <h:panelGroup rendered="#{agentPaymentReceiveSearchController.printPreview}" >
-                        <bi:agent billController ="#{agentPaymentReceiveSearchController}"  
+                        <bi:agency_payment_cancellation billController ="#{agentPaymentReceiveSearchController}"  
                                   bill="#{agentPaymentReceiveSearchController.bill}" dup="false"/>  
                     </h:panelGroup>
-
 
                 </h:form>   
             </ui:define>
