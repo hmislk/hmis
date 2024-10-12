@@ -3619,6 +3619,13 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 JsfUtil.addErrorMessage("Agency (balance+credit limit) exeeded. Please get a agency deposit or increase credit limit");
                 return;
             }
+            
+            if(getAgentRefNo() == null || getAgentRefNo().isEmpty()){
+                JsfUtil.addErrorMessage("Please add Agent Reference No. ");
+                return;
+            }
+            
+    
         }
 
         saveSelected(patient);
