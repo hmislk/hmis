@@ -56,15 +56,18 @@
                                 <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
                                 <h:outputLabel value="Institution" for="cmbIns" />
                             </h:panelGroup>
-                            <p:autoComplete
-                                value="#{reportController.institution}"
-                                completeMethod="#{institutionController.completeCompany}"
-                                var="ins"
-                                class="w-100 "
-                                inputStyleClass="form-control"
-                                itemLabel="#{ins.name}"
-                                itemValue="#{ins}">
-                            </p:autoComplete>
+                            <p:selectOneMenu filter="true" id="cmdInstitution"
+                                             filterMatchMode="contains"
+                                             style=" max-width: 100%; overflow-x: auto; "
+                                             class="w-100"
+                                             value="#{reportController.institution}">
+                                <f:selectItem itemLabel="All Institution" />
+                                <f:selectItems value="#{institutionController.companies}"
+                                               var="i"
+                                               itemLabel="#{i.name}"
+                                               itemValue="#{i}" />
+                                 <p:ajax process="@this" update="cmbDept" event="itemSelect" />
+                            </p:selectOneMenu>
 
                             <p:spacer></p:spacer>
 
@@ -72,13 +75,15 @@
                                 <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
                                 <h:outputLabel value="Site" for="siteMenu" />
                             </h:panelGroup>
-                            <p:selectOneMenu
+                             <p:selectOneMenu
                                 id="siteMenu"
-                                class="w-100"
+                                styleClass="w-100 form-control"  
                                 value="#{reportController.site}" 
-                                filter="true">
+                                filter="true"
+                                filterMatchMode="contains">
                                 <f:selectItem itemLabel="All Sites" />
                                 <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                <p:ajax process="@this" update="cmbDept" event="itemSelect" />
                             </p:selectOneMenu>
 
                             <p:spacer width="10"></p:spacer>
@@ -93,7 +98,7 @@
                                 value="#{reportController.department}" 
                                 filter="true">
                                 <f:selectItem itemLabel="All Departments" />
-                                <f:selectItems value="#{departmentController.getInsDepartments(searchController.institution)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                <f:selectItems value="#{departmentController.getInstitutionDepartmentsWithSite(reportController.institution,reportController.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
                             </p:selectOneMenu>
 
                             <h:panelGroup >
