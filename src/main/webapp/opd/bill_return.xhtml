@@ -12,24 +12,36 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
 
-                <p:commandButton ajax="false" value="Return" action="#{billReturnController.settleOpdReturnBill()}" ></p:commandButton>
-                
-                <p:dataTable 
-                    value="#{billReturnController.originalBillItemsAvailableToReturn}" 
-                    var="obi"   
-                    selectionMode="multiple"
-                    selection="#{billReturnController.originalBillItemsToSelectedToReturn}"
-                    rowKey="#{obi.id}" >
+                <h:form >
 
-                    <p:column selectionBox="true" width="20">
-                    </p:column>
-                    <p:column >
-                        <h:outputLabel value="#{obi.item.name}" ></h:outputLabel>
-                    </p:column>
-                    <p:column >
-                        <h:outputLabel value="#{obi.netValue}" ></h:outputLabel>
-                    </p:column>
-                </p:dataTable>
+
+                    <p:messages ></p:messages>
+
+
+                    <p:commandButton 
+                        ajax="false" 
+                        value="Return"
+                        action="#{billReturnController.settleOpdReturnBill()}" ></p:commandButton>
+
+                    <p:dataTable 
+                        value="#{billReturnController.originalBillItemsAvailableToReturn}" 
+                        var="obi"   
+                        selectionMode="multiple"
+                        selection="#{billReturnController.originalBillItemsToSelectedToReturn}"
+                        rowKey="#{obi.id}" >
+
+                        <p:column selectionBox="true" width="20">
+                        </p:column>
+                        <p:column >
+                            <h:outputLabel value="#{obi.item.name}" ></h:outputLabel>
+                        </p:column>
+                        <p:column >
+                            <h:outputLabel value="#{obi.netValue}" ></h:outputLabel>
+                        </p:column>
+                    </p:dataTable>
+
+
+                </h:form>
 
             </ui:define>
         </ui:composition>
