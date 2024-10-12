@@ -19,12 +19,12 @@
                                 <p:outputLabel value="Discharge Date" class="mx-3" >
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:datePicker 
-                                value="#{searchController.fromDate}"
-                                class="w-100"
+                            <p:calendar 
+                                class="w-100 " 
                                 inputStyleClass="w-100"
-                                pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>  
-
+                                value="#{searchController.fromDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            </p:calendar>
 
 
                             <p:spacer width="20"></p:spacer>
@@ -36,22 +36,23 @@
                                 <p:outputLabel value="Service Added Date" class="mx-3" >
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:datePicker
-                                class="w-100"
-                                inputStyleClass="w-100"
-                                 value="#{searchController.toDate}"
-                                pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
-
+                            <p:calendar 
+                                class="w-100 " 
+                                inputStyleClass="w-100" 
+                                value="#{searchController.toDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            </p:calendar>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf571;" styleClass="fa mr-2" />
                                 <p:outputLabel value="Invoice Date" class="mx-3">
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:datePicker
-                                class="w-100"
+                            <p:calendar 
+                                class="w-100 " 
                                 inputStyleClass="w-100"
-                                pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            </p:calendar>
 
 
                             <p:spacer width="20"></p:spacer>
