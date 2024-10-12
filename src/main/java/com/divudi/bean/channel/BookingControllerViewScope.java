@@ -3591,7 +3591,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 if (maxNo <= totalPatientCount) {
                     JsfUtil.addErrorMessage("Error: The maximum number of bookings (" + maxNo + ") has been Reached.");
                     return;
-
                 }
             }
         }
