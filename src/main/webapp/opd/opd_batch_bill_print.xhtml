@@ -188,18 +188,20 @@
                                             class="w-100 m-1" 
                                             rowStyleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
                                             <p:column headerText="ID" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
-                                                <p:inputText value="#{b.id}" ></p:inputText>
+                                                <p:inputText value="#{b.id}" class="w-100 m-1" ></p:inputText>
                                             </p:column>
                                             <p:column headerText="Dep No" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
-                                                <p:inputText value="#{b.deptId}" ></p:inputText>
+                                                <p:inputText value="#{b.deptId}"  class="w-100 m-1" ></p:inputText>
                                             </p:column>
                                             <p:column headerText="Bill Type Atomic" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
                                                 <h:outputText value="#{b.billTypeAtomic.label}" ></h:outputText>
                                             </p:column>
-                                            <p:column headerText="Net Total" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
+                                            <p:column headerText="Net Total" 
+                                                      styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}"
+                                                      class="text-end">
                                                 <h:outputText value="#{b.netTotal}" ></h:outputText>
                                             </p:column>
-                                            <p:column headerText="Actions" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
+                                            <p:column width="12em" headerText="Actions" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
                                                 <!-- To Bill Details Button -->
                                                 <p:commandButton ajax="false"
                                                                  title="View Bill"
@@ -217,12 +219,13 @@
                                                 </p:commandButton>
 
                                                 <!-- To Cancel Button -->
-                                                <p:commandButton ajax="false"
-                                                                 title="To Cancel Bill"
-                                                                 action="#{billSearch.navigateToCancelOpdBill()}"
-                                                                 disabled="#{b.cancelled or b.refunded}"
-                                                                 class="ui-button-danger m-1"
-                                                                 icon="fa fa-times">
+                                                <p:commandButton 
+                                                    ajax="false"
+                                                    title="To Cancel Bill"
+                                                    action="#{billSearch.navigateToCancelOpdBill()}"
+                                                    disabled="#{b.cancelled or b.refunded}"
+                                                    class="ui-button-danger m-1"
+                                                    icon="fa fa-times">
                                                     <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}"/>
                                                 </p:commandButton>
 
@@ -238,9 +241,6 @@
                                                     <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}"/>
                                                 </p:commandButton>
 
-                                                <p:tooltip 
-                                                    for="btnRefund"
-                                                    value="To go to the Refunds, Click here" ></p:tooltip>
                                             </p:column>
                                         </p:dataTable>
                                     </p:tab>
