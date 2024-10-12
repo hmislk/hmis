@@ -203,7 +203,7 @@
                                         <f:facet name="header">
                                             <h:outputText value="Hospital Fee" />
                                         </f:facet>
-                                        <h:outputText value="#{row.itemHospitalFee}">
+                                        <h:outputText value="#{row.itemHospitalFee + row.itemDiscountAmount} ">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
                                     </p:column>
@@ -212,6 +212,14 @@
                                             <h:outputText value="Professional Fee" />
                                         </f:facet>
                                         <h:outputText value="#{row.itemProfessionalFee}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column class="text-end">
+                                        <f:facet name="header">
+                                            <h:outputText value="Gross Amount" />
+                                        </f:facet>
+                                        <h:outputText value="#{row.itemTotal}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
                                     </p:column>
