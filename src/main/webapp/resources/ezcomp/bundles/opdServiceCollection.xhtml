@@ -20,7 +20,7 @@
                 <thead>
                     <tr class="text-light bg-dark">
                         <th class="text-light bg-dark">
-                            No OPD Collection
+                            <h:outputText value="No Data for #{cc.attrs.bundle.name}" ></h:outputText>
                         </th>
                     </tr>
                 </thead>
@@ -35,9 +35,7 @@
                         <thead>
                             <tr class="text-light bg-dark">
                                 <th  class="text-light bg-dark " colspan="6">
-
-                                    OPD Services Collection
-
+                                    <h:outputText value="#{cc.attrs.bundle.name}" ></h:outputText>
                                 </th>
                                 <th  class=" text-end text-light bg-dark">
                                     <h:outputText value="#{cc.attrs.bundle.total}" >
@@ -87,7 +85,7 @@
                                         </h:outputText>
                                     </td>
                                     <td class="text-end">
-                                        <h:outputText value="#{row.itemHospitalFee+row.itemDiscountAmount}">
+                                        <h:outputText value="#{row.itemHospitalFee}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
                                     </td>

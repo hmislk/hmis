@@ -87,6 +87,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -105,7 +106,10 @@ import javax.persistence.TemporalType;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.primefaces.model.DefaultStreamedContent;
@@ -12415,7 +12419,25 @@ public class SearchController implements Serializable {
     }
 
     public void generateDailyReturn() {
+
         bundle = new ReportTemplateRowBundle();
+        bundle.setName("Daily Return");
+        bundle.setBundleType("dailyReturn");
+
+        String institutionName = institution != null ? institution.getName() : "All Institutions";
+        String siteName = site != null ? site.getName() : "All Sites";
+        String departmentName = department != null ? department.getName() : "All Departments";
+
+        String dateTimeFormat = sessionController.getApplicationPreference().getLongDateTimeFormat();
+
+        String formattedFromDate = fromDate != null ? new SimpleDateFormat(dateTimeFormat).format(fromDate) : "N/A";
+        String formattedToDate = toDate != null ? new SimpleDateFormat(dateTimeFormat).format(toDate) : "N/A";
+
+        String description = String.format("Report for %s to %s covering %s, %s, %s",
+                formattedFromDate, formattedToDate,
+                institutionName, siteName, departmentName);
+
+        bundle.setDescription(description);
 
         double collectionForTheDay = 0.0;
         double netCashCollection = 0.0;
@@ -15602,22 +15624,35 @@ public class SearchController implements Serializable {
         }
     }
 
-    public StreamedContent createTemplateForCollectingCentreUpload(ReportTemplateRowBundle rootBundle) throws IOException {
+    public StreamedContent getBundleAsExcel() {
+        try {
+            downloadingExcel = createExcelForBundle(bundle);
+        } catch (IOException e) {
+            // Handle IOException
+        }
+        return downloadingExcel;
+    }
+
+    public StreamedContent createExcelForBundle(ReportTemplateRowBundle rootBundle) throws IOException {
+        if (rootBundle == null) {
+            return null;
+        }
         StreamedContent excelSc;
 
         XSSFWorkbook workbook = new XSSFWorkbook();
         XSSFSheet dataSheet = workbook.createSheet(rootBundle.getName());
 
         Row headerRow = dataSheet.createRow(0);
-        String[] columnHeaders = {"Code", "Agent Name", "Agent Printing Name", "Active", "With Commission Status", "Route Name", "Percentage", "Agent Contact No", "Email Address", "Owner Name", "Agent Address", "Standard Credit Limit", "Allowed Credit Limit", "Max Credit Limit"};
-        for (int i = 0; i < columnHeaders.length; i++) {
-            Cell cell = headerRow.createCell(i);
-            cell.setCellValue(columnHeaders[i]);
-        }
 
-        // Auto-size columns for aesthetics
-        for (int i = 0; i < columnHeaders.length; i++) {
-            dataSheet.autoSizeColumn(i);
+        int currentRow = 3;
+
+        if (rootBundle.getBundles() == null || rootBundle.getBundles().isEmpty()) {
+            currentRow = addDataToExcel(dataSheet, currentRow, rootBundle, rootBundle.getBundleType());
+        } else {
+            for (ReportTemplateRowBundle childBundle : rootBundle.getBundles()) {
+                currentRow = addDataToExcel(dataSheet, currentRow, childBundle, childBundle.getBundleType());
+                currentRow++;
+            }
         }
 
         // Write the output to a byte array
@@ -15633,8 +15668,135 @@ public class SearchController implements Serializable {
                 .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
                 .stream(() -> inputStream)
                 .build();
-        
+
         return excelSc;
+    }
+
+    private int addDataToExcel(XSSFSheet dataSheet, int startRow, ReportTemplateRowBundle addingBundle, String type) {
+        if (type == null || type.isEmpty()) {
+            type = "BillList";
+        }
+        switch (type) {
+            case "opdServiceCollection":
+                return addDataToExcelForItemSummaryGroupedByCategory(dataSheet, startRow, addingBundle);
+            case "pharmacyCollection":
+                return addDataToExcelForDepartmentCollection(dataSheet, startRow, addingBundle);
+            case "ccCollection":
+                
+
+        }
+        return startRow++;
+    }
+
+    private int addDataToExcelForCcDeposits(XSSFSheet dataSheet, int startRow, ReportTemplateRowBundle addingBundle) {
+        
+    }
+    
+    private int addDataToExcelForDepartmentCollection(XSSFSheet dataSheet, int startRow, ReportTemplateRowBundle addingBundle) {
+        // Check if there are any data rows
+        if (addingBundle.getReportTemplateRows() == null || addingBundle.getReportTemplateRows().isEmpty()) {
+            // If no data, create a single row stating this
+            Row noDataRow = dataSheet.createRow(startRow++);
+            Cell noDataCell = noDataRow.createCell(0);
+            noDataCell.setCellValue("No Data for " + addingBundle.getName());
+            // Merge the cell across both columns
+            dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 1));
+        } else {
+            // Create a title row for the report name and total
+            Row titleRow = dataSheet.createRow(startRow++);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue(addingBundle.getName());
+            Cell totalCell = titleRow.createCell(1); // Assuming 2nd column is for total
+            totalCell.setCellValue(addingBundle.getTotal()); // Assuming getTotal() returns formatted string
+
+            // Merge title across the first column (leaving second for total)
+            dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 0));
+
+            // Create header row for Excel only when there is data
+            Row headerRow = dataSheet.createRow(startRow++);
+            String[] columnHeaders = {"Department", "Collection"};
+            for (int i = 0; i < columnHeaders.length; i++) {
+                Cell headerCell = headerRow.createCell(i);
+                headerCell.setCellValue(columnHeaders[i]);
+            }
+
+            // Populate data rows
+            for (ReportTemplateRow row : addingBundle.getReportTemplateRows()) {
+                Row excelRow = dataSheet.createRow(startRow++);
+
+                // First column: Department Name
+                Cell departmentCell = excelRow.createCell(0);
+                departmentCell.setCellValue(row.getDepartment() != null ? row.getDepartment().getName() : "N/A");
+
+                // Second column: Collection, formatted as a number
+                Cell collectionCell = excelRow.createCell(1);
+                collectionCell.setCellValue(row.getRowValue() != null ? row.getRowValue() : 0.0);
+
+                // Optionally, you can apply a number format to the collection cell
+                CellStyle cellStyle = dataSheet.getWorkbook().createCellStyle();
+                CreationHelper createHelper = dataSheet.getWorkbook().getCreationHelper();
+                cellStyle.setDataFormat(createHelper.createDataFormat().getFormat("#,##0.00"));
+                collectionCell.setCellStyle(cellStyle);
+            }
+        }
+
+        // Adjust column widths to fit the content
+        dataSheet.autoSizeColumn(0);
+        dataSheet.autoSizeColumn(1);
+
+        return startRow;
+    }
+
+    private int addDataToExcelForItemSummaryGroupedByCategory(XSSFSheet dataSheet, int startRow, ReportTemplateRowBundle addingBundle) {
+        // Create title row only if there is data
+        if (addingBundle.getReportTemplateRows() != null && !addingBundle.getReportTemplateRows().isEmpty()) {
+            // Create title row with name and total
+            Row titleRow = dataSheet.createRow(startRow++);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue(addingBundle.getName());
+            Cell totalCell = titleRow.createCell(6); // Assuming 7th column is for total
+            totalCell.setCellValue(addingBundle.getTotal()); // Assuming getTotal() returns formatted string
+
+            // Merge title across all columns except the last (for total)
+            dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 5));
+
+            // Create header row for Excel
+            Row headerRow = dataSheet.createRow(startRow++);
+            String[] columnHeaders = {
+                "Category", "Item / Service", "Count", "Hospital Fee",
+                "Professional Fee", "Discount", "Net Amount"
+            };
+            for (int i = 0; i < columnHeaders.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(columnHeaders[i]);
+            }
+
+            // Iterate through each row of the data and add to Excel
+            for (ReportTemplateRow row : addingBundle.getReportTemplateRows()) {
+                Row excelRow = dataSheet.createRow(startRow++);
+                String categoryOrItem = row.getCategory() != null ? row.getCategory().getName() : "";
+                String itemName = row.getItem() != null ? row.getItem().getName() : "";
+
+                // Create cells for each column
+                excelRow.createCell(0).setCellValue(categoryOrItem);
+                excelRow.createCell(1).setCellValue(itemName);
+                excelRow.createCell(2).setCellValue(row.getItemCount());
+                excelRow.createCell(3).setCellValue(row.getItemHospitalFee());
+                excelRow.createCell(4).setCellValue(row.getItemProfessionalFee());
+                excelRow.createCell(5).setCellValue(row.getItemDiscountAmount());
+                excelRow.createCell(6).setCellValue(row.getItemNetTotal());
+            }
+
+        } else {
+            // If no data, create a single row stating this
+            Row noDataRow = dataSheet.createRow(startRow++);
+            Cell noDataCell = noDataRow.createCell(0);
+            noDataCell.setCellValue("No Data for " + addingBundle.getName());
+            // Merge the cell across all columns
+            dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 6));
+        }
+
+        return startRow;
     }
 
     public void directPurchaseOrderSearch() {
