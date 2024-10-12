@@ -11082,6 +11082,7 @@ public class SearchController implements Serializable {
             sql += " and  ((b.fromInstitution.institutionCode) like :num )";
             temMap.put("num", "%" + getSearchKeyword().getNumber().trim().toUpperCase() + "%");
         }
+        
 
         sql += " order by b.createdAt desc  ";
 
