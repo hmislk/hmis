@@ -392,15 +392,12 @@ public class AgentPaymentReceiveSearchController implements Serializable {
     }
 
     public void cancelCollectingCentreDepositBill() {
-        System.out.println("cancelCollectingCentreDepositBill");
-        System.out.println("agencyDepositCanellationStarted = " + agencyDepositCanellationStarted);
         if (agencyDepositCanellationStarted) {
             JsfUtil.addErrorMessage("Already Started");
             printPreview=false;
             return;
         }
         agencyDepositCanellationStarted = true;
-        System.out.println("getBill() = " + getBill());
         if (getBill() == null) {
             JsfUtil.addErrorMessage("No Bill to Calcel");
             printPreview=false;
