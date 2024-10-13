@@ -139,39 +139,7 @@
                                         </p:panel>
                                     </p:tab>
                                     <p:tab title="Bill Items" >
-                                        <view:bill_item_list_edit editable="true" billItems="#{billSearch.viewingBillItems}"/>
-                                        <p:dataTable value="#{billSearch.viewingBillItems}" var="bi" rowKey="#{bi.id}" >
-                                            <p:column >
-                                                <h:outputText value="#{bi.id}" ></h:outputText>
-                                            </p:column>
-                                            <p:column >
-                                                <h:outputText value="#{bi.item.name}" ></h:outputText>
-                                            </p:column>
-                                            <p:column >
-                                                <h:outputText value="#{bi.qty}" ></h:outputText>
-                                            </p:column>
-                                            <p:column >
-                                                <h:outputText value="#{bi.hospitalFee}" ></h:outputText>
-                                            </p:column>
-                                            <p:column >
-                                                <h:outputText value="#{bi.staffFee}" ></h:outputText>
-                                            </p:column>
-                                            <p:column >
-                                                <h:outputText value="#{bi.collectingCentreFee}" ></h:outputText>
-                                            </p:column>
-                                            <p:column >
-                                                <h:outputText value="#{bi.otherFee}" ></h:outputText>
-                                            </p:column>
-                                            <p:column >
-                                                <h:outputText value="#{bi.grossValue}" ></h:outputText>
-                                            </p:column>
-                                            <p:column >
-                                                <h:outputText value="#{bi.discount}" ></h:outputText>
-                                            </p:column>
-                                            <p:column >
-                                                <h:outputText value="#{bi.netValue}" ></h:outputText>
-                                            </p:column>
-                                        </p:dataTable>
+                                        <view:bill_item_list_edit editable="false" billItems="#{billSearch.viewingBillItems}"/>
                                     </p:tab>
                                     <p:tab title="Bill Fees" >
                                         <p:dataTable rowIndexVar="rowIndex"
