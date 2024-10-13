@@ -1,5 +1,6 @@
 package com.divudi.bean.common;
 
+import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.cashTransaction.PaymentController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
@@ -45,6 +46,8 @@ public class BillReturnController implements Serializable {
     BillFeeController billFeeController;
     @Inject
     PaymentController paymentController;
+    @Inject
+    DrawerController drawerController;
 
     private Bill originalBillToReturn;
     private List<BillItem> originalBillItemsAvailableToReturn;
@@ -164,7 +167,7 @@ public class BillReturnController implements Serializable {
             return null;
         }
         
-        // fetch original bill now, checked alteady returned, cancelled, drawer balance, 
+        // fetch original bill now, checked alteady returned, cancelled, , 
         newlyReturnedBill = new RefundBill();
         newlyReturnedBill.copy(originalBillToReturn);
         newlyReturnedBill.setBillTypeAtomic(BillTypeAtomic.OPD_BILL_REFUND);
@@ -252,6 +255,9 @@ public class BillReturnController implements Serializable {
         paymentController.save(returningPayment);
         returningBillPayments.add(returningPayment);
 
+//      drawer Update
+        drawerController.updateDrawerForOuts(returningPayment);
+        
         returningStarted = false;
         return "/opd/bill_return_print?faces-redirect=true";
 
