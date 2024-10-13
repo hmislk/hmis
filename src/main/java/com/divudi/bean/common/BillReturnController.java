@@ -59,21 +59,72 @@ public class BillReturnController implements Serializable {
 
     private boolean returningStarted = false;
 
+    private double refundingTotalAmount;
+
+    private String refundComment;
+
+    private boolean selectAll;
+
     /**
      * Creates a new instance of BillReturnController
      */
     public BillReturnController() {
     }
 
+    public void makeNull() {
+
+    }
+
+    public void clear() {
+        refundComment = null;
+        refundingTotalAmount = 0.0;
+        returningBillPayments = null;
+        newlyReturnedBillFees = null;
+        newlyReturnedBillItems = null;
+        originalBillItemsToSelectedToReturn = null;
+        selectAll = true;
+    }
+
     public String navigateToReturnOpdBill() {
         if (originalBillToReturn == null) {
             return null;
         }
+        
         originalBillItemsAvailableToReturn = billBeanController.fetchBillItems(originalBillToReturn);
-        returningStarted=false;
+        returningStarted = false;
+        paymentMethod = originalBillToReturn.getPaymentMethod();
         return "/opd/bill_return?faces-redirect=true";
     }
 
+    public void selectAllItems() {
+        originalBillItemsToSelectedToReturn = new ArrayList();
+        for (BillItem selectedBillItemToReturn : originalBillItemsAvailableToReturn) {
+            if (!selectedBillItemToReturn.isRefunded()) {
+                System.out.println(selectedBillItemToReturn.getItem().getName() + " Add");
+                originalBillItemsToSelectedToReturn.add(selectedBillItemToReturn);
+            }
+        }
+        calculateRefundingAmount();
+        selectAll = false;
+    }
+
+    public void unSelectAllItems() {
+        originalBillItemsToSelectedToReturn = new ArrayList();
+        refundingTotalAmount = 0.0;
+        selectAll = true;
+    }
+    
+    public boolean checkCanReturnBill(Bill bill){
+        List<BillItem> items = billBeanController.fetchBillItems(bill);
+        boolean canReturn = false;
+        for(BillItem bllItem : items){
+            if(!bllItem.isRefunded()){
+                canReturn = true;
+            }
+        }
+        return canReturn;
+    }
+    
     public String settleOpdReturnBill() {
         if (returningStarted) {
             JsfUtil.addErrorMessage("Already Returning Started");
@@ -89,6 +140,13 @@ public class BillReturnController implements Serializable {
             returningStarted = false;
             return null;
         }
+
+        if (refundComment == null || refundComment.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Enter Refund Comment");
+            returningStarted = false;
+            return null;
+        }
+
         originalBillToReturn = billFacade.findWithoutCache(originalBillToReturn.getId());
         if (originalBillToReturn.isCancelled()) {
             JsfUtil.addErrorMessage("Already Cancelled");
@@ -96,21 +154,31 @@ public class BillReturnController implements Serializable {
             return null;
         }
         //TO DO: Check weather selected items is refunded
-        if (originalBillToReturn.isRefunded()) {
-            JsfUtil.addErrorMessage("Already Cancelled");
+        if (!checkCanReturnBill(originalBillToReturn)) {
+            JsfUtil.addErrorMessage("All Items are Already Refunded");
             returningStarted = false;
             return null;
         }
+        
         // fetch original bill now, checked alteady returned, cancelled, drawer balance, 
         newlyReturnedBill = new RefundBill();
         newlyReturnedBill.copy(originalBillToReturn);
         newlyReturnedBill.setBillTypeAtomic(BillTypeAtomic.OPD_BILL_REFUND);
+        newlyReturnedBill.setComments(refundComment);
         newlyReturnedBill.invertValue();
-        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(),
-                BillTypeAtomic.OPD_BILL_REFUND);
+
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.OPD_BILL_REFUND);
         newlyReturnedBill.setDeptId(deptId);
         newlyReturnedBill.setInsId(deptId);
         billController.save(newlyReturnedBill);
+        
+        List<Bill> refundBillList = originalBillToReturn.getRefundBills();
+        refundBillList.add(newlyReturnedBill);
+        originalBillToReturn.setRefunded(true);
+        originalBillToReturn.setRefundBills(refundBillList);
+        
+        
+        billController.save(originalBillToReturn);
 
         double returningTotal = 0.0;
         double returningNetTotal = 0.0;
@@ -119,9 +187,9 @@ public class BillReturnController implements Serializable {
         double returningDiscount = 0.0;
 
         newlyReturnedBillItems = new ArrayList<>();
-        returningBillPayments=new ArrayList<>();
-        newlyReturnedBillFees=new ArrayList<>();
-        
+        returningBillPayments = new ArrayList<>();
+        newlyReturnedBillFees = new ArrayList<>();
+
         for (BillItem selectedBillItemToReturn : originalBillItemsToSelectedToReturn) {
 
             returningTotal += selectedBillItemToReturn.getGrossValue();
@@ -141,9 +209,7 @@ public class BillReturnController implements Serializable {
             selectedBillItemToReturn.setReferanceBillItem(newlyCreatedReturningItem);
             billItemController.save(selectedBillItemToReturn);
             List<BillFee> originalBillFeesOfSelectedBillItem = billBeanController.fetchBillFees(selectedBillItemToReturn);
-            
-            
-            
+
             if (originalBillFeesOfSelectedBillItem != null) {
                 for (BillFee origianlFee : originalBillFeesOfSelectedBillItem) {
                     BillFee newlyCreatedBillFeeToReturn = new BillFee();
@@ -183,6 +249,18 @@ public class BillReturnController implements Serializable {
         returningStarted = false;
         return "/opd/bill_return_print?faces-redirect=true";
 
+    }
+
+    public void calculateRefundingAmount() {
+        refundingTotalAmount = 0.0;
+        for (BillItem selectedBillItemToReturn : originalBillItemsToSelectedToReturn) {
+            refundingTotalAmount += selectedBillItemToReturn.getNetValue();
+        }
+        if (originalBillItemsToSelectedToReturn.size() == 0) {
+            selectAll = true;
+        }else{
+            selectAll = false;
+        }
     }
 
     public Bill getOriginalBillToReturn() {
@@ -255,6 +333,30 @@ public class BillReturnController implements Serializable {
 
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
+    }
+
+    public double getRefundingTotalAmount() {
+        return refundingTotalAmount;
+    }
+
+    public void setRefundingTotalAmount(double refundingTotalAmount) {
+        this.refundingTotalAmount = refundingTotalAmount;
+    }
+
+    public String getRefundComment() {
+        return refundComment;
+    }
+
+    public void setRefundComment(String refundComment) {
+        this.refundComment = refundComment;
+    }
+
+    public boolean isSelectAll() {
+        return selectAll;
+    }
+
+    public void setSelectAll(boolean selectAll) {
+        this.selectAll = selectAll;
     }
 
 }
