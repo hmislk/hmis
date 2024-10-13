@@ -95,6 +95,10 @@ public class BillReturnController implements Serializable {
         paymentMethod = originalBillToReturn.getPaymentMethod();
         return "/opd/bill_return?faces-redirect=true";
     }
+    
+    public String navigateToOPDBillSearchFormRefundOpdBillView() {
+        return"/opd/opd_bill_search?faces-redirect=true";
+    }
 
     public void selectAllItems() {
         originalBillItemsToSelectedToReturn = new ArrayList();
@@ -165,6 +169,8 @@ public class BillReturnController implements Serializable {
         newlyReturnedBill.copy(originalBillToReturn);
         newlyReturnedBill.setBillTypeAtomic(BillTypeAtomic.OPD_BILL_REFUND);
         newlyReturnedBill.setComments(refundComment);
+        newlyReturnedBill.setInstitution(sessionController.getInstitution());
+        newlyReturnedBill.setDepartment(sessionController.getDepartment());
         newlyReturnedBill.invertValue();
 
         String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.OPD_BILL_REFUND);
