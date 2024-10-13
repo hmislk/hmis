@@ -96,7 +96,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
@@ -12430,8 +12434,8 @@ public class SearchController implements Serializable {
 
         String dateTimeFormat = sessionController.getApplicationPreference().getLongDateTimeFormat();
 
-        String formattedFromDate = fromDate != null ? new SimpleDateFormat(dateTimeFormat).format(fromDate) : "N/A";
-        String formattedToDate = toDate != null ? new SimpleDateFormat(dateTimeFormat).format(toDate) : "N/A";
+        String formattedFromDate = fromDate != null ? new SimpleDateFormat(dateTimeFormat).format(fromDate) : "Not availbale";
+        String formattedToDate = toDate != null ? new SimpleDateFormat(dateTimeFormat).format(toDate) : "Not availbale";
 
         String description = String.format("Report for %s to %s covering %s, %s, %s",
                 formattedFromDate, formattedToDate,
@@ -15682,16 +15686,478 @@ public class SearchController implements Serializable {
             case "pharmacyCollection":
                 return addDataToExcelForDepartmentCollection(dataSheet, startRow, addingBundle);
             case "ccCollection":
-                
-
+                return addDataToExcelForCcDeposits(dataSheet, startRow, addingBundle);
+            case "companyPaymentBillOpd":
+            case "companyPaymentBillInward":
+            case "companyPaymentBillPharmacy":
+            case "companyPaymentBillChannelling":
+                return addDataToExcelForCompanyCollection(dataSheet, startRow, addingBundle);
+            case "patientDepositPayments":
+                return addDataToExcelForPatientDeposits(dataSheet, startRow, addingBundle);
+            case "collectionForTheDay":
+                return addDataToExcelForTitleBundle(dataSheet, startRow, addingBundle);
+            case "pettyCashPayments":
+                return addDataToExcelForPettyCashPayments(dataSheet, startRow, addingBundle);
+            case "ProfessionalPaymentBillReportOpd":
+            case "ProfessionalPaymentBillReportChannelling":
+            case "ProfessionalPaymentBillReportInward":
+                return addDataToExcelForProfessionalPayments(dataSheet, startRow, addingBundle);
+            case "paymentReportCards":
+                return addDataToExcelForCreditCards(dataSheet, startRow, addingBundle);
+            case "paymentReportStaffWelfare":
+            case "paymentReportVoucher":
+            case "paymentReportCheque":
+            case "paymentReportEwallet":
+            case "paymentReportSlip":
+                //TODO: Change per the payment method
+                return addDataToExcelForCreditCards(dataSheet, startRow, addingBundle);
+            case "netCash":
+                return addDataToExcelForTitleBundle(dataSheet, startRow, addingBundle);
         }
         return startRow++;
     }
 
-    private int addDataToExcelForCcDeposits(XSSFSheet dataSheet, int startRow, ReportTemplateRowBundle addingBundle) {
-        
+    private int addDataToExcelForTitleBundle(XSSFSheet dataSheet, int startRow, ReportTemplateRowBundle addingBundle) {
+        // Row above for visual separation (mimicking <hr/>)
+        Row upperSeparatorRow = dataSheet.createRow(startRow++);
+        upperSeparatorRow.createCell(0).setCellValue(""); // Empty cell, you can optionally format it as a visual separator
+        dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 5));
+
+        // Create a title row for the report name and total
+        Row titleRow = dataSheet.createRow(startRow++);
+        Cell titleCell = titleRow.createCell(0);
+        titleCell.setCellValue(addingBundle.getName());  // Bundle name
+
+        Cell totalCell = titleRow.createCell(5); // Total in the sixth column
+        totalCell.setCellValue(addingBundle.getTotal());  // Total value
+        // Merge cells for the title, leaving the last one for the total
+        dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 4));
+
+        // Row below for visual separation (mimicking <hr/>)
+        Row lowerSeparatorRow = dataSheet.createRow(startRow++);
+        lowerSeparatorRow.createCell(0).setCellValue(""); // Empty cell, can be formatted as a visual separator
+        dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 5));
+
+        // Adjust column widths to maintain uniform appearance
+        for (int i = 0; i < 6; i++) {
+            dataSheet.autoSizeColumn(i);
+        }
+
+        return startRow;
     }
-    
+
+    private int addDataToExcelForCreditCards(XSSFSheet dataSheet, int startRow, ReportTemplateRowBundle addingBundle) {
+        if (addingBundle.getReportTemplateRows() == null || addingBundle.getReportTemplateRows().isEmpty()) {
+            // If no data, create a single row stating this
+            Row noDataRow = dataSheet.createRow(startRow++);
+            Cell noDataCell = noDataRow.createCell(0);
+            noDataCell.setCellValue("No Data for " + addingBundle.getName());
+            // Merge the cell across all columns
+            dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 6));
+        } else {
+            // Create a title row for the report name and total
+            Row titleRow = dataSheet.createRow(startRow++);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue(addingBundle.getName());
+            Cell totalCell = titleRow.createCell(6); // Total is in the seventh column
+            totalCell.setCellValue(addingBundle.getTotal());
+
+            // Merge title across all columns except the last (for total)
+            dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 5));
+
+            // Create header row for Excel only when there is data
+            Row headerRow = dataSheet.createRow(startRow++);
+            String[] columnHeaders = {"Bill No", "Bill Class", "Bill Type", "Card Ref. Number", "Bank", "Reference Bill", "Fee"};
+            for (int i = 0; i < columnHeaders.length; i++) {
+                Cell headerCell = headerRow.createCell(i);
+                headerCell.setCellValue(columnHeaders[i]);
+            }
+
+            // Populate data rows
+            for (ReportTemplateRow row : addingBundle.getReportTemplateRows()) {
+                Row excelRow = dataSheet.createRow(startRow++);
+
+                // First column: Bill No
+                Cell billNoCell = excelRow.createCell(0);
+                billNoCell.setCellValue(row.getPayment() != null && row.getPayment().getBill() != null ? row.getPayment().getBill().getDeptId() : "N/A");
+
+                // Second column: Bill Class
+                Cell billClassCell = excelRow.createCell(1);
+                billClassCell.setCellValue(row.getPayment() != null && row.getPayment().getBill() != null ? row.getPayment().getBill().getBillClassType().toString() : "N/A");
+
+                // Third column: Bill Type
+                Cell billTypeCell = excelRow.createCell(2);
+                billTypeCell.setCellValue(row.getPayment() != null && row.getPayment().getBill() != null ? row.getPayment().getBill().getCreatedAt().toString() : "N/A");  // Assuming createdAt is a date
+
+                // Fourth column: Card Ref. Number
+                Cell cardRefCell = excelRow.createCell(3);
+                cardRefCell.setCellValue(row.getPayment() != null ? row.getPayment().getCreditCardRefNo() : "N/A");
+
+                // Fifth column: Bank
+                Cell bankCell = excelRow.createCell(4);
+                bankCell.setCellValue(row.getPayment() != null && row.getPayment().getBank() != null ? row.getPayment().getBank().getName() : "N/A");
+
+                // Sixth column: Reference Bill
+                Cell refBillCell = excelRow.createCell(5);
+                refBillCell.setCellValue(row.getPayment() != null && row.getPayment().getBill() != null && row.getPayment().getBill().getBackwardReferenceBill() != null ? row.getPayment().getBill().getBackwardReferenceBill().getDeptId() : "N/A");
+
+                // Seventh column: Fee
+                Cell feeCell = excelRow.createCell(6);
+                feeCell.setCellValue(row.getPayment() != null ? row.getPayment().getPaidValue() : 0.0);
+                CellStyle feeStyle = dataSheet.getWorkbook().createCellStyle();
+                CreationHelper createHelper = dataSheet.getWorkbook().getCreationHelper();
+                feeStyle.setDataFormat(createHelper.createDataFormat().getFormat("#,##0.00"));
+                feeCell.setCellStyle(feeStyle);
+            }
+        }
+
+        // Adjust column widths to fit the content
+        for (int i = 0; i < 7; i++) {
+            dataSheet.autoSizeColumn(i);
+        }
+
+        return startRow;
+    }
+
+    private int addDataToExcelForProfessionalPayments(XSSFSheet dataSheet, int startRow, ReportTemplateRowBundle addingBundle) {
+        if (addingBundle.getReportTemplateRows() == null || addingBundle.getReportTemplateRows().isEmpty()) {
+            // If no data, create a single row stating this
+            Row noDataRow = dataSheet.createRow(startRow++);
+            Cell noDataCell = noDataRow.createCell(0);
+            noDataCell.setCellValue("No Data for " + addingBundle.getName());
+            // Merge the cell across all columns
+            dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 2));
+        } else {
+            // Create a title row for the report name and total
+            Row titleRow = dataSheet.createRow(startRow++);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue(addingBundle.getName());
+            Cell totalCell = titleRow.createCell(2); // Total is in the third column
+            totalCell.setCellValue(addingBundle.getTotal());
+
+            // Merge title across all columns except the last (for total)
+            dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 1));
+
+            // Create header row for Excel only when there is data
+            Row headerRow = dataSheet.createRow(startRow++);
+            String[] columnHeaders = {"Bill No", "Professional", "Fee"};
+            for (int i = 0; i < columnHeaders.length; i++) {
+                Cell headerCell = headerRow.createCell(i);
+                headerCell.setCellValue(columnHeaders[i]);
+            }
+
+            // Populate data rows
+            for (ReportTemplateRow row : addingBundle.getReportTemplateRows()) {
+                Row excelRow = dataSheet.createRow(startRow++);
+
+                // First column: Bill No
+                Cell billNoCell = excelRow.createCell(0);
+                billNoCell.setCellValue(row.getBill() != null ? row.getBill().getDeptId() : "N/A");
+
+                // Second column: Professional
+                Cell professionalCell = excelRow.createCell(1);
+                professionalCell.setCellValue(row.getBill() != null && row.getBill().getStaff() != null && row.getBill().getStaff().getPerson() != null ? row.getBill().getStaff().getPerson().getNameWithTitle() : "N/A");
+
+                // Third column: Fee
+                Cell feeCell = excelRow.createCell(2);
+                feeCell.setCellValue(row.getBill() != null ? row.getBill().getNetTotal() : 0.0);
+                CellStyle feeStyle = dataSheet.getWorkbook().createCellStyle();
+                CreationHelper createHelper = dataSheet.getWorkbook().getCreationHelper();
+                feeStyle.setDataFormat(createHelper.createDataFormat().getFormat("#,##0.00"));
+                feeCell.setCellStyle(feeStyle);
+            }
+        }
+
+        // Adjust column widths to fit the content
+        for (int i = 0; i < 3; i++) {
+            dataSheet.autoSizeColumn(i);
+        }
+
+        return startRow;
+    }
+
+    private int addDataToExcelForPettyCashPayments(XSSFSheet dataSheet, int startRow, ReportTemplateRowBundle addingBundle) {
+        if (addingBundle.getReportTemplateRows() == null || addingBundle.getReportTemplateRows().isEmpty()) {
+            // If no data, create a single row stating this
+            Row noDataRow = dataSheet.createRow(startRow++);
+            Cell noDataCell = noDataRow.createCell(0);
+            noDataCell.setCellValue("No Data for " + addingBundle.getName());
+            // Merge the cell across all columns
+            dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 5));
+        } else {
+            // Create a title row for the report name and total
+            Row titleRow = dataSheet.createRow(startRow++);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue(addingBundle.getName());
+            Cell totalCell = titleRow.createCell(5); // Total is in the sixth column
+            totalCell.setCellValue(addingBundle.getTotal());
+
+            // Merge title across all columns except the last (for total)
+            dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 4));
+
+            // Create header row for Excel only when there is data
+            Row headerRow = dataSheet.createRow(startRow++);
+            String[] columnHeaders = {"Bill No", "Bill Type", "Fee", "Reference Bills"};
+            for (int i = 0; i < columnHeaders.length; i++) {
+                Cell headerCell = headerRow.createCell(i);
+                headerCell.setCellValue(columnHeaders[i]);
+            }
+            // Merge columns for Reference Bills
+            dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 3, 5));
+
+            // Populate data rows
+            for (ReportTemplateRow row : addingBundle.getReportTemplateRows()) {
+                Row excelRow = dataSheet.createRow(startRow++);
+
+                // First column: Bill No
+                Cell billNoCell = excelRow.createCell(0);
+                billNoCell.setCellValue(row.getBill() != null ? row.getBill().getDeptId() : "N/A");
+
+                // Second column: Bill Type
+                Cell billTypeCell = excelRow.createCell(1);
+                billTypeCell.setCellValue(row.getBill() != null ? row.getBill().getBillTypeAtomic().getLabel() : "N/A");
+
+                // Third column: Fee
+                Cell feeCell = excelRow.createCell(2);
+                feeCell.setCellValue(row.getBill() != null ? row.getBill().getNetTotal() : 0.0);
+                CellStyle feeStyle = dataSheet.getWorkbook().createCellStyle();
+                CreationHelper createHelper = dataSheet.getWorkbook().getCreationHelper();
+                feeStyle.setDataFormat(createHelper.createDataFormat().getFormat("#,##0.00"));
+                feeCell.setCellStyle(feeStyle);
+
+                // Fourth to sixth columns: Reference Bills
+                Cell refBillCell = excelRow.createCell(3);
+                String refBills = Stream.of(
+                        row.getBill().getBackwardReferenceBill(),
+                        row.getBill().getForwardReferenceBill(),
+                        row.getBill().getReferenceBill(),
+                        row.getBill().getRefundedBill(),
+                        row.getBill().getCancelledBill(),
+                        row.getBill().getBilledBill())
+                        .filter(Objects::nonNull)
+                        .map(b -> Optional.ofNullable(b.getDeptId()).orElse("N/A"))
+                        .collect(Collectors.joining(", "));
+                refBillCell.setCellValue(refBills);
+                excelRow.createCell(4); // For merged cell handling
+                excelRow.createCell(5); // For merged cell handling
+            }
+            // Merge cells for Reference Bills in each data row
+            for (int row = startRow - addingBundle.getReportTemplateRows().size(); row < startRow; row++) {
+                dataSheet.addMergedRegion(new CellRangeAddress(row, row, 3, 5));
+            }
+        }
+
+        // Adjust column widths to fit the content
+        for (int i = 0; i < 6; i++) {
+            dataSheet.autoSizeColumn(i);
+        }
+
+        return startRow;
+    }
+
+    private int addDataToExcelForPatientDeposits(XSSFSheet dataSheet, int startRow, ReportTemplateRowBundle addingBundle) {
+        if (addingBundle.getReportTemplateRows() == null || addingBundle.getReportTemplateRows().isEmpty()) {
+            // If no data, create a single row stating this
+            Row noDataRow = dataSheet.createRow(startRow++);
+            Cell noDataCell = noDataRow.createCell(0);
+            noDataCell.setCellValue("No Data for " + addingBundle.getName());
+            // Merge the cell across all columns
+            dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 3));
+        } else {
+            // Create a title row for the report name and total
+            Row titleRow = dataSheet.createRow(startRow++);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue(addingBundle.getName());
+            Cell totalCell = titleRow.createCell(3); // Total is in the fourth column
+            totalCell.setCellValue(addingBundle.getTotal());
+
+            // Merge title across all columns except the last (for total)
+            dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 2));
+
+            // Create header row for Excel only when there is data
+            Row headerRow = dataSheet.createRow(startRow++);
+            String[] columnHeaders = {"Bill No", "Patient", "Payment Method", "Value"};
+            for (int i = 0; i < columnHeaders.length; i++) {
+                Cell headerCell = headerRow.createCell(i);
+                headerCell.setCellValue(columnHeaders[i]);
+            }
+
+            // Populate data rows
+            for (ReportTemplateRow row : addingBundle.getReportTemplateRows()) {
+                Row excelRow = dataSheet.createRow(startRow++);
+
+                // First column: Bill No
+                Cell billNoCell = excelRow.createCell(0);
+                billNoCell.setCellValue(row.getBill() != null ? row.getBill().getDeptId() : "N/A");
+
+                // Second column: Patient
+                Cell patientCell = excelRow.createCell(1);
+                patientCell.setCellValue(row.getBill() != null && row.getBill().getPatient() != null && row.getBill().getPatient().getPerson() != null ? row.getBill().getPatient().getPerson().getNameWithTitle() : "N/A");
+
+                // Third column: Payment Method
+                Cell paymentMethodCell = excelRow.createCell(2);
+                paymentMethodCell.setCellValue(row.getBill() != null && row.getBill().getPaymentMethod() != null ? row.getBill().getPaymentMethod().getLabel() : "N/A");
+
+                // Fourth column: Value, formatted as a number
+                Cell valueCell = excelRow.createCell(3);
+                valueCell.setCellValue(row.getBill() != null ? row.getBill().getNetTotal() : 0.0);
+                CellStyle cellStyle = dataSheet.getWorkbook().createCellStyle();
+                CreationHelper createHelper = dataSheet.getWorkbook().getCreationHelper();
+                cellStyle.setDataFormat(createHelper.createDataFormat().getFormat("#,##0.00"));
+                valueCell.setCellStyle(cellStyle);
+            }
+        }
+
+        // Adjust column widths to fit the content
+        for (int i = 0; i < 4; i++) {
+            dataSheet.autoSizeColumn(i);
+        }
+
+        return startRow;
+    }
+
+    private int addDataToExcelForCompanyCollection(XSSFSheet dataSheet, int startRow, ReportTemplateRowBundle addingBundle) {
+        if (addingBundle.getReportTemplateRows() == null || addingBundle.getReportTemplateRows().isEmpty()) {
+            // If no data, create a single row stating this
+            Row noDataRow = dataSheet.createRow(startRow++);
+            Cell noDataCell = noDataRow.createCell(0);
+            noDataCell.setCellValue("No Data for " + addingBundle.getName());
+            // Merge the cell across all columns
+            dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 3));
+        } else {
+            // Create a title row for the report name and total
+            Row titleRow = dataSheet.createRow(startRow++);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue(addingBundle.getName());
+            Cell totalCell = titleRow.createCell(3); // Total is in the fourth column
+            totalCell.setCellValue(addingBundle.getTotal());
+
+            // Merge title across all columns except the last (for total)
+            dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 2));
+
+            // Create header row for Excel only when there is data
+            Row headerRow = dataSheet.createRow(startRow++);
+            String[] columnHeaders = {"Bill No", "Company", "Payment Method", "Value"};
+            for (int i = 0; i < columnHeaders.length; i++) {
+                Cell headerCell = headerRow.createCell(i);
+                headerCell.setCellValue(columnHeaders[i]);
+            }
+
+            // Populate data rows
+            for (ReportTemplateRow row : addingBundle.getReportTemplateRows()) {
+                Row excelRow = dataSheet.createRow(startRow++);
+
+                // First column: Bill No
+                Cell billNoCell = excelRow.createCell(0);
+                billNoCell.setCellValue(row.getBill() != null ? row.getBill().getDeptId() : "Not availbale");
+
+                // Second column: Company
+                Cell companyCell = excelRow.createCell(1);
+                companyCell.setCellValue(row.getBill() != null && row.getBill().getFromInstitution() != null ? row.getBill().getFromInstitution().getName() : "Not availbale");
+
+                // Third column: Payment Method
+                Cell paymentMethodCell = excelRow.createCell(2);
+                paymentMethodCell.setCellValue(row.getBill() != null && row.getBill().getPaymentMethod() != null ? row.getBill().getPaymentMethod().getLabel() : "Not availbale");
+
+                // Fourth column: Value, formatted as a number
+                Cell valueCell = excelRow.createCell(3);
+                valueCell.setCellValue(row.getBill() != null ? row.getBill().getNetTotal() : 0.0);
+                CellStyle cellStyle = dataSheet.getWorkbook().createCellStyle();
+                CreationHelper createHelper = dataSheet.getWorkbook().getCreationHelper();
+                cellStyle.setDataFormat(createHelper.createDataFormat().getFormat("#,##0.00"));
+                valueCell.setCellStyle(cellStyle);
+            }
+        }
+
+        // Adjust column widths to fit the content
+        for (int i = 0; i < 4; i++) {
+            dataSheet.autoSizeColumn(i);
+        }
+
+        return startRow;
+    }
+
+    private int addDataToExcelForCcDeposits(XSSFSheet dataSheet, int startRow, ReportTemplateRowBundle addingBundle) {
+        if (addingBundle.getReportTemplateRows() == null || addingBundle.getReportTemplateRows().isEmpty()) {
+            // If no data, create a single row stating this
+            Row noDataRow = dataSheet.createRow(startRow++);
+            Cell noDataCell = noDataRow.createCell(0);
+            noDataCell.setCellValue("No Data for " + addingBundle.getName());
+            // Merge the cell across all columns
+            dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 4));
+        } else {
+            // Create a title row for the report name and total
+            Row titleRow = dataSheet.createRow(startRow++);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue(addingBundle.getName());
+            Cell totalCell = titleRow.createCell(4); // Total is in the fifth column
+            totalCell.setCellValue(addingBundle.getTotal());
+
+            // Merge title across all columns except the last (for total)
+            dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 3));
+
+            // Create header row for Excel only when there is data
+            Row headerRow = dataSheet.createRow(startRow++);
+            String[] columnHeaders = {"Bill No", "Collecting Centre Name", "Collecting Centre Code", "Reference Bill", "Fee"};
+            for (int i = 0; i < columnHeaders.length; i++) {
+                Cell headerCell = headerRow.createCell(i);
+                headerCell.setCellValue(columnHeaders[i]);
+            }
+
+            // Populate data rows
+            for (ReportTemplateRow row : addingBundle.getReportTemplateRows()) {
+                Row excelRow = dataSheet.createRow(startRow++);
+
+                // First column: Bill No
+                Cell billNoCell = excelRow.createCell(0);
+                billNoCell.setCellValue(row.getBill() != null ? row.getBill().getDeptId() : "Not availbale");
+
+                // Second column: Collecting Centre Name
+                Cell ccNameCell = excelRow.createCell(1);
+                ccNameCell.setCellValue(row.getBill() != null && row.getBill().getFromInstitution() != null ? row.getBill().getFromInstitution().getName() : "Not availbale");
+
+                // Third column: Collecting Centre Code
+                Cell ccCodeCell = excelRow.createCell(2);
+                ccCodeCell.setCellValue(row.getBill() != null && row.getBill().getFromInstitution() != null ? row.getBill().getFromInstitution().getCode() : "Not availbale");
+
+                // Fourth column: Reference Bill
+                Cell refBillCell = excelRow.createCell(3);
+                if (row.getBill() != null) {
+                    // Concatenating all possible reference bills into a single cell
+                    String refBills = Stream.of(
+                            row.getBill().getBackwardReferenceBill(),
+                            row.getBill().getForwardReferenceBill(),
+                            row.getBill().getReferenceBill(),
+                            row.getBill().getRefundedBill(),
+                            row.getBill().getCancelledBill(),
+                            row.getBill().getBilledBill())
+                            .filter(Objects::nonNull)
+                            .map(b -> b.getDeptId())
+                            .filter(Objects::nonNull)
+                            .collect(Collectors.joining(", "));
+                    refBillCell.setCellValue(refBills);
+                } else {
+                    refBillCell.setCellValue("Not availbale");
+                }
+
+                // Fifth column: Fee
+                Cell feeCell = excelRow.createCell(4);
+                feeCell.setCellValue(row.getBill() != null ? row.getBill().getNetTotal() : 0.0);
+                CellStyle cellStyle = dataSheet.getWorkbook().createCellStyle();
+                CreationHelper createHelper = dataSheet.getWorkbook().getCreationHelper();
+                cellStyle.setDataFormat(createHelper.createDataFormat().getFormat("#,##0.00"));
+                feeCell.setCellStyle(cellStyle);
+            }
+        }
+
+        // Adjust column widths to fit the content
+        for (int i = 0; i < 5; i++) {
+            dataSheet.autoSizeColumn(i);
+        }
+
+        return startRow;
+    }
+
     private int addDataToExcelForDepartmentCollection(XSSFSheet dataSheet, int startRow, ReportTemplateRowBundle addingBundle) {
         // Check if there are any data rows
         if (addingBundle.getReportTemplateRows() == null || addingBundle.getReportTemplateRows().isEmpty()) {
@@ -15726,7 +16192,7 @@ public class SearchController implements Serializable {
 
                 // First column: Department Name
                 Cell departmentCell = excelRow.createCell(0);
-                departmentCell.setCellValue(row.getDepartment() != null ? row.getDepartment().getName() : "N/A");
+                departmentCell.setCellValue(row.getDepartment() != null ? row.getDepartment().getName() : "Not availbale");
 
                 // Second column: Collection, formatted as a number
                 Cell collectionCell = excelRow.createCell(1);
