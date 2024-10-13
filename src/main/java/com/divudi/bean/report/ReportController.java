@@ -206,11 +206,11 @@ public class ReportController implements Serializable {
     private List<BillAndItemDataRow> billAndItemDataRows;
     private BillAndItemDataRow headerBillAndItemDataRow;
 
-    private Double totalCount;
-    private Double totalHosFee;
-    private Double totalCCFee;
-    private Double totalProFee;
-    private Double totalNetTotal;
+    private double totalCount;
+    private double totalHosFee;
+    private double totalCCFee;
+    private double totalProFee;
+    private double totalNetTotal;
 
     public void generateItemMovementByBillReport() {
         billAndItemDataRows = new ArrayList<>();
@@ -2636,8 +2636,9 @@ public class ReportController implements Serializable {
                 + ") "
                 + " from BillItem bi "
                 + " where bi.retired=:ret"
+                + " and bi.bill.cancelled=:can"
                 + " and bi.bill.billDate between :fd and :td "
-                + " and bi.bill.billType = :bType ";
+                + " and bi.bill.billTypeAtomic = :billTypeAtomic ";
 
         if (false) {
             BillItem bi = new BillItem();
@@ -2650,9 +2651,10 @@ public class ReportController implements Serializable {
 
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
+        m.put("can", false);
         m.put("fd", fromDate);
         m.put("td", toDate);
-        m.put("bType", BillType.CollectingCentreBill);
+        m.put("billTypeAtomic", BillTypeAtomic.CC_BILL);
 
         if (route != null) {
             jpql += " and bi.bill.fromInstitution.route = :route ";
@@ -2699,21 +2701,24 @@ public class ReportController implements Serializable {
             m.put("status", status);
         }
 
-        jpql += " group by bi.item.name";
+        jpql += " group by bi.item.name ORDER BY bi.item.name ASC";
 
         testWiseCounts = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m);
 
-        hospitalFeeTotal = 0.0;
-        ccFeeTotal = 0.0;
-        professionalFeeTotal = 0.0;
-        entireTotal = 0.0;
+        totalCount = 0.0;
+        totalHosFee = 0.0;
+        totalCCFee = 0.0;
+        totalProFee = 0.0;
+        totalNetTotal = 0.0;
 
         if (testWiseCounts != null) {
             for (TestWiseCountReport report : testWiseCounts) {
-                hospitalFeeTotal += report.getHosFee();
-                ccFeeTotal += report.getCcFee();
-                professionalFeeTotal += report.getProFee();
-                entireTotal += report.getTotal();
+                totalCount += report.getCount();
+                totalHosFee += report.getHosFee();
+                totalCCFee += report.getCcFee();
+                totalProFee += report.getProFee();
+                totalNetTotal += report.getTotal();
+
             }
         }
     }
