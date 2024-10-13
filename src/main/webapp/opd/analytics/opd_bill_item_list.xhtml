@@ -363,13 +363,13 @@
                             </p:column>
 
 
-                            <p:column headerText="Cancalled" sortBy="#{pi.billItem.bill.createdAt}" filterBy="#{pi.billItem.bill.createdAt}" filterMatchMode="equals">
+                            <p:column headerText="Cancalled" >
                                 <h:outputLabel style="color: red;" rendered="#{pi.billItem.bill.cancelled}" value="#{pi.billItem.bill.cancelledBill.createdAt}">
                                     <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>
                             
-                            <p:column headerText="Cancallation at" sortBy="#{pi.billItem.bill.createdAt}" filterBy="#{pi.billItem.bill.createdAt}" filterMatchMode="equals">
+                            <p:column headerText="Cancallation at" >
                                 <h:outputLabel style="color: red;" rendered="#{pi.billItem.bill.cancelled}" value="#{pi.billItem.bill.cancelledBill.createdAt}">
                                     <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
                                 </h:outputLabel>
