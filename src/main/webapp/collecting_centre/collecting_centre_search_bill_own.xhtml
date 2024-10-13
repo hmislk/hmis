@@ -105,6 +105,10 @@
                                     <p:column headerText="Patient Phone No">                              
                                         <h:outputLabel value="#{bill.patient.person.phone}" />
                                     </p:column>
+                                    
+                                    <p:column headerText="Billed By">                              
+                                        <h:outputLabel value="#{bill.creater.name}" />
+                                    </p:column>
 
                                     <p:column headerText="Gross Value" styleClass="averageNumericColumn">
                                         <h:outputLabel value="#{bill.total}" >
