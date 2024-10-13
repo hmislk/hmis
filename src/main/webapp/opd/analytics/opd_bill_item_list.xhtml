@@ -196,6 +196,13 @@
                                     <p:column headerText="Category"  sortBy="#{pi.billItem.item.category.name}" filterBy="#{pi.billItem.item.category.name}" filterMatchMode="contains">
                                         <h:outputLabel value="#{pi.billItem.item.category.name}" />
                                     </p:column>
+                                    
+                                    <p:column headerText="Bill Type" 
+                                              rendered="#{webUserController.hasPrivilege('Developers')}"
+                                              sortBy="#{pi.billItem.bill.billTypeAtomic}"
+                                              filterBy="#{pi.billItem.bill.billTypeAtomic}" filterMatchMode="contains">
+                                        <h:outputLabel value="#{pi.billItem.bill.billTypeAtomic}" />
+                                    </p:column>
 
                                     <p:column headerText="Investigation or Service"  sortBy="#{pi.billItem.item.name}" filterBy="#{pi.billItem.item.name}" filterMatchMode="contains">
                                         <h:outputLabel value="#{pi.billItem.item.name}" />
