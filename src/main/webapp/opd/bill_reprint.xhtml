@@ -79,6 +79,7 @@
                                         <p:commandButton
                                             ajax="false" 
                                             value="To Return"
+                                            actionListener="#{billReturnController.clear()}"
                                             disabled="#{billSearch.bill.cancelled or billSearch.bill.refunded}" 
                                             action="#{billReturnController.navigateToReturnOpdBill()}" 
                                             class="ui-button-warning m-1 w-25" 
