@@ -32,7 +32,7 @@
             <table class="table w-100">
                 <thead>
                     <tr class="text-light bg-dark">
-                        <th class="text-light bg-dark" colspan="6">
+                        <th class="text-light bg-dark" colspan="3">
                             Credit Company Collection for OPD Services
                         </th>
                         <th class="text-end text-light bg-dark">
@@ -42,47 +42,26 @@
                         </th>
                     </tr>
                     <tr>
-                        <th>Bil No</th>
-                        <th>Bill Type</th>
-                        <th>Card Ref. Number</th>
-                        <th>Card Ref. Details</th>
-                        <th>Bank Code</th>
-                        <th class="text-end">Fee</th>
+                        <th>Bill No</th>
+                        <th>Company</th>
+                        <th>Payment Method</th>
+                        <th class="text-end">Value</th>
                     </tr>
                 </thead>
                 <tbody>
                     <ui:repeat value="#{cc.attrs.bundle.reportTemplateRows}" var="row">
-                        <tr class="#{row.payment.bill ne null ? 'table-primary' : 'table-light'}">
+                        <tr class="#{row.bill ne null ? 'table-primary' : 'table-light'}">
                             <td>
-                                <h:outputText value="#{row.payment.bill.deptId}" />
+                                <h:outputText value="#{row.bill.deptId}" />
                             </td>
                             <td>
-                                <h:outputText value="#{row.payment.bill.billTypeAtomic.label}" />
+                                <h:outputText value="#{row.bill.fromInstitution.name}" />
                             </td>
                             <td>
-                                <ui:repeat value="#{row.payment.bill.payments}" var="ps">
-                                    <h:panelGroup rendered="#{ps.paymentMethod eq 'Card' }">
-                                        <h:outputText value="#{ps.creditCardRefNo}" />
-                                    </h:panelGroup>
-                                </ui:repeat>
-                            </td>
-                            <td>
-                                <!-- Example for adding more card details -->
-                                <ui:repeat value="#{row.payment.bill.payments}" var="ps">
-                                    <h:panelGroup rendered="#{ps.paymentMethod eq 'Card' }">
-                                        <h:outputText value="#{ps.additionalDetails}" />
-                                    </h:panelGroup>
-                                </ui:repeat>
-                            </td>
-                            <td>
-                                <ui:repeat value="#{row.payment.bill.payments}" var="ps">
-                                    <h:panelGroup rendered="#{ps.paymentMethod eq 'Card' }">
-                                        <h:outputText value="#{ps.bank.code}" />
-                                    </h:panelGroup>
-                                </ui:repeat>
+                                <h:outputText value="#{row.bill.paymentMethod}" />
                             </td>
                             <td class="text-end">
-                                <h:outputText value="#{row.payment.paidValue}">
+                                <h:outputText value="#{row.bill.netTotal}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </td>
@@ -103,19 +82,19 @@
                 <f:facet name="header">
                     <h:outputText value="Bil No" />
                 </f:facet>
-                <h:outputText value="#{row.payment.bill.deptId}"  />
+                <h:outputText value="#{row.bill.deptId}"  />
             </p:column>
             <p:column>
                 <f:facet name="header">
                     <h:outputText value="Bill Type" />
                 </f:facet>
-                <h:outputText value="#{row.payment.bill.billTypeAtomic.label}"  />
+                <h:outputText value="#{row.bill.billTypeAtomic.label}"  />
             </p:column>
             <p:column>
                 <f:facet name="header">
                     <h:outputText value="Card Ref.Number" />
                 </f:facet>                
-                <ui:repeat value="#{row.payment.bill.payments}" var="ps">
+                <ui:repeat value="#{row.bill.payments}" var="ps">
                     <h:panelGroup rendered="#{ps.paymentMethod eq 'Card' }" >
                         <h:outputText 
                             value="#{ps.creditCardRefNo}"/>
@@ -126,7 +105,7 @@
                 <f:facet name="header">
                     <h:outputText value="Card Ref.Number" />
                 </f:facet>                
-                <ui:repeat value="#{row.payment.bill.payments}" var="ps">
+                <ui:repeat value="#{row.bill.payments}" var="ps">
                     <h:panelGroup rendered="#{ps.paymentMethod eq 'Card' }" >
                         <h:outputText 
                             value="#{ps}"/>
@@ -137,7 +116,7 @@
                 <f:facet name="header">
                     <h:outputText value="Bank Code" />
                 </f:facet>                
-                <ui:repeat value="#{row.payment.bill.payments}" var="ps">
+                <ui:repeat value="#{row.bill.payments}" var="ps">
                     <h:panelGroup rendered="#{ps.paymentMethod eq 'Card' }" >
                         <h:outputText 
                             value="#{ps.bank.code}"/>
@@ -148,7 +127,7 @@
                 <f:facet name="header">
                     <h:outputText value="Fee" />
                 </f:facet>
-                <h:outputText value="#{row.payment.paidValue}"  >
+                <h:outputText value="#{row.paidValue}"  >
                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                 </h:outputText>
             </p:column>
