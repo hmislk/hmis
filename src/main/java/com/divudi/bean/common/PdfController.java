@@ -1,14 +1,9 @@
 package com.divudi.bean.common;
 
-import com.itextpdf.layout.element.Cell;
 import com.divudi.data.ReportTemplateRow;
 import com.divudi.data.ReportTemplateRowBundle;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
-import com.itextpdf.layout.Document;
-import com.itextpdf.layout.element.Paragraph;
-import com.itextpdf.layout.element.Table;
-import com.itextpdf.layout.property.UnitValue;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -17,23 +12,18 @@ import javax.inject.Named;
 import javax.enterprise.context.RequestScoped;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
-import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.element.Cell;
-import com.itextpdf.layout.property.UnitValue;
-import com.itextpdf.layout.element.Paragraph;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.Objects;
-import com.itextpdf.layout.Document;
-import com.itextpdf.layout.element.Table;
-import com.itextpdf.layout.element.Cell;
-import com.itextpdf.layout.property.UnitValue;
-import com.itextpdf.layout.element.Paragraph;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.Objects;
+import com.itextpdf.kernel.pdf.canvas.draw.SolidLine;
 import java.util.Optional;
+import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.Paragraph;
+import com.itextpdf.layout.element.LineSeparator;
+import com.itextpdf.kernel.colors.ColorConstants;
+import com.itextpdf.layout.properties.TextAlignment;
 
 /**
  *
@@ -89,7 +79,7 @@ public class PdfController {
 
         // Create a new Table for each call
         Table table = new Table(new float[]{10, 40, 15, 15, 10, 10}); // Adjust column widths as needed
-        table.setWidth(UnitValue.createPercentValue(100)); // Set width to 100% of available space
+        table.setWidth(100); // Set width to 100% of available space
 
         switch (type) {
             case "opdServiceCollection":
@@ -111,7 +101,7 @@ public class PdfController {
                 populateTableForPatientDeposits(document, addingBundle);
                 break;
             case "collectionForTheDay":
-                populateTableForTitleBundle(document, addingBundle);
+                populateTitleBundleForPdf(document, addingBundle);
                 break;
             case "pettyCashPayments":
                 populateTableForPettyCashPayments(document, addingBundle);
@@ -129,10 +119,10 @@ public class PdfController {
             case "paymentReportCheque":
             case "paymentReportEwallet":
             case "paymentReportSlip":
-                populateTableForPaymentReports(document, addingBundle);
+//                populateTableForPaymentReports(document, addingBundle);
                 break;
             case "netCash":
-                populateTableForTitleBundle(table, addingBundle);
+                populateTitleBundleForPdf(document, addingBundle);
                 break;
             default:
                 table.addCell(new Cell().add(new Paragraph("Data for unknown type"))); // Default handling for unknown types
@@ -145,58 +135,148 @@ public class PdfController {
         // Optionally, add spacing or a separator between tables
         document.add(new Paragraph("\n"));
     }
+
     
-    private void populateTableForPettyCashPayments(Document document, ReportTemplateRowBundle addingBundle) {
-    if (addingBundle.getReportTemplateRows() == null || addingBundle.getReportTemplateRows().isEmpty()) {
-        // If no data, add a paragraph stating this
-        Paragraph noDataParagraph = new Paragraph("No Data for " + addingBundle.getName());
-        document.add(noDataParagraph);
-    } else {
-        // Create a new Table for each call
-        Table table = new Table(new float[]{10, 15, 15, 40}); // Adjust column widths
-        table.setWidth(UnitValue.createPercentValue(100)); // Set width to 100% of available space
 
-        // Add title row with the report name and total
-        table.addCell(new Cell(1, 3).add(new Paragraph(addingBundle.getName())));
-        table.addCell(new Cell().add(new Paragraph(String.format("%.2f", addingBundle.getTotal())))); // Formatting total as a string
+    private void populateTableForCreditCards(Document document, ReportTemplateRowBundle addingBundle) {
+        if (addingBundle.getReportTemplateRows() == null || addingBundle.getReportTemplateRows().isEmpty()) {
+            // If no data, add a paragraph stating this
+            Paragraph noDataParagraph = new Paragraph("No Data for " + addingBundle.getName());
+            document.add(noDataParagraph);
+        } else {
+            // Create a new Table for each call
+            Table table = new Table(new float[]{10, 10, 10, 15, 15, 15, 15}); // Adjust column widths as necessary
+            table.setWidth(100); // Set width to 100% of available space
 
-        // Add header row only when there is data
-        String[] headers = {"Bill No", "Bill Type", "Fee", "Reference Bills"};
-        for (String header : headers) {
-            table.addCell(new Cell().add(new Paragraph(header)));
+            // Add title row with the report name and total
+            table.addCell(new Cell(1, 6).add(new Paragraph(addingBundle.getName())));
+            table.addCell(new Cell().add(new Paragraph(String.format("%.2f", addingBundle.getTotal())))); // Formatting total as a string
+
+            // Add header row only when there is data
+            String[] headers = {"Bill No", "Bill Class", "Bill Type", "Card Ref. Number", "Bank", "Reference Bill", "Fee"};
+            for (String header : headers) {
+                table.addCell(new Cell().add(new Paragraph(header)));
+            }
+
+            // Populate data rows
+            for (ReportTemplateRow row : addingBundle.getReportTemplateRows()) {
+                table.addCell(new Cell().add(new Paragraph(
+                        row.getPayment() != null && row.getPayment().getBill() != null ? row.getPayment().getBill().getDeptId() : "N/A")));
+
+                table.addCell(new Cell().add(new Paragraph(
+                        row.getPayment() != null && row.getPayment().getBill() != null ? row.getPayment().getBill().getBillClassType().toString() : "N/A")));
+
+                table.addCell(new Cell().add(new Paragraph(
+                        row.getPayment() != null && row.getPayment().getBill() != null ? row.getPayment().getBill().getCreatedAt().toString() : "N/A")));
+
+                table.addCell(new Cell().add(new Paragraph(
+                        row.getPayment() != null ? row.getPayment().getCreditCardRefNo() : "N/A")));
+
+                table.addCell(new Cell().add(new Paragraph(
+                        row.getPayment() != null && row.getPayment().getBank() != null ? row.getPayment().getBank().getName() : "N/A")));
+
+                table.addCell(new Cell().add(new Paragraph(
+                        row.getPayment() != null && row.getPayment().getBill() != null && row.getPayment().getBill().getBackwardReferenceBill() != null ? row.getPayment().getBill().getBackwardReferenceBill().getDeptId() : "N/A")));
+
+                table.addCell(new Cell().add(new Paragraph(
+                        String.format("%.2f", row.getPayment() != null ? row.getPayment().getPaidValue() : 0.0)))); // Format as string
+            }
+
+            // Add the table to the document
+            document.add(table);
         }
-
-        // Populate data rows
-        for (ReportTemplateRow row : addingBundle.getReportTemplateRows()) {
-            table.addCell(new Cell().add(new Paragraph(
-                row.getBill() != null ? row.getBill().getDeptId() : "N/A")));
-
-            table.addCell(new Cell().add(new Paragraph(
-                row.getBill() != null ? row.getBill().getBillTypeAtomic().getLabel() : "N/A")));
-
-            table.addCell(new Cell().add(new Paragraph(
-                String.format("%.2f", row.getBill() != null ? row.getBill().getNetTotal() : 0.0)))); // Format as string
-
-            String refBills = Stream.of(
-                row.getBill().getBackwardReferenceBill(),
-                row.getBill().getForwardReferenceBill(),
-                row.getBill().getReferenceBill(),
-                row.getBill().getRefundedBill(),
-                row.getBill().getCancelledBill(),
-                row.getBill().getBilledBill())
-                .filter(Objects::nonNull)
-                .map(b -> Optional.ofNullable(b.getDeptId()).orElse("N/A"))
-                .collect(Collectors.joining(", "));
-
-            // Merge cells for Reference Bills
-            Cell refBillCell = new Cell(1, 3).add(new Paragraph(refBills));
-            table.addCell(refBillCell);
-        }
-
-        // Add the table to the document
-        document.add(table);
     }
-}
+
+    private void populateTableForProfessionalPayments(Document document, ReportTemplateRowBundle addingBundle) {
+        if (addingBundle.getReportTemplateRows() == null || addingBundle.getReportTemplateRows().isEmpty()) {
+            // If no data, add a paragraph stating this
+            Paragraph noDataParagraph = new Paragraph("No Data for " + addingBundle.getName());
+            document.add(noDataParagraph);
+        } else {
+            // Create a new Table for each call
+            Table table = new Table(new float[]{10, 20, 10}); // Set column widths. Adjust as necessary
+            table.setWidth(100); // Set width to 100% of available space
+
+            // Add title row with the report name and total
+            table.addCell(new Cell(1, 2)
+                    .add(new Paragraph(addingBundle.getName())));
+            table.addCell(new Cell()
+                    .add(new Paragraph(String.format("%.2f", addingBundle.getTotal())))); // Formatting total as a string
+
+            // Add header row only when there is data
+            String[] headers = {"Bill No", "Professional", "Fee"};
+            for (String header : headers) {
+                table.addCell(new Cell().add(new Paragraph(header)));
+            }
+
+            // Populate data rows
+            for (ReportTemplateRow row : addingBundle.getReportTemplateRows()) {
+                table.addCell(new Cell().add(new Paragraph(
+                        row.getBill() != null ? row.getBill().getDeptId() : "N/A")));
+
+                table.addCell(new Cell().add(new Paragraph(
+                        row.getBill() != null && row.getBill().getStaff() != null && row.getBill().getStaff().getPerson() != null ? row.getBill().getStaff().getPerson().getNameWithTitle() : "N/A")));
+
+                table.addCell(new Cell().add(new Paragraph(
+                        String.format("%.2f", row.getBill() != null ? row.getBill().getNetTotal() : 0.0)))); // Format as string
+            }
+
+            // Add the table to the document
+            document.add(table);
+        }
+    }
+
+    private void populateTableForPettyCashPayments(Document document, ReportTemplateRowBundle addingBundle) {
+        if (addingBundle.getReportTemplateRows() == null || addingBundle.getReportTemplateRows().isEmpty()) {
+            // If no data, add a paragraph stating this
+            Paragraph noDataParagraph = new Paragraph("No Data for " + addingBundle.getName());
+            document.add(noDataParagraph);
+        } else {
+            // Create a new Table for each call
+            Table table = new Table(new float[]{10, 15, 15, 40}); // Adjust column widths
+            table.setWidth(100); // Set width to 100% of available space
+
+            // Add title row with the report name and total
+            table.addCell(new Cell(1, 3).add(new Paragraph(addingBundle.getName())));
+            table.addCell(new Cell().add(new Paragraph(String.format("%.2f", addingBundle.getTotal())))); // Formatting total as a string
+
+            // Add header row only when there is data
+            String[] headers = {"Bill No", "Bill Type", "Fee", "Reference Bills"};
+            for (String header : headers) {
+                table.addCell(new Cell().add(new Paragraph(header)));
+            }
+
+            // Populate data rows
+            for (ReportTemplateRow row : addingBundle.getReportTemplateRows()) {
+                table.addCell(new Cell().add(new Paragraph(
+                        row.getBill() != null ? row.getBill().getDeptId() : "N/A")));
+
+                table.addCell(new Cell().add(new Paragraph(
+                        row.getBill() != null ? row.getBill().getBillTypeAtomic().getLabel() : "N/A")));
+
+                table.addCell(new Cell().add(new Paragraph(
+                        String.format("%.2f", row.getBill() != null ? row.getBill().getNetTotal() : 0.0)))); // Format as string
+
+                String refBills = Stream.of(
+                        row.getBill().getBackwardReferenceBill(),
+                        row.getBill().getForwardReferenceBill(),
+                        row.getBill().getReferenceBill(),
+                        row.getBill().getRefundedBill(),
+                        row.getBill().getCancelledBill(),
+                        row.getBill().getBilledBill())
+                        .filter(Objects::nonNull)
+                        .map(b -> Optional.ofNullable(b.getDeptId()).orElse("N/A"))
+                        .collect(Collectors.joining(", "));
+
+                // Merge cells for Reference Bills
+                Cell refBillCell = new Cell(1, 3).add(new Paragraph(refBills));
+                table.addCell(refBillCell);
+            }
+
+            // Add the table to the document
+            document.add(table);
+        }
+    }
 
     private void populateTableForPatientDeposits(Document document, ReportTemplateRowBundle addingBundle) {
         if (addingBundle.getReportTemplateRows() == null || addingBundle.getReportTemplateRows().isEmpty()) {
@@ -206,7 +286,7 @@ public class PdfController {
         } else {
             // Create a new Table for each call
             Table table = new Table(new float[]{10, 20, 20, 20}); // Set column widths. Adjust as necessary
-            table.setWidth(UnitValue.createPercentValue(100)); // Set width to 100% of available space
+            table.setWidth(100); // Set width to 100% of available space
 
             // Add title row with the report name and total
             table.addCell(new com.itextpdf.layout.element.Cell(1, 3)
@@ -240,7 +320,6 @@ public class PdfController {
         }
     }
 
-    
     private void populateTableForCompanyCollection(Document document, ReportTemplateRowBundle addingBundle) {
         if (addingBundle.getReportTemplateRows() == null || addingBundle.getReportTemplateRows().isEmpty()) {
             // If no data, add a paragraph stating this
@@ -249,7 +328,7 @@ public class PdfController {
         } else {
             // Create a new Table for each call
             Table table = new Table(new float[]{10, 20, 20, 20}); // Set column widths. Adjust as necessary
-            table.setWidth(UnitValue.createPercentValue(100)); // Set width to 100% of available space
+            table.setWidth(100); // Set width to 100% of available space
 
             // Add title row with the report name and total
             table.addCell(new com.itextpdf.layout.element.Cell(1, 3)
@@ -291,7 +370,7 @@ public class PdfController {
         } else {
             // Create a new Table for each call
             Table table = new Table(new float[]{10, 20, 20, 30, 20}); // Set column widths. Adjust as necessary
-            table.setWidth(UnitValue.createPercentValue(100)); // Set width to 100% of available space
+            table.setWidth(100); // Set width to 100% of available space
 
             // Add title row with the report name and total
             table.addCell(new com.itextpdf.layout.element.Cell(1, 4)
@@ -346,7 +425,7 @@ public class PdfController {
         if (addingBundle.getReportTemplateRows() != null && !addingBundle.getReportTemplateRows().isEmpty()) {
             // Create a new Table for each call
             Table table = new Table(new float[]{10, 40, 10, 10, 10, 10, 10}); // Example column widths
-            table.setWidth(UnitValue.createPercentValue(100)); // Set width to 100% of available space
+            table.setWidth(100); // Set width to 100% of available space
 
             // Add title row with bundle name and total
             table.addCell(new com.itextpdf.layout.element.Cell(1, 6)
@@ -395,7 +474,7 @@ public class PdfController {
         } else {
             // Create a new Table for each call
             Table table = new Table(new float[]{10, 40}); // Set column widths. Adjust as necessary
-            table.setWidth(UnitValue.createPercentValue(100)); // Set width to 100% of available space
+            table.setWidth(100); // Set width to 100% of available space
 
             // Add title row with the report name and total
             table.addCell(new com.itextpdf.layout.element.Cell(1, 1)
@@ -420,6 +499,31 @@ public class PdfController {
             // Add the table to the document
             document.add(table);
         }
+    }
+
+    private void populateTitleBundleForPdf(Document document, ReportTemplateRowBundle addingBundle) {
+        // Create a solid line separator
+        SolidLine lineDrawer = new SolidLine(1f); // 1f is the line width
+        LineSeparator lineSeparator = new LineSeparator(lineDrawer);
+        lineSeparator.setStrokeColor(ColorConstants.BLACK); // Set color of the line
+
+        // Visual separator before the title
+        document.add(lineSeparator);
+
+        // Create a title paragraph for the report name
+        Paragraph titleParagraph = new Paragraph(addingBundle.getName())
+                .setTextAlignment(TextAlignment.LEFT)
+                .setBold();
+        document.add(titleParagraph);
+
+        // Paragraph for the total
+        Paragraph totalParagraph = new Paragraph("Total: " + String.format("%.2f", addingBundle.getTotal()))
+                .setTextAlignment(TextAlignment.RIGHT)
+                .setItalic();
+        document.add(totalParagraph);
+
+        // Visual separator after the total
+        document.add(lineSeparator);
     }
 
 }

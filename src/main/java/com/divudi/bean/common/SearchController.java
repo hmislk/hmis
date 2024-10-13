@@ -96,19 +96,12 @@ import javax.inject.Named;
 import javax.persistence.TemporalType;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
-import org.apache.poi.ss.usermodel.Cell;
+
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.primefaces.model.file.UploadedFile;
 
-import com.itextpdf.kernel.pdf.PdfDocument;
-import com.itextpdf.kernel.pdf.PdfWriter;
-import com.itextpdf.layout.Document;
-import com.itextpdf.layout.element.Table;
-
-import com.itextpdf.layout.property.UnitValue;
-import com.itextpdf.layout.element.Paragraph;
 
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;

@@ -101,11 +101,14 @@
         </dependency>
 
         <!-- iText -->
+        <!-- https://mvnrepository.com/artifact/com.itextpdf/itextpdf -->
         <dependency>
             <groupId>com.itextpdf</groupId>
-            <artifactId>itext7-core</artifactId>
-            <version>7.1.9</version>
+            <artifactId>itextpdf</artifactId>
+            <version>5.5.13.4</version>
         </dependency>
+
+       
 
         
         <!-- Apache POI Core Dependency -->
@@ -310,6 +313,12 @@
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-common</artifactId>
             <version>22.0.1</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>layout</artifactId>
+            <version>8.0.5</version>
             <type>jar</type>
         </dependency>
         <dependency>
