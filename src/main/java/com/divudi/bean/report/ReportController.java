@@ -1704,10 +1704,16 @@ public class ReportController implements Serializable {
         }
 
         if (toDepartment != null) {
-            jpql += " and bill.toDepartment = :dep ";
-            m.put("dep", toDepartment);
+            jpql += " and bill.toDepartment = :tdep ";
+            m.put("tdep", toDepartment);
         }
 
+        if (department != null) {
+            jpql += " and bill.department = :dep ";
+            m.put("dep", department);
+        }
+        
+        
         if (phn != null && !phn.isEmpty()) {
             jpql += " and bill.patient.phn = :phn ";
             m.put("phn", phn);
