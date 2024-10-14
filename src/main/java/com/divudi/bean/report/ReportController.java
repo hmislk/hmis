@@ -2719,6 +2719,7 @@ public class ReportController implements Serializable {
                 totalCCFee += report.getCcFee();
                 totalProFee += report.getProFee();
                 totalNetTotal += report.getTotal();
+
             }
         }
     }
