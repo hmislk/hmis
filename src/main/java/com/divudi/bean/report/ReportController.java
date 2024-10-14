@@ -1669,6 +1669,7 @@ public class ReportController implements Serializable {
         billtypes.add(BillTypeAtomic.CC_PAYMENT_MADE_BILL);
         billtypes.add(BillTypeAtomic.CC_PAYMENT_MADE_CANCELLATION_BILL);
         billtypes.add(BillTypeAtomic.CC_PAYMENT_RECEIVED_BILL);
+        billtypes.add(BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL);
 
         String jpql = "select new com.divudi.data.ReportTemplateRow(bill) "
                 + " from Bill bill "

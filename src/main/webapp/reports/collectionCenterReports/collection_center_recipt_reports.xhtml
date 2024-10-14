@@ -201,13 +201,13 @@
                                 <h:outputText value="#{row.bill.billTypeAtomic}" ></h:outputText>
                             </p:column>
                             <p:column headerText="Bill No" >
-                                <h:outputText value="#{row.bill.referenceNumber}" ></h:outputText>
+                                <h:outputText value="#{row.bill.deptId}" ></h:outputText>
                                 <p:commandLink 
                                     ajax="false"
                                     action="#{billSearch.navigateToViewBillByAtomicBillType()}">
                                     <h:outputText title="View Bill" styleClass="fa fa-eye m-1" />
                                     <f:setPropertyActionListener 
-                                        value="#{bi}" 
+                                        value="#{row.bill}" 
                                         target="#{billSearch.bill}" >
                                     </f:setPropertyActionListener>
                                 </p:commandLink>
@@ -216,7 +216,7 @@
                                     action="#{billSearch.navigateToManageBillByAtomicBillType()}">
                                     <h:outputText title="Manage Bill" styleClass="fa fa-pencil m-1" />
                                     <f:setPropertyActionListener 
-                                        value="#{bi}" 
+                                        value="#{row.bill}" 
                                         target="#{billSearch.bill}" >
                                     </f:setPropertyActionListener>
                                 </p:commandLink>
