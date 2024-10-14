@@ -9,13 +9,13 @@
     <!-- INTERFACE -->
     <cc:interface>
         <cc:attribute name="billItems" />
-        <cc:attribute name="editable" type="java.lang.Boolean" default="false"/>
+        <cc:attribute name="editable" type="java.lang.Boolean" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
 
-
+        <h1>Bill Items</h1>
         <p:dataTable value="#{cc.attrs.billItems}" var="bi" rowKey="#{bi.id}" >
             <p:column >
                 <h:outputText value="#{bi.id}" class="w-100 m-1"></h:outputText>

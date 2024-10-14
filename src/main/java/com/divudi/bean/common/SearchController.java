@@ -14274,7 +14274,7 @@ public class SearchController implements Serializable {
         return ap;
     }
 
-    public void updateBillItenValues() {
+    public void updateBillItemValues() {
         bundle = new ReportTemplateRowBundle();
         String jpql = "select bi "
                 + " from BillItem bi "
@@ -14324,7 +14324,6 @@ public class SearchController implements Serializable {
             bi.setHospitalFee(hospitalFeeCalculatedByBillFess);
             billItemFacade.edit(bi);
         }
-
     }
 
     public void billItemsToBundleForOpdUnderCategory(ReportTemplateRowBundle rtrb, List<BillItem> billItems) {
