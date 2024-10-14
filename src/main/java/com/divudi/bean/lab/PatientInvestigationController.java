@@ -3128,15 +3128,6 @@ public class PatientInvestigationController implements Serializable {
                 grossFeeTotal += billItem.getGrossValue();
                 discountTotal += billItem.getDiscount();
                 netTotal += billItem.getNetValue();
-
-                if (billItem.getBill().isCancelled() || billItem.getBill().isRefunded()) {
-                    hospitalFeeTotal -= Math.abs(billItem.getHospitalFee());
-                    ccFeeTotal -= Math.abs(billItem.getCollectingCentreFee());
-                    staffFeeTotal -= Math.abs(billItem.getStaffFee());
-                    grossFeeTotal -= Math.abs(billItem.getGrossValue());
-                    discountTotal -= Math.abs(billItem.getDiscount());
-                    netTotal -= Math.abs(billItem.getNetValue());
-                }
             }
         }
     }
