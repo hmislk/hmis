@@ -20,7 +20,7 @@
                 <thead>
                     <tr class="text-light bg-dark">
                         <th class="text-light bg-dark">
-                            No Collecting Centre Collection
+                            No Data For #{cc.attrs.bundle.name}
                         </th>
                     </tr>
                 </thead>
@@ -32,7 +32,7 @@
                 <thead>
                     <tr class="text-light bg-dark">
                         <th class="text-light bg-dark" colspan="4">
-                            Collecting Centre Collection
+                            #{cc.attrs.bundle.name}
                         </th>
                         <th class="text-end text-light bg-dark">
                             <h:outputText value="#{cc.attrs.bundle.total}">
@@ -41,7 +41,7 @@
                         </th>
                     </tr>
                     <tr>
-                        <th>Bil No</th>
+                        <th>Bill No</th>
                         <th>Collecting Centre Name</th>
                         <th>Collecting Centre Code</th>
                         <th>Reference Bill</th>
@@ -86,71 +86,5 @@
                 </tbody>
             </table>
         </h:panelGroup>
-
-
-
-
-
-        <!--<p:dataTable value="#{cc.attrs.bundle.reportTemplateRows}" var="row" ></p:dataTable>-->
-        <!--<p:dataTable value="#{cc.attrs.bundle.reportTemplateRows}" var="row" >-->
-
-<!--        <p:dataTable value="#{cc.attrs.bundle.reportTemplateRows}" var="row" >
-            <f:facet name="header" >
-                <h:outputText value="#{cc.attrs.bundle.name}" ></h:outputText>
-            </f:facet>
-            <f:facet name="footer" >
-                <h:outputText value="Collecting Centre Collection Total" ></h:outputText>
-                <p:spacer width="50" ></p:spacer>
-                <h:outputText value="#{cc.attrs.bundle.total}" ></h:outputText>
-            </f:facet>
-            <p:column>
-                <f:facet name="header">
-                    <h:outputText value="Bil No" />
-                </f:facet>
-                <h:commandLink action="#{billSearch.navigateToViewBillByAtomicBillType()}" value="#{row.bill.deptId}">
-                    <f:setPropertyActionListener value="#{row.bill}" target="#{agentAndCcPaymentController.current}" />
-                    <f:setPropertyActionListener value="true" target="#{agentAndCcPaymentController.printPreview}" />
-                </h:commandLink>
-            </p:column>
-
-            <p:column>
-                <f:facet name="header">
-                    <h:outputText value="Collecting Centre Name" />
-                </f:facet>
-                <h:outputText value="#{row.bill.fromInstitution.name}"  />
-            </p:column>
-
-            <p:column>
-                <f:facet name="header">
-                    <h:outputText value="Collecting Centre Code" />
-                </f:facet>
-                <h:outputText value="#{row.bill.fromInstitution.code}"  />
-            </p:column>
-
-            <p:column>
-                <f:facet name="header">
-                    <h:outputText value="Referane Bill" />
-                </f:facet>
-                <h:outputText value="#{row.bill.backwardReferenceBill.deptId}"  />
-                <h:outputText value="#{row.bill.forwardReferenceBill.deptId}"  />
-                <h:outputText value="#{row.bill.referenceBill.deptId}"  />
-                <h:outputText value="#{row.bill.refundedBill.deptId}"  />
-                <h:outputText value="#{row.bill.cancelledBill.deptId}"  />
-                <h:outputText value="#{row.bill.billedBill.deptId}"  />
-            </p:column>
-
-            <p:column>
-                <f:facet name="header">
-                    <h:outputText value="Fee" />
-                </f:facet>
-                <h:outputText value="#{row.bill.netTotal}"  >
-                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                </h:outputText>
-            </p:column>
-
-        </p:dataTable>-->
-
-
-
     </cc:implementation>
 </html>

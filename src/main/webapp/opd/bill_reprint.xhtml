@@ -76,6 +76,15 @@
                                             class="ui-button-warning m-1 w-25" 
                                             icon="fa fa-money-bill-wave">                          
                                         </p:commandButton>
+                                        <p:commandButton
+                                            ajax="false" 
+                                            value="To Return"
+                                            disabled="#{billSearch.bill.cancelled or billSearch.bill.refunded}" 
+                                            action="#{billReturnController.navigateToReturnOpdBill()}" 
+                                            class="ui-button-warning m-1 w-25" 
+                                            icon="fa fa-money-bill-wave"> 
+                                            <f:setPropertyActionListener value="#{billSearch.bill}" target="#{billReturnController.originalBillToReturn}" ></f:setPropertyActionListener>
+                                        </p:commandButton>
                                     </h:panelGroup>
 
                                     <h:panelGroup rendered="#{!billSearch.opdBillRefundAllowedSameDay}">

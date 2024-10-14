@@ -100,6 +100,16 @@
             <version>2.2</version>
         </dependency>
 
+        <!-- iText -->
+        <!-- https://mvnrepository.com/artifact/com.itextpdf/itextpdf -->
+        <dependency>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>itextpdf</artifactId>
+            <version>5.5.13.4</version>
+        </dependency>
+
+       
+
         
         <!-- Apache POI Core Dependency -->
         <dependency>
@@ -107,7 +117,7 @@
             <artifactId>poi</artifactId>
             <version>5.2.5</version>
         </dependency>
-
+        
         <!-- Apache POI OOXML Dependency -->
         <dependency>
             <groupId>org.apache.poi</groupId>
@@ -303,6 +313,12 @@
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-common</artifactId>
             <version>22.0.1</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>layout</artifactId>
+            <version>8.0.5</version>
             <type>jar</type>
         </dependency>
         <dependency>

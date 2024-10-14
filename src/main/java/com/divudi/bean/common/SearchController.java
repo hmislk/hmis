@@ -1,8 +1,3 @@
-/*
- * Open Hospital Management Information System
- * Dr M H B Ariyaratne
- * buddhika.ari@gmail.com
- */
 package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.CashBookEntryController;
@@ -63,7 +58,6 @@ import static com.divudi.data.BillClassType.RefundBill;
 import com.divudi.data.BillFinanceType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.PaymentCategory;
-import com.divudi.data.PaymentContext;
 import com.divudi.data.PaymentType;
 import com.divudi.data.ReportTemplateRow;
 import com.divudi.data.ReportTemplateRowBundle;
@@ -82,11 +76,9 @@ import com.divudi.facade.TokenFacade;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import com.divudi.light.common.BillSummaryRow;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -104,13 +96,19 @@ import javax.inject.Named;
 import javax.persistence.TemporalType;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
-import org.apache.poi.ss.usermodel.Cell;
+
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.primefaces.model.file.UploadedFile;
+
+
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
-import org.primefaces.model.file.UploadedFile;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 /**
  *
@@ -191,15 +189,18 @@ public class SearchController implements Serializable {
     ReportTemplateController reportTemplateController;
     @Inject
     CashBookEntryController cashBookEntryController;
-
+    @Inject
+    ExcelController excelController;
+    @Inject
+    PdfController pdfController;
     /**
      * Properties
      */
     private Category category;
     private ReportTemplateType reportTemplateType;
     private SearchKeyword searchKeyword;
-    Date fromDate;
-    Date toDate;
+    private Date fromDate;
+    private Date toDate;
     private Long startBillId;
     private Long endBillId;
     private WebUser webUser;
@@ -213,7 +214,7 @@ public class SearchController implements Serializable {
     private List<BillLight> billLights;
     private List<BillSummaryRow> billSummaryRows;
     private List<Bill> selectedBills;
-    List<Bill> aceptPaymentBills;
+    private List<Bill> aceptPaymentBills;
     private List<BillFee> billFees;
     private List<BillFee> billFeesDone;
     private List<BillItem> billItems;
@@ -222,6 +223,8 @@ public class SearchController implements Serializable {
     private List<PatientInvestigation> patientInvestigationsSigle;
     private BillTypeAtomic billTypeAtomic;
     private BillClassType billClassType;
+
+    private StreamedContent downloadingExcel;
 
     BillSummaryRow billSummaryRow;
     Bill cancellingIssueBill;
@@ -1918,6 +1921,14 @@ public class SearchController implements Serializable {
 
     public void setBillClassType(BillClassType billClassType) {
         this.billClassType = billClassType;
+    }
+
+    public StreamedContent getDownloadingExcel() {
+        return downloadingExcel;
+    }
+
+    public void setDownloadingExcel(StreamedContent downloadingExcel) {
+        this.downloadingExcel = downloadingExcel;
     }
 
     public class billsWithbill {
@@ -12405,7 +12416,25 @@ public class SearchController implements Serializable {
     }
 
     public void generateDailyReturn() {
+
         bundle = new ReportTemplateRowBundle();
+        bundle.setName("Daily Return");
+        bundle.setBundleType("dailyReturn");
+
+        String institutionName = institution != null ? institution.getName() : "All Institutions";
+        String siteName = site != null ? site.getName() : "All Sites";
+        String departmentName = department != null ? department.getName() : "All Departments";
+
+        String dateTimeFormat = sessionController.getApplicationPreference().getLongDateTimeFormat();
+
+        String formattedFromDate = fromDate != null ? new SimpleDateFormat(dateTimeFormat).format(fromDate) : "Not availbale";
+        String formattedToDate = toDate != null ? new SimpleDateFormat(dateTimeFormat).format(toDate) : "Not availbale";
+
+        String description = String.format("Report for %s to %s covering %s, %s, %s",
+                formattedFromDate, formattedToDate,
+                institutionName, siteName, departmentName);
+
+        bundle.setDescription(description);
 
         double collectionForTheDay = 0.0;
         double netCashCollection = 0.0;
@@ -13889,7 +13918,7 @@ public class SearchController implements Serializable {
         billToBundleForPatientDeposits(depositCollection, bis);
         depositCollection.setName("Patient Deposit Payments");
         depositCollection.setBundleType("patientDepositPayments");
-        
+
         return depositCollection;
     }
 
@@ -15590,6 +15619,26 @@ public class SearchController implements Serializable {
         } catch (IOException e) {
             e.printStackTrace(); // Handle exceptions properly
         }
+    }
+
+    public StreamedContent getBundleAsPdf() {
+        StreamedContent pdfSc = null;
+        try {
+            pdfSc = pdfController.createPdfForBundle(bundle);
+        } catch (IOException e) {
+            // Handle IOException
+        }
+        return pdfSc;
+    }
+
+    
+    public StreamedContent getBundleAsExcel() {
+        try {
+            downloadingExcel = excelController.createExcelForBundle(bundle);
+        } catch (IOException e) {
+            // Handle IOException
+        }
+        return downloadingExcel;
     }
 
     public void directPurchaseOrderSearch() {
