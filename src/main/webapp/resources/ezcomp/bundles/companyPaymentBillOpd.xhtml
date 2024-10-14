@@ -2,7 +2,6 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:cc="http://xmlns.jcp.org/jsf/composite"
-      xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
@@ -21,7 +20,7 @@
                 <thead>
                     <tr class="text-light bg-dark">
                         <th class="text-light bg-dark">
-                            No Credit Company Collection for OPD Services
+                            <h:outputText value="No Data for #{cc.attrs.bundle.name}" ></h:outputText>
                         </th>
                     </tr>
                 </thead>
@@ -32,8 +31,8 @@
             <table class="table w-100">
                 <thead>
                     <tr class="text-light bg-dark">
-                        <th class="text-light bg-dark" colspan="6">
-                            Credit Company Collection for OPD Services
+                        <th class="text-light bg-dark" colspan="3">
+                            <h:outputText value="#{cc.attrs.bundle.name}" ></h:outputText>
                         </th>
                         <th class="text-end text-light bg-dark">
                             <h:outputText value="#{cc.attrs.bundle.total}">
@@ -42,47 +41,26 @@
                         </th>
                     </tr>
                     <tr>
-                        <th>Bil No</th>
-                        <th>Bill Type</th>
-                        <th>Card Ref. Number</th>
-                        <th>Card Ref. Details</th>
-                        <th>Bank Code</th>
-                        <th class="text-end">Fee</th>
+                        <th>Bill No</th>
+                        <th>Company</th>
+                        <th>Payment Method</th>
+                        <th class="text-end">Value</th>
                     </tr>
                 </thead>
                 <tbody>
                     <ui:repeat value="#{cc.attrs.bundle.reportTemplateRows}" var="row">
-                        <tr class="#{row.payment.bill ne null ? 'table-primary' : 'table-light'}">
+                        <tr class="#{row.bill ne null ? 'table-primary' : 'table-light'}">
                             <td>
-                                <h:outputText value="#{row.payment.bill.deptId}" />
+                                <h:outputText value="#{row.bill.deptId}" />
                             </td>
                             <td>
-                                <h:outputText value="#{row.payment.bill.billTypeAtomic.label}" />
+                                <h:outputText value="#{row.bill.fromInstitution.name}" />
                             </td>
                             <td>
-                                <ui:repeat value="#{row.payment.bill.payments}" var="ps">
-                                    <h:panelGroup rendered="#{ps.paymentMethod eq 'Card' }">
-                                        <h:outputText value="#{ps.creditCardRefNo}" />
-                                    </h:panelGroup>
-                                </ui:repeat>
-                            </td>
-                            <td>
-                                <!-- Example for adding more card details -->
-                                <ui:repeat value="#{row.payment.bill.payments}" var="ps">
-                                    <h:panelGroup rendered="#{ps.paymentMethod eq 'Card' }">
-                                        <h:outputText value="#{ps.additionalDetails}" />
-                                    </h:panelGroup>
-                                </ui:repeat>
-                            </td>
-                            <td>
-                                <ui:repeat value="#{row.payment.bill.payments}" var="ps">
-                                    <h:panelGroup rendered="#{ps.paymentMethod eq 'Card' }">
-                                        <h:outputText value="#{ps.bank.code}" />
-                                    </h:panelGroup>
-                                </ui:repeat>
+                                <h:outputText value="#{row.bill.paymentMethod}" />
                             </td>
                             <td class="text-end">
-                                <h:outputText value="#{row.payment.paidValue}">
+                                <h:outputText value="#{row.bill.netTotal}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </td>
@@ -92,87 +70,6 @@
             </table>
         </h:panelGroup>
 
-
-
-<!--
-        <p:dataTable value="#{cc.attrs.bundle.reportTemplateRows}" var="row" >
-            <f:facet name="header" >
-                <h:outputText value="#{cc.attrs.bundle.name}" ></h:outputText>
-            </f:facet>
-            <p:column>
-                <f:facet name="header">
-                    <h:outputText value="Bil No" />
-                </f:facet>
-                <h:outputText value="#{row.payment.bill.deptId}"  />
-            </p:column>
-            <p:column>
-                <f:facet name="header">
-                    <h:outputText value="Bill Type" />
-                </f:facet>
-                <h:outputText value="#{row.payment.bill.billTypeAtomic.label}"  />
-            </p:column>
-            <p:column>
-                <f:facet name="header">
-                    <h:outputText value="Card Ref.Number" />
-                </f:facet>                
-                <ui:repeat value="#{row.payment.bill.payments}" var="ps">
-                    <h:panelGroup rendered="#{ps.paymentMethod eq 'Card' }" >
-                        <h:outputText 
-                            value="#{ps.creditCardRefNo}"/>
-                    </h:panelGroup>
-                </ui:repeat>
-            </p:column>
-            <p:column>
-                <f:facet name="header">
-                    <h:outputText value="Card Ref.Number" />
-                </f:facet>                
-                <ui:repeat value="#{row.payment.bill.payments}" var="ps">
-                    <h:panelGroup rendered="#{ps.paymentMethod eq 'Card' }" >
-                        <h:outputText 
-                            value="#{ps}"/>
-                    </h:panelGroup>
-                </ui:repeat>
-            </p:column>
-            <p:column>
-                <f:facet name="header">
-                    <h:outputText value="Bank Code" />
-                </f:facet>                
-                <ui:repeat value="#{row.payment.bill.payments}" var="ps">
-                    <h:panelGroup rendered="#{ps.paymentMethod eq 'Card' }" >
-                        <h:outputText 
-                            value="#{ps.bank.code}"/>
-                    </h:panelGroup>
-                </ui:repeat>
-            </p:column>
-            <p:column>
-                <f:facet name="header">
-                    <h:outputText value="Fee" />
-                </f:facet>
-                <h:outputText value="#{row.payment.paidValue}"  >
-                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                </h:outputText>
-            </p:column>
-            <p:columnGroup type="footer">  
-                <p:row>    
-                    <p:column style=" text-align: left">
-                        <f:facet name="footer">
-                            <h:outputLabel value="Total"/>
-
-                        </f:facet>
-                    </p:column>
-                    <p:column colspan="4" style=" text-align: left;font">  
-                        <f:facet name="footer">
-                            <h:outputLabel value="00.00">
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputLabel>
-                        </f:facet>
-                    </p:column>
-
-                </p:row>  
-            </p:columnGroup>  
-
-        </p:dataTable>
--->
 
 
     </cc:implementation>

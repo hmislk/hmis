@@ -18,7 +18,8 @@
                     <p:panel >
                         <f:facet name="header">
                             <div class="d-flex justify-content-between">
-                                <p:outputLabel value="View Refund OPD Bill" class="mt-2"></p:outputLabel>
+                                <p:outputLabel value="Edit Refund OPD Bill" class="mt-2"></p:outputLabel>
+                                <p:commandButton value="Update" ajax="false" action="#{billSearch.saveViewingBillData}" ></p:commandButton>
                             </div> 
                         </f:facet>
                         <div class="row">
@@ -134,56 +135,17 @@
                                                 <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
                                                 <h:outputLabel value="Bill Details" class="mx-4"></h:outputLabel>
                                             </f:facet>
-                                            <view:out bill="#{billSearch.viewingBill}"/>
+                                            <view:bill_edit editable="true" bill="#{billSearch.viewingBill}"/>
                                         </p:panel>
                                     </p:tab>
                                     <p:tab title="Bill Items" >
-
-                                        <p:dataTable value="#{billSearch.viewingBillItems}" var="bi" rowKey="#{bi.id}" >
-                                            <p:column >
-                                                <h:outputText value="#{bi.id}" ></h:outputText>
-                                            </p:column>
-                                            <p:column >
-                                                <h:outputText value="#{bi.item.name}" ></h:outputText>
-                                            </p:column>
-                                            <p:column >
-                                                <h:outputText value="#{bi.qty}" ></h:outputText>
-                                            </p:column>
-                                            <p:column >
-                                                <h:outputText value="#{bi.hospitalFee}" ></h:outputText>
-                                            </p:column>
-                                            <p:column >
-                                                <h:outputText value="#{bi.staffFee}" ></h:outputText>
-                                            </p:column>
-                                            <p:column >
-                                                <h:outputText value="#{bi.collectingCentreFee}" ></h:outputText>
-                                            </p:column>
-                                            <p:column >
-                                                <h:outputText value="#{bi.otherFee}" ></h:outputText>
-                                            </p:column>
-                                            <p:column >
-                                                <h:outputText value="#{bi.grossValue}" ></h:outputText>
-                                            </p:column>
-                                            <p:column >
-                                                <h:outputText value="#{bi.discount}" ></h:outputText>
-                                            </p:column>
-                                            <p:column >
-                                                <h:outputText value="#{bi.netValue}" ></h:outputText>
-                                            </p:column>
-                                        </p:dataTable>
+                                        <view:bill_item_list_edit editable="false" billItems="#{billSearch.viewingBillItems}"/>
                                     </p:tab>
                                     <p:tab title="Bill Fees" >
                                         <p:dataTable rowIndexVar="rowIndex"
                                                      value="#{billSearch.viewingBill.billFees}" 
                                                      var="bip">
-                                            <p:ajax event="rowEdit" listener="#{billSearch.onEdit}" />
-                                            <p:ajax event="rowEditCancel" listener="#{billSearch.onEdit}" />
-
-                                            <!-- Ordered and Combined Columns -->
-                                            <p:column>
-                                                <f:facet name="header">No</f:facet>
-                                                <h:outputLabel value="#{rowIndex + 1}"/>
-                                            </p:column>
+                                             
                                             <p:column>
                                                 <f:facet name="header">Fee ID</f:facet>
                                                 <h:outputText value="#{bip.id}"/>

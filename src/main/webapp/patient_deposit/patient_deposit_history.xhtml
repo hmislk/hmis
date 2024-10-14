@@ -212,6 +212,9 @@
                         
                         <p:badge value="#{ptDH.bill.cancelled ? 'Cancelled' : ''}" severity="danger" rendered="#{ptDH.bill.cancelled}" />
                         <p:badge value="#{ptDH.bill.refunded ? 'Refunded' : ''}" severity="warning" rendered="#{ptDH.bill.refunded}" />
+                      
+                        <p:badge value="Cancelled" severity="danger" rendered="#{ptDH.bill.billTypeAtomic.billCategory eq 'CANCELLATION' and !ptDH.bill.cancelled}" />
+                        <p:badge value="Refunded" severity="warning" rendered="#{ptDH.bill.billTypeAtomic.billCategory eq 'REFUND' and !ptDH.bill.refunded}" />
 
     <!--                    <h:outputText value="#{agentHx.paidAmountToAgency}">
                             <f:convertNumber pattern="#,##0.00" />

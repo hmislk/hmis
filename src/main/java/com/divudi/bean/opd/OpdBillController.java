@@ -1521,6 +1521,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         }
         return result.toString().trim();
     }
+    
+    public void savePatient(Patient p){
+        setPatient(p);
+        savePatient();
+    }
 
     private void savePatient() {
         if (getPatient().getId() == null) {

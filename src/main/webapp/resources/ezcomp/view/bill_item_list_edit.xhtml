@@ -1,0 +1,66 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="billItems" />
+        <cc:attribute name="editable" type="java.lang.Boolean" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+
+        <h1>Bill Items</h1>
+        <p:dataTable value="#{cc.attrs.billItems}" var="bi" rowKey="#{bi.id}" >
+            <p:column >
+                <h:outputText value="#{bi.id}" class="w-100 m-1"></h:outputText>
+            </p:column>
+            <p:column >
+                <h:outputText value="#{bi.item.name}" ></h:outputText>
+            </p:column>
+            <p:column headerText="Quantity" class="text-end">
+                <p:inputText value="#{bi.qty}" rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end" />
+                <p:outputLabel value="#{bi.qty}" rendered="#{!cc.attrs.editable}" class="text-end" />
+            </p:column>
+            <p:column headerText="Hospital Fee" class="text-end">
+                <p:inputText value="#{bi.hospitalFee}" rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end" />
+                <h:outputText value="#{bi.hospitalFee}" rendered="#{!cc.attrs.editable}" class="text-end" />
+            </p:column>
+            <p:column headerText="Staff Fee" class="text-end">
+                <p:inputText value="#{bi.staffFee}" rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end" />
+                <h:outputText value="#{bi.staffFee}" rendered="#{!cc.attrs.editable}" class="text-end" />
+            </p:column>
+            <p:column headerText="Collecting Centre Fee" class="text-end">
+                <p:inputText value="#{bi.collectingCentreFee}" rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end" />
+                <h:outputText value="#{bi.collectingCentreFee}" rendered="#{!cc.attrs.editable}" class="text-end" />
+            </p:column>
+            <p:column headerText="Other Fee" class="text-end">
+                <p:inputText value="#{bi.otherFee}" rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end" />
+                <h:outputText value="#{bi.otherFee}" rendered="#{!cc.attrs.editable}" class="text-end" />
+            </p:column>
+            <p:column headerText="Gross Value" class="text-end">
+                <p:inputText value="#{bi.grossValue}" rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end" />
+                <h:outputText value="#{bi.grossValue}" rendered="#{!cc.attrs.editable}" class="text-end" />
+            </p:column>
+            <p:column headerText="Discount" class="text-end">
+                <p:inputText value="#{bi.discount}" rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end" />
+                <h:outputText value="#{bi.discount}" rendered="#{!cc.attrs.editable}" class="text-end" />
+            </p:column>
+            <p:column headerText="Net Value" class="text-end">
+                <p:inputText value="#{bi.netValue}" rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end" />
+                <h:outputText value="#{bi.netValue}" rendered="#{!cc.attrs.editable}" class="text-end" />
+            </p:column>
+            <p:column headerText="Retired" class="text-end">
+                <p:selectBooleanCheckbox value="#{bi.retired}" rendered="#{cc.attrs.editable}" class="text-end" />
+                <p:outputLabel value="#{bi.retired ? 'Yes' : 'No'}" rendered="#{!cc.attrs.editable}" class="text-end" />
+            </p:column>
+
+        </p:dataTable>
+
+    </cc:implementation>
+</html>

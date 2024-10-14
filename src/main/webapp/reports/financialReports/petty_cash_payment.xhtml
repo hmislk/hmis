@@ -15,25 +15,38 @@
                             <h:outputLabel value="Petty Cash Report" />
                         </f:facet>
 
-                        <h:panelGrid columns="5" class="w-100">
+                        <h:panelGrid columns="8" class="w-100">
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf133;" styleClass="fa mr-2" />
                                 <p:outputLabel value="From Date"  class="mx-3">
                                 </p:outputLabel>
                             </h:panelGroup>
-                              <p:datePicker  showTime="true" value="#{reportController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                            <p:datePicker  
+                                showTime="true" 
+                                class="w-100"
+                                inputStyleClass="form-control"
+                                value="#{reportController.fromDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
 
-
-                            <p:spacer width="20"></p:spacer>
-
-
+                            <p:spacer width="30"></p:spacer>
+                            
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf133;" styleClass="fa mr-2" />
                                 <p:outputLabel value="To Date" class="mx-3" >
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:datePicker showTime="true" value="#{reportController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                            <p:datePicker 
+                                showTime="true" 
+                                class="w-100"
+                                inputStyleClass="form-control"
+                                value="#{reportController.toDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                            
+                            <p:spacer width="30"></p:spacer>
+                            <p:spacer ></p:spacer>
+                            <p:spacer></p:spacer>
+
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Paid To Department" class="mx-3"/>
@@ -48,7 +61,7 @@
                                 itemValue="#{dpt}">
                             </p:autoComplete>
 
-                            <p:spacer width="20"></p:spacer>
+                            <p:spacer width="30"></p:spacer>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf0c0;" styleClass="fa mr-2" />
@@ -63,37 +76,58 @@
                                 itemLabel="#{ix.person.name}"
                                 itemValue="#{ix}">
                             </p:autoComplete>
+                            
+                            <p:spacer width="30"></p:spacer>
+                            <p:spacer ></p:spacer>
+                            <p:spacer ></p:spacer>
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
-                                <h:outputLabel value="Branch Name" class="mx-3"/>
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
+                                <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
                             </h:panelGroup>
-                           <p:selectOneMenu filter="true" id="cmdInstitution"
-                                             filterMatchMode="contains"
-                                             style=" max-width: 100%; overflow-x: auto; "
-                                             class="w-100"
-                                             value="#{reportController.institution}">
-                                <f:selectItem itemLabel="All" />
-                                <f:selectItems value="#{institutionController.companies}"
-                                               var="i"
-                                               itemLabel="#{i.name}"
-                                               itemValue="#{i}" />
+                            <p:selectOneMenu
+                                id="cmbIns"
+                                styleClass="w-100 form-control" 
+                                value="#{reportController.institution}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Institutions" />
+                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                <p:ajax process="cmbIns" update="cmbDept" />
                             </p:selectOneMenu>
 
-                            <p:spacer width="20"></p:spacer>
+                            <p:spacer width="30"></p:spacer>
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf64f;" styleClass="fa mr-2" /> 
-                                <h:outputLabel value="Site Name" class="mx-3"/>
+                                <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
+                                <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
                             </h:panelGroup>
-                             <p:selectOneMenu
+                            <p:selectOneMenu
                                 id="siteMenu"
                                 styleClass="w-100 form-control"  
                                 value="#{reportController.site}" 
-                                filter="true"
-                                filterMatchMode="contains">
+                                filter="true">
                                 <f:selectItem itemLabel="All Sites" />
                                 <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                <p:ajax process="siteMenu" update="cmbDept" event="blur"/>
+                            </p:selectOneMenu>
+
+                            <p:spacer width="30"></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="cmbDept"
+                                styleClass="w-100 form-control"  
+                                value="#{reportController.department}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Departments" />
+                                <f:selectItems 
+                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}" 
+                                    var="d" 
+                                    itemLabel="#{d.name}" 
+                                    itemValue="#{d}" />
                             </p:selectOneMenu>
 
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -112,15 +146,35 @@
                         </h:panelGrid>
 
                         <h:panelGrid columns="6" class="my-2">
-                            <p:commandButton ajax="false" value="Process" icon="fas fa-cogs" class="ui-button-warning mx-1" action="#{reportController.processPettyCashPayment}" >
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Process" 
+                                icon="fas fa-cogs" 
+                                class="ui-button-warning mx-1" 
+                                action="#{reportController.processPettyCashPayment}" >
                             </p:commandButton>
-                            <p:commandButton ajax="false" value="Print All" icon="fas fa-print" class="ui-button-info mx-1"  >
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Print All" 
+                                icon="fas fa-print" 
+                                class="ui-button-info mx-1"  >
                                 <p:printer target="dtaPr"/>
                             </p:commandButton>
-                            <p:commandButton ajax="false" value="Download" icon="fas fa-file-excel" class="ui-button-success mx-1" >
-                                <p:dataExporter fileName="Petty Cash Payment - #{webUserController.institution} (#{reportController.fromDate} - #{reportController.fromDate})" type="xlsx" target="dtaPr" />
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Download" 
+                                icon="fas fa-file-excel" 
+                                class="ui-button-success mx-1" >
+                                <p:dataExporter 
+                                    fileName="Petty Cash Payment - #{webUserController.institution} (#{reportController.fromDate} - #{reportController.fromDate})" 
+                                    type="xlsx" 
+                                    target="dtaPr" />
                             </p:commandButton>
-                            <p:commandButton class="ui-button-danger mx-1" icon= "fas fa-file-pdf" ajax="false" value="PDF">
+                            <p:commandButton 
+                                class="ui-button-danger mx-1" 
+                                icon= "fas fa-file-pdf" 
+                                ajax="false" 
+                                value="PDF">
                             </p:commandButton>
 
                         </h:panelGrid>
@@ -174,7 +228,9 @@
                                 <h:outputText value="#{pc.comments}" ></h:outputText>
                             </p:column>
                             <p:column headerText="Status" >
-                                <p:badge value="#{pc.approveUser != null ? 'Approved': 'Not Approved'}" severity="#{pc.approveUser != null ? 'success': 'danger'}" />
+                                <p:badge 
+                                    value="#{pc.approveUser != null ? 'Approved': 'Not Approved'}" 
+                                         severity="#{pc.approveUser != null ? 'success': 'danger'}" />
 <!--                                <h:outputText value="#{pc.approveUser != null ? 'Approved': 'Not Approved'}" ></h:outputText>-->
                             </p:column>
                             <p:column headerText="Amount" >
