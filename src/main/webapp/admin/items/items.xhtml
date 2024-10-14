@@ -119,10 +119,11 @@
                                                     value="#{itemController.current.category}"
                                                     inputStyleClass="w-100"
                                                     class="w-100 mx-1"
+                                                    maxResults="20"
                                                     id="cat"
                                                     >                                    
-                                                    <p:column>#{pta.name}</p:column>
-                                                    <p:column>#{pta.parentCategory}</p:column>                                        
+                                                    <p:column style="padding: 6px; width: 250px;" headerText="Name">#{pta.name}</p:column>
+                                                    <p:column style="padding: 6px; width: 8em;" headerText="parent Category">#{pta.parentCategory}</p:column>                                        
                                                 </p:autoComplete>
                                                 <h:outputText value="Institution" ></h:outputText>
                                                 <p:selectOneMenu class="mx-1" id="cmbIns" value="#{itemController.current.institution}" filter="true" filterMatchMode="contains" style="width: 100%">
