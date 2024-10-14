@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
@@ -54,6 +55,9 @@ public class PettyCashBillController implements Serializable {
     BillController billController;
     @Inject
     WebUserController webUserController;
+    @Inject
+    DrawerController drawerController;
+    
     private Bill current;
     private boolean printPreview = false;
     @EJB
@@ -278,6 +282,16 @@ public class PettyCashBillController implements Serializable {
     public String navigateToPettyCashReturnBill(){
         return "";
     }
+    
+    public void approveBill(Bill b){
+        if(b == null){
+            JsfUtil.addErrorMessage("No Bill");
+        }
+        b.setApproveAt(new Date());
+        b.setApproveUser(sessionController.getLoggedUser());
+        billFacade.edit(b);
+        JsfUtil.addSuccessMessage("Approved");
+    }
 
     public void settleBill() {
         Date startTime = new Date();
@@ -307,6 +321,12 @@ public class PettyCashBillController implements Serializable {
                     return;
                 }
                 break;
+            case "tabDepartment":
+                if (getCurrent().getToDepartment().getId().equals(null)) {
+                    JsfUtil.addErrorMessage("Department?");
+                    return;
+                }
+                break;
             default:
                 JsfUtil.addErrorMessage(getTabId());
                 return;
@@ -324,7 +344,8 @@ public class PettyCashBillController implements Serializable {
 
         saveBill();
         saveBillItem();
-        createPaymentForPettyCashBill(getCurrent(),getCurrent().getPaymentMethod());
+        List<Payment> payments = createPaymentForPettyCashBill(getCurrent(),getCurrent().getPaymentMethod());
+        drawerController.updateDrawerForOuts(payments);
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(getCurrent(), getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
         JsfUtil.addSuccessMessage("Bill Saved");
@@ -365,11 +386,14 @@ public class PettyCashBillController implements Serializable {
         return p;
     }
     
-    public void createPaymentForPettyCashBill(Bill b, PaymentMethod pm) {
+    public List<Payment> createPaymentForPettyCashBill(Bill b, PaymentMethod pm) {
+        List<Payment> payments = new ArrayList<>();
         Payment p = new Payment();
         p.setBill(b);
         p.setPaidValue(0 - Math.abs(b.getNetTotal()));
         setPaymentMethodData(p, pm);
+        payments.add(p);
+        return payments;
         
     }
 

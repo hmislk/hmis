@@ -225,6 +225,8 @@ public class Bill implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     private Staff staff;
     @ManyToOne(fetch = FetchType.LAZY)
+    private WebUser webUser;
+    @ManyToOne(fetch = FetchType.LAZY)
     private Staff fromStaff;
     @ManyToOne(fetch = FetchType.LAZY)
     private Staff toStaff;
@@ -249,7 +251,7 @@ public class Bill implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date checkeAt;
     //Retairing properties
-    boolean retired;
+    private boolean retired;
     @ManyToOne(fetch = FetchType.LAZY)
     private WebUser retirer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
@@ -317,8 +319,12 @@ public class Bill implements Serializable {
     private Date smsedAt;
     @OneToMany(mappedBy = "bill")
     private List<Sms> sentSmses;
-    
+
     private boolean completed;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private WebUser completedBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date completedAt;
 
     //Print Information
     private boolean printed;
@@ -389,6 +395,11 @@ public class Bill implements Serializable {
         if (status == null) {
             status = PatientInvestigationStatus.ORDERED;
         }
+        completed=false;
+        retired=false;
+        reactivated=false;
+        refunded=false;
+        cancelled=false;
     }
 
     private void generateBillPrintFromBillTemplate() {
@@ -833,6 +844,7 @@ public class Bill implements Serializable {
         catId = bill.getCatId();
         creditCompany = bill.getCreditCompany();
         staff = bill.getStaff();
+        webUser = bill.getWebUser();
         toStaff = bill.getToStaff();
         fromStaff = bill.getFromStaff();
         toDepartment = bill.getToDepartment();
@@ -2370,6 +2382,30 @@ public class Bill implements Serializable {
         this.completed = completed;
     }
 
+    public WebUser getWebUser() {
+        return webUser;
+    }
 
+    public void setWebUser(WebUser webUser) {
+        this.webUser = webUser;
+    }
+
+    public WebUser getCompletedBy() {
+        return completedBy;
+    }
+
+    public void setCompletedBy(WebUser completedBy) {
+        this.completedBy = completedBy;
+    }
+
+    public Date getCompletedAt() {
+        return completedAt;
+    }
+
+    public void setCompletedAt(Date completedAt) {
+        this.completedAt = completedAt;
+    }
+
+    
     
 }

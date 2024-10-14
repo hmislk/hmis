@@ -24,12 +24,11 @@
                 
                 <div class="fiveinchbill " style="page-break-after: always" >
                     
-                    <div >
-                        <h1>#{cc.attrs.bill.department.name}</h1>
-                    </div>
+                    <div class="d-flex justify-content-center" style="font-size: 20px; font-weight: 700"><h:outputLabel value="#{cc.attrs.bill.department.name}"/></div> 
                     
                     
                     <div style="font-weight: bold;text-align: left;font-size: 10pt" class="row mt-2 d-flex align-items-center">
+                        
                         <div class="col-12">
                             <div class="d-flex justify-content-center" style="font-size: 20px; font-weight: 700"> 
                                 <h:outputLabel value="PETTY PAYMENT"/><h:outputLabel value=" - REFUND" rendered="#{cc.attrs.bill.refunded}" style="margin-left: 10px;" /> 
@@ -59,13 +58,12 @@
                                 <td style="width: 15px;"></td>
                                 <td>
                                     <h:outputLabel 
-                                        value="#{cc.attrs.bill.cancelledBill.deptId} **Cancelled"  
+                                        value="#{cc.attrs.bill.cancelledBill.deptId}"  
                                         rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}"/> 
                                     <h:outputLabel 
                                         value="#{cc.attrs.bill.deptId}" 
                                         rendered="#{cc.attrs.bill.cancelledBill.deptId eq null}"/>  
-                                    <h:outputLabel 
-                                        value="  **Duplicate" 
+                                    <h:outputLabel                                         
                                         rendered="#{cc.attrs.bill.cancelledBill.deptId eq null and cc.attrs.dup eq true }" />
 
                                 </td>

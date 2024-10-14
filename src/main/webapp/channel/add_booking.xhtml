@@ -144,7 +144,7 @@
                                             </p:inputText>
                                         </div>
                                     </div>
-                                    
+
                                     <div class="row mt-3">
                                         <div class="col-4 mt-2">Payment Balance</div>
                                         <div class="col-8">
@@ -301,7 +301,7 @@
                                         </div>
                                     </div>
                                 </h:panelGroup>
-                                
+
                                 <h:panelGroup rendered="#{bookingController.paymentMethod eq 'MultiplePaymentMethods'}">
                                     <div class="row mt-3">
                                         <div class="col-12 d-flex gap-2">
@@ -565,13 +565,20 @@
                             </p:commandButton>
                             <h:panelGroup id="gpBillPreview">
                                 <ui:repeat value="#{sessionController.departmentPreference.channellingBillCopiesList}" var="copy">
-                                    <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'PosPaper'}" >
+
+                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Bill is PosPaper',true)}">
                                         <ez:bmsChannelBill  bill="#{bookingController.printingBill}" />
                                     </h:panelGroup>
-                                    <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePaper'}" >
-                                        <ez:bms5x5ChannelBill bill="#{bookingController.printingBill}"/> 
-    <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingController.printingBill}"/>  -->
+                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Bill is FiveFivePaper',true)}">
+                                        <ez:bms5x5ChannelBill bill="#{bookingController.printingBill}"/>
                                     </h:panelGroup>
+                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Bill is FiveFIvePaperCustom2',true)}">
+                                        <ez:fivefivePapaerCustom2 bill="#{bookingController.printingBill}" paymentMethodData="#{bookingController.paymentMethodData}"/>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Bill is FiveFivePrintedPaper',true)}">
+                                        <ez:bms5x5WIthoutHeaderChannelBill bill="#{bookingController.printingBill}" paymentMethodData="#{bookingController.paymentMethodData}"/>
+                                    </h:panelGroup>
+
                                 </ui:repeat>
                             </h:panelGroup>
                         </div>

@@ -46,7 +46,7 @@
                                                      value="Search" 
                                                      icon="fa fa-search"
                                                      class="ui-button-success mt-2"
-                                                     action="#{searchController.createCollectingCentrePaymentTable}" />
+                                                     action="#{searchController.createChannelAgencyPaymentTable}" />
                                     <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
 
                                     <p:inputText autocomplete="off" placeholder="Bill No" value="#{searchController.searchKeyword.billNo}" class="my-1"/>
@@ -58,7 +58,7 @@
                             </div>
                             <div class="col-md-10">
                                 <p:dataTable id="tblBills" value="#{searchController.bills}" var="bill"  >
-                                    <p:column headerText="Bill No" >
+                                    <p:column headerText="Bill No" width="16em">
                                         <h:commandLink action="/agency_management/agency_deposit_bill_reprint?faces-redirect=true" value="#{bill.deptId}">
                                             <h:outputLabel  ></h:outputLabel>
                                             <f:setPropertyActionListener value="#{bill}" target="#{agentPaymentReceiveSearchController.bill}"/>
@@ -116,6 +116,8 @@
                                         </h:commandLink>
                                     </p:column>                          
                                     <p:column headerText="Comments" >
+                                        <h:outputLabel rendered="#{bill.refundedBill eq null and bill.cancelledBill eq null}" value="#{bill.comments}" >
+                                        </h:outputLabel>
                                         <h:outputLabel rendered="#{bill.refundedBill ne null}" value="#{bill.refundedBill.comments}" >
                                         </h:outputLabel>
                                         <h:outputLabel  rendered="#{bill.cancelledBill ne null}" value="#{bill.cancelledBill.comments}" >

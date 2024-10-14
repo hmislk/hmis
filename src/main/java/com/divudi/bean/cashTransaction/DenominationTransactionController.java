@@ -8,12 +8,17 @@ package com.divudi.bean.cashTransaction;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.PaymentMethod;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Payment;
 import com.divudi.entity.cashTransaction.DenominationTransaction;
 import com.divudi.facade.DenominationTransactionFacade;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -36,9 +41,10 @@ public class DenominationTransactionController implements Serializable {
 
     @Inject
     private SessionController sessionController;
+    @Inject
+    DenominationController denominationController;
 
     private DenominationTransaction selected;
-
 
     public DenominationTransactionController() {
     }
@@ -75,6 +81,29 @@ public class DenominationTransactionController implements Serializable {
         } else {
             denominationTransactionFacade.edit(transaction);
         }
+    }
+    
+    public List<DenominationTransaction> createDefaultDenominationTransaction() {
+        List<DenominationTransaction> dts = new ArrayList<>();
+        List<com.divudi.entity.cashTransaction.Denomination> denominations = denominationController.getDenominations();
+        for (com.divudi.entity.cashTransaction.Denomination d : denominations) {
+            DenominationTransaction dt = new DenominationTransaction();
+            dt.setDenomination(d);
+            dt.setPaymentMethod(PaymentMethod.Cash);
+            dts.add(dt);
+        }
+        return dts;
+    }
+
+    List<DenominationTransaction> fetchDenominationTransactionFromBill(Bill b) {
+        String jpql = "select dt "
+                + " from DenominationTransaction dt "
+                + " where dt.retired=:ret "
+                + " and dt.bill=:b";
+        Map m = new HashMap();
+        m.put("b", b);
+        m.put("ret", false);
+        return denominationTransactionFacade.findByJpql(jpql, m);
     }
 
     @FacesConverter(forClass = DenominationTransaction.class)

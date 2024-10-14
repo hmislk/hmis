@@ -89,13 +89,23 @@ public class BillFee implements Serializable {
     double feeMargin;
     double feeAdjusted;
 
+    //This records the payment made for the payment due staff or institution
     double paidValue = 0.0;
+    //This records the value paid out of the total from the customer
     double settleValue = 0.0;
+
+    // Indicates if the bill is fully settled by the client
+    private Boolean fullySettled;
+
+    // Indicates if the payment has been completed to the professional or institution
+    private Boolean completedPayment;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private BillItem referenceBillItem;
     int orderNo;
 
+    private boolean returned;
+    
     @Transient
     private double transSerial;
     @Transient
@@ -103,6 +113,8 @@ public class BillFee implements Serializable {
     @ManyToOne
     private PatientRoom referencePatientRoom;
 
+    
+    
     public PriceMatrix getPriceMatrix() {
         return priceMatrix;
     }
@@ -182,6 +194,19 @@ public class BillFee implements Serializable {
         feeMargin = 0 - billFee.getFeeMargin();
         feeAdjusted = 0 - billFee.getFeeAdjusted();
         paidValue = 0 - billFee.getPaidValue();
+    }
+
+    public void invertValue() {
+        feeValue = 0 - feeValue;
+        if (feeGrossValue != null) {
+            feeGrossValue = 0 - feeGrossValue;
+        }
+        feeDiscount = 0 - feeDiscount;
+        feeVat = 0 - feeVat;
+        feeVatPlusValue = 0 - feeVatPlusValue;
+        feeMargin = 0 - feeMargin;
+        feeAdjusted = 0 - feeAdjusted;
+        paidValue = 0 - paidValue;
     }
 
     public BillFee() {
@@ -672,6 +697,39 @@ public class BillFee implements Serializable {
     public double getAbsoluteFeeValue() {
         absoluteFeeValue = Math.abs(feeValue);
         return absoluteFeeValue;
+    }
+
+    public Boolean getFullySettled() {
+        if (fullySettled == null) {
+            fullySettled = (feeValue - settleValue) < 1;
+        }
+        return fullySettled;
+    }
+
+    public void setFullySettled(Boolean fullySettled) {
+        this.fullySettled = fullySettled;
+    }
+
+    public Boolean getCompletedPayment() {
+        if (completedPayment == null) {
+            double absolutePaidValue = Math.abs(paidValue);
+            double absoluteFeeValue = Math.abs(feeValue);
+            double difference = Math.abs(absolutePaidValue - absoluteFeeValue);
+            completedPayment = difference < 1;
+        }
+        return completedPayment;
+    }
+
+    public void setCompletedPayment(Boolean completedPayment) {
+        this.completedPayment = completedPayment;
+    }
+
+    public boolean isReturned() {
+        return returned;
+    }
+
+    public void setReturned(boolean returned) {
+        this.returned = returned;
     }
 
 }

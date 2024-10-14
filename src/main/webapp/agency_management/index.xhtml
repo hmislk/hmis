@@ -14,7 +14,7 @@
                     <div class="row">
                         <div class="col-md-3">
                             <h:form>
-                                <p:accordionPanel activeIndex="#{collectingCentreController.ccManagementIndex}">
+                                <p:accordionPanel activeIndex="#{agencyController.tabIndex}">
                                     <p:ajax process="@this"></p:ajax>
 
                                     <!-- Manage Section -->
@@ -30,7 +30,7 @@
                                                              action="/agency_management/agency_bill_search_own?faces-redirect=true"
                                                              actionListener="#{searchController.makeListNull}"
                                                              class="w-100 m-1"/>
-                                            <p:commandButton icon="fa fa-book" ajax="false" value="Issue Agency Books"
+<!--                                            <p:commandButton icon="fa fa-book" ajax="false" value="Issue Agency Books"
                                                              action="/agency_management/agency_referece_book?faces-redirect=true"
                                                              class="w-100 m-1"/>
                                             <p:commandButton icon="fa fa-list-alt" ajax="false" value="Search Agency Book Issues"
@@ -40,7 +40,7 @@
                                                              action="/agency_management/agency_update_credit_limit?faces-redirect=true"
                                                              actionListener="#{institutionController.makeNull()}"
                                                              rendered="#{webUserController.hasPrivilege('ChangeCreditLimitInCC')}"
-                                                             class="w-100 m-1"/>
+                                                             class="w-100 m-1"/>-->
 
                                             <p:commandButton icon="fa fa-check-circle" ajax="false" value="Pay Agencies"
                                                              action="/agency_management/pay_agency?faces-redirect=true"
@@ -76,26 +76,14 @@
                                         </h:panelGrid>
                                     </p:tab>
 
-                                    <!-- Collecting Centre Book Issuing Section -->
-                                    <p:tab title="Agency Reports">
-                                        <h:panelGrid columns="1" class="w-100" >
-                                            <p:commandButton icon="fa fa-statement" ajax="false" value="Agency Statement"
-                                                             action="/agency_management/agency_statement?faces-redirect=true"
-                                                             class="w-100 m-1"/>
-                                            <p:commandButton icon="fa fa-archive" ajax="false" value="Agency Book Issuance Report"
-                                                             action="/agency_management/report_agency_referece_book?faces-redirect=true"
-                                                             class="w-100 m-1"/>
-                                            <p:commandButton icon="fa fa-history" ajax="false" value="Agency History"
-                                                             action="/reportLab/agency_report_agent_history?faces-redirect=true"
-                                                             class="w-100 m-1"/>
+                                    <p:tab title="Agent">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100" ajax="false" value="Agent Payment" action="/agent_bill?faces-redirect=true" actionListener="#{agentAndCcPaymentController.prepareNewBill()}" />
+                                            <p:commandButton class="w-100" ajax="false" value="Agent Payment Bill Search" action="/agent_bill_search_own?faces-redirect=true" actionListener="#{searchController.makeListNull}" />
+                                            <p:commandButton  class="w-100" ajax="false" value="Pay Agent"  action="/channel/channel_payment_agent_bill?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannellingPaymentPayDoctor')}" />
+                                            <p:commandButton  class="w-100" ajax="false" value="Payment Done Search"  action="/channel/channel_payment_agency_bill_search?faces-redirect=true" actionListener="#{billSearch.recreateModel}" rendered="#{webUserController.hasPrivilege('ChannellingPaymentDoneSearch')}"/>
 
-                                            <p:commandButton icon="fa fa-dollar-sign" ajax="false" value="Agency Deposits"
-                                                             action="/reportLab/report_agency_payment_bill?faces-redirect=true"
-                                                             class="w-100 m-1"/>
-                                            <p:commandButton icon="fa fa-balance-scale" ajax="false" value="Agency Current Balance"
-                                                             action="/reportLab/report_agency_balance?faces-redirect=true"
-                                                             class="w-100 m-1"/>
-                                        </h:panelGrid>
+                                        </div>
                                     </p:tab>
 
                                 </p:accordionPanel>

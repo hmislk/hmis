@@ -14,12 +14,53 @@
             <h:panelGrid columns="1">
                 <p:panel header="Channel Sesion Report(Doctor Card)" >
                     <p:panelGrid columns="2">
-                        <p:outputLabel value="From"></p:outputLabel>
-                        <p:calendar id="fromDate" value="#{channelReportController.fromDate}" locale="de"
-                                    pattern="dd.MM.yyyy HH:mm"/>
-                        <p:outputLabel value="To" ></p:outputLabel>
-                        <p:calendar id="toDate" value="#{channelReportController.toDate}" locale="de"
-                                    pattern="dd.MM.yyyy HH:mm"/>
+                        <h:panelGrid columns="2" class="w-100">
+                            <p:outputLabel value="From"></p:outputLabel>
+                            <p:calendar class="mx-2" id="fromDate" value="#{channelReportController.fromDate}" locale="de"
+                                        pattern="dd.MM.yyyy HH:mm"/>
+                            <p:outputLabel value="To" ></p:outputLabel>
+                            <p:calendar class="mx-2" id="toDate" value="#{channelReportController.toDate}" locale="de"
+                                        pattern="dd.MM.yyyy HH:mm"/>
+                            <h:outputLabel  value="Speciality" ></h:outputLabel>
+                            <p:autoComplete 
+                                onfocus="this.select()" 
+                                inputStyleClass="w-100"
+                                class="mx-2 w-100" 
+                                value="#{channelReportController.speciality}" 
+                                id="acSpeciality" 
+                                placeholder="Speciality"
+                                completeMethod="#{channelScheduleController.completeDOctorSpeciality}"
+                                var="speciality" 
+                                itemLabel="#{speciality.name}" 
+                                itemValue="#{speciality}"
+                                >
+                                <p:ajax event="blur" process="@this" update="scStaff" />
+                                <p:ajax process="@this" update="scStaff" />
+                            </p:autoComplete>
+
+
+
+                            <h:outputLabel  value="Doctor" ></h:outputLabel>
+                            <p:selectOneMenu 
+                                filter="true"
+                                filterMatchMode="contains"
+                                class="mx-2 w-100"  
+                                value="#{channelReportController.staff}" 
+                                id="scStaff" 
+                                > 
+                                <f:selectItem itemLabel="Please Select"/>
+                                <f:selectItems 
+                                    value="#{channelScheduleController.specialityStaff}" 
+                                    var="mys" 
+                                    itemLabel="#{mys.person.nameWithTitle}" 
+                                    itemValue="#{mys}">
+                                </f:selectItems>
+
+                            </p:selectOneMenu>
+
+
+
+                        </h:panelGrid>
                     </p:panelGrid>
 
                     <h:panelGrid columns="3" class="my-2">
@@ -39,7 +80,7 @@
                                 <p:outputLabel value="Channel Session Report(Doctor Card)" />
                                 <br></br>
                             </f:facet>
-                            
+
                             <p:column style="padding: 6px">
                                 <f:facet name="header" >
                                     <p:outputLabel value="Consultant" />
@@ -87,8 +128,8 @@
                             <p:column style="padding: 6px">
                                 <f:facet name="header" >
                                     <p:outputLabel value="Room No" />
-                             0   </f:facet>
-                                
+                                    0   </f:facet>
+
                             </p:column>
                         </p:dataTable>
                     </p:panel>

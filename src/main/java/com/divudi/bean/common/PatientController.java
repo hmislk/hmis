@@ -55,6 +55,7 @@ import com.divudi.facade.PersonFacade;
 import com.divudi.facade.WebUserFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
+import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Department;
 import com.divudi.java.CommonFunctions;
 import java.io.ByteArrayInputStream;
@@ -122,6 +123,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     private PersonFacade personFacade;
     @EJB
     BillNumberGenerator billNumberBean;
+    @EJB
+    private BillNumberGenerator billNumberGenerator;
 
     CommonFunctions commonFunctions;
     @EJB
@@ -182,6 +185,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     PatientController patientController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    PatientDepositController patientDepositController;
 
     /**
      *
@@ -241,6 +246,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     private String quickSearchPhoneNumber;
 
     Bill bill;
+    Bill cancelBill;
+    
     private BillItem billItem;
     private List<BillItem> billItems;
     private PaymentMethodData paymentMethodData;
@@ -939,6 +946,11 @@ public class PatientController implements Serializable, ControllerWithPatient {
         billItems = new ArrayList<>();
         printPreview = false;
     }
+    
+     public void preparePatientDepositCancel() {
+      cancelBill = new CancelledBill();
+      current = getBill().getPatient();
+    }
 
     public void clearDataForPatientRefund() {
         current = null;
@@ -1068,6 +1080,91 @@ public class PatientController implements Serializable, ControllerWithPatient {
 //        patientInvestigations = getPatientInvestigationFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         // patientInvestigations=
     }
+    
+    public void setBillNetTotal(){
+        if (bill.getPaymentMethod() == PaymentMethod.Card) {
+            bill.setNetTotal(getPaymentMethodData().getCreditCard().getTotalValue());
+        } else if (bill.getPaymentMethod() == PaymentMethod.Cheque) {
+            bill.setNetTotal(getPaymentMethodData().getCheque().getTotalValue());
+        } else if (bill.getPaymentMethod() == PaymentMethod.ewallet) {
+            bill.setNetTotal(getPaymentMethodData().getEwallet().getTotalValue());
+        } else if (bill.getPaymentMethod() == PaymentMethod.Slip) {
+            bill.setNetTotal(getPaymentMethodData().getSlip().getTotalValue());
+        } else if (bill.getPaymentMethod() == PaymentMethod.Credit) {
+           bill.setNetTotal(getPaymentMethodData().getCredit().getTotalValue());   
+        }
+    }
+    
+    public void listnerForPaymentMethodChange(){
+       if(patientDepositController.getCurrent() != null){
+            if (bill.getPaymentMethod() == PaymentMethod.Card) {
+            getPaymentMethodData().getCreditCard().setTotalValue(patientDepositController.getCurrent().getBalance());
+        } else if (bill.getPaymentMethod() == PaymentMethod.Cheque) {
+            getPaymentMethodData().getCheque().setTotalValue(patientDepositController.getCurrent().getBalance());
+        } else if (bill.getPaymentMethod() == PaymentMethod.ewallet) {
+            getPaymentMethodData().getEwallet().setTotalValue(patientDepositController.getCurrent().getBalance());
+        } else if (bill.getPaymentMethod() == PaymentMethod.Slip) {
+            getPaymentMethodData().getSlip().setTotalValue(patientDepositController.getCurrent().getBalance());
+        } else if (bill.getPaymentMethod() == PaymentMethod.Credit) {
+           getPaymentMethodData().getCredit().setTotalValue(patientDepositController.getCurrent().getBalance());
+        } else{
+            bill.setNetTotal(patientDepositController.getCurrent().getBalance());
+        }
+       }
+    }
+
+    
+    public boolean validatePaymentMethodData() {
+        boolean error = false;
+
+        if (bill.getPaymentMethod() == PaymentMethod.Card) {
+            if (getPaymentMethodData().getCreditCard().getComment().trim().equals("") && configOptionApplicationController.getBooleanValueByKey("Patient Deposit - CreditCard Comment is Mandatory", false)) {
+                JsfUtil.addErrorMessage("Please Enter a Credit Card Comment..");
+                error = true;
+            }
+            if(getPaymentMethodData().getCreditCard().getTotalValue() <= 0){
+                JsfUtil.addErrorMessage("Entered Value is Wrong..");
+                error = true;
+            }
+        } else if (bill.getPaymentMethod() == PaymentMethod.Cheque) {
+            if (getPaymentMethodData().getCheque().getComment().trim().equals("") && configOptionApplicationController.getBooleanValueByKey("Patient Deposit - Cheque Comment is Mandatory", false)) {
+                JsfUtil.addErrorMessage("Please Enter a Cheque Comment..");
+                error = true;
+            }
+            if(getPaymentMethodData().getCheque().getTotalValue() <= 0){
+                JsfUtil.addErrorMessage("Entered Value is Wrong..");
+                error = true;
+            }
+        } else if (bill.getPaymentMethod() == PaymentMethod.ewallet) {
+            if (getPaymentMethodData().getEwallet().getComment().trim().equals("") && configOptionApplicationController.getBooleanValueByKey("Patient Deposit - E-Wallet Comment is Mandatory", false)) {
+                JsfUtil.addErrorMessage("Please Enter a E-Wallet Comment..");
+                error = true;
+            }
+            if(getPaymentMethodData().getEwallet().getTotalValue() <= 0){
+                JsfUtil.addErrorMessage("Entered Value is Wrong..");
+                error = true;
+            }
+        } else if (bill.getPaymentMethod() == PaymentMethod.Slip) {
+            if (getPaymentMethodData().getSlip().getComment().trim().equals("") && configOptionApplicationController.getBooleanValueByKey("Patient Deposit - Slip Comment is Mandatory", false)) {
+                JsfUtil.addErrorMessage("Please Enter a Slip Comment..");
+                error = true;
+            }
+            if(getPaymentMethodData().getSlip().getTotalValue() <= 0){
+                JsfUtil.addErrorMessage("Entered Value is Wrong..");
+                error = true;
+            }
+        } else if (bill.getPaymentMethod() == PaymentMethod.Credit) {
+            if (getPaymentMethodData().getCredit().getComment().trim().equals("") && configOptionApplicationController.getBooleanValueByKey("Patient Deposit - Credit Comment is Mandatory", false)) {
+                JsfUtil.addErrorMessage("Please Enter a Credit Comment..");
+                error = true;
+            }
+            if(getPaymentMethodData().getCredit().getTotalValue() <= 0){
+                JsfUtil.addErrorMessage("Entered Value is Wrong..");
+                error = true;
+            }
+        }
+        return error;
+    }
 
     public void settlePatientDepositReceive() {
         if (getBill().getPaymentMethod() == null) {
@@ -1109,7 +1206,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
     
     public int settlePatientDepositReceiveCancelNew() {
-        if (getBill().getPaymentMethod() == null) {
+        if (getCancelBill().getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Please select a Payment Method");
             return 1;
         }
@@ -1121,9 +1218,23 @@ public class PatientController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("Please enter all relavent Payment Method Details");
             return 2;
         }
-
+        
+        PaymentMethod tempPm = getCancelBill().getPaymentMethod();
+        String tempComment = getCancelBill().getComments();
+        
+        cancelBill.copy(getBill());
+        getCancelBill().setPaymentMethod(tempPm);
+        getCancelBill().setComments(tempComment);
+        getBill().setCancelled(true);
+        getBill().setCancelledBill(getCancelBill());
+        getCancelBill().setReferenceBill(cancelBill);
+        getCancelBill().setNetTotal(0-getBill().getNetTotal());
+        
         settleCancelBill(BillType.PatientPaymentCanceldBill, HistoryType.PatientDeposit, BillNumberSuffix.PDC, current);
         
+        billFacade.edit(getCancelBill());
+        billFacade.edit(getBill());
+       
         printPreview = true;
         return 0;
     }
@@ -1159,16 +1270,16 @@ public class PatientController implements Serializable, ControllerWithPatient {
     public void settleCancelBill(BillType billType, HistoryType historyType, BillNumberSuffix billNumberSuffix, Patient patient) {
 
         saveCancelBill(billType, billNumberSuffix, patient);
-        billBeanController.setPaymentMethodData(getBill(), getBill().getPaymentMethod(), getPaymentMethodData());
+        billBeanController.setPaymentMethodData(getBill(), getCancelBill().getPaymentMethod(), getPaymentMethodData());
         addToCancelBill();
         saveBillItem();
-        getBill().setBillTypeAtomic(BillTypeAtomic.PATIENT_DEPOSIT_CANCELLED);
-        billFacade.edit(getBill());
+        getCancelBill().setBillTypeAtomic(BillTypeAtomic.PATIENT_DEPOSIT_CANCELLED);
+        billFacade.edit(getCancelBill());
         //TODO: Add Patient Balance History
         if (patient.getRunningBalance() == null) {
-            patient.setRunningBalance(getBill().getNetTotal());
+            patient.setRunningBalance(getCancelBill().getNetTotal());
         } else {
-            patient.setRunningBalance(patient.getRunningBalance() + getBill().getNetTotal());
+            patient.setRunningBalance(patient.getRunningBalance() + getCancelBill().getNetTotal());
         }
         getFacade().edit(patient);
 
@@ -1277,10 +1388,12 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return 4;
         }
 
-        if (getBill().getComments().trim().equalsIgnoreCase("")) {
+        if(getBill().getPaymentMethod() == PaymentMethod.Cash){
+            if (getBill().getComments().trim().equalsIgnoreCase("")) {
             JsfUtil.addErrorMessage("Please Add Comment");
             System.out.println("erior 5");
             return 5;
+        }
         }
 
         if (paymentSchemeController.checkPaymentMethodError(getBill().getPaymentMethod(), paymentMethodData)) {
@@ -1311,7 +1424,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     private void saveBill(BillType billType, BillNumberSuffix billNumberSuffix, Patient patient, BillTypeAtomic billTypeAtomic) {
         getBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), billType, BillClassType.BilledBill, billNumberSuffix));
-        getBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(sessionController.getDepartment(), billType, BillClassType.BilledBill, billNumberSuffix));
+//        getBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(sessionController.getDepartment(), billType, BillClassType.BilledBill, billNumberSuffix));
+        getBill().setDeptId(getBillNumberGenerator().departmentBillNumberGenerator(sessionController.getDepartment(), sessionController.getDepartment(), billType, BillClassType.BilledBill));
         getBill().setBillType(billType);
 
         getBill().setPatient(patient);
@@ -1383,7 +1497,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     private void saveBill(BillType billType, BillNumberSuffix billNumberSuffix, Patient patient) {
         getBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), billType, BillClassType.BilledBill, billNumberSuffix));
-        getBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(sessionController.getDepartment(), billType, BillClassType.BilledBill, billNumberSuffix));
+//        getBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(sessionController.getDepartment(), billType, BillClassType.BilledBill, billNumberSuffix));
+        getBill().setDeptId(getBillNumberGenerator().departmentBillNumberGenerator(sessionController.getDepartment(), sessionController.getDepartment(), billType, BillClassType.BilledBill));
         getBill().setBillType(billType);
 
         getBill().setPatient(patient);
@@ -1412,32 +1527,33 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
     
     private void saveCancelBill(BillType billType, BillNumberSuffix billNumberSuffix, Patient patient) {
-        getBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), billType, BillClassType.CancelledBill, billNumberSuffix));
-        getBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(sessionController.getDepartment(), billType, BillClassType.CancelledBill, billNumberSuffix));
-        getBill().setBillType(billType);
+        getCancelBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), billType, BillClassType.CancelledBill, billNumberSuffix));
+//        getCancelBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(sessionController.getDepartment(), billType, BillClassType.CancelledBill, billNumberSuffix));
+        getCancelBill().setDeptId(getBillNumberGenerator().departmentBillNumberGenerator(sessionController.getDepartment(), sessionController.getDepartment(), billType, BillClassType.CancelledBill));
+        getCancelBill().setBillType(billType);
 
-        getBill().setPatient(patient);
+        getCancelBill().setPatient(patient);
 
-        getBill().setCreatedAt(new Date());
-        getBill().setCreater(sessionController.getLoggedUser());
-        getBill().setBillDate(new Date());
-        getBill().setBillTime(new Date());
+        getCancelBill().setCreatedAt(new Date());
+        getCancelBill().setCreater(sessionController.getLoggedUser());
+        getCancelBill().setBillDate(new Date());
+        getCancelBill().setBillTime(new Date());
 
-        getBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
-        getBill().setInstitution(getSessionController().getLoggedUser().getInstitution());
+        getCancelBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
+        getCancelBill().setInstitution(getSessionController().getLoggedUser().getInstitution());
 
-        getBill().setCreatedAt(new Date());
-        getBill().setCreater(getSessionController().getLoggedUser());
+        getCancelBill().setCreatedAt(new Date());
+        getCancelBill().setCreater(getSessionController().getLoggedUser());
 
-        getBill().setGrantTotal(0-getBill().getNetTotal());
-        getBill().setTotal(0-getBill().getNetTotal());
-        getBill().setDiscount(0.0);
-        getBill().setDiscountPercent(0);
+        getCancelBill().setGrantTotal(0-getBill().getNetTotal());
+        getCancelBill().setTotal(0-getBill().getNetTotal());
+        getCancelBill().setDiscount(0.0);
+        getCancelBill().setDiscountPercent(0);
 
-        if (getBill().getId() == null) {
-            billFacade.create(getBill());
+        if (getCancelBill().getId() == null) {
+            billFacade.create(getCancelBill());
         } else {
-            billFacade.edit(getBill());
+            billFacade.edit(getCancelBill());
         }
     }
 
@@ -1935,6 +2051,10 @@ public class PatientController implements Serializable, ControllerWithPatient {
         admissionController.fillCurrentPatientAllergies(current);
         controller.setPatientDetailsEditable(false);
         opdBillController.setPaymentMethod(null);
+        if(patientDepositController.checkDepositOfThePatient(current, sessionController.getDepartment()) != null){
+            controller.getPatient().setHasAnAccount(true);
+             controller.getPatient().setRunningBalance(patientDepositController.checkDepositOfThePatient(current, sessionController.getDepartment()).getBalance());
+        }
         if (controller.getPatient().getHasAnAccount() != null) {
             if (controller.getPatient().getHasAnAccount() && configOptionApplicationController.getBooleanValueByKey("Automatically set the PatientDeposit payment Method if a Deposit is Available", false)) {
                 opdBillController.setPaymentMethod(PaymentMethod.PatientDeposit);
@@ -4007,6 +4127,22 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     public void setSearchMrn(String searchMrn) {
         this.searchMrn = searchMrn;
+    }
+
+    public Bill getCancelBill() {
+        return cancelBill;
+    }
+
+    public void setCancelBill(Bill cancelBill) {
+        this.cancelBill = cancelBill;
+    }
+
+    public BillNumberGenerator getBillNumberGenerator() {
+        return billNumberGenerator;
+    }
+
+    public void setBillNumberGenerator(BillNumberGenerator billNumberGenerator) {
+        this.billNumberGenerator = billNumberGenerator;
     }
 
     /**

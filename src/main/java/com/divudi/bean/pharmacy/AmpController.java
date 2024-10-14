@@ -10,6 +10,7 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.CategoryController;
 import com.divudi.bean.common.CommonController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.bean.common.util.JsfUtil;
@@ -94,6 +95,8 @@ public class AmpController implements Serializable {
     CategoryController categoryController;
     @Inject
     VmpController vmpController;
+    @Inject
+    private ConfigOptionApplicationController configOptionApplicationController;
     private UploadedFile file;
 
     public UploadedFile getFile() {
@@ -207,7 +210,6 @@ public class AmpController implements Serializable {
 //            p.setSupplier(itemDistributorsController.getDistributor(p.getAmp()));
 //        }
 
-        
     }
 
     public void fillPricesForItemSupplierPrices() {
@@ -232,7 +234,6 @@ public class AmpController implements Serializable {
 //            p.setSupplier(itemDistributorsController.getDistributor(p.getAmp()));
 //        }
 
-        
     }
 
     public void fillSuppliersForItemSupplierPrices() {
@@ -244,7 +245,6 @@ public class AmpController implements Serializable {
             p.setSupplier(itemDistributorsController.getDistributor(p.getAmp()));
         }
 
-        
     }
 
     public List<Amp> getListToRemove() {
@@ -339,7 +339,6 @@ public class AmpController implements Serializable {
 
         items = getFacade().findByJpql(sql, m);
 
-        
     }
 
     public void createItemList() {
@@ -357,7 +356,6 @@ public class AmpController implements Serializable {
 
         items = getFacade().findByJpql(sql, m);
 
-        
     }
 
     public void createItemListPharmacy() {
@@ -407,7 +405,6 @@ public class AmpController implements Serializable {
         Date toDate = null;
         itemList = deleteOrNotItem(false, DepartmentType.Store);
 
-        
     }
 
     public void pharmacyNoDeleteItem() {
@@ -416,7 +413,6 @@ public class AmpController implements Serializable {
         Date toDate = null;
         itemList = deleteOrNotItem(true, DepartmentType.Store);
 
-        
     }
 
     public void storeDeleteItem() {
@@ -425,7 +421,6 @@ public class AmpController implements Serializable {
         Date toDate = null;
         itemList = deleteOrNotStoreItem(false, DepartmentType.Store);
 
-        
     }
 
     public void storeNoDeleteItem() {
@@ -434,7 +429,6 @@ public class AmpController implements Serializable {
         Date toDate = null;
         itemList = deleteOrNotStoreItem(true, DepartmentType.Store);
 
-        
     }
 
     public void onTabChange(TabChangeEvent event) {
@@ -720,6 +714,23 @@ public class AmpController implements Serializable {
             JsfUtil.addErrorMessage("No Name");
             return;
         }
+        
+        int maxCodeLeanth = Integer.parseInt(configOptionApplicationController.getShortTextValueByKey("Minimum Number of Characters to Search for Item","4"));
+        
+        System.out.println("maxCodeLeanth = " + maxCodeLeanth);
+        System.out.println("Current Code length = " + current.getCode().trim().length());
+        
+        System.out.println(current.getCode().trim().length() < maxCodeLeanth);
+        
+        if (current.getCode().trim().length() < maxCodeLeanth){
+            JsfUtil.addErrorMessage("Minimum " + maxCodeLeanth + " characters are Required for Item Code");
+            return;
+        }
+        
+        if (checkItemCode(current.getCode())) {
+            JsfUtil.addErrorMessage("This Code has Already been Used.");
+            return;
+        }
         if (current.getDepartmentType() == null) {
             current.setDepartmentType(DepartmentType.Pharmacy);
         }
@@ -749,9 +760,23 @@ public class AmpController implements Serializable {
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
             JsfUtil.addSuccessMessage("Saved Successfully");
+            recreateModel();
+            getItems();
         }
-        recreateModel();
-        // getItems();
+    }
+
+    public boolean checkItemCode(String code) {
+        Map m = new HashMap();
+        String jpql = "select c from Amp c "
+                + " where c.retired=false"
+                + " and (c.code is not null and c.code=:icode)";
+        m.put("icode", code);
+        Amp amp = getFacade().findFirstByJpql(jpql, m);
+        if (amp == null) {
+            return false;
+        } else {
+            return true;
+        }
     }
 
     public void saveSelected() {
@@ -970,6 +995,14 @@ public class AmpController implements Serializable {
 
     public void setItems(List<Amp> items) {
         this.items = items;
+    }
+
+    public ConfigOptionApplicationController getConfigOptionApplicationController() {
+        return configOptionApplicationController;
+    }
+
+    public void setConfigOptionApplicationController(ConfigOptionApplicationController configOptionApplicationController) {
+        this.configOptionApplicationController = configOptionApplicationController;
     }
 
     /**

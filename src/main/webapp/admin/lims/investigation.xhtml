@@ -383,6 +383,7 @@
                                         ajax="false" 
                                         value="Manage Valuesets" 
                                         action="#{investigationController.navigateToManageValueSetsForAdmin()}" >
+                                        <f:setPropertyActionListener value="#{investigationController.current}" target="#{investigationItemController.currentInvestigation}" ></f:setPropertyActionListener>
                                     </p:commandButton>
 
                                     <p:commandButton 
@@ -406,6 +407,7 @@
                                         ajax="false" 
                                         value="Dynamic Labels" 
                                         action="/admin/lims/dynamic_labels?faces-redirect=true" >
+                                        <f:setPropertyActionListener value="#{investigationController.current}" target="#{investigationItemDynamicLabelController.investigation}" ></f:setPropertyActionListener>
                                     </p:commandButton>
 
                                     <p:commandButton                                         

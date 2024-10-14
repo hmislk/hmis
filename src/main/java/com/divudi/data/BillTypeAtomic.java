@@ -1,20 +1,12 @@
 package com.divudi.data;
 
-import static com.divudi.data.BillType.PharmacyAddtoStock;
-import static com.divudi.data.BillType.PharmacyAdjustment;
-import static com.divudi.data.BillType.PharmacyAdjustmentDepartmentSingleStock;
 import static com.divudi.data.BillType.PharmacyGrnBill;
-import static com.divudi.data.BillType.PharmacyPre;
 import static com.divudi.data.BillType.PharmacyPurchaseBill;
 import static com.divudi.data.BillType.PharmacyWholeSale;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Enumerates types of bills for atomic billing purposes. Includes
- * categorization by service type, finance type, and payment category.
- */
 public enum BillTypeAtomic {
     INWARD_PHARMACY_REQUEST("Inward Request Medicines From Pharmacy", BillCategory.BILL, ServiceType.INWARD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.CREDIT_SPEND),
     INWARD_SERVICE_BATCH_BILL("Inward Service Batch Bill", BillCategory.BILL, ServiceType.INWARD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.CREDIT_SPEND),
@@ -24,6 +16,9 @@ public enum BillTypeAtomic {
     INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION("Opd Bill Cancellation with Batch Bill", BillCategory.CANCELLATION, ServiceType.INWARD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.CREDIT_SPEND),
     INWARD_SERVICE_BATCH_BILL_REFUND("Opd Bill Refund", BillCategory.REFUND, ServiceType.INWARD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.CREDIT_SPEND),
     INWARD_SERVICE_PROFESSIONAL_PAYMENT_BILL("OPD Professional Payment bill", BillCategory.BILL, ServiceType.INWARD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.CREDIT_SPEND),
+    INWARD_DEPOSIT("Inward Deposit", BillCategory.BILL, ServiceType.INWARD, BillFinanceType.CASH_IN, CountedServiceType.INWARD, PaymentCategory.CREDIT_SPEND),
+    INWARD_DEPOSIT_CANCELLATION("Inward Deposit Cancellation", BillCategory.CANCELLATION, ServiceType.INWARD, BillFinanceType.CASH_OUT, CountedServiceType.INWARD, PaymentCategory.CREDIT_SPEND),
+    INWARD_DEPOSIT_REFUND("Inward Deposit Refund", BillCategory.REFUND, ServiceType.INWARD, BillFinanceType.CASH_OUT, CountedServiceType.INWARD, PaymentCategory.CREDIT_SPEND),
     // STORE
     STORE_ORDER("Store Order", BillCategory.BILL, ServiceType.STORE, BillFinanceType.CASH_IN, CountedServiceType.STORE, PaymentCategory.NON_CREDIT_SPEND),
     STORE_ORDER_PRE("Store Order Pre", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.STORE, PaymentCategory.CREDIT_SPEND),
@@ -125,8 +120,9 @@ public enum BillTypeAtomic {
     CHANNEL_RESHEDULE_WITH_OUT_PAYMENT("Channel Reschedule For Non Paid Appointment", BillCategory.BILL, ServiceType.CHANNELLING, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.CHANNELLING, PaymentCategory.CREDIT_SPEND),
     @Deprecated
     CHANNEL_BOOKING_PAYMENT("Channel Booking For Online Payment - Pending Confirmation", BillCategory.BILL, ServiceType.CHANNELLING, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.CHANNELLING, PaymentCategory.NON_CREDIT_SPEND),
-    CHANNEL_BOOKING_WITH_PAYMENT_ONLINE("Channel Booking Online Payment", BillCategory.BILL, ServiceType.CHANNELLING, BillFinanceType.ONLINE_PAYMENT_IN, CountedServiceType.CHANNELLING, PaymentCategory.NON_CREDIT_SPEND),
-    CHANNEL_BOOKING_WITHOUT_PAYMENT("Channel Booking without Payment", BillCategory.BILL, ServiceType.CHANNELLING, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.CHANNELLING, PaymentCategory.CREDIT_SPEND),
+    CHANNEL_BOOKING_WITH_PAYMENT_ONLINE("Channel Booking Online Payment", BillCategory.BILL, ServiceType.CHANNELLING, BillFinanceType.ONLINE_PAYMENT_IN, CountedServiceType.CHANNELLING, PaymentCategory.NON_CREDIT_COLLECTION),
+    CHANNEL_BOOKING_WITH_PAYMENT_PENDING_ONLINE("Channel Booking Online Payment Pending", BillCategory.BILL, ServiceType.CHANNELLING, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.CHANNELLING, PaymentCategory.NO_PAYMENT),
+    CHANNEL_BOOKING_WITHOUT_PAYMENT("Channel Booking without Payment", BillCategory.BILL, ServiceType.CHANNELLING, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.CHANNELLING, PaymentCategory.NON_CREDIT_COLLECTION),
     CHANNEL_PAYMENT_FOR_BOOKING_BILL("Channel Payment for Booking", BillCategory.BILL, ServiceType.CHANNELLING, BillFinanceType.CASH_IN, CountedServiceType.CHANNELLING, PaymentCategory.NON_CREDIT_SPEND),
     CHANNEL_CANCELLATION_WITH_PAYMENT("Channel Cancellation with Payment", BillCategory.CANCELLATION, ServiceType.CHANNELLING, BillFinanceType.CASH_OUT, CountedServiceType.CHANNELLING, PaymentCategory.NON_CREDIT_SPEND),
     CHANNEL_CANCELLATION_WITH_PAYMENT_FOR_CREDIT_SETTLED_BOOKINGS("Channel Cancellation with Payment for Bills Where Credit Payment was Settled", BillCategory.CANCELLATION, ServiceType.CHANNELLING, BillFinanceType.CASH_OUT, CountedServiceType.CHANNELLING, PaymentCategory.NON_CREDIT_SPEND),
@@ -168,29 +164,32 @@ public enum BillTypeAtomic {
     CC_DEBIT_NOTE("Collecting Centre Debit Note", BillCategory.BILL, ServiceType.COLLECTING_CENTRE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.COLLECTING_CENTRE, PaymentCategory.CREDIT_SPEND),
     CC_CREDIT_NOTE_CANCELLATION("Collecting Centre Credit Note Cancellation", BillCategory.CANCELLATION, ServiceType.COLLECTING_CENTRE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.COLLECTING_CENTRE, PaymentCategory.CREDIT_SPEND),
     CC_DEBIT_NOTE_CANCELLATION("Collecting Centre Debit Note Cancellation", BillCategory.CANCELLATION, ServiceType.COLLECTING_CENTRE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.COLLECTING_CENTRE, PaymentCategory.CREDIT_SPEND),
+    @Deprecated
     CC_PAYMENT_MADE_BILL("Collecting Centre Payment Made Bill", BillCategory.BILL, ServiceType.COLLECTING_CENTRE, BillFinanceType.CASH_OUT, CountedServiceType.COLLECTING_CENTRE, PaymentCategory.NON_CREDIT_SPEND),
+    @Deprecated
     CC_PAYMENT_MADE_CANCELLATION_BILL("Collecting Centre Payment Made Cancellation Bill", BillCategory.CANCELLATION, ServiceType.COLLECTING_CENTRE, BillFinanceType.CASH_OUT, CountedServiceType.COLLECTING_CENTRE, PaymentCategory.NON_CREDIT_SPEND),
     // FLOAT TRANSACTIONS
     FUND_SHIFT_START_BILL("Shift Start Fund Bill", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.FLOAT_STARTING_BALANCE, CountedServiceType.OTHER, PaymentCategory.CREDIT_SPEND),
     FUND_SHIFT_START_BILL_CANCELLED("Shift Start Fund Bill - Cancelled", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.FLOAT_STARTING_BALANCE, CountedServiceType.OTHER, PaymentCategory.CREDIT_SPEND),
     FUND_SHIFT_END_BILL("Shift End Fund Bill", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.FLOAT_CLOSING_BALANCE, CountedServiceType.OTHER, PaymentCategory.CREDIT_SPEND),
-    FUND_SHIFT_COMPONANT_HANDOVER_CREATE("Shift Handover Componant Bill", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.FLOAT_CLOSING_BALANCE, CountedServiceType.OTHER, PaymentCategory.OTHER),
     FUND_SHIFT_HANDOVER_CREATE("Shift Handover Create Bill", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.FLOAT_DECREASE, CountedServiceType.OTHER, PaymentCategory.OTHER),
+    FUND_SHIFT_COMPONANT_HANDOVER_CREATE("Shift Handover Componant Bill", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.FLOAT_CHANGE, CountedServiceType.OTHER, PaymentCategory.OTHER),
+    FUND_SHIFT_DENOMINATION_HANDOVER_CREATE("Shift Handover Denomination Bill", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.FLOAT_CHANGE, CountedServiceType.OTHER, PaymentCategory.OTHER),
     FUND_SHIFT_HANDOVER_ACCEPT("Shift Handover Accept", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.FLOAT_INCREASE, CountedServiceType.OTHER, PaymentCategory.OTHER),
+    FUND_SHIFT_COMPONANT_HANDOVER_ACCEPT("Shift Handover Accept Componant Bill", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.FLOAT_CLOSING_BALANCE, CountedServiceType.OTHER, PaymentCategory.OTHER),
     FUND_SHIFT_END_BILL_CANCELLED("Shift End Fund Bill - Cancelled", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.FLOAT_CLOSING_BALANCE, CountedServiceType.OTHER, PaymentCategory.CREDIT_SPEND),
     FUND_TRANSFER_BILL("Fund Transfer Bill", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.FLOAT_DECREASE, CountedServiceType.OTHER, PaymentCategory.CREDIT_SPEND),
     FUND_TRANSFER_BILL_CANCELLED("Fund Transfer Bill - Cancelled", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.FLOAT_INCREASE, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
     FUND_TRANSFER_RECEIVED_BILL("Fund Transfer Received Bill", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.FLOAT_INCREASE, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
     FUND_TRANSFER_RECEIVED_BILL_CANCELLED("Fund Transfer Received Bill - Cancelled", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.FLOAT_DECREASE, CountedServiceType.OTHER, PaymentCategory.CREDIT_SPEND),
-    // ENUM EXTENSION FOR NEW BILL TYPES
-    FUND_SHIFT_SHORTAGE_BILL("Shift Shortage Bill", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.FLOAT_DECREASE, CountedServiceType.OTHER, PaymentCategory.CREDIT_SPEND),
-    FUND_SHIFT_SHORTAGE_BILL_CANCELLED("Shift Shortage Bill - Cancelled", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.FLOAT_DECREASE, CountedServiceType.OTHER, PaymentCategory.CREDIT_SPEND),
-    FUND_SHIFT_EXCESS_BILL("Shift Excess Bill", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.FLOAT_INCREASE, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
-    FUND_SHIFT_EXCESS_BILL_CANCELLED("Shift Excess Bill - Cancelled", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.FLOAT_INCREASE, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
-    TRANSFER_PAYMENT_METHOD_BILL("Transfer Payment Method Bill", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.CASH_IN, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
-    TRANSFER_PAYMENT_METHOD_BILL_CANCELLED("Transfer Payment Method Bill - Cancelled", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.CASH_IN, CountedServiceType.OTHER, PaymentCategory.CREDIT_SPEND),
-
-// PROFESSIONAL PAYMENTS
+    // Shortage Bill
+    FUND_SHIFT_SHORTAGE_BILL("Shift Shortage Bill", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.FLOAT_INCREASE, CountedServiceType.OTHER, PaymentCategory.NO_PAYMENT),
+    FUND_SHIFT_SHORTAGE_BILL_CANCELLED("Shift Shortage Bill - Cancelled", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.FLOAT_DECREASE, CountedServiceType.OTHER, PaymentCategory.NO_PAYMENT),
+    FUND_SHIFT_EXCESS_BILL("Shift Excess Bill", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.CASH_IN, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_COLLECTION),
+    FUND_SHIFT_EXCESS_BILL_CANCELLED("Shift Excess Bill - Cancelled", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.CASH_OUT, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
+    TRANSFER_PAYMENT_METHOD_BILL("Transfer Payment Method Bill", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.CASH_IN, CountedServiceType.OTHER, PaymentCategory.NO_PAYMENT),
+    TRANSFER_PAYMENT_METHOD_BILL_CANCELLED("Transfer Payment Method Bill - Cancelled", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.CASH_IN, CountedServiceType.OTHER, PaymentCategory.NO_PAYMENT),
+    // PROFESSIONAL PAYMENTS
     PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE("Inward Payment for Staff", BillCategory.PAYMENTS, ServiceType.INWARD, BillFinanceType.CASH_IN, CountedServiceType.INWARD_PROFESSIONAL_PAYMENT, PaymentCategory.NON_CREDIT_SPEND),
     PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE("Channelling Payment for Staff", BillCategory.PAYMENTS, ServiceType.CHANNELLING, BillFinanceType.CASH_OUT, CountedServiceType.CHANNELLING_PROFESSIONAL_PAYMENT, PaymentCategory.NON_CREDIT_SPEND),
     PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION("Channelling session Payment for Staff", BillCategory.PAYMENTS, ServiceType.CHANNELLING, BillFinanceType.CASH_OUT, CountedServiceType.CHANNELLING_PROFESSIONAL_PAYMENT, PaymentCategory.NON_CREDIT_SPEND),
@@ -204,12 +203,12 @@ public enum BillTypeAtomic {
     PETTY_CASH_ISSUE("Petty Cash Issue", BillCategory.PAYMENTS, ServiceType.OTHER, BillFinanceType.CASH_OUT, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
     PETTY_CASH_RETURN("Petty Cash Return", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.CASH_IN, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
     PETTY_CASH_BILL_CANCELLATION("Petty Cash Bill Cancellation", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.CASH_IN, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
-    IOU_CASH_ISSUE("Iou Cash Issue", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.CASH_OUT, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
-    IOU_CASH_RETURN("Iou Cash Return", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.CASH_IN, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
+    IOU_CASH_ISSUE("Iou Cash Issue", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.FLOAT_CHANGE, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
+    IOU_SETTLE("Iou Cash Settle", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.FLOAT_CHANGE, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_COLLECTION),
     STAFF_CREDIT_SETTLE("Staff Credit Settle", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.CASH_IN, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
-    PATIENT_DEPOSIT("Patient Deposit Settle", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.CASH_IN, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
-    PATIENT_DEPOSIT_REFUND("Patient Deposit - Refund", BillCategory.REFUND, ServiceType.OTHER, BillFinanceType.CASH_OUT, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
-    PATIENT_DEPOSIT_CANCELLED("Patient Deposit - Cancelled", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.CASH_OUT, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
+    PATIENT_DEPOSIT("Patient Deposit Settle", BillCategory.BILL, ServiceType.PATIENT_DEPOSIT, BillFinanceType.CASH_IN, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
+    PATIENT_DEPOSIT_REFUND("Patient Deposit - Refund", BillCategory.REFUND, ServiceType.PATIENT_DEPOSIT, BillFinanceType.CASH_OUT, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
+    PATIENT_DEPOSIT_CANCELLED("Patient Deposit - Cancelled", BillCategory.CANCELLATION, ServiceType.PATIENT_DEPOSIT, BillFinanceType.CASH_OUT, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
     //Agency Payments
     AGENCY_PAYMENT_RECEIVED("Agency Payment Received", BillCategory.BILL, ServiceType.AGENCY, BillFinanceType.CASH_IN, CountedServiceType.AGENCY, PaymentCategory.NON_CREDIT_SPEND),
     AGENCY_PAYMENT_CANCELLATION("Agency Payment Cancellation", BillCategory.CANCELLATION, ServiceType.AGENCY, BillFinanceType.CASH_OUT, CountedServiceType.AGENCY, PaymentCategory.NON_CREDIT_SPEND),
@@ -218,10 +217,10 @@ public enum BillTypeAtomic {
     AGENCY_DEBIT_NOTE("Agency Debit Note", BillCategory.BILL, ServiceType.AGENCY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.AGENCY, PaymentCategory.CREDIT_SPEND),
     AGENCY_DEBIT_NOTE_CANCELLATION("Agency Debit Note Cancellation", BillCategory.CANCELLATION, ServiceType.AGENCY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.AGENCY, PaymentCategory.CREDIT_SPEND),
     // OPD Payments from Credit Companies
-    OPD_CREDIT_COMPANY_PAYMENT_RECEIVED("OPD Payment Received from Credit Company", BillCategory.BILL, ServiceType.OPD, BillFinanceType.CASH_IN, CountedServiceType.AGENCY, PaymentCategory.NON_CREDIT_COLLECTION),
-    OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION("OPD Payment Cancellation from Credit Company", BillCategory.CANCELLATION, ServiceType.OPD, BillFinanceType.CASH_OUT, CountedServiceType.AGENCY, PaymentCategory.NON_CREDIT_COLLECTION),
-    OPD_CREDIT_COMPANY_CREDIT_NOTE("OPD Credit Note from Credit Company", BillCategory.BILL, ServiceType.OPD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.AGENCY, PaymentCategory.NON_CREDIT_COLLECTION),
-    OPD_CREDIT_COMPANY_DEBIT_NOTE("OPD Debit Note from Credit Company", BillCategory.BILL, ServiceType.OPD, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.AGENCY, PaymentCategory.NON_CREDIT_COLLECTION),
+    OPD_CREDIT_COMPANY_PAYMENT_RECEIVED("OPD Payment Received from Credit Company", BillCategory.BILL, ServiceType.COMPANY_CREDIT, BillFinanceType.CASH_IN, CountedServiceType.AGENCY, PaymentCategory.NON_CREDIT_COLLECTION),
+    OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION("OPD Payment Cancellation from Credit Company", BillCategory.CANCELLATION, ServiceType.COMPANY_CREDIT, BillFinanceType.CASH_OUT, CountedServiceType.AGENCY, PaymentCategory.NON_CREDIT_COLLECTION),
+    OPD_CREDIT_COMPANY_CREDIT_NOTE("OPD Credit Note from Credit Company", BillCategory.BILL, ServiceType.COMPANY_CREDIT, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.AGENCY, PaymentCategory.NON_CREDIT_COLLECTION),
+    OPD_CREDIT_COMPANY_DEBIT_NOTE("OPD Debit Note from Credit Company", BillCategory.BILL, ServiceType.COMPANY_CREDIT, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.AGENCY, PaymentCategory.NON_CREDIT_COLLECTION),
     // Pharmacy Payments from Credit Companies
     PHARMACY_CREDIT_COMPANY_PAYMENT_RECEIVED("Pharmacy Payment Received from Credit Company", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.CASH_IN, CountedServiceType.PHARMACY, PaymentCategory.NON_CREDIT_COLLECTION),
     PHARMACY_CREDIT_COMPANY_PAYMENT_CANCELLATION("Pharmacy Payment Cancellation from Credit Company", BillCategory.CANCELLATION, ServiceType.PHARMACY, BillFinanceType.CASH_OUT, CountedServiceType.PHARMACY, PaymentCategory.NON_CREDIT_COLLECTION),
@@ -241,7 +240,19 @@ public enum BillTypeAtomic {
     FUND_DEPOSIT_BILL("Deposit Fund Bill", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.BANK_OUT, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
     FUND_DEPOSIT_BILL_CANCELLED("Deposit Fund Bill - Cancelled", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.BANK_IN, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
     FUND_WITHDRAWAL_BILL("Withdrawal Fund Bill", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.BANK_IN, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
-    FUND_WITHDRAWAL_BILL_CANCELLED("Withdrawal Fund Bill - Cancelled", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.BANK_OUT, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),;
+    FUND_WITHDRAWAL_BILL_CANCELLED("Withdrawal Fund Bill - Cancelled", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.BANK_OUT, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
+    CREDIT_COMPANY_OPD_PATIENT_PAYMENT("Credit Company OPD Patient Payment", BillCategory.BILL, ServiceType.OPD, BillFinanceType.CASH_IN, CountedServiceType.OPD_IN, PaymentCategory.CREDIT_SPEND),
+    CREDIT_COMPANY_OPD_PATIENT_PAYMENT_CANCELLATION("Credit Company OPD Patient Payment Cancellation", BillCategory.CANCELLATION, ServiceType.OPD, BillFinanceType.CASH_OUT, CountedServiceType.OPD_OUT, PaymentCategory.CREDIT_SPEND),
+    CREDIT_COMPANY_OPD_PATIENT_PAYMENT_REFUND("Credit Company OPD Patient Payment Refund", BillCategory.REFUND, ServiceType.OPD, BillFinanceType.CASH_OUT, CountedServiceType.OPD_OUT, PaymentCategory.CREDIT_SPEND),
+    CREDIT_COMPANY_INPATIENT_PAYMENT("Credit Company Inpatient Payment", BillCategory.BILL, ServiceType.INWARD, BillFinanceType.CASH_IN, CountedServiceType.INWARD, PaymentCategory.CREDIT_SPEND),
+    CREDIT_COMPANY_INPATIENT_PAYMENT_CANCELLATION("Credit Company Inpatient Payment Cancellation", BillCategory.CANCELLATION, ServiceType.INWARD, BillFinanceType.CASH_OUT, CountedServiceType.INWARD, PaymentCategory.CREDIT_SPEND),
+    CREDIT_COMPANY_INPATIENT_PAYMENT_REFUND("Credit Company Inpatient Payment Refund", BillCategory.REFUND, ServiceType.INWARD, BillFinanceType.CASH_OUT, CountedServiceType.INWARD, PaymentCategory.CREDIT_SPEND),
+    // Additional Income
+    SUPPLEMENTARY_INCOME("Supplementary Income", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.CASH_IN, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_COLLECTION),
+    SUPPLEMENTARY_INCOME_CANCELLED("Supplementary Income - Cancelled", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.CASH_OUT, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_COLLECTION),
+    // Operational Expenses
+    OPERATIONAL_EXPENSES("Operational Expenses", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.CASH_OUT, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
+    OPERATIONAL_EXPENSES_CANCELLED("Operational Expenses - Cancelled", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.CASH_IN, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND);
 
     private final String label;
     private final BillCategory billCategory;

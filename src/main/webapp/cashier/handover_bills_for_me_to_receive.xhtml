@@ -11,9 +11,6 @@
             <ui:define name="subcontent">
                 <h:form>
 
-
-
-
                     <p:dataTable
                         id="tblbill"
                         value="#{financialTransactionController.handovertBillsToReceive}" 
@@ -22,11 +19,19 @@
                         selectionMode="single"
                         selection="#{financialTransactionController.selectedBill}">
 
+                        <p:column headerText="ID" rendered="#{webUserController.hasPrivilege('Developers')}">
+                             <h:outputText value="#{bp.id}" />
+                        </p:column>
+                        
+                        <p:column headerText="Number">
+                            <h:outputText value="#{bp.insId}" />
+                        </p:column>
+
+
                         <p:column headerText="Username">
                             <h:outputText value="#{bp.fromWebUser.name}" />
                         </p:column>
 
-                        
                         <p:column headerText="Staff Name">
                             <h:outputText value="#{bp.staff.person.nameWithTitle}" />
                         </p:column>
@@ -55,8 +60,10 @@
 
                             <p:commandButton 
                                 value="Reject"
-                                action="#{financialTransactionController.navigateToReceiveNewHandoverBill()}"
+                                action="#{financialTransactionController.rejectToReceiveHandoverBill()}"
                                 ajax="false"
+                                onclick="if (!confirm('Are you sure you want to Reject this record?'))
+                                            return false;" 
                                 class="m-1 ui-button-danger"
                                 icon="pi pi-times-circle">
                                 <f:setPropertyActionListener value="#{bp}" target="#{financialTransactionController.selectedBill}"></f:setPropertyActionListener>

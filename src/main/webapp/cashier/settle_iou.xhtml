@@ -1,0 +1,308 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/payments/pay_index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
+                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
+
+    <ui:define name="admin">
+        <h:panelGroup >
+            <h:form  >
+                <p:panel rendered="#{!iouBillController.printPreview}" >
+                    <f:facet name="header">
+                        <div class="d-flex align-items-center">
+                            <h:outputText value="Settle IOU" style="margin-right: 20px; " />
+                            
+                            <div class="d-flex" style="margin-left: auto">
+                                <p:commandButton  
+                                value="Settle"                               
+                                icon="pi pi-check"
+                                class="mx-3 ui-button-success"
+                                action="#{iouBillController.settleIouSettlingBill()}" 
+                                ajax="false"  
+                                style="min-width: 150px; ">
+                            </p:commandButton>
+                            <p:commandButton 
+                                value="Clear &amp; Create New IOU Settle Bill" 
+                                ajax="false"                             
+                                styleClass="ui-button-warning"
+                                icon="pi pi-plus"  
+                                action="#{iouBillController.prepareNewIouSettleBill()}" 
+                                style="min-width: 200px; ">
+                            </p:commandButton>
+                            </div>
+                            
+                        </div>
+                    </f:facet>
+
+
+
+                    <div class="row">
+                        <div class="col-6">
+                            <p:panel header="Available IOUs">
+
+                                <p:dataTable 
+                                    value="#{iouBillController.myIousToSettle}" 
+                                    selectionMode="multiple"
+                                    rowKey="#{mi.id}"
+                                    selection="#{iouBillController.settlingIuos}"
+                                    var="mi" >
+                                    <p:column selectionBox="true" width="30" ></p:column>
+                                    <p:column headerText="Ref. No" width="4rem" >
+                                        <h:outputLabel value="#{mi.bill.referenceNumber}" ></h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Bll Type" width="4rem">
+                                        <h:outputLabel value="#{mi.bill.billTypeAtomic.label}" ></h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Payment Method" width="4rem">
+                                        <h:outputLabel value="#{mi.paymentMethod}" ></h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Debtor" width="4rem">
+                                        <h:outputLabel value="#{mi.bill.staff.person.nameWithTitle}" ></h:outputLabel>
+                                        <h:outputLabel value="#{mi.bill.person.nameWithTitle}" ></h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Created at" width="4rem">
+                                        <h:outputLabel value="#{mi.bill.createdAt}" >
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" >
+                                            </f:convertDateTime>
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Value" width="4rem">
+                                        <h:outputLabel value="#{mi.paidValue}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>
+                                    </p:column>
+                                </p:dataTable>
+
+                            </p:panel>
+                        </div>
+
+
+
+                        <div class="col-6"  >
+
+
+                            <p:panel header="Add Funds" >
+
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <p:outputLabel value="Payment Method" ></p:outputLabel>
+                                        <p:selectOneMenu 
+                                            class="mx-2"
+                                            style="width: 8em"
+                                            id="cmdPayment" 
+                                            value="#{iouBillController.currentPayment.paymentMethod}" >
+                                            <f:selectItem itemLabel="Select" ></f:selectItem>
+                                            <f:selectItems value="#{enumController.paymentMethodsForIouSettle}" ></f:selectItems>
+                                            <p:ajax process="cmdPayment" update="paymentDetails" ></p:ajax>
+                                        </p:selectOneMenu>
+                                    </div>
+                                    <div class="col-md-7" >
+                                        <h:panelGroup id="paymentDetails" >
+                                            <h:panelGroup
+                                                class="d-flex"
+                                                layout="block" 
+                                                id="cheque" 
+                                                rendered="#{iouBillController.currentPayment.paymentMethod eq 'Cheque'}" >
+
+                                                <p:outputLabel value="Value" ></p:outputLabel>
+                                                <p:inputText 
+                                                    autocomplete="off"
+                                                    onfocus="this.select()"
+                                                    value="#{iouBillController.currentPayment.paidValue}"  id="txtVal">
+                                                    <p:ajax process="@this" ></p:ajax>
+                                                </p:inputText>
+
+                                                <p:outputLabel value="Ref No" ></p:outputLabel>
+                                                <p:inputText class="mx-2" autocomplete="off"  value="#{iouBillController.currentPayment.chequeRefNo}" id="chequNo">
+                                                    <p:ajax process="@this" ></p:ajax>
+                                                </p:inputText>
+
+                                                <p:outputLabel value="Bank" ></p:outputLabel>
+                                                <p:selectOneMenu  value="#{iouBillController.currentPayment.bank}" style="width: 10em;">
+                                                    <f:selectItem itemLabel="Select Bank"/>
+                                                    <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
+                                                    <p:ajax process="@this" ></p:ajax>
+                                                </p:selectOneMenu>
+
+                                                <p:outputLabel value="Date" ></p:outputLabel>
+                                                <p:calendar class="mx-2" value="#{iouBillController.currentPayment.chequeDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" id="ChequeDate">                            
+                                                    <p:ajax process="@this" ></p:ajax>
+                                                </p:calendar>
+
+
+                                            </h:panelGroup>
+
+                                            <h:panelGroup class="d-flex" layout="block" id="cash" rendered="#{iouBillController.currentPayment.paymentMethod eq 'Cash'}">
+                                                <p:panelGrid columns="1" layout="tabular" class="w-50">
+                                                    <p:outputLabel value="Total Value" ></p:outputLabel>
+                                                    <p:inputText id="txtCashPaidValue" value="#{iouBillController.currentPayment.paidValue}"  />
+                                                </p:panelGrid>
+                                            </h:panelGroup>
+
+
+                                            <h:panelGroup
+                                                class="d-flex"
+                                                layout="block" 
+                                                id="card"  
+                                                rendered="#{iouBillController.currentPayment.paymentMethod eq 'Card'}" >
+                                                <p:outputLabel value="Value" class="mt-2"></p:outputLabel>
+                                                <p:inputText 
+                                                    class="mx-3"
+                                                    id="txtCardValue" 
+                                                    value="#{iouBillController.currentPayment.paidValue}" >
+                                                </p:inputText>
+
+                                            </h:panelGroup>
+
+                                            <h:panelGroup
+                                                class="d-flex"
+                                                layout="block" 
+                                                id="iou"  
+                                                rendered="#{iouBillController.currentPayment.paymentMethod eq 'IOU'}" >
+                                                <p:outputLabel value="Value" class="mt-2"></p:outputLabel>
+                                                <p:inputText 
+                                                    class="mx-3"
+                                                    id="txtIouValue" 
+                                                    value="#{iouBillController.currentPayment.paidValue}" >
+                                                </p:inputText>
+
+                                            </h:panelGroup>
+
+                                            <h:panelGroup
+                                                class="d-flex"
+                                                layout="block" 
+                                                id="voucher"  
+                                                rendered="#{iouBillController.currentPayment.paymentMethod eq 'Voucher'}" >
+                                                <p:outputLabel value="Value" class="mt-2"></p:outputLabel>
+                                                <p:inputText 
+                                                    class="mx-3"
+                                                    id="txtVValue" 
+                                                    value="#{iouBillController.currentPayment.paidValue}" >
+                                                </p:inputText>
+
+                                            </h:panelGroup>
+
+
+
+
+
+
+                                        </h:panelGroup>
+
+
+                                    </div>
+                                    <div class="col-md-1">
+                                        <p:commandButton
+                                            id="btnAdd"
+                                            style="float: right;"
+                                            value="Add"
+                                            icon="fa fa-plus"
+                                            ajax="false"
+                                            class="ui-button-success"
+                                            process="btnAdd cmdPayment paymentDetails"
+                                            update="tblPayments totals cmdPayment paymentDetails"
+                                            action="#{iouBillController.addPaymentToSettlingIouBill()}" >
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+
+                            </p:panel>
+                            <p:panel  header="Funds" >
+                                <f:facet name="header">
+                                    <h:panelGroup id="totals">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <h:outputText value="Funds List" ></h:outputText>
+                                            </div>
+                                            <div class="d-flex">
+                                                <h:outputText value=" Total Funds : " ></h:outputText>
+                                                <p:outputLabel 
+
+                                                    class="mx-2"
+                                                    value="#{iouBillController.current.total}" >
+                                                </p:outputLabel>
+                                            </div>
+                                        </div>
+
+                                    </h:panelGroup>
+                                </f:facet>
+
+                                <p:dataTable id="tblPayments" value="#{iouBillController.paymentsForsettlingIuos}" var="bp" >
+                                    <p:column headerText="Payment Method" width="5rem">
+                                        <h:outputText value="#{bp.paymentMethod}" ></h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Details" width="5rem" >
+                                        <h:panelGroup rendered="#{bp.paymentMethod eq 'Cheque'}">
+                                            <h:outputLabel value="Bank Name : #{bp.bank.name}" ></h:outputLabel>
+                                            <h:outputLabel value="Cheque No : #{bp.chequeRefNo}" ></h:outputLabel>
+                                            <h:outputLabel value="Cheque Date : #{bp.chequeDate}" >
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"  ></f:convertDateTime>
+                                            </h:outputLabel>
+                                            ෆ                                    </h:panelGroup>
+                                    </p:column>
+
+                                    <p:column headerText="Value" width="5rem">
+                                        <h:outputText value="#{bp.paidValue}" ></h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Action" width="5rem">
+                                        <p:commandButton 
+                                            class="ui-button-danger"
+                                            icon=" fa-solid fa-trash"
+                                            id="btnRemove"
+                                            value="Remove" 
+                                            action="#{iouBillController.removePayment}" 
+                                            process="btnRemove tblPayments"
+                                            update=":#{p:resolveFirstComponentWithId('tblPayments',view).clientId} :#{p:resolveFirstComponentWithId('totals',view).clientId}"
+                                            >
+                                            <f:setPropertyActionListener value="#{bp}" target="#{iouBillController.removingPayment}" ></f:setPropertyActionListener>
+                                        </p:commandButton>
+                                    </p:column>
+                                </p:dataTable>
+
+                            </p:panel>
+
+
+                        </div>
+
+                    </div>
+                </p:panel>
+
+                <p:panel rendered="#{iouBillController.printPreview}" >
+                    <f:facet name="header">
+                        <div class="d-flex justify-content-between">
+                            <h:outputLabel value="IOU Settling Bill" ></h:outputLabel>
+                            <p:commandButton 
+                                value="Prepare New IOU Settling" 
+                                ajax="false" 
+                                class="ui-button-warning"
+                                icon="fa fa-plus"
+                                action="#{iouBillController.prepareNewIouSettleBill()}" >
+                            </p:commandButton>
+                        </div>
+                    </f:facet>
+                    <div class="d-flex justify-content-end">
+                        <p:commandButton value="Print" 
+                                         class="ui-button-info m-1"
+                                         icon="fa fa-print"
+                                         ajax="false">
+                            <p:printer target="gpBillPreview" />
+                        </p:commandButton> 
+                    </div>
+
+                    <h:panelGroup   id="gpBillPreview">
+                        <bi:iou_settle_bill bill="#{iouBillController.current}" billController="#{iouBillController}" dup="false"/>
+                    </h:panelGroup>
+                </p:panel>  
+
+            </h:form>
+        </h:panelGroup>
+
+    </ui:define>
+</ui:composition>

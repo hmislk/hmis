@@ -1,11 +1,14 @@
 package com.divudi.entity.cashTransaction;
 
+import com.divudi.data.PaymentMethod;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Payment;
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -28,8 +31,13 @@ public class DenominationTransaction implements Serializable {
     private Denomination denomination;
     private Long denominationQty;
     private Double denominationValue;
+    @ManyToOne
     private Bill bill;
+    @ManyToOne
     private Payment payment;
+    @Enumerated(EnumType.STRING)
+    private PaymentMethod paymentMethod;
+    @ManyToOne
     private DetailedFinancialBill detailedFinancialBill;
 
     //Created Properties
@@ -46,6 +54,12 @@ public class DenominationTransaction implements Serializable {
     private Date retiredAt;
     private String retireComments;
 
+    private boolean cancelled;
+    @ManyToOne
+    private WebUser cancelledBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date cancelledAt ;
+    
     public Long getId() {
         return id;
     }
@@ -61,6 +75,8 @@ public class DenominationTransaction implements Serializable {
         return hash;
     }
 
+    
+    
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
@@ -174,5 +190,40 @@ public class DenominationTransaction implements Serializable {
     public void setPayment(Payment payment) {
         this.payment = payment;
     }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public WebUser getCancelledBy() {
+        return cancelledBy;
+    }
+
+    public void setCancelledBy(WebUser cancelledBy) {
+        this.cancelledBy = cancelledBy;
+    }
+
+    public Date getCancelledAt() {
+        return cancelledAt;
+    }
+
+    public void setCancelledAt(Date cancelledAt) {
+        this.cancelledAt = cancelledAt;
+    }
+
+    public boolean isCancelled() {
+        return cancelled;
+    }
+
+    public void setCancelled(boolean cancelled) {
+        this.cancelled = cancelled;
+    }
+    
+    
+    
 
 }

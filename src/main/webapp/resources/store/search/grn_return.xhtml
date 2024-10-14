@@ -12,20 +12,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <h:panelGrid columns="6">         
-            <h:outputLabel value="GRN Return No"/> 
-            <h:outputLabel value="Grn No"/>  
-            <h:outputLabel value="Supplier Name"/>
-            <h:outputLabel value="Net Total"/>
-            <h:outputLabel value="Item Name"/>
-            <h:outputLabel value="Item Code"/>
-            <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
-            <p:inputText autocomplete="off" value="#{searchController.searchKeyword.refBillNo}"/>
-            <p:inputText autocomplete="off" value="#{searchController.searchKeyword.toInstitution}"/>
-            <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
-            <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}"/>
-            <p:inputText autocomplete="off" value="#{searchController.searchKeyword.code}"/>
-        </h:panelGrid>
+        
         <p:dataTable rowIndexVar="i" id="tblBills" value="#{searchController.bills}" var="bill" >
             <f:facet name="header">
                 <h:outputLabel value="GOOD RETURN NOTE"/>
@@ -37,19 +24,19 @@
                     <f:setPropertyActionListener value="#{bill}" target="#{storeBillSearch.bill}"/>
                 </h:commandLink>
             </p:column>      
-            <p:column headerText="GRN NO" >
+            <p:column headerText="GRN No" >
                 <h:commandLink action="store_reprint_grn_return" value="#{bill.referenceBill.deptId}">
                     <h:outputLabel  ></h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{storeBillSearch.bill}"/>
                 </h:commandLink>
             </p:column> 
-            <p:column headerText="Delaor Name" >
+            <p:column headerText="Dealer Name" >
                 <h:commandLink action="store_reprint_grn_return" value="#{bill.toInstitution.name}">
                     <h:outputLabel  ></h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{storeBillSearch.bill}"/>
                 </h:commandLink>
             </p:column>
-            <p:column headerText="Billed at"  >
+            <p:column headerText="Billed At"  >
                 <h:commandLink action="store_reprint_grn_return" >
                     <h:outputLabel value="#{bill.createdAt}" >
                         <f:convertDateTime pattern="dd MM yyyy hh mm a"/>
@@ -70,7 +57,7 @@
                     </h:outputLabel>
                 </h:panelGroup>
             </p:column>                 
-            <p:column headerText="Billed by" >
+            <p:column headerText="Billed By" >
                 <h:commandLink action="store_reprint_grn_return" >
                     <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
                     </h:outputLabel>
@@ -89,7 +76,7 @@
                     </h:outputLabel>
                 </h:panelGroup>
             </p:column>          
-            <p:column headerText="Paymentmethod"  >
+            <p:column headerText="Payment Method"  >
                 <h:commandLink action="store_reprint_grn_return" >
                     <h:outputLabel value="#{bill.paymentMethod}" ></h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{storeBillSearch.bill}"/>

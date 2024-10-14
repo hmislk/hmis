@@ -47,7 +47,7 @@ import com.divudi.data.lab.PatientInvestigationStatus;
 import com.divudi.entity.clinical.ClinicalFindingValue;
 import com.divudi.entity.lab.ReportFormat;
 import com.divudi.facade.ClinicalFindingValueFacade;
-import com.lowagie.text.DocumentException;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -357,90 +357,90 @@ public class PatientReportController implements Serializable {
 
     public void sendEmail() {
 
-        if (getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getEmail() == null) {
-            JsfUtil.addErrorMessage("Email not given");
-            return;
-        }
-        if (!CommonController.isValidEmail(getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getEmail())) {
-            JsfUtil.addErrorMessage("Given email is NOT valid.");
-            return;
-        }
-
-        boolean sent = getEmailManagerEjb().sendEmail(
-                getCurrentPatientReport().getApproveInstitution().getEmailSendingUsername(),
-                getCurrentPatientReport().getApproveInstitution().getEmailSendingPassword(),
-                getCurrentPatientReport().getApproveInstitution().getEmail(),
-                getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getEmail(),
-                getCurrentPatientReport().getPatientInvestigation().getInvestigation().getName() + " Results",
-                emailMessageBody(currentPatientReport),
-                createPDFAndSaveAsaFile());
-
-        if (sent) {
-            JsfUtil.addSuccessMessage("Email Sent");
-        } else {
-            JsfUtil.addErrorMessage("Email Sending Failed");
-        }
-
-    }
-
-    public void sendEmailOld() {
-
-        final String username = getCurrentPatientReport().getPatientInvestigation().getBillItem().getItem().getDepartment().getInstitution().getEmailSendingUsername();
-        final String password = getCurrentPatientReport().getPatientInvestigation().getBillItem().getItem().getDepartment().getInstitution().getEmailSendingPassword();
-
-        Properties props = new Properties();
-        props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.host", "smtp.gmail.com");
-        props.put("mail.smtp.port", "587");
-//        Authenticator auth = new SMTPAuthenticator();
-        Session session = Session.getInstance(props,
-                new javax.mail.Authenticator() {
-            protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(username, password);
-            }
-        });
-
-        try {
-            Message message = new MimeMessage(session);
-            message.setFrom(new InternetAddress(getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getToDepartment().getInstitution().getEmailSendingUsername()));
-            message.setRecipients(Message.RecipientType.TO,
-                    InternetAddress.parse(getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getEmail()));
-            message.setSubject(getCurrentPatientReport().getPatientInvestigation().getInvestigation().getName() + " Results");
-//            message.setText("Dear " + getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getNameWithTitle()
-//                    + ",\n\n Please find the results of your " + getCurrentPatientReport().getPatientInvestigation().getInvestigation().getName() + ".");
-
-            message.setContent(emailMessageBody(currentPatientReport), "text/html; charset=utf-8");
-            //3) create MimeBodyPart object and set your message text     
-            BodyPart msbp1 = new MimeBodyPart();
-            msbp1.setText("Final Lab report of patient");
-
-            //4) create new MimeBodyPart object and set DataHandler object to this object      
-            MimeBodyPart msbp2 = new MimeBodyPart();
-//            createHtmlFile();
-            DataSource source = new FileDataSource(createPDFAndSaveAsaFile());
-            msbp2.setDataHandler(new DataHandler(source));
-            msbp2.setFileName("/tmp/report" + getCurrentPatientReport().getId() + ".pdf");
-
-            //5) create Multipart object and add Mimdler(soeBodyPart objects to this object      
-            Multipart multipart = new MimeMultipart();
-            multipart.addBodyPart(msbp1);
-            multipart.addBodyPart(msbp2);
-
-            //6) set the multiplart object to the message object  
-            message.setContent(multipart);
-
-            Transport.send(message);
-
-            JsfUtil.addSuccessMessage("Email Sent SUccessfully");
-
-        } catch (MessagingException e) {
-            JsfUtil.addErrorMessage("Error. " + e.getMessage());
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage("Error. " + e.getMessage());
-        }
+//        if (getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getEmail() == null) {
+//            JsfUtil.addErrorMessage("Email not given");
+//            return;
+//        }
+//        if (!CommonController.isValidEmail(getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getEmail())) {
+//            JsfUtil.addErrorMessage("Given email is NOT valid.");
+//            return;
+//        }
+//
+//        boolean sent = getEmailManagerEjb().sendEmail(
+//                getCurrentPatientReport().getApproveInstitution().getEmailSendingUsername(),
+//                getCurrentPatientReport().getApproveInstitution().getEmailSendingPassword(),
+//                getCurrentPatientReport().getApproveInstitution().getEmail(),
+//                getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getEmail(),
+//                getCurrentPatientReport().getPatientInvestigation().getInvestigation().getName() + " Results",
+//                emailMessageBody(currentPatientReport),
+//                createPDFAndSaveAsaFile());
+//
+//        if (sent) {
+//            JsfUtil.addSuccessMessage("Email Sent");
+//        } else {
+//            JsfUtil.addErrorMessage("Email Sending Failed");
+//        }
 
     }
+//
+//    public void sendEmailOld() {
+//
+//        final String username = getCurrentPatientReport().getPatientInvestigation().getBillItem().getItem().getDepartment().getInstitution().getEmailSendingUsername();
+//        final String password = getCurrentPatientReport().getPatientInvestigation().getBillItem().getItem().getDepartment().getInstitution().getEmailSendingPassword();
+//
+//        Properties props = new Properties();
+//        props.put("mail.smtp.starttls.enable", "true");
+//        props.put("mail.smtp.auth", "true");
+//        props.put("mail.smtp.host", "smtp.gmail.com");
+//        props.put("mail.smtp.port", "587");
+////        Authenticator auth = new SMTPAuthenticator();
+//        Session session = Session.getInstance(props,
+//                new javax.mail.Authenticator() {
+//            protected PasswordAuthentication getPasswordAuthentication() {
+//                return new PasswordAuthentication(username, password);
+//            }
+//        });
+//
+//        try {
+//            Message message = new MimeMessage(session);
+//            message.setFrom(new InternetAddress(getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getToDepartment().getInstitution().getEmailSendingUsername()));
+//            message.setRecipients(Message.RecipientType.TO,
+//                    InternetAddress.parse(getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getEmail()));
+//            message.setSubject(getCurrentPatientReport().getPatientInvestigation().getInvestigation().getName() + " Results");
+////            message.setText("Dear " + getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getNameWithTitle()
+////                    + ",\n\n Please find the results of your " + getCurrentPatientReport().getPatientInvestigation().getInvestigation().getName() + ".");
+//
+//            message.setContent(emailMessageBody(currentPatientReport), "text/html; charset=utf-8");
+//            //3) create MimeBodyPart object and set your message text     
+//            BodyPart msbp1 = new MimeBodyPart();
+//            msbp1.setText("Final Lab report of patient");
+//
+//            //4) create new MimeBodyPart object and set DataHandler object to this object      
+//            MimeBodyPart msbp2 = new MimeBodyPart();
+////            createHtmlFile();
+//            DataSource source = new FileDataSource(createPDFAndSaveAsaFile());
+//            msbp2.setDataHandler(new DataHandler(source));
+//            msbp2.setFileName("/tmp/report" + getCurrentPatientReport().getId() + ".pdf");
+//
+//            //5) create Multipart object and add Mimdler(soeBodyPart objects to this object      
+//            Multipart multipart = new MimeMultipart();
+//            multipart.addBodyPart(msbp1);
+//            multipart.addBodyPart(msbp2);
+//
+//            //6) set the multiplart object to the message object  
+//            message.setContent(multipart);
+//
+//            Transport.send(message);
+//
+//            JsfUtil.addSuccessMessage("Email Sent SUccessfully");
+//
+//        } catch (MessagingException e) {
+//            JsfUtil.addErrorMessage("Error. " + e.getMessage());
+//        } catch (Exception e) {
+//            JsfUtil.addErrorMessage("Error. " + e.getMessage());
+//        }
+//
+//    }
 
     public void addTemplateToReport() {
         if (investigationItem == null) {
@@ -692,6 +692,7 @@ public class PatientReportController implements Serializable {
     }
 
     public void calculate() {
+        System.out.println("calculate");
         Date startTime = new Date();
         if (currentPatientReport == null) {
             JsfUtil.addErrorMessage("No Report to calculate");
@@ -796,7 +797,7 @@ public class PatientReportController implements Serializable {
                         calString = calString + currentPatientReport.getPatientInvestigation().getPatient().getAgeYears();
                     }
                 }
-
+                System.out.println("calString = " + calString);
                 System.out.println("baseJs = " + baseJs);
                 if (baseJs != null) {
                     calString = generateModifiedJavascriptFromBaseJavaScript(currentPatientReport, baseJs);
@@ -1850,7 +1851,7 @@ public class PatientReportController implements Serializable {
                 e.setReceipientEmail(currentPtIx.getBillItem().getBill().getPatient().getPerson().getEmail());
                 e.setMessageSubject("Your Report is Ready");
                 e.setMessageBody(emailMessageBody(currentPatientReport));
-                e.setAttachment1(createPDFAndSaveAsaFile());
+//                e.setAttachment1(createPDFAndSaveAsaFile());
 
                 e.setSenderPassword(getCurrentPatientReport().getApproveInstitution().getEmailSendingPassword());
                 e.setSenderUsername(getCurrentPatientReport().getApproveInstitution().getEmailSendingUsername());
@@ -2059,7 +2060,7 @@ public class PatientReportController implements Serializable {
                 e.setReceipientEmail(getSessionController().getLoggedUser().getInstitution().getOwnerEmail());
                 e.setMessageSubject("This Report is Reversed after Athorizing");
                 e.setMessageBody(cancelApprovalEmailMessageBody(currentPatientReport));
-                e.setAttachment1(createPDFAndSaveAsaFile());
+//                e.setAttachment1(createPDFAndSaveAsaFile());
 
                 e.setSenderPassword(getCurrentPatientReport().getApproveInstitution().getEmailSendingPassword());
                 e.setSenderUsername(getCurrentPatientReport().getApproveInstitution().getEmailSendingUsername());
@@ -2122,94 +2123,94 @@ public class PatientReportController implements Serializable {
         getFacade().edit(currentPatientReport);
     }
 
-    public void pdfPatientReport() throws DocumentException, com.lowagie.text.DocumentException, IOException {
-//        long serialVersionUID = 626953318628565053L;
-        //System.out.println("enter 1");
-//        long serialVersionUID = 626953318628565053L;
-        //        long serialVersionUID = 626953318628565053L;
-        //        long serialVersionUID = 626953318628565053L;
-        //        long serialVersionUID = 626953318628565053L;
-        FacesContext facesContext = FacesContext.getCurrentInstance();
-        HttpServletResponse response = (HttpServletResponse) facesContext.getExternalContext().getResponse();
-        //System.out.println("enter 2");
-        response.reset();
-
-        String pdf_url = commonController.getBaseUrl() + "faces/lab/patient_report.xhtml";
-
-        response.setHeader(pdf_url, "application/pdf");
-        //System.out.println("enter 3");
-        OutputStream outputStream = response.getOutputStream();
-        //System.out.println("enter 4");
-        URL url = new URL(pdf_url);
-        InputStream pdfInputStream = url.openStream();
-        byte[] byteBuffer = new byte[2048];
-        int byteRead;
-        while ((byteRead = pdfInputStream.read(byteBuffer)) > 0) {
-            outputStream.write(byteBuffer, 0, byteRead);
-        }
-        outputStream.flush();
-        pdfInputStream.close();
-
-        facesContext.responseComplete();
-
-    }
+//    public void pdfPatientReport() throws DocumentException, com.lowagie.text.DocumentException, IOException {
+////        long serialVersionUID = 626953318628565053L;
+//        //System.out.println("enter 1");
+////        long serialVersionUID = 626953318628565053L;
+//        //        long serialVersionUID = 626953318628565053L;
+//        //        long serialVersionUID = 626953318628565053L;
+//        //        long serialVersionUID = 626953318628565053L;
+//        FacesContext facesContext = FacesContext.getCurrentInstance();
+//        HttpServletResponse response = (HttpServletResponse) facesContext.getExternalContext().getResponse();
+//        //System.out.println("enter 2");
+//        response.reset();
+//
+//        String pdf_url = commonController.getBaseUrl() + "faces/lab/patient_report.xhtml";
+//
+//        response.setHeader(pdf_url, "application/pdf");
+//        //System.out.println("enter 3");
+//        OutputStream outputStream = response.getOutputStream();
+//        //System.out.println("enter 4");
+//        URL url = new URL(pdf_url);
+//        InputStream pdfInputStream = url.openStream();
+//        byte[] byteBuffer = new byte[2048];
+//        int byteRead;
+//        while ((byteRead = pdfInputStream.read(byteBuffer)) > 0) {
+//            outputStream.write(byteBuffer, 0, byteRead);
+//        }
+//        outputStream.flush();
+//        pdfInputStream.close();
+//
+//        facesContext.responseComplete();
+//
+//    }
 
     public void createPDF() {
-        FacesContext facesContext = FacesContext.getCurrentInstance();
-        ExternalContext externalContext = facesContext.getExternalContext();
-        HttpSession session = (HttpSession) externalContext.getSession(true);
-//        String url = "http://localhost:8080/new/faces/lab/lab/patient_report_print.xhtml:jsessionid=" + session.getId() + "?pdf=true";
-        String url = commonController.getBaseUrl() + "faces/requests/report.xhtml?id=" + securityController.encrypt(currentPatientReport.getId() + "");
-        try {
-            ITextRenderer renderer = new ITextRenderer();
-            renderer.setDocument(new URL(url).toString());
-            renderer.layout();
-            HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
-            response.reset();
-            response.setContentType("application/pdf");
-            response.setHeader("Content-Disposition", "inline; filename=\"print.pdf\"");
-            OutputStream outputStream = response.getOutputStream();
-            renderer.createPDF(outputStream);
-            JsfUtil.addSuccessMessage("PDF Created");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        facesContext.responseComplete();
+//        FacesContext facesContext = FacesContext.getCurrentInstance();
+//        ExternalContext externalContext = facesContext.getExternalContext();
+//        HttpSession session = (HttpSession) externalContext.getSession(true);
+////        String url = "http://localhost:8080/new/faces/lab/lab/patient_report_print.xhtml:jsessionid=" + session.getId() + "?pdf=true";
+//        String url = commonController.getBaseUrl() + "faces/requests/report.xhtml?id=" + securityController.encrypt(currentPatientReport.getId() + "");
+//        try {
+//            ITextRenderer renderer = new ITextRenderer();
+//            renderer.setDocument(new URL(url).toString());
+//            renderer.layout();
+//            HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+//            response.reset();
+//            response.setContentType("application/pdf");
+//            response.setHeader("Content-Disposition", "inline; filename=\"print.pdf\"");
+//            OutputStream outputStream = response.getOutputStream();
+//            renderer.createPDF(outputStream);
+//            JsfUtil.addSuccessMessage("PDF Created");
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        facesContext.responseComplete();
     }
 
-    public String createPDFAndSaveAsaFile() {
-        String temId = currentPatientReport.getId() + "";
-        temId = securityController.encrypt(temId);
-        try {
-            temId = URLEncoder.encode(temId, "UTF-8");
-        } catch (UnsupportedEncodingException ex) {
-        }
-        String url = commonController.getBaseUrl() + "faces/requests/report.xhtml?id=" + temId;
-        FileOutputStream fop = null;
-        File file;
-        try {
-            try {
-                url = URLEncoder.encode(url, "UTF-8");
-            } catch (UnsupportedEncodingException ex) {
-            }
-            ITextRenderer renderer = new ITextRenderer();
-            renderer.setDocument(new URL(url).toString());
-
-            renderer.layout();
-            file = new File("/tmp/" + currentPatientReport.getId() + ".pdf");
-            fop = new FileOutputStream(file);
-            if (!file.exists()) {
-                file.createNewFile();
-            }
-            OutputStream outputStream = fop;
-            renderer.createPDF(outputStream);
-//            JsfUtil.addSuccessMessage("PDF Created");
-//            JsfUtil.addSuccessMessage("PDF Created");
-            return file.getAbsolutePath();
-        } catch (DocumentException | IOException e) {
-        }
-        return "";
-    }
+//    public String createPDFAndSaveAsaFile() {
+//        String temId = currentPatientReport.getId() + "";
+//        temId = securityController.encrypt(temId);
+//        try {
+//            temId = URLEncoder.encode(temId, "UTF-8");
+//        } catch (UnsupportedEncodingException ex) {
+//        }
+//        String url = commonController.getBaseUrl() + "faces/requests/report.xhtml?id=" + temId;
+//        FileOutputStream fop = null;
+//        File file;
+//        try {
+//            try {
+//                url = URLEncoder.encode(url, "UTF-8");
+//            } catch (UnsupportedEncodingException ex) {
+//            }
+//            ITextRenderer renderer = new ITextRenderer();
+//            renderer.setDocument(new URL(url).toString());
+//
+//            renderer.layout();
+//            file = new File("/tmp/" + currentPatientReport.getId() + ".pdf");
+//            fop = new FileOutputStream(file);
+//            if (!file.exists()) {
+//                file.createNewFile();
+//            }
+//            OutputStream outputStream = fop;
+//            renderer.createPDF(outputStream);
+////            JsfUtil.addSuccessMessage("PDF Created");
+////            JsfUtil.addSuccessMessage("PDF Created");
+//            return file.getAbsolutePath();
+//        } catch (DocumentException | IOException e) {
+//        }
+//        return "";
+//    }
 
     public String getSelectText() {
         return selectText;

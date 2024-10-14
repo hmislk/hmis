@@ -311,6 +311,16 @@
                                                 <f:setPropertyActionListener value="#{pi.investigation}" target="#{investigationController.current}"  />
                                             </p:commandButton>
                                         </h:outputLabel>
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Need to Generate Barcodes for Sample Tubes at OPD Billing Automatically')}" >
+                                            <ui:repeat value="#{patientInvestigationController.getPatientSampleComponentsByInvestigation(pi)}" var="psc">
+                                                <div class="ui-g d-grid" style="margin-bottom: 10px;">
+                                                    <div class="ui-g-6">
+                                                        <i class="fa fa-vial"></i>
+                                                        <h:outputText value="#{psc.patientSample.id}" class="text-primary" />
+                                                    </div>
+                                                </div>
+                                            </ui:repeat>
+                                        </h:panelGroup>
                                     </p:column>
 
                                     <p:column rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow Local Number For Opd Billing')}" headerText="Local Number"  styleClass="alignTop" style="width: 32em;">
@@ -342,7 +352,7 @@
                                             </p:commandLink>
                                         </h:panelGroup>
 
-                                        
+
                                         <p:commandLink id="btnNewReport" ajax="false" 
                                                        disabled="#{!pi.received}" 
                                                        action="/lab/patient_report?faces-redirect=true"  

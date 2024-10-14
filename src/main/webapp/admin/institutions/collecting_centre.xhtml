@@ -19,13 +19,16 @@
                                              action="#{collectingCentreController.prepareAdd()}" 
                                              process="btnAdd"
                                              update="lstSelect gpDetail"/>
-                            <p:commandButton id="btnDelete" onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                        return false;" action="#{collectingCentreController.delete()}"  
-                                             value="Delete" 
-                                             icon="fas fa-trash"
-                                             class=" m-1 ui-button-danger w-25"
-                                             process="btnDelete"
-                                             update="lstSelect gpDetail"/>
+                            <p:commandButton 
+                                id="btnDelete" 
+                                onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                            return false;" 
+                                action="#{collectingCentreController.delete()}"  
+                                value="Delete" 
+                                icon="fas fa-trash"
+                                class=" m-1 ui-button-danger w-25"
+                                process="btnDelete"
+                                update="lstSelect gpDetail"/>
 
                             <p:selectOneListbox  id="lstSelect" class="w-100" value="#{collectingCentreController.current}"  filter="true" filterMatchMode="contains">
                                 <f:selectItems  value="#{collectingCentreController.selectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.code} - #{myItem.name}" ></f:selectItems>
@@ -64,10 +67,10 @@
                                 <p:inputText autocomplete="off" id="txtChqPrnName" 
                                              class="w-100"
                                              value="#{collectingCentreController.current.chequePrintingName}" ></p:inputText>
-                                
+
                                 <h:outputText value="Institution Code"  ></h:outputText>
-                                            <p:inputText autocomplete="off" class="w-100 form-control m-1"
-                                                         value="#{collectingCentreController.current.institutionCode}"></p:inputText>
+                                <p:inputText autocomplete="off" class="w-100 form-control m-1"
+                                             value="#{collectingCentreController.current.institutionCode}"></p:inputText>
 
                                 <h:outputText value="Code" >                                        
                                 </h:outputText>

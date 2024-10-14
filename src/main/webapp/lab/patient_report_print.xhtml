@@ -118,13 +118,16 @@
                                             <h:outputLabel 
                                                 value="#{prv.doubleValue}" 
                                                 style="z-index: 1000;"
-                                                rendered="#{prv.investigationItem.ixItemType eq 'Calculation' and prv.investigationItem.ixItemValueType eq 'Double' }" escape="false" >
+                                                rendered="#{prv.investigationItem.ixItemType eq 'Calculation' and prv.investigationItem.ixItemValueType eq 'Double'}" 
+                                                escape="false" >
                                                 <f:convertNumber pattern="0.0" />
                                             </h:outputLabel>
+                                            
                                             <h:outputLabel 
                                                 value="#{prv.strValue}" 
                                                 style="z-index: 1000;"
-                                                rendered="#{prv.investigationItem.ixItemType eq 'Calculation' and prv.investigationItem.ixItemValueType eq 'Varchar' }" escape="false" >
+                                                rendered="#{prv.investigationItem.ixItemType eq 'Calculation' and prv.investigationItem.ixItemValueType eq 'Varchar'}" 
+                                                escape="false" >
                                             </h:outputLabel>
                                         </h:panelGroup>
                                     </ui:repeat>

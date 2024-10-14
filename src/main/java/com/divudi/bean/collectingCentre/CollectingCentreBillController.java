@@ -241,7 +241,11 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             return;
         }
         fillAvailableAgentReferanceNumbers(collectingCentre);
-        opdItems = itemFeeManager.fillItemLightsForCc(collectingCentre);
+        if (collectingCentre.getFeeListType() != null) {
+            opdItems = itemFeeManager.fillItemLightsForCc(collectingCentre);
+        } else {
+            opdItems = fillOpdItems();
+        }
         itemController.setCcInstitutionItems(itemController.fillItemsByInstitution(collectingCentre));
     }
 
@@ -811,7 +815,6 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 ////        updateBallance(collectingCentre, 0 - Math.abs(feeTotalExceptCcfs), HistoryType.CollectingCentreBalanceUpdateBill, temBill, referralId);
 //        return true;
 //    }
-
     public void setPrintigBill() {
         ////// // System.out.println("In Print");
         billPrint = bill;
@@ -891,6 +894,15 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         checkBillValues();
         printPreview = true;
 
+    }
+
+    public Payment createPaymentForRefunds(Bill bill, PaymentMethod pm) {
+        Payment p = new Payment();
+        p.setBill(bill);
+        double valueToSet = 0 - Math.abs(bill.getNetTotal());
+        p.setPaidValue(valueToSet);
+        setPaymentMethodData(p, pm);
+        return p;
     }
 
     @Deprecated
@@ -2166,7 +2178,10 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             }
 
             if (matchFound) {
-                FeeValue f = feeValueController.getCollectingCentreFeeValue(opdItem.getId(), collectingCentre);
+                FeeValue f = null;
+                if(collectingCentre.getFeeListType()!=null){
+                    f = feeValueController.getCollectingCentreFeeValue(opdItem.getId(), collectingCentre);
+                }
                 if (f != null) {
                     opdItem.setTotal(f.getTotalValueForLocals());
                     opdItem.setTotalForForeigner(f.getTotalValueForForeigners());

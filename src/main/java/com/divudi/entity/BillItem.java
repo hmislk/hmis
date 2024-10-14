@@ -7,6 +7,7 @@ package com.divudi.entity;
 import com.divudi.data.BillItemStatus;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.data.lab.Priority;
+import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.entity.pharmacy.Ampp;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.entity.pharmacy.UserStock;
@@ -88,7 +89,8 @@ public class BillItem implements Serializable {
     Bill bill;
     @ManyToOne
     Bill expenseBill;
-    Boolean refunded;
+    boolean refunded;
+    private boolean billItemRefunded;
     //Created Properties
     @ManyToOne
     WebUser creater;
@@ -115,6 +117,8 @@ public class BillItem implements Serializable {
     Date fromTime;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date toTime;
+    @OneToOne(mappedBy = "billItem")
+    private PatientInvestigation patientInvestigation;
     @OneToOne
     BillItem referanceBillItem;
     @OneToOne
@@ -221,6 +225,7 @@ public class BillItem implements Serializable {
         item = billItem.getItem();
         sessionDate = billItem.getSessionDate();
         patientEncounter = billItem.getPatientEncounter();
+        patientInvestigation = billItem.getPatientInvestigation();
         inwardChargeType = billItem.getInwardChargeType();
         agentRefNo = billItem.getAgentRefNo();
         item = billItem.getItem();
@@ -427,15 +432,15 @@ public class BillItem implements Serializable {
         this.bill = bill;
     }
 
-    public Boolean isRefunded() {
+    public boolean isRefunded() {
         return refunded;
     }
 
-    public Boolean getRefunded() {
-        return refunded;
-    }
+//    public boolean getRefunded() {
+//        return refunded;
+//    }
 
-    public void setRefunded(Boolean refunded) {
+    public void setRefunded(boolean refunded) {
         this.refunded = refunded;
     }
 
@@ -595,11 +600,18 @@ public class BillItem implements Serializable {
         }
         return qty;
     }
+    
+    @Transient
+    public double getQtyAbsolute() {
+        return Math.abs(getQty());
+    }
 
     public void setQty(Double Qty) {
         this.qty = Qty;
 
     }
+    
+    
 
     public double getRemainingQty() {
         return remainingQty;
@@ -977,5 +989,24 @@ public class BillItem implements Serializable {
     public void setFeeValue(double feeValue) {
         this.feeValue = feeValue;
     }
+
+    
+    public PatientInvestigation getPatientInvestigation() {
+        return patientInvestigation;
+    }
+
+    public void setPatientInvestigation(PatientInvestigation patientInvestigation) {
+        this.patientInvestigation = patientInvestigation;
+    }
+
+    public boolean isBillItemRefunded() {
+        return billItemRefunded;
+    }
+
+    public void setBillItemRefunded(boolean billItemRefunded) {
+        this.billItemRefunded = billItemRefunded;
+    }
+    
+    
 
 }

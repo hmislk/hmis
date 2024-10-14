@@ -28,65 +28,71 @@ public class DetailedFinancialBill implements Serializable {
     @OneToOne
     private Bill bill;
 
+    private Double floatInValue;
+    private Double floatOutValue;
+    private Double floatBalanceValue;
+    
+    
+    
     // Calculated values for each payment method
-    private Double cashCalculateValue;
-    private Double cardCalculateValue;
-    private Double chequeCalculateValue;
-    private Double slipCalculateValue;
-    private Double ewalletCalculateValue;
-    private Double onCallCalculateValue;
-    private Double multiplePaymentMethodsCalculateValue;
-    private Double staffCalculateValue;
-    private Double creditCalculateValue;
-    private Double staffWelfareCalculateValue;
-    private Double voucherCalculateValue;
-    private Double iouCalculateValue;
-    private Double agentCalculateValue;
-    private Double patientDepositCalculateValue;
-    private Double patientPointsCalculateValue;
-    private Double onlineSettlementCalculateValue;
-    private Double noneCalculateValue;
-    private Double youOweMeCalculateValue;
+    private Double cashValue;
+    private Double cardValue;
+    private Double chequeValue;
+    private Double slipValue;
+    private Double ewalletValue;
+    private Double onCallValue;
+    private Double multiplePaymentMethodsValue;
+    private Double staffValue;
+    private Double creditValue;
+    private Double staffWelfareValue;
+    private Double voucherValue;
+    private Double iouValue;
+    private Double agentValue;
+    private Double patientDepositValue;
+    private Double patientPointsValue;
+    private Double onlineSettlementValue;
+    private Double noneValue;
+    private Double youOweMeValue;
 
-// Actual values for each payment method
-    private Double cashActualValue;
-    private Double cardActualValue;
-    private Double chequeActualValue;
-    private Double slipActualValue;
-    private Double ewalletActualValue;
-    private Double onCallActualValue;
-    private Double multiplePaymentMethodsActualValue;
-    private Double staffActualValue;
-    private Double creditActualValue;
-    private Double staffWelfareActualValue;
-    private Double voucherActualValue;
-    private Double iouActualValue;
-    private Double agentActualValue;
-    private Double patientDepositActualValue;
-    private Double patientPointsActualValue;
-    private Double onlineSettlementActualValue;
-    private Double noneActualValue;
-    private Double youOweMeActualValue;
+    // Handover values for each payment method
+    private Double cashHandoverValue;
+    private Double cardHandoverValue;
+    private Double chequeHandoverValue;
+    private Double slipHandoverValue;
+    private Double ewalletHandoverValue;
+    private Double onCallHandoverValue;
+    private Double multiplePaymentMethodsHandoverValue;
+    private Double staffHandoverValue;
+    private Double creditHandoverValue;
+    private Double staffWelfareHandoverValue;
+    private Double voucherHandoverValue;
+    private Double iouHandoverValue;
+    private Double agentHandoverValue;
+    private Double patientDepositHandoverValue;
+    private Double patientPointsHandoverValue;
+    private Double onlineSettlementHandoverValue;
+    private Double noneHandoverValue;
+    private Double youOweMeHandoverValue;
 
-// Difference values for each payment method (calculated as actualValue - calculateValue)
-    private Double cashDifferenceValue;
-    private Double cardDifferenceValue;
-    private Double chequeDifferenceValue;
-    private Double slipDifferenceValue;
-    private Double ewalletDifferenceValue;
-    private Double onCallDifferenceValue;
-    private Double multiplePaymentMethodsDifferenceValue;
-    private Double staffDifferenceValue;
-    private Double creditDifferenceValue;
-    private Double staffWelfareDifferenceValue;
-    private Double voucherDifferenceValue;
-    private Double iouDifferenceValue;
-    private Double agentDifferenceValue;
-    private Double patientDepositDifferenceValue;
-    private Double patientPointsDifferenceValue;
-    private Double onlineSettlementDifferenceValue;
-    private Double noneDifferenceValue;
-    private Double youOweMeDifferenceValue;
+    // Difference values for each payment method (calculated as actualValue - calculateValue)
+    private Double cashDifference;
+    private Double cardDifference;
+    private Double chequeDifference;
+    private Double slipDifference;
+    private Double ewalletDifference;
+    private Double onCallDifference;
+    private Double multiplePaymentMethodsDifference;
+    private Double staffDifference;
+    private Double creditDifference;
+    private Double staffWelfareDifference;
+    private Double voucherDifference;
+    private Double iouDifference;
+    private Double agentDifference;
+    private Double patientDepositDifference;
+    private Double patientPointsDifference;
+    private Double onlineSettlementDifference;
+    private Double noneDifference;
+    private Double youOweMeDifference;
 
     //Created Properties
     @ManyToOne
@@ -135,12 +141,541 @@ public class DetailedFinancialBill implements Serializable {
         return "com.divudi.entity.cashTransaction.DetailedFinancialBill[ id=" + id + " ]";
     }
 
+    @Transient
+    public boolean isCashValuePresent() {
+        return isValuePresent(cashValue, cashHandoverValue, cashDifference);
+    }
+
+    @Transient
+    public boolean isCardValuePresent() {
+        return isValuePresent(cardValue, cardHandoverValue, cardDifference);
+    }
+
+    @Transient
+    public boolean isChequeValuePresent() {
+        return isValuePresent(chequeValue, chequeHandoverValue, chequeDifference);
+    }
+
+    @Transient
+    public boolean isSlipValuePresent() {
+        return isValuePresent(slipValue, slipHandoverValue, slipDifference);
+    }
+
+    @Transient
+    public boolean isEwalletValuePresent() {
+        return isValuePresent(ewalletValue, ewalletHandoverValue, ewalletDifference);
+    }
+
+    @Transient
+    public boolean isOnCallValuePresent() {
+        return isValuePresent(onCallValue, onCallHandoverValue, onCallDifference);
+    }
+
+    @Transient
+    public boolean isMultiplePaymentMethodsValuePresent() {
+        return isValuePresent(multiplePaymentMethodsValue, multiplePaymentMethodsHandoverValue, multiplePaymentMethodsDifference);
+    }
+
+    @Transient
+    public boolean isStaffValuePresent() {
+        return isValuePresent(staffValue, staffHandoverValue, staffDifference);
+    }
+
+    @Transient
+    public boolean isCreditValuePresent() {
+        return isValuePresent(creditValue, creditHandoverValue, creditDifference);
+    }
+
+    @Transient
+    public boolean isStaffWelfareValuePresent() {
+        return isValuePresent(staffWelfareValue, staffWelfareHandoverValue, staffWelfareDifference);
+    }
+
+    @Transient
+    public boolean isVoucherValuePresent() {
+        return isValuePresent(voucherValue, voucherHandoverValue, voucherDifference);
+    }
+
+    @Transient
+    public boolean isIouValuePresent() {
+        return isValuePresent(iouValue, iouHandoverValue, iouDifference);
+    }
+
+    @Transient
+    public boolean isAgentValuePresent() {
+        return isValuePresent(agentValue, agentHandoverValue, agentDifference);
+    }
+
+    @Transient
+    public boolean isPatientDepositValuePresent() {
+        return isValuePresent(patientDepositValue, patientDepositHandoverValue, patientDepositDifference);
+    }
+
+    @Transient
+    public boolean isPatientPointsValuePresent() {
+        return isValuePresent(patientPointsValue, patientPointsHandoverValue, patientPointsDifference);
+    }
+
+    @Transient
+    public boolean isOnlineSettlementValuePresent() {
+        return isValuePresent(onlineSettlementValue, onlineSettlementHandoverValue, onlineSettlementDifference);
+    }
+
+    @Transient
+    public boolean isNoneValuePresent() {
+        return isValuePresent(noneValue, noneHandoverValue, noneDifference);
+    }
+
+    @Transient
+    public boolean isYouOweMeValuePresent() {
+        return isValuePresent(youOweMeValue, youOweMeHandoverValue, youOweMeDifference);
+    }
+
+// Helper method to check if any of the given values are present
+    private boolean isValuePresent(Double calculatedValue, Double handoverValue, Double differenceValue) {
+        return (calculatedValue != null && calculatedValue != 0.0)
+                || (handoverValue != null && handoverValue != 0.0)
+                || (differenceValue != null && differenceValue != 0.0);
+    }
+
     public Bill getBill() {
         return bill;
     }
 
     public void setBill(Bill bill) {
         this.bill = bill;
+    }
+
+    public Double getCashValue() {
+        return cashValue;
+    }
+
+    public void setCashValue(Double cashValue) {
+        this.cashValue = cashValue;
+    }
+
+    public Double getCardValue() {
+        return cardValue;
+    }
+
+    public void setCardValue(Double cardValue) {
+        this.cardValue = cardValue;
+    }
+
+    public Double getChequeValue() {
+        return chequeValue;
+    }
+
+    public void setChequeValue(Double chequeValue) {
+        this.chequeValue = chequeValue;
+    }
+
+    public Double getSlipValue() {
+        return slipValue;
+    }
+
+    public void setSlipValue(Double slipValue) {
+        this.slipValue = slipValue;
+    }
+
+    public Double getEwalletValue() {
+        return ewalletValue;
+    }
+
+    public void setEwalletValue(Double ewalletValue) {
+        this.ewalletValue = ewalletValue;
+    }
+
+    public Double getOnCallValue() {
+        return onCallValue;
+    }
+
+    public void setOnCallValue(Double onCallValue) {
+        this.onCallValue = onCallValue;
+    }
+
+    public Double getMultiplePaymentMethodsValue() {
+        return multiplePaymentMethodsValue;
+    }
+
+    public void setMultiplePaymentMethodsValue(Double multiplePaymentMethodsValue) {
+        this.multiplePaymentMethodsValue = multiplePaymentMethodsValue;
+    }
+
+    public Double getStaffValue() {
+        return staffValue;
+    }
+
+    public void setStaffValue(Double staffValue) {
+        this.staffValue = staffValue;
+    }
+
+    public Double getCreditValue() {
+        return creditValue;
+    }
+
+    public void setCreditValue(Double creditValue) {
+        this.creditValue = creditValue;
+    }
+
+    public Double getStaffWelfareValue() {
+        return staffWelfareValue;
+    }
+
+    public void setStaffWelfareValue(Double staffWelfareValue) {
+        this.staffWelfareValue = staffWelfareValue;
+    }
+
+    public Double getVoucherValue() {
+        return voucherValue;
+    }
+
+    public void setVoucherValue(Double voucherValue) {
+        this.voucherValue = voucherValue;
+    }
+
+    public Double getIouValue() {
+        return iouValue;
+    }
+
+    public void setIouValue(Double iouValue) {
+        this.iouValue = iouValue;
+    }
+
+    public Double getAgentValue() {
+        return agentValue;
+    }
+
+    public void setAgentValue(Double agentValue) {
+        this.agentValue = agentValue;
+    }
+
+    public Double getPatientDepositValue() {
+        return patientDepositValue;
+    }
+
+    public void setPatientDepositValue(Double patientDepositValue) {
+        this.patientDepositValue = patientDepositValue;
+    }
+
+    public Double getPatientPointsValue() {
+        return patientPointsValue;
+    }
+
+    public void setPatientPointsValue(Double patientPointsValue) {
+        this.patientPointsValue = patientPointsValue;
+    }
+
+    public Double getOnlineSettlementValue() {
+        return onlineSettlementValue;
+    }
+
+    public void setOnlineSettlementValue(Double onlineSettlementValue) {
+        this.onlineSettlementValue = onlineSettlementValue;
+    }
+
+    public Double getNoneValue() {
+        return noneValue;
+    }
+
+    public void setNoneValue(Double noneValue) {
+        this.noneValue = noneValue;
+    }
+
+    public Double getYouOweMeValue() {
+        return youOweMeValue;
+    }
+
+    public void setYouOweMeValue(Double youOweMeValue) {
+        this.youOweMeValue = youOweMeValue;
+    }
+
+    public Double getCashHandoverValue() {
+        return cashHandoverValue;
+    }
+
+    public void setCashHandoverValue(Double cashHandoverValue) {
+        this.cashHandoverValue = cashHandoverValue;
+    }
+
+    public Double getCardHandoverValue() {
+        return cardHandoverValue;
+    }
+
+    public void setCardHandoverValue(Double cardHandoverValue) {
+        this.cardHandoverValue = cardHandoverValue;
+    }
+
+    public Double getChequeHandoverValue() {
+        return chequeHandoverValue;
+    }
+
+    public void setChequeHandoverValue(Double chequeHandoverValue) {
+        this.chequeHandoverValue = chequeHandoverValue;
+    }
+
+    public Double getSlipHandoverValue() {
+        return slipHandoverValue;
+    }
+
+    public void setSlipHandoverValue(Double slipHandoverValue) {
+        this.slipHandoverValue = slipHandoverValue;
+    }
+
+    public Double getEwalletHandoverValue() {
+        return ewalletHandoverValue;
+    }
+
+    public void setEwalletHandoverValue(Double ewalletHandoverValue) {
+        this.ewalletHandoverValue = ewalletHandoverValue;
+    }
+
+    public Double getOnCallHandoverValue() {
+        return onCallHandoverValue;
+    }
+
+    public void setOnCallHandoverValue(Double onCallHandoverValue) {
+        this.onCallHandoverValue = onCallHandoverValue;
+    }
+
+    public Double getMultiplePaymentMethodsHandoverValue() {
+        return multiplePaymentMethodsHandoverValue;
+    }
+
+    public void setMultiplePaymentMethodsHandoverValue(Double multiplePaymentMethodsHandoverValue) {
+        this.multiplePaymentMethodsHandoverValue = multiplePaymentMethodsHandoverValue;
+    }
+
+    public Double getStaffHandoverValue() {
+        return staffHandoverValue;
+    }
+
+    public void setStaffHandoverValue(Double staffHandoverValue) {
+        this.staffHandoverValue = staffHandoverValue;
+    }
+
+    public Double getCreditHandoverValue() {
+        return creditHandoverValue;
+    }
+
+    public void setCreditHandoverValue(Double creditHandoverValue) {
+        this.creditHandoverValue = creditHandoverValue;
+    }
+
+    public Double getStaffWelfareHandoverValue() {
+        return staffWelfareHandoverValue;
+    }
+
+    public void setStaffWelfareHandoverValue(Double staffWelfareHandoverValue) {
+        this.staffWelfareHandoverValue = staffWelfareHandoverValue;
+    }
+
+    public Double getVoucherHandoverValue() {
+        return voucherHandoverValue;
+    }
+
+    public void setVoucherHandoverValue(Double voucherHandoverValue) {
+        this.voucherHandoverValue = voucherHandoverValue;
+    }
+
+    public Double getIouHandoverValue() {
+        return iouHandoverValue;
+    }
+
+    public void setIouHandoverValue(Double iouHandoverValue) {
+        this.iouHandoverValue = iouHandoverValue;
+    }
+
+    public Double getAgentHandoverValue() {
+        return agentHandoverValue;
+    }
+
+    public void setAgentHandoverValue(Double agentHandoverValue) {
+        this.agentHandoverValue = agentHandoverValue;
+    }
+
+    public Double getPatientDepositHandoverValue() {
+        return patientDepositHandoverValue;
+    }
+
+    public void setPatientDepositHandoverValue(Double patientDepositHandoverValue) {
+        this.patientDepositHandoverValue = patientDepositHandoverValue;
+    }
+
+    public Double getPatientPointsHandoverValue() {
+        return patientPointsHandoverValue;
+    }
+
+    public void setPatientPointsHandoverValue(Double patientPointsHandoverValue) {
+        this.patientPointsHandoverValue = patientPointsHandoverValue;
+    }
+
+    public Double getOnlineSettlementHandoverValue() {
+        return onlineSettlementHandoverValue;
+    }
+
+    public void setOnlineSettlementHandoverValue(Double onlineSettlementHandoverValue) {
+        this.onlineSettlementHandoverValue = onlineSettlementHandoverValue;
+    }
+
+    public Double getNoneHandoverValue() {
+        return noneHandoverValue;
+    }
+
+    public void setNoneHandoverValue(Double noneHandoverValue) {
+        this.noneHandoverValue = noneHandoverValue;
+    }
+
+    public Double getYouOweMeHandoverValue() {
+        return youOweMeHandoverValue;
+    }
+
+    public void setYouOweMeHandoverValue(Double youOweMeHandoverValue) {
+        this.youOweMeHandoverValue = youOweMeHandoverValue;
+    }
+
+    public Double getCashDifference() {
+        return cashDifference;
+    }
+
+    public void setCashDifference(Double cashDifference) {
+        this.cashDifference = cashDifference;
+    }
+
+    public Double getCardDifference() {
+        return cardDifference;
+    }
+
+    public void setCardDifference(Double cardDifference) {
+        this.cardDifference = cardDifference;
+    }
+
+    public Double getChequeDifference() {
+        return chequeDifference;
+    }
+
+    public void setChequeDifference(Double chequeDifference) {
+        this.chequeDifference = chequeDifference;
+    }
+
+    public Double getSlipDifference() {
+        return slipDifference;
+    }
+
+    public void setSlipDifference(Double slipDifference) {
+        this.slipDifference = slipDifference;
+    }
+
+    public Double getEwalletDifference() {
+        return ewalletDifference;
+    }
+
+    public void setEwalletDifference(Double ewalletDifference) {
+        this.ewalletDifference = ewalletDifference;
+    }
+
+    public Double getOnCallDifference() {
+        return onCallDifference;
+    }
+
+    public void setOnCallDifference(Double onCallDifference) {
+        this.onCallDifference = onCallDifference;
+    }
+
+    public Double getMultiplePaymentMethodsDifference() {
+        return multiplePaymentMethodsDifference;
+    }
+
+    public void setMultiplePaymentMethodsDifference(Double multiplePaymentMethodsDifference) {
+        this.multiplePaymentMethodsDifference = multiplePaymentMethodsDifference;
+    }
+
+    public Double getStaffDifference() {
+        return staffDifference;
+    }
+
+    public void setStaffDifference(Double staffDifference) {
+        this.staffDifference = staffDifference;
+    }
+
+    public Double getCreditDifference() {
+        return creditDifference;
+    }
+
+    public void setCreditDifference(Double creditDifference) {
+        this.creditDifference = creditDifference;
+    }
+
+    public Double getStaffWelfareDifference() {
+        return staffWelfareDifference;
+    }
+
+    public void setStaffWelfareDifference(Double staffWelfareDifference) {
+        this.staffWelfareDifference = staffWelfareDifference;
+    }
+
+    public Double getVoucherDifference() {
+        return voucherDifference;
+    }
+
+    public void setVoucherDifference(Double voucherDifference) {
+        this.voucherDifference = voucherDifference;
+    }
+
+    public Double getIouDifference() {
+        return iouDifference;
+    }
+
+    public void setIouDifference(Double iouDifference) {
+        this.iouDifference = iouDifference;
+    }
+
+    public Double getAgentDifference() {
+        return agentDifference;
+    }
+
+    public void setAgentDifference(Double agentDifference) {
+        this.agentDifference = agentDifference;
+    }
+
+    public Double getPatientDepositDifference() {
+        return patientDepositDifference;
+    }
+
+    public void setPatientDepositDifference(Double patientDepositDifference) {
+        this.patientDepositDifference = patientDepositDifference;
+    }
+
+    public Double getPatientPointsDifference() {
+        return patientPointsDifference;
+    }
+
+    public void setPatientPointsDifference(Double patientPointsDifference) {
+        this.patientPointsDifference = patientPointsDifference;
+    }
+
+    public Double getOnlineSettlementDifference() {
+        return onlineSettlementDifference;
+    }
+
+    public void setOnlineSettlementDifference(Double onlineSettlementDifference) {
+        this.onlineSettlementDifference = onlineSettlementDifference;
+    }
+
+    public Double getNoneDifference() {
+        return noneDifference;
+    }
+
+    public void setNoneDifference(Double noneDifference) {
+        this.noneDifference = noneDifference;
+    }
+
+    public Double getYouOweMeDifference() {
+        return youOweMeDifference;
+    }
+
+    public void setYouOweMeDifference(Double youOweMeDifference) {
+        this.youOweMeDifference = youOweMeDifference;
     }
 
     public WebUser getCreater() {
@@ -191,534 +726,30 @@ public class DetailedFinancialBill implements Serializable {
         this.retireComments = retireComments;
     }
 
-    public Double getCashCalculateValue() {
-        return cashCalculateValue;
+    public Double getFloatInValue() {
+        return floatInValue;
     }
 
-    public void setCashCalculateValue(Double cashCalculateValue) {
-        this.cashCalculateValue = cashCalculateValue;
+    public void setFloatInValue(Double floatInValue) {
+        this.floatInValue = floatInValue;
     }
 
-    public Double getCardCalculateValue() {
-        return cardCalculateValue;
+    public Double getFloatOutValue() {
+        return floatOutValue;
     }
 
-    public void setCardCalculateValue(Double cardCalculateValue) {
-        this.cardCalculateValue = cardCalculateValue;
+    public void setFloatOutValue(Double floatOutValue) {
+        this.floatOutValue = floatOutValue;
     }
 
-    public Double getChequeCalculateValue() {
-        return chequeCalculateValue;
+    public Double getFloatBalanceValue() {
+        return floatBalanceValue;
     }
 
-    public void setChequeCalculateValue(Double chequeCalculateValue) {
-        this.chequeCalculateValue = chequeCalculateValue;
-    }
-
-    public Double getSlipCalculateValue() {
-        return slipCalculateValue;
-    }
-
-    public void setSlipCalculateValue(Double slipCalculateValue) {
-        this.slipCalculateValue = slipCalculateValue;
-    }
-
-    public Double getEwalletCalculateValue() {
-        return ewalletCalculateValue;
-    }
-
-    public void setEwalletCalculateValue(Double ewalletCalculateValue) {
-        this.ewalletCalculateValue = ewalletCalculateValue;
-    }
-
-    public Double getOnCallCalculateValue() {
-        return onCallCalculateValue;
-    }
-
-    public void setOnCallCalculateValue(Double onCallCalculateValue) {
-        this.onCallCalculateValue = onCallCalculateValue;
-    }
-
-    public Double getMultiplePaymentMethodsCalculateValue() {
-        return multiplePaymentMethodsCalculateValue;
-    }
-
-    public void setMultiplePaymentMethodsCalculateValue(Double multiplePaymentMethodsCalculateValue) {
-        this.multiplePaymentMethodsCalculateValue = multiplePaymentMethodsCalculateValue;
-    }
-
-    public Double getStaffCalculateValue() {
-        return staffCalculateValue;
-    }
-
-    public void setStaffCalculateValue(Double staffCalculateValue) {
-        this.staffCalculateValue = staffCalculateValue;
-    }
-
-    public Double getCreditCalculateValue() {
-        return creditCalculateValue;
-    }
-
-    public void setCreditCalculateValue(Double creditCalculateValue) {
-        this.creditCalculateValue = creditCalculateValue;
-    }
-
-    public Double getStaffWelfareCalculateValue() {
-        return staffWelfareCalculateValue;
-    }
-
-    public void setStaffWelfareCalculateValue(Double staffWelfareCalculateValue) {
-        this.staffWelfareCalculateValue = staffWelfareCalculateValue;
-    }
-
-    public Double getVoucherCalculateValue() {
-        return voucherCalculateValue;
-    }
-
-    public void setVoucherCalculateValue(Double voucherCalculateValue) {
-        this.voucherCalculateValue = voucherCalculateValue;
-    }
-
-    public Double getIouCalculateValue() {
-        return iouCalculateValue;
-    }
-
-    public void setIouCalculateValue(Double iouCalculateValue) {
-        this.iouCalculateValue = iouCalculateValue;
-    }
-
-    public Double getAgentCalculateValue() {
-        return agentCalculateValue;
-    }
-
-    public void setAgentCalculateValue(Double agentCalculateValue) {
-        this.agentCalculateValue = agentCalculateValue;
-    }
-
-    public Double getPatientDepositCalculateValue() {
-        return patientDepositCalculateValue;
-    }
-
-    public void setPatientDepositCalculateValue(Double patientDepositCalculateValue) {
-        this.patientDepositCalculateValue = patientDepositCalculateValue;
-    }
-
-    public Double getPatientPointsCalculateValue() {
-        return patientPointsCalculateValue;
-    }
-
-    public void setPatientPointsCalculateValue(Double patientPointsCalculateValue) {
-        this.patientPointsCalculateValue = patientPointsCalculateValue;
-    }
-
-    public Double getOnlineSettlementCalculateValue() {
-        return onlineSettlementCalculateValue;
-    }
-
-    public void setOnlineSettlementCalculateValue(Double onlineSettlementCalculateValue) {
-        this.onlineSettlementCalculateValue = onlineSettlementCalculateValue;
-    }
-
-    public Double getNoneCalculateValue() {
-        return noneCalculateValue;
-    }
-
-    public void setNoneCalculateValue(Double noneCalculateValue) {
-        this.noneCalculateValue = noneCalculateValue;
-    }
-
-    public Double getYouOweMeCalculateValue() {
-        return youOweMeCalculateValue;
-    }
-
-    public void setYouOweMeCalculateValue(Double youOweMeCalculateValue) {
-        this.youOweMeCalculateValue = youOweMeCalculateValue;
-    }
-
-    public Double getCashActualValue() {
-        return cashActualValue;
-    }
-
-    public void setCashActualValue(Double cashActualValue) {
-        this.cashActualValue = cashActualValue;
-    }
-
-    public Double getCardActualValue() {
-        return cardActualValue;
-    }
-
-    public void setCardActualValue(Double cardActualValue) {
-        this.cardActualValue = cardActualValue;
-    }
-
-    public Double getChequeActualValue() {
-        return chequeActualValue;
-    }
-
-    public void setChequeActualValue(Double chequeActualValue) {
-        this.chequeActualValue = chequeActualValue;
-    }
-
-    public Double getSlipActualValue() {
-        return slipActualValue;
-    }
-
-    public void setSlipActualValue(Double slipActualValue) {
-        this.slipActualValue = slipActualValue;
-    }
-
-    public Double getEwalletActualValue() {
-        return ewalletActualValue;
-    }
-
-    public void setEwalletActualValue(Double ewalletActualValue) {
-        this.ewalletActualValue = ewalletActualValue;
-    }
-
-    public Double getOnCallActualValue() {
-        return onCallActualValue;
-    }
-
-    public void setOnCallActualValue(Double onCallActualValue) {
-        this.onCallActualValue = onCallActualValue;
-    }
-
-    public Double getMultiplePaymentMethodsActualValue() {
-        return multiplePaymentMethodsActualValue;
-    }
-
-    public void setMultiplePaymentMethodsActualValue(Double multiplePaymentMethodsActualValue) {
-        this.multiplePaymentMethodsActualValue = multiplePaymentMethodsActualValue;
-    }
-
-    public Double getStaffActualValue() {
-        return staffActualValue;
-    }
-
-    public void setStaffActualValue(Double staffActualValue) {
-        this.staffActualValue = staffActualValue;
-    }
-
-    public Double getCreditActualValue() {
-        return creditActualValue;
-    }
-
-    public void setCreditActualValue(Double creditActualValue) {
-        this.creditActualValue = creditActualValue;
-    }
-
-    public Double getStaffWelfareActualValue() {
-        return staffWelfareActualValue;
-    }
-
-    public void setStaffWelfareActualValue(Double staffWelfareActualValue) {
-        this.staffWelfareActualValue = staffWelfareActualValue;
-    }
-
-    public Double getVoucherActualValue() {
-        return voucherActualValue;
-    }
-
-    public void setVoucherActualValue(Double voucherActualValue) {
-        this.voucherActualValue = voucherActualValue;
-    }
-
-    public Double getIouActualValue() {
-        return iouActualValue;
-    }
-
-    public void setIouActualValue(Double iouActualValue) {
-        this.iouActualValue = iouActualValue;
-    }
-
-    public Double getAgentActualValue() {
-        return agentActualValue;
-    }
-
-    public void setAgentActualValue(Double agentActualValue) {
-        this.agentActualValue = agentActualValue;
-    }
-
-    public Double getPatientDepositActualValue() {
-        return patientDepositActualValue;
-    }
-
-    public void setPatientDepositActualValue(Double patientDepositActualValue) {
-        this.patientDepositActualValue = patientDepositActualValue;
-    }
-
-    public Double getPatientPointsActualValue() {
-        return patientPointsActualValue;
-    }
-
-    public void setPatientPointsActualValue(Double patientPointsActualValue) {
-        this.patientPointsActualValue = patientPointsActualValue;
-    }
-
-    public Double getOnlineSettlementActualValue() {
-        return onlineSettlementActualValue;
-    }
-
-    public void setOnlineSettlementActualValue(Double onlineSettlementActualValue) {
-        this.onlineSettlementActualValue = onlineSettlementActualValue;
-    }
-
-    public Double getNoneActualValue() {
-        return noneActualValue;
-    }
-
-    public void setNoneActualValue(Double noneActualValue) {
-        this.noneActualValue = noneActualValue;
-    }
-
-    public Double getYouOweMeActualValue() {
-        return youOweMeActualValue;
-    }
-
-    public void setYouOweMeActualValue(Double youOweMeActualValue) {
-        this.youOweMeActualValue = youOweMeActualValue;
-    }
-
-    public Double getCashDifferenceValue() {
-        return cashDifferenceValue;
-    }
-
-    public void setCashDifferenceValue(Double cashDifferenceValue) {
-        this.cashDifferenceValue = cashDifferenceValue;
-    }
-
-    public Double getCardDifferenceValue() {
-        return cardDifferenceValue;
-    }
-
-    public void setCardDifferenceValue(Double cardDifferenceValue) {
-        this.cardDifferenceValue = cardDifferenceValue;
-    }
-
-    public Double getChequeDifferenceValue() {
-        return chequeDifferenceValue;
-    }
-
-    public void setChequeDifferenceValue(Double chequeDifferenceValue) {
-        this.chequeDifferenceValue = chequeDifferenceValue;
-    }
-
-    public Double getSlipDifferenceValue() {
-        return slipDifferenceValue;
-    }
-
-    public void setSlipDifferenceValue(Double slipDifferenceValue) {
-        this.slipDifferenceValue = slipDifferenceValue;
-    }
-
-    public Double getEwalletDifferenceValue() {
-        return ewalletDifferenceValue;
-    }
-
-    public void setEwalletDifferenceValue(Double ewalletDifferenceValue) {
-        this.ewalletDifferenceValue = ewalletDifferenceValue;
-    }
-
-    public Double getOnCallDifferenceValue() {
-        return onCallDifferenceValue;
-    }
-
-    public void setOnCallDifferenceValue(Double onCallDifferenceValue) {
-        this.onCallDifferenceValue = onCallDifferenceValue;
-    }
-
-    public Double getMultiplePaymentMethodsDifferenceValue() {
-        return multiplePaymentMethodsDifferenceValue;
-    }
-
-    public void setMultiplePaymentMethodsDifferenceValue(Double multiplePaymentMethodsDifferenceValue) {
-        this.multiplePaymentMethodsDifferenceValue = multiplePaymentMethodsDifferenceValue;
-    }
-
-    public Double getStaffDifferenceValue() {
-        return staffDifferenceValue;
-    }
-
-    public void setStaffDifferenceValue(Double staffDifferenceValue) {
-        this.staffDifferenceValue = staffDifferenceValue;
-    }
-
-    public Double getCreditDifferenceValue() {
-        return creditDifferenceValue;
-    }
-
-    public void setCreditDifferenceValue(Double creditDifferenceValue) {
-        this.creditDifferenceValue = creditDifferenceValue;
-    }
-
-    public Double getStaffWelfareDifferenceValue() {
-        return staffWelfareDifferenceValue;
-    }
-
-    public void setStaffWelfareDifferenceValue(Double staffWelfareDifferenceValue) {
-        this.staffWelfareDifferenceValue = staffWelfareDifferenceValue;
-    }
-
-    public Double getVoucherDifferenceValue() {
-        return voucherDifferenceValue;
-    }
-
-    public void setVoucherDifferenceValue(Double voucherDifferenceValue) {
-        this.voucherDifferenceValue = voucherDifferenceValue;
-    }
-
-    public Double getIouDifferenceValue() {
-        return iouDifferenceValue;
-    }
-
-    public void setIouDifferenceValue(Double iouDifferenceValue) {
-        this.iouDifferenceValue = iouDifferenceValue;
-    }
-
-    public Double getAgentDifferenceValue() {
-        return agentDifferenceValue;
-    }
-
-    public void setAgentDifferenceValue(Double agentDifferenceValue) {
-        this.agentDifferenceValue = agentDifferenceValue;
-    }
-
-    public Double getPatientDepositDifferenceValue() {
-        return patientDepositDifferenceValue;
-    }
-
-    public void setPatientDepositDifferenceValue(Double patientDepositDifferenceValue) {
-        this.patientDepositDifferenceValue = patientDepositDifferenceValue;
-    }
-
-    public Double getPatientPointsDifferenceValue() {
-        return patientPointsDifferenceValue;
-    }
-
-    public void setPatientPointsDifferenceValue(Double patientPointsDifferenceValue) {
-        this.patientPointsDifferenceValue = patientPointsDifferenceValue;
-    }
-
-    public Double getOnlineSettlementDifferenceValue() {
-        return onlineSettlementDifferenceValue;
-    }
-
-    public void setOnlineSettlementDifferenceValue(Double onlineSettlementDifferenceValue) {
-        this.onlineSettlementDifferenceValue = onlineSettlementDifferenceValue;
-    }
-
-    public Double getNoneDifferenceValue() {
-        return noneDifferenceValue;
-    }
-
-    public void setNoneDifferenceValue(Double noneDifferenceValue) {
-        this.noneDifferenceValue = noneDifferenceValue;
-    }
-
-    public Double getYouOweMeDifferenceValue() {
-        return youOweMeDifferenceValue;
-    }
-
-    public void setYouOweMeDifferenceValue(Double youOweMeDifferenceValue) {
-        this.youOweMeDifferenceValue = youOweMeDifferenceValue;
+    public void setFloatBalanceValue(Double floatBalanceValue) {
+        this.floatBalanceValue = floatBalanceValue;
     }
 
     
-    @Transient
-    public boolean isCashValuePresent() {
-        return isValuePresent(cashCalculateValue, cashActualValue, cashDifferenceValue);
-    }
-
-    @Transient
-    public boolean isCardValuePresent() {
-        return isValuePresent(cardCalculateValue, cardActualValue, cardDifferenceValue);
-    }
-
-    @Transient
-    public boolean isChequeValuePresent() {
-        return isValuePresent(chequeCalculateValue, chequeActualValue, chequeDifferenceValue);
-    }
-
-    @Transient
-    public boolean isSlipValuePresent() {
-        return isValuePresent(slipCalculateValue, slipActualValue, slipDifferenceValue);
-    }
-
-    @Transient
-    public boolean isEwalletValuePresent() {
-        return isValuePresent(ewalletCalculateValue, ewalletActualValue, ewalletDifferenceValue);
-    }
-
-    @Transient
-    public boolean isOnCallValuePresent() {
-        return isValuePresent(onCallCalculateValue, onCallActualValue, onCallDifferenceValue);
-    }
-
-    @Transient
-    public boolean isMultiplePaymentMethodsValuePresent() {
-        return isValuePresent(multiplePaymentMethodsCalculateValue, multiplePaymentMethodsActualValue, multiplePaymentMethodsDifferenceValue);
-    }
-
-    @Transient
-    public boolean isStaffValuePresent() {
-        return isValuePresent(staffCalculateValue, staffActualValue, staffDifferenceValue);
-    }
-
-    @Transient
-    public boolean isCreditValuePresent() {
-        return isValuePresent(creditCalculateValue, creditActualValue, creditDifferenceValue);
-    }
-
-    @Transient
-    public boolean isStaffWelfareValuePresent() {
-        return isValuePresent(staffWelfareCalculateValue, staffWelfareActualValue, staffWelfareDifferenceValue);
-    }
-
-    @Transient
-    public boolean isVoucherValuePresent() {
-        return isValuePresent(voucherCalculateValue, voucherActualValue, voucherDifferenceValue);
-    }
-
-    @Transient
-    public boolean isIouValuePresent() {
-        return isValuePresent(iouCalculateValue, iouActualValue, iouDifferenceValue);
-    }
-
-    @Transient
-    public boolean isAgentValuePresent() {
-        return isValuePresent(agentCalculateValue, agentActualValue, agentDifferenceValue);
-    }
-
-    @Transient
-    public boolean isPatientDepositValuePresent() {
-        return isValuePresent(patientDepositCalculateValue, patientDepositActualValue, patientDepositDifferenceValue);
-    }
-
-    @Transient
-    public boolean isPatientPointsValuePresent() {
-        return isValuePresent(patientPointsCalculateValue, patientPointsActualValue, patientPointsDifferenceValue);
-    }
-
-    @Transient
-    public boolean isOnlineSettlementValuePresent() {
-        return isValuePresent(onlineSettlementCalculateValue, onlineSettlementActualValue, onlineSettlementDifferenceValue);
-    }
-
-    @Transient
-    public boolean isNoneValuePresent() {
-        return isValuePresent(noneCalculateValue, noneActualValue, noneDifferenceValue);
-    }
-
-    @Transient
-    public boolean isYouOweMeValuePresent() {
-        return isValuePresent(youOweMeCalculateValue, youOweMeActualValue, youOweMeDifferenceValue);
-    }
-
-// Helper method to check if any of the given values are present
-    private boolean isValuePresent(Double calculateValue, Double actualValue, Double differenceValue) {
-        return (calculateValue != null && calculateValue != 0.0)
-                || (actualValue != null && actualValue != 0.0)
-                || (differenceValue != null && differenceValue != 0.0);
-    }
-
+    
 }

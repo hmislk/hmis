@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
@@ -142,6 +143,8 @@ public class PharmacyBillSearch implements Serializable {
     InwardBeanController inwardBean;
     @Inject
     PharmacySaleController pharmacySaleController;
+    @Inject
+    DrawerController drawerController;
     
     public String navigatePharmacyReprintPo(){
         return "pharmacy_reprint_po?faces-redirect=true";
@@ -661,7 +664,7 @@ public class PharmacyBillSearch implements Serializable {
                 return false;
             }
 
-            if (i.isRefunded() == null) {
+            if (!i.isRefunded()) {
                 d = d + i.getNetValue();
                 getTempbillItems().add(i);
             }
@@ -1760,6 +1763,7 @@ public class PharmacyBillSearch implements Serializable {
 
             //for Payment,billFee and BillFeepayment
             Payment p = pharmacySaleController.createPayment(cb, paymentMethod);
+            drawerController.updateDrawerForOuts(p);
             pharmacyCancelBillItems(cb, p);
 
             getBill().setCancelled(true);
