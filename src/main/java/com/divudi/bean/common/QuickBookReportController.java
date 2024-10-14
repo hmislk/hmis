@@ -81,9 +81,6 @@ public class QuickBookReportController implements Serializable {
     @EJB
     private PatientRoomFacade patientRoomFacade;
 
-    @EJB
-    private CommonFunctions commonFunctions; 
-
     @Inject
     private BillBeanController billBeanController;
     @Inject
@@ -95,12 +92,16 @@ public class QuickBookReportController implements Serializable {
     @Inject
     private InwardBeanController inwardBeanController;
 
+    private CommonFunctions commonFunctions;
+
     private List<QuickBookFormat> quickBookFormats;
     private List<Category> categorys;
     private List<Institution> creditCompanies;
     private List<Item> items;
 
     private Institution institution;
+    private Department department;
+    private Institution site;
     private Date toDate;
     private Date fromDate;
     private String report;
@@ -1289,14 +1290,26 @@ public class QuickBookReportController implements Serializable {
                 + " sum(bf.feeValue),"
                 + " bi.bill.billClassType "
                 + " from BillFee bf join bf.billItem bi join bi.item i join i.category c "
-                + " where bi.bill.institution=:ins "
-                + " and bi.bill.billType= :bTp  "
+                + " where bi.bill.billType= :bTp  "
                 + " and bi.bill.createdAt between :fromDate and :toDate "
                 + " and bi.bill.paymentMethod in :pms "
                 + " and bf.fee.feeType!=:ft "
                 + " and bi.bill.retired=false "
                 + " and bi.retired=false "
                 + " and bf.retired=false ";
+
+        if (institution != null) {
+            jpql += " and bi.bill.institution=:ins ";
+            temMap.put("ins", institution);
+        }
+        if (department != null) {
+            jpql += " and bi.bill.department=:dep ";
+            temMap.put("dep", department);
+        }
+        if(site!=null){
+            jpql +=" and bi.bill.department.site=:site ";
+            temMap.put("site", site);
+        }
 
         if (creditCompany != null) {
             jpql += " and bi.bill.creditCompany=:cd ";
@@ -1306,13 +1319,13 @@ public class QuickBookReportController implements Serializable {
             // RHRHD/87626 set fee depart ment collecting center
 //            jpql += " and bf.department.institution=:ins ";
         }
-        jpql += " group by i.name, bi.bill.billClassType "
+        jpql += " group by c, i, bi.bill.billClassType, bf.fee "
                 + " order by c.name, i.name, bf.fee.feeType ";
 
         temMap.put("ft", FeeType.Staff);
         temMap.put("toDate", td);
         temMap.put("fromDate", fd);
-        temMap.put("ins", institution);
+
         temMap.put("bTp", BillType.OpdBill);
         temMap.put("pms", paymentMethods);
 
@@ -2887,6 +2900,22 @@ public class QuickBookReportController implements Serializable {
 
     public void setItems(List<Item> items) {
         this.items = items;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
     }
 
 }
