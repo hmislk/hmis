@@ -26,20 +26,20 @@
 
                             <div class="col-12">
                                 <p:tabView orientation="left">
-                                    <p:tab title="Patient Details" >
-                                        <p:panel header="">
+                                    <p:tab title="Bill Details" >
+                                        <p:panel>
                                             <f:facet name="header">
-                                                <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
-                                                <h:outputLabel value="Patient Details" class="mx-4"></h:outputLabel>
+                                                <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
+                                                <h:outputLabel value="Bill Details" class="mx-4"></h:outputLabel>
                                             </f:facet>
+                                            <view:out bill="#{billSearch.viewingBill}"/>
+                                            <p:splitter ></p:splitter>
                                             <common:patient patient="#{billSearch.viewingBill.patient}" class="w-100"/>
                                         </p:panel>
                                     </p:tab>
 
                                     <p:tab title="Original" >
                                         <h:panelGrid columns="2" class="w-100">
-
-
                                             <p:panel class="w-100">
                                                 <f:facet name="header">
                                                     <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
@@ -95,18 +95,9 @@
                                         </h:panelGrid>
                                     </p:tab>
 
-                                    <p:tab title="Bill Details" >
-                                        <p:panel>
-                                            <f:facet name="header">
-                                                <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
-                                                <h:outputLabel value="Bill Details" class="mx-4"></h:outputLabel>
-                                            </f:facet>
-                                            <view:out bill="#{billSearch.viewingBill}"/>
-                                        </p:panel>
-                                    </p:tab>
+
                                     <p:tab title="Bill Items" >
                                         <view:bill_item_list_edit editable="true" billItems="#{billSearch.viewingBillItems}"/>
-                                        <view:bill_item_list_edit editable="true" billItems="#{billSearch.viewingBill.billItems}"/>
                                     </p:tab>
                                     <p:tab title="Bill Fees" >
                                         <view:bill_fee_list_edit editable="true" billFees="#{billSearch.viewingBillFees}" ></view:bill_fee_list_edit>
