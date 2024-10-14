@@ -3638,11 +3638,10 @@ public class DataUploadController implements Serializable {
             } else if (codeCell != null && codeCell.getCellType() == CellType.NUMERIC) {
                 codeDbl = codeCell.getNumericCellValue();
                 code = codeDbl.toString();
-            }else{
+            } else {
                 code = UUID.randomUUID().toString();
             }
             System.out.println("code = " + code);
-
 
             //    Item masterItem = itemController.findMasterItemByName(code);
             Cell agentNameCell = row.getCell(1);
@@ -4366,6 +4365,16 @@ public class DataUploadController implements Serializable {
         }
     }
 
+    public void uploadToFixItemCategoriesByCode() {
+        if (file != null) {
+            try (InputStream inputStream = file.getInputStream()) {
+                fixItemCategoriesFromCode(inputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     public void uploadDiagnoses() {
         if (file != null) {
             try {
@@ -4926,6 +4935,51 @@ public class DataUploadController implements Serializable {
         }
 
         return itemFees;
+    }
+
+    private List<Item> fixItemCategoriesFromCode(InputStream inputStream) throws IOException {
+        Workbook workbook = new XSSFWorkbook(inputStream);
+        Sheet sheet = workbook.getSheetAt(0);
+        Iterator<Row> rowIterator = sheet.rowIterator();
+        List<Item> changedItems = new ArrayList<>();
+        if (rowIterator.hasNext()) {
+            rowIterator.next();
+        }
+        while (rowIterator.hasNext()) {
+            Row row = rowIterator.next();
+
+            Category cat = null;
+            String code = null;
+            String categoryName = null;
+
+            Cell codeCell = row.getCell(0);
+            if (codeCell != null && codeCell.getCellType() == CellType.STRING) {
+                code = codeCell.getStringCellValue();
+            }
+            if (code == null || code.trim().equals("")) {
+                continue;
+            }
+            Item item = itemController.findItemByCode(code);
+            if (item == null) {
+                continue;
+            }
+            Cell categoryCell = row.getCell(2);
+            if (categoryCell != null && categoryCell.getCellType() == CellType.STRING) {
+                categoryName = categoryCell.getStringCellValue();
+            }
+            if (categoryName == null || categoryName.trim().equals("")) {
+                continue;
+            }
+            cat = categoryController.findAndCreateCategoryByName(categoryName);
+            if (cat == null) {
+                continue;
+            }
+            item.setCategory(cat);
+            itemFacade.edit(item);
+            changedItems.add(item);
+        }
+
+        return changedItems;
     }
 
     private List<Investigation> readInvestigationsFromExcel(InputStream inputStream) throws IOException {

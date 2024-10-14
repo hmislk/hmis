@@ -56,15 +56,18 @@
                                 <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
                                 <h:outputLabel value="Institution" for="cmbIns" />
                             </h:panelGroup>
-                            <p:autoComplete
-                                value="#{reportController.institution}"
-                                completeMethod="#{institutionController.completeCompany}"
-                                var="ins"
-                                class="w-100 "
-                                inputStyleClass="form-control"
-                                itemLabel="#{ins.name}"
-                                itemValue="#{ins}">
-                            </p:autoComplete>
+                            <p:selectOneMenu filter="true" id="cmdInstitution"
+                                             filterMatchMode="contains"
+                                             style=" max-width: 100%; overflow-x: auto; "
+                                             class="w-100"
+                                             value="#{reportController.institution}">
+                                <f:selectItem itemLabel="All Institution" />
+                                <f:selectItems value="#{institutionController.companies}"
+                                               var="i"
+                                               itemLabel="#{i.name}"
+                                               itemValue="#{i}" />
+                                <p:ajax process="@this" update="cmbDept" event="itemSelect" />
+                            </p:selectOneMenu>
 
                             <p:spacer></p:spacer>
 
@@ -74,11 +77,13 @@
                             </h:panelGroup>
                             <p:selectOneMenu
                                 id="siteMenu"
-                                class="w-100"
+                                styleClass="w-100 form-control"  
                                 value="#{reportController.site}" 
-                                filter="true">
+                                filter="true"
+                                filterMatchMode="contains">
                                 <f:selectItem itemLabel="All Sites" />
                                 <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                <p:ajax process="@this" update="cmbDept" event="itemSelect" />
                             </p:selectOneMenu>
 
                             <p:spacer width="10"></p:spacer>
@@ -93,7 +98,7 @@
                                 value="#{reportController.department}" 
                                 filter="true">
                                 <f:selectItem itemLabel="All Departments" />
-                                <f:selectItems value="#{departmentController.getInsDepartments(searchController.institution)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                <f:selectItems value="#{departmentController.getInstitutionDepartmentsWithSite(reportController.institution,reportController.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
                             </p:selectOneMenu>
 
                             <h:panelGroup >
@@ -156,9 +161,19 @@
                                 class="m-2 ui-button-danger" 
                                 icon="fa-solid fa-file-pdf"
                                 ajax="false" 
+                                onclick="generatePDF()"
                                 value="PDF">
-                                <p:dataExporter fileName="item_movement_by_bill" target="tbl" type="pdf"></p:dataExporter>
                             </p:commandButton>
+                            <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+                            <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+                            <script>
+                                    function generatePDF() {
+                                        const {jsPDF} = window.jspdf;
+                                        const doc = new jsPDF();
+                                        doc.autoTable({html: '#printTbl'});
+                                        doc.save('bill_wice_item_movement_report.pdf');
+                                    }
+                            </script>
                         </h:panelGrid>
 
                         <p:dataTable
@@ -229,6 +244,43 @@
 
                         </p:dataTable>
 
+                        <table border="1" id="printTbl" style="display:none;">
+                            <thead>
+                                <tr>
+                                    <th>MRN</th>
+                                    <th>Name</th>
+                                    <th>Bill Details</th>
+                                    <th>Bill ID</th>
+                                    <ui:repeat value="#{reportController.headerBillAndItemDataRow.itemDetailCells}" var="hr">
+                                        <th>#{hr.item.name}</th>
+                                    </ui:repeat>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <ui:repeat value="#{reportController.billAndItemDataRows}" var="pc">
+                                    <tr>
+                                        <td>#{pc.bill.patient.phn}</td>
+                                        <td>#{pc.bill.patient.person.nameWithTitle}</td>
+                                        <td>#{pc.bill.id}</td>
+                                        <td>#{pc.bill.deptId}</td>
+                                        <ui:repeat value="#{reportController.headerBillAndItemDataRow.itemDetailCells}" var="hr" varStatus="status">
+                                            <td>#{pc.itemDetailCells[status.index].quentity}</td>
+                                        </ui:repeat>
+                                    </tr>
+                                </ui:repeat>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td>Total</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <ui:repeat value="#{reportController.headerBillAndItemDataRow.itemDetailCells}" var="hr">
+                                        <td>#{hr.quentity}</td>
+                                    </ui:repeat>
+                                </tr>
+                            </tfoot>
+                        </table>
 
 
 

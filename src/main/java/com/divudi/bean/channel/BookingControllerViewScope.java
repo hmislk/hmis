@@ -2944,11 +2944,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 //            if (cancelPaymentMethod == PaymentMethod.Agent) {
 //                updateBallance(cb.getCreditCompany(), Math.abs(bill.getNetTotal()), HistoryType.ChannelBooking, cb, selectedBillSession.getBillItem(), selectedBillSession, selectedBillSession.getBill().getReferralNumber());
 //            }
-        } 
-        else if(bill.getPaymentMethod() == PaymentMethod.Card){
+        } else if (bill.getPaymentMethod() == PaymentMethod.Card) {
             cb.setPaymentMethod(bill.getPaymentMethod());
-        }
-        else {
+        } else {
             cb.setPaymentMethod(bill.getPaymentMethod());
         }
 
@@ -3593,7 +3591,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 if (maxNo <= totalPatientCount) {
                     JsfUtil.addErrorMessage("Error: The maximum number of bookings (" + maxNo + ") has been Reached.");
                     return;
-
                 }
             }
         }
@@ -3615,6 +3612,20 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         if (selectedSessionInstance.isCancelled()) {
             JsfUtil.addErrorMessage("Cannot add patient to a canceled session. Please select an active session.");
             return;
+        }
+
+        if (paymentMethod == PaymentMethod.Agent) {
+            if (institution.getBallance() + institution.getAllowedCreditLimit() < feeNetTotalForSelectedBill) {
+                JsfUtil.addErrorMessage("Agency (balance+credit limit) exeeded. Please get a agency deposit or increase credit limit");
+                return;
+            }
+            
+            if(getAgentRefNo() == null || getAgentRefNo().isEmpty()){
+                JsfUtil.addErrorMessage("Please add Agent Reference No. ");
+                return;
+            }
+            
+    
         }
 
         saveSelected(patient);
@@ -8008,11 +8019,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 //            if (refundPaymentMethod == PaymentMethod.Agent) {
 //                updateBallance(rb.getCreditCompany(), refundableTotal, HistoryType.ChannelBooking, rb, billSession.getBillItem(), billSession, billSession.getBill().getReferralNumber());
 //            }
-        } 
-        else if(bill.getPaymentMethod() == PaymentMethod.Card){
+        } else if (bill.getPaymentMethod() == PaymentMethod.Card) {
             rb.setPaymentMethod(bill.getPaymentMethod());
-        }
-        else {
+        } else {
             rb.setPaymentMethod(bill.getPaymentMethod());
         }
 

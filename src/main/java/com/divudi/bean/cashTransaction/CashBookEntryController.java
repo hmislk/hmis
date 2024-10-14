@@ -35,7 +35,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -78,21 +77,16 @@ public class CashBookEntryController implements Serializable {
     private Date toDate;
 
     public void generateDailyCashbookSummary() {
-        // Initialize the list for sitesGroupedIntoInstitutionses
         sitesGroupedIntoInstitutionses = new ArrayList<>();
 
-        // Fetch departments that have cashbook entries between fromDate and toDate
         List<Department> departmentsFromCashBookEntries = fetchToDepartmentsFromCashbookEntries(fromDate, toDate);
 
-        // A map to track institutions and their grouped sites
         Map<Institution, List<Institution>> institutionToSitesMap = new HashMap<>();
 
-        // Group sites under their respective institutions
         for (Department d : departmentsFromCashBookEntries) {
             Institution institution = d.getInstitution();
             Institution site = d.getSite();
 
-            // Add site to the institution's site list
             institutionToSitesMap
                     .computeIfAbsent(institution, k -> new ArrayList<>())
                     .add(site);
@@ -242,7 +236,7 @@ public class CashBookEntryController implements Serializable {
         }
 
         Map<String, CashBookEntryData> cashbookEntryDataMap = new HashMap<>();
-          
+
         for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
             if (row.getPayment() == null || row.getPayment().getPaymentMethod() == null || row.getPayment().getBill() == null || row.getPayment().getBill().getBillTypeAtomic() == null) {
                 continue;
@@ -319,6 +313,7 @@ public class CashBookEntryController implements Serializable {
 
         for (CashBookEntryData entryData : cashbookEntryDataMap.values()) {
             bundleCb = cashbookFacade.findWithLock(bundleCb.getId());
+
             // Create a new CashBookEntry for each department combination
             CashBookEntry newCbEntry = new CashBookEntry();
             newCbEntry.setInstitution(bundle.getDepartment().getInstitution());
@@ -375,6 +370,7 @@ public class CashBookEntryController implements Serializable {
             entryData.setTotal(totalEntryValue);
 
             newCbEntry.setEntryValue(totalEntryValue);
+
             newCbEntry.setCashBook(bundleCb);
             cashbookEntryFacade.create(newCbEntry);
             cashbookEntries.add(newCbEntry);

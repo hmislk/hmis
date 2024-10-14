@@ -50,15 +50,15 @@
                                     <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
 
                                     <p:inputText autocomplete="off" placeholder="Bill No" value="#{searchController.searchKeyword.billNo}" class="my-1"/>
-                                    <p:inputText autocomplete="off" placeholder="Agent" value="#{searchController.searchKeyword.fromInstitution}" class="my-1"/>
-                                    <p:inputText autocomplete="off" placeholder="Agent Code" value="#{searchController.searchKeyword.number}" class="my-1"/>
+                                    <p:inputText autocomplete="off" placeholder="Collecting Center" value="#{searchController.searchKeyword.fromInstitution}" class="my-1"/>
+                                    <p:inputText autocomplete="off" placeholder="CC Code" value="#{searchController.searchKeyword.number}" class="my-1"/>
                                     <p:inputText autocomplete="off" placeholder="Value" value="#{searchController.searchKeyword.netTotal}" class="my-1"/>
                                     <h:outputLabel/>
                                 </h:panelGroup>
                             </div>
                             <div class="col-md-10">
-                                <p:dataTable id="tblBills" value="#{searchController.bills}" var="bill"  >
-                                    <p:column headerText="Bill No" >
+                                <p:dataTable id="tblBills" value="#{searchController.bills}" var="bill">
+                                    <p:column headerText="Bill No" width="18em">
                                         <h:commandLink action="/collecting_centre/cc_deposit_bill_reprint?faces-redirect=true" value="#{bill.deptId}">
                                             <h:outputLabel  ></h:outputLabel>
                                             <f:setPropertyActionListener value="#{bill}" target="#{agentPaymentReceiveSearchController.bill}"/>
@@ -116,6 +116,7 @@
                                         </h:commandLink>
                                     </p:column>                          
                                     <p:column headerText="Comments" >
+                                        <h:outputLabel rendered="#{bill.refundedBill eq null and bill.cancelledBill eq null}" value="#{bill.comments}" ></h:outputLabel>
                                         <h:outputLabel rendered="#{bill.refundedBill ne null}" value="#{bill.refundedBill.comments}" >
                                         </h:outputLabel>
                                         <h:outputLabel  rendered="#{bill.cancelledBill ne null}" value="#{bill.cancelledBill.comments}" >
