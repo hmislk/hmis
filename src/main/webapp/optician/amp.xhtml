@@ -42,7 +42,36 @@
                             class="m-1 ui-button-danger w-25">
 
                         </p:commandButton>
-                        <p:selectOneListbox 
+                        
+                        
+                        <p:autoComplete 
+                            id="acAmp"
+                            class="w-100"
+                            inputStyleClass="w-100"
+                            completeMethod="#{ampController.completeAmp}"
+                            var="amp"
+                            itemLabel="#{amp.name}"
+                            itemValue="#{amp}"
+                             value="#{ampController.current}" 
+                            maxResults="10"
+                            minQueryLength="3"
+                            >
+                            <p:ajax 
+                                update="gpDetail" 
+                                process="lstSelect" 
+                                listener="#{pharmacyAdjustmentController.fillAmpStocks}">
+                            </p:ajax>
+                            <p:column headerText="Item"  style="padding: 3px;" >
+                                <h:outputText value="#{amp.name}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Stock" style="padding: 3px;" >
+                                <h:outputText value="#{stockController.departmentItemStock(sessionController.department, amp)}" ></h:outputText>
+                            </p:column>
+                        </p:autoComplete>
+                        
+                        
+                        
+<!--                        <p:selectOneListbox 
                             id="lstSelect" 
                             class="w-100"
                             filter="true"
@@ -56,7 +85,7 @@
                                 itemLabel="#{myItem.name}" ></f:selectItems>
                             <p:ajax update="gpDetail" process="lstSelect" >
                             </p:ajax>
-                        </p:selectOneListbox>
+                        </p:selectOneListbox>-->
 
 
                     </div>
