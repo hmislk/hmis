@@ -59,13 +59,10 @@ public class BillReturnController implements Serializable {
     private List<Payment> returningBillPayments;
 
     private PaymentMethod paymentMethod;
-
+  
     private boolean returningStarted = false;
-
     private double refundingTotalAmount;
-
     private String refundComment;
-
     private boolean selectAll;
 
     /**
@@ -131,7 +128,7 @@ public class BillReturnController implements Serializable {
         }
         return canReturn;
     }
-    
+
     public String settleOpdReturnBill() {
         if (returningStarted) {
             JsfUtil.addErrorMessage("Already Returning Started");
@@ -186,7 +183,6 @@ public class BillReturnController implements Serializable {
         originalBillToReturn.setRefunded(true);
         originalBillToReturn.setRefundBills(refundBillList);
         
-        
         billController.save(originalBillToReturn);
 
         double returningTotal = 0.0;
@@ -198,7 +194,7 @@ public class BillReturnController implements Serializable {
         newlyReturnedBillItems = new ArrayList<>();
         returningBillPayments = new ArrayList<>();
         newlyReturnedBillFees = new ArrayList<>();
-
+      
         for (BillItem selectedBillItemToReturn : originalBillItemsToSelectedToReturn) {
 
             returningTotal += selectedBillItemToReturn.getGrossValue();
