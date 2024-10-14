@@ -3111,7 +3111,7 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage("No Bill to Dsiplay");
             return "";
         }
-        return "/opd/view/opd_refund_bill?faces-redirect=true;";
+        return "/opd/view/opd_refund_bill_admin?faces-redirect=true;";
     }
 
     public String navigateToAdminOpdRefundBill() {
