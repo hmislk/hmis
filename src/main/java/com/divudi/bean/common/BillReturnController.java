@@ -5,22 +5,12 @@ import com.divudi.bean.cashTransaction.PaymentController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.PaymentMethod;
-import static com.divudi.data.PaymentMethod.Card;
-import static com.divudi.data.PaymentMethod.Cash;
-import static com.divudi.data.PaymentMethod.Cheque;
-import static com.divudi.data.PaymentMethod.Credit;
-import static com.divudi.data.PaymentMethod.MultiplePaymentMethods;
-import static com.divudi.data.PaymentMethod.OnlineSettlement;
-import static com.divudi.data.PaymentMethod.Slip;
-import static com.divudi.data.PaymentMethod.Staff;
-import static com.divudi.data.PaymentMethod.Staff_Welfare;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Payment;
 import com.divudi.entity.RefundBill;
-import com.divudi.entity.cashTransaction.Drawer;
 import com.divudi.facade.BillFacade;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
@@ -32,21 +22,18 @@ import javax.inject.Inject;
 
 /**
  *
- * @author Damith Deshan
+ * @author Damith
  *
  */
 @Named
 @SessionScoped
 public class BillReturnController implements Serializable {
 
-    // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
     BillFacade billFacade;
     @EJB
     BillNumberGenerator billNumberGenerator;
-// </editor-fold>
 
-    // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     SessionController sessionController;
     @Inject
@@ -61,9 +48,7 @@ public class BillReturnController implements Serializable {
     PaymentController paymentController;
     @Inject
     DrawerController drawerController;
-    // </editor-fold>
 
-    // <editor-fold defaultstate="collapsed" desc="Class Variable">
     private Bill originalBillToReturn;
     private List<BillItem> originalBillItemsAvailableToReturn;
     private List<BillItem> originalBillItemsToSelectedToReturn;
@@ -74,17 +59,12 @@ public class BillReturnController implements Serializable {
     private List<Payment> returningBillPayments;
 
     private PaymentMethod paymentMethod;
-
+  
     private boolean returningStarted = false;
-
     private double refundingTotalAmount;
-
     private String refundComment;
-
     private boolean selectAll;
-    // </editor-fold>
 
-    // <editor-fold defaultstate="collapsed" desc="Method">
     /**
      * Creates a new instance of BillReturnController
      */
@@ -109,21 +89,22 @@ public class BillReturnController implements Serializable {
         if (originalBillToReturn == null) {
             return null;
         }
-
+        
         originalBillItemsAvailableToReturn = billBeanController.fetchBillItems(originalBillToReturn);
         returningStarted = false;
         paymentMethod = originalBillToReturn.getPaymentMethod();
         return "/opd/bill_return?faces-redirect=true";
     }
-
+    
     public String navigateToOPDBillSearchFormRefundOpdBillView() {
-        return "/opd/opd_bill_search?faces-redirect=true";
+        return"/opd/opd_bill_search?faces-redirect=true";
     }
 
     public void selectAllItems() {
         originalBillItemsToSelectedToReturn = new ArrayList();
         for (BillItem selectedBillItemToReturn : originalBillItemsAvailableToReturn) {
             if (!selectedBillItemToReturn.isRefunded()) {
+                System.out.println(selectedBillItemToReturn.getItem().getName() + " Add");
                 originalBillItemsToSelectedToReturn.add(selectedBillItemToReturn);
             }
         }
@@ -136,54 +117,14 @@ public class BillReturnController implements Serializable {
         refundingTotalAmount = 0.0;
         selectAll = true;
     }
-
-    public boolean checkCanReturnBill(Bill bill) {
+    
+    public boolean checkCanReturnBill(Bill bill){
         List<BillItem> items = billBeanController.fetchBillItems(bill);
         boolean canReturn = false;
-        for (BillItem bllItem : items) {
-            if (!bllItem.isRefunded()) {
+        for(BillItem bllItem : items){
+            if(!bllItem.isRefunded()){
                 canReturn = true;
             }
-        }
-        return canReturn;
-    }
-
-    public boolean checkDraverBalance(Drawer drawer, PaymentMethod paymentMethod) {
-        boolean canReturn = false;
-        switch (paymentMethod) {
-            case Cash:
-                if (drawer.getCashInHandValue() < refundingTotalAmount) {
-                    canReturn = false;
-                } else {
-                    canReturn = true;
-                }
-                break;
-            case Card:
-                canReturn = true;
-                break;
-            case MultiplePaymentMethods:
-                canReturn = true;
-                break;
-            case Staff:
-                canReturn = true;
-                break;
-            case Credit:
-                canReturn = true;
-                break;
-            case Staff_Welfare:
-                canReturn = true;
-                break;
-            case Cheque:
-                canReturn = true;
-                break;
-            case Slip:
-                canReturn = true;
-                break;
-            case OnlineSettlement:
-                canReturn = true;
-                break;
-            default:
-                break;
         }
         return canReturn;
     }
@@ -209,15 +150,6 @@ public class BillReturnController implements Serializable {
             returningStarted = false;
             return null;
         }
-        calculateRefundingAmount();
-
-        Drawer loggedUserDraver = drawerController.getUsersDrawer(sessionController.getLoggedUser());
-
-        if (!checkDraverBalance(loggedUserDraver, paymentMethod)) {
-            JsfUtil.addErrorMessage("Your Draver does not have enough Money");
-            returningStarted = false;
-            return null;
-        }
 
         originalBillToReturn = billFacade.findWithoutCache(originalBillToReturn.getId());
         if (originalBillToReturn.isCancelled()) {
@@ -231,7 +163,7 @@ public class BillReturnController implements Serializable {
             returningStarted = false;
             return null;
         }
-
+        
         // fetch original bill now, checked alteady returned, cancelled, , 
         newlyReturnedBill = new RefundBill();
         newlyReturnedBill.copy(originalBillToReturn);
@@ -245,12 +177,12 @@ public class BillReturnController implements Serializable {
         newlyReturnedBill.setDeptId(deptId);
         newlyReturnedBill.setInsId(deptId);
         billController.save(newlyReturnedBill);
-
+        
         List<Bill> refundBillList = originalBillToReturn.getRefundBills();
         refundBillList.add(newlyReturnedBill);
         originalBillToReturn.setRefunded(true);
         originalBillToReturn.setRefundBills(refundBillList);
-
+        
         billController.save(originalBillToReturn);
 
         double returningTotal = 0.0;
@@ -262,7 +194,7 @@ public class BillReturnController implements Serializable {
         newlyReturnedBillItems = new ArrayList<>();
         returningBillPayments = new ArrayList<>();
         newlyReturnedBillFees = new ArrayList<>();
-
+      
         for (BillItem selectedBillItemToReturn : originalBillItemsToSelectedToReturn) {
 
             returningTotal += selectedBillItemToReturn.getGrossValue();
@@ -321,7 +253,7 @@ public class BillReturnController implements Serializable {
 
 //      drawer Update
         drawerController.updateDrawerForOuts(returningPayment);
-
+        
         returningStarted = false;
         return "/opd/bill_return_print?faces-redirect=true";
 
@@ -334,13 +266,11 @@ public class BillReturnController implements Serializable {
         }
         if (originalBillItemsToSelectedToReturn.size() == 0) {
             selectAll = true;
-        } else {
+        }else{
             selectAll = false;
         }
     }
-    // </editor-fold>
 
-    // <editor-fold defaultstate="collapsed" desc="Getter & Setter">
     public Bill getOriginalBillToReturn() {
         return originalBillToReturn;
     }
@@ -437,6 +367,4 @@ public class BillReturnController implements Serializable {
         this.selectAll = selectAll;
     }
 
-    // </editor-fold>
-    
 }
