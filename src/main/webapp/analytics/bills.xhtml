@@ -266,11 +266,11 @@
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>  
-                                <p:column headerText="No" styleClass="alignTop" >
+                                <p:column headerText="No" styleClass="alignTop">
                                     <p:commandButton 
                                         value="View" 
                                         icon="fa fa-eye" 
-                                        class="m-1" 
+                                        class="m-1 ui-button-info" 
                                         action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
                                         ajax="false">
                                         <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" />
@@ -278,15 +278,24 @@
 
                                     <p:commandButton 
                                         value="Manage" 
-                                        icon="fa fa-cog" 
-                                        class="m-1" 
+                                        icon="fa fa-tools" 
+                                        class="m-1 ui-button-primary" 
                                         action="#{billSearch.navigateToManageBillByAtomicBillType()}" 
+                                        ajax="false">
+                                        <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" />
+                                    </p:commandButton>
+
+                                    <p:commandButton 
+                                        value="Admin" 
+                                        icon="fa fa-shield-alt" 
+                                        class="m-1 ui-button-danger" 
+                                        action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
                                         ajax="false" 
                                         rendered="#{webUserController.hasPrivilege('Developers')}">
                                         <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" />
                                     </p:commandButton>
-
                                 </p:column>
+
                             </p:dataTable>
 
                         </div>

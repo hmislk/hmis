@@ -84,6 +84,32 @@ public class BillFeeController implements Serializable {
         getItems();
     }
 
+    public void save(BillFee billFee) {
+        if (billFee == null) {
+            return;
+        }
+        if (billFee.getId() == null) {
+            if (billFee.getCreatedAt() == null) {
+                billFee.setCreatedAt(new Date());
+            }
+            if (billFee.getCreater() == null) {
+                billFee.setCreater(sessionController.getLoggedUser());
+            }
+            getFacade().create(billFee);
+        } else {
+            getFacade().edit(billFee);
+        }
+    }
+
+    public void save(List<BillFee> billFees) {
+        if (billFees == null || billFees.isEmpty()) {
+            return;
+        }
+        for (BillFee billFee : billFees) {
+            save(billFee);
+        }
+    }
+
     public void setSelectText(String selectText) {
         this.selectText = selectText;
     }
