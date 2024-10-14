@@ -53,7 +53,7 @@
                                             ajax="false" 
                                             value="To Cancel" 
                                             action="#{billSearch.navigateToCancelOpdBill()}" 
-                                            disabled="#{(billSearch.bill.cancelled or billSearch.bill.refundedBill ne null)}" 
+                                            disabled="#{billSearch.bill.cancelled or billSearch.bill.refunded}" 
                                             class="ui-button-danger m-1 w-25" icon="fa fa-times" > 
                                         </p:commandButton>
                                     </h:panelGroup>
@@ -71,6 +71,7 @@
                                         <p:commandButton
                                             ajax="false" 
                                             value="To Refund"
+                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Refund Allow for OPD Bill',true)}"
                                             disabled="#{billSearch.bill.cancelled or billSearch.bill.refunded}" 
                                             action="#{billSearch.navigateToRefundOpdBill}" 
                                             class="ui-button-warning m-1 w-25" 
@@ -79,14 +80,16 @@
                                         <p:commandButton
                                             ajax="false" 
                                             value="To Return"
-                                            disabled="#{billSearch.bill.cancelled or billSearch.bill.refunded}" 
-                                            action="#{billReturnController.navigateToReturnOpdBill()}" 
+                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Return Allow for OPD Bill',true)}"
+                                            actionListener="#{billReturnController.clear()}"
+                                            disabled="#{billSearch.bill.cancelled or not billReturnController.checkCanReturnBill(billSearch.bill)}" 
+                                            action="#{billReturnController.navigateToReturnOpdBill()}"
                                             class="ui-button-warning m-1 w-25" 
                                             icon="fa fa-money-bill-wave"> 
                                             <f:setPropertyActionListener value="#{billSearch.bill}" target="#{billReturnController.originalBillToReturn}" ></f:setPropertyActionListener>
                                         </p:commandButton>
                                     </h:panelGroup>
-
+                                    
                                     <h:panelGroup rendered="#{!billSearch.opdBillRefundAllowedSameDay}">
                                         <p:commandButton
                                             ajax="false" 

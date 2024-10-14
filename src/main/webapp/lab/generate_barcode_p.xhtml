@@ -4,6 +4,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:na="http://xmlns.jcp.org/jsf/composite/template"
       xmlns:p="http://primefaces.org/ui">
     <ui:composition template="/resources/template/template.xhtml">
         <ui:define name="content">
@@ -14,7 +15,7 @@
             </h:head>
 
             <h:panelGroup rendered="#{!webUserController.hasPrivilege('LabSampleCollecting')}" >
-                You are NOT authorized
+                <na:not_authorize />
             </h:panelGroup>
 
             <h:panelGroup rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}" >

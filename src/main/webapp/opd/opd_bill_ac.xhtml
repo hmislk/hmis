@@ -424,7 +424,7 @@
 
                                                     <h:outputLabel value="Account Balance " class="mx-3" rendered="#{opdBillController.patient.hasAnAccount}"/>
                                                     <h:outputLabel value=" : " class="mx-3" rendered="#{opdBillController.patient.hasAnAccount}"/>
-                                                    <h:outputText value="#{opdBillController.patient.runningBalance}" rendered="#{opdBillController.patient.hasAnAccount}">
+                                                    <h:outputText value="#{opdBillController.paymentMethodData.patient_deposit.patientDepost.balance}" rendered="#{opdBillController.patient.hasAnAccount}">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
 

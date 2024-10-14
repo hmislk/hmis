@@ -5,123 +5,225 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
-    <h:body class="w-100 border">
-        <ui:composition template="/reports/index.xhtml" class="w-100 border">
+
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
-                <h:form class="w-100">
-                    <p:panel header="Collection Center Wise Income" class="w-100">
-                        <h:panelGrid columns="5" class="w-100" >
 
+                <h:form >
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
-                                <p:outputLabel value="From Date"  class="mx-3">
-                                </p:outputLabel>
+                    <p:panel>
+                        <f:facet name="header">
+                            <h:outputLabel value="Collection Centre Wise Income Report" />
+                        </f:facet>
+
+                        <p:panelGrid  columns="4" class=" mx-2">
+                            <h:panelGroup>
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" />
+                                <p:outputLabel value="From Date" class="mx-3" />
+
                             </h:panelGroup>
-                            <p:datePicker value="#{reportController.fromDate}" 
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"
-                                          class=" w-100" inputStyleClass="w-100" ></p:datePicker>
+                            <p:datePicker
+                                value="#{reportController.fromDate}" 
+                                class="w-100"
+                                showTime="true"
+                                showButtonBar="true"
+                                timeInput="true"
+                                inputStyleClass="form-control"
+                                maxdate="#{commonFunctionsController.endOfDay}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          ></p:datePicker>
 
-
-                            <p:spacer width="20"></p:spacer>
-
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
-                                <p:outputLabel value="To Date" class="mx-3" >
-                                </p:outputLabel>
+                            <h:panelGroup>
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" />
+                                <p:outputLabel value="To Date" class="mx-3" />
                             </h:panelGroup>
-                            <p:datePicker value="#{reportController.toDate}"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"
-                                          class="w-100" inputStyleClass="w-100"></p:datePicker>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf1ad;" styleClass="fa mr-2" /> 
-                                <h:outputLabel value="Site" class="mx-3"/>
+                            <p:datePicker 
+                                class="w-100"
+                                showTime="true"
+                                showButtonBar="true"
+                                timeInput="true"
+                                inputStyleClass="form-control"
+                                value="#{reportController.toDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
+                            </p:datePicker>
+
+                            <h:panelGroup>
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Institution" class="mx-3" />
+
                             </h:panelGroup>
-                            <p:selectOneMenu value="" filter="true" class="w-100 ">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value=""
+
+                            <p:selectOneMenu
+                                id="cmdInstitution"
+                                value="#{reportController.institution}"
+                                style=" max-width: 100%; overflow-x: auto; "
+                                class="w-100"
+                                filter="true">
+                                <f:selectItem itemLabel="All"></f:selectItem>
+                                <f:selectItems value="#{institutionController.companies}"
                                                var="i"
-                                               itemLabel=""
-                                               itemValue=""
-                                               ></f:selectItems>
+                                               itemLabel="#{i.name}"
+                                               itemValue="#{i}"></f:selectItems>
                             </p:selectOneMenu>
 
+                            <h:panelGroup>
+                                <h:outputText value="&#xf201;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Collecting Centre Route" class="mx-3"></p:outputLabel>
 
-                            <p:spacer width="20"></p:spacer>
-
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf0f7;" styleClass="fa mr-2" /> <!-- FontAwesome user-injured icon for Collection Center Name -->
-                                <h:outputLabel value="Collection Center Name" for="cmbCollectionCenterName" class="mx-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+
+                            <p:selectOneMenu value="#{reportController.route}"
+                                             style=" max-width: 100%; overflow-x: auto; "
+                                             class="w-100"
+                                             filter="true"
+                                             filterMatchMode="contains">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var="i"
-                                               itemLabel=""
-                                               itemValue=""
-                                               ></f:selectItems>
-                            </p:selectOneMenu>   
+                                <f:selectItems value="#{routeController.items}"
+                                               var="r"
+                                               itemLabel="#{r.name}"
+                                               itemValue="#{r}"
+                                               />
+                            </p:selectOneMenu>
+
+                            <h:panelGroup>
+                                <h:outputText value="&#xf1ad;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Collecting Center" class="mx-3"></p:outputLabel>
+
+                            </h:panelGroup>
+
+                            <p:autoComplete 
+                                id="creditCom" 
+                                forceSelection="true" 
+                                value="#{reportController.collectingCentre}"
+                                completeMethod="#{institutionController.completeCollectingCenter}" 
+                                var="ix" 
+                                class="w-100"
+                                inputStyleClass="form-control"
+                                itemLabel="#{ix.name}" 
+                                itemValue="#{ix}" 
+                                size="30" 
+                                maxResults="20"                                
+                                >
+                                <f:ajax  event="itemSelect" execute="creditCom"  />
+                                <p:column headerText="Code" style="padding: 5px; width: 150px;">#{ix.institutionCode}</p:column>
+                                <p:column headerText="Collecting Centre Name" style="padding: 5px;">#{ix.name}</p:column>
+                                <p:column headerText="Balance" style="padding: 5px; width: 150px; text-align: right;">
+                                    <p:outputLabel value="#{ix.ballance}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </p:outputLabel>
+                                </p:column>
+                            </p:autoComplete>
 
 
+                        </p:panelGrid>
 
-
-
-                        </h:panelGrid><br/>
-
-                        <div class="d-flex align-items-center">
-                            <p:commandButton class="ui-button-warning mx-1" ajax="false" value="Process" icon="fas fa-cogs" action="#{reportController.processLabTestCount()}" >
+                        <h:panelGrid columns="6" class="my-3">
+                            <p:commandButton 
+                                ajax="false"
+                                action="#{reportController.ccSummaryReportByBill()}"
+                                value="Process by Bill"
+                                icon="fas fa-cogs" class="ui-button-warning mx-2" >
                             </p:commandButton>
-                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
+                            <p:commandButton 
+                                ajax="false"
+                                action="#{reportController.ccSummaryReportByItem()}"
+                                value="Process By Bill Items"
+                                icon="fas fa-cogs" class="ui-button-warning mx-2" >
                             </p:commandButton>
-                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download" action="#{reportController.downloadLabTestCount}">
+                            <p:commandButton style="width: 150px" ajax="false" value="Print" icon="fas fa-print" class="ui-button-info mx-2"  >
+                                <p:printer target="dtaPr"/>
                             </p:commandButton>
-                            <p:commandButton class="ui-button-danger mx-1" icon= "fas fa-file-pdf" ajax="false" value="PDF">
+                            <p:commandButton style="width: 150px" ajax="false" value="Excel" icon="fas fa-file-excel" class="ui-button-success mx-2" >
+                                <p:dataExporter fileName="Collection Centre Wise Income Report - #{webUserController.institution} (#{reportController.fromDate} - #{reportController.fromDate})" type="xlsx" target="dtaPr" />
                             </p:commandButton>
-                        </div><br/><br/>
+                            <p:commandButton style="width: 150px" ajax="false" value="PDF" icon="fas fa-file-pdf" class="ui-button-danger mx-1" >
+                                <p:dataExporter fileName="Collection Centre Wise Income Report - #{webUserController.institution} (#{reportController.fromDate} - #{reportController.fromDate})" type="pdf" target="dtaPr" />
+                            </p:commandButton>
+                        </h:panelGrid>
 
-                        <p:panel>
+                        <p:dataTable id="dtaPr" 
+
+                                     rowKey="#{c.uuid}"
+                                     rowIndexVar="count"
+                                     value="#{reportController.bundle.reportTemplateRows}"
+                                     var="c" class="my-2">
                             <f:facet name="header">
-                                <h:outputLabel value="Collection Center Wise Summary Report" /><br/><br/>
-
-                                <h:outputLabel value="From Date :"/>
+                                <h:outputLabel value="Collection Centre Wise Income Report" /><br/>
+                                <h:outputLabel value="From Date &emsp;&nbsp;&nbsp; :  &emsp;"/>
+                                <h:outputLabel value="#{reportController.fromDate}"  >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                </h:outputLabel>
                                 <br/>
-                                <h:outputLabel value="To Date :"/>      
-                                <br/>     
+                                <h:outputLabel value="To Date  &emsp;&emsp;&nbsp;&nbsp;&nbsp;  :  &emsp;"/>
+                                <h:outputLabel value="#{reportController.toDate}"  >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                </h:outputLabel>
+                                <br/>
+                                <h:outputLabel value="CC Name &emsp;&emsp; :  &emsp;"/>
+                                <h:outputLabel value="#{reportController.collectingCentre}"  ></h:outputLabel>
                             </f:facet>
+                            <p:column headerText="S. No" >
+                                <h:outputText value="#{count+1}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="CC Code" filterMatchMode="contains" sortBy="#{c.institution.code}" filterBy="#{c.institution.code}" >
+                                <h:outputText value="#{c.institution.code}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="CC Name" filterMatchMode="contains" sortBy="#{c.institution.name}" filterBy="#{c.institution.name}">
+                                <h:outputText value="#{c.institution.name}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="CC Route" filterMatchMode="contains" sortBy="#{c.institution.route.name}" filterBy="#{c.institution.route.name}">
+                                <h:outputText value="#{c.institution.route.name}" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Count" filterMatchMode="contains" sortBy="#{c.itemCount}" filterBy="#{c.itemCount}">
+                                <h:outputText value="#{c.itemCount}" ></h:outputText>
+                                <f:facet name="footer" >
+                                    <h:outputLabel value="#{reportController.bundle.count}" >
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column headerText="Hos Fee" >
+                                <h:outputText value="#{c.itemHospitalFee}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                <f:facet name="footer" >
+                                    <h:outputLabel value="#{reportController.bundle.hospitalTotal}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column headerText="CC Fee" >
+                                <h:outputText value="#{c.itemCollectingCentreFee}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                <f:facet name="footer" >
+                                    <h:outputLabel value="#{reportController.bundle.ccTotal}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column headerText="Staff" >
+                                <h:outputText value="#{c.itemProfessionalFee}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                <f:facet name="footer" >
+                                    <h:outputLabel value="#{reportController.bundle.staffTotal}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column headerText="Net Total" >
+                                <h:outputText value="#{c.itemNetTotal}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                <f:facet name="footer" >
+                                    <h:outputLabel value="#{reportController.bundle.total}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
 
-
-                            <p:dataTable>  
-                                <p:column headerText="S.No">
-                                    <h:outputText value="" ></h:outputText>
-                                </p:column>
-                                <p:column headerText="CC Code">
-                                    <h:outputText value="" ></h:outputText>
-                                </p:column>
-                                <p:column headerText="CC Name" width="">
-                                    <h:outputText value="" ></h:outputText>
-                                </p:column>
-                                <p:column headerText="Count" >
-                                    <h:outputText value="" ></h:outputText>
-                                </p:column>
-                                <p:column headerText="Hos Fee" >
-                                    <h:outputText value="" ></h:outputText>
-                                </p:column>
-                                <p:column headerText="CC Fee" >
-                                    <h:outputText value="" ></h:outputText>
-                                </p:column>
-                                <p:column headerText="Staff" >
-                                    <h:outputText value="" ></h:outputText>
-                                </p:column>
-                                <p:column headerText="Net Total" >
-                                    <h:outputText value="" ></h:outputText>
-                                </p:column>
-                            </p:dataTable>
-                        </p:panel>
-
-
+                        </p:dataTable>
                     </p:panel>
 
                 </h:form>
