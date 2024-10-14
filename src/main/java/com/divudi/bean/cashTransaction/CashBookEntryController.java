@@ -236,7 +236,7 @@ public class CashBookEntryController implements Serializable {
         }
 
         Map<String, CashBookEntryData> cashbookEntryDataMap = new HashMap<>();
-
+          
         for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
             if (row.getPayment() == null || row.getPayment().getPaymentMethod() == null || row.getPayment().getBill() == null || row.getPayment().getBill().getBillTypeAtomic() == null) {
                 continue;
@@ -313,7 +313,6 @@ public class CashBookEntryController implements Serializable {
 
         for (CashBookEntryData entryData : cashbookEntryDataMap.values()) {
             bundleCb = cashbookFacade.findWithLock(bundleCb.getId());
-
             // Create a new CashBookEntry for each department combination
             CashBookEntry newCbEntry = new CashBookEntry();
             newCbEntry.setInstitution(bundle.getDepartment().getInstitution());
@@ -370,7 +369,6 @@ public class CashBookEntryController implements Serializable {
             entryData.setTotal(totalEntryValue);
 
             newCbEntry.setEntryValue(totalEntryValue);
-
             newCbEntry.setCashBook(bundleCb);
             cashbookEntryFacade.create(newCbEntry);
             cashbookEntries.add(newCbEntry);
