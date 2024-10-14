@@ -15,8 +15,7 @@
                     <p:panel   header="Daily Return" class="m-1">
 
 
-                        <h:panelGrid columns="2" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
-
+                        <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
                                 <h:outputLabel value="From" for="fromDate" class="mx-3"/>
@@ -28,6 +27,8 @@
                                 value="#{searchController.fromDate}" 
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
                                 />
+
+                            <p:spacer width="50" ></p:spacer>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
@@ -41,6 +42,11 @@
                                 navigator="false" 
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
                                 />
+
+                            <p:spacer width="50" ></p:spacer>
+
+                            <p:spacer width="50" ></p:spacer>
+                            <p:spacer width="50" ></p:spacer>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
@@ -56,18 +62,9 @@
                                 <p:ajax process="cmbIns" update="cmbDept" />
                             </p:selectOneMenu>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
-                                <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu
-                                id="cmbDept"
-                                styleClass="w-100 form-control"  
-                                value="#{searchController.department}" 
-                                filter="true">
-                                <f:selectItem itemLabel="All Departments" />
-                                <f:selectItems value="#{departmentController.getInsDepartments(searchController.institution)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
-                            </p:selectOneMenu>
+                            <p:spacer ></p:spacer>
+
+
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
@@ -80,28 +77,24 @@
                                 filter="true">
                                 <f:selectItem itemLabel="All Sites" />
                                 <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                <p:ajax process="siteMenu" update="cmbDept" />
                             </p:selectOneMenu>
 
-                        </h:panelGrid>
 
+                            <p:spacer ></p:spacer>
 
-
-                        <h:panelGrid columns="3" class="my-2" >
-
-                            <p:commandButton  
-                                value="Process" 
-                                ajax="false"
-                                action="#{searchController.generateDailyReturn()}" 
-                                class="ui-button-success" icon="fas fa-cogs">
-                            </p:commandButton>
-
-                            <p:commandButton  
-                                value="Update" 
-                                ajax="false"
-                                action="#{searchController.updateBillItenValues()}" 
-                                class="ui-button-danger" icon="fas fa-cogs">
-                            </p:commandButton>
-
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="cmbDept"
+                                styleClass="w-100 form-control"  
+                                value="#{searchController.department}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Departments" />
+                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                            </p:selectOneMenu>
 
                             <p:commandButton value="Download Excel" 
                                              ajax="false" 
@@ -116,6 +109,55 @@
                             </p:commandButton>
 
                         </h:panelGrid>
+
+                        <p:commandButton 
+                            value="Process" 
+                            ajax="false"
+                            action="#{searchController.generateDailyReturn()}" 
+                            class="ui-button-success m-1" 
+                            icon="fas fa-cogs" 
+                            style="background-color: #28a745; border-color: #28a745;"> 
+                        </p:commandButton>
+
+                        <p:commandButton
+                            value="Update" 
+                            ajax="false"
+                            action="#{searchController.updateBillItemValues()}" 
+                            class="ui-button-primary m-1" 
+                            icon="pi pi-pencil" 
+                            style="background-color: #007bff; border-color: #007bff;"> 
+                        </p:commandButton>
+
+                        <p:commandButton 
+                            value="Download Excel" 
+                            ajax="false" 
+                            icon="pi pi-file-excel" 
+                            class="ui-button-info  m-1"
+                            style="background-color: #17a2b8; border-color: #17a2b8;" 
+                            onclick="PrimeFaces.monitorDownload(start, stop);">
+                            <p:fileDownload value="#{searchController.bundleAsExcel}" />
+                        </p:commandButton>
+
+                        <p:commandButton 
+                            value="Download PDF" 
+                            ajax="false" 
+                            icon="pi pi-file-pdf" 
+                            class="ui-button-info  m-1"
+                            style="background-color: #17a2b8; border-color: #17a2b8;" 
+                            onclick="PrimeFaces.monitorDownload(start, stop);">
+                            <p:fileDownload value="#{searchController.bundleAsPdf}" />
+                        </p:commandButton>
+
+                        <p:commandButton 
+                            value="Print" 
+                            class="m-1"
+                            icon="pi pi-print" 
+                            style="background-color: #f0ad4e; border-color: #f0ad4e;"> 
+                            <p:printer target="printPanel" />
+                        </p:commandButton>
+
+
+
 
 
 

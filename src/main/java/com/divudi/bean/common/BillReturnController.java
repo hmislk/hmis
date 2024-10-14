@@ -64,7 +64,6 @@ public class BillReturnController implements Serializable {
     private String refundComment;
 
     private boolean selectAll;
-
     /**
      * Creates a new instance of BillReturnController
      */
@@ -135,7 +134,6 @@ public class BillReturnController implements Serializable {
             returningStarted = false;
             return null;
         }
-
         originalBillToReturn = billFacade.findWithoutCache(originalBillToReturn.getId());
         if (originalBillToReturn.isCancelled()) {
             JsfUtil.addErrorMessage("Already Cancelled");
@@ -169,7 +167,6 @@ public class BillReturnController implements Serializable {
         newlyReturnedBillItems = new ArrayList<>();
         returningBillPayments = new ArrayList<>();
         newlyReturnedBillFees = new ArrayList<>();
-
         for (BillItem selectedBillItemToReturn : originalBillItemsToSelectedToReturn) {
 
             returningTotal += selectedBillItemToReturn.getGrossValue();
