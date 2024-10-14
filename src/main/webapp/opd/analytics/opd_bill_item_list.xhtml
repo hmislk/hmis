@@ -266,33 +266,23 @@
                                         </h:commandLink>
                                     </p:column>
 
-                                    <p:column headerText="Gross Value" sortBy="#{pi.billItem.grossValue}" filterBy="#{pi.grossValue}" filterMatchMode="gte">
-                                        <h:commandLink action="/opd/bill_reprint?faces-redirect=true">
-                                            <h:outputLabel value="#{pi.billItem.grossValue}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
-                                            <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.billSearch}"/>
-                                        </h:commandLink>
+                                    <p:column headerText="Gross Value*" sortBy="#{pi.billItem.grossValue}" filterBy="#{pi.billItem.grossValue}" filterMatchMode="gte">
+                                        <h:outputLabel value="#{pi.billItem.grossValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
                                     </p:column>
 
-                                    <p:column headerText="Discount" sortBy="#{pi.billItem.discount}" filterBy="#{pi.billItem.discount}" filterMatchMode="gte">
-                                        <h:commandLink action="/opd/bill_reprint?faces-redirect=true">
-                                            <h:outputLabel value="#{pi.billItem.discount}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
-                                            <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.billSearch}"/>
-                                        </h:commandLink>
+                                    <p:column headerText="Discount*" sortBy="#{pi.billItem.discount}" filterBy="#{pi.billItem.discount}" filterMatchMode="gte">
+                                        <h:outputLabel value="#{pi.billItem.discount}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
                                     </p:column>
 
-                                    <p:column headerText="Net Value" sortBy="#{pi.billItem.netValue}" 
+                                    <p:column headerText="Net Value*" sortBy="#{pi.billItem.netValue}" 
                                               filterBy="#{pi.billItem.netValue}" filterMatchMode="gte">
-                                        <h:commandLink action="/opd/bill_reprint?faces-redirect=true">
-                                            <h:outputLabel value="#{pi.billItem.netValue}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
-                                            <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.billSearch}"/>
-                                        </h:commandLink>
-
+                                        <h:outputLabel value="#{pi.billItem.netValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
                                     </p:column>
 
                                     <p:column headerText="Doctor" sortBy="#{pi.billItem.bill.fromStaff.person.nameWithTitle}" filterBy="#{pi.billItem.bill.fromStaff.person.nameWithTitle}" filterMatchMode="contains">

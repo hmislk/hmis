@@ -201,6 +201,7 @@
                                             <p:column width="12em" headerText="Actions" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
                                                 <!-- To Bill Details Button -->
                                                 <p:commandButton ajax="false"
+                                                                 rendered="false"
                                                                  title="View Bill"
                                                                  class="ui-button-success m-1"
                                                                  icon="fa fa-file-invoice"
@@ -218,6 +219,7 @@
                                                 <!-- To Cancel Button -->
                                                 <p:commandButton 
                                                     ajax="false"
+                                                    rendered="false"
                                                     title="To Cancel Bill"
                                                     action="#{billSearch.navigateToCancelOpdBill()}"
                                                     disabled="#{b.cancelled or b.refunded}"
@@ -226,17 +228,6 @@
                                                     <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}"/>
                                                 </p:commandButton>
 
-                                                <!-- To Refund Button -->
-                                                <p:commandButton 
-                                                    id="btnRefund"
-                                                    ajax="false"
-                                                    title="To Refund Bill"
-                                                    action="#{billSearch.navigateToRefundOpdBill()}"
-                                                    disabled="#{b.cancelled}"
-                                                    class="ui-button-warning m-1"
-                                                    icon="fa fa-money-bill-wave">
-                                                    <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}"/>
-                                                </p:commandButton>
 
                                             </p:column>
                                         </p:dataTable>
