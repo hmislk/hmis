@@ -64,7 +64,6 @@ public class BillReturnController implements Serializable {
     private String refundComment;
 
     private boolean selectAll;
-
     /**
      * Creates a new instance of BillReturnController
      */
