@@ -15,16 +15,23 @@
 
             <ui:define name="content">
                 <h:form>
-                    <p:panel class="text-danger bg-danger text-white">
+                    <p:panel >
                         <f:facet name="header">
                             <div class="d-flex justify-content-between">
-                                <p:outputLabel value="View Refund OPD Bill" class="mt-2"></p:outputLabel>
+                                <p:outputLabel value="Admin OPD Bill" class="mt-2"></p:outputLabel>
+                                <p:commandButton value="Save" action="#{billSearch.saveViewingBillData()}" ajax="false" ></p:commandButton>
                             </div> 
-                            <p:commandButton value="Save" action="#{billSearch.saveViewingBillData()}" ajax="false" ></p:commandButton>
                         </f:facet>
                         <div class="row">
 
                             <div class="col-12">
+                                <h:panelGroup rendered="#{billSearch.viewingBill.cancelled}" >
+                                    <p:outputLabel value="Cancelled" class="ui-message-error m-2 p-2 b-1 w-100 text-center" ></p:outputLabel>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{billSearch.viewingBill.refunded}" >
+                                    <p:outputLabel value="Refunded" class="ui-message-error m-2 p-2 b-1 w-100 text-center" ></p:outputLabel>
+                                </h:panelGroup>
+
                                 <p:tabView orientation="left">
                                     <p:tab title="Patient Details" >
                                         <p:panel header="">
@@ -36,63 +43,22 @@
                                         </p:panel>
                                     </p:tab>
 
-                                    <p:tab title="Original" >
-                                        <h:panelGrid columns="2" class="w-100">
-
-
-                                            <p:panel class="w-100">
-                                                <f:facet name="header">
-                                                    <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
-                                                    <h:outputLabel value="Original Batch Bill Details" class="mx-4"></h:outputLabel>
-                                                    <p:commandButton 
-                                                        value="View Original Batch Bill" 
-                                                        ajax="false"
-                                                        action="#{billSearch.navigateToViewBillByAtomicBillType()}">
-                                                        <f:setPropertyActionListener 
-                                                            value="#{billSearch.viewingBill.backwardReferenceBill}" 
-                                                            target="#{billSearch.bill}" ></f:setPropertyActionListener>
-                                                    </p:commandButton> 
-                                                    <p:commandButton 
-                                                        value="Admin" 
-                                                        icon="fa fa-shield-alt" 
-                                                        class="m-1 ui-button-danger" 
-                                                        action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
-                                                        ajax="false" 
-                                                        rendered="#{webUserController.hasPrivilege('Developers')}">
-                                                        <f:setPropertyActionListener 
-                                                            value="#{billSearch.viewingBill.referenceBill}" 
-                                                            target="#{billSearch.bill}" ></f:setPropertyActionListener>
-                                                    </p:commandButton>
-                                                </f:facet>
-                                                <view:out bill="#{billSearch.viewingBill.backwardReferenceBill}"/>
-                                            </p:panel>
-                                            <p:panel class="w-100">
-                                                <f:facet name="header">
-                                                    <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
-                                                    <h:outputLabel value="Original Bill Details" class="mx-4"></h:outputLabel>
-                                                    <p:commandButton 
-                                                        value="View Original Bill" 
-                                                        ajax="false"
-                                                        action="#{billSearch.navigateToViewBillByAtomicBillType()}">
-                                                        <f:setPropertyActionListener 
-                                                            value="#{billSearch.viewingBill.referenceBill}" 
-                                                            target="#{billSearch.bill}" ></f:setPropertyActionListener>
-                                                    </p:commandButton> 
-                                                    <p:commandButton 
-                                                        value="Admin" 
-                                                        icon="fa fa-shield-alt" 
-                                                        class="m-1 ui-button-danger" 
-                                                        action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
-                                                        ajax="false" 
-                                                        rendered="#{webUserController.hasPrivilege('Developers')}">
-                                                        <f:setPropertyActionListener 
-                                                            value="#{billSearch.viewingBill.referenceBill}" 
-                                                            target="#{billSearch.bill}" ></f:setPropertyActionListener>
-                                                    </p:commandButton>
-                                                </f:facet>
-                                                <view:out bill="#{billSearch.viewingBill.referenceBill}"/>
-                                            </p:panel>
-                                        </h:panelGrid>
+                                    <p:tab title="Batch Bill Details" >
+                                        <p:panel>
+                                            <f:facet name="header">
+                                                <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
+                                                <h:outputLabel value="Batch Bill Details" class="mx-4"></h:outputLabel>
+                                                <p:commandButton 
+                                                    value="View Batch Bill" 
+                                                    ajax="false"
+                                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                                                    <f:setPropertyActionListener 
+                                                        value="#{billSearch.viewingBill.backwardReferenceBill}" 
+                                                        target="#{billSearch.bill}" ></f:setPropertyActionListener>
+                                                </p:commandButton> 
+                                            </f:facet>
+                                            <view:out bill="#{billSearch.viewingBill.backwardReferenceBill}"/>
+                                        </p:panel>
                                     </p:tab>
 
                                     <p:tab title="Bill Details" >
@@ -148,7 +114,73 @@
                                             </p:column>
                                         </p:dataTable>
                                     </p:tab>
+                                    <p:tab title="Cancellations" >
+                                        <h:panelGroup rendered="#{not billSearch.viewingBill.cancelled}" >
+                                            <p:outputLabel value="Not Cancelled" class="ui-message-error m-2 p-2 b-1 w-100 text-center" ></p:outputLabel>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{billSearch.viewingBill.cancelled}" >
+
+                                            <p:commandButton
+                                                ajax="false"
+                                                class="m-1"
+                                                icon="pi pi-eye"
+                                                value="View Cancelled Bill"
+                                                action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                                                <f:setPropertyActionListener 
+                                                    value="#{billSearch.viewingBill.cancelledBill}" 
+                                                    target="#{billSearch.bill}" />
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false"
+                                                class="m-1"
+                                                icon="pi pi-pencil"
+                                                value="Manage Cancelled Bill"
+                                                action="#{billSearch.navigateToManageBillByAtomicBillType()}">
+                                                <f:setPropertyActionListener 
+                                                    value="#{billSearch.viewingBill.cancelledBill}"  
+                                                    target="#{billSearch.bill}" />
+                                            </p:commandButton>
+                                            <view:out bill="#{billSearch.viewingBill.cancelledBill}" ></view:out>
+                                        </h:panelGroup>
+                                    </p:tab>
+                                    <p:tab title="Refunded" >
+                                        <h:panelGroup rendered="#{not billSearch.viewingBill.refunded}" >
+                                            <p:outputLabel value="Not Refunded" class="ui-message-error m-2 p-2 b-1 w-100 text-center" ></p:outputLabel>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{billSearch.viewingBill.refunded}" >
+                                            <ui:repeat value="#{billSearch.viewingBill.refundBills}" var="rb" >
+                                                <p:commandButton 
+                                                    ajax="false"
+                                                    value="View Refund Bill"
+                                                    class="m-1"
+                                                    icon="pi pi-eye"
+                                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                                                    <f:setPropertyActionListener 
+                                                        value="#{rb}" 
+                                                        target="#{billSearch.bill}" />
+                                                </p:commandButton>
+                                                <p:commandButton 
+                                                    ajax="false"
+                                                    class="m-1"
+                                                    icon="pi pi-pencil"
+                                                    value="Manage Refund Bill"
+                                                    action="#{billSearch.navigateToManageBillByAtomicBillType()}">
+                                                    <f:setPropertyActionListener 
+                                                        value="#{rb}" 
+                                                        target="#{billSearch.bill}" />
+                                                </p:commandButton>
+
+                                                <view:out bill="#{rb}" ></view:out>
+                                            </ui:repeat>
+                                        </h:panelGroup>
+                                    </p:tab>
                                 </p:tabView>
+
+
+
+
+
+
                             </div>
                         </div>
 
