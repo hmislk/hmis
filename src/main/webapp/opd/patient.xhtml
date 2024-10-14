@@ -101,14 +101,16 @@
                                             styleClass="mr-2">
                                         </p:badge>
                                         <p:outputLabel value="Has an Account:"  />
-                                        <p:outputLabel value="#{patientController.current.hasAnAccount?'Has an account':'No Account'}" />
+                                        <p:outputLabel value="#{patientDepositController.checkDepositOfThePatient(patientController.current, sessionController.getDepartment()) ne null ?'Has an account':'No Account'}" />
 
 
-                                        <p:outputLabel value="Account Balance:" rendered="#{patientController.current.hasAnAccount}" />
-                                        <p:outputLabel value="#{patientController.current.runningBalance}" rendered="#{patientController.current.hasAnAccount}" />
+                                        <p:outputLabel value="Account Balance:" rendered="#{patientDepositController.checkDepositOfThePatient(patientController.current, sessionController.getDepartment()) ne null}" />
+                                        <p:outputLabel value="#{patientDepositController.checkDepositOfThePatient(patientController.current, sessionController.getDepartment()).balance}" rendered="#{patientDepositController.checkDepositOfThePatient(patientController.current, sessionController.getDepartment()) ne null}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel>
 
-                                        <p:outputLabel value="Credit Limit:" rendered="#{patientController.current.hasAnAccount}" />
-                                        <p:outputLabel value="#{patientController.current.creditLimit}" rendered="#{patientController.current.hasAnAccount}" />
+<!--                                        <p:outputLabel value="Credit Limit:" rendered="#{patientController.current.hasAnAccount}" />
+                                        <p:outputLabel value="#{patientController.current.creditLimit}" rendered="#{patientDepositController.checkDepositOfThePatient(patientController.current, sessionController.getDepartment()) ne null}" />-->
 
 
                                     </p:panelGrid>
