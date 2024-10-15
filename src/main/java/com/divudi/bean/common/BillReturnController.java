@@ -149,7 +149,6 @@ public class BillReturnController implements Serializable {
             returningStarted = false;
             return null;
         }
-
         originalBillToReturn = billFacade.findWithoutCache(originalBillToReturn.getId());
         if (originalBillToReturn.isCancelled()) {
             JsfUtil.addErrorMessage("Already Cancelled");
@@ -168,6 +167,7 @@ public class BillReturnController implements Serializable {
         newlyReturnedBill.copy(originalBillToReturn);
         newlyReturnedBill.setBillTypeAtomic(BillTypeAtomic.OPD_BILL_REFUND);
         newlyReturnedBill.setComments(refundComment);
+
         newlyReturnedBill.setInstitution(sessionController.getInstitution());
         newlyReturnedBill.setDepartment(sessionController.getDepartment());
         newlyReturnedBill.invertValue();
