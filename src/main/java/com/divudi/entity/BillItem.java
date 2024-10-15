@@ -225,6 +225,7 @@ public class BillItem implements Serializable {
         item = billItem.getItem();
         sessionDate = billItem.getSessionDate();
         patientEncounter = billItem.getPatientEncounter();
+        patientInvestigation = billItem.getPatientInvestigation();
         inwardChargeType = billItem.getInwardChargeType();
         agentRefNo = billItem.getAgentRefNo();
         item = billItem.getItem();

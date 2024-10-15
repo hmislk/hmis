@@ -21,6 +21,7 @@ import com.divudi.data.FeeType;
 import com.divudi.data.HistoryType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.PersonInstitutionType;
+import com.divudi.data.Title;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.ChannelBean;
 
@@ -56,6 +57,7 @@ import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.SessionInstanceFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.java.CommonFunctions;
+import com.divudi.service.PatientService;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -66,6 +68,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import javax.ejb.EJB;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
@@ -85,7 +88,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.json.JSONArray;
 import org.json.JSONObject;
-
 
 /**
  * REST Web Service
@@ -148,6 +150,11 @@ public class ChannelApi {
     SpecialityController specialityController;
     @Inject
     ApiKeyController apiKeyController;
+    @Inject
+    BookingControllerViewScope bookingControllerViewScope;
+
+    @EJB
+    PatientService patientService;
 
     /**
      * Creates a new instance of Api
@@ -219,6 +226,14 @@ public class ChannelApi {
         return jSONObjectOut;
     }
 
+    public JSONObject commonFunctionToErrorResponse(String msg) {
+        JSONObject jSONObject = new JSONObject();
+        jSONObject.put("code", 400);
+        jSONObject.put("type", "error");
+        jSONObject.put("message", msg);
+        return jSONObject;
+    }
+
     private JSONObject errorMessageNotValidKey() {
         JSONObject jSONObjectOut = new JSONObject();
         jSONObjectOut.put("code", 401);
@@ -230,7 +245,7 @@ public class ChannelApi {
 
     private JSONObject errorMessageNotValidPathParameter() {
         JSONObject jSONObjectOut = new JSONObject();
-        jSONObjectOut.put("code", 401);
+        jSONObjectOut.put("code", 400);
         jSONObjectOut.put("type", "error");
         String e = "Not a valid path parameter.";
         jSONObjectOut.put("message", e);
@@ -239,7 +254,7 @@ public class ChannelApi {
 
     private JSONObject errorMessageNotValidInstitution() {
         JSONObject jSONObjectOut = new JSONObject();
-        jSONObjectOut.put("code", 401);
+        jSONObjectOut.put("code", 400);
         jSONObjectOut.put("type", "error");
         String e = "Not a valid institution code.";
         jSONObjectOut.put("message", e);
@@ -248,7 +263,7 @@ public class ChannelApi {
 
     private JSONObject notValidId() {
         JSONObject jSONObjectOut = new JSONObject();
-        jSONObjectOut.put("code", 401);
+        jSONObjectOut.put("code", 400);
         jSONObjectOut.put("type", "error");
         String e = "Not a valid code.";
         jSONObjectOut.put("message", e);
@@ -535,13 +550,13 @@ public class ChannelApi {
         Institution hospital = institutionController.findInstitution(hosId);
         Speciality speciality = specialityController.findSpeciality(docNo);
         Consultant consultant = consultantController.getConsultantById(docNo);
-        
-        if(hospital == null || consultant == null){
+
+        if (hospital == null || consultant == null) {
             JSONObject json = notValidId();
         }
 
         List<SessionInstance> sessions = sessionInstanceController.findSessionInstance(hospital, speciality, consultant, null, null);
-        
+
         Map<String, Object> sessionData = new HashMap<>();
 
         for (SessionInstance s : sessions) {
@@ -645,14 +660,20 @@ public class ChannelApi {
     public Response createBooking(@Context HttpServletRequest requestContext, Map<String, Object> requestBody) {
         String key = requestContext.getHeader("Finance");
         if (!isValidKey(key)) {
-            JSONObject responseError = new JSONObject();
-            responseError = errorMessageNotValidKey();
-            String json = responseError.toString();
-            return Response.status(Response.Status.ACCEPTED).entity(responseError.toString()).build();
+            JSONObject responseError = errorMessageNotValidKey();
+            return Response.status(Response.Status.UNAUTHORIZED).entity(responseError.toString()).build();
         }
-         Map<String, String> patientDetails = (Map<String, String>)requestBody.get("patient");
+        Map<String, String> patientDetails = (Map<String, String>) requestBody.get("patient");
+        String sessionId = (String) requestBody.get("sessionID");
+        Map<String, String> payment = (Map<String, String>) requestBody.get("payment");
 
-        if(patientDetails == null || patientDetails.isEmpty()){
+        SessionInstance session = sessionInstanceFacade.find(sessionId);
+        if (session == null) {
+            JSONObject response = commonFunctionToErrorResponse("Session id is invalid");
+            return Response.status(Response.Status.NOT_FOUND).entity(response).build();
+        }
+
+        if (patientDetails == null || patientDetails.isEmpty()) {
             JSONObject response = new JSONObject();
             response.put("Code", "401");
             response.put("type", "error");
@@ -660,31 +681,109 @@ public class ChannelApi {
             return Response.status(Response.Status.ACCEPTED).entity(response).build();
         }
 
-//        String patientPhoneNo = patientDetails.get("teleNo");
-//        String patientName = patientDetails.get("patientName");
-//        String patientType = patientDetails.get("foreign");
-//        boolean isForeigner = false;
-//        String patientTitle = patientDetails.get("title");
-//        String nic = patientDetails.get("nid");
-//        
-//        if(patientType.toUpperCase().equals("YES")){
-//            isForeigner = true;
-//        }
-//        
-//       BookingControllerViewScope bookingControllerViewScope = new BookingControllerViewScope();
-//       bookingControllerViewScope.setQuickSearchPhoneNumber(patientPhoneNo);
-//       bookingControllerViewScope.quickSearchPatientLongPhoneNumber();
-//       
-//       if(bookingControllerViewScope.getQuickSearchPatientList() == null || bookingControllerViewScope.getQuickSearchPatientList().isEmpty()){
-//           Patient p = bookingControllerViewScope.getPatient();
-//           p.getPerson().setForeigner(isForeigner);
-//           p.getPerson().setName(patientName);
-//           p.getPerson().setMobile(patientPhoneNo);
-//           p.getPerson().setPhone(patientPhoneNo);          
-//           p.getPerson().setNic(nic);
-//       }
-//       
+        String patientPhoneNo = patientDetails.get("teleNo");
+        String patientName = patientDetails.get("patientName");
+        String patientType = patientDetails.get("foreign");
+        boolean isForeigner = false;
+        String patientTitle = patientDetails.get("title");
+        String nic = patientDetails.get("nid");
+        String clientsReferanceNo = patientDetails.get("clientRefNumber");
+        Long patientPhoneNumberLong = CommonFunctions.removeSpecialCharsInPhonenumber(patientPhoneNo);
 
+        List<Patient> patients = null;
+        Patient newPatient = null;
+        boolean toSelectOneFromALot = false;
+        boolean toCreateNewOne = true;
+
+        if (nic != null && !nic.isEmpty()) {
+            patients = patientService.searchPatientsByNic(nic);
+            if (patients == null) {
+                toCreateNewOne = true;
+            } else {
+                toCreateNewOne = false;
+                if (patients.size() > 1) {
+                    toSelectOneFromALot = true;
+                } else {
+                    newPatient = patients.get(0);
+                    toSelectOneFromALot = false;
+                }
+            }
+        }
+
+        if (newPatient == null && toSelectOneFromALot == false) {
+            if (patientPhoneNumberLong == null) {
+                JSONObject response = commonFunctionToErrorResponse("Not a Valid Phone number");
+                return Response.status(Response.Status.ACCEPTED).entity(response).build();
+            }
+        } else if (newPatient == null && toSelectOneFromALot) {
+            if (patients != null) {
+                for (Patient pt : patients) {
+                    if (Objects.equals(pt.getPatientMobileNumber(), patientPhoneNumberLong) || pt.getPatientPhoneNumber() == patientPhoneNumberLong) {
+                        newPatient = pt;
+                        toSelectOneFromALot = false;
+                    }
+                }
+            }
+        }
+
+        if (newPatient == null && patients == null) {
+            patients = patientService.searchPatientsByPhone(patientPhoneNumberLong);
+            if (patients == null) {
+                toCreateNewOne = true;
+            } else {
+                toCreateNewOne = false;
+                if (patients.size() > 1) {
+                    toSelectOneFromALot = true;
+                } else {
+                    newPatient = patients.get(0);
+                    toSelectOneFromALot = false;
+                }
+            }
+        } else if (newPatient == null && patients != null) {
+            List<Patient> temPts = patientService.searchPatientsByPhone(patientPhoneNumberLong);
+            if (temPts != null) {
+                patients.addAll(temPts);
+            }
+        }
+
+        if (toSelectOneFromALot) {
+            newPatient = patientService.findFirstMatchingPatientByName(patients, patientName);
+        }
+
+        Title titleForPatienFromSystem = null;
+
+        for (Title title : Title.values()) {
+            if (title.name().equalsIgnoreCase(patientTitle)) {
+                titleForPatienFromSystem = title;
+            }
+        }
+
+        if (titleForPatienFromSystem == null) {
+            JSONObject response = commonFunctionToErrorResponse("Invalid title for the patient");
+            return Response.status(Response.Status.ACCEPTED).entity(response).build();
+        }
+        if (patientType.toUpperCase().equals("YES")) {
+            isForeigner = true;
+        }
+
+        newPatient = new Patient();
+        Person p = new Person();
+        p.setName(patientName);
+        p.setTitle(titleForPatienFromSystem);
+        p.setNic(nic);
+        p.setForeigner(isForeigner);
+        newPatient.setPerson(p);
+
+        String paymentMode = payment.get("paymentMode");
+        String bankCode = payment.get("bankCode");
+        String paymentChannel = payment.get("paymentChannel");
+        String channelForm = payment.get("channelFrom");
+        PaymentMethod paymentMethod = null;
+
+        //TODO : Handle Payment Method
+        
+        
+        
         return Response.status(Response.Status.ACCEPTED).entity("create Booking Api").build();
     }
 

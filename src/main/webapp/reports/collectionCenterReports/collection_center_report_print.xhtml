@@ -29,7 +29,7 @@
                             <p:spacer width="50"></p:spacer>
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
                                 <h:outputLabel value="To" for="toDate" class="mx-3"/>
                             </h:panelGroup>
                             <p:datePicker 
@@ -233,6 +233,28 @@
                         </p:commandButton>
 
                     </p:panel>
+                    
+                    <p:spacer height="5"></p:spacer>
+
+                    <h:panelGrid columns="2" class="my-4" >
+                        
+                        <h:outputLabel value="From Date :  "/>
+                        <h:outputLabel value="#{reportController.fromDate}"  >
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                        </h:outputLabel>
+
+                        <h:outputLabel value="To Date :  "/>
+                        <h:outputLabel value="#{reportController.toDate}"  >
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                        </h:outputLabel>
+
+                        <h:outputLabel value="Collection Center :  "/>
+                        <h:outputLabel value="#{reportController.collectingCentre.name}"  >
+                        </h:outputLabel>
+                    </h:panelGrid>
+
+                    <p:spacer height="5"></p:spacer>
+
 
                     <p:dataTable 
                         id="tblExport"
@@ -258,7 +280,7 @@
                         <p:column headerText="Leaf.No" width="5em" >
                             <p:outputLabel value="#{patientInvestigation.billItem.bill.referenceNumber}"/>
                         </p:column>
-                        <p:column headerText="PHN" width="10em" >
+                        <p:column headerText="MRN" width="10em" >
                             #{patientInvestigation.billItem.bill.patient.phn}
                         </p:column>
                         <p:column headerText="Patient" width="14em">

@@ -1534,6 +1534,25 @@ public class BillBeanController implements Serializable {
 
         return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
+    
+    public double calBillTotal(List<BillTypeAtomic> billTypeAtomics, Date fromDate, Date toDate, Institution institution) {
+        String sql;
+        sql = " SELECT sum(b.netTotal) "
+                + " FROM Bill b"
+                + " WHERE b.retired=false "
+                + " and b.billTypeAtomic in :btas "
+                + " and b.institution=:ins "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " order by b.id";
+
+        Map temMap = new HashMap();
+        temMap.put("fromDate", fromDate);
+        temMap.put("toDate", toDate);
+        temMap.put("btas", billTypeAtomics);
+        temMap.put("ins", institution);
+
+        return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
+    }
 
     public double calBillTotal(BillType billType, boolean isOpd, Date fromDate, Date toDate, Institution institution) {
         String sql;
