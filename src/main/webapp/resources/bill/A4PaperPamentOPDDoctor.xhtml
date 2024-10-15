@@ -115,7 +115,7 @@
                             <td width="" ><h:outputLabel value="Speciality" class="billDetailsFiveFive" ></h:outputLabel></td>
                             <td style="text-align: center;" >:</td>
                             <td width="">
-                                <h:outputLabel value="#{cc.attrs.controller.speciality.name}" class="billDetailsFiveFive" ></h:outputLabel>
+                                <h:outputLabel value="#{cc.attrs.bill.staff.speciality.name}" class="billDetailsFiveFive" ></h:outputLabel>
                             </td>
                         </tr>
                     </table>
@@ -126,7 +126,7 @@
                     <br/>
                 </div>
                 <div class="billDetailsFiveFive" >
-                    <h:dataTable value="#{cc.attrs.controller.billItems}"
+                    <h:dataTable value="#{billBeanController.fetchBillItems(cc.attrs.bill)}"
                                  var="bip" style="margin: auto; padding: 1%; width: 100%; margin-right: 10%; " >
 
                         <p:column style="text-align: center; margin-left: 10%" >

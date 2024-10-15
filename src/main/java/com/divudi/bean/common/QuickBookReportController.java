@@ -10,6 +10,7 @@ import com.divudi.bean.inward.AdmissionTypeController;
 import com.divudi.bean.inward.InwardBeanController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.PaymentMethodData;
@@ -1306,8 +1307,8 @@ public class QuickBookReportController implements Serializable {
             jpql += " and bi.bill.department=:dep ";
             temMap.put("dep", department);
         }
-        if(site!=null){
-            jpql +=" and bi.bill.department.site=:site ";
+        if (site != null) {
+            jpql += " and bi.bill.department.site=:site ";
             temMap.put("site", site);
         }
 
@@ -1633,22 +1634,30 @@ public class QuickBookReportController implements Serializable {
         List<QuickBookFormat> qbfs = new ArrayList<>();
 
         double agent = getBillBeanController().calBillTotal(BillType.AgentPaymentReceiveBill, fd, td, getInstitution());
-        double cc = getBillBeanController().calBillTotal(BillType.CollectingCentrePaymentReceiveBill, fd, td, getInstitution());
+        List<BillTypeAtomic> ccCollection = new ArrayList<>();
+        ccCollection.add(BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL);
+        ccCollection.add(BillTypeAtomic.CC_PAYMENT_RECEIVED_BILL);
+        double cc = getBillBeanController().calBillTotal(ccCollection, fd, td, getInstitution());
 
-        QuickBookFormat qbf = new QuickBookFormat();
-        qbf.setRowType("SPL");
-        qbf.setTrnsType("Cash Sale");
-        qbf.setName("CASH AR");
-        qbf.setAccnt("ACCRUED CHARGES:Channel Advance");
-        qbf.setInvItemType("SERV");
+        boolean skippedChannelling = true;
+        QuickBookFormat qbf;
+        if (!skippedChannelling) {
+            qbf = new QuickBookFormat();
+            qbf.setRowType("SPL");
+            qbf.setTrnsType("Cash Sale");
+            qbf.setName("CASH AR");
+            qbf.setAccnt("ACCRUED CHARGES:Channel Advance");
+            qbf.setInvItemType("SERV");
 
-        qbf.setQbClass("Channel");
-        qbf.setInvItem("Channel Advance");
-        qbf.setMemo("");
-        qbf.setAmount(0 - agent);
+            qbf.setQbClass("Channel");
+            qbf.setInvItem("Channel Advance");
+            qbf.setMemo("");
+            qbf.setAmount(0 - agent);
 
-        grantTot += agent;
-        qbfs.add(qbf);
+            grantTot += agent;
+            qbfs.add(qbf);
+
+        }
 
         qbf = new QuickBookFormat();
         qbf.setRowType("SPL");

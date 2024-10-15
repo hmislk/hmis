@@ -167,7 +167,16 @@
                                         <p:commandButton icon="pi pi-search-plus" styleClass="m-1" ajax="false" title="View Batch Bill" action="#{billSearch.navigateToViewBillByAtomicBillType}">
                                             <f:setPropertyActionListener value="#{pi.billItem.bill.backwardReferenceBill}" target="#{billSearch.bill}"/>
                                         </p:commandButton>
-                                        
+                                        <p:commandButton 
+                                            title="Admin" 
+                                            icon="fa fa-shield-alt" 
+                                            class="m-1 ui-button-danger" 
+                                            action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
+                                            ajax="false" 
+                                            rendered="#{webUserController.hasPrivilege('Developers')}">
+                                            <f:setPropertyActionListener value="#{pi.billItem.bill}" target="#{billSearch.bill}" />
+                                            #{pi.billItem.bill.id}
+                                        </p:commandButton>
                                     </p:column>
 
                                     <p:column headerText="Institution Name"  sortBy="#{pi.billItem.bill.toInstitution.name}" filterBy="#{pi.billItem.bill.toInstitution.name}" filterMatchMode="contains">
@@ -195,6 +204,13 @@
 
                                     <p:column headerText="Category"  sortBy="#{pi.billItem.item.category.name}" filterBy="#{pi.billItem.item.category.name}" filterMatchMode="contains">
                                         <h:outputLabel value="#{pi.billItem.item.category.name}" />
+                                    </p:column>
+
+                                    <p:column headerText="Bill Type" 
+                                              rendered="#{webUserController.hasPrivilege('Developers')}"
+                                              sortBy="#{pi.billItem.bill.billTypeAtomic}"
+                                              filterBy="#{pi.billItem.bill.billTypeAtomic}" filterMatchMode="contains">
+                                        <h:outputLabel value="#{pi.billItem.bill.billTypeAtomic}" />
                                     </p:column>
 
                                     <p:column headerText="Investigation or Service"  sortBy="#{pi.billItem.item.name}" filterBy="#{pi.billItem.item.name}" filterMatchMode="contains">
@@ -250,32 +266,23 @@
                                         </h:commandLink>
                                     </p:column>
 
-                                    <p:column headerText="Gross Value" sortBy="#{pi.billItem.grossValue}" filterBy="#{pi.grossValue}" filterMatchMode="gte">
-                                        <h:commandLink action="/opd/bill_reprint?faces-redirect=true">
-                                            <h:outputLabel value="#{pi.billItem.grossValue}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
-                                            <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.billSearch}"/>
-                                        </h:commandLink>
+                                    <p:column headerText="Gross Value*" sortBy="#{pi.billItem.grossValue}" filterBy="#{pi.billItem.grossValue}" filterMatchMode="gte">
+                                        <h:outputLabel value="#{pi.billItem.grossValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
                                     </p:column>
 
-                                    <p:column headerText="Discount" sortBy="#{pi.billItem.discount}" filterBy="#{pi.billItem.discount}" filterMatchMode="gte">
-                                        <h:commandLink action="/opd/bill_reprint?faces-redirect=true">
-                                            <h:outputLabel value="#{pi.billItem.discount}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
-                                            <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.billSearch}"/>
-                                        </h:commandLink>
+                                    <p:column headerText="Discount*" sortBy="#{pi.billItem.discount}" filterBy="#{pi.billItem.discount}" filterMatchMode="gte">
+                                        <h:outputLabel value="#{pi.billItem.discount}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
                                     </p:column>
 
-                                    <p:column headerText="Net Value" sortBy="#{pi.billItem.netValue}" 
+                                    <p:column headerText="Net Value*" sortBy="#{pi.billItem.netValue}" 
                                               filterBy="#{pi.billItem.netValue}" filterMatchMode="gte">
-                                        <h:commandLink action="/opd/bill_reprint?faces-redirect=true">
-                                            <h:outputLabel value="#{pi.billItem.netValue}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
-                                            <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.billSearch}"/>
-                                        </h:commandLink>
+                                        <h:outputLabel value="#{pi.billItem.netValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
                                     </p:column>
 
                                     <p:column headerText="Doctor" sortBy="#{pi.billItem.bill.fromStaff.person.nameWithTitle}" filterBy="#{pi.billItem.bill.fromStaff.person.nameWithTitle}" filterMatchMode="contains">
@@ -304,6 +311,18 @@
 
                             <p:column headerText="Bill No" >
                                 <h:outputLabel value="#{pi.billItem.bill.deptId}"/>
+                            </p:column>
+
+                            <p:column headerText="Bill Type" >
+                                <h:outputLabel value="#{pi.billItem.bill.billType}"/>
+                            </p:column>
+
+                            <p:column headerText="Bill Class Type" >
+                                <h:outputLabel value="#{pi.billItem.bill.billClassType}"/>
+                            </p:column>
+
+                            <p:column headerText="Bill Type Atomic" >
+                                <h:outputLabel value="#{pi.billItem.bill.billTypeAtomic}"/>
                             </p:column>
 
                             <p:column headerText="Institution Name" >
@@ -344,48 +363,74 @@
                             </p:column>
 
 
-                            <p:column headerText="Cancallation" sortBy="#{pi.billItem.bill.createdAt}" filterBy="#{pi.billItem.bill.createdAt}" filterMatchMode="equals">
-                                <h:outputLabel style="color: red;" value="Cancelled at "  rendered="#{pi.billItem.bill.cancelled}"/>
+                            <p:column headerText="Cancalled" >
                                 <h:outputLabel style="color: red;" rendered="#{pi.billItem.bill.cancelled}" value="#{pi.billItem.bill.cancelledBill.createdAt}">
                                     <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Refunds" sortBy="#{pi.billItem.bill.createdAt}" filterBy="#{pi.billItem.bill.createdAt}" filterMatchMode="equals">
+                            <p:column headerText="Cancallation at" >
+                                <h:outputLabel style="color: red;" rendered="#{pi.billItem.bill.cancelled}" value="#{pi.billItem.bill.cancelledBill.createdAt}">
+                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Refunded">
                                 <h:outputLabel style="color: red;" value="Refunded at "  rendered="#{pi.billItem.bill.refunded}"/>
+                            </p:column>
+
+                            <p:column headerText="Refunded At">
                                 <h:outputLabel style="color: red;" rendered="#{pi.billItem.bill.refunded}" value="#{pi.billItem.bill.refundedBill.createdAt}">
                                     <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>
 
 
-                            <p:column headerText="Payment Method" sortBy="#{pi.billItem.bill.paymentMethod}" filterBy="#{pi.billItem.bill.paymentMethod}" filterMatchMode="contains">
+                            <p:column headerText="Payment Method" >
                                 <h:outputLabel value="#{pi.billItem.bill.paymentMethod}" />
                             </p:column>
 
-                            <p:column headerText="Discount Scheme" sortBy="#{pi.billItem.bill.paymentScheme.name}" filterBy="#{pi.billItem.bill.paymentScheme.name}" filterMatchMode="contains">
+                            <p:column headerText="Discount Scheme" >
                                 <h:outputLabel value="#{pi.billItem.bill.paymentScheme.name}" />
                             </p:column>
 
-                            <p:column headerText="Gross Value" sortBy="#{pi.billItem.grossValue}" filterBy="#{pi.billItem.grossValue}" filterMatchMode="gte">
+                            <p:column headerText="Gross Value" >
                                 <h:outputLabel value="#{pi.billItem.grossValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Discount" sortBy="#{pi.billItem.discount}" filterBy="#{pi.billItem.discount}" filterMatchMode="gte">
+                            <p:column headerText="Discount" >
                                 <h:outputLabel value="#{pi.billItem.discount}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Net Value" sortBy="#{pi.billItem.netValue}" filterBy="#{pi.billItem.netValue}" filterMatchMode="gte">
+                            <p:column headerText="Net Value" >
                                 <h:outputLabel value="#{pi.billItem.netValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Doctor" sortBy="#{pi.billItem.bill.fromStaff.person.nameWithTitle}" filterBy="#{pi.billItem.bill.fromStaff.person.nameWithTitle}" filterMatchMode="contains">
+                            <p:column headerText="Hospital Fee" >
+                                <h:outputLabel value="#{pi.billItem.hospitalFee}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Staff Fee" >
+                                <h:outputLabel value="#{pi.billItem.staffFee}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="CC Fee" >
+                                <h:outputLabel value="#{pi.billItem.collectingCentreFee}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Doctor" >
                                 <p:outputLabel value="#{pi.billItem.bill.fromStaff.person.nameWithTitle}" />
                             </p:column>
 

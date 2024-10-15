@@ -4,18 +4,15 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
-      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
       xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
-      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
-      xmlns:pat="http://xmlns.jcp.org/jsf/composite/patient"
+      xmlns:na="http://xmlns.jcp.org/jsf/composite/template"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
     <h:body>
 
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:panelGroup rendered="#{!(webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier'))}">
-                    You are NOT authorized
+                    <na:not_authorize />
                 </h:panelGroup>
                 <h:form>
                     <p:panel
@@ -204,6 +201,7 @@
                                             <p:column width="12em" headerText="Actions" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
                                                 <!-- To Bill Details Button -->
                                                 <p:commandButton ajax="false"
+                                                                 rendered="false"
                                                                  title="View Bill"
                                                                  class="ui-button-success m-1"
                                                                  icon="fa fa-file-invoice"
@@ -221,6 +219,7 @@
                                                 <!-- To Cancel Button -->
                                                 <p:commandButton 
                                                     ajax="false"
+                                                    rendered="false"
                                                     title="To Cancel Bill"
                                                     action="#{billSearch.navigateToCancelOpdBill()}"
                                                     disabled="#{b.cancelled or b.refunded}"
@@ -229,17 +228,6 @@
                                                     <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}"/>
                                                 </p:commandButton>
 
-                                                <!-- To Refund Button -->
-                                                <p:commandButton 
-                                                    id="btnRefund"
-                                                    ajax="false"
-                                                    title="To Refund Bill"
-                                                    action="#{billSearch.navigateToRefundOpdBill()}"
-                                                    disabled="#{b.cancelled}"
-                                                    class="ui-button-warning m-1"
-                                                    icon="fa fa-money-bill-wave">
-                                                    <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}"/>
-                                                </p:commandButton>
 
                                             </p:column>
                                         </p:dataTable>

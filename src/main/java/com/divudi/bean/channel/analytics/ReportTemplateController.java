@@ -286,7 +286,7 @@ public class ReportTemplateController implements Serializable {
         System.out.println("Final JPQL Query: " + jpql);
 
         // Assuming you have an EJB or similar service to run the query
-        List<ReportTemplateRow> results = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
+        List<ReportTemplateRow> results = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
         // Properly handle empty or null results
         if (results == null || results.isEmpty()) {

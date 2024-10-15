@@ -204,14 +204,15 @@
                     </p:column>
 
                     <!-- Investigation Name Column -->
-                    <p:column headerText="Investigation" filterBy="#{billItem.patientInvestigation.investigation.name}" 
-                              sortBy="#{billItem.patientInvestigation.investigation.name}">
-                        <h:outputLabel value="#{billItem.patientInvestigation.investigation.name}" />
+                    <p:column headerText="Investigation" filterBy="#{billItem.item.name}" 
+                              sortBy="#{billItem.item.name}">
+                        <h:outputLabel value="#{billItem.item.name}" />
                     </p:column>
 
                     <!-- Status Column -->
                     <p:column headerText="Status" filterBy="#{billItem.patientInvestigation.status}" sortBy="#{billItem.patientInvestigation.status}">
-                        <h:outputLabel value="#{billItem.patientInvestigation.status}"/>
+                        <h:outputLabel value="#{billItem.patientInvestigation.status}" rendered="#{billItem.patientInvestigation ne null}"/>
+                        <h:outputLabel value="#{billItem.referanceBillItem.patientInvestigation.status}" rendered="#{billItem.referanceBillItem.patientInvestigation ne null}" />
                     </p:column>
 
 

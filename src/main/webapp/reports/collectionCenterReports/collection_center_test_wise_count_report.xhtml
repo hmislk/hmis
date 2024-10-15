@@ -132,10 +132,9 @@
                             <h:outputLabel value="#{reportController.toDate}"  >
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                             </h:outputLabel>
-
+                          
                             <h:outputLabel value="CC Name :"/>
                             <h:outputLabel value="#{reportController.collectingCentre.name}" ></h:outputLabel>
-
 
                         </h:panelGrid>
 
@@ -168,6 +167,7 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
+
                             <p:column headerText="CC Fee" width="10em">
                                 <h:outputText value="#{c.ccFee}" > 
                                     <f:convertNumber pattern="#,##0.00" />
@@ -178,6 +178,7 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
+
                             <p:column headerText="Professional Fee" width="10em">
                                 <h:outputText value="#{c.proFee}" > 
                                     <f:convertNumber pattern="#,##0.00" />
@@ -188,6 +189,7 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
+
                             <p:column headerText="Total Amount" width="10em">
                                 <h:outputText value="#{c.total}" > 
                                     <f:convertNumber pattern="#,##0.00" />
