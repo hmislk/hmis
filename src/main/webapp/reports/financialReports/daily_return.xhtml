@@ -122,25 +122,13 @@
                         <p:commandButton 
                             value="Download Excel" 
                             ajax="false" 
-                            icon="pi pi-file-excel" 
-                            class="ui-button-info  m-1"
-                            style="background-color: #17a2b8; border-color: #17a2b8;" 
-                            onclick="PrimeFaces.monitorDownload(start, stop);">
-                            <p:fileDownload value="#{searchController.bundleAsExcel}" />
-                        </p:commandButton>
-
-                        <p:commandButton 
-                            value="Download Excel" 
-                            ajax="false" 
                             icon="fas fa-download"
                             class="ui-button-warning mx-2"
                             onclick="PrimeFaces.monitorDownload(start, stop);" >
                             <p:fileDownload value="#{searchController.bundleAsExcel}" />
                         </p:commandButton>
 
-                        <p:commandButton value="Print" icon="fas fa-print">
-                            <p:printer target="printPanel" />
-                        </p:commandButton>
+
 
                         <p:commandButton 
                             value="Download PDF" 
@@ -150,6 +138,10 @@
                             style="background-color: #17a2b8; border-color: #17a2b8;" 
                             onclick="PrimeFaces.monitorDownload(start, stop);">
                             <p:fileDownload value="#{searchController.bundleAsPdf}" />
+                        </p:commandButton>
+
+                        <p:commandButton value="Print" icon="fas fa-print">
+                            <p:printer target="printPanel" />
                         </p:commandButton>
 
                         <p:commandButton 
