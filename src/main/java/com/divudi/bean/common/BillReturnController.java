@@ -36,7 +36,6 @@ import javax.inject.Inject;
 /**
  *
  * @author Damith Deshan
- *
  */
 @Named
 @SessionScoped
@@ -83,14 +82,13 @@ public class BillReturnController implements Serializable {
     private PaymentMethod paymentMethod;
   
     private boolean returningStarted = false;
+
     private double refundingTotalAmount;
     private String refundComment;
     private boolean selectAll;
 
     private double refundingTotalAmount;
-
     private String refundComment;
-
     private boolean selectAll;
 
     // </editor-fold>
@@ -265,7 +263,6 @@ public class BillReturnController implements Serializable {
         originalBillToReturn.setRefundBills(refundBillList);
 
         billController.save(originalBillToReturn);
-
         double returningTotal = 0.0;
         double returningNetTotal = 0.0;
         double returningHospitalTotal = 0.0;
@@ -275,7 +272,7 @@ public class BillReturnController implements Serializable {
         newlyReturnedBillItems = new ArrayList<>();
         returningBillPayments = new ArrayList<>();
         newlyReturnedBillFees = new ArrayList<>();
-
+      
         for (BillItem selectedBillItemToReturn : originalBillItemsToSelectedToReturn) {
 
             returningTotal += selectedBillItemToReturn.getGrossValue();
@@ -295,7 +292,7 @@ public class BillReturnController implements Serializable {
             selectedBillItemToReturn.setReferanceBillItem(newlyCreatedReturningItem);
             billItemController.save(selectedBillItemToReturn);
             List<BillFee> originalBillFeesOfSelectedBillItem = billBeanController.fetchBillFees(selectedBillItemToReturn);
-
+          
             if (originalBillFeesOfSelectedBillItem != null) {
                 for (BillFee origianlFee : originalBillFeesOfSelectedBillItem) {
                     BillFee newlyCreatedBillFeeToReturn = new BillFee();
@@ -331,7 +328,6 @@ public class BillReturnController implements Serializable {
         returningPayment.setPaidValue(newlyReturnedBill.getNetTotal());
         paymentController.save(returningPayment);
         returningBillPayments.add(returningPayment);
-
 
         // drawer Update
         drawerController.updateDrawerForOuts(returningPayment);
@@ -453,5 +449,5 @@ public class BillReturnController implements Serializable {
     }
 
     // </editor-fold>
-    
+
 }
