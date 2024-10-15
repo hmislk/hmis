@@ -88,7 +88,6 @@ public class BillReturnController implements Serializable {
         if (originalBillToReturn == null) {
             return null;
         }
-        
         originalBillItemsAvailableToReturn = billBeanController.fetchBillItems(originalBillToReturn);
         returningStarted = false;
         paymentMethod = originalBillToReturn.getPaymentMethod();
@@ -145,7 +144,6 @@ public class BillReturnController implements Serializable {
             returningStarted = false;
             return null;
         }
-
         originalBillToReturn = billFacade.findWithoutCache(originalBillToReturn.getId());
         if (originalBillToReturn.isCancelled()) {
             JsfUtil.addErrorMessage("Already Cancelled");
@@ -153,7 +151,6 @@ public class BillReturnController implements Serializable {
             return null;
         }
         //TO DO: Check weather selected items is refunded
-      
         if (!checkCanReturnBill(originalBillToReturn)) {
             JsfUtil.addErrorMessage("All Items are Already Refunded");
             returningStarted = false;
@@ -164,7 +161,6 @@ public class BillReturnController implements Serializable {
         newlyReturnedBill = new RefundBill();
         newlyReturnedBill.copy(originalBillToReturn);
         newlyReturnedBill.setBillTypeAtomic(BillTypeAtomic.OPD_BILL_REFUND);
-
         newlyReturnedBill.setComments(refundComment);
         newlyReturnedBill.invertValue();
 
