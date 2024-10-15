@@ -65,6 +65,11 @@ public class BillReturnController implements Serializable {
     private String refundComment;
     private boolean selectAll;
 
+    private double refundingTotalAmount;
+
+    private String refundComment;
+
+    private boolean selectAll;
     /**
      * Creates a new instance of BillReturnController
      */
@@ -129,6 +134,35 @@ public class BillReturnController implements Serializable {
         return canReturn;
     }
 
+    public void selectAllItems() {
+        originalBillItemsToSelectedToReturn = new ArrayList();
+        for (BillItem selectedBillItemToReturn : originalBillItemsAvailableToReturn) {
+            if (!selectedBillItemToReturn.isRefunded()) {
+                System.out.println(selectedBillItemToReturn.getItem().getName() + " Add");
+                originalBillItemsToSelectedToReturn.add(selectedBillItemToReturn);
+            }
+        }
+        calculateRefundingAmount();
+        selectAll = false;
+    }
+
+    public void unSelectAllItems() {
+        originalBillItemsToSelectedToReturn = new ArrayList();
+        refundingTotalAmount = 0.0;
+        selectAll = true;
+    }
+    
+    public boolean checkCanReturnBill(Bill bill){
+        List<BillItem> items = billBeanController.fetchBillItems(bill);
+        boolean canReturn = false;
+        for(BillItem bllItem : items){
+            if(!bllItem.isRefunded()){
+                canReturn = true;
+            }
+        }
+        return canReturn;
+    }
+    
     public String settleOpdReturnBill() {
         if (returningStarted) {
             JsfUtil.addErrorMessage("Already Returning Started");
@@ -163,7 +197,7 @@ public class BillReturnController implements Serializable {
             returningStarted = false;
             return null;
         }
-        
+
         // fetch original bill now, checked alteady returned, cancelled, , 
         newlyReturnedBill = new RefundBill();
         newlyReturnedBill.copy(originalBillToReturn);
@@ -194,7 +228,7 @@ public class BillReturnController implements Serializable {
         newlyReturnedBillItems = new ArrayList<>();
         returningBillPayments = new ArrayList<>();
         newlyReturnedBillFees = new ArrayList<>();
-      
+
         for (BillItem selectedBillItemToReturn : originalBillItemsToSelectedToReturn) {
 
             returningTotal += selectedBillItemToReturn.getGrossValue();
