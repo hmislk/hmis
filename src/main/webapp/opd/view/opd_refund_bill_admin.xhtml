@@ -106,6 +106,7 @@
                                     </p:tab>
                                     <p:tab title="Bill Items" >
                                         <view:bill_item_list_edit editable="true" billItems="#{billSearch.viewingBillItems}"/>
+                                        <view:bill_item_list_edit editable="true" billItems="#{billSearch.viewingBill.billItems}"/>
                                     </p:tab>
                                     <p:tab title="Bill Fees" >
                                         <view:bill_fee_list_edit editable="true" billFees="#{billSearch.viewingBillFees}" ></view:bill_fee_list_edit>
