@@ -102,7 +102,6 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.primefaces.model.file.UploadedFile;
 
-
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 
@@ -298,6 +297,11 @@ public class SearchController implements Serializable {
     private double billCount;
     private Token token;
     private int managePaymentIndex = -1;
+    
+    private double hosTotal;
+    private double staffTotal;
+    private double discountTotal;
+    private double amountTotal;
 
     private boolean duplicateBillView;
 
@@ -1929,6 +1933,38 @@ public class SearchController implements Serializable {
 
     public void setDownloadingExcel(StreamedContent downloadingExcel) {
         this.downloadingExcel = downloadingExcel;
+    }
+
+    public double getHosTotal() {
+        return hosTotal;
+    }
+
+    public void setHosTotal(double hosTotal) {
+        this.hosTotal = hosTotal;
+    }
+
+    public double getStaffTotal() {
+        return staffTotal;
+    }
+
+    public void setStaffTotal(double staffTotal) {
+        this.staffTotal = staffTotal;
+    }
+
+    public double getDiscountTotal() {
+        return discountTotal;
+    }
+
+    public void setDiscountTotal(double discountTotal) {
+        this.discountTotal = discountTotal;
+    }
+
+    public double getAmountTotal() {
+        return amountTotal;
+    }
+
+    public void setAmountTotal(double amountTotal) {
+        this.amountTotal = amountTotal;
     }
 
     public class billsWithbill {
@@ -14576,6 +14612,66 @@ public class SearchController implements Serializable {
         bundle.calculateTotals();
     }
 
+    public void listAgentChannelBookings() {
+        String jpql = "SELECT b FROM Bill b "
+                + " WHERE b.retired = :ret "
+                + " AND b.billTypeAtomic IN :bts ";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+
+        List<BillTypeAtomic> bts = new ArrayList<>();
+        bts.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+//        bts.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
+//        bts.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT);
+        m.put("bts", bts);
+
+        jpql += " AND b.paymentMethod = :pm ";
+        m.put("pm", PaymentMethod.Agent);
+
+        if (institution != null) {
+            jpql += " AND b.institution = :ins ";
+            m.put("ins", institution);
+        }
+        
+        if (site != null) {
+            jpql += " AND b.department.site = :site ";
+            m.put("site", site);
+        }
+        
+        if (department != null) {
+            jpql += " AND b.department = :dept ";
+            m.put("dept", department);
+        }
+        
+        if (webUser != null) {
+            jpql += " AND b.creator = :wu ";
+            m.put("wu", webUser);
+        }
+        
+        jpql += " AND b.createdAt BETWEEN :fromDate AND :toDate ";
+        m.put("fromDate", getFromDate());
+        m.put("toDate", getToDate());
+       
+        bills = billFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        
+        hosTotal = 0.0;
+        staffTotal = 0.0;
+        grossTotal = 0.0;
+        discountTotal = 0.0;
+        amountTotal = 0.0;
+        
+        for(Bill b : bills){
+            if(!b.isCancelled() && !b.isRefunded()){
+                hosTotal += b.getHospitalFee();
+                staffTotal += b.getStaffFee();
+                grossTotal += (b.getHospitalFee() + b.getStaffFee());
+                discountTotal += b.getDiscount();
+                amountTotal += b.getNetTotal();
+            } 
+        }
+    }
+
     public void billItemsToItamizedSaleReport(ReportTemplateRowBundle rtrb, List<BillItem> billItems) {
         Map<String, ReportTemplateRow> categoryMap = new HashMap<>();
         Map<String, ReportTemplateRow> itemSummaryMap = new HashMap<>();
@@ -15630,7 +15726,6 @@ public class SearchController implements Serializable {
         return pdfSc;
     }
 
-    
     public StreamedContent getBundleAsExcel() {
         try {
             downloadingExcel = excelController.createExcelForBundle(bundle);
