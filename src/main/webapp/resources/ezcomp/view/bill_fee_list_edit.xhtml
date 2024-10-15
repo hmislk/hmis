@@ -37,6 +37,11 @@
                 <h:outputText value="#{bf.billItem.item.department.name}"  />
             </p:column>
             
+            <p:column>
+                <f:facet name="header">Paid To</f:facet>
+                <h:outputText value="#{bf.staff.person.nameWithTitle}"  />
+            </p:column>
+            
             <p:column >
                 <f:facet name="header">Gross Fee Value</f:facet>
                 <p:inputText value="#{bf.feeGrossValue}"  rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end"/>
@@ -53,6 +58,12 @@
                 <f:facet name="header">Net Fee Value</f:facet>
                 <p:inputText value="#{bf.feeValue}"  rendered="#{cc.attrs.editable}"  class="w-100 m-1 text-end"/>
                 <h:outputText value="#{bf.feeValue}"  rendered="#{!cc.attrs.editable}"  class="w-100 m-1"/>
+            </p:column>
+            
+            <p:column >
+                <f:facet name="header">Paid Value</f:facet>
+                <p:inputText value="#{bf.paidValue}"  rendered="#{cc.attrs.editable}"  class="w-100 m-1 text-end"/>
+                <h:outputText value="#{bf.paidValue}"  rendered="#{!cc.attrs.editable}"  class="w-100 m-1"/>
             </p:column>
             
             <p:column >
