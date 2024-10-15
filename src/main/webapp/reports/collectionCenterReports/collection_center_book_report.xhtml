@@ -135,7 +135,13 @@
 
                         <p:spacer height="5"></p:spacer>
 
-                        <p:dataTable id="tblExport" value="#{reportController.agentReferenceBooks}" var="a" rowIndexVar="i">
+                        <p:dataTable id="tblExport" value="#{reportController.agentReferenceBooks}" var="a" rowIndexVar="i"
+                                     paginator="true"
+                                     rows="10" 
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
+                                     rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
+
                             <p:column headerText="S. No" width="5rem">
                                 <h:outputText value="#{i+1}" ></h:outputText>
                             </p:column>
@@ -151,7 +157,7 @@
                             <p:column headerText="CC Phone No" width="5rem">
                                 <h:outputText value="#{a.institution.phone}" ></h:outputText>
                             </p:column>
-                            <p:column headerText="Contact Person E-mail" >
+                            <p:column headerText="E-mail" width="10rem">
                                 <h:outputText value="#{a.institution.contactPerson.email}" ></h:outputText>
                             </p:column>
                             <p:column headerText="Address" width="5rem">
@@ -173,7 +179,7 @@
                                 <h:outputText value="#{a.strbookNumber}" ></h:outputText>
                             </p:column>
 
-                            <p:column headerText="Starting Reference Number" >
+                            <p:column headerText="Starting Reference Number" width="5rem">
                                 <h:outputText value="#{a.startingReferenceNumber}" ></h:outputText>
                             </p:column>
                             <p:column headerText="Ending Reference Number" width="5rem">

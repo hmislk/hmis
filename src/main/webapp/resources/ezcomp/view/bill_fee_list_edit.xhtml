@@ -9,69 +9,61 @@
     <!-- INTERFACE -->
     <cc:interface>
         <cc:attribute name="billFees" />
-        <cc:attribute name="editable" type="java.lang.Boolean" default="false"/>
+        <cc:attribute name="editable" type="java.lang.Boolean" default="true"/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
 
-
-        <p:dataTable value="#{cc.attrs.billFees}" var="bf" rowKey="#{bi.id}" >
+        <p:dataTable value="#{cc.attrs.billFees}" var="bf" rowKey="#{bf.id}" >
 
             <p:column>
                 <f:facet name="header">Fee ID</f:facet>
-                <h:outputText value="#{bf.id}"/>
+                <h:outputText value="#{bf.id}" />
             </p:column>
+            
             <p:column>
                 <f:facet name="header">Item Name</f:facet>
-                <h:outputText value="#{bf.billItem.item.name}"/>
+                <h:outputText value="#{bf.billItem.item.name}"  />
             </p:column>
+            
             <p:column>
                 <f:facet name="header">Item Code</f:facet>
-                <h:outputText value="#{bf.billItem.item.code}"/>
+                <h:outputText value="#{bf.billItem.item.code}"  />
             </p:column>
+            
             <p:column>
                 <f:facet name="header">Department</f:facet>
-                <h:outputText value="#{bf.billItem.item.department.name}"/>
+                <h:outputText value="#{bf.billItem.item.department.name}"  />
             </p:column>
-            <p:column class="text-end">
+            
+            <p:column >
                 <f:facet name="header">Gross Fee Value</f:facet>
-                <h:outputText value="#{bf.feeGrossValue}" class="text-end" />
+                <p:inputText value="#{bf.feeGrossValue}"  rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end"/>
+                <h:outputText value="#{bf.feeGrossValue}"  rendered="#{!cc.attrs.editable}"  />
             </p:column>
-            <p:column class="text-end">
+            
+            <p:column >
                 <f:facet name="header">Discount Fee Value</f:facet>
-                <h:outputText value="#{bf.feeDiscount}" class="text-end" />
+                <p:inputText value="#{bf.feeDiscount}"  rendered="#{cc.attrs.editable}"  class="w-100 m-1 text-end"/>
+                <h:outputText value="#{bf.feeDiscount}"  rendered="#{!cc.attrs.editable}"  class="w-100 m-1"/>
             </p:column>
-            <p:column class="text-end">
+            
+            <p:column >
                 <f:facet name="header">Net Fee Value</f:facet>
-                <h:outputText value="#{bf.feeValue}" class="text-end" />
+                <p:inputText value="#{bf.feeValue}"  rendered="#{cc.attrs.editable}"  class="w-100 m-1 text-end"/>
+                <h:outputText value="#{bf.feeValue}"  rendered="#{!cc.attrs.editable}"  class="w-100 m-1"/>
             </p:column>
-            <p:column class="text-end">
+            
+            <p:column >
                 <f:facet name="header">Fee Name</f:facet>
-                <h:outputText value="#{bf.fee.name}" class="text-end" />
+                <h:outputText value="#{bf.fee.name}"  rendered="#{!cc.attrs.editable}" />
             </p:column>
-
-            <p:column>
-                <f:facet name="header">Speciality</f:facet>
-                <h:outputText value="#{bf.fee.speciality.name}"/>
-            </p:column>
-            <p:column headerText="Payee">
-                <p:cellEditor>  
-                    <f:facet name="output"> 
-                        <h:outputLabel value="#{bf.staff.person.name}"/>
-                    </f:facet>  
-                    <f:facet name="input">  
-                        <p:selectOneMenu value="#{bf.staff}" 
-                                         rendered="#{bf.fee.speciality != null}" 
-                                         disabled="#{bf.paidValue != 0 or !webUserController.hasPrivilege('ChangeProfessionalFee')}">
-                            <f:selectItem itemLabel="Select Staff"/>
-                            <f:selectItems value="#{staffController.getSpecialityStaff(bip.fee.speciality)}" 
-                                           var="bifs" 
-                                           itemLabel="#{bifs.person.name}" 
-                                           itemValue="#{bifs}"/>
-                        </p:selectOneMenu>
-                    </f:facet>  
-                </p:cellEditor>  
+            
+            <p:column >
+                <f:facet name="header">Retired</f:facet>
+                <p:selectBooleanCheckbox value="#{bf.retired}" rendered="#{cc.attrs.editable}" />
+                <h:outputText value="#{bf.retired}"  rendered="#{!cc.attrs.editable}" />
             </p:column>
 
         </p:dataTable>
