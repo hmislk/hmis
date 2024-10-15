@@ -87,6 +87,7 @@ public class BillReturnController implements Serializable {
     private String refundComment;
     private boolean selectAll;
 
+
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Method">
