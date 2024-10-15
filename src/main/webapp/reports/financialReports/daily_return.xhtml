@@ -98,13 +98,7 @@
 
 
 
-
-
                         </h:panelGrid>
-
-
-
-
 
                         <p:commandButton 
                             value="Process" 
@@ -125,7 +119,6 @@
                             onclick="return confirm('Are you sure you want to update the bill item values?');">
                         </p:commandButton>
 
-
                         <p:commandButton 
                             value="Download Excel" 
                             ajax="false" 
@@ -134,6 +127,19 @@
                             style="background-color: #17a2b8; border-color: #17a2b8;" 
                             onclick="PrimeFaces.monitorDownload(start, stop);">
                             <p:fileDownload value="#{searchController.bundleAsExcel}" />
+                        </p:commandButton>
+
+                        <p:commandButton 
+                            value="Download Excel" 
+                            ajax="false" 
+                            icon="fas fa-download"
+                            class="ui-button-warning mx-2"
+                            onclick="PrimeFaces.monitorDownload(start, stop);" >
+                            <p:fileDownload value="#{searchController.bundleAsExcel}" />
+                        </p:commandButton>
+
+                        <p:commandButton value="Print" icon="fas fa-print">
+                            <p:printer target="printPanel" />
                         </p:commandButton>
 
                         <p:commandButton 
