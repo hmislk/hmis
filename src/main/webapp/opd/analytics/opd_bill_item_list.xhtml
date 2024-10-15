@@ -168,15 +168,15 @@
                                             <f:setPropertyActionListener value="#{pi.billItem.bill.backwardReferenceBill}" target="#{billSearch.bill}"/>
                                         </p:commandButton>
                                         <p:commandButton 
-                                            value="Admin" 
+                                            title="Admin" 
                                             icon="fa fa-shield-alt" 
                                             class="m-1 ui-button-danger" 
                                             action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
                                             ajax="false" 
                                             rendered="#{webUserController.hasPrivilege('Developers')}">
                                             <f:setPropertyActionListener value="#{pi.billItem.bill}" target="#{billSearch.bill}" />
+                                            #{pi.billItem.bill.id}
                                         </p:commandButton>
-
                                     </p:column>
 
                                     <p:column headerText="Institution Name"  sortBy="#{pi.billItem.bill.toInstitution.name}" filterBy="#{pi.billItem.bill.toInstitution.name}" filterMatchMode="contains">

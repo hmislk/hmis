@@ -69,7 +69,7 @@
                                     <h:panelGroup rendered="#{row.item ne null}" >
                                         <td>
                                         </td>
-                                        <td>
+                                        <td style="#{((((row.itemHospitalFee + row.itemProfessionalFee - row.itemDiscountAmount) - (row.itemNetTotal)) gt 1.0) or (((row.itemHospitalFee + row.itemProfessionalFee - row.itemDiscountAmount) - (row.itemNetTotal)) lt -1.0)) ? 'background-color: red;' : ''}">
                                             <h:outputText value="#{row.item.name}" />
                                             <h:commandLink rendered="#{row.item ne null}"
                                                            action="#{searchController.navigateToOpdBillItemList(row)}"

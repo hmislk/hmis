@@ -105,8 +105,7 @@
                             ajax="false"
                             action="#{searchController.generateDailyReturn()}" 
                             class="ui-button-success m-1" 
-                            icon="fas fa-cogs" 
-                            style="background-color: #28a745; border-color: #28a745;"> 
+                            icon="fas fa-cogs"> 
                         </p:commandButton>
 
                         <p:commandButton
@@ -122,24 +121,10 @@
                         <p:commandButton 
                             value="Download Excel" 
                             ajax="false" 
-                            icon="pi pi-file-excel" 
-                            class="ui-button-info  m-1"
-                            style="background-color: #17a2b8; border-color: #17a2b8;" 
-                            onclick="PrimeFaces.monitorDownload(start, stop);">
-                            <p:fileDownload value="#{searchController.bundleAsExcel}" />
-                        </p:commandButton>
-
-                        <p:commandButton 
-                            value="Download Excel" 
-                            ajax="false" 
                             icon="fas fa-download"
                             class="ui-button-warning mx-2"
                             onclick="PrimeFaces.monitorDownload(start, stop);" >
                             <p:fileDownload value="#{searchController.bundleAsExcel}" />
-                        </p:commandButton>
-
-                        <p:commandButton value="Print" icon="fas fa-print">
-                            <p:printer target="printPanel" />
                         </p:commandButton>
 
                         <p:commandButton 
@@ -147,22 +132,16 @@
                             ajax="false" 
                             icon="pi pi-file-pdf" 
                             class="ui-button-info  m-1"
-                            style="background-color: #17a2b8; border-color: #17a2b8;" 
                             onclick="PrimeFaces.monitorDownload(start, stop);">
                             <p:fileDownload value="#{searchController.bundleAsPdf}" />
                         </p:commandButton>
 
                         <p:commandButton 
                             value="Print" 
-                            class="m-1"
-                            icon="pi pi-print" 
-                            style="background-color: #f0ad4e; border-color: #f0ad4e;"> 
+                            class="ui-button-secondary  m-1"
+                            icon="fas fa-print">
                             <p:printer target="printPanel" />
                         </p:commandButton>
-
-
-
-
 
 
                         <!--Do not remove this part-->

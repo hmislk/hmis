@@ -2287,97 +2287,97 @@ public class ReportController implements Serializable {
 
     public String navigateToLeaveForm() {
 
-        return "/reports/HRReports/leave_form";
+        return "/reports/HRReports/leave_form?faces-redirect=true";
     }
 
     public String navigateToAdditionalFormReportVerification() {
 
-        return "/reports/HRReports/additional_form_report_veification";
+        return "/reports/HRReports/additional_form_report_veification?faces-redirect=true";
     }
 
     public String navigateToOnlineFormStatus() {
 
-        return "/reports/HRReports/online_form_status";
+        return "/reports/HRReports/online_form_status?faces-redirect=true";
     }
 
     public String navigateToAdmissionDischargeReport() {
 
-        return "/reports/inpatientReports/admission_discharge_report";
+        return "/reports/inpatientReports/admission_discharge_report?faces-redirect=true";
     }
 
     public String navigateToGoodInTransit() {
 
-        return "/reports/inventoryReports/good_in_transit";
+        return "/reports/inventoryReports/good_in_transit?faces-redirect=true";
     }
 
     public String navigateToGrnReport() {
 
-        return "/reports/inventoryReports/grn_report";
+        return "/reports/inventoryReports/grn_report?faces-redirect=true";
     }
 
     public String navigateToSlowFastNoneMovement() {
 
-        return "/reports/inventoryReports/slow_fast_none_movement";
+        return "/reports/inventoryReports/slow_fast_none_movement?faces-redirect=true";
     }
 
     public String navigateToBeforeStockTaking() {
 
-        return "/reports/inventoryReports/before_stock_taking";
+        return "/reports/inventoryReports/before_stock_taking?faces-redirect=true";
     }
 
     public String navigateToAfterStockTaking() {
 
-        return "/reports/inventoryReports/after_stock_taking";
+        return "/reports/inventoryReports/after_stock_taking?faces-redirect=true";
     }
 
     public String navigateToStockLedger() {
 
-        return "/reports/inventoryReports/stock_ledger";
+        return "/reports/inventoryReports/stock_ledger?faces-redirect=true";
     }
 
     public String navigateToExpiryItem() {
 
-        return "/reports/inventoryReports/expiry_item";
+        return "/reports/inventoryReports/expiry_item?faces-redirect=true";
     }
 
     public String navigateToIpUnsettledInvoices() {
 
-        return "/reports/inpatientReports/ip_unsettled_invoices";
+        return "/reports/inpatientReports/ip_unsettled_invoices?faces-redirect=true";
     }
 
     public String navigateToconsumption() {
 
-        return "/reports/inventoryReports/consumption";
+        return "/reports/inventoryReports/consumption?faces-redirect=true";
     }
 
     public String navigateToClosingStockReport() {
 
-        return "/reports/inventoryReports/closing_stock_report";
+        return "/reports/inventoryReports/closing_stock_report?faces-redirect=true";
     }
 
     public String navigateToAdmissionCategoryWiseAdmission() {
 
-        return "/reports/inpatientReports/admission_category_wise_admission";
+        return "/reports/inpatientReports/admission_category_wise_admission?faces-redirect=true";
     }
 
     public String navigateToStockTransferReport() {
 
-        return "/reports/inventoryReports/stock_transfer_report";
+        return "/reports/inventoryReports/stock_transfer_report?faces-redirect=true";
     }
 
     public String navigateToCostOfGoodsSold() {
 
-        return "/reports/inventoryReports/cost_of_goods_sold";
+        return "/reports/inventoryReports/cost_of_goods_sold?faces-redirect=true";
     }
 
     public String navigateToDiscount() {
 
-        return "/reports/financialReports/discount";
+        return "/reports/financialReports/discount?faces-redirect=true";
     }
 
     public String navigateToOutsidePayment() {
 
-        return "/reports/financialReports/outside_payment";
+        return "/reports/financialReports/outside_payment?faces-redirect=true";
     }
 
     public Department getFromDepartment() {
