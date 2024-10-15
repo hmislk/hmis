@@ -136,7 +136,6 @@
                             <h:outputLabel value="CC Name :"/>
                             <h:outputLabel value="#{reportController.collectingCentre.name}" ></h:outputLabel>
 
-
                         </h:panelGrid>
 
 
@@ -178,6 +177,7 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
+
                             <p:column headerText="Professional Fee" width="10em">
                                 <h:outputText value="#{c.proFee}" > 
                                     <f:convertNumber pattern="#,##0.00" />
@@ -188,6 +188,7 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
+
                             <p:column headerText="Total Amount" width="10em">
                                 <h:outputText value="#{c.total}" > 
                                     <f:convertNumber pattern="#,##0.00" />

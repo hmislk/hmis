@@ -3105,13 +3105,21 @@ public class BillSearch implements Serializable {
         }
         return "/opd/view/opd_bill?faces-redirect=true;";
     }
+    
+     public String navigateToAdminOpdBill() {
+        if (viewingBill == null) {
+            JsfUtil.addErrorMessage("No Bill to Dsiplay");
+            return "";
+        }
+        return "/opd/view/opd_bill_admin?faces-redirect=true;";
+    }
 
     public String navigateToViewOpdRefundBill() {
         if (viewingBill == null) {
             JsfUtil.addErrorMessage("No Bill to Dsiplay");
             return "";
         }
-        return "/opd/view/opd_refund_bill?faces-redirect=true;";
+        return "/opd/view/opd_refund_bill_admin?faces-redirect=true;";
     }
 
     public String navigateToAdminOpdRefundBill() {
@@ -3394,7 +3402,7 @@ public class BillSearch implements Serializable {
             case OPD_PROFESSIONAL_PAYMENT_BILL:
                 return navigateToManageOpdBill();
             case OPD_BILL_WITH_PAYMENT:
-                return navigateToViewOpdBill();
+                return navigateToAdminOpdBill();
             case OPD_BATCH_BILL_WITH_PAYMENT:
                 return navigateToViewOpdBatchBill();
 

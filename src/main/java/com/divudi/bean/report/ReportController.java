@@ -212,6 +212,10 @@ public class ReportController implements Serializable {
     private double totalProFee;
     private double totalNetTotal;
 
+    private List<String> voucherStatusOnDebtorSettlement;
+    private String selectedVoucherStatusOnDebtorSettlement;
+    private BillItem voucherItem;
+
     public void generateItemMovementByBillReport() {
         billAndItemDataRows = new ArrayList<>();
         Map<String, Object> params = new HashMap<>();
@@ -896,6 +900,88 @@ public class ReportController implements Serializable {
         }
         agentReferenceBooks = agentReferenceBookFacade.findByJpql(sql, m);
 
+    }
+
+    public void createDebtorSettlement() {
+        String jpql = "SELECT cb "
+                + "FROM Bill cb "
+                + "WHERE cb.retired = :ret "
+                + "AND cb.paymentMethod = :pm "
+                + "AND cb.billType in :bts ";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("pm", PaymentMethod.Credit);
+        List<BillType> bts = new ArrayList<>();
+        bts.add(BillType.OpdBill);
+        m.put("bts", bts);
+        
+        if(institution != null){
+            jpql += "AND cb.creditCompany = : cc ";
+            m.put("cc", institution);
+        }
+
+        jpql += "AND cb.createdAt BETWEEN :fromDate AND :toDate";
+        m.put("fromDate", getFromDate());
+        m.put("toDate", getToDate());
+
+        bills = billFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        if(selectedVoucherStatusOnDebtorSettlement != null){
+            // Filter the bills list based on the statusFilter
+        bills = filterBillsByStatus(bills, selectedVoucherStatusOnDebtorSettlement);
+
+        }
+    }
+
+    private List<Bill> filterBillsByStatus(List<Bill> bills, String statusFilter) {
+        List<Bill> filteredBills = new ArrayList<>();
+
+        for (Bill bill : bills) {
+            String status = classifyVoucherSettlementStatus(bill);
+
+            // Only add bills that match the status filter
+            if (status.equals(statusFilter)) {
+                filteredBills.add(bill);
+            }
+        }
+
+        return filteredBills; // Return the filtered list of bills
+    }
+
+    private String classifyVoucherSettlementStatus(Bill bill) {
+        BillItem voucher = findVoucherIsAvailable(bill);
+
+        if (voucher == null) {
+            return "Unsettled";
+        }
+
+        if (bill.getNetTotal() == voucher.getBill().getNetTotal()) {
+            return "Settled";
+        }
+
+        if (bill.getNetTotal() < voucher.getBill().getNetTotal()) {
+            return "Partially Settled";
+        }
+
+        return "Unsettled"; // Default case for safety
+    }
+
+    public BillItem findVoucherIsAvailable(Bill b) {
+        String jpql = "SELECT bi "
+                + "FROM BillItem bi "
+                + "WHERE bi.retired = :ret "
+                + "AND bi.referenceBill = :b "
+                + "AND bi.bill.billType in :bts";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("b", b);
+        List<BillType> bts = new ArrayList<>();
+        bts.add(BillType.CashRecieveBill);
+        m.put("bts", bts);
+
+        voucherItem = billItemFacade.findFirstByJpql(jpql, m);
+        return voucherItem;
     }
 
     public void processPettyCashPayment() {
@@ -1712,8 +1798,7 @@ public class ReportController implements Serializable {
             jpql += " and bill.department = :dep ";
             m.put("dep", department);
         }
-        
-        
+
         if (phn != null && !phn.isEmpty()) {
             jpql += " and bill.patient.phn = :phn ";
             m.put("phn", phn);
@@ -3076,6 +3161,35 @@ public class ReportController implements Serializable {
 
     public void setEntireTotal(double entireTotal) {
         this.entireTotal = entireTotal;
+    }
+
+    public List<String> getVoucherStatusOnDebtorSettlement() {
+        voucherStatusOnDebtorSettlement = new ArrayList<>(Arrays.asList(
+                "Settled",
+                "Partially Settled",
+                "Unsettled"
+        ));
+        return voucherStatusOnDebtorSettlement;
+    }
+
+    public void setVoucherStatusOnDebtorSettlement(List<String> voucherStatusOnDebtorSettlement) {
+        this.voucherStatusOnDebtorSettlement = voucherStatusOnDebtorSettlement;
+    }
+
+    public String getSelectedVoucherStatusOnDebtorSettlement() {
+        return selectedVoucherStatusOnDebtorSettlement;
+    }
+
+    public void setSelectedVoucherStatusOnDebtorSettlement(String selectedVoucherStatusOnDebtorSettlement) {
+        this.selectedVoucherStatusOnDebtorSettlement = selectedVoucherStatusOnDebtorSettlement;
+    }
+
+    public BillItem getVoucherItem() {
+        return voucherItem;
+    }
+
+    public void setVoucherItem(BillItem voucherItem) {
+        this.voucherItem = voucherItem;
     }
 
 }
