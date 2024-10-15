@@ -81,14 +81,18 @@ public class BillReturnController implements Serializable {
     private List<Payment> returningBillPayments;
 
     private PaymentMethod paymentMethod;
-
+  
     private boolean returningStarted = false;
+    private double refundingTotalAmount;
+    private String refundComment;
+    private boolean selectAll;
 
     private double refundingTotalAmount;
 
     private String refundComment;
 
     private boolean selectAll;
+
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Method">
@@ -156,7 +160,7 @@ public class BillReturnController implements Serializable {
         }
         return canReturn;
     }
-
+  
     public boolean checkDraverBalance(Drawer drawer, PaymentMethod paymentMethod) {
         boolean canReturn = false;
         switch (paymentMethod) {
@@ -196,7 +200,7 @@ public class BillReturnController implements Serializable {
         }
         return canReturn;
     }
-
+    
     public String settleOpdReturnBill() {
         if (returningStarted) {
             JsfUtil.addErrorMessage("Already Returning Started");
