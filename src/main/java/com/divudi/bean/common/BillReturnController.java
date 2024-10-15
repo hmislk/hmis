@@ -14,13 +14,16 @@ import static com.divudi.data.PaymentMethod.OnlineSettlement;
 import static com.divudi.data.PaymentMethod.Slip;
 import static com.divudi.data.PaymentMethod.Staff;
 import static com.divudi.data.PaymentMethod.Staff_Welfare;
+
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Payment;
 import com.divudi.entity.RefundBill;
+
 import com.divudi.entity.cashTransaction.Drawer;
+
 import com.divudi.facade.BillFacade;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
@@ -33,19 +36,23 @@ import javax.inject.Inject;
 /**
  *
  * @author Damith Deshan
+ *
  */
 @Named
 @SessionScoped
 public class BillReturnController implements Serializable {
+
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
     BillFacade billFacade;
     @EJB
     BillNumberGenerator billNumberGenerator;
-// </editor-fold>
+
+    // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
+
     @Inject
     SessionController sessionController;
     @Inject
@@ -63,6 +70,7 @@ public class BillReturnController implements Serializable {
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Class Variable">
+
     private Bill originalBillToReturn;
     private List<BillItem> originalBillItemsAvailableToReturn;
     private List<BillItem> originalBillItemsToSelectedToReturn;
@@ -75,17 +83,22 @@ public class BillReturnController implements Serializable {
     private PaymentMethod paymentMethod;
 
     private boolean returningStarted = false;
+
     private double refundingTotalAmount;
+
     private String refundComment;
+
     private boolean selectAll;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Method">
+  
     /**
      * Creates a new instance of BillReturnController
      */
     public BillReturnController() {
     }
+
 
     public void makeNull() {
 
@@ -248,6 +261,7 @@ public class BillReturnController implements Serializable {
         originalBillToReturn.setRefundBills(refundBillList);
 
         billController.save(originalBillToReturn);
+
         double returningTotal = 0.0;
         double returningNetTotal = 0.0;
         double returningHospitalTotal = 0.0;
@@ -257,7 +271,7 @@ public class BillReturnController implements Serializable {
         newlyReturnedBillItems = new ArrayList<>();
         returningBillPayments = new ArrayList<>();
         newlyReturnedBillFees = new ArrayList<>();
-      
+
         for (BillItem selectedBillItemToReturn : originalBillItemsToSelectedToReturn) {
 
             returningTotal += selectedBillItemToReturn.getGrossValue();
@@ -277,7 +291,7 @@ public class BillReturnController implements Serializable {
             selectedBillItemToReturn.setReferanceBillItem(newlyCreatedReturningItem);
             billItemController.save(selectedBillItemToReturn);
             List<BillFee> originalBillFeesOfSelectedBillItem = billBeanController.fetchBillFees(selectedBillItemToReturn);
-          
+
             if (originalBillFeesOfSelectedBillItem != null) {
                 for (BillFee origianlFee : originalBillFeesOfSelectedBillItem) {
                     BillFee newlyCreatedBillFeeToReturn = new BillFee();
@@ -313,14 +327,16 @@ public class BillReturnController implements Serializable {
         returningPayment.setPaidValue(newlyReturnedBill.getNetTotal());
         paymentController.save(returningPayment);
         returningBillPayments.add(returningPayment);
-      
-//      drawer Update
+
+
+        // drawer Update
         drawerController.updateDrawerForOuts(returningPayment);
 
         returningStarted = false;
         return "/opd/bill_return_print?faces-redirect=true";
 
     }
+
 
     public void calculateRefundingAmount() {
         refundingTotalAmount = 0.0;
@@ -433,5 +449,5 @@ public class BillReturnController implements Serializable {
     }
 
     // </editor-fold>
-
+    
 }

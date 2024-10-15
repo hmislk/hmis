@@ -215,6 +215,9 @@ public class ReportController implements Serializable {
     private List<String> voucherStatusOnDebtorSettlement;
     private String selectedVoucherStatusOnDebtorSettlement;
     private BillItem voucherItem;
+    
+    private String type;
+    private String reportType;
 
     public void generateItemMovementByBillReport() {
         billAndItemDataRows = new ArrayList<>();
@@ -824,6 +827,39 @@ public class ReportController implements Serializable {
             }
         }
 
+    }
+    
+    public void createReferringDoctorWiseRevenueReport(){
+        switch (reportType) {
+            case "Detail":
+                createReferringDoctorWiseRevenueDetailedReport();
+                break;
+            case "Summary":
+                createReferringDoctorWiseRevenueSummaryReport();
+                break;
+            default:
+                createReferringDoctorWiseRevenueDetailedReport();
+        }
+    }
+    
+    public void createReferringDoctorWiseRevenueDetailedReport(){
+         String jpql = "select bi"
+                + " from BillItem bi"
+                + " where bi.retired=:ret"
+                + " and bi.bill.referredBy IS NOT NULL";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+
+        jpql += " AND bi.createdAt BETWEEN :fromDate AND :toDate";
+        m.put("fromDate", getFromDate());
+        m.put("toDate", getToDate());
+
+        billItems = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+    }
+    
+    public void createReferringDoctorWiseRevenueSummaryReport(){
+        
     }
 
     public double getTotalCredit() {
@@ -3199,6 +3235,22 @@ public class ReportController implements Serializable {
 
     public void setVoucherItem(BillItem voucherItem) {
         this.voucherItem = voucherItem;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getReportType() {
+        return reportType;
+    }
+
+    public void setReportType(String reportType) {
+        this.reportType = reportType;
     }
 
 }

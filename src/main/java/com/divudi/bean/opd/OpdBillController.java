@@ -2431,7 +2431,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         }
         if (getPatient().getPerson().getName() == null
                 || getPatient().getPerson().getName().trim().equals("")) {
-            JsfUtil.addErrorMessage("Can not bill without a name for the new Patient !");
+            JsfUtil.addErrorMessage("Can not bill without a name for the Patient !");
+            return true;
+        }
+        if (getPatient().getPerson().getSex()== null) {
+            JsfUtil.addErrorMessage("Can not bill without sex for the Patient !");
             return true;
         }
         if (getPaymentMethod() == null) {
