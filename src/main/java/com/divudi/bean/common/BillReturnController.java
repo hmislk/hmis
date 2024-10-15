@@ -1,5 +1,6 @@
 package com.divudi.bean.common;
 
+import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.cashTransaction.PaymentController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
@@ -45,6 +46,8 @@ public class BillReturnController implements Serializable {
     BillFeeController billFeeController;
     @Inject
     PaymentController paymentController;
+    @Inject
+    DrawerController drawerController;
 
     private Bill originalBillToReturn;
     private List<BillItem> originalBillItemsAvailableToReturn;
@@ -56,8 +59,11 @@ public class BillReturnController implements Serializable {
     private List<Payment> returningBillPayments;
 
     private PaymentMethod paymentMethod;
-
+  
     private boolean returningStarted = false;
+    private double refundingTotalAmount;
+    private String refundComment;
+    private boolean selectAll;
 
     private double refundingTotalAmount;
 
@@ -127,6 +133,35 @@ public class BillReturnController implements Serializable {
         }
         return canReturn;
     }
+
+    public void selectAllItems() {
+        originalBillItemsToSelectedToReturn = new ArrayList();
+        for (BillItem selectedBillItemToReturn : originalBillItemsAvailableToReturn) {
+            if (!selectedBillItemToReturn.isRefunded()) {
+                System.out.println(selectedBillItemToReturn.getItem().getName() + " Add");
+                originalBillItemsToSelectedToReturn.add(selectedBillItemToReturn);
+            }
+        }
+        calculateRefundingAmount();
+        selectAll = false;
+    }
+
+    public void unSelectAllItems() {
+        originalBillItemsToSelectedToReturn = new ArrayList();
+        refundingTotalAmount = 0.0;
+        selectAll = true;
+    }
+    
+    public boolean checkCanReturnBill(Bill bill){
+        List<BillItem> items = billBeanController.fetchBillItems(bill);
+        boolean canReturn = false;
+        for(BillItem bllItem : items){
+            if(!bllItem.isRefunded()){
+                canReturn = true;
+            }
+        }
+        return canReturn;
+    }
     
     public String settleOpdReturnBill() {
         if (returningStarted) {
@@ -149,6 +184,7 @@ public class BillReturnController implements Serializable {
             returningStarted = false;
             return null;
         }
+
         originalBillToReturn = billFacade.findWithoutCache(originalBillToReturn.getId());
         if (originalBillToReturn.isCancelled()) {
             JsfUtil.addErrorMessage("Already Cancelled");
@@ -161,13 +197,12 @@ public class BillReturnController implements Serializable {
             returningStarted = false;
             return null;
         }
-        
-        // fetch original bill now, checked alteady returned, cancelled, drawer balance, 
+
+        // fetch original bill now, checked alteady returned, cancelled, , 
         newlyReturnedBill = new RefundBill();
         newlyReturnedBill.copy(originalBillToReturn);
         newlyReturnedBill.setBillTypeAtomic(BillTypeAtomic.OPD_BILL_REFUND);
         newlyReturnedBill.setComments(refundComment);
-
         newlyReturnedBill.setInstitution(sessionController.getInstitution());
         newlyReturnedBill.setDepartment(sessionController.getDepartment());
         newlyReturnedBill.invertValue();
@@ -181,7 +216,6 @@ public class BillReturnController implements Serializable {
         refundBillList.add(newlyReturnedBill);
         originalBillToReturn.setRefunded(true);
         originalBillToReturn.setRefundBills(refundBillList);
-        
         
         billController.save(originalBillToReturn);
 
@@ -251,6 +285,9 @@ public class BillReturnController implements Serializable {
         paymentController.save(returningPayment);
         returningBillPayments.add(returningPayment);
 
+//      drawer Update
+        drawerController.updateDrawerForOuts(returningPayment);
+        
         returningStarted = false;
         return "/opd/bill_return_print?faces-redirect=true";
 
