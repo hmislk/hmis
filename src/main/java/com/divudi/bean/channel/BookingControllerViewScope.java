@@ -3105,6 +3105,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
         selectedBillSession.getBillItem().getBill().getBillItems().remove(selectedBillItem);
         calculateBillTotalsFromBillFees(selectedBillSession.getBillItem().getBill());
+        calculateCashBalance();
     }
 
     public void addItemToBookingAtSettling() {
@@ -3171,7 +3172,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
 
         calculateBillTotalsFromBillFees(selectedBillSession.getBillItem().getBill());
-
+        calculateCashBalance();
         itemToAddToBooking = null;
 //        fillBaseFees();
     }
@@ -3619,13 +3620,12 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 JsfUtil.addErrorMessage("Agency (balance+credit limit) exeeded. Please get a agency deposit or increase credit limit");
                 return;
             }
-            
-            if(getAgentRefNo() == null || getAgentRefNo().isEmpty()){
+
+            if (getAgentRefNo() == null || getAgentRefNo().isEmpty()) {
                 JsfUtil.addErrorMessage("Please add Agent Reference No. ");
                 return;
             }
-            
-    
+
         }
 
         saveSelected(patient);
@@ -6153,16 +6153,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void calculateBillTotalsFromBillFeesForChangingFeeBeforeBillSettlings(BillFee updatingFee) {
-        System.out.println("calculateBillTotalsFromBillFeesForChangingFeeBeforeBillSettlings");
-
         if (updatingFee == null) {
             return;
         }
-
-        System.out.println("updatingFee = " + updatingFee);
-        System.out.println("updatingFee = " + updatingFee.getId());
-        System.out.println("updatingFee = " + updatingFee.getFeeValue());
-
         //TODO: Until Discount is finalized
         updatingFee.setFeeValue(updatingFee.getFeeGrossValue());
 
@@ -6211,7 +6204,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         feeTotalForSelectedBill = calculatingNetBillTotal;
         billSessionFacade.edit(selectedBillSession);
         selectedBillSession = billSessionFacade.find(selectedBillSession.getId());
-
+        calculateCashBalance();
     }
 
     public void calculateBillTotalsFromBillFeesForChangingFeeBeforeBillSettlings(boolean byBillItem) {
@@ -8698,13 +8691,16 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         this.cashPaid = cashPaid;
     }
 
-    public double getCashBalance() {
+    public void calculateCashBalance() {
         if (feeTotalForSelectedBill != null) {
             cashBalance = feeTotalForSelectedBill - cashPaid;
         } else {
             feeTotalForSelectedBill = 0.0;
             cashBalance = feeTotalForSelectedBill - cashPaid;
         }
+    }
+
+    public double getCashBalance() {
         return cashBalance;
     }
 
