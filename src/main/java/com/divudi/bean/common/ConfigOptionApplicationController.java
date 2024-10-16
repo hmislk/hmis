@@ -166,19 +166,18 @@ public class ConfigOptionApplicationController implements Serializable {
         if (option == null || option.getValueType() != OptionValueType.DOUBLE) {
             option = new ConfigOption();
             option.setCreatedAt(new Date());
-
             option.setOptionKey(key);
             option.setScope(OptionScope.APPLICATION);
             option.setInstitution(null);
             option.setDepartment(null);
             option.setWebUser(null);
             option.setValueType(OptionValueType.DOUBLE);
+            option.setOptionValue("0.0");
             optionFacade.create(option);
-
             loadApplicationOptions();
         }
         try {
-            return Double.parseDouble(option.getEnumValue());
+            return Double.valueOf(option.getOptionValue());
         } catch (NumberFormatException e) {
             return null;
         }
