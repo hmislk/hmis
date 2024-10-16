@@ -41,6 +41,14 @@ public class DrawerEntryController implements Serializable {
         }
         service.save(current, sessionController.getLoggedUser());
     }
+    
+    public void saveCurrent(DrawerEntry drawerEntry) {
+        if (drawerEntry == null) {
+            JsfUtil.addErrorMessage("Select");
+            return;
+        }
+        service.save(drawerEntry, sessionController.getLoggedUser());
+    }
 
     public DrawerEntryController() {
     }
