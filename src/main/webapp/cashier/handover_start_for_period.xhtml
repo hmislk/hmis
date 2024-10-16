@@ -71,12 +71,12 @@
                                 <div class="col-6">
                                     <h:panelGroup id="shiftPrint" >
 
-                                        <h:outputLabel value="From : " style=" white-space:pre-line;"/>
-                                        <h:outputLabel class="mx-2" value="#{financialTransactionController.fromDate}" >
+                                        <h:outputLabel value="From : " style=" font-weight: bold;"/>
+                                        <h:outputLabel class="mx-2" style=" font-weight: bold;" value="#{financialTransactionController.fromDate}" >
                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>                          
-                                        <h:outputLabel value="&emsp;&emsp;To :"/>
-                                        <h:outputLabel class="mx-2" value="#{financialTransactionController.toDate}" >
+                                        <h:outputLabel value="&emsp;&emsp;To :" style=" font-weight: bold;"/>
+                                        <h:outputLabel class="mx-2" style=" font-weight: bold;" value="#{financialTransactionController.toDate}" >
                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
 
