@@ -67,9 +67,18 @@
                         </p:commandButton>
 
                         <h:panelGroup id="gpPrint" >
-                            <div class="row mx-2" >
+                            <div class="row mx-2 mt-3" >
                                 <div class="col-6">
                                     <h:panelGroup id="shiftPrint" >
+
+                                        <h:outputLabel value="From : " style=" white-space:pre-line;"/>
+                                        <h:outputLabel class="mx-2" value="#{financialTransactionController.fromDate}" >
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputLabel>                          
+                                        <h:outputLabel value="&emsp;&emsp;To :"/>
+                                        <h:outputLabel class="mx-2" value="#{financialTransactionController.toDate}" >
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputLabel>
 
                                         <p:panelGrid layout="tabular" columns="2" class="w-100 mb-3 mt-3" >
                                             <f:facet name="header" >
