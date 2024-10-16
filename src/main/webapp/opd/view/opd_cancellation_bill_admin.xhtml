@@ -49,7 +49,7 @@
                                                         ajax="false"
                                                         action="#{billSearch.navigateToViewBillByAtomicBillType()}">
                                                         <f:setPropertyActionListener 
-                                                            value="#{billSearch.viewingBill.backwardReferenceBill}" 
+                                                            value="#{billSearch.viewingBill.billedBill.backwardReferenceBill}" 
                                                             target="#{billSearch.bill}" ></f:setPropertyActionListener>
                                                     </p:commandButton> 
                                                     <p:commandButton 
@@ -64,7 +64,7 @@
                                                             target="#{billSearch.bill}" ></f:setPropertyActionListener>
                                                     </p:commandButton>
                                                 </f:facet>
-                                                <view:out bill="#{billSearch.viewingBill.backwardReferenceBill}"/>
+                                                <view:out bill="#{billSearch.viewingBill.billedBill.backwardReferenceBill}"/>
                                             </p:panel>
                                             <p:panel class="w-100">
                                                 <f:facet name="header">
@@ -75,7 +75,7 @@
                                                         ajax="false"
                                                         action="#{billSearch.navigateToViewBillByAtomicBillType()}">
                                                         <f:setPropertyActionListener 
-                                                            value="#{billSearch.viewingBill.referenceBill}" 
+                                                            value="#{billSearch.viewingBill.billedBill}" 
                                                             target="#{billSearch.bill}" ></f:setPropertyActionListener>
                                                     </p:commandButton> 
                                                     <p:commandButton 
@@ -86,11 +86,11 @@
                                                         ajax="false" 
                                                         rendered="#{webUserController.hasPrivilege('Developers')}">
                                                         <f:setPropertyActionListener 
-                                                            value="#{billSearch.viewingBill.referenceBill}" 
+                                                            value="#{billSearch.viewingBill.billedBill}" 
                                                             target="#{billSearch.bill}" ></f:setPropertyActionListener>
                                                     </p:commandButton>
                                                 </f:facet>
-                                                <view:out bill="#{billSearch.viewingBill.referenceBill}"/>
+                                                <view:out bill="#{billSearch.viewingBill.billedBill}"/>
                                             </p:panel>
                                         </h:panelGrid>
                                     </p:tab>

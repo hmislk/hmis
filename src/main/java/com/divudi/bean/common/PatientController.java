@@ -2051,6 +2051,10 @@ public class PatientController implements Serializable, ControllerWithPatient {
         admissionController.fillCurrentPatientAllergies(current);
         controller.setPatientDetailsEditable(false);
         opdBillController.setPaymentMethod(null);
+        if(patientDepositController.checkDepositOfThePatient(current, sessionController.getDepartment()) != null){
+            controller.getPatient().setHasAnAccount(true);
+             controller.getPatient().setRunningBalance(patientDepositController.checkDepositOfThePatient(current, sessionController.getDepartment()).getBalance());
+        }
         if (controller.getPatient().getHasAnAccount() != null) {
             if (controller.getPatient().getHasAnAccount() && configOptionApplicationController.getBooleanValueByKey("Automatically set the PatientDeposit payment Method if a Deposit is Available", false)) {
                 opdBillController.setPaymentMethod(PaymentMethod.PatientDeposit);

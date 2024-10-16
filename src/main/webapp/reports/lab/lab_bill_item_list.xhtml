@@ -211,8 +211,8 @@
 
                     <!-- Status Column -->
                     <p:column headerText="Status" filterBy="#{billItem.patientInvestigation.status}" sortBy="#{billItem.patientInvestigation.status}">
-                        <h:outputLabel value="#{billItem.patientInvestigation.status} 1" rendered="#{billItem.patientInvestigation ne null}"/>
-                        <h:outputLabel value="#{billItem.referanceBillItem.patientInvestigation.status} 2" rendered="#{billItem.referanceBillItem.patientInvestigation ne null}" />
+                        <h:outputLabel value="#{billItem.patientInvestigation.status}" rendered="#{billItem.patientInvestigation ne null}"/>
+                        <h:outputLabel value="#{billItem.referanceBillItem.patientInvestigation.status}" rendered="#{billItem.referanceBillItem.patientInvestigation ne null}" />
                     </p:column>
 
 

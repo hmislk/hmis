@@ -92,10 +92,15 @@
                             </p:panel>
                         </p:panelGrid>
                     </h:panelGroup>
+              
+                    <p:commandButton icon="fas fa-print"
+                                     class="ui-badge-info"
+                                     value="Print">
+                        <p:printer target="profpaycancelbill" />
+                        </p:commandButton>
 
-
-                    <h:panelGroup rendered="#{billSearch.printPreview}" >
-                         <bi:staffBill controller="#{billSearch}" bill="#{billSearch.bill}" dup="false"/>                       
+                    <h:panelGroup id="profpaycancelbill" rendered="#{billSearch.printPreview}" >                       
+                         <bi:A4PaperPamentOPDDoctor controller="#{billSearch}" bill="#{billSearch.bill}" dup="true"/>
                     </h:panelGroup>
 
 

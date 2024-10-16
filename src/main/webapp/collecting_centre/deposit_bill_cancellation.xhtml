@@ -11,7 +11,7 @@
         <ui:composition template="/collecting_centre/index.xhtml">
             <ui:define name="subcontent">
                 <h:form>
-                    <h:panelGroup rendered="#{!agentPaymentReceiveSearchController.printPreview}" style="vertical-align: top;">
+                    <p:panel header="CC Payment Bill" rendered="#{!agentPaymentReceiveSearchController.printPreview}" style="vertical-align: top;">
                         <p:panelGrid layout="tabular" columns="2" class="w-100" style="vertical-align: top;">
                             <p:panel header="Bill Detail">
                                 <p:panelGrid columns="2">
@@ -54,17 +54,28 @@
                             </p:panel>
                         </p:panelGrid>
 
+                    </p:panel>
 
+                    <p:panel rendered="#{agentPaymentReceiveSearchController.printPreview}" >
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between">
+                                <h:outputLabel value="CC Payment Cancel Bill" class="mt-2"></h:outputLabel>
+                                <p:commandButton 
+                                    class="ui-button-info"
+                                    ajax="false"
+                                    value="Print"
+                                    icon="fas fa-print">
+                                    <p:printer target="print" />
+                                </p:commandButton>
+                            </div>    
+                        </f:facet>
+                        <h:panelGroup id="print">
+                            <bi:cc_payment_cancellation
+                                billController ="#{agentPaymentReceiveSearchController}"  
+                                bill="#{agentPaymentReceiveSearchController.cancelledBill}" />  
+                        </h:panelGroup>
 
-
-                    </h:panelGroup>
-                    <h:panelGroup rendered="#{agentPaymentReceiveSearchController.printPreview}" >
-                        <bi:cc_payment_cancellation
-                            billController ="#{agentPaymentReceiveSearchController}"  
-                            bill="#{agentPaymentReceiveSearchController.bill}" />  
-                    </h:panelGroup>
-
-
+                    </p:panel>
                 </h:form>   
             </ui:define>
         </ui:composition>
