@@ -427,7 +427,6 @@ public class ReportController implements Serializable {
     }
 
     public void ccSummaryReportByItem() {
-
         ReportTemplateRowBundle billedBundle = new ReportTemplateRowBundle();
         billedBundle.setName("Collecting Centre Report By Item");
         billedBundle.setDescription("From : to :");

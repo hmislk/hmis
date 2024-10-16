@@ -61,7 +61,7 @@
                                 <p:autoComplete 
                                     forceSelection="true" 
                                     value="#{staffPaymentBillController.currentStaff}"
-                                    inputStyleClass="m-2 w-100" class="mx-1 w-100 my-1"
+                                    inputStyleClass="w-100" class="m-1 w-100"
                                     id="scStaff"
                                     completeMethod="#{staffPaymentBillController.completeStaff}"
                                     var="mys" 
@@ -73,18 +73,18 @@
 
 
                             <p:commandButton 
-                                value="Process" 
+                                value="Find Due Payments" 
                                 action="#{staffPaymentBillController.calculateDueFeesForOpdForSelectedPeriod}" 
                                 ajax="false" 
                                 icon="fa-solid fa-arrows-rotate"
-                                class="w-25 ui-button-warning my-1" />
+                                class="ui-button-warning" />
 
                             <p:commandButton 
                                 ajax="false" 
-                                value="Excel" 
+                                value="Download as Excel" 
                                 styleClass="noPrintButton" 
                                 icon="fa-solid fa-file-excel"
-                                class="w-25 ui-button-success my-1 mx-2" >
+                                class="ui-button-success mx-2" >
                                 <p:dataExporter type="xlsx" target=":#{p:resolveFirstComponentWithId('tblFee',view).clientId}" fileName="Staff_Payment_Due_OPD"  />
                             </p:commandButton>
 
@@ -94,21 +94,23 @@
                                 id="tblFee"
                                 value="#{staffPaymentBillController.dueBillFees}"
                                 selection="#{staffPaymentBillController.payingBillFees}"
-                                class="w-100"
-                                paginator="true" paginatorPosition="bottom"
+                                class="w-100 m-1"
+                                rows="10"
+                                paginator="true"
+                                paginatorPosition="bottom"
                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                 currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
                                 rowsPerPageTemplate="{ShowAll|'All'}"
                                 var="bf" 
                                 rowKey="#{bf.id}" >
 
-                                <f:ajax  event="rowSelectCheckbox" execute="tblFee" listener="#{staffPaymentBillController.performCalculations()}"   
+                                <f:ajax  event="rowSelectCheckbox" execute="tblFee" listener="#{staffPaymentBillController.calculatePaymentsSelected()}"   
                                          render=":#{p:resolveFirstComponentWithId('scStaff',view).clientId}  :#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId} tblFee"  />  
 
-                                <f:ajax  event="rowUnselectCheckbox" execute="tblFee" listener="#{staffPaymentBillController.performCalculations()}"   
+                                <f:ajax  event="rowUnselectCheckbox" execute="tblFee" listener="#{staffPaymentBillController.calculatePaymentsSelected()}"   
                                          render=":#{p:resolveFirstComponentWithId('scStaff',view).clientId}  :#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId} tblFee"  />  
 
-                                <f:ajax  event="toggleSelect" execute="tblFee" listener="#{staffPaymentBillController.performCalculations()}"   
+                                <f:ajax  event="toggleSelect" execute="tblFee" listener="#{staffPaymentBillController.calculatePaymentsSelected()}"   
                                          render=":#{p:resolveFirstComponentWithId('scStaff',view).clientId}  :#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId} tblFee"  />  
 
                                 <p:column selectionBox="true" width="20"></p:column>
@@ -180,34 +182,66 @@
                             <p:panel id="pTotals"  >
                                 <f:facet name="header" >
                                     <h:outputLabel value="Payment Details" />
+                                    <p:commandButton 
+                                        id="btnPay"
+                                        ajax="false"
+                                        value= "&nbsp;&nbsp;&nbsp;&nbsp; Settle Professional Payment" 
+                                        style="float: right;"
+                                        class="ui-button-success m-1 p-1"
+                                        action="#{staffPaymentBillController.settleBill()}" >
+                                    </p:commandButton>
+
+                                    <p:defaultCommand target="btnPay"/>
                                 </f:facet>
-                                <h:panelGrid columns="3" >
+                                <p:panelGrid columns="2" layout="tabular" >
                                     <h:outputLabel value="Payment Method" ></h:outputLabel>
-                                    <p:spacer width="30"/>
                                     <p:selectOneMenu  id="cmbPay" value="#{staffPaymentBillController.paymentMethod}" class="mx-2 w-100">                                      
                                         <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"  />
                                     </p:selectOneMenu>
                                     <h:outputLabel value="Total Due" ></h:outputLabel>
-                                    <p:spacer width="30"/>
                                     <h:outputLabel id="lblDue" value="#{staffPaymentBillController.totalDue}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
-                                    <h:outputLabel value="Paying This time" ></h:outputLabel>
-                                    <p:spacer width="30"/>
-                                    <h:outputLabel id="lblPay"  value="#{staffPaymentBillController.totalPaying }" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>  
-                                </h:panelGrid>
-                            </p:panel>
-                        </h:form>
-                        <h:form>
-                            <div class="w-25">
-                                <p:commandButton id="btnPay" ajax="false" value="Pay" class="w-25 ui-button-success my-1"
-                                                 action="#{staffPaymentBillController.settleBill()}" >
-                                    <!--<f:ajax execute="@this cmbPay tblFee scStaff" render="@all" />-->
-                                </p:commandButton>
 
-                                <p:defaultCommand target="btnPay"/>
+
+
+                                    <p:splitter ></p:splitter>
+                                    <p:splitter ></p:splitter>
+
+                                    <h:outputLabel value="Total Payment Completed for this month" ></h:outputLabel>
+                                    <h:outputLabel id="lblPayDoneForThisMonth"  value="#{staffPaymentBillController.totalPaidForCurrentProfessionalForCurrentMonthForCurrentInstitute}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <h:outputLabel value="Withholding Cutoff" ></h:outputLabel>
+                                    <h:outputLabel id="lblWhtCuroff"  value="#{staffPaymentBillController.withholdingTaxLimit}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <h:outputLabel value="Withholding Percentage" ></h:outputLabel>
+                                    <h:outputLabel id="lblWhtPercentage"  value="#{staffPaymentBillController.withholdingTaxPercentage}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+
+                                    <p:splitter ></p:splitter>
+                                    <p:splitter ></p:splitter>
+
+                                    <h:outputLabel value="Paying This time" ></h:outputLabel>
+                                    <h:outputLabel id="lblPay"  value="#{staffPaymentBillController.totalPaying}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel> 
+                                    <h:outputLabel value="Witholging Tax" ></h:outputLabel>
+                                    <h:outputLabel id="lblTax" value="#{staffPaymentBillController.withholdingTax}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <h:outputLabel value="Paying This time withot WHT" ></h:outputLabel>
+                                    <h:outputLabel id="lblPayWithTax"  value="#{staffPaymentBillController.totalPayingWithoutWht}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel> 
+
+
+                                </p:panelGrid>
+                            </p:panel>
+                            <div class="w-25">
+
 
                             </div>
                         </h:form>
