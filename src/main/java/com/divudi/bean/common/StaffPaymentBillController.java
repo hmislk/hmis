@@ -183,7 +183,7 @@ public class StaffPaymentBillController implements Serializable {
         currentStaff = null;
         totalDue = 0.0;
         totalPaying = 0.0;
-        withholdingTax=0.0;
+        withholdingTax = 0.0;
         printPreview = false;
         paymentMethod = PaymentMethod.Cash;
         speciality = null;
@@ -433,8 +433,8 @@ public class StaffPaymentBillController implements Serializable {
         for (BillFee f : payingBillFees) {
             totalPaying = totalPaying + (f.getFeeValue() - f.getPaidValue());
         }
-        if(getWithholdingTaxLimit()  < totalPaidForCurrentProfessionalForCurrentMonthForCurrentInstitute){
-            withholdingTax = totalPaying * getWithholdingTaxPercentage() ;
+        if (getWithholdingTaxLimit() < totalPaidForCurrentProfessionalForCurrentMonthForCurrentInstitute) {
+            withholdingTax = totalPaying * getWithholdingTaxPercentage();
         }
         totalPayingWithoutWht = totalPaying - withholdingTax;
     }
@@ -548,6 +548,10 @@ public class StaffPaymentBillController implements Serializable {
     private boolean errorCheck() {
         if (currentStaff == null) {
             JsfUtil.addErrorMessage("Please select a Staff Memeber");
+            return true;
+        }
+        if (dueBillFees == null) {
+            JsfUtil.addErrorMessage("Please select payments to update");
             return true;
         }
         performCalculations();
@@ -1174,7 +1178,7 @@ public class StaffPaymentBillController implements Serializable {
     }
 
     public Double getWithholdingTaxPercentage() {
-        if(withholdingTaxPercentage==null){
+        if (withholdingTaxPercentage == null) {
             withholdingTaxPercentage = configOptionApplicationController.getDoubleValueByKey("Withholding Tax Percentage");
         }
         return withholdingTaxPercentage;
@@ -1191,7 +1195,5 @@ public class StaffPaymentBillController implements Serializable {
     public void setTotalPayingWithoutWht(double totalPayingWithoutWht) {
         this.totalPayingWithoutWht = totalPayingWithoutWht;
     }
-    
-    
 
 }
