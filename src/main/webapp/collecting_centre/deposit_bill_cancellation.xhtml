@@ -11,7 +11,7 @@
         <ui:composition template="/collecting_centre/index.xhtml">
             <ui:define name="subcontent">
                 <h:form>
-                    <h:panelGroup rendered="#{!agentPaymentReceiveSearchController.printPreview}" style="vertical-align: top;">
+                    <p:panel header="CC Payment Bill" rendered="#{!agentPaymentReceiveSearchController.printPreview}" style="vertical-align: top;">
                         <p:panelGrid layout="tabular" columns="2" class="w-100" style="vertical-align: top;">
                             <p:panel header="Bill Detail">
                                 <p:panelGrid columns="2">
@@ -54,15 +54,12 @@
                             </p:panel>
                         </p:panelGrid>
 
-
-
-
-                    </h:panelGroup>
-                    <h:panelGroup rendered="#{agentPaymentReceiveSearchController.printPreview}" >
+                    </p:panel>
+                    <p:panel header="CC Payment Cancel Bill" rendered="#{agentPaymentReceiveSearchController.printPreview}" >
                         <bi:cc_payment_cancellation
                             billController ="#{agentPaymentReceiveSearchController}"  
-                            bill="#{agentPaymentReceiveSearchController.bill}" />  
-                    </h:panelGroup>
+                            bill="#{agentPaymentReceiveSearchController.cancelledBill}" />  
+                    </p:panel>
 
 
                 </h:form>   
