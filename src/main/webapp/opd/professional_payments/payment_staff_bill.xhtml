@@ -213,7 +213,11 @@
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                     <h:outputLabel value="Withholding Cutoff" ></h:outputLabel>
-                                    <h:outputLabel id="lblWhtCuroff"  value="#{staffPaymentBillController.totalPaidForCurrentProfessionalForCurrentMonthForCurrentInstitute}" >
+                                    <h:outputLabel id="lblWhtCuroff"  value="#{staffPaymentBillController.withholdingTaxLimit}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <h:outputLabel value="Withholding Percentage" ></h:outputLabel>
+                                    <h:outputLabel id="lblWhtPercentage"  value="#{staffPaymentBillController.withholdingTaxPercentage}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
 
@@ -225,7 +229,7 @@
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel> 
                                     <h:outputLabel value="Witholging Tax" ></h:outputLabel>
-                                    <h:outputLabel id="lblTax" value="#{staffPaymentBillController.totalDue}" >
+                                    <h:outputLabel id="lblTax" value="#{staffPaymentBillController.withholdingTax}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                     <h:outputLabel value="Paying This time withot WHT" ></h:outputLabel>
