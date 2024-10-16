@@ -102,7 +102,6 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.primefaces.model.file.UploadedFile;
 
-
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 
@@ -298,6 +297,11 @@ public class SearchController implements Serializable {
     private double billCount;
     private Token token;
     private int managePaymentIndex = -1;
+
+    private double hosTotal;
+    private double staffTotal;
+    private double discountTotal;
+    private double amountTotal;
 
     private boolean duplicateBillView;
 
@@ -1929,6 +1933,38 @@ public class SearchController implements Serializable {
 
     public void setDownloadingExcel(StreamedContent downloadingExcel) {
         this.downloadingExcel = downloadingExcel;
+    }
+
+    public double getHosTotal() {
+        return hosTotal;
+    }
+
+    public void setHosTotal(double hosTotal) {
+        this.hosTotal = hosTotal;
+    }
+
+    public double getStaffTotal() {
+        return staffTotal;
+    }
+
+    public void setStaffTotal(double staffTotal) {
+        this.staffTotal = staffTotal;
+    }
+
+    public double getDiscountTotal() {
+        return discountTotal;
+    }
+
+    public void setDiscountTotal(double discountTotal) {
+        this.discountTotal = discountTotal;
+    }
+
+    public double getAmountTotal() {
+        return amountTotal;
+    }
+
+    public void setAmountTotal(double amountTotal) {
+        this.amountTotal = amountTotal;
     }
 
     public class billsWithbill {
@@ -4885,72 +4921,105 @@ public class SearchController implements Serializable {
     }
 
     public void createDueFeeTableAll() {
-        Date sartTime = new Date();
+        String jpql;
+        Map params = new HashMap();
 
-        String sql;
-        Map temMap = new HashMap();
-
-        sql = "select b from BillFee b where b.retired=false and "
-                + " (b.bill.billType=:btp or b.bill.billType=:btpc) "
-                + " and b.bill.cancelled=false "
-                + " and (b.feeValue - b.paidValue) > 0 and"
-                + "  b.bill.createdAt between :fromDate"
+        jpql = "select bf "
+                + " from BillFee bf "
+                + " where bf.retired=false "
+                + " and bf.bill.billTypeAtomic in :btas "
+                + " and bf.bill.cancelled=false "
+                + " and (bf.feeValue - bf.paidValue) > 0 and"
+                + "  bf.bill.createdAt between :fromDate"
                 + " and :toDate ";
 
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
-            sql += " and  ((b.bill.patient.person.name) like :patientName )";
-            temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+            jpql += " and  ((bf.bill.patient.person.name) like :patientName )";
+            params.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
-            sql += " and  ((b.bill.insId) like :billNo )";
-            temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+            jpql += " and  ((bf.bill.insId) like :billNo )";
+            params.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
-            sql += " and  ((b.feeValue) like :total )";
-            temMap.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+            jpql += " and  ((bf.feeValue) like :total )";
+            params.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getSpeciality() != null && !getSearchKeyword().getSpeciality().trim().equals("")) {
-            sql += " and  ((b.staff.speciality.name) like :special )";
-            temMap.put("special", "%" + getSearchKeyword().getSpeciality().trim().toUpperCase() + "%");
+            jpql += " and  ((bf.staff.speciality.name) like :special )";
+            params.put("special", "%" + getSearchKeyword().getSpeciality().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getStaffName() != null && !getSearchKeyword().getStaffName().trim().equals("")) {
-            sql += " and  ((b.staff.person.name) like :staff )";
-            temMap.put("staff", "%" + getSearchKeyword().getStaffName().trim().toUpperCase() + "%");
+            jpql += " and  ((bf.staff.person.name) like :staff )";
+            params.put("staff", "%" + getSearchKeyword().getStaffName().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
-            sql += " and  ((b.billItem.item.name) like :staff )";
-            temMap.put("staff", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
+            jpql += " and  ((bf.billItem.item.name) like :staff )";
+            params.put("staff", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
-            sql += " and  ((b.paidForBillFee.bill.patientEncounter.bhtNo) like :bht )";
-            temMap.put("bht", "%" + getSearchKeyword().getBhtNo().trim().toUpperCase() + "%");
+            jpql += " and  ((bf.paidForBillFee.bill.patientEncounter.bhtNo) like :bht )";
+            params.put("bht", "%" + getSearchKeyword().getBhtNo().trim().toUpperCase() + "%");
         }
 
-        sql += "  order by b.staff.id    ";
+        jpql += "  order by bf.staff.id    ";
 
-        temMap.put("toDate", getToDate());
-        temMap.put("fromDate", getFromDate());
-        temMap.put("btp", BillType.OpdBill);
-        temMap.put("btpc", BillType.CollectingCentreBill);
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+        btas.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+        btas.add(BillTypeAtomic.CC_BILL);
 
-        billFees = getBillFeeFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
-        List<BillFee> removeingBillFees = new ArrayList<>();
-        for (BillFee bf : billFees) {
-            sql = "SELECT bi FROM BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + bf.getBillItem().getId();
-            BillItem rbi = getBillItemFacade().findFirstByJpql(sql);
+        params.put("toDate", getToDate());
+        params.put("fromDate", getFromDate());
+        params.put("btas", btas);
 
-            if (rbi != null) {
-                removeingBillFees.add(bf);
+        billFees = getBillFeeFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        if (configOptionApplicationController.getBooleanValueByKey("Remove Refunded Bill From OPD Staff Payment")) {
+            List<BillFee> removeingBillFees = new ArrayList<>();
+            for (BillFee bf : billFees) {
+                params = new HashMap();
+                jpql = "SELECT bi FROM BillItem bi where "
+                        + " bi.retired=false"
+                        + " and bi.bill.cancelled=false "
+                        + " and type(bi.bill)=:class "
+                        + " and bi.referanceBillItem.id=" + bf.getBillItem().getId();
+                params.put("class", RefundBill.class);
+                BillItem rbi = getBillItemFacade().findFirstByJpql(jpql, params);
+
+                if (rbi != null) {
+                    removeingBillFees.add(bf);
+                }
+
             }
+            billFees.removeAll(removeingBillFees);
 
+            System.out.println("billFees = " + billFees);
         }
-        billFees.removeAll(removeingBillFees);
+
+//        List<BillFee> removeingBillFees = new ArrayList<>();
+//        for (BillFee bf : billFees) {
+//            sql = "SELECT bi "
+//                    + " FROM BillItem bi "
+//                    + " where bi.retired=false "
+//                    + " and bi.bill.cancelled=false "
+//                    + " and bi.bill.billTypeAtomic in :btas "
+//                    + " and bi.referanceBillItem.id=" + bf.getBillItem().getId();
+//            BillItem rbi = getBillItemFacade().findFirstByJpql(sql);
+//
+//            if (rbi != null) {
+//                removeingBillFees.add(bf);
+//            }
+//
+//        }
+//        billFees.removeAll(removeingBillFees);
         calTotal();
 
     }
@@ -14576,6 +14645,66 @@ public class SearchController implements Serializable {
         bundle.calculateTotals();
     }
 
+    public void listAgentChannelBookings() {
+        String jpql = "SELECT b FROM Bill b "
+                + " WHERE b.retired = :ret "
+                + " AND b.billTypeAtomic IN :bts ";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+
+        List<BillTypeAtomic> bts = new ArrayList<>();
+        bts.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+//        bts.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
+//        bts.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT);
+        m.put("bts", bts);
+
+        jpql += " AND b.paymentMethod = :pm ";
+        m.put("pm", PaymentMethod.Agent);
+
+        if (institution != null) {
+            jpql += " AND b.institution = :ins ";
+            m.put("ins", institution);
+        }
+
+        if (site != null) {
+            jpql += " AND b.department.site = :site ";
+            m.put("site", site);
+        }
+
+        if (department != null) {
+            jpql += " AND b.department = :dept ";
+            m.put("dept", department);
+        }
+
+        if (webUser != null) {
+            jpql += " AND b.creator = :wu ";
+            m.put("wu", webUser);
+        }
+
+        jpql += " AND b.createdAt BETWEEN :fromDate AND :toDate ";
+        m.put("fromDate", getFromDate());
+        m.put("toDate", getToDate());
+
+        bills = billFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+
+        hosTotal = 0.0;
+        staffTotal = 0.0;
+        grossTotal = 0.0;
+        discountTotal = 0.0;
+        amountTotal = 0.0;
+
+        for (Bill b : bills) {
+            if (!b.isCancelled() && !b.isRefunded()) {
+                hosTotal += b.getHospitalFee();
+                staffTotal += b.getStaffFee();
+                grossTotal += (b.getHospitalFee() + b.getStaffFee());
+                discountTotal += b.getDiscount();
+                amountTotal += b.getNetTotal();
+            }
+        }
+    }
+
     public void billItemsToItamizedSaleReport(ReportTemplateRowBundle rtrb, List<BillItem> billItems) {
         Map<String, ReportTemplateRow> categoryMap = new HashMap<>();
         Map<String, ReportTemplateRow> itemSummaryMap = new HashMap<>();
@@ -15630,7 +15759,6 @@ public class SearchController implements Serializable {
         return pdfSc;
     }
 
-    
     public StreamedContent getBundleAsExcel() {
         try {
             downloadingExcel = excelController.createExcelForBundle(bundle);
