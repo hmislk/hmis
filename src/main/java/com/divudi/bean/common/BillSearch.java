@@ -3163,9 +3163,9 @@ public class BillSearch implements Serializable {
         return "/opd/professional_payments/opd_search_professional_payment_due?faces-redirect=true;";
     }
 
-    public String navigateToViewOpdPayProfessionalPayments() {
-        return "/opd/professional_payments/payment_staff_bill?faces-redirect=true;";
-    }
+//    public String navigateToViewOpdPayProfessionalPayments() {
+//        return "/opd/professional_payments/payment_staff_bill?faces-redirect=true;";
+//    }
 
     public String navigateToViewCancallationOpdbATCHBill() {
         if (viewingBill == null) {
