@@ -100,7 +100,7 @@
 
                             <h:panelGroup >
                                 <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
-                                <h:outputLabel value="To Institution" />
+                                <h:outputLabel value="To Institution" class="mx-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu filter="true"
                                              filterMatchMode="contains"
@@ -119,7 +119,7 @@
 
                             <h:panelGroup>
                                 <h:outputText value="&#xf0e8;" styleClass="fa mr-2" />
-                                <h:outputLabel value="To Department"/>
+                                <h:outputLabel value="To Department" class="mx-3"/>
                             </h:panelGroup>
                             <h:panelGroup id="gpToDept" >
                                 <p:selectOneMenu
@@ -137,7 +137,7 @@
 
                             <h:panelGroup >
                                 <h:outputText value="&#xf007;" styleClass="fa mr-2" /> 
-                                <h:outputLabel value="Patient MRN" />
+                                <h:outputLabel value="Patient MRN" class="mx-3"/>
                             </h:panelGroup>
                             <p:inputText value="#{reportController.phn}" class="w-100 " />
 
@@ -178,7 +178,7 @@
 
                         </h:panelGrid>
 
-                       
+
 
                         <h:panelGrid columns="6" class="my-2">
                             <p:commandButton 
@@ -281,7 +281,7 @@
                                 </f:facet>
 
                             </p:columns>
-
+                    
                         </p:dataTable>
 
                         <table border="1" id="printTbl" style="display:none;">
