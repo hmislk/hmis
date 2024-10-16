@@ -2,19 +2,26 @@ package com.divudi.bean.cashTransaction;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.cashTransaction.Drawer;
+import com.divudi.entity.BillFee;
 import com.divudi.entity.cashTransaction.DrawerEntry;
 import com.divudi.facade.DrawerEntryFacade;
 import com.divudi.service.DrawerEntryService;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -27,12 +34,18 @@ public class DrawerEntryController implements Serializable {
     @EJB
     DrawerEntryFacade ejbFacade;
     @EJB
-    DrawerEntryService service;
-    
+    private DrawerEntryService service;
+
     @Inject
-    SessionController sessionController;
+    private SessionController sessionController;
 
     private DrawerEntry current;
+    private List<DrawerEntry> userDrawerEntry;
+    private Date fromDate;
+    private Date toDate;
+
+    public DrawerEntryController() {
+    }
 
     public void saveCurrent() {
         if (current == null) {
@@ -41,7 +54,7 @@ public class DrawerEntryController implements Serializable {
         }
         service.save(current, sessionController.getLoggedUser());
     }
-    
+
     public void saveCurrent(DrawerEntry drawerEntry) {
         if (drawerEntry == null) {
             JsfUtil.addErrorMessage("Select");
@@ -50,7 +63,33 @@ public class DrawerEntryController implements Serializable {
         service.save(drawerEntry, sessionController.getLoggedUser());
     }
 
-    public DrawerEntryController() {
+    public void myDrawerEntrys() {
+        userDrawerEntry = new ArrayList();
+        String jpql = "select de"
+                + " from DrawerEntry de"
+                + " where de.retired=:ret"
+                + " and de.webUser=:wu";
+
+        Map m = new HashMap();
+
+        jpql += " order by de.id desc";
+
+        m.put("ret", false);
+        m.put("wu", sessionController.getLoggedUser());
+        List<DrawerEntry> result = ejbFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP, 50);
+
+        // Reverse the list to get the last entry at the end
+        Collections.reverse(result);
+
+        // Assign to the class field
+        userDrawerEntry = result;
+        System.out.println("userDrawerEntry = " + userDrawerEntry);
+    }
+
+    public String navigateToMyDrawerEntry() {
+        userDrawerEntry = new ArrayList();
+        myDrawerEntrys();
+        return "/cashier/my_drawer_entry_history?faces-redirect=true;";
     }
 
     private DrawerEntryFacade getEjbFacade() {
@@ -63,6 +102,46 @@ public class DrawerEntryController implements Serializable {
 
     public void setCurrent(DrawerEntry current) {
         this.current = current;
+    }
+
+    public DrawerEntryService getService() {
+        return service;
+    }
+
+    public void setService(DrawerEntryService service) {
+        this.service = service;
+    }
+
+    public SessionController getSessionController() {
+        return sessionController;
+    }
+
+    public void setSessionController(SessionController sessionController) {
+        this.sessionController = sessionController;
+    }
+
+    public List<DrawerEntry> getUserDrawerEntry() {
+        return userDrawerEntry;
+    }
+
+    public void setUserDrawerEntry(List<DrawerEntry> userDrawerEntry) {
+        this.userDrawerEntry = userDrawerEntry;
+    }
+
+    public Date getFromDate() {
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
     }
 
     @FacesConverter(forClass = DrawerEntry.class)
