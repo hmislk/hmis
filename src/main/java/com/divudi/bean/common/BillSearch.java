@@ -4248,6 +4248,7 @@ public class BillSearch implements Serializable {
         this.creditCompany = creditCompany;
     }
 
+    @Deprecated
     public void setBillSearch(Bill bill) {
         recreateModel();
         this.bill = bill;
