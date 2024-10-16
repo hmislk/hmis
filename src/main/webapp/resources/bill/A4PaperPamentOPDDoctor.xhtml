@@ -126,7 +126,7 @@
                     <br/>
                 </div>
                 <div class="billDetailsFiveFive" >
-                    <h:dataTable value="#{cc.attrs.controller.viewingBillItems}"
+                    <h:dataTable value="#{billBeanController.fetchBillItems(cc.attrs.bill)}"
                                  var="bip" style="margin: auto; padding: 1%; width: 100%; margin-right: 10%; " >
 
                         <p:column style="text-align: center; margin-left: 10%" >
