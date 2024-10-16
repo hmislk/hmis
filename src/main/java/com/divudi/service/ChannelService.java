@@ -32,6 +32,7 @@ import com.divudi.entity.Patient;
 import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.ServiceSession;
+import com.divudi.entity.WebUser;
 import com.divudi.entity.channel.SessionInstance;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
@@ -70,10 +71,11 @@ public class ChannelService {
     private BillFeeFacade billFeeFacade;
     @EJB
     private BillNumberGenerator billNumberBean;
+    
 
     @Inject
     BillBeanController billBeanController;
-
+    
     public BillFacade getBillFacade() {
         return billFacade;
     }
@@ -98,7 +100,7 @@ public class ChannelService {
         this.billSessionFacade = billSessionFacade;
     }
 
-    public Bill saveBilledBill(boolean forReservedNumbers, Patient patient, SessionInstance session, String refNo) {
+    public Bill saveBilledBill(boolean forReservedNumbers, Patient patient, SessionInstance session, String refNo, WebUser user) {
         Bill savingBill = createBill(patient, session);
         BillItem savingBillItemForSession = createSessionItem(savingBill, refNo, session);
 
@@ -233,7 +235,7 @@ public class ChannelService {
         billToCaclculate.setTotal(calculatingGrossBillTotal);
         getBillFacade().edit(billToCaclculate);
     }
-
+    @Deprecated
     private String generateBillNumberDeptId(Bill bill) {
         String suffix = bill.getDepartment().getDepartmentCode();
         BillClassType billClassType = null;
@@ -286,7 +288,8 @@ public class ChannelService {
         bill.setBillType(BillType.ChannelOnCall);
         bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
         System.out.println(bill);
-        String deptId = generateBillNumberDeptId(bill);
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(session.getDepartment(), BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
+        
 
         if (deptId.equals("")) {
             return null;
@@ -381,7 +384,7 @@ public class ChannelService {
         } else {
             bs.setSerialNo(1);
         }
-
+        
         getBillSessionFacade().create(bs);
 
         return bs;

@@ -576,18 +576,17 @@ public class ChannelApi {
         Long additionalProp = 1L;
         for (SessionInstance s : sessions) {
             Map<String, Object> session = new HashMap<>();
-            session.put("sessionID", s.getId());
-            session.put("hosFee", s.getHospitalFee());
+            session.put("sessionID", s.getId());        
             session.put("docName", s.getStaff().getName());
             session.put("docNo", s.getStaff().getId());
-            session.put("foreignAmount", s.getTotalForForeigner());
+            session.put("foreignAmount", s.getOriginatingSession().getTotalForForeigner());
             session.put("hosId", s.getInstitution().getId());
-            session.put("hosFee", s.getHospitalFee());
+            session.put("hosFee", s.getOriginatingSession().getHospitalFee());
             session.put("docFee", s.getProfessionalFee());
             session.put("startTime", s.getStartingTime());
-            session.put("amount", s.getTotalFee());
+            session.put("amount", s.getOriginatingSession().getTotal());
             session.put("appDate", s.getSessionDate());
-            session.put("maxPatient", s.getMaxNo());
+            session.put("maxPatient", s.getOriginatingSession().getMaxNo());
             session.put("appDay", s.getDayString());
             session.put("nextNo", s.getNextAvailableAppointmentNumber());
 
@@ -644,18 +643,19 @@ public class ChannelApi {
         Map<String, Object> sessionData = new HashMap<>();
         sessionData.put("sessionID", session.getId());
         sessionData.put("hosFee", session.getOriginatingSession().getHospitalFee());
-        sessionData.put("docName", session.getStaff().getName());
+        sessionData.put("docName", session.getStaff().getPerson().getName());
         sessionData.put("docNo", session.getStaff().getId());
-        sessionData.put("foreignAmount", session.getTotalForForeigner());
+        sessionData.put("foreignAmount", session.getOriginatingSession().getTotalForForeigner());
         sessionData.put("hosId", session.getInstitution().getId());
-        sessionData.put("hosFee", session.getHospitalFee());
-        sessionData.put("docFee", session.getProfessionalFee());
+        sessionData.put("hosFee", session.getHospitalFee());       
+        sessionData.put("docFee", session.getProfessionalFee());      
         sessionData.put("startTime", session.getStartingTime());
-        sessionData.put("amount", session.getTotalFee());
+        sessionData.put("amount", session.getTotalFee());       
         sessionData.put("appDate", session.getSessionDate());
         sessionData.put("maxPatient", session.getMaxNo());
         sessionData.put("appDay", session.getDayString());
         sessionData.put("nextNo", session.getNextAvailableAppointmentNumber());
+        
 
         Map<String, Object> allSessionData = new HashMap<>();
         allSessionData.put("result", sessionData);
@@ -798,7 +798,7 @@ public class ChannelApi {
         PaymentMethod paymentMethod = null;
 
         //TODO : Handle Payment Method
-        Bill bill = channelService.saveBilledBill(false, newPatient, session, clientsReferanceNo);
+        Bill bill = channelService.saveBilledBill(false, newPatient, session, clientsReferanceNo, null);
 
         if (false) {
             Bill billa = new Bill();
