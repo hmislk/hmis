@@ -92,7 +92,7 @@
                             </div>
                         </div>
                         <p:panel header="Bill Fee Details" class="my-2">
-                            <p:dataTable value="#{billSearch.bill.billItems}" var="bip21" emptyMessage="No Items" >
+                            <p:dataTable value="#{billBeanController.fetchBillItems(billSearch.bill)}" var="bip21" emptyMessage="No Items" >
                                 <p:column headerText="Bill No">
                                     <h:outputLabel value="#{bip21.referenceBill.deptId}" />
                                 </p:column>
@@ -101,6 +101,13 @@
                                 </p:column>
                                 <p:column headerText="Test/Service">
                                     <h:outputLabel value="#{bip21.paidForBillFee.billItem.item.name}" />
+                                </p:column>
+                                <p:column>
+                                    <f:facet name="header" >
+                                        <h:outputLabel value="Patient Name" ></h:outputLabel>
+                                    </f:facet>
+                                    <h:outputLabel value="#{bip21.referanceBillItem.bill.patient.person.name}" rendered="#{bip21.referanceBillItem.bill.patientEncounter eq null}"/>                                    
+                                    <h:outputLabel value="#{bip21.referanceBillItem.bill.patientEncounter.patient.person.nameWithTitle}"/>                                                                                
                                 </p:column>
                                 <p:column headerText="Fee" >
                                     <h:outputLabel value="#{bip21.netValue}" />
@@ -120,8 +127,7 @@
                         <p:printer target="profpaybill" />
                     </p:commandButton>
                     <h:panelGroup id="profpaybill">
-                        <bi:staffBill_1  bill="#{billSearch.bill}" dup="true" controller="#{billSearch}" >
-                        </bi:staffBill_1>
+                        <bi:A4PaperPamentOPDDoctor controller="#{billSearch}" bill="#{billSearch.bill}" dup="true"/>
                     </h:panelGroup>
                 </h:form>
 
