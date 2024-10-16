@@ -14656,7 +14656,7 @@ public class SearchController implements Serializable {
         
         if (toInstitution != null) {
             jpql += " AND b.toInstitution = :tins ";
-            m.put("tins", institution);
+            m.put("tins", toInstitution);
         }
         
         if (toSite != null) {

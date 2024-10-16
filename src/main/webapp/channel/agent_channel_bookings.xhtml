@@ -94,7 +94,7 @@
                                             value="#{searchController.department}" 
                                             filter="true">
                                             <f:selectItem itemLabel="All Departments" />
-                                            <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, institutionController.sites)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                            <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
                                         </p:selectOneMenu>
                                     </h:panelGroup>
 
@@ -168,38 +168,45 @@
                                     ajax="false" value="View List"
                                     action="#{searchController.listAgentChannelBookings}" />
 
-                                <p:commandButton id="btnPdf" class="m-1 ui-button-info"
-                                                 ajax="false"
-                                                 rendered="false"
-                                                 icon="fas fa-file-pdf"
-                                                 value="Export as PDF">
-                                    <p:dataExporter type="pdf" target="tbl" fileName="itemized_sale_summary" />
+                                <p:commandButton 
+                                    id="btnPdf" 
+                                    class="m-1 ui-button-info"
+                                    ajax="false"
+                                    rendered="false"
+                                    icon="fas fa-file-pdf"
+                                    value="Export as PDF">
+                                    <p:dataExporter type="pdf" target="tbl" fileName="agent_channel_bookings" />
                                 </p:commandButton>
 
-                                <p:commandButton id="btnPrint" class="m-1 ui-button-primary"
-                                                 icon="fas fa-print"
-                                                 ajax="false"
-                                                 value="Print Table">
+                                <p:commandButton 
+                                    id="btnPrint"
+                                    class="m-1 ui-button-primary"
+                                    icon="fas fa-print"
+                                    ajax="false"
+                                    value="Print Table">
                                     <p:printer target="tbl" />
                                 </p:commandButton>
 
-                                <p:commandButton id="btnExcel" class="m-1 ui-button-success"
-                                                 icon="fas fa-file-excel"
-                                                 ajax="false" value="Export to Excel">
-                                    <p:dataExporter type="xlsx" target="tbl" fileName="itemized_sale_summary" />
+                                <p:commandButton 
+                                    id="btnExcel" 
+                                    class="m-1 ui-button-success"
+                                    icon="fas fa-file-excel"
+                                    ajax="false" value="Export to Excel">
+                                    <p:dataExporter type="xlsx" target="tbl" fileName="agent_channel_bookings" />
                                 </p:commandButton>
                             </div>
                         </div>
 
-                        <p:dataTable id="tbl"
-                                     value="#{searchController.bills}"
-                                     var="b"
-                                     paginator="true"
-                                     rows="10"
-                                     rowIndexVar="n"
-                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     rowsPerPageTemplate="5,10,20"
-                                     rowKey="#{b.id}">
+                        <p:dataTable 
+                            id="tbl"
+                            value="#{searchController.bills}"
+                            var="b"
+                            paginator="true"
+                            rows="10"
+                            rowIndexVar="n"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="5,10,20"
+                            rowKey="#{b.id}">
 
                             <p:column width="2em">
                                 <f:facet name="header">
@@ -248,6 +255,7 @@
                                 </f:facet>
                                 <h:outputText value="#{b.institution.name}">
                                 </h:outputText>
+                                <br/>
                                 <h:outputText value="#{b.department.name}">
                                 </h:outputText>
                             </p:column>
@@ -258,6 +266,7 @@
                                 </f:facet>
                                 <h:outputText value="#{b.toInstitution.name}">
                                 </h:outputText>
+                                <br/>
                                 <h:outputText value="#{b.toDepartment.name}">
                                 </h:outputText>
                             </p:column>
