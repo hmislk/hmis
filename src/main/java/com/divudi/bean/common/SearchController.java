@@ -14644,6 +14644,21 @@ public class SearchController implements Serializable {
             m.put("dept", department);
         }
         
+        if (toInstitution != null) {
+            jpql += " AND b.toInstitution = :ins ";
+            m.put("ins", institution);
+        }
+        
+        if (site != null) {
+            jpql += " AND b.department.site = :site ";
+            m.put("site", site);
+        }
+        
+        if (toDepartment != null) {
+            jpql += " AND b.toDepartment = :dept ";
+            m.put("dept", department);
+        }
+        
         if (webUser != null) {
             jpql += " AND b.creator = :wu ";
             m.put("wu", webUser);

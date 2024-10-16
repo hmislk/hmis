@@ -50,7 +50,7 @@
 
                                     <h:panelGroup layout="block" styleClass="form-group">
                                         <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
-                                        <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                                        <h:outputLabel value="Booked Institution" for="cmbIns" class="mx-3"/>
                                     </h:panelGroup>
                                     <p:selectOneMenu
                                         id="cmbIns"
@@ -66,7 +66,7 @@
 
                                     <h:panelGroup layout="block" styleClass="form-group">
                                         <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
-                                        <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                                        <h:outputLabel value="Booked Department" for="cmbDept" class="mx-3"/>
                                     </h:panelGroup>
                                     <p:selectOneMenu
                                         id="cmbDept"
@@ -76,21 +76,40 @@
                                         <f:selectItem itemLabel="All Departments" />
                                         <f:selectItems value="#{departmentController.getInsDepartments(searchController.institution)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
                                     </p:selectOneMenu>
+                                    
+                                    
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
+                                        <h:outputLabel value="Channl Institution" for="cmbToIns" class="mx-3"/>
+                                    </h:panelGroup>
+                                    <p:selectOneMenu
+                                        id="cmbToIns"
+                                        styleClass="w-100 form-control" 
+                                        value="#{searchController.toInstitution}" 
+                                        filter="true">
+                                        <f:selectItem itemLabel="All Institutions" />
+                                        <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                        <p:ajax process="cmbToIns" update="cmbToDept" />
+                                    </p:selectOneMenu>
 
                                     <p:spacer ></p:spacer>
 
                                     <h:panelGroup layout="block" styleClass="form-group">
-                                        <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
-                                        <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
+                                        <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                        <h:outputLabel value="Channel Department" for="cmbToDept" class="mx-3"/>
                                     </h:panelGroup>
                                     <p:selectOneMenu
-                                        id="siteMenu"
-                                        styleClass="w-75 form-control"  
-                                        value="#{searchController.site}" 
+                                        id="cmbToDept"
+                                        styleClass="w-100 form-control"  
+                                        value="#{searchController.toDepartment}" 
                                         filter="true">
-                                        <f:selectItem itemLabel="All Sites" />
-                                        <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                        <f:selectItem itemLabel="All Departments" />
+                                        <f:selectItems value="#{departmentController.getInsDepartments(searchController.toInstitution)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
                                     </p:selectOneMenu>
+
+                                    <p:spacer ></p:spacer>
+
+                                   
 
 
                                     <h:panelGroup layout="block" styleClass="form-group">
@@ -172,7 +191,7 @@
                                 <p:badge value="Refunded" severity="warning" rendered="#{b.refunded}"/>
                             </p:column>
 
-                            <p:column>
+                            <p:column rendered="#{webUserController.hasPrivilege('Developers')}">
                                 <f:facet name="header">
                                     <h:outputText value="Bill Type" />
                                 </f:facet>
@@ -184,6 +203,26 @@
                                     <h:outputText value="Patient" />
                                 </f:facet>
                                 <h:outputText value="#{b.patient.person.nameWithTitle}">
+                                </h:outputText>
+                            </p:column>
+                            
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Booked From" />
+                                </f:facet>
+                                <h:outputText value="#{b.institution.name}">
+                                </h:outputText>
+                                <h:outputText value="#{b.department.name}">
+                                </h:outputText>
+                            </p:column>
+                            
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Channel at" />
+                                </f:facet>
+                                <h:outputText value="#{b.toInstitution.name}">
+                                </h:outputText>
+                                <h:outputText value="#{b.toDepartment.name}">
                                 </h:outputText>
                             </p:column>
 
