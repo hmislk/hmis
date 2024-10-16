@@ -98,6 +98,7 @@ public class AgentPaymentReceiveSearchController implements Serializable {
     private List<BillItem> tempbillItems;
     private String comment;
     WebUser user;
+    private CancelledBill cancelledBill;
 
     boolean agencyDepositCanellationStarted = false;
 
@@ -430,25 +431,26 @@ public class AgentPaymentReceiveSearchController implements Serializable {
 
 //        cancelBill(BillType.CollectingCentrePaymentReceiveBill, BillNumberSuffix.CCCAN, HistoryType.CollectingCentreDepositCancel, BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL);
 
-        CancelledBill newlyCreatedCancelBill = generateCancelBillForCcDepositBill(origianlBil);
+        cancelledBill = generateCancelBillForCcDepositBill(origianlBil);
 
-        cancelBillItems(newlyCreatedCancelBill, origianlBil);
+        cancelBillItems(cancelledBill, origianlBil);
 
         origianlBil.setCancelled(true);
-        origianlBil.setCancelledBill(newlyCreatedCancelBill);
+        origianlBil.setCancelledBill(cancelledBill);
         getBillFacade().editAndCommit(origianlBil);
 
-        Payment payments = createPayment(newlyCreatedCancelBill, paymentMethod);
+        Payment payments = createPayment(cancelledBill, paymentMethod);
         drawerController.updateDrawerForOuts(payments);
         agentAndCcApplicationController.updateCcBalance(
-                newlyCreatedCancelBill.getFromInstitution(),
+                cancelledBill.getFromInstitution(),
                 0,
-                newlyCreatedCancelBill.getNetTotal(),
+                cancelledBill.getNetTotal(),
                 0,
-                newlyCreatedCancelBill.getNetTotal(),
+                cancelledBill.getNetTotal(),
                 HistoryType.CollectingCentreDepositCancel,
-                newlyCreatedCancelBill, comment);
+                cancelledBill, comment);
         printPreview = true;
+        System.out.println("cancelledBill = " + cancelledBill);
         agencyDepositCanellationStarted = false;
         JsfUtil.addSuccessMessage("Cancelled");
     }
@@ -873,6 +875,14 @@ public class AgentPaymentReceiveSearchController implements Serializable {
 
     public void setAgentAndCcPaymentController(AgentAndCcPaymentController agentAndCcPaymentController) {
         this.agentAndCcPaymentController = agentAndCcPaymentController;
+    }
+
+    public CancelledBill getCancelledBill() {
+        return cancelledBill;
+    }
+
+    public void setCancelledBill(CancelledBill cancelledBill) {
+        this.cancelledBill = cancelledBill;
     }
 
 }

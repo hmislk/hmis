@@ -2108,8 +2108,10 @@ public class BillSearch implements Serializable {
         cb.setBillType(BillType.OpdBill);
         cb.setBillTypeAtomic(BillTypeAtomic.OPD_BILL_CANCELLATION);
 
-        cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), originalBill.getToDepartment(), originalBill.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.CAN));
-        cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), originalBill.getToDepartment(), originalBill.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.CAN));
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.OPD_BILL_CANCELLATION);
+        
+        cb.setDeptId(deptId);
+        cb.setInsId(deptId);
 
         cb.setBalance(0.0);
         cb.setPaymentMethod(paymentMethod);
@@ -2754,7 +2756,7 @@ public class BillSearch implements Serializable {
             b.setDeptId(nB.getDeptId());
             b.setInsId(nB.getInsId());
             b.setDiscount(0 - nB.getDiscount());
-            b.setQty(1.0);
+            b.setQty(0-nB.getQty());
             b.setRate(nB.getRate());
 
             b.setCreatedAt(new Date());
@@ -3129,6 +3131,14 @@ public class BillSearch implements Serializable {
         }
         return "/opd/view/opd_refund_bill_admin?faces-redirect=true;";
     }
+    
+    public String navigateToAdminOpdCancellationBill() {
+        if (viewingBill == null) {
+            JsfUtil.addErrorMessage("No Bill to Dsiplay");
+            return "";
+        }
+        return "/opd/view/opd_cancellation_bill_admin?faces-redirect=true;";
+    }
 
     public String navigateToViewCancallationOpdBill() {
         if (viewingBill == null) {
@@ -3392,9 +3402,9 @@ public class BillSearch implements Serializable {
                 pharmacyBillSearch.setBill(bill);
                 return pharmacyBillSearch.navigateToViewPharmacyGrn();
             case OPD_BILL_REFUND:
-                return navigateToViewOpdRefundBill();
+                return navigateToAdminOpdRefundBill();
             case OPD_BILL_CANCELLATION:
-                return navigateToManageOpdBill();
+                return navigateToAdminOpdCancellationBill();
             case OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER:
                 return navigateToManageOpdBill();
             case OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION:

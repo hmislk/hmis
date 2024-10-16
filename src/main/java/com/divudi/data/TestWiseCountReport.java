@@ -20,6 +20,8 @@ public class TestWiseCountReport {
     private Double ccFee;
     private Double proFee;
     private Double total;
+    private Double discount;
+
 
     public TestWiseCountReport(String testName, Long count, Double hosFee, Double ccFee, Double proFee, Double total) {
         this.testName = testName;
@@ -30,8 +32,16 @@ public class TestWiseCountReport {
         this.total = total;
     }
     
+    public TestWiseCountReport(String testName, Long count, Double hosFee, Double ccFee, Double proFee, Double discount, Double total) {
+        this.testName = testName;
+        this.count = count;
+        this.hosFee = hosFee;
+        this.ccFee = ccFee;
+        this.proFee = proFee;
+        this.discount = discount;
+        this.total = total;
+    }
     
-
     public Integer getSerial() {
         return serial;
     }
@@ -86,6 +96,14 @@ public class TestWiseCountReport {
 
     public void setTotal(Double total) {
         this.total = total;
+    }
+
+    public Double getDiscount() {
+        return discount;
+    }
+
+    public void setDiscount(Double discount) {
+        this.discount = discount;
     }
     
     
