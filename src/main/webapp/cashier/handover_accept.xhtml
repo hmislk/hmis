@@ -106,48 +106,65 @@
                                                 </div>
                                                 <div class="col-md-8 text-right">
 
-                                                    <h:panelGroup rendered="#{not webUserController.hasPrivilege('handoverAcceptAsCashier')}" >
-
-                                                        <p:outputLabel 
-                                                            value="You do NOT have privilege to accept handovers" 
-                                                            class="ui-message-error">
-                                                      </p:outputLabel>
-                                                      
-                                                    </h:panelGroup>
-                                                  
-                                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('handoverAcceptAsCashier')}" >
-
-                                                        <p:commandButton 
-                                                            rendered="#{webUserController.hasPrivilege('handoverAcceptAsMainCashier')}" 
-                                                            value="Accept Handover - No Cashbook Entries" 
-                                                            styleClass="ui-button-warning mx-1" 
-                                                            icon="pi pi-check-circle" 
-                                                            ajax="false" 
-                                                            onclick="return confirm('Are you sure you want to proceed with the handover?');" 
-                                                            action="#{financialTransactionController.acceptHandoverBill()}">
-                                                        </p:commandButton>
 
 
-                                                        <p:commandButton 
-                                                            value="Accept Handover and write to Cashbook" 
-                                                            styleClass="ui-button-success mx-1" 
-                                                            icon="pi pi-check-circle" 
-                                                            ajax="false" 
-                                                            onclick="return confirm('Are you sure you want to proceed with the handover?');" 
-                                                            action="#{financialTransactionController.acceptHandoverBillAndWriteToCashbook()}">
-                                                        </p:commandButton>
 
-                                                        <p:commandButton 
-                                                            value="Reject"
-                                                            action="#{financialTransactionController.rejectToReceiveHandoverBill()}"
-                                                            ajax="false"
-                                                            onclick="if (!confirm('Are you sure you want to Reject this record?'))
+                                                    <p:commandButton 
+                                                        rendered="#{webUserController.hasPrivilege('ShiftHandoverAcceptAsMainCashier')}" 
+                                                        value="Accept Handover - Main Cashier" 
+                                                        styleClass="ui-button-warning mx-1" 
+                                                        icon="pi pi-check-circle" 
+                                                        ajax="false" 
+                                                        onclick="return confirm('Are you sure you want to proceed with the handover?');" 
+                                                        action="#{financialTransactionController.acceptHandoverBill()}">
+                                                    </p:commandButton>
+
+
+                                                    <p:commandButton 
+                                                        rendered="#{webUserController.hasPrivilege('ShiftHandoverAcceptAsMainCashier')}" 
+                                                        value="Accept Handover and write to Cashbook - Main Cashier" 
+                                                        styleClass="ui-button-success mx-1" 
+                                                        icon="pi pi-check-circle" 
+                                                        ajax="false" 
+                                                        onclick="return confirm('Are you sure you want to proceed with the handover?');" 
+                                                        action="#{financialTransactionController.acceptHandoverBillAndWriteToCashbook()}">
+                                                    </p:commandButton>
+
+                                                    <p:commandButton 
+                                                        value="Reject"
+                                                        action="#{financialTransactionController.rejectToReceiveHandoverBill()}"
+                                                        ajax="false"
+                                                        onclick="if (!confirm('Are you sure you want to Reject this record?'))
                                                                         return false;" 
-                                                            class="m-1 ui-button-danger"
-                                                            icon="pi pi-times-circle">
-                                                        </p:commandButton>
+                                                        class="m-1 ui-button-danger"
+                                                        icon="pi pi-times-circle">
+                                                    </p:commandButton>
 
-                                                    </h:panelGroup>
+
+
+                                                    <p:commandButton 
+                                                        rendered="#{webUserController.hasPrivilege('ShiftHandoverAcceptAsCashier')}" 
+                                                        value="Accept Handover" 
+                                                        styleClass="ui-button-warning mx-1" 
+                                                        icon="pi pi-check-circle" 
+                                                        ajax="false" 
+                                                        onclick="return confirm('Are you sure you want to proceed with the handover?');" 
+                                                        action="#{financialTransactionController.acceptHandoverBill()}">
+                                                    </p:commandButton>
+
+
+                                                    <p:commandButton 
+                                                        value="Accept Handover and write to Cashbook" 
+                                                        rendered="#{webUserController.hasPrivilege('ShiftHandoverAcceptAsCashier')}" 
+                                                        styleClass="ui-button-success mx-1" 
+                                                        icon="pi pi-check-circle" 
+                                                        ajax="false" 
+                                                        onclick="return confirm('Are you sure you want to proceed with the handover?');" 
+                                                        action="#{financialTransactionController.acceptHandoverBillAndWriteToCashbook()}">
+                                                    </p:commandButton>
+
+
+
 
                                                 </div>
 

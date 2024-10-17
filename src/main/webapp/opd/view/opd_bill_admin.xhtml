@@ -220,39 +220,7 @@
                             <p:commandButton class="my-2" ajax="false" value="Save" action="#{billSearch.editBillDetails()}" />
                         </f:facet>
                     </p:dialog>
-                    <p:dialog id="panDoc" header="Add New Doctor" widgetVar="dlg" resizable="false" modal="true" class="p-2" showEffect="fade"  width="450">  
-                        <h:panelGrid columns="2" >  
-                            <p:outputLabel id="lblNameD" value="Name" ></p:outputLabel>
-                            <p:inputText autocomplete="off" id="txtNameD"  value="#{doctorController.current.person.name}"  ></p:inputText>
-                            <p:outputLabel id="lblPhoneD" value="Phone" ></p:outputLabel>
-                            <p:inputText autocomplete="off" id="txtPhoneD" value="#{doctorController.current.person.phone}"  ></p:inputText>
-                            <p:outputLabel id="lblFaxD" value="Fax" ></p:outputLabel>
-                            <p:inputText autocomplete="off" id="txtFaxD" value="#{doctorController.current.person.fax}"  ></p:inputText>
-                            <p:outputLabel id="lblMobileD" value="Mobile" ></p:outputLabel>
-                            <p:inputText autocomplete="off" id="txtMobileD" value="#{doctorController.current.person.mobile}"  ></p:inputText>
-                            <p:outputLabel id="lblAddressD" value="Address" ></p:outputLabel>
-                            <p:inputText autocomplete="off" id="txtAddressD" value="#{doctorController.current.person.address}"  ></p:inputText>
-                            <p:outputLabel value="Code"></p:outputLabel>   
-                            <p:inputText autocomplete="off" id="txtCodeD" value="#{doctorController.current.code}"  ></p:inputText>
-                            <p:outputLabel value="Speciality" ></p:outputLabel>
-                            <p:selectOneMenu id="cmbSpecialityD" value="#{doctorController.current.speciality}" >
-                                <f:selectItem itemLabel="Please select a speciality"/>
-                                <f:selectItems value="#{doctorSpecialityController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
-                            </p:selectOneMenu>
-                            <p:outputLabel id="lblRegD" value="Registration" ></p:outputLabel>
-                            <p:inputText autocomplete="off" id="txtRegD" value="#{doctorController.current.registration}"  ></p:inputText>                 
-                            <p:outputLabel id="lblQuaD" value="Qualification" ></p:outputLabel>
-                            <p:inputText autocomplete="off" id="txtQuaD" value="#{doctorController.current.qualification}"  ></p:inputText>   
-
-                            <p:commandButton 
-                                id="btnDocSave" 
-                                value="Add New" 
-                                ajax="false"
-                                process="btnDocSave panDoc" 
-                                update="msg panDoc cmbDoc " actionListener="#{doctorController.saveSelected()}" styleClass="buttons" oncomplete="dlg.hide();">
-                            </p:commandButton>
-                        </h:panelGrid>  
-                    </p:dialog> 
+                  
 
 
 

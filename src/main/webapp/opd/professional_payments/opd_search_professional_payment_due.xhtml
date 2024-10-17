@@ -28,9 +28,13 @@
                                 <h:outputLabel value="To Date"/>
                                 <p:calendar id="toDate" value="#{searchController.toDate}" class="my-1 w-100" inputStyleClass="my-1 w-100" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
                                 </p:calendar>                                
-                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createDueFeeTableAll()}" 
-                                                 icon="fas fa-search"
-                                                 class="w-100 my-1 ui-button-warning"/>                                
+                                <p:commandButton
+                                    id="btnSearch"
+                                    ajax="false" 
+                                    value="Search" 
+                                    action="#{searchController.createDueFeeTableAll()}" 
+                                    icon="fas fa-search"
+                                    class="w-100 my-1 ui-button-warning"/>                                
                                 <p:commandButton ajax="false" value="Excel" class="w-100 ui-button-success"
                                                  icon="fas fa-file-excel">
                                     <p:dataExporter type="xlsx" target="tblFee" fileName="Detailed_Transfer_Listing"  />
@@ -90,7 +94,7 @@
                                     </p:column>
 
                                     <p:column headerText="Bill No">
-                                        <h:commandLink action="payment_staff_bill" >
+                                        <h:commandLink action="/opd/payment_staff_bill" >
                                             <h:outputLabel value="#{bf.bill.deptId}">
                                             </h:outputLabel>
                                             <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>

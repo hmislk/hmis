@@ -75,7 +75,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Speciality"/>
                                 </f:facet>
-                                <h:commandLink action="payment_staff_bill" >
+                                <h:commandLink action="/opd/payment_staff_bill" >
 
                                     <h:outputLabel value="#{bf.staff.speciality.name}"/>
 
@@ -85,7 +85,7 @@
                             </p:column>
 
                             <p:column headerText="Doctor" >
-                                <h:commandLink action="payment_staff_bill" >
+                                <h:commandLink action="/opd/payment_staff_bill" >
                                     <h:outputLabel value="#{bf.staff.person.name}">
                                     </h:outputLabel>
                                     <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
@@ -93,7 +93,7 @@
                             </p:column>
 
                             <p:column headerText="Patient" >
-                                <h:commandLink action="payment_staff_bill" >
+                                <h:commandLink action="/opd/payment_staff_bill" >
                                     <h:outputLabel value="#{bf.bill.patient.person.nameWithTitle}"/>                                   
 
                                     <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
@@ -101,7 +101,7 @@
                             </p:column>
 
                             <p:column headerText="Bill No">
-                                <h:commandLink action="payment_staff_bill" >
+                                <h:commandLink action="/opd/payment_staff_bill" >
                                     <h:outputLabel value="#{bf.bill.deptId}">
                                     </h:outputLabel>
                                     <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
@@ -109,7 +109,7 @@
                             </p:column>
 
                             <p:column headerText="Billed At" >
-                                <h:commandLink action="payment_staff_bill" >
+                                <h:commandLink action="/opd/payment_staff_bill" >
                                     <h:outputLabel value="#{bf.bill.createdAt}">
                                     </h:outputLabel>
                                     <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
@@ -118,14 +118,14 @@
 
 
                             <p:column headerText="Test" >
-                                <h:commandLink action="payment_staff_bill" >
+                                <h:commandLink action="/opd/payment_staff_bill" >
                                     <h:outputLabel value="#{bf.billItem.item.name}" />
                                     <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
                                 </h:commandLink>
                             </p:column>
 
                             <p:column style="text-align: right;" headerText="Charge">
-                                <h:commandLink action="payment_staff_bill" >
+                                <h:commandLink action="/opd/payment_staff_bill" >
                                     <h:outputLabel value="#{bf.feeValue}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
