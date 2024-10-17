@@ -179,36 +179,53 @@
 
                     <table style="width: 100%;"> 
 
-                        <h:panelGroup rendered="#{cc.attrs.bill.margin > 0? 'false':'true'}">
-                            <tr>
-                                <td  style="text-align: left; width: 60%; font-size: 20px!important;
-                                     font-family:Verdana, Helvetica, sans-serif!important;
-                                     font-weight: bold;">
-                                    &nbsp;&nbsp;
-                                    <h:outputLabel value="Total" />
-                                </td>
-                                <td  style="text-align: right!important; width: 40%; padding-right: 32px; font-size: 20px!important;
-                                     font-family:Verdana, Helvetica, sans-serif!important;
-                                     font-weight: bold;">
-                                    <h:outputLabel value="#{-cc.attrs.bill.netTotal}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
-                            </tr>
-                        </h:panelGroup>
 
-                        <h:panelGroup rendered="#{cc.attrs.bill.margin ne 0.0}">
-                            <tr>
-                                <td class="totalsBlock1" style="text-align: left; width: 60%;">
-                                    <h:outputLabel value="Total" />
-                                </td>
-                                <td  class="totalsBlock1" style="text-align: right!important; width: 40%; padding-right: 30px;">
-                                    <h:outputLabel value="#{cc.attrs.bill.netTotal}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
-                            </tr>
-                        </h:panelGroup>
+                        <tr>
+                            <td  style="text-align: left; width: 60%; font-size: 20px!important;
+                                 font-family:Verdana, Helvetica, sans-serif!important;
+                                 font-weight: bold;">
+                                &nbsp;&nbsp;
+                                <h:outputLabel value="Gross Total" />
+                            </td>
+                            <td  style="text-align: right!important; width: 40%; padding-right: 32px; font-size: 20px!important;
+                                 font-family:Verdana, Helvetica, sans-serif!important;
+                                 font-weight: bold;">
+                                <h:outputLabel value="#{-cc.attrs.bill.total}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td  style="text-align: left; width: 60%; font-size: 20px!important;
+                                 font-family:Verdana, Helvetica, sans-serif!important;
+                                 font-weight: bold;">
+                                &nbsp;&nbsp;
+                                <h:outputLabel value="Withholding tax" />
+                            </td>
+                            <td  style="text-align: right!important; width: 40%; padding-right: 32px; font-size: 20px!important;
+                                 font-family:Verdana, Helvetica, sans-serif!important;
+                                 font-weight: bold;">
+                                <h:outputLabel value="#{-cc.attrs.bill.tax}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td  style="text-align: left; width: 60%; font-size: 20px!important;
+                                 font-family:Verdana, Helvetica, sans-serif!important;
+                                 font-weight: bold;">
+                                &nbsp;&nbsp;
+                                <h:outputLabel value="Net Total" />
+                            </td>
+                            <td  style="text-align: right!important; width: 40%; padding-right: 32px; font-size: 20px!important;
+                                 font-family:Verdana, Helvetica, sans-serif!important;
+                                 font-weight: bold;">
+                                <h:outputLabel value="#{-cc.attrs.bill.netTotal}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+
 
                     </table> 
                 </div>

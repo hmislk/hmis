@@ -210,6 +210,8 @@ public class ReportController implements Serializable {
     private double totalHosFee;
     private double totalCCFee;
     private double totalProFee;
+    private double totalDiscount;
+    private double totalNetHosFee;
     private double totalNetTotal;
 
     private List<String> voucherStatusOnDebtorSettlement;
@@ -425,7 +427,6 @@ public class ReportController implements Serializable {
     }
 
     public void ccSummaryReportByItem() {
-
         ReportTemplateRowBundle billedBundle = new ReportTemplateRowBundle();
         billedBundle.setName("Collecting Centre Report By Item");
         billedBundle.setDescription("From : to :");
@@ -2866,7 +2867,8 @@ public class ReportController implements Serializable {
                 + "sum(bi.hospitalFee), "
                 + "sum(bi.collectingCentreFee), "
                 + "sum(bi.staffFee), "
-                + "sum(bi.netValue) "
+                + "sum(bi.discount), "
+                + "sum(bi.netValue)"
                 + ") "
                 + "from BillItem bi "
                 + "where bi.retired = :ret "
@@ -2937,6 +2939,7 @@ public class ReportController implements Serializable {
                 posResult.setCcFee(posResult.getCcFee() - Math.abs(cancelResult.getCcFee()));
                 posResult.setProFee(posResult.getProFee() - Math.abs(cancelResult.getProFee()));
                 posResult.setTotal(posResult.getTotal() - Math.abs(cancelResult.getTotal()));
+                posResult.setDiscount(posResult.getDiscount()- Math.abs(cancelResult.getDiscount()));
             }
         }
 
@@ -2949,6 +2952,7 @@ public class ReportController implements Serializable {
                 posResult.setCcFee(posResult.getCcFee() - Math.abs(refundResult.getCcFee()));
                 posResult.setProFee(posResult.getProFee() - Math.abs(refundResult.getProFee()));
                 posResult.setTotal(posResult.getTotal() - Math.abs(refundResult.getTotal()));
+                posResult.setDiscount(posResult.getDiscount()- Math.abs(refundResult.getDiscount()));
             }
         }
 
@@ -2959,13 +2963,17 @@ public class ReportController implements Serializable {
         totalCCFee = 0.0;
         totalProFee = 0.0;
         totalNetTotal = 0.0;
+        totalDiscount = 0.0;
+        totalNetHosFee = 0.0;
 
         for (TestWiseCountReport twc : testWiseCounts) {
             totalCount += twc.getCount();
-            totalHosFee += twc.getHosFee();
+            totalHosFee += (twc.getHosFee() + twc.getDiscount());
             totalCCFee += twc.getCcFee();
             totalProFee += twc.getProFee();
             totalNetTotal += twc.getTotal();
+            totalDiscount += twc.getDiscount();
+            totalNetHosFee += twc.getHosFee();
         }
     }
 
@@ -3251,6 +3259,22 @@ public class ReportController implements Serializable {
 
     public void setReportType(String reportType) {
         this.reportType = reportType;
+    }
+
+    public double getTotalDiscount() {
+        return totalDiscount;
+    }
+
+    public void setTotalDiscount(double totalDiscount) {
+        this.totalDiscount = totalDiscount;
+    }
+
+    public double getTotalNetHosFee() {
+        return totalNetHosFee;
+    }
+
+    public void setTotalNetHosFee(double totalNetHosFee) {
+        this.totalNetHosFee = totalNetHosFee;
     }
 
 }

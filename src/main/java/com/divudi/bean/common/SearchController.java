@@ -310,6 +310,7 @@ public class SearchController implements Serializable {
 
     private List<CashBookEntry> cashBookEntries;
     private Institution site;
+    private Institution toSite;
     private List<Drawer> drawerList;
     private Drawer selectedDrawer;
     private int opdAnalyticsIndex;
@@ -1965,6 +1966,14 @@ public class SearchController implements Serializable {
 
     public void setAmountTotal(double amountTotal) {
         this.amountTotal = amountTotal;
+    }
+
+    public Institution getToSite() {
+        return toSite;
+    }
+
+    public void setToSite(Institution toSite) {
+        this.toSite = toSite;
     }
 
     public class billsWithbill {
@@ -14613,7 +14622,8 @@ public class SearchController implements Serializable {
     }
 
     public void listAgentChannelBookings() {
-        String jpql = "SELECT b FROM Bill b "
+        String jpql = "SELECT b "
+                + " FROM Bill b "
                 + " WHERE b.retired = :ret "
                 + " AND b.billTypeAtomic IN :bts ";
 
@@ -14642,6 +14652,21 @@ public class SearchController implements Serializable {
         if (department != null) {
             jpql += " AND b.department = :dept ";
             m.put("dept", department);
+        }
+        
+        if (toInstitution != null) {
+            jpql += " AND b.toInstitution = :tins ";
+            m.put("tins", toInstitution);
+        }
+        
+        if (toSite != null) {
+            jpql += " AND b.toDepartment.site = :tsite ";
+            m.put("tsite", toSite);
+        }
+        
+        if (toDepartment != null) {
+            jpql += " AND b.toDepartment = :tdept ";
+            m.put("tdept", toDepartment);
         }
         
         if (webUser != null) {
@@ -15749,6 +15774,8 @@ public class SearchController implements Serializable {
         bills = billFacade.findByJpql(jpql, m);
 
     }
+    
+    
 
     public void prepareDataBillsAndBillItemsDownload() {
         // JPQL to fetch Bills and their BillItems through Payments
