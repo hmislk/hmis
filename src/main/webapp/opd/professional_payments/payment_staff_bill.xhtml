@@ -104,14 +104,14 @@
                                 var="bf" 
                                 rowKey="#{bf.id}" >
 
-                                <f:ajax  event="rowSelectCheckbox" execute="tblFee" listener="#{staffPaymentBillController.calculatePaymentsSelected()}"   
-                                         render=":#{p:resolveFirstComponentWithId('scStaff',view).clientId}  :#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId} tblFee"  />  
+                                <p:ajax  event="rowSelectCheckbox" process="tblFee" listener="#{staffPaymentBillController.peformeCalculations()}"   
+                                         update=":#{p:resolveFirstComponentWithId('pTotals',view).clientId}"  />  
 
-                                <f:ajax  event="rowUnselectCheckbox" execute="tblFee" listener="#{staffPaymentBillController.calculatePaymentsSelected()}"   
-                                         render=":#{p:resolveFirstComponentWithId('scStaff',view).clientId}  :#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId} tblFee"  />  
+                                <p:ajax  event="rowUnselectCheckbox" process="tblFee" listener="#{staffPaymentBillController.peformeCalculations()}"   
+                                         update=":#{p:resolveFirstComponentWithId('pTotals',view).clientId}"  />  
 
-                                <f:ajax  event="toggleSelect" execute="tblFee" listener="#{staffPaymentBillController.calculatePaymentsSelected()}"   
-                                         render=":#{p:resolveFirstComponentWithId('scStaff',view).clientId}  :#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId} tblFee"  />  
+                                <p:ajax  event="toggleSelect" process="tblFee" listener="#{staffPaymentBillController.peformeCalculations()}"   
+                                         update=":#{p:resolveFirstComponentWithId('pTotals',view).clientId}"  />  
 
                                 <p:column selectionBox="true" width="20"></p:column>
 
@@ -193,57 +193,52 @@
 
                                     <p:defaultCommand target="btnPay"/>
                                 </f:facet>
-                                <p:panelGrid columns="2" layout="tabular" >
-                                    <h:outputLabel value="Payment Method" ></h:outputLabel>
-                                    <p:selectOneMenu  id="cmbPay" value="#{staffPaymentBillController.paymentMethod}" class="mx-2 w-100">                                      
-                                        <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"  />
-                                    </p:selectOneMenu>
-                                    <h:outputLabel value="Total Due" ></h:outputLabel>
-                                    <h:outputLabel id="lblDue" value="#{staffPaymentBillController.totalDue}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
 
+                                <div class="row" >
+                                    <div class="col " >
+                                        <p:panelGrid columns="2" layout="tabular" class="w-100" columnClasses="text-left, text-end">
+                                            <h:outputLabel value="Payment Method" ></h:outputLabel>
+                                            <p:selectOneMenu  id="cmbPay" value="#{staffPaymentBillController.paymentMethod}" class="mx-2 w-100">                                      
+                                                <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"  />
+                                            </p:selectOneMenu>
 
-
-                                    <p:splitter ></p:splitter>
-                                    <p:splitter ></p:splitter>
-
-                                    <h:outputLabel value="Total Payment Completed for this month" ></h:outputLabel>
-                                    <h:outputLabel id="lblPayDoneForThisMonth"  value="#{staffPaymentBillController.totalPaidForCurrentProfessionalForCurrentMonthForCurrentInstitute}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                    <h:outputLabel value="Withholding Cutoff" ></h:outputLabel>
-                                    <h:outputLabel id="lblWhtCuroff"  value="#{staffPaymentBillController.withholdingTaxLimit}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                    <h:outputLabel value="Withholding Percentage" ></h:outputLabel>
-                                    <h:outputLabel id="lblWhtPercentage"  value="#{staffPaymentBillController.withholdingTaxPercentage}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-
-                                    <p:splitter ></p:splitter>
-                                    <p:splitter ></p:splitter>
-
-                                    <h:outputLabel value="Paying This time" ></h:outputLabel>
-                                    <h:outputLabel id="lblPay"  value="#{staffPaymentBillController.totalPaying}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel> 
-                                    <h:outputLabel value="Witholging Tax" ></h:outputLabel>
-                                    <h:outputLabel id="lblTax" value="#{staffPaymentBillController.withholdingTax}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                    <h:outputLabel value="Paying This time withot WHT" ></h:outputLabel>
-                                    <h:outputLabel id="lblPayWithTax"  value="#{staffPaymentBillController.totalPayingWithoutWht}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel> 
-
-
-                                </p:panelGrid>
+                                            <h:outputLabel value="Paying This time" ></h:outputLabel>
+                                            <h:outputLabel id="lblPay"  value="#{staffPaymentBillController.totalPaying}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel> 
+                                            <h:outputLabel value="Witholging Tax" ></h:outputLabel>
+                                            <h:outputLabel id="lblTax" value="#{staffPaymentBillController.withholdingTax}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                            <h:outputLabel value="Paying This time withot WHT" ></h:outputLabel>
+                                            <h:outputLabel id="lblPayWithTax"  value="#{staffPaymentBillController.totalPayingWithoutWht}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel> 
+                                        </p:panelGrid>
+                                    </div>
+                                    <div class="col" >
+                                        <p:panelGrid columns="2" layout="tabular" class="w-100" columnClasses="text-left, text-end">
+                                            <h:outputLabel value="Total Due" ></h:outputLabel>
+                                            <h:outputLabel id="lblDue" value="#{staffPaymentBillController.totalDue}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                            <h:outputLabel value="Total Payment Completed for this month" ></h:outputLabel>
+                                            <h:outputLabel id="lblPayDoneForThisMonth"  value="#{staffPaymentBillController.totalPaidForCurrentProfessionalForCurrentMonthForCurrentInstitute}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                            <h:outputLabel value="Withholding Cutoff" ></h:outputLabel>
+                                            <h:outputLabel id="lblWhtCuroff"  value="#{staffPaymentBillController.withholdingTaxLimit}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                            <h:outputLabel value="Withholding Percentage" ></h:outputLabel>
+                                            <h:outputLabel id="lblWhtPercentage"  value="#{staffPaymentBillController.withholdingTaxPercentage}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </p:panelGrid>
+                                    </div>
+                                </div>
                             </p:panel>
-                            <div class="w-25">
 
-
-                            </div>
                         </h:form>
 
                     </p:panel>
