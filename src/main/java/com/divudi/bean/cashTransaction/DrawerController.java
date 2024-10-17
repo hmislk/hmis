@@ -11,9 +11,11 @@ package com.divudi.bean.cashTransaction;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.PaymentMethod;
 import com.divudi.entity.Payment;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.cashTransaction.Drawer;
+import com.divudi.entity.cashTransaction.DrawerEntry;
 import com.divudi.facade.DrawerFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -45,6 +47,12 @@ public class DrawerController implements Serializable {
     SessionController sessionController;
     @EJB
     private DrawerFacade ejbFacade;
+    
+    @Inject
+    DrawerEntryController drawerEntryController;
+    
+    
+    DrawerEntry drawerEntry;
     private Drawer current;
     private List<Drawer> items = null;
     List<Drawer> drawers;
@@ -56,6 +64,40 @@ public class DrawerController implements Serializable {
         for (Payment payment : payments) {
             updateDrawerForIns(payment);
         }
+    }
+    
+    public void drawerEntryUpdate(Payment payment, Drawer currentDrawer){
+        System.out.println("Drawer Entry Update");
+        System.out.println("current Drawer = " + currentDrawer);
+        System.out.println("payment = " + payment);
+        if (payment == null) {
+            System.out.println("Null");
+            return;
+        }
+        
+        drawerEntry = new DrawerEntry();
+        drawerEntry.setPayment(payment);
+        drawerEntry.setPaymentMethod(payment.getPaymentMethod());
+        drawerEntry.setBill(payment.getBill());
+        drawerEntry.setDrawer(currentDrawer);
+        drawerEntry.setWebUser(payment.getCreater());
+        
+        if(payment.getPaymentMethod() == PaymentMethod.Cash){
+            System.out.println("Cash");
+            drawerEntry.setBeforeInHandValue(currentDrawer.getCashInHandValue());
+            drawerEntry.setAfterInHandValue(currentDrawer.getCashInHandValue() + payment.getPaidValue());
+        }
+        
+        drawerEntry.setBeforeBalance(currentDrawer.getTotalBalance());
+        drawerEntry.setAfterBalance(currentDrawer.getTotalBalance() + payment.getPaidValue());
+        
+        drawerEntry.setBeforeShortageExcess(currentDrawer.getTotalShortageOrExcess());
+        drawerEntry.setAfterShortageExcess(currentDrawer.getTotalShortageOrExcess());
+        
+        drawerEntryController.saveCurrent(drawerEntry);
+        
+        System.out.println("Drawer Entry Created = " + drawerEntry);
+        
     }
 
     public void updateDrawerForOuts(List<Payment> payments) {
@@ -83,6 +125,9 @@ public class DrawerController implements Serializable {
             System.err.println("No drawer found for the user.");
             return;
         }
+        
+        //update Drover History
+        drawerEntryUpdate(payment,drawer);
 
         synchronized (drawer) {
             switch (payment.getPaymentMethod()) {

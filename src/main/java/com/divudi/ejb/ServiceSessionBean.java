@@ -327,7 +327,7 @@ public class ServiceSessionBean {
             BillType.ChannelStaff,
             BillType.ChannelCredit,
             BillType.ChannelResheduleWithOutPayment,
-            BillType.ChannelResheduleWithPayment
+            BillType.ChannelResheduleWithPayment          
         };
 
         List<BillType> bts = Arrays.asList(billTypes);

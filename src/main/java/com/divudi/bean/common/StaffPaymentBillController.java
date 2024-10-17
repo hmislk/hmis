@@ -319,8 +319,8 @@ public class StaffPaymentBillController implements Serializable {
             }
             dueBillFees.removeAll(removeingBillFees);
         }
-        performCalculations();
         calculateTotalPaymentsForTheProfessionalForCurrentMonthForCurrentInstitution();
+        peformeCalculations();
     }
 
     public void calculateDueFees() {
@@ -423,9 +423,10 @@ public class StaffPaymentBillController implements Serializable {
         }
     }
 
-    public void performCalculations() {
+    public void peformeCalculations() {
         calculateTotalDue();
         calculatePaymentsSelected();
+        calculateWithholdingTax();
     }
 
     public void calculatePaymentsSelected() {
@@ -433,10 +434,31 @@ public class StaffPaymentBillController implements Serializable {
         for (BillFee f : payingBillFees) {
             totalPaying = totalPaying + (f.getFeeValue() - f.getPaidValue());
         }
-        if (getWithholdingTaxLimit() < totalPaidForCurrentProfessionalForCurrentMonthForCurrentInstitute) {
-            withholdingTax = totalPaying * getWithholdingTaxPercentage();
+    }
+
+    public void calculateWithholdingTax() {
+        System.out.println("Calculating Withholding Tax:");
+        System.out.println("totalPaying = " + totalPaying);
+        System.out.println("Total Paid For Current Professional This Month: " + totalPaidForCurrentProfessionalForCurrentMonthForCurrentInstitute);
+        if (totalPaidForCurrentProfessionalForCurrentMonthForCurrentInstitute == 0.0) {
+            withholdingTax = 0.0;
+            totalPayingWithoutWht = totalPaying;
+            System.out.println("No previous payments found. Withholding Tax set to 0.");
+            return;
+        }
+        Double paidValue = Math.abs(totalPaidForCurrentProfessionalForCurrentMonthForCurrentInstitute);
+        System.out.println("Paid Value: " + paidValue);
+        System.out.println("Withholding Tax Limit: " + getWithholdingTaxLimit());
+        if (getWithholdingTaxLimit() < paidValue) {
+            withholdingTax = totalPaying * (getWithholdingTaxPercentage() / 100 );
+            System.out.println("Withholding Tax Percentage: " + getWithholdingTaxPercentage());
+            System.out.println("Withholding Tax Calculated: " + withholdingTax);
+        } else {
+            withholdingTax = 0.0; // Ensure withholdingTax is set to 0.0
+            System.out.println("Paid Value is less than Withholding Tax Limit. No Withholding Tax applied.");
         }
         totalPayingWithoutWht = totalPaying - withholdingTax;
+        System.out.println("Total Paying Without WHT: " + totalPayingWithoutWht);
     }
 
     public void calculateTotalPaymentsForTheProfessionalForCurrentMonthForCurrentInstitution() {
@@ -523,7 +545,8 @@ public class StaffPaymentBillController implements Serializable {
         tmp.setDiscountPercent(0.0);
 
         tmp.setInstitution(getSessionController().getLoggedUser().getInstitution());
-        tmp.setNetTotal(0 - totalPaying);
+        tmp.setNetTotal(0 - totalPayingWithoutWht);
+        tmp.setTax(withholdingTax);
         tmp.setPaymentMethod(paymentMethod);
         tmp.setStaff(currentStaff);
         tmp.setToStaff(currentStaff);
@@ -554,7 +577,7 @@ public class StaffPaymentBillController implements Serializable {
             JsfUtil.addErrorMessage("Please select payments to update");
             return true;
         }
-        performCalculations();
+        peformeCalculations();
         if (totalPaying == 0) {
             JsfUtil.addErrorMessage("Please select payments to update");
             return true;
@@ -583,7 +606,7 @@ public class StaffPaymentBillController implements Serializable {
         if (errorCheck()) {
             return;
         }
-        calculatePaymentsSelected();
+        peformeCalculations();
         Bill newlyCreatedPaymentBill = createPaymentBill();
         current = newlyCreatedPaymentBill;
         getBillFacade().create(newlyCreatedPaymentBill);
