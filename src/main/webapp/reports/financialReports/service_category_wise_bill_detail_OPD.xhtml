@@ -12,7 +12,7 @@
             <ui:define name="subcontent">
                 <h:form class="w-100">
                     <p:panel header="Service Category Wise Bill Detail Report for OPD" class="w-100">
-                        <h:panelGrid columns="5" class="w-100 ">
+                        <h:panelGrid columns="8" class="w-100 ">
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf133;" styleClass="fa mr-2" />
@@ -42,6 +42,10 @@
                                 value="#{searchController.toDate}"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                             </p:calendar>
+
+                            <p:spacer width="20"></p:spacer>
+                            <p:spacer width="20"></p:spacer>
+                            <p:spacer width="20"></p:spacer>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
@@ -75,46 +79,78 @@
                                 <p:ajax process="siteMenu" update="cmbDept" />
                             </p:selectOneMenu>
 
+                            <p:spacer width="20"></p:spacer>
+
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
                                 <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu
-                                id="cmbDept"
-                                styleClass="w-100 form-control"  
-                                value="#{searchController.department}" 
-                                filter="true">
-                                <f:selectItem itemLabel="All Departments" />
-                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
-                            </p:selectOneMenu>
-                            
-                            <p:spacer ></p:spacer>
+                            <h:panelGroup  id="cmbDept" >
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution ne null and searchController.site ne null}"
+                                    styleClass="w-100 form-control"  
+                                    value="#{searchController.department}" 
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                </p:selectOneMenu>
+                            </h:panelGroup>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText title="Category" value="&#xf02d;" styleClass="fa mr-2" /> <!-- FontAwesome book icon -->
                                 <h:outputLabel value="Category"  class="mx-3"/>
                             </h:panelGroup>
-                            <p:autoComplete value="#{searchController.category}"
-                                            completeMethod="#{categoryController.completeCategory}" 
-                                            var="category"
-                                            class="w-100"
-                                            inputStyleClass="w-100"
-                                            itemLabel="#{category.name}"
-                                            itemValue="#{category}">
+                            <p:autoComplete 
+                                id="acCat"
+                                value="#{searchController.category}"
+                                completeMethod="#{categoryController.completeCategory}" 
+                                var="category"
+                                class="w-100"
+                                forceSelection="true"
+                                inputStyleClass="w-100"
+                                itemLabel="#{category.name}"
+                                itemValue="#{category}">
+                                <p:ajax event="itemSelect" process="acCat" update="gpItem" ></p:ajax>
                             </p:autoComplete>
+
+                            <p:spacer ></p:spacer>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText title="Item" value="&#xf0f6;" styleClass="fa mr-2" /> <!-- FontAwesome box icon -->
                                 <h:outputLabel value="Item"  class="mx-3"/>
                             </h:panelGroup>
-                            <p:autoComplete value="#{searchController.item}"
-                                            class="w-100"
-                                            inputStyleClass="w-100"
-                                            completeMethod="#{itemController.completeAllServicesAndInvestigations}" 
-                                            var="item"
-                                            itemLabel="#{item.name}"
-                                            itemValue="#{item}">
-                            </p:autoComplete>
+                            <h:panelGroup id="gpItem" >
+                                <p:selectOneMenu 
+                                    rendered="#{searchController.category ne null}"
+                                    value="#{searchController.item}" 
+                                    filter="true"
+                                    styleClass="w-100"
+                                    filterMatchMode="contains" >
+                                    <f:selectItem itemLabel="All" ></f:selectItem>
+                                    <f:selectItems value="#{itemController.getCategoryServicesAndInvestigations(searchController.category)}" var="item" itemLabel="#{item.name}" itemValue="#{item}" ></f:selectItems>
+                                </p:selectOneMenu>
+                                <p:autoComplete 
+                                    rendered="#{searchController.category eq null}"
+                                    value="#{searchController.item}"
+                                    class="w-100"
+                                    inputStyleClass="w-100"
+                                    completeMethod="#{itemController.completeAllServicesAndInvestigations}" 
+                                    var="itemAc"
+                                    minQueryLength="3"
+                                    maxResults="10"
+                                    itemLabel="#{itemAc.name}"
+                                    itemValue="#{itemAc}">
+                                    <p:column headerText="Name" >
+                                        <h:outputLabel value="#{itemAc.name}"    ></h:outputLabel> 
+                                    </p:column>
+                                     <p:column headerText="Code" >
+                                        <h:outputLabel value="#{itemAc.code}"    ></h:outputLabel> 
+                                    </p:column>
+                                    
+                                </p:autoComplete>
+
+                            </h:panelGroup>
+
 
 
 

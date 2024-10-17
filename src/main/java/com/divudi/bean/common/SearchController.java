@@ -297,7 +297,7 @@ public class SearchController implements Serializable {
     private double billCount;
     private Token token;
     private int managePaymentIndex = -1;
-    
+
     private double hosTotal;
     private double staffTotal;
     private double discountTotal;
@@ -14643,57 +14643,57 @@ public class SearchController implements Serializable {
             jpql += " AND b.institution = :ins ";
             m.put("ins", institution);
         }
-        
+
         if (site != null) {
             jpql += " AND b.department.site = :site ";
             m.put("site", site);
         }
-        
+
         if (department != null) {
             jpql += " AND b.department = :dept ";
             m.put("dept", department);
         }
-        
+
         if (toInstitution != null) {
             jpql += " AND b.toInstitution = :tins ";
             m.put("tins", toInstitution);
         }
-        
+
         if (toSite != null) {
             jpql += " AND b.toDepartment.site = :tsite ";
             m.put("tsite", toSite);
         }
-        
+
         if (toDepartment != null) {
             jpql += " AND b.toDepartment = :tdept ";
             m.put("tdept", toDepartment);
         }
-        
+
         if (webUser != null) {
             jpql += " AND b.creator = :wu ";
             m.put("wu", webUser);
         }
-        
+
         jpql += " AND b.createdAt BETWEEN :fromDate AND :toDate ";
         m.put("fromDate", getFromDate());
         m.put("toDate", getToDate());
-       
+
         bills = billFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
-        
+
         hosTotal = 0.0;
         staffTotal = 0.0;
         grossTotal = 0.0;
         discountTotal = 0.0;
         amountTotal = 0.0;
-        
-        for(Bill b : bills){
-            if(!b.isCancelled() && !b.isRefunded()){
+
+        for (Bill b : bills) {
+            if (!b.isCancelled() && !b.isRefunded()) {
                 hosTotal += b.getHospitalFee();
                 staffTotal += b.getStaffFee();
                 grossTotal += (b.getHospitalFee() + b.getStaffFee());
                 discountTotal += b.getDiscount();
                 amountTotal += b.getNetTotal();
-            } 
+            }
         }
     }
 
@@ -14703,6 +14703,7 @@ public class SearchController implements Serializable {
         Map<String, List<ReportTemplateRow>> detailedBillItemRows = new HashMap<>();
         List<ReportTemplateRow> rowsToAdd = new ArrayList<>();
         double totalOpdServiceCollection = 0.0;
+
         for (BillItem bi : billItems) {
             System.out.println("Processing BillItem: " + bi);
 
@@ -14711,7 +14712,9 @@ public class SearchController implements Serializable {
                 continue;
             }
 
-            String categoryName = bi.getItem() != null && bi.getItem().getCategory() != null ? bi.getItem().getCategory().getName() : "No Category";
+            String categoryName = bi.getItem() != null && bi.getItem().getCategory() != null
+                    ? bi.getItem().getCategory().getName()
+                    : "No Category";
             String itemName = bi.getItem() != null ? bi.getItem().getName() : "No Item";
             String itemKey = categoryName + "->" + itemName;
 
@@ -14732,25 +14735,37 @@ public class SearchController implements Serializable {
             ReportTemplateRow detailedRow = new ReportTemplateRow();
             detailedRow.setBillItem(bi);  // Assuming a method to set other attributes from BillItem
 
-            double grossValue = bi.getGrossValue();
+            double total = bi.getGrossValue();
             double hospitalFee = bi.getHospitalFee();
             double discount = bi.getDiscount();
-            double staffFee = bi.getStaffFee();
-            double netValue = bi.getNetValue();
-            long countModifier = bi.getBill().getBillClassType() == BillClassType.CancelledBill
-                    || bi.getBill().getBillClassType() == BillClassType.RefundBill ? -1 : 1;
+            double professionalFee = bi.getStaffFee();
+            double netTotal = bi.getNetValue();
+            long countModifier = (bi.getBill().getBillClassType() == BillClassType.CancelledBill
+                    || bi.getBill().getBillClassType() == BillClassType.RefundBill) ? -1 : 1;
+
+            long count = (long) bi.getQtyAbsolute() * countModifier;
 
             if (countModifier == -1) {
-                grossValue = -Math.abs(grossValue);
+                total = -Math.abs(total);
                 hospitalFee = -Math.abs(hospitalFee);
                 discount = -Math.abs(discount);
-                staffFee = -Math.abs(staffFee);
-                netValue = -Math.abs(netValue);
+                professionalFee = -Math.abs(professionalFee);
+                netTotal = -Math.abs(netTotal);
             }
 
-            totalOpdServiceCollection += netValue;
-            updateRow(detailedRow, countModifier, grossValue, hospitalFee, discount, staffFee, netValue);
+            totalOpdServiceCollection += netTotal;
+
+            // Update the detailed row
+            updateRow(detailedRow, count, total, hospitalFee, discount, professionalFee, netTotal);
+
+            // Add the detailed row to the list for this item
             detailedBillItemRows.get(itemKey).add(detailedRow);
+
+            // Update category summary row
+            updateRow(categoryMap.get(categoryName), count, total, hospitalFee, discount, professionalFee, netTotal);
+
+            // Update item summary row
+            updateRow(itemSummaryMap.get(itemKey), count, total, hospitalFee, discount, professionalFee, netTotal);
         }
 
         // Add category rows and item summary rows, then each individual detailed bill item row within each item
@@ -15774,8 +15789,6 @@ public class SearchController implements Serializable {
         bills = billFacade.findByJpql(jpql, m);
 
     }
-    
-    
 
     public void prepareDataBillsAndBillItemsDownload() {
         // JPQL to fetch Bills and their BillItems through Payments
