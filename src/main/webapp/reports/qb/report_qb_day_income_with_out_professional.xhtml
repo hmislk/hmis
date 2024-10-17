@@ -71,7 +71,7 @@
                 <p:selectOneMenu
                     id="siteMenu"
                     styleClass="w-100 form-control"  
-                    value="#{searchController.site}" 
+                    value="#{quickBookReportController.site}" 
                     filter="true">
                     <f:selectItem itemLabel="All Sites" />
                     <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
@@ -88,7 +88,7 @@
                 <p:selectOneMenu
                     id="cmbDept"
                     styleClass="w-100 form-control"  
-                    value="#{searchController.department}" 
+                    value="#{quickBookReportController.department}" 
                     filter="true">
                     <f:selectItem itemLabel="All Departments" />
                     <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
