@@ -46,11 +46,14 @@
                                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
                                         />
 
+                                    <p:spacer width="50" ></p:spacer>
+                                    <p:spacer width="50" ></p:spacer>
+                                    <p:spacer width="50" ></p:spacer>
 
 
                                     <h:panelGroup layout="block" styleClass="form-group">
                                         <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
-                                        <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                                        <h:outputLabel value="Booked Institution" for="cmbIns" class="mx-3"/>
                                     </h:panelGroup>
                                     <p:selectOneMenu
                                         id="cmbIns"
@@ -65,32 +68,84 @@
                                     <p:spacer ></p:spacer>
 
                                     <h:panelGroup layout="block" styleClass="form-group">
-                                        <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
-                                        <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                                        <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
+                                        <h:outputLabel value="Booked Site" for="cmbSite" class="mx-3"/>
                                     </h:panelGroup>
                                     <p:selectOneMenu
-                                        id="cmbDept"
-                                        styleClass="w-100 form-control"  
-                                        value="#{searchController.department}" 
+                                        id="cmbSite"
+                                        styleClass="w-100 form-control" 
+                                        value="#{searchController.site}" 
                                         filter="true">
-                                        <f:selectItem itemLabel="All Departments" />
-                                        <f:selectItems value="#{departmentController.getInsDepartments(searchController.institution)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                        <f:selectItem itemLabel="All Institutions" />
+                                        <f:selectItems value="#{institutionController.sites}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                        <p:ajax process="cmbSite" update="cmbDept" />
                                     </p:selectOneMenu>
 
                                     <p:spacer ></p:spacer>
 
                                     <h:panelGroup layout="block" styleClass="form-group">
-                                        <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
-                                        <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
+                                        <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                        <h:outputLabel value="Booked Department" for="cmbDept" class="mx-3"/>
+                                    </h:panelGroup>
+                                    <h:panelGroup id="cmbDept" >
+                                        <p:selectOneMenu
+                                            rendered="#{searchController.institution ne null and searchController.site ne null}"
+                                            styleClass="w-100 form-control"  
+                                            value="#{searchController.department}" 
+                                            filter="true">
+                                            <f:selectItem itemLabel="All Departments" />
+                                            <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                        </p:selectOneMenu>
+                                    </h:panelGroup>
+
+
+
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> 
+                                        <h:outputLabel value="Channl Institution" for="cmbToIns" class="mx-3"/>
                                     </h:panelGroup>
                                     <p:selectOneMenu
-                                        id="siteMenu"
-                                        styleClass="w-75 form-control"  
-                                        value="#{searchController.site}" 
+                                        id="cmbToIns"
+                                        styleClass="w-100 form-control" 
+                                        value="#{searchController.toInstitution}" 
                                         filter="true">
-                                        <f:selectItem itemLabel="All Sites" />
-                                        <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                        <f:selectItem itemLabel="All Institutions" />
+                                        <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                        <p:ajax process="cmbToIns" update="cmbToDept" />
                                     </p:selectOneMenu>
+
+                                    <p:spacer ></p:spacer>
+
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
+                                        <h:outputLabel value="Channel Site" for="cmbToSite" class="mx-3"/>
+                                    </h:panelGroup>
+                                    <p:selectOneMenu
+                                        id="cmbToSite"
+                                        styleClass="w-100 form-control" 
+                                        value="#{searchController.toSite}" 
+                                        filter="true">
+                                        <f:selectItem itemLabel="All Institutions" />
+                                        <f:selectItems value="#{institutionController.sites}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                        <p:ajax process="cmbToSite" update="cmbToDept" />
+                                    </p:selectOneMenu>
+
+                                    <p:spacer ></p:spacer>
+
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                        <h:outputLabel value="Channel Department" for="cmbToDept" class="mx-3"/>
+                                    </h:panelGroup>
+                                    <h:panelGroup id="cmbToDept" >
+                                        <p:selectOneMenu
+                                            rendered="#{searchController.toInstitution ne null and searchController.toSite ne null}"
+                                            styleClass="w-100 form-control"  
+                                            value="#{searchController.toDepartment}" 
+                                            filter="true">
+                                            <f:selectItem itemLabel="All Departments" />
+                                            <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.toInstitution, searchController.toSite)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                        </p:selectOneMenu>
+                                    </h:panelGroup>
 
 
                                     <h:panelGroup layout="block" styleClass="form-group">
@@ -113,38 +168,45 @@
                                     ajax="false" value="View List"
                                     action="#{searchController.listAgentChannelBookings}" />
 
-                                <p:commandButton id="btnPdf" class="m-1 ui-button-info"
-                                                 ajax="false"
-                                                 rendered="false"
-                                                 icon="fas fa-file-pdf"
-                                                 value="Export as PDF">
-                                    <p:dataExporter type="pdf" target="tbl" fileName="itemized_sale_summary" />
+                                <p:commandButton 
+                                    id="btnPdf" 
+                                    class="m-1 ui-button-info"
+                                    ajax="false"
+                                    rendered="false"
+                                    icon="fas fa-file-pdf"
+                                    value="Export as PDF">
+                                    <p:dataExporter type="pdf" target="tbl" fileName="agent_channel_bookings" />
                                 </p:commandButton>
 
-                                <p:commandButton id="btnPrint" class="m-1 ui-button-primary"
-                                                 icon="fas fa-print"
-                                                 ajax="false"
-                                                 value="Print Table">
+                                <p:commandButton 
+                                    id="btnPrint"
+                                    class="m-1 ui-button-primary"
+                                    icon="fas fa-print"
+                                    ajax="false"
+                                    value="Print Table">
                                     <p:printer target="tbl" />
                                 </p:commandButton>
 
-                                <p:commandButton id="btnExcel" class="m-1 ui-button-success"
-                                                 icon="fas fa-file-excel"
-                                                 ajax="false" value="Export to Excel">
-                                    <p:dataExporter type="xlsx" target="tbl" fileName="itemized_sale_summary" />
+                                <p:commandButton 
+                                    id="btnExcel" 
+                                    class="m-1 ui-button-success"
+                                    icon="fas fa-file-excel"
+                                    ajax="false" value="Export to Excel">
+                                    <p:dataExporter type="xlsx" target="tbl" fileName="agent_channel_bookings" />
                                 </p:commandButton>
                             </div>
                         </div>
 
-                        <p:dataTable id="tbl"
-                                     value="#{searchController.bills}"
-                                     var="b"
-                                     paginator="true"
-                                     rows="10"
-                                     rowIndexVar="n"
-                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     rowsPerPageTemplate="5,10,20"
-                                     rowKey="#{b.id}">
+                        <p:dataTable 
+                            id="tbl"
+                            value="#{searchController.bills}"
+                            var="b"
+                            paginator="true"
+                            rows="10"
+                            rowIndexVar="n"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="5,10,20"
+                            rowKey="#{b.id}">
 
                             <p:column width="2em">
                                 <f:facet name="header">
@@ -172,7 +234,7 @@
                                 <p:badge value="Refunded" severity="warning" rendered="#{b.refunded}"/>
                             </p:column>
 
-                            <p:column>
+                            <p:column rendered="#{webUserController.hasPrivilege('Developers')}">
                                 <f:facet name="header">
                                     <h:outputText value="Bill Type" />
                                 </f:facet>
@@ -184,6 +246,28 @@
                                     <h:outputText value="Patient" />
                                 </f:facet>
                                 <h:outputText value="#{b.patient.person.nameWithTitle}">
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Booked From" />
+                                </f:facet>
+                                <h:outputText value="#{b.institution.name}">
+                                </h:outputText>
+                                <br/>
+                                <h:outputText value="#{b.department.name}">
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Channel at" />
+                                </f:facet>
+                                <h:outputText value="#{b.toInstitution.name}">
+                                </h:outputText>
+                                <br/>
+                                <h:outputText value="#{b.toDepartment.name}">
                                 </h:outputText>
                             </p:column>
 
