@@ -1436,10 +1436,10 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
         getBill().setCreatedAt(new Date());
         getBill().setCreater(getSessionController().getLoggedUser());
-        Double refundingValue = getBill().getNetTotal();
+        Double refundingValue = Math.abs(getBill().getNetTotal());
         getBill().setGrantTotal(-refundingValue);
         getBill().setTotal(-refundingValue);
-        getBill().setTotal(-refundingValue);
+        getBill().setNetTotal(-refundingValue);
         getBill().setDiscount(0.0);
         getBill().setDiscountPercent(0);
         getBill().setBillTypeAtomic(billTypeAtomic);
