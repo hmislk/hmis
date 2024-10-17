@@ -14788,7 +14788,6 @@ public class SearchController implements Serializable {
     }
 
     public ReportTemplateRowBundle billItemsToBundleForOpd(ReportTemplateRowBundle rtrb, List<BillItem> billItems) {
-
         List<ReportTemplateRow> rowsToAdd = new ArrayList<>();
         long count = 1;
         double grossTotal = 0.0;
