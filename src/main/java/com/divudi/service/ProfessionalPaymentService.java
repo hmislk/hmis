@@ -49,7 +49,7 @@ public class ProfessionalPaymentService {
         String jpql;
         Map params = new HashMap();
 
-        jpql = "select b.netTotal "
+        jpql = "select sum(b.netTotal) "
                 + " from Bill b "
                 + " where b.billTypeAtomic in :billTypesAtomics "
                 + " and b.createdAt between :fromDate and :toDate "
@@ -66,7 +66,6 @@ public class ProfessionalPaymentService {
             params.put("dep", dep);
         }
 
-        jpql += " order by b.createdAt desc  ";
         params.put("billTypesAtomics", billTypesAtomics);
         params.put("fromDate", fromDate);
         params.put("toDate", toDate);
@@ -76,6 +75,7 @@ public class ProfessionalPaymentService {
         System.out.println("jpql = " + jpql);
 
         Double sum = billFacade.findDoubleByJpql(jpql, params, TemporalType.TIMESTAMP);
+        System.out.println("sum = " + sum);
         return sum;
     }
 
