@@ -1244,6 +1244,12 @@ public class ReportController implements Serializable {
         m.put("toDate", getToDate());
 
         bills = billFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        
+        netTotal = 0.0;
+        
+        for(Bill b : bills){
+            netTotal += b.getTotal();
+        }
     }
 
     public String navigatetoOPDLabReportByMenu() {

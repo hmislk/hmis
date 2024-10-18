@@ -292,7 +292,9 @@ public class PettyCashBillSearch implements Serializable {
         cb.setBillTypeAtomic(BillTypeAtomic.PETTY_CASH_BILL_CANCELLATION);
         cb.setPaymentMethod(paymentMethod);
         cb.setComments(comment);
-
+        cb.setStaff(getBill().getStaff());
+        cb.setPerson(getBill().getPerson());
+        cb.setToDepartment(getBill().getToDepartment());
         return cb;
     }
 
