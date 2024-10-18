@@ -547,12 +547,9 @@ public class ChannelApi {
 
         long hosId;
         try {
-            System.out.println("550 line");
             hosId = Long.parseLong(hospitalId);
-            System.out.println("551 line");
         } catch (Exception e) {
             JSONObject json = notValidId();
-            System.out.println("555 line");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(json.toString()).build();
         }
 
@@ -562,7 +559,6 @@ public class ChannelApi {
         Speciality speciality = specialityController.findSpeciality(doctorId);
         Consultant consultant = consultantController.getConsultantById(doctorId);
         //System.out.println(hospital.getName() + " " + " " + consultant.getName());
-        System.out.println("565 line");
         if (hospital == null) {
             JSONObject json = notValidId();
             return Response.status(Response.Status.BAD_REQUEST).entity(json).build();
@@ -572,12 +568,11 @@ public class ChannelApi {
         List<SessionInstance> sessions = sessionInstanceController.findSessionInstance(hospital, speciality, consultant, fromDate, null);
         System.out.println(sessions);
         Map<String, Object> sessionData = new HashMap<>();
-        System.out.println("574 line");
         Long additionalProp = 1L;
         for (SessionInstance s : sessions) {
             Map<String, Object> session = new HashMap<>();
             session.put("sessionID", s.getId());        
-            session.put("docName", s.getStaff().getName());
+            session.put("docName", s.getStaff().getPerson().getName());
             session.put("docNo", s.getStaff().getId());
             session.put("foreignAmount", s.getOriginatingSession().getTotalForForeigner());
             session.put("hosId", s.getInstitution().getId());
@@ -602,7 +597,6 @@ public class ChannelApi {
         response.put("message", "Accepted");
         response.put("data", sessionResults);
         response.put("detailMessage", "Succeess");
-        System.out.println("last line");
 
         return Response.status(Response.Status.ACCEPTED).entity(response.toString()).build();
 
@@ -643,14 +637,14 @@ public class ChannelApi {
         Map<String, Object> sessionData = new HashMap<>();
         sessionData.put("sessionID", session.getId());
         sessionData.put("hosFee", session.getOriginatingSession().getHospitalFee());
-        sessionData.put("docName", session.getStaff().getPerson().getName());
+        sessionData.put("docName", session.getStaff().getPerson().getNameWithInitials());
         sessionData.put("docNo", session.getStaff().getId());
         sessionData.put("foreignAmount", session.getOriginatingSession().getTotalForForeigner());
         sessionData.put("hosId", session.getInstitution().getId());
         sessionData.put("hosFee", session.getHospitalFee());       
         sessionData.put("docFee", session.getProfessionalFee());      
         sessionData.put("startTime", session.getStartingTime());
-        sessionData.put("amount", session.getTotalFee());       
+        sessionData.put("amount", session.getOriginatingSession().getTotal());       
         sessionData.put("appDate", session.getSessionDate());
         sessionData.put("maxPatient", session.getMaxNo());
         sessionData.put("appDay", session.getDayString());
@@ -685,6 +679,7 @@ public class ChannelApi {
         Map<String, String> payment = (Map<String, String>) requestBody.get("payment");
 
         SessionInstance session = sessionInstanceFacade.find(Long.parseLong(sessionId));
+        System.out.println(session);
         if (session == null) {
             JSONObject response = commonFunctionToErrorResponse("Session id is invalid");
             return Response.status(Response.Status.NOT_FOUND).entity(response).build();

@@ -71,11 +71,10 @@ public class ChannelService {
     private BillFeeFacade billFeeFacade;
     @EJB
     private BillNumberGenerator billNumberBean;
-    
 
     @Inject
     BillBeanController billBeanController;
-    
+
     public BillFacade getBillFacade() {
         return billFacade;
     }
@@ -114,6 +113,7 @@ public class ChannelService {
         BillSession savingBillSession;
 
         savingBillSession = createBillSession(savingBill, savingBillItemForSession, forReservedNumbers, session);
+        System.out.println(savingBillSession);
 
         List<BillFee> savingBillFees = new ArrayList<>();
 
@@ -235,6 +235,7 @@ public class ChannelService {
         billToCaclculate.setTotal(calculatingGrossBillTotal);
         getBillFacade().edit(billToCaclculate);
     }
+
     @Deprecated
     private String generateBillNumberDeptId(Bill bill) {
         String suffix = bill.getDepartment().getDepartmentCode();
@@ -289,7 +290,6 @@ public class ChannelService {
         bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
         System.out.println(bill);
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(session.getDepartment(), BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
-        
 
         if (deptId.equals("")) {
             return null;
@@ -384,7 +384,7 @@ public class ChannelService {
         } else {
             bs.setSerialNo(1);
         }
-        
+        System.out.println(bs);
         getBillSessionFacade().create(bs);
 
         return bs;
@@ -435,7 +435,7 @@ public class ChannelService {
             bf.setBill(bill);
             bf.setBillItem(billItem);
             bf.setCreatedAt(new Date());
-           // bf.setCreater(getSessionController().getLoggedUser());
+            // bf.setCreater(getSessionController().getLoggedUser());
             if (f.getFeeType() == FeeType.OwnInstitution) {
                 bf.setInstitution(f.getInstitution());
                 bf.setDepartment(f.getDepartment());
