@@ -507,7 +507,6 @@ public class ChannelService {
         BillItem bi = savePaidBillItem(b, bs);
         savePaidBillFee(b, bi, bs);
         BillSession newBillSession = savePaidBillSession(b, bi, bs);
-
         bs.setPaidBillSession(newBillSession);
         getBillSessionFacade().edit(newBillSession);
         getBillSessionFacade().edit(bs);
