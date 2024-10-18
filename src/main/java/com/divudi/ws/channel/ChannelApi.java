@@ -657,10 +657,8 @@ public class ChannelApi {
         for (ItemFee f : itemFees) {
             if (f.getFeeType() == FeeType.Staff) {
                 doctorFee = f.getFee();
-            } else if (f.getFeeType() == FeeType.OwnInstitution) {
-                hosFee = f.getFee();
             } else {
-                continue;
+                hosFee = f.getFee();
             }
         }
         SimpleDateFormat forDate = new SimpleDateFormat("yyyy-MM-dd");
