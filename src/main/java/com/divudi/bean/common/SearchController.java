@@ -297,7 +297,7 @@ public class SearchController implements Serializable {
     private double billCount;
     private Token token;
     private int managePaymentIndex = -1;
-    
+
     private double hosTotal;
     private double staffTotal;
     private double discountTotal;
@@ -310,6 +310,7 @@ public class SearchController implements Serializable {
 
     private List<CashBookEntry> cashBookEntries;
     private Institution site;
+    private Institution toSite;
     private List<Drawer> drawerList;
     private Drawer selectedDrawer;
     private int opdAnalyticsIndex;
@@ -1965,6 +1966,14 @@ public class SearchController implements Serializable {
 
     public void setAmountTotal(double amountTotal) {
         this.amountTotal = amountTotal;
+    }
+
+    public Institution getToSite() {
+        return toSite;
+    }
+
+    public void setToSite(Institution toSite) {
+        this.toSite = toSite;
     }
 
     public class billsWithbill {
@@ -14367,83 +14376,86 @@ public class SearchController implements Serializable {
         Map<String, ReportTemplateRow> itemMap = new HashMap<>();
         List<ReportTemplateRow> rowsToAdd = new ArrayList<>();
         double totalOpdServiceCollection = 0.0;
+
         for (BillItem bi : billItems) {
             System.out.println("Processing BillItem: " + bi);
 
-            if (bi.getBill() == null) {
-                continue;
-            } else if (bi.getBill().getPaymentMethod() == null) {
-                continue;
-            } else if (bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.NONE) {
-                continue;
-            } else if (bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.CREDIT) {
+            // Skip invalid or unwanted bills
+            if (bi.getBill() == null || bi.getBill().getPaymentMethod() == null
+                    || bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.NONE
+                    || bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.CREDIT) {
                 continue;
             }
 
-            String categoryName = bi.getItem() != null && bi.getItem().getCategory() != null ? bi.getItem().getCategory().getName() : "No Category";
+            // Identify category and item
+            String categoryName = bi.getItem() != null && bi.getItem().getCategory() != null
+                    ? bi.getItem().getCategory().getName() : "No Category";
             String itemName = bi.getItem() != null ? bi.getItem().getName() : "No Item";
             String itemKey = categoryName + "->" + itemName;
 
             System.out.println("Item Key: " + itemKey);
             System.out.println("Category: " + categoryName + ", Item: " + itemName);
 
+            // Initialize the maps if keys are not present
             categoryMap.putIfAbsent(categoryName, new ReportTemplateRow());
             itemMap.putIfAbsent(itemKey, new ReportTemplateRow());
 
             ReportTemplateRow categoryRow = categoryMap.get(categoryName);
             ReportTemplateRow itemRow = itemMap.get(itemKey);
 
+            // Set category and item details
             if (bi.getItem() != null) {
                 categoryRow.setCategory(bi.getItem().getCategory());
                 itemRow.setItem(bi.getItem());
             }
 
-            long countModifier = 1;
+            // Initialize financial values
             double grossValue = bi.getGrossValue();
             double hospitalFee = bi.getHospitalFee();
             double discount = bi.getDiscount();
             double staffFee = bi.getStaffFee();
             double netValue = bi.getNetValue();
 
-            switch (bi.getBill().getBillClassType()) {
-                case CancelledBill:
-                case RefundBill:
-                    countModifier = -1;
-                    // Apply abs to ensure all values are positive before negating
-                    grossValue = -Math.abs(grossValue);
-                    hospitalFee = -Math.abs(hospitalFee);
-                    discount = -Math.abs(discount);
-                    staffFee = -Math.abs(staffFee);
-                    netValue = -Math.abs(netValue);
-                    break;
-                case BilledBill:
-                case Bill:
-                    // Positive adjustments, no need to change the sign or apply abs
-                    break;
-                default:
-                    // Do nothing for other types of bills
-                    continue;  // Skip processing for unrecognized or unhandled bill types
+            // Determine quantity modifier based on bill class type
+            long qtyModifier = (bi.getBill().getBillClassType() == BillClassType.CancelledBill
+                    || bi.getBill().getBillClassType() == BillClassType.RefundBill) ? -1 : 1;
+
+            // Adjust financial values for cancelled/refunded items
+            if (qtyModifier == -1) {
+                grossValue = -Math.abs(grossValue);
+                hospitalFee = -Math.abs(hospitalFee);
+                discount = -Math.abs(discount);
+                staffFee = -Math.abs(staffFee);
+                netValue = -Math.abs(netValue);
             }
+
+            // Calculate the adjusted quantity
+            long quantity = (long) (bi.getQtyAbsolute() * qtyModifier);
+
+            // Accumulate the total collection
             totalOpdServiceCollection += netValue;
+
             System.out.println("hospitalFee = " + hospitalFee);
-            updateRow(categoryRow, countModifier, grossValue, hospitalFee, discount, staffFee, netValue);
-            updateRow(itemRow, countModifier, grossValue, hospitalFee, discount, staffFee, netValue);
+
+            // Update the rows with the adjusted values
+            updateRow(categoryRow, quantity, grossValue, hospitalFee, discount, staffFee, netValue);
+            updateRow(itemRow, quantity, grossValue, hospitalFee, discount, staffFee, netValue);
         }
 
-        // Only add rows that are properly initialized and grouped
+        // Add the rows to the report template bundle
         categoryMap.forEach((categoryName, catRow) -> {
             System.out.println("Adding category row to bundle: " + categoryName);
             rowsToAdd.add(catRow);
-            itemMap.values().stream()
-                    .filter(iRow -> iRow.getItem() != null && iRow.getItem().getCategory() != null && iRow.getItem().getCategory().getName().equals(categoryName))
-                    .forEach(iRow -> {
-                        System.out.println("Adding item row to bundle under category " + categoryName + ": " + iRow.getItem().getName());
-                        rowsToAdd.add(iRow);
+
+            itemMap.entrySet().stream()
+                    .filter(entry -> entry.getKey().startsWith(categoryName + "->"))
+                    .forEach(entry -> {
+                        System.out.println("Adding item row to bundle under category " + categoryName + ": " + entry.getValue().getItem().getName());
+                        rowsToAdd.add(entry.getValue());
                     });
         });
 
-        System.out.println("rowsToAdd = " + rowsToAdd);
-        System.out.println("rtrb.getReportTemplateRows() = " + rtrb.getReportTemplateRows());
+        System.out.println("Total collected: " + totalOpdServiceCollection);
         rtrb.getReportTemplateRows().addAll(rowsToAdd);
         rtrb.setTotal(totalOpdServiceCollection);
     }
@@ -14613,7 +14625,8 @@ public class SearchController implements Serializable {
     }
 
     public void listAgentChannelBookings() {
-        String jpql = "SELECT b FROM Bill b "
+        String jpql = "SELECT b "
+                + " FROM Bill b "
                 + " WHERE b.retired = :ret "
                 + " AND b.billTypeAtomic IN :bts ";
 
@@ -14633,42 +14646,57 @@ public class SearchController implements Serializable {
             jpql += " AND b.institution = :ins ";
             m.put("ins", institution);
         }
-        
+
         if (site != null) {
             jpql += " AND b.department.site = :site ";
             m.put("site", site);
         }
-        
+
         if (department != null) {
             jpql += " AND b.department = :dept ";
             m.put("dept", department);
         }
-        
+
+        if (toInstitution != null) {
+            jpql += " AND b.toInstitution = :tins ";
+            m.put("tins", toInstitution);
+        }
+
+        if (toSite != null) {
+            jpql += " AND b.toDepartment.site = :tsite ";
+            m.put("tsite", toSite);
+        }
+
+        if (toDepartment != null) {
+            jpql += " AND b.toDepartment = :tdept ";
+            m.put("tdept", toDepartment);
+        }
+
         if (webUser != null) {
             jpql += " AND b.creator = :wu ";
             m.put("wu", webUser);
         }
-        
+
         jpql += " AND b.createdAt BETWEEN :fromDate AND :toDate ";
         m.put("fromDate", getFromDate());
         m.put("toDate", getToDate());
-       
+
         bills = billFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
-        
+
         hosTotal = 0.0;
         staffTotal = 0.0;
         grossTotal = 0.0;
         discountTotal = 0.0;
         amountTotal = 0.0;
-        
-        for(Bill b : bills){
-            if(!b.isCancelled() && !b.isRefunded()){
+
+        for (Bill b : bills) {
+            if (!b.isCancelled() && !b.isRefunded()) {
                 hosTotal += b.getHospitalFee();
                 staffTotal += b.getStaffFee();
                 grossTotal += (b.getHospitalFee() + b.getStaffFee());
                 discountTotal += b.getDiscount();
                 amountTotal += b.getNetTotal();
-            } 
+            }
         }
     }
 
@@ -14678,6 +14706,7 @@ public class SearchController implements Serializable {
         Map<String, List<ReportTemplateRow>> detailedBillItemRows = new HashMap<>();
         List<ReportTemplateRow> rowsToAdd = new ArrayList<>();
         double totalOpdServiceCollection = 0.0;
+
         for (BillItem bi : billItems) {
             System.out.println("Processing BillItem: " + bi);
 
@@ -14686,7 +14715,9 @@ public class SearchController implements Serializable {
                 continue;
             }
 
-            String categoryName = bi.getItem() != null && bi.getItem().getCategory() != null ? bi.getItem().getCategory().getName() : "No Category";
+            String categoryName = bi.getItem() != null && bi.getItem().getCategory() != null
+                    ? bi.getItem().getCategory().getName()
+                    : "No Category";
             String itemName = bi.getItem() != null ? bi.getItem().getName() : "No Item";
             String itemKey = categoryName + "->" + itemName;
 
@@ -14707,25 +14738,37 @@ public class SearchController implements Serializable {
             ReportTemplateRow detailedRow = new ReportTemplateRow();
             detailedRow.setBillItem(bi);  // Assuming a method to set other attributes from BillItem
 
-            double grossValue = bi.getGrossValue();
+            double total = bi.getGrossValue();
             double hospitalFee = bi.getHospitalFee();
             double discount = bi.getDiscount();
-            double staffFee = bi.getStaffFee();
-            double netValue = bi.getNetValue();
-            long countModifier = bi.getBill().getBillClassType() == BillClassType.CancelledBill
-                    || bi.getBill().getBillClassType() == BillClassType.RefundBill ? -1 : 1;
+            double professionalFee = bi.getStaffFee();
+            double netTotal = bi.getNetValue();
+            long countModifier = (bi.getBill().getBillClassType() == BillClassType.CancelledBill
+                    || bi.getBill().getBillClassType() == BillClassType.RefundBill) ? -1 : 1;
+
+            long count = (long) bi.getQtyAbsolute() * countModifier;
 
             if (countModifier == -1) {
-                grossValue = -Math.abs(grossValue);
+                total = -Math.abs(total);
                 hospitalFee = -Math.abs(hospitalFee);
                 discount = -Math.abs(discount);
-                staffFee = -Math.abs(staffFee);
-                netValue = -Math.abs(netValue);
+                professionalFee = -Math.abs(professionalFee);
+                netTotal = -Math.abs(netTotal);
             }
 
-            totalOpdServiceCollection += netValue;
-            updateRow(detailedRow, countModifier, grossValue, hospitalFee, discount, staffFee, netValue);
+            totalOpdServiceCollection += netTotal;
+
+            // Update the detailed row
+            updateRow(detailedRow, count, total, hospitalFee, discount, professionalFee, netTotal);
+
+            // Add the detailed row to the list for this item
             detailedBillItemRows.get(itemKey).add(detailedRow);
+
+            // Update category summary row
+            updateRow(categoryMap.get(categoryName), count, total, hospitalFee, discount, professionalFee, netTotal);
+
+            // Update item summary row
+            updateRow(itemSummaryMap.get(itemKey), count, total, hospitalFee, discount, professionalFee, netTotal);
         }
 
         // Add category rows and item summary rows, then each individual detailed bill item row within each item
@@ -14748,7 +14791,6 @@ public class SearchController implements Serializable {
     }
 
     public ReportTemplateRowBundle billItemsToBundleForOpd(ReportTemplateRowBundle rtrb, List<BillItem> billItems) {
-
         List<ReportTemplateRow> rowsToAdd = new ArrayList<>();
         long count = 1;
         double grossTotal = 0.0;

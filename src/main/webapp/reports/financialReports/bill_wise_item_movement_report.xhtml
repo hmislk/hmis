@@ -15,198 +15,171 @@
                             <h:outputLabel value="Bill Wise Item Movement Report" />
                         </f:facet>
 
-                        <h:panelGroup>
-                            <div class="row mb-2">
-                                <div class="col-md-2">
-                                    <h:panelGroup >
-                                        <h:outputText value="&#xf073;" styleClass="fa ml-5" />
-                                        <h:outputLabel value="From Date" />
-                                    </h:panelGroup>
-                                </div>
-                                <div class="col-md-4">
-                                    <p:datePicker
-                                        value="#{reportController.fromDate}"
-                                        class="w-100"
-                                        showTime="true"
-                                        showButtonBar="true"
-                                        timeInput="true"
-                                        inputStyleClass="form-control"
-                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
-                                    </p:datePicker>
-                                </div>
 
-                                <div class="col-md-2">
-                                    <h:panelGroup >
-                                        <h:outputText value="&#xf073;" styleClass="fa mr-2" /> 
-                                        <h:outputLabel value="To Date"  />
-                                    </h:panelGroup>
-                                </div>
-                                <div class="col-md-4">
-                                    <p:datePicker
-                                        value="#{reportController.toDate}"
-                                        class="w-100"
-                                        showTime="true"
-                                        showButtonBar="true"
-                                        timeInput="true"
-                                        inputStyleClass="form-control"
-                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
-                                    </p:datePicker>
-                                </div>
-                            </div>
-                            <div class="row mb-2">
-                                <div class="col-md-2">
-                                    <h:panelGroup >
-                                        <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
-                                        <h:outputLabel value="Institution" for="cmbIns" />
-                                    </h:panelGroup>
-                                </div>
-                                <div class="col-md-4">
-                                    <p:selectOneMenu filter="true" id="cmdInstitution"
-                                                     filterMatchMode="contains"
-                                                     style=" max-width: 100%; overflow-x: auto; "
-                                                     class="w-100"
-                                                     value="#{reportController.institution}">
-                                        <f:selectItem itemLabel="All Institution" />
-                                        <f:selectItems value="#{institutionController.companies}"
-                                                       var="i"
-                                                       itemLabel="#{i.name}"
-                                                       itemValue="#{i}" />
-                                        <p:ajax process="@this" update="cmbDept" event="itemSelect" />
-                                    </p:selectOneMenu>
-                                </div>
 
-                                <div class="col-md-2">
-                                    <h:panelGroup layout="block" styleClass="form-group">
-                                        <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
-                                        <h:outputLabel value="Site" for="siteMenu" />
-                                    </h:panelGroup>
-                                </div>
-                                <div class="col-md-4">
-                                    <p:selectOneMenu
-                                        id="siteMenu"
-                                        styleClass="w-100 form-control"  
-                                        value="#{reportController.site}" 
-                                        filter="true"
-                                        filterMatchMode="contains">
-                                        <f:selectItem itemLabel="All Sites" />
-                                        <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
-                                        <p:ajax process="@this" update="cmbDept" event="itemSelect" />
-                                    </p:selectOneMenu>
-                                </div>
-                            </div>
-                            <div class="row mb-2">
-                                <div class="col-md-2">
-                                    <h:panelGroup layout="block" >
-                                        <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
-                                        <h:outputLabel value="Department" for="cmbDept" />
-                                    </h:panelGroup>
-                                </div>
-                                <div class="col-md-4">
-                                    <p:selectOneMenu
-                                        id="cmbDept"
-                                        style="width: 100%; max-width: 500px;"  
-                                        styleClass="form-control"  
-                                        value="#{reportController.department}" 
-                                        filter="true">
-                                        <f:selectItem itemLabel="All Departments" />
-                                        <f:selectItems value="#{departmentController.getInstitutionDepartmentsWithSite(reportController.institution, reportController.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
-                                    </p:selectOneMenu>
+                        <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="From" for="fromDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar 
+                                styleClass="w-100" 
+                                inputStyleClass="w-100 form-control" 
+                                id="fromDate" 
+                                value="#{reportController.fromDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                />
 
-                                </div>
+                            <p:spacer width="50" ></p:spacer>
 
-                                <div class="col-md-2">
-                                    <h:panelGroup >
-                                        <h:outputText value="&#xf022;" styleClass="fa mr-2" />
-                                        <p:outputLabel value="Service Category" ></p:outputLabel>
-                                    </h:panelGroup>
-                                </div>
-                                <div class="col-md-4">
-                                    <p:autoComplete 
-                                        completeMethod="#{categoryController.completeCategory}" 
-                                        var="pta" 
-                                        itemLabel="#{pta.name}"
-                                        itemValue="#{pta}" 
-                                        value="#{reportController.category}"
-                                        class="w-100 "
-                                        inputStyleClass="form-control"
-                                        >                                    
-                                        <p:column>#{pta.name}</p:column>
-                                        <p:column>#{pta.parentCategory}</p:column>                                        
-                                    </p:autoComplete>
-                                </div>
-                            </div>
-                            <div class="row mb-2">
-                                <div class="col-md-2">
-                                    <h:panelGroup >
-                                        <h:outputText value="&#xf466;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
-                                        <p:outputLabel value="Item" ></p:outputLabel>
-                                    </h:panelGroup>
-                                </div>
-                                <div class="col-md-4">
-                                    <p:autoComplete
-                                        value="#{reportController.item}"
-                                        completeMethod="#{itemController.completeOpdItemsByNamesAndCode}"
-                                        var="w"
-                                        class="w-100 "
-                                        inputStyleClass="form-control"
-                                        itemLabel="#{w.name}"
-                                        itemValue="#{w}">
-                                    </p:autoComplete>
-                                </div>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="To" for="toDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar 
+                                styleClass="w-100" 
+                                inputStyleClass="w-100 form-control" 
+                                id="toDate" 
+                                value="#{reportController.toDate}" 
+                                navigator="false" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                />
 
-                                <div class="col-md-2">
-                                    <h:panelGroup >
-                                        <h:outputText value="&#xf007;" styleClass="fa mr-2" /> 
-                                        <h:outputLabel value="Patient MRN" />
-                                    </h:panelGroup>
-                                </div>
-                                <div class="col-md-4">
-                                    <p:inputText value="#{reportController.phn}" class="w-100 " />
-                                </div>
-                            </div>
+                            <p:spacer width="50" ></p:spacer>
 
-                            <div class="row mb-2">
-                                <div class="col-md-2">
-                                    <h:panelGroup >
-                                        <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
-                                        <h:outputLabel value="To Institution" />
-                                    </h:panelGroup>
-                                </div>
-                                <div class="col-md-4">
-                                    <p:selectOneMenu filter="true"
-                                                     filterMatchMode="contains"
-                                                     style=" max-width: 100%; overflow-x: auto; "
-                                                     class="w-100"
-                                                     value="#{reportController.toInstitution}">
-                                        <f:selectItem itemLabel="All Institution" />
-                                        <f:selectItems value="#{institutionController.companies}"
-                                                       var="i"
-                                                       itemLabel="#{i.name}"
-                                                       itemValue="#{i}" />
-                                        <p:ajax process="@this" event="itemSelect" />
-                                    </p:selectOneMenu>
-                                </div>
+                            <p:spacer width="50" ></p:spacer>
+                            <p:spacer width="50" ></p:spacer>
 
-                                <div class="col-md-2">
-                                    <h:panelGroup>
-                                        <h:outputText value="&#xf0e8;" styleClass="fa mr-2" />
-                                        <h:outputLabel value="To Department"/>
-                                    </h:panelGroup>
-                                </div>
-                                <div class="col-md-4">
-                                    <p:selectOneMenu
-                                        style="width: 100%; max-width: 500px;"  
-                                        styleClass="form-control"  
-                                        value="#{reportController.toDepartment}" 
-                                        filter="true">
-                                        <f:selectItem itemLabel="All Departments" />
-                                        <f:selectItems value="#{itemController.fillInstitutionDepatrments()}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
-                                    </p:selectOneMenu>
-                                </div>
-                            </div>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
+                                <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="cmbIns"
+                                styleClass="w-100 form-control" 
+                                value="#{reportController.institution}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Institutions" />
+                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                <p:ajax process="cmbIns" update="cmbDept" />
+                            </p:selectOneMenu>
 
-                        </h:panelGroup>
-                        
+                            <p:spacer ></p:spacer>
+
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
+                                <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="siteMenu"
+                                styleClass="w-100 form-control"  
+                                value="#{reportController.site}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Sites" />
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                <p:ajax process="siteMenu" update="cmbDept" />
+                            </p:selectOneMenu>
+
+
+                            <p:spacer ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="cmbDept"
+                                styleClass="w-100 form-control"  
+                                value="#{reportController.department}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Departments" />
+                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(reportController.institution, reportController.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                            </p:selectOneMenu>
+
+                            <h:panelGroup >
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
+                                <h:outputLabel value="To Institution" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu filter="true"
+                                             filterMatchMode="contains"
+                                             style=" max-width: 100%; overflow-x: auto; "
+                                             class="w-100"
+                                             value="#{reportController.toInstitution}">
+                                <f:selectItem itemLabel="All Institution" />
+                                <f:selectItems value="#{institutionController.companies}"
+                                               var="i"
+                                               itemLabel="#{i.name}"
+                                               itemValue="#{i}" />
+                                <p:ajax process="@this" event="itemSelect" update="gpToDept" />
+                            </p:selectOneMenu>
+
+                            <p:spacer ></p:spacer>
+
+                            <h:panelGroup>
+                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" />
+                                <h:outputLabel value="To Department" class="mx-3"/>
+                            </h:panelGroup>
+                            <h:panelGroup id="gpToDept" >
+                                <p:selectOneMenu
+                                    rendered="#{reportController.toInstitution ne null}"
+                                    style="width: 100%; max-width: 500px;"  
+                                    styleClass="form-control"  
+                                    value="#{reportController.toDepartment}" 
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems value="#{departmentController.getInsDepartments(reportController.toInstitution)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                </p:selectOneMenu>
+                            </h:panelGroup>
+
+                            <p:spacer ></p:spacer>
+
+                            <h:panelGroup >
+                                <h:outputText value="&#xf007;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="Patient MRN" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:inputText value="#{reportController.phn}" class="w-100 " />
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText title="Category" value="&#xf02d;" styleClass="fa mr-2" /> <!-- FontAwesome book icon -->
+                                <h:outputLabel value="Category"  class="mx-3"/>
+                            </h:panelGroup>
+                            <p:autoComplete value="#{reportController.category}"
+                                            completeMethod="#{categoryController.completeCategory}" 
+                                            var="category"
+                                            class="w-100"
+                                            inputStyleClass="w-100"
+                                            itemLabel="#{category.name}"
+                                            itemValue="#{category}">
+                            </p:autoComplete>
+
+                            <p:spacer ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText title="Item" value="&#xf0f6;" styleClass="fa mr-2" /> <!-- FontAwesome box icon -->
+                                <h:outputLabel value="Item"  class="mx-3"/>
+                            </h:panelGroup>
+                            <p:autoComplete value="#{reportController.item}"
+                                            class="w-100"
+                                            inputStyleClass="w-100"
+                                            completeMethod="#{itemController.completeServicesPlusInvestigationsAll}" 
+                                            var="item"
+                                            itemLabel="#{item.name}"
+                                            itemValue="#{item}">
+                            </p:autoComplete>
+
+                            <p:spacer width="50" ></p:spacer>
+
+                            <p:spacer width="50" ></p:spacer>
+                            <p:spacer width="50" ></p:spacer>
+
+
+
+                        </h:panelGrid>
+
+
+
                         <h:panelGrid columns="6" class="my-2">
                             <p:commandButton 
                                 ajax="false" 
@@ -306,9 +279,9 @@
                                         <f:convertNumber integerOnly="true" />
                                     </h:outputText>
                                 </f:facet>
-                                
-                            </p:columns>
 
+                            </p:columns>
+                    
                         </p:dataTable>
 
                         <table border="1" id="printTbl" style="display:none;">

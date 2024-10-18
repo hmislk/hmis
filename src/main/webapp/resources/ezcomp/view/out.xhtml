@@ -19,6 +19,11 @@
             </f:facet>
             <p:outputLabel value="Bill ID" ></p:outputLabel>
             <p:outputLabel value="#{cc.attrs.bill.id}" ></p:outputLabel>
+            
+            <p:outputLabel value="Bill Created at" ></p:outputLabel>
+            <p:outputLabel value="#{cc.attrs.bill.createdAt}" >
+                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+            </p:outputLabel>
 
             <p:outputLabel value="Dept ID" ></p:outputLabel>
             <p:outputLabel value="#{cc.attrs.bill.deptId}" ></p:outputLabel>

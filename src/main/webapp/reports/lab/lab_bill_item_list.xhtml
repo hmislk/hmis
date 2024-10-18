@@ -244,18 +244,6 @@
                         </f:facet>
                     </p:column>
 
-                    <!-- Collecting Centre Fee Column -->
-                    <p:column headerText="CC Fee">
-                        <h:outputLabel value="#{billItem.collectingCentreFee}">
-                            <f:convertNumber pattern="#,##0.00" />
-                        </h:outputLabel>
-                        <f:facet name="footer">
-                            <h:outputText value="#{patientInvestigationController.ccFeeTotal}">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputText>
-                        </f:facet>
-                    </p:column>
-
                     <!-- Hospital Fee Column -->
                     <p:column headerText="Staff Fee">
                         <h:outputLabel value="#{billItem.staffFee}">

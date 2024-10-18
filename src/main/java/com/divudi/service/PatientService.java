@@ -90,9 +90,9 @@ public class PatientService {
     public List<Patient> searchPatientsByPhone(Long phoneNo) {
         String jpql;
         Map params = new HashMap();
-        jpql = "select p from patient where p.retired = :ret and (p.patientMobileNumber =:p or p.patientPhoneNumber =:p)";
+        jpql = "select p from Patient p where p.retired = :ret and (p.patientMobileNumber = :pn or p.patientPhoneNumber = :pn)";
         params.put("ret", false);
-        params.put("p", phoneNo);
+        params.put("pn", phoneNo);
         List<Patient> patientsSavedWithPhoneNo = patientFacade.findByJpql(jpql, params);
         return patientsSavedWithPhoneNo;
     }

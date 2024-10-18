@@ -90,6 +90,26 @@
                                     </p:inputText>
                                 </td>
                             </tr>
+                            
+                            <!-- Credit Payment Row -->
+                            <tr class="ui-widget-content">
+                                <td><i class="pi pi-tag payment-icon"></i>&nbsp;Credit</td>
+                                <td class="centered">
+                                    <p:inputText value="#{drawerController.current.creditInHandValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </td>
+                                <td class="centered">
+                                    <p:inputText value="#{drawerController.current.creditShortageOrExcess}" styleClass="#{drawerController.current.creditShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </td>
+                                <td class="centered">
+                                    <p:inputText value="#{drawerController.current.creditBalance}" styleClass="#{drawerController.current.creditShortageOrExcess >= 0 ? 'negative-value' : 'positive-value'}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:inputText>
+                                </td>
+                            </tr>
 
                             <!-- Voucher Payment Row -->
                             <tr class="ui-widget-content">

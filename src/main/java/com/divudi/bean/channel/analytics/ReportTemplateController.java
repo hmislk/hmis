@@ -224,7 +224,7 @@ public class ReportTemplateController implements Serializable {
         System.out.println("Final JPQL Query: " + jpql);
 
         // Assuming you have an EJB or similar service to run the query
-        List<ReportTemplateRow> results = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
+        List<ReportTemplateRow> results = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
         // Properly handle empty or null results
         if (results == null || results.isEmpty()) {
@@ -356,7 +356,7 @@ public class ReportTemplateController implements Serializable {
         System.out.println("Final JPQL Query: " + jpql);
 
         // Assuming you have an EJB or similar service to run the query
-        List<ReportTemplateRow> results = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
+        List<ReportTemplateRow> results = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
         // Properly handle empty or null results
         if (results == null || results.isEmpty()) {
@@ -950,7 +950,7 @@ public class ReportTemplateController implements Serializable {
 
         jpql += " group by bill.billTypeAtomic";
 
-        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
         if (rs == null || rs.isEmpty()) {
         } else {
@@ -1118,7 +1118,7 @@ public class ReportTemplateController implements Serializable {
 
         jpql += " group by bill.billTypeAtomic";
 
-        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
         if (rs == null || rs.isEmpty()) {
         } else {
@@ -1281,7 +1281,7 @@ public class ReportTemplateController implements Serializable {
 
         jpql += " group by bill.billTypeAtomic";
 
-        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
         if (rs == null || rs.isEmpty()) {
         } else {
@@ -1790,7 +1790,7 @@ public class ReportTemplateController implements Serializable {
 
         jpql += " group by bi.item.category ";
 
-        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
         if (rs == null || rs.isEmpty()) {
         } else {
@@ -1950,7 +1950,7 @@ public class ReportTemplateController implements Serializable {
 
         jpql += " group by bi.item.category ";
 
-        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
         if (rs == null || rs.isEmpty()) {
         } else {
@@ -2114,7 +2114,7 @@ public class ReportTemplateController implements Serializable {
 
         System.out.println("jpql = " + jpql);
 
-        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
         if (rs == null || rs.isEmpty()) {
         } else {
@@ -2275,7 +2275,7 @@ public class ReportTemplateController implements Serializable {
 
         jpql += " group by bi.item ";
 
-        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
         if (rs == null || rs.isEmpty()) {
         } else {
@@ -2388,7 +2388,7 @@ public class ReportTemplateController implements Serializable {
             parameters.put("wu", paramUser);
         }
 
-        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.DATE);
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
         if (rs == null || rs.isEmpty()) {
             return null;
