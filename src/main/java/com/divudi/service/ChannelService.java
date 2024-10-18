@@ -29,6 +29,7 @@ import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Item;
 import com.divudi.entity.ItemFee;
 import com.divudi.entity.Patient;
+import com.divudi.entity.Payment;
 import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.ServiceSession;
@@ -39,9 +40,13 @@ import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.BillSessionFacade;
 import com.divudi.facade.ItemFeeFacade;
+import com.divudi.facade.PatientFacade;
+import com.divudi.facade.PaymentFacade;
+import com.divudi.facade.PersonFacade;
 import com.divudi.java.CommonFunctions;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -70,7 +75,69 @@ public class ChannelService {
     @EJB
     private BillFeeFacade billFeeFacade;
     @EJB
+    private PaymentFacade paymentFacade;
+
+    public ServiceSessionBean getServiceSessionBean() {
+        return serviceSessionBean;
+    }
+
+    public void setServiceSessionBean(ServiceSessionBean serviceSessionBean) {
+        this.serviceSessionBean = serviceSessionBean;
+    }
+
+    public ItemFeeFacade getItemFeeFacade() {
+        return itemFeeFacade;
+    }
+
+    public void setItemFeeFacade(ItemFeeFacade itemFeeFacade) {
+        this.itemFeeFacade = itemFeeFacade;
+    }
+
+    public BillFeeFacade getBillFeeFacade() {
+        return billFeeFacade;
+    }
+
+    public void setBillFeeFacade(BillFeeFacade billFeeFacade) {
+        this.billFeeFacade = billFeeFacade;
+    }
+
+    public BillNumberGenerator getBillNumberBean() {
+        return billNumberBean;
+    }
+
+    public void setBillNumberBean(BillNumberGenerator billNumberBean) {
+        this.billNumberBean = billNumberBean;
+    }
+
+    public PatientFacade getPatientFacade() {
+        return patientFacade;
+    }
+
+    public void setPatientFacade(PatientFacade patientFacade) {
+        this.patientFacade = patientFacade;
+    }
+
+    public PersonFacade getPersonFacade() {
+        return personFacade;
+    }
+
+    public void setPersonFacade(PersonFacade personFacade) {
+        this.personFacade = personFacade;
+    }
+
+    public BillBeanController getBillBeanController() {
+        return billBeanController;
+    }
+
+    public void setBillBeanController(BillBeanController billBeanController) {
+        this.billBeanController = billBeanController;
+    }
+    @EJB
     private BillNumberGenerator billNumberBean;
+    @EJB
+    private PatientFacade patientFacade;
+    @EJB
+    private PersonFacade personFacade;
 
     @Inject
     BillBeanController billBeanController;
@@ -99,7 +166,30 @@ public class ChannelService {
         this.billSessionFacade = billSessionFacade;
     }
 
+    public void saveSelected(Patient p) {
+        if (p == null) {
+            return;
+        }
+        if (p.getPerson() == null) {
+            return;
+        }
+        if (p.getPerson().getId() == null) {
+            p.getPerson().setCreatedAt(new Date());
+            personFacade.create(p.getPerson());
+        } else {
+            personFacade.edit(p.getPerson());
+        }
+        if (p.getId() == null) {
+            p.setCreatedAt(new Date());
+            //     p.setCreatedInstitution(sessionController.getInstitution());
+            patientFacade.create(p);
+        } else {
+            patientFacade.edit(p);
+        }
+    }
+
     public Bill saveBilledBill(boolean forReservedNumbers, Patient patient, SessionInstance session, String refNo, WebUser user) {
+        saveSelected(patient);
         Bill savingBill = createBill(patient, session);
         BillItem savingBillItemForSession = createSessionItem(savingBill, refNo, session);
 
@@ -322,10 +412,21 @@ public class ChannelService {
         return bill;
     }
 
+    public List<BillItem> findBillFromRefNo(String refNo) {
+        Map params = new HashMap();
+        String jpql = "Select bi from BillItem bi"
+                + " where bi.AgentRefNo = :ref"
+                + " And bi.retired = false";
+
+        params.put("ref", refNo);
+        return billItemFacade.findByJpql(jpql, params);
+
+    }
+
     private BillItem createSessionItem(Bill bill, String refNo, SessionInstance session) {
         BillItem bi = new BillItem();
         bi.setAdjustedValue(0.0);
-        bi.setAgentRefNo(refNo);
+        bi.setAgentRefNo(refNo);      
         bi.setBill(bill);
         bi.setBillTime(new Date());
         bi.setCreatedAt(new Date());
@@ -399,6 +500,112 @@ public class ChannelService {
                 + " order by f.id";
         m.put("i", i);
         return itemFeeFacade.findByJpql(sql, m);
+    }
+
+    public void settleCredit(BillSession bs) {
+        Bill b = savePaidBill(bs);
+        BillItem bi = savePaidBillItem(b, bs);
+        savePaidBillFee(b, bi, bs);
+        BillSession newBillSession = savePaidBillSession(b, bi, bs);
+
+        bs.setPaidBillSession(newBillSession);
+        getBillSessionFacade().edit(newBillSession);
+        getBillSessionFacade().edit(bs);
+
+        bs.getBill().setPaidAmount(b.getPaidAmount());
+        bs.getBill().setBalance(0.0);
+        bs.getBill().setPaidBill(b);
+
+        getBillFacade().edit(bs.getBill());
+
+        b.setSingleBillItem(bi);
+        b.setSingleBillSession(bs);
+        getBillFacade().editAndCommit(b);
+
+        List<Payment> p = createPayment(b, PaymentMethod.OnlineSettlement);
+        // drawerController.updateDrawerForIns(p);
+    }
+
+    public List<Payment> createPayment(Bill bill, PaymentMethod pm) {
+        List<Payment> ps = new ArrayList<>();
+        Payment p = new Payment();
+        p.setBill(bill);
+        // p.setInstitution(getSessionController().getInstitution());
+        // p.setDepartment(getSessionController().getDepartment());
+        p.setCreatedAt(new Date());
+        // p.setCreater(getSessionController().getLoggedUser());
+        p.setPaymentMethod(pm);
+        p.setPaidValue(p.getBill().getNetTotal());
+        paymentFacade.create(p);
+
+        ps.add(p);
+
+        return ps;
+
+    }
+
+    private BillItem savePaidBillItem(Bill b, BillSession bs) {
+        BillItem bi = new BillItem();
+        bi.copy(bs.getBillItem());
+        bi.setCreatedAt(new Date());
+        // bi.setCreater(getSessionController().getLoggedUser());
+        bi.setBill(b);
+        getBillItemFacade().create(bi);
+
+        return bi;
+    }
+
+    private void savePaidBillFee(Bill b, BillItem bi, BillSession bs) {
+
+        for (BillFee f : bs.getBill().getBillFees()) {
+
+            BillFee bf = new BillFee();
+            bf.copy(f);
+            bf.setCreatedAt(Calendar.getInstance().getTime());
+            // bf.setCreater(getSessionController().getLoggedUser());
+            bf.setBill(b);
+            bf.setBillItem(bi);
+            getBillFeeFacade().create(bf);
+        }
+    }
+
+    private BillSession savePaidBillSession(Bill bill, BillItem billItem, BillSession bs) {
+        BillSession newbs = new BillSession();
+        bs.copy(bs);
+        bs.setBill(bill);
+        bs.setBillItem(billItem);
+        bs.setCreatedAt(new Date());
+        //  bs.setCreater(getSessionController().getLoggedUser());
+
+        getBillSessionFacade().create(bs);
+        return bs;
+
+    }
+
+    private Bill savePaidBill(BillSession bs) {
+        Bill temp = new BilledBill();
+        temp.copy(bs.getBill());
+        temp.copyValue(bs.getBill());
+        temp.setPaidAmount(bs.getBill().getNetTotal());
+        temp.setBalance(0.0);
+        temp.setPaymentMethod(PaymentMethod.OnlineSettlement);
+        temp.setReferenceBill(bs.getBill());
+        temp.setBillType(BillType.ChannelPaid);
+        temp.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
+        String deptId = generateBillNumberDeptId(temp);
+        temp.setInsId(deptId);
+        temp.setDeptId(deptId);
+        temp.setBookingId(deptId);
+        temp.setDepartment(bs.getDepartment());
+        temp.setInstitution(bs.getInstitution());
+        temp.setBillDate(new Date());
+        temp.setBillTime(new Date());
+        temp.setCreatedAt(new Date());
+        // temp.setCreater(getSessionController().getLoggedUser());
+
+        getBillFacade().create(temp);
+
+        return temp;
     }
 
     private List<BillFee> createBillFeeForSessions(Bill bill, BillItem billItem, boolean thisIsAnAdditionalFee, PriceMatrix priceMatrix) {
