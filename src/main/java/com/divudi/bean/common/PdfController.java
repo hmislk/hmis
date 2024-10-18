@@ -1,6 +1,7 @@
 package com.divudi.bean.common;
 
 import ca.uhn.fhir.model.api.IElement;
+import com.divudi.bean.hr.StaffImageController;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.InvestigationItemValueType;
 import com.divudi.data.ReportTemplateRow;
@@ -30,6 +31,8 @@ import java.util.regex.Pattern;
 
 import com.itextpdf.html2pdf.HtmlConverter;
 import com.itextpdf.io.font.constants.StandardFonts;
+import com.itextpdf.io.image.ImageData;
+import com.itextpdf.io.image.ImageDataFactory;
 import com.itextpdf.kernel.colors.Color;
 import com.itextpdf.kernel.colors.ColorConstants;
 import com.itextpdf.kernel.colors.DeviceRgb;
@@ -41,10 +44,14 @@ import com.itextpdf.layout.Canvas;
 import com.itextpdf.kernel.geom.PageSize;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Cell;
+import com.itextpdf.layout.element.Image;
 import com.itextpdf.layout.element.LineSeparator;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.properties.TextAlignment;
+import com.itextpdf.text.pdf.qrcode.BitMatrix;
+import java.util.function.Supplier;
+import javax.inject.Inject;
 
 /**
  *
@@ -54,6 +61,9 @@ import com.itextpdf.layout.properties.TextAlignment;
 @Named
 @RequestScoped
 public class PdfController {
+
+    @Inject
+    StaffImageController staffImageController;
 
     /**
      * Creates a new instance of PdfController
@@ -220,6 +230,250 @@ public class PdfController {
             }
         } else {
             System.out.println("Report items are null.");
+        }
+
+        // Example positions and styles (you may need to adjust these based on your layout)
+        float leftMargin = 50;
+        float topMargin = pageHeight - 50;
+        float lineSpacing = 15;
+        PdfFont font = PdfFontFactory.createFont(StandardFonts.HELVETICA);
+        float fontSize = 12;
+
+        // Patient Name
+        if (report.getPatientInvestigation().getPatient().getPerson().getNameWithTitle() != null) {
+            String patientName = report.getPatientInvestigation().getPatient().getPerson().getNameWithTitle();
+            Paragraph p = new Paragraph("Patient Name: " + patientName)
+                    .setFont(font)
+                    .setFontSize(fontSize)
+                    .setFixedPosition(leftMargin, topMargin, pageWidth - leftMargin * 2);
+            document.add(p);
+            topMargin -= lineSpacing;
+        }
+
+        // PHN
+        if (report.getPatientInvestigation().getPatient().getPhn() != null) {
+            String phn = report.getPatientInvestigation().getPatient().getPhn();
+            Paragraph p = new Paragraph("PHN: " + phn)
+                    .setFont(font)
+                    .setFontSize(fontSize)
+                    .setFixedPosition(leftMargin, topMargin, pageWidth - leftMargin * 2);
+            document.add(p);
+            topMargin -= lineSpacing;
+        }
+
+        // Phone
+        if (report.getPatientInvestigation().getPatient().getPerson().getPhone() != null) {
+            String phone = report.getPatientInvestigation().getPatient().getPerson().getPhone();
+            Paragraph p = new Paragraph("Phone: " + phone)
+                    .setFont(font)
+                    .setFontSize(fontSize)
+                    .setFixedPosition(leftMargin, topMargin, pageWidth - leftMargin * 2);
+            document.add(p);
+            topMargin -= lineSpacing;
+        }
+
+        // Age
+        if (report.getPatientInvestigation().getPatient().getPerson().getAgeAsShortString() != null) {
+            String age = report.getPatientInvestigation().getPatient().getPerson().getAgeAsShortString();
+            Paragraph p = new Paragraph("Age: " + age)
+                    .setFont(font)
+                    .setFontSize(fontSize)
+                    .setFixedPosition(leftMargin, topMargin, pageWidth - leftMargin * 2);
+            document.add(p);
+            topMargin -= lineSpacing;
+        }
+
+        // Sex
+        if (report.getPatientInvestigation().getPatient().getPerson().getSex() != null) {
+            String sex = report.getPatientInvestigation().getPatient().getPerson().getSex().toString();
+            Paragraph p = new Paragraph("Sex: " + sex)
+                    .setFont(font)
+                    .setFontSize(fontSize)
+                    .setFixedPosition(leftMargin, topMargin, pageWidth - leftMargin * 2);
+            document.add(p);
+            topMargin -= lineSpacing;
+        }
+
+        // Investigation Name
+        if (report.getPatientInvestigation().getInvestigation().getName() != null) {
+            String investigationName = report.getPatientInvestigation().getInvestigation().getName();
+            Paragraph p = new Paragraph("Investigation: " + investigationName)
+                    .setFont(font)
+                    .setFontSize(fontSize)
+                    .setFixedPosition(leftMargin, topMargin, pageWidth - leftMargin * 2);
+            document.add(p);
+            topMargin -= lineSpacing;
+        }
+
+        // Specimen
+        if (report.getPatientInvestigation().getInvestigation().getSample() != null
+                && report.getPatientInvestigation().getInvestigation().getSample().getName() != null) {
+            String specimen = report.getPatientInvestigation().getInvestigation().getSample().getName();
+            Paragraph p = new Paragraph("Specimen: " + specimen)
+                    .setFont(font)
+                    .setFontSize(fontSize)
+                    .setFixedPosition(leftMargin, topMargin, pageWidth - leftMargin * 2);
+            document.add(p);
+            topMargin -= lineSpacing;
+        }
+
+        // Sampled Time
+        if (report.getPatientInvestigation().getSampledAt() != null) {
+            String sampledTime = new java.text.SimpleDateFormat("hh:mm a").format(report.getPatientInvestigation().getSampledAt());
+            Paragraph p = new Paragraph("Sampled Time: " + sampledTime)
+                    .setFont(font)
+                    .setFontSize(fontSize)
+                    .setFixedPosition(leftMargin, topMargin, pageWidth - leftMargin * 2);
+            document.add(p);
+            topMargin -= lineSpacing;
+        }
+
+        // Billed Date
+        if (report.getPatientInvestigation().getBillItem().getBill().getCreatedAt() != null) {
+            String billedDate = new java.text.SimpleDateFormat("dd/MM/yyyy").format(report.getPatientInvestigation().getBillItem().getBill().getCreatedAt());
+            Paragraph p = new Paragraph("Billed Date: " + billedDate)
+                    .setFont(font)
+                    .setFontSize(fontSize)
+                    .setFixedPosition(leftMargin, topMargin, pageWidth - leftMargin * 2);
+            document.add(p);
+            topMargin -= lineSpacing;
+        }
+
+        // Billed Time
+        if (report.getPatientInvestigation().getBillItem().getBill().getCreatedAt() != null) {
+            String billedTime = new java.text.SimpleDateFormat("hh:mm a").format(report.getPatientInvestigation().getBillItem().getBill().getCreatedAt());
+            Paragraph p = new Paragraph("Billed Time: " + billedTime)
+                    .setFont(font)
+                    .setFontSize(fontSize)
+                    .setFixedPosition(leftMargin, topMargin, pageWidth - leftMargin * 2);
+            document.add(p);
+            topMargin -= lineSpacing;
+        }
+
+        // Bill Number
+        if (report.getPatientInvestigation().getBillItem().getBill().getDeptId() != null) {
+            String billNo = report.getPatientInvestigation().getBillItem().getBill().getDeptId();
+            Paragraph p = new Paragraph("Bill No: " + billNo)
+                    .setFont(font)
+                    .setFontSize(fontSize)
+                    .setFixedPosition(leftMargin, topMargin, pageWidth - leftMargin * 2);
+            document.add(p);
+            topMargin -= lineSpacing;
+        }
+
+        // Reported Date
+        if (report.getCreatedAt() != null) {
+            String reportedDate = new java.text.SimpleDateFormat("dd/MM/yyyy").format(report.getCreatedAt());
+            Paragraph p = new Paragraph("Reported Date: " + reportedDate)
+                    .setFont(font)
+                    .setFontSize(fontSize)
+                    .setFixedPosition(leftMargin, topMargin, pageWidth - leftMargin * 2);
+            document.add(p);
+            topMargin -= lineSpacing;
+        }
+
+        // Reported Time
+        if (report.getCreatedAt() != null) {
+            String reportedTime = new java.text.SimpleDateFormat("hh:mm a").format(report.getCreatedAt());
+            Paragraph p = new Paragraph("Reported Time: " + reportedTime)
+                    .setFont(font)
+                    .setFontSize(fontSize)
+                    .setFixedPosition(leftMargin, topMargin, pageWidth - leftMargin * 2);
+            document.add(p);
+            topMargin -= lineSpacing;
+        }
+
+        // Referring Doctor
+        if (report.getPatientInvestigation().getBillItem().getBill().getReferredBy() != null
+                && report.getPatientInvestigation().getBillItem().getBill().getReferredBy().getPerson().getNameWithTitle() != null) {
+            String referringDoctor = report.getPatientInvestigation().getBillItem().getBill().getReferredBy().getPerson().getNameWithTitle();
+            Paragraph p = new Paragraph("Referring Doctor: " + referringDoctor)
+                    .setFont(font)
+                    .setFontSize(fontSize)
+                    .setFixedPosition(leftMargin, topMargin, pageWidth - leftMargin * 2);
+            document.add(p);
+            topMargin -= lineSpacing;
+        }
+
+        // Authorized User Details
+        if (report.getApproveUser() != null && report.getApproveUser().getStaff() != null) {
+            // Authorized Code
+            if (report.getApproveUser().getStaff().getCode() != null) {
+                String authorizedCode = report.getApproveUser().getStaff().getCode();
+                Paragraph p = new Paragraph("Authorized Code: " + authorizedCode)
+                        .setFont(font)
+                        .setFontSize(fontSize)
+                        .setFixedPosition(leftMargin, topMargin, pageWidth - leftMargin * 2);
+                document.add(p);
+                topMargin -= lineSpacing;
+            }
+
+            // Authorized Position
+            if (report.getApproveUser().getStaff().getSpeciality() != null
+                    && report.getApproveUser().getStaff().getSpeciality().getName() != null) {
+                String authorizedPosition = report.getApproveUser().getStaff().getSpeciality().getName();
+                Paragraph p = new Paragraph("Authorized Position: " + authorizedPosition)
+                        .setFont(font)
+                        .setFontSize(fontSize)
+                        .setFixedPosition(leftMargin, topMargin, pageWidth - leftMargin * 2);
+                document.add(p);
+                topMargin -= lineSpacing;
+            }
+
+            // Authorized Qualification
+            if (report.getApproveUser().getStaff().getQualification() != null) {
+                String authorizedQualification = report.getApproveUser().getStaff().getQualification();
+                Paragraph p = new Paragraph("Authorized Qualification: " + authorizedQualification)
+                        .setFont(font)
+                        .setFontSize(fontSize)
+                        .setFixedPosition(leftMargin, topMargin, pageWidth - leftMargin * 2);
+                document.add(p);
+                topMargin -= lineSpacing;
+            }
+        }
+
+        // Collecting Center
+        if (report.getPatientInvestigation().getBillItem().getBill().getCollectingCentre() != null
+                && report.getPatientInvestigation().getBillItem().getBill().getCollectingCentre().getChequePrintingName() != null) {
+            String collectingCenter = report.getPatientInvestigation().getBillItem().getBill().getCollectingCentre().getChequePrintingName();
+            Paragraph p = new Paragraph("Collecting Center: " + collectingCenter)
+                    .setFont(font)
+                    .setFontSize(fontSize)
+                    .setFixedPosition(leftMargin, topMargin, pageWidth - leftMargin * 2);
+            document.add(p);
+            topMargin -= lineSpacing;
+        }
+
+        if (report.getApproveUser() != null && report.getApproveUser().getStaff() != null) {
+            StreamedContent signatureContent = staffImageController.getSignatureForPatientReport(report);
+            if (signatureContent != null && signatureContent.getStream() != null) {
+                Supplier<InputStream> signatureStreamSupplier = signatureContent.getStream();
+                if (signatureStreamSupplier != null) {
+                    try (InputStream signatureStream = signatureStreamSupplier.get()) {
+                        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+                        int nRead;
+                        byte[] data = new byte[16384];
+                        while ((nRead = signatureStream.read(data, 0, data.length)) != -1) {
+                            buffer.write(data, 0, nRead);
+                        }
+                        buffer.flush();
+                        byte[] signatureBytes = buffer.toByteArray();
+
+                        ImageData imageData = ImageDataFactory.create(signatureBytes);
+                        Image signatureImage = new Image(imageData);
+                        signatureImage.setFixedPosition(leftMargin, topMargin - 100); // Adjust position as needed
+                        signatureImage.scaleToFit(100, 50); // Adjust size as needed
+                        document.add(signatureImage);
+                        topMargin -= 100; // Update the top margin if needed
+                    } catch (IOException e) {
+                        System.out.println("Error reading signature image: " + e.getMessage());
+                    }
+                } else {
+                    System.out.println("Signature stream supplier is null.");
+                }
+            } else {
+                System.out.println("Signature content is null or has no stream.");
+            }
         }
 
         document.close();
