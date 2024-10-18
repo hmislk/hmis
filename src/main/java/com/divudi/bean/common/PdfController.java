@@ -1,6 +1,7 @@
 package com.divudi.bean.common;
 
 import ca.uhn.fhir.model.api.IElement;
+import com.divudi.bean.hr.StaffImageController;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.InvestigationItemValueType;
 import com.divudi.data.ReportTemplateRow;
@@ -8,10 +9,7 @@ import com.divudi.data.ReportTemplateRowBundle;
 import com.divudi.entity.lab.InvestigationItem;
 import com.divudi.entity.lab.PatientReport;
 import com.divudi.entity.lab.PatientReportItemValue;
-import com.itextpdf.html2pdf.ConverterProperties;
-import com.itextpdf.io.font.constants.StandardFonts;
-import com.itextpdf.kernel.pdf.PdfDocument;
-import com.itextpdf.kernel.pdf.PdfWriter;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -20,35 +18,40 @@ import javax.inject.Named;
 import javax.enterprise.context.RequestScoped;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
-import com.itextpdf.layout.element.Table;
-import com.itextpdf.layout.element.Cell;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.Objects;
 import com.itextpdf.kernel.pdf.canvas.draw.SolidLine;
 import java.util.Optional;
-import com.itextpdf.layout.Document;
-import com.itextpdf.layout.element.Paragraph;
-import com.itextpdf.layout.element.LineSeparator;
-import com.itextpdf.kernel.colors.ColorConstants;
-import com.itextpdf.kernel.colors.DeviceRgb;
-import com.itextpdf.kernel.font.PdfFont;
-import com.itextpdf.kernel.font.PdfFontFactory;
-import com.itextpdf.kernel.geom.PageSize;
-import com.itextpdf.kernel.pdf.PdfPage;
-import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
-import com.itextpdf.html2pdf.HtmlConverter;
-import com.itextpdf.html2pdf.resolver.font.DefaultFontProvider;
-import com.itextpdf.kernel.geom.Rectangle;
-import com.itextpdf.layout.Canvas;
-import com.itextpdf.text.*;
-import com.itextpdf.text.pdf.*;
-import com.itextpdf.layout.properties.TextAlignment;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.itextpdf.html2pdf.HtmlConverter;
+import com.itextpdf.io.font.constants.StandardFonts;
+import com.itextpdf.io.image.ImageData;
+import com.itextpdf.io.image.ImageDataFactory;
+import com.itextpdf.kernel.colors.Color;
+import com.itextpdf.kernel.colors.ColorConstants;
+import com.itextpdf.kernel.colors.DeviceRgb;
+import com.itextpdf.kernel.font.PdfFont;
+import com.itextpdf.kernel.font.PdfFontFactory;
+import com.itextpdf.kernel.geom.Rectangle;
+import com.itextpdf.kernel.pdf.*;
+import com.itextpdf.layout.Canvas;
+import com.itextpdf.kernel.geom.PageSize;
+import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.Cell;
+import com.itextpdf.layout.element.Image;
+import com.itextpdf.layout.element.LineSeparator;
+import com.itextpdf.layout.element.Paragraph;
+import com.itextpdf.layout.element.Table;
+import com.itextpdf.layout.properties.TextAlignment;
+import com.itextpdf.text.pdf.qrcode.BitMatrix;
+import java.util.function.Supplier;
+import javax.inject.Inject;
 
 /**
  *
@@ -59,13 +62,16 @@ import java.util.regex.Pattern;
 @RequestScoped
 public class PdfController {
 
+    @Inject
+    StaffImageController staffImageController;
+
     /**
      * Creates a new instance of PdfController
      */
     public PdfController() {
     }
 
-    public StreamedContent createPdfForPatientReport(PatientReport report) throws IOException, DocumentException {
+    public StreamedContent createPdfForPatientReport(PatientReport report) throws IOException {
         System.out.println("createPdfForPatientReport");
         System.out.println("Report: " + report);
         if (report == null) {
@@ -74,85 +80,403 @@ public class PdfController {
         }
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-//        Document document = new Document(PageSize.A4);
-//        PdfWriter writer = PdfWriter.getInstance(document, outputStream);
-//        document.open();
-//
-//        PdfContentByte canvas = writer.getDirectContent();
-//
-//        float pageWidth = document.getPageSize().getWidth();
-//        float pageHeight = document.getPageSize().getHeight();
-//
-//        // Process patient report item values
-//        System.out.println("Processing patient report item values...");
-//        if (report.getPatientReportItemValues() != null) {
-//            for (PatientReportItemValue prv : report.getPatientReportItemValues()) {
-//                System.out.println("Processing PatientReportItemValue: " + prv);
-//                InvestigationItem item = prv.getInvestigationItem();
-//                if (item.isRetired()) {
-//                    System.out.println("Item is retired, skipping.");
-//                    continue;
-//                }
-//
-//                String cssStyle = item.getCssStyle();
-//                System.out.println("CSS Style: " + cssStyle);
-//                Map<String, String> styleMap = parseCssStyle(cssStyle);
-//                System.out.println("Parsed Style Map: " + styleMap);
-//
-//                float left = parseFloat(styleMap.get("left"), 0, pageWidth);
-//                float top = parseFloat(styleMap.get("top"), 0, pageHeight);
-//                float fontSize = parseFloat(styleMap.get("font-size"), 12, 0);
-//                String color = styleMap.get("color");
-//
-//                System.out.println("Position - Left: " + left + ", Top: " + top + ", Font Size: " + fontSize + ", Color: " + color);
-//
-//                String value = getValueBasedOnItemType(prv);
-//                System.out.println("Value to display: " + value);
-//
-//                if (value != null && !value.isEmpty()) {
-//                    // Convert CSS top position to PDF coordinate (from bottom)
-//                    float yPosition = pageHeight - top;
-//
-//                    if (containsHtml(value)) {
-//                        // Create a PdfTemplate to hold the HTML content
-//                        PdfTemplate template = canvas.createTemplate(pageWidth, pageHeight);
-//
-//                        // Create a new Document for the template
-//                        Rectangle rect = new Rectangle(0, 0, pageWidth, pageHeight);
-//                        Document tmpDoc = new Document(rect);
-//                        PdfWriter tmpWriter = PdfWriter.getInstance(tmpDoc, new ByteArrayOutputStream());
-//                        tmpWriter.setDirectContent(template);
-//                        tmpDoc.open();
-//
-//                        // Parse the HTML content
-//                        XMLWorkerHelper.getInstance().parseXHtml(tmpWriter, tmpDoc, new StringReader(value));
-//
-//                        tmpDoc.close();
-//
-//                        // Add the template to the main document at the desired position
-//                        canvas.addTemplate(template, left, yPosition - template.getHeight());
-//
-//                    } else {
-//                        // For plain text, create a ColumnText to position the text
-//                        Font font = FontFactory.getFont(FontFactory.HELVETICA, fontSize);
-//                        if (color != null) {
-//                            BaseColor baseColor = parseBaseColor(color);
-//                            font.setColor(baseColor);
-//                        }
-//
-//                        ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase(value, font), left, yPosition, 0);
-//                    }
-//                } else {
-//                    System.out.println("Value is null or empty, skipping.");
-//                }
-//            }
-//        } else {
-//            System.out.println("Patient report item values are null.");
-//        }
+        PdfWriter writer = new PdfWriter(outputStream);
+        PdfDocument pdfDoc = new PdfDocument(writer);
+        Document document = new Document(pdfDoc, PageSize.A4);
+
+        float pageWidth = pdfDoc.getDefaultPageSize().getWidth();
+        float pageHeight = pdfDoc.getDefaultPageSize().getHeight();
+
+        // Process patient report item values
+        System.out.println("Processing patient report item values...");
+        if (report.getPatientReportItemValues() != null) {
+            for (PatientReportItemValue prv : report.getPatientReportItemValues()) {
+                System.out.println("Processing PatientReportItemValue: " + prv);
+                InvestigationItem item = prv.getInvestigationItem();
+                if (item.isRetired()) {
+                    System.out.println("Item is retired, skipping.");
+                    continue;
+                }
+
+                String cssStyle = item.getCssStyle();
+                System.out.println("CSS Style: " + cssStyle);
+                Map<String, String> styleMap = parseCssStyle(cssStyle);
+                System.out.println("Parsed Style Map: " + styleMap);
+
+                float left = parseFloat(styleMap.get("left"), 0, pageWidth);
+                float top = parseFloat(styleMap.get("top"), 0, pageHeight);
+                float fontSize = parseFloat(styleMap.get("font-size"), 12, 0);
+                String color = styleMap.get("color");
+
+                System.out.println("Position - Left: " + left + ", Top: " + top + ", Font Size: " + fontSize + ", Color: " + color);
+
+                String value = getValueBasedOnItemType(prv);
+                System.out.println("Value to display: " + value);
+
+                if (value != null && !value.isEmpty()) {
+                    // Convert CSS top position to PDF coordinate (from bottom)
+                    float yPosition = pageHeight - top;
+
+                    if (containsHtml(value)) {
+                        // Handling of HTML content at specific positions requires additional code
+                        System.out.println("HTML content detected, adding to document.");
+
+                        // For simplicity, render HTML content directly
+                        // Note: Positioning HTML content at specific coordinates is complex
+                        ByteArrayInputStream htmlStream = new ByteArrayInputStream(value.getBytes());
+                        HtmlConverter.convertToPdf(htmlStream, pdfDoc);
+
+                    } else {
+                        // For plain text, use Paragraph and set fixed position
+                        PdfFont font = PdfFontFactory.createFont(StandardFonts.HELVETICA);
+                        Color colorRgb = parseColor(color);
+
+                        Paragraph paragraph = new Paragraph(value)
+                                .setFont(font)
+                                .setFontSize(fontSize)
+                                .setFontColor(colorRgb)
+                                .setFixedPosition(left, yPosition, pageWidth - left);
+
+                        document.add(paragraph);
+                    }
+                } else {
+                    System.out.println("Value is null or empty, skipping.");
+                }
+            }
+        } else {
+            System.out.println("Patient report item values are null.");
+        }
 
         // Process report items (Labels)
-        // Similar code for labels...
-//        document.close();
+        System.out.println("Processing report items (Labels)...");
+        if (report.getItem() != null && report.getItem().getReportItems() != null) {
+            for (InvestigationItem ii : report.getItem().getReportItems()) {
+                System.out.println("Processing InvestigationItem: " + ii);
+                if (ii.isRetired()) {
+                    System.out.println("Item is retired, skipping.");
+                    continue;
+                }
+                if (ii.getIxItemType() != InvestigationItemType.Label) {
+                    System.out.println("Item is not a Label, skipping.");
+                    continue;
+                }
+                String cssStyle = ii.getCssStyle();
+                System.out.println("CSS Style: " + cssStyle);
+                Map<String, String> styleMap = parseCssStyle(cssStyle);
+                System.out.println("Parsed Style Map: " + styleMap);
+
+                float left = parseFloat(styleMap.get("left"), 0, pageWidth);
+                float top = parseFloat(styleMap.get("top"), 0, pageHeight);
+                float fontSize = parseFloat(styleMap.get("font-size"), 12, 0);
+                String color = styleMap.get("color");
+                String cssColor = ii.getCssColor();
+                if (color == null) {
+                    color = cssColor;
+                }
+
+                System.out.println("Position - Left: " + left + ", Top: " + top + ", Font Size: " + fontSize + ", Color: " + color);
+
+                String value = ii.getHtmltext(); // Assuming getHtmltext() method
+                System.out.println("Value to display: " + value);
+
+                if (value != null && !value.isEmpty()) {
+                    // Convert CSS top position to PDF coordinate (from bottom)
+                    float yPosition = pageHeight - top;
+
+                    if (containsHtml(value)) {
+                        // Handling of HTML content at specific positions
+                        System.out.println("HTML content detected, adding to document at specific position.");
+
+                        // Convert HTML content to elements
+                        // Create a Div with absolute positioning
+                        PdfFont font = PdfFontFactory.createFont(StandardFonts.HELVETICA);
+                        Color colorRgb = parseColor(color);
+
+                        // Create a Paragraph with the HTML content
+                        Paragraph paragraph = new Paragraph();
+                        paragraph.setFont(font)
+                                .setFontSize(fontSize)
+                                .setFontColor(colorRgb)
+                                .setFixedPosition(left, yPosition, pageWidth - left);
+
+                        // Add the HTML content to the Paragraph
+                        // Note: iText doesn't parse HTML in Paragraphs directly
+                        // We need to parse the HTML content and add elements
+                        java.util.List<com.itextpdf.layout.element.IElement> elements
+                                = HtmlConverter.convertToElements(value);
+
+                        for (com.itextpdf.layout.element.IElement element : elements) {
+                            paragraph.add((com.itextpdf.layout.element.IBlockElement) element);
+                        }
+
+                        document.add(paragraph);
+
+                    } else {
+                        // For plain text, use Paragraph and set fixed position
+                        PdfFont font = PdfFontFactory.createFont(StandardFonts.HELVETICA);
+                        Color colorRgb = parseColor(color);
+
+                        Paragraph paragraph = new Paragraph(value)
+                                .setFont(font)
+                                .setFontSize(fontSize)
+                                .setFontColor(colorRgb)
+                                .setFixedPosition(left, yPosition, pageWidth - left);
+
+                        document.add(paragraph);
+                    }
+                } else {
+                    System.out.println("Value is null or empty, skipping.");
+                }
+            }
+        } else {
+            System.out.println("Report items are null.");
+        }
+
+        // Example positions and styles (you may need to adjust these based on your layout)
+        float leftMargin = 50;
+        float topMargin = pageHeight - 50;
+        float lineSpacing = 15;
+        PdfFont font = PdfFontFactory.createFont(StandardFonts.HELVETICA);
+        float fontSize = 12;
+
+        // Patient Name
+        if (report.getPatientInvestigation().getPatient().getPerson().getNameWithTitle() != null) {
+            String patientName = report.getPatientInvestigation().getPatient().getPerson().getNameWithTitle();
+            Paragraph p = new Paragraph("Patient Name: " + patientName)
+                    .setFont(font)
+                    .setFontSize(fontSize)
+                    .setFixedPosition(leftMargin, topMargin, pageWidth - leftMargin * 2);
+            document.add(p);
+            topMargin -= lineSpacing;
+        }
+
+        // PHN
+        if (report.getPatientInvestigation().getPatient().getPhn() != null) {
+            String phn = report.getPatientInvestigation().getPatient().getPhn();
+            Paragraph p = new Paragraph("PHN: " + phn)
+                    .setFont(font)
+                    .setFontSize(fontSize)
+                    .setFixedPosition(leftMargin, topMargin, pageWidth - leftMargin * 2);
+            document.add(p);
+            topMargin -= lineSpacing;
+        }
+
+        // Phone
+        if (report.getPatientInvestigation().getPatient().getPerson().getPhone() != null) {
+            String phone = report.getPatientInvestigation().getPatient().getPerson().getPhone();
+            Paragraph p = new Paragraph("Phone: " + phone)
+                    .setFont(font)
+                    .setFontSize(fontSize)
+                    .setFixedPosition(leftMargin, topMargin, pageWidth - leftMargin * 2);
+            document.add(p);
+            topMargin -= lineSpacing;
+        }
+
+        // Age
+        if (report.getPatientInvestigation().getPatient().getPerson().getAgeAsShortString() != null) {
+            String age = report.getPatientInvestigation().getPatient().getPerson().getAgeAsShortString();
+            Paragraph p = new Paragraph("Age: " + age)
+                    .setFont(font)
+                    .setFontSize(fontSize)
+                    .setFixedPosition(leftMargin, topMargin, pageWidth - leftMargin * 2);
+            document.add(p);
+            topMargin -= lineSpacing;
+        }
+
+        // Sex
+        if (report.getPatientInvestigation().getPatient().getPerson().getSex() != null) {
+            String sex = report.getPatientInvestigation().getPatient().getPerson().getSex().toString();
+            Paragraph p = new Paragraph("Sex: " + sex)
+                    .setFont(font)
+                    .setFontSize(fontSize)
+                    .setFixedPosition(leftMargin, topMargin, pageWidth - leftMargin * 2);
+            document.add(p);
+            topMargin -= lineSpacing;
+        }
+
+        // Investigation Name
+        if (report.getPatientInvestigation().getInvestigation().getName() != null) {
+            String investigationName = report.getPatientInvestigation().getInvestigation().getName();
+            Paragraph p = new Paragraph("Investigation: " + investigationName)
+                    .setFont(font)
+                    .setFontSize(fontSize)
+                    .setFixedPosition(leftMargin, topMargin, pageWidth - leftMargin * 2);
+            document.add(p);
+            topMargin -= lineSpacing;
+        }
+
+        // Specimen
+        if (report.getPatientInvestigation().getInvestigation().getSample() != null
+                && report.getPatientInvestigation().getInvestigation().getSample().getName() != null) {
+            String specimen = report.getPatientInvestigation().getInvestigation().getSample().getName();
+            Paragraph p = new Paragraph("Specimen: " + specimen)
+                    .setFont(font)
+                    .setFontSize(fontSize)
+                    .setFixedPosition(leftMargin, topMargin, pageWidth - leftMargin * 2);
+            document.add(p);
+            topMargin -= lineSpacing;
+        }
+
+        // Sampled Time
+        if (report.getPatientInvestigation().getSampledAt() != null) {
+            String sampledTime = new java.text.SimpleDateFormat("hh:mm a").format(report.getPatientInvestigation().getSampledAt());
+            Paragraph p = new Paragraph("Sampled Time: " + sampledTime)
+                    .setFont(font)
+                    .setFontSize(fontSize)
+                    .setFixedPosition(leftMargin, topMargin, pageWidth - leftMargin * 2);
+            document.add(p);
+            topMargin -= lineSpacing;
+        }
+
+        // Billed Date
+        if (report.getPatientInvestigation().getBillItem().getBill().getCreatedAt() != null) {
+            String billedDate = new java.text.SimpleDateFormat("dd/MM/yyyy").format(report.getPatientInvestigation().getBillItem().getBill().getCreatedAt());
+            Paragraph p = new Paragraph("Billed Date: " + billedDate)
+                    .setFont(font)
+                    .setFontSize(fontSize)
+                    .setFixedPosition(leftMargin, topMargin, pageWidth - leftMargin * 2);
+            document.add(p);
+            topMargin -= lineSpacing;
+        }
+
+        // Billed Time
+        if (report.getPatientInvestigation().getBillItem().getBill().getCreatedAt() != null) {
+            String billedTime = new java.text.SimpleDateFormat("hh:mm a").format(report.getPatientInvestigation().getBillItem().getBill().getCreatedAt());
+            Paragraph p = new Paragraph("Billed Time: " + billedTime)
+                    .setFont(font)
+                    .setFontSize(fontSize)
+                    .setFixedPosition(leftMargin, topMargin, pageWidth - leftMargin * 2);
+            document.add(p);
+            topMargin -= lineSpacing;
+        }
+
+        // Bill Number
+        if (report.getPatientInvestigation().getBillItem().getBill().getDeptId() != null) {
+            String billNo = report.getPatientInvestigation().getBillItem().getBill().getDeptId();
+            Paragraph p = new Paragraph("Bill No: " + billNo)
+                    .setFont(font)
+                    .setFontSize(fontSize)
+                    .setFixedPosition(leftMargin, topMargin, pageWidth - leftMargin * 2);
+            document.add(p);
+            topMargin -= lineSpacing;
+        }
+
+        // Reported Date
+        if (report.getCreatedAt() != null) {
+            String reportedDate = new java.text.SimpleDateFormat("dd/MM/yyyy").format(report.getCreatedAt());
+            Paragraph p = new Paragraph("Reported Date: " + reportedDate)
+                    .setFont(font)
+                    .setFontSize(fontSize)
+                    .setFixedPosition(leftMargin, topMargin, pageWidth - leftMargin * 2);
+            document.add(p);
+            topMargin -= lineSpacing;
+        }
+
+        // Reported Time
+        if (report.getCreatedAt() != null) {
+            String reportedTime = new java.text.SimpleDateFormat("hh:mm a").format(report.getCreatedAt());
+            Paragraph p = new Paragraph("Reported Time: " + reportedTime)
+                    .setFont(font)
+                    .setFontSize(fontSize)
+                    .setFixedPosition(leftMargin, topMargin, pageWidth - leftMargin * 2);
+            document.add(p);
+            topMargin -= lineSpacing;
+        }
+
+        // Referring Doctor
+        if (report.getPatientInvestigation().getBillItem().getBill().getReferredBy() != null
+                && report.getPatientInvestigation().getBillItem().getBill().getReferredBy().getPerson().getNameWithTitle() != null) {
+            String referringDoctor = report.getPatientInvestigation().getBillItem().getBill().getReferredBy().getPerson().getNameWithTitle();
+            Paragraph p = new Paragraph("Referring Doctor: " + referringDoctor)
+                    .setFont(font)
+                    .setFontSize(fontSize)
+                    .setFixedPosition(leftMargin, topMargin, pageWidth - leftMargin * 2);
+            document.add(p);
+            topMargin -= lineSpacing;
+        }
+
+        // Authorized User Details
+        if (report.getApproveUser() != null && report.getApproveUser().getStaff() != null) {
+            // Authorized Code
+            if (report.getApproveUser().getStaff().getCode() != null) {
+                String authorizedCode = report.getApproveUser().getStaff().getCode();
+                Paragraph p = new Paragraph("Authorized Code: " + authorizedCode)
+                        .setFont(font)
+                        .setFontSize(fontSize)
+                        .setFixedPosition(leftMargin, topMargin, pageWidth - leftMargin * 2);
+                document.add(p);
+                topMargin -= lineSpacing;
+            }
+
+            // Authorized Position
+            if (report.getApproveUser().getStaff().getSpeciality() != null
+                    && report.getApproveUser().getStaff().getSpeciality().getName() != null) {
+                String authorizedPosition = report.getApproveUser().getStaff().getSpeciality().getName();
+                Paragraph p = new Paragraph("Authorized Position: " + authorizedPosition)
+                        .setFont(font)
+                        .setFontSize(fontSize)
+                        .setFixedPosition(leftMargin, topMargin, pageWidth - leftMargin * 2);
+                document.add(p);
+                topMargin -= lineSpacing;
+            }
+
+            // Authorized Qualification
+            if (report.getApproveUser().getStaff().getQualification() != null) {
+                String authorizedQualification = report.getApproveUser().getStaff().getQualification();
+                Paragraph p = new Paragraph("Authorized Qualification: " + authorizedQualification)
+                        .setFont(font)
+                        .setFontSize(fontSize)
+                        .setFixedPosition(leftMargin, topMargin, pageWidth - leftMargin * 2);
+                document.add(p);
+                topMargin -= lineSpacing;
+            }
+        }
+
+        // Collecting Center
+        if (report.getPatientInvestigation().getBillItem().getBill().getCollectingCentre() != null
+                && report.getPatientInvestigation().getBillItem().getBill().getCollectingCentre().getChequePrintingName() != null) {
+            String collectingCenter = report.getPatientInvestigation().getBillItem().getBill().getCollectingCentre().getChequePrintingName();
+            Paragraph p = new Paragraph("Collecting Center: " + collectingCenter)
+                    .setFont(font)
+                    .setFontSize(fontSize)
+                    .setFixedPosition(leftMargin, topMargin, pageWidth - leftMargin * 2);
+            document.add(p);
+            topMargin -= lineSpacing;
+        }
+
+        if (report.getApproveUser() != null && report.getApproveUser().getStaff() != null) {
+            StreamedContent signatureContent = staffImageController.getSignatureForPatientReport(report);
+            if (signatureContent != null && signatureContent.getStream() != null) {
+                Supplier<InputStream> signatureStreamSupplier = signatureContent.getStream();
+                if (signatureStreamSupplier != null) {
+                    try (InputStream signatureStream = signatureStreamSupplier.get()) {
+                        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+                        int nRead;
+                        byte[] data = new byte[16384];
+                        while ((nRead = signatureStream.read(data, 0, data.length)) != -1) {
+                            buffer.write(data, 0, nRead);
+                        }
+                        buffer.flush();
+                        byte[] signatureBytes = buffer.toByteArray();
+
+                        ImageData imageData = ImageDataFactory.create(signatureBytes);
+                        Image signatureImage = new Image(imageData);
+                        signatureImage.setFixedPosition(leftMargin, topMargin - 100); // Adjust position as needed
+                        signatureImage.scaleToFit(100, 50); // Adjust size as needed
+                        document.add(signatureImage);
+                        topMargin -= 100; // Update the top margin if needed
+                    } catch (IOException e) {
+                        System.out.println("Error reading signature image: " + e.getMessage());
+                    }
+                } else {
+                    System.out.println("Signature stream supplier is null.");
+                }
+            } else {
+                System.out.println("Signature content is null or has no stream.");
+            }
+        }
+
+        document.close();
         System.out.println("Document closed.");
 
         InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
@@ -165,16 +489,17 @@ public class PdfController {
                 .build();
     }
 
-// Helper method to parse color strings into BaseColor
-    private BaseColor parseBaseColor(String colorStr) {
+    private Color parseColor(String colorStr) {
         if (colorStr == null || colorStr.isEmpty()) {
-            return BaseColor.BLACK;
+            return ColorConstants.BLACK;
         }
         colorStr = colorStr.trim();
         if (colorStr.startsWith("#")) {
             // Handle hex color codes
-            int color = Integer.parseInt(colorStr.substring(1), 16);
-            return new BaseColor(color);
+            int r = Integer.parseInt(colorStr.substring(1, 3), 16);
+            int g = Integer.parseInt(colorStr.substring(3, 5), 16);
+            int b = Integer.parseInt(colorStr.substring(5, 7), 16);
+            return new DeviceRgb(r, g, b);
         } else if (colorStr.startsWith("rgb")) {
             // Handle rgb(r, g, b) format
             Pattern pattern = Pattern.compile("rgb\\s*\\(\\s*(\\d+),\\s*(\\d+),\\s*(\\d+)\\s*\\)");
@@ -183,19 +508,17 @@ public class PdfController {
                 int r = Integer.parseInt(matcher.group(1));
                 int g = Integer.parseInt(matcher.group(2));
                 int b = Integer.parseInt(matcher.group(3));
-                return new BaseColor(r, g, b);
+                return new DeviceRgb(r, g, b);
             }
         }
         // Fallback or handle named colors
-        return BaseColor.BLACK;
+        return ColorConstants.BLACK;
     }
 
-// Helper method to check if the string contains HTML tags
     private boolean containsHtml(String value) {
         return value != null && value.matches(".*\\<[^>]+>.*");
     }
 
-// Helper method to parse CSS style string into a Map
     private Map<String, String> parseCssStyle(String cssStyle) {
         Map<String, String> styleMap = new HashMap<>();
         if (cssStyle != null) {
@@ -233,23 +556,6 @@ public class PdfController {
         }
     }
 
-    private DeviceRgb parseColor(String colorStr) {
-        if (colorStr == null || colorStr.isEmpty()) {
-            return (DeviceRgb) ColorConstants.BLACK;
-        }
-        colorStr = colorStr.trim();
-        if (colorStr.startsWith("#")) {
-            colorStr = colorStr.substring(1);
-            int r = Integer.parseInt(colorStr.substring(0, 2), 16);
-            int g = Integer.parseInt(colorStr.substring(2, 4), 16);
-            int b = Integer.parseInt(colorStr.substring(4, 6), 16);
-            return new DeviceRgb(r, g, b);
-        }
-        // Add more color parsing if needed (e.g., RGB function)
-        return (DeviceRgb) ColorConstants.BLACK;
-    }
-
-// Helper method to get value based on item type
     private String getValueBasedOnItemType(PatientReportItemValue prv) {
         InvestigationItem item = prv.getInvestigationItem();
         InvestigationItemType ixItemType = item.getIxItemType();
