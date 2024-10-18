@@ -109,10 +109,10 @@ public class PdfController {
 
                     if (containsHtml(value)) {
                         // Handling of HTML content at specific positions requires additional code
-                        // For now, we can render the HTML content to the document directly
                         System.out.println("HTML content detected, adding to document.");
 
-                        // Convert HTML to PDF elements
+                        // For simplicity, render HTML content directly
+                        // Note: Positioning HTML content at specific coordinates is complex
                         ByteArrayInputStream htmlStream = new ByteArrayInputStream(value.getBytes());
                         HtmlConverter.convertToPdf(htmlStream, pdfDoc);
 
@@ -135,6 +135,91 @@ public class PdfController {
             }
         } else {
             System.out.println("Patient report item values are null.");
+        }
+
+        // Process report items (Labels)
+        System.out.println("Processing report items (Labels)...");
+        if (report.getItem() != null && report.getItem().getReportItems() != null) {
+            for (InvestigationItem ii : report.getItem().getReportItems()) {
+                System.out.println("Processing InvestigationItem: " + ii);
+                if (ii.isRetired()) {
+                    System.out.println("Item is retired, skipping.");
+                    continue;
+                }
+                if (ii.getIxItemType() != InvestigationItemType.Label) {
+                    System.out.println("Item is not a Label, skipping.");
+                    continue;
+                }
+                String cssStyle = ii.getCssStyle();
+                System.out.println("CSS Style: " + cssStyle);
+                Map<String, String> styleMap = parseCssStyle(cssStyle);
+                System.out.println("Parsed Style Map: " + styleMap);
+
+                float left = parseFloat(styleMap.get("left"), 0, pageWidth);
+                float top = parseFloat(styleMap.get("top"), 0, pageHeight);
+                float fontSize = parseFloat(styleMap.get("font-size"), 12, 0);
+                String color = styleMap.get("color");
+                String cssColor = ii.getCssColor();
+                if (color == null) {
+                    color = cssColor;
+                }
+
+                System.out.println("Position - Left: " + left + ", Top: " + top + ", Font Size: " + fontSize + ", Color: " + color);
+
+                String value = ii.getHtmltext(); // Assuming getHtmltext() method
+                System.out.println("Value to display: " + value);
+
+                if (value != null && !value.isEmpty()) {
+                    // Convert CSS top position to PDF coordinate (from bottom)
+                    float yPosition = pageHeight - top;
+
+                    if (containsHtml(value)) {
+                        // Handling of HTML content at specific positions
+                        System.out.println("HTML content detected, adding to document at specific position.");
+
+                        // Convert HTML content to elements
+                        // Create a Div with absolute positioning
+                        PdfFont font = PdfFontFactory.createFont(StandardFonts.HELVETICA);
+                        Color colorRgb = parseColor(color);
+
+                        // Create a Paragraph with the HTML content
+                        Paragraph paragraph = new Paragraph();
+                        paragraph.setFont(font)
+                                .setFontSize(fontSize)
+                                .setFontColor(colorRgb)
+                                .setFixedPosition(left, yPosition, pageWidth - left);
+
+                        // Add the HTML content to the Paragraph
+                        // Note: iText doesn't parse HTML in Paragraphs directly
+                        // We need to parse the HTML content and add elements
+                        java.util.List<com.itextpdf.layout.element.IElement> elements
+                                = HtmlConverter.convertToElements(value);
+
+                        for (com.itextpdf.layout.element.IElement element : elements) {
+                            paragraph.add((com.itextpdf.layout.element.IBlockElement) element);
+                        }
+
+                        document.add(paragraph);
+
+                    } else {
+                        // For plain text, use Paragraph and set fixed position
+                        PdfFont font = PdfFontFactory.createFont(StandardFonts.HELVETICA);
+                        Color colorRgb = parseColor(color);
+
+                        Paragraph paragraph = new Paragraph(value)
+                                .setFont(font)
+                                .setFontSize(fontSize)
+                                .setFontColor(colorRgb)
+                                .setFixedPosition(left, yPosition, pageWidth - left);
+
+                        document.add(paragraph);
+                    }
+                } else {
+                    System.out.println("Value is null or empty, skipping.");
+                }
+            }
+        } else {
+            System.out.println("Report items are null.");
         }
 
         document.close();
