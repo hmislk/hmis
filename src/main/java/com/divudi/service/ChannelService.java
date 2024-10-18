@@ -43,6 +43,7 @@ import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PersonFacade;
+import com.divudi.facade.SessionInstanceFacade;
 import com.divudi.java.CommonFunctions;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -76,6 +77,8 @@ public class ChannelService {
     private BillFeeFacade billFeeFacade;
     @EJB
     private PaymentFacade paymentFacade;
+    @EJB
+    private SessionInstanceFacade sessionInstanceFacade;
 
     public ServiceSessionBean getServiceSessionBean() {
         return serviceSessionBean;
@@ -192,6 +195,8 @@ public class ChannelService {
         saveSelected(patient);
         Bill savingBill = createBill(patient, session);
         BillItem savingBillItemForSession = createSessionItem(savingBill, refNo, session);
+        savingBill.setAgentRefNo(refNo);
+       
 
 //        PriceMatrix priceMatrix;
 //        if (itemsAddedToBooking != null || itemsAddedToBooking.isEmpty()) {
@@ -412,7 +417,7 @@ public class ChannelService {
         return bill;
     }
 
-    public List<BillItem> findBillFromRefNo(String refNo) {
+    public List<BillItem> findBillItemFromRefNo(String refNo) {
         Map params = new HashMap();
         String jpql = "Select bi from BillItem bi"
                 + " where bi.AgentRefNo = :ref"
@@ -501,8 +506,33 @@ public class ChannelService {
         m.put("i", i);
         return itemFeeFacade.findByJpql(sql, m);
     }
+    
+    public List<Bill> findBillFromRefNo(String refNo){
+        String jpql = "Select b from Bill b"
+                + " where b.agentRefNo = :ref"
+                + " and b.Cancelled = false"
+                + " and b.retired = false";
+        
+        Map params = new HashMap();
+        params.put("ref", refNo);
+        return billFacade.findByJpql(jpql, params);
 
-    public void settleCredit(BillSession bs) {
+    }
+    
+    public List<SessionInstance> findSessionInstanceFromId(String id){
+        String jpql = "Select ss from SessionInstance ss "
+                + " Where ss.completed = false "
+                + " and ss.id = :id";
+        
+        Long idLong = Long.parseLong(id);
+        Map parms = new HashMap();
+        parms.put("id", idLong);
+        
+        return sessionInstanceFacade.findByJpql(jpql, parms);
+
+    }
+
+    public Bill settleCredit(BillSession bs) {
         Bill b = savePaidBill(bs);
         BillItem bi = savePaidBillItem(b, bs);
         savePaidBillFee(b, bi, bs);
@@ -523,6 +553,7 @@ public class ChannelService {
         getBillFacade().editAndCommit(b);
 
         List<Payment> p = createPayment(b, PaymentMethod.OnlineSettlement);
+        return b;
         // drawerController.updateDrawerForIns(p);
     }
 
