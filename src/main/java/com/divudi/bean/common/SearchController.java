@@ -7739,7 +7739,7 @@ public class SearchController implements Serializable {
             billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES);
             billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN);
             billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION);
-        }
+        }else 
         if (reportType.equalsIgnoreCase("op")) {
             billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES);
             billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN);
@@ -7756,6 +7756,7 @@ public class SearchController implements Serializable {
         }
         bundle = createBundleByKeywordForBills(billTypesAtomics, institution, department, null, null, null, null);
         bundle.calculateTotalNetTotalTaxByBills();
+        reportType = "irs";
     }
 
     public void updateToStaffForChannelProfessionalPaymentBills() {

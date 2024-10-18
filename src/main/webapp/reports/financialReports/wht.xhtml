@@ -208,7 +208,7 @@
                                 class="m-1 ui-button-danger"
                                 icon="fas fa-list"
                                 ajax="false" 
-                                value="View List"
+                                value="List Payment Receipts"
                                 action="#{searchController.searchWhtBills()}"/>
 
                             <p:commandButton 
@@ -230,6 +230,7 @@
 
                         <h:panelGroup >
                             <p:dataTable 
+                                rendered="#{searchController.reportType eq 'irs'}"
                                 rowIndexVar="i" 
                                 id="tbl" 
                                 value="#{searchController.bundle.reportTemplateRows}" 
@@ -405,7 +406,9 @@
 
 
 
-                            <p:dataTable id="dtaPr0" value="" var="pc" rowIndexVar="rowIndex">
+                            <p:dataTable
+                                rendered="#{searchController.reportType eq 'mr'}"
+                                id="dtaPr0" value="" var="pc" rowIndexVar="rowIndex">
                                 <p:column headerText="Doc No">
                                     <h:outputText value="" ></h:outputText>
                                 </p:column>
@@ -438,7 +441,7 @@
                                 </p:column>                       
                             </p:dataTable><br />
 
-                            <p:panel id="dtaPr1" >
+                            <p:panel id="dtaPr1" rendered="#{searchController.reportType eq 'cr'}" >
                                 <f:facet name="header">
                                     <h:outputLabel value="Monthly Vice Sumary report" /><br/><br/>
 
@@ -472,7 +475,7 @@
                             </p:panel><br/>
 
 
-                            <p:panel id="dtaPr3" >
+                            <p:panel id="dtaPr3" rendered="#{searchController.reportType eq 'cr'}">
                                 <f:facet name="header">
                                     <h:outputLabel value="Consultant Vice Sumary report" /><br/><br/>
 
