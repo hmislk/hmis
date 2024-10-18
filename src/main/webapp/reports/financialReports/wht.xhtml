@@ -176,15 +176,15 @@
                                     <f:selectItem itemLabel="Select" ></f:selectItem>
                                     <f:selectItem
                                         itemLabel="Individual Receipts"
-                                        itemValue="irs"
+                                        itemValue="individualReceipts"
                                         ></f:selectItem>
                                     <f:selectItem
                                         itemLabel="Monthly Summary"
-                                        itemValue="mr"
+                                        itemValue="monthlySummary"
                                         ></f:selectItem>
                                     <f:selectItem
                                         itemLabel="Consultant Summary"
-                                        itemValue="cr"
+                                        itemValue="consultantSummary"
                                         ></f:selectItem>
                                 </p:selectOneMenu>
 
@@ -208,8 +208,8 @@
                                 class="m-1 ui-button-danger"
                                 icon="fas fa-list"
                                 ajax="false" 
-                                value="List Payment Receipts"
-                                action="#{searchController.searchWhtBills()}"/>
+                                value="Process Report"
+                                action="#{searchController.processWhtReport()}"/>
 
                             <p:commandButton 
                                 class="ui-button-warning mx-1" 

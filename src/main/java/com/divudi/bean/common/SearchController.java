@@ -7726,9 +7726,23 @@ public class SearchController implements Serializable {
         bundle.calculateTotalByBills();
     }
 
-    public void searchWhtBills() {
+    public void processWhtReport() {
+        switch (reportType) {
+            case "individualReceipts":
+                processWhtReceipts();
+                break;
+            case "monthlySummary":
+                processWhtMonthlySymmary();
+                break;
+            case "consultantSummary":
+                processWhtConsultantSymmary();
+                break;
+        }
+    }
+
+    public void processWhtReceipts() {
         List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
-        if (reportType == null || reportType.isEmpty()) {
+        if (searchType == null || searchType.isEmpty()) {
             billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES);
             billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN);
             billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL);
@@ -7739,15 +7753,15 @@ public class SearchController implements Serializable {
             billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES);
             billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN);
             billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION);
-        } else if (reportType.equalsIgnoreCase("op")) {
+        } else if (searchType.equalsIgnoreCase("op")) {
             billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES);
             billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN);
             billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL);
             billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL_RETURN);
-        } else if (reportType.equalsIgnoreCase("ip")) {
+        } else if (searchType.equalsIgnoreCase("ip")) {
             billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE);
             billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN);
-        } else if (reportType.equalsIgnoreCase("ch")) {
+        } else if (searchType.equalsIgnoreCase("ch")) {
             billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE);
             billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES);
             billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN);
@@ -7756,6 +7770,14 @@ public class SearchController implements Serializable {
         bundle = createBundleForBills(billTypesAtomics, institution, department, null, null, null, null);
         bundle.calculateTotalNetTotalTaxByBills();
         reportType = "irs";
+    }
+
+    public void processWhtMonthlySymmary() {
+
+    }
+
+    public void processWhtConsultantSymmary() {
+
     }
 
     public void updateToStaffForChannelProfessionalPaymentBills() {
@@ -8456,7 +8478,7 @@ public class SearchController implements Serializable {
         outputBundle.setReportTemplateRows(outputRows);
         return outputBundle;
     }
-    
+
     public ReportTemplateRowBundle createBundleForBills(List<BillTypeAtomic> billTypesAtomics,
             Institution ins, Department dep,
             Institution fromIns,
