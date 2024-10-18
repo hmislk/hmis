@@ -217,7 +217,7 @@ public class ReportController implements Serializable {
     private List<String> voucherStatusOnDebtorSettlement;
     private String selectedVoucherStatusOnDebtorSettlement;
     private BillItem voucherItem;
-    
+
     private String type;
     private String reportType;
 
@@ -294,7 +294,7 @@ public class ReportController implements Serializable {
             Bill bill = bi.getBill();
             BillAndItemDataRow row = billMap.getOrDefault(bill, new BillAndItemDataRow());
             row.setBill(bill);
-
+            
             if (row.getItemDetailCells().isEmpty()) {
                 for (int i = 0; i < sortedItems.size(); i++) {
                     row.getItemDetailCells().add(new ItemDetailsCell());
@@ -318,6 +318,8 @@ public class ReportController implements Serializable {
                 } else {
                     cell.setQuentity(cell.getQuentity() + bi.getQtyAbsolute());
                 }
+                double quantityToAdd = (cancelledBill || refundedBill) ? -bi.getQtyAbsolute() : bi.getQtyAbsolute();
+                row.setGrandTotal(row.getGrandTotal() + quantityToAdd);
                 row.getItemDetailCells().set(itemIndex, cell);
 
                 // Accumulate totals directly in the header row
@@ -829,8 +831,8 @@ public class ReportController implements Serializable {
         }
 
     }
-    
-    public void createReferringDoctorWiseRevenueReport(){
+
+    public void createReferringDoctorWiseRevenueReport() {
         switch (reportType) {
             case "Detail":
                 createReferringDoctorWiseRevenueDetailedReport();
@@ -842,9 +844,9 @@ public class ReportController implements Serializable {
                 createReferringDoctorWiseRevenueDetailedReport();
         }
     }
-    
-    public void createReferringDoctorWiseRevenueDetailedReport(){
-         String jpql = "select bi"
+
+    public void createReferringDoctorWiseRevenueDetailedReport() {
+        String jpql = "select bi"
                 + " from BillItem bi"
                 + " where bi.retired=:ret"
                 + " and bi.bill.referredBy IS NOT NULL";
@@ -858,9 +860,9 @@ public class ReportController implements Serializable {
 
         billItems = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
     }
-    
-    public void createReferringDoctorWiseRevenueSummaryReport(){
-        
+
+    public void createReferringDoctorWiseRevenueSummaryReport() {
+
     }
 
     public double getTotalCredit() {
@@ -960,8 +962,8 @@ public class ReportController implements Serializable {
         List<BillType> bts = new ArrayList<>();
         bts.add(BillType.OpdBill);
         m.put("bts", bts);
-        
-        if(institution != null){
+
+        if (institution != null) {
             jpql += "AND cb.creditCompany = : cc ";
             m.put("cc", institution);
         }
@@ -971,9 +973,9 @@ public class ReportController implements Serializable {
         m.put("toDate", getToDate());
 
         bills = billFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
-        if(selectedVoucherStatusOnDebtorSettlement != null){
+        if (selectedVoucherStatusOnDebtorSettlement != null) {
             // Filter the bills list based on the statusFilter
-        bills = filterBillsByStatus(bills, selectedVoucherStatusOnDebtorSettlement);
+            bills = filterBillsByStatus(bills, selectedVoucherStatusOnDebtorSettlement);
 
         }
     }
@@ -2939,7 +2941,7 @@ public class ReportController implements Serializable {
                 posResult.setCcFee(posResult.getCcFee() - Math.abs(cancelResult.getCcFee()));
                 posResult.setProFee(posResult.getProFee() - Math.abs(cancelResult.getProFee()));
                 posResult.setTotal(posResult.getTotal() - Math.abs(cancelResult.getTotal()));
-                posResult.setDiscount(posResult.getDiscount()- Math.abs(cancelResult.getDiscount()));
+                posResult.setDiscount(posResult.getDiscount() - Math.abs(cancelResult.getDiscount()));
             }
         }
 
@@ -2952,7 +2954,7 @@ public class ReportController implements Serializable {
                 posResult.setCcFee(posResult.getCcFee() - Math.abs(refundResult.getCcFee()));
                 posResult.setProFee(posResult.getProFee() - Math.abs(refundResult.getProFee()));
                 posResult.setTotal(posResult.getTotal() - Math.abs(refundResult.getTotal()));
-                posResult.setDiscount(posResult.getDiscount()- Math.abs(refundResult.getDiscount()));
+                posResult.setDiscount(posResult.getDiscount() - Math.abs(refundResult.getDiscount()));
             }
         }
 

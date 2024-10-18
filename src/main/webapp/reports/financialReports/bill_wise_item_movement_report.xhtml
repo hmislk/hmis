@@ -265,6 +265,11 @@
                                 </p:commandLink>
 
                             </p:column>
+                            <p:column headerText="Grand Total" width="4em">
+                                <h:outputText value="#{pc.grandTotal}" >
+                                    <f:convertNumber integerOnly="true" />
+                                </h:outputText>
+                            </p:column>
                             <p:columns 
                                 width="5em"
                                 value="#{reportController.headerBillAndItemDataRow.itemDetailCells}" var="hr" columnIndexVar="colIndex">
@@ -281,7 +286,7 @@
                                 </f:facet>
 
                             </p:columns>
-                    
+
                         </p:dataTable>
 
                         <table border="1" id="printTbl" style="display:none;">
