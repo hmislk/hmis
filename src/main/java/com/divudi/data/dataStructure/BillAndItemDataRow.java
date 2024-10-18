@@ -15,6 +15,7 @@ public class BillAndItemDataRow {
     private Bill bill;
     private UUID id;
     private List<ItemDetailsCell> itemDetailCells;
+    private double grandTotal;
 
     public BillAndItemDataRow() {
         id = UUID.randomUUID();
@@ -67,6 +68,14 @@ public class BillAndItemDataRow {
         }
         final BillAndItemDataRow other = (BillAndItemDataRow) obj;
         return Objects.equals(this.id, other.id);
+    }
+
+    public double getGrandTotal() {
+        return grandTotal;
+    }
+
+    public void setGrandTotal(double grandTotal) {
+        this.grandTotal = grandTotal;
     }
 
     

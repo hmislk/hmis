@@ -54,6 +54,7 @@ public class ReportTemplateRowBundle implements Serializable {
     private Double grossTotal;
     private Double discount;
     private Double total;
+    private Double tax;
 
     private Double hospitalTotal;
     private Double staffTotal;
@@ -691,6 +692,23 @@ public class ReportTemplateRowBundle implements Serializable {
                 }
                 Double amount = safeDouble(row.getBill().getNetTotal());
                 total += amount;
+            }
+        }
+    }
+    
+    public void calculateTotalNetTotalTaxByBills() {
+        total = 0.0;
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getBill() == null) {
+                    continue;
+                }
+                Double billTotal = safeDouble(row.getBill().getNetTotal());
+                Double billGrossTotal = safeDouble(row.getBill().getTotal());
+                Double billTax = safeDouble(row.getBill().getTax());
+                total += billTotal;
+                grossTotal += billGrossTotal;
+                tax +=billTax;
             }
         }
     }
@@ -1811,5 +1829,15 @@ public class ReportTemplateRowBundle implements Serializable {
     public void setDenominations(List<com.divudi.entity.cashTransaction.Denomination> denominations) {
         this.denominations = denominations;
     }
+
+    public Double getTax() {
+        return tax;
+    }
+
+    public void setTax(Double tax) {
+        this.tax = tax;
+    }
+    
+    
 
 }

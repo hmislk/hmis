@@ -315,6 +315,9 @@ public class SearchController implements Serializable {
     private Drawer selectedDrawer;
     private int opdAnalyticsIndex;
 
+    private String searchType;
+    private String reportType;
+
     public String navigateToPettyCashBillApprove() {
         createPettyCashToApproveTable();
         return "/petty_cash_bill_to_approve?faces-redirect=true";
@@ -1974,6 +1977,22 @@ public class SearchController implements Serializable {
 
     public void setToSite(Institution toSite) {
         this.toSite = toSite;
+    }
+
+    public String getSearchType() {
+        return searchType;
+    }
+
+    public void setSearchType(String searchType) {
+        this.searchType = searchType;
+    }
+
+    public String getReportType() {
+        return reportType;
+    }
+
+    public void setReportType(String reportType) {
+        this.reportType = reportType;
     }
 
     public class billsWithbill {
@@ -7705,6 +7724,38 @@ public class SearchController implements Serializable {
         billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL_RETURN);
         bundle = createBundleByKeywordForBills(billTypesAtomics, institution, department, null, null, null, null);
         bundle.calculateTotalByBills();
+    }
+
+    public void searchWhtBills() {
+        List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
+        if (reportType == null || reportType.isEmpty()) {
+            billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES);
+            billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN);
+            billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL);
+            billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL_RETURN);
+            billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE);
+            billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN);
+            billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE);
+            billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES);
+            billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN);
+            billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION);
+        } else if (reportType.equalsIgnoreCase("op")) {
+            billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES);
+            billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN);
+            billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL);
+            billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL_RETURN);
+        } else if (reportType.equalsIgnoreCase("ip")) {
+            billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE);
+            billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN);
+        } else if (reportType.equalsIgnoreCase("ch")) {
+            billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE);
+            billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES);
+            billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN);
+            billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION);
+        }
+        bundle = createBundleByKeywordForBills(billTypesAtomics, institution, department, null, null, null, null);
+        bundle.calculateTotalNetTotalTaxByBills();
+        reportType = "irs";
     }
 
     public void updateToStaffForChannelProfessionalPaymentBills() {
@@ -14376,83 +14427,86 @@ public class SearchController implements Serializable {
         Map<String, ReportTemplateRow> itemMap = new HashMap<>();
         List<ReportTemplateRow> rowsToAdd = new ArrayList<>();
         double totalOpdServiceCollection = 0.0;
+
         for (BillItem bi : billItems) {
             System.out.println("Processing BillItem: " + bi);
 
-            if (bi.getBill() == null) {
-                continue;
-            } else if (bi.getBill().getPaymentMethod() == null) {
-                continue;
-            } else if (bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.NONE) {
-                continue;
-            } else if (bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.CREDIT) {
+            // Skip invalid or unwanted bills
+            if (bi.getBill() == null || bi.getBill().getPaymentMethod() == null
+                    || bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.NONE
+                    || bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.CREDIT) {
                 continue;
             }
 
-            String categoryName = bi.getItem() != null && bi.getItem().getCategory() != null ? bi.getItem().getCategory().getName() : "No Category";
+            // Identify category and item
+            String categoryName = bi.getItem() != null && bi.getItem().getCategory() != null
+                    ? bi.getItem().getCategory().getName() : "No Category";
             String itemName = bi.getItem() != null ? bi.getItem().getName() : "No Item";
             String itemKey = categoryName + "->" + itemName;
 
             System.out.println("Item Key: " + itemKey);
             System.out.println("Category: " + categoryName + ", Item: " + itemName);
 
+            // Initialize the maps if keys are not present
             categoryMap.putIfAbsent(categoryName, new ReportTemplateRow());
             itemMap.putIfAbsent(itemKey, new ReportTemplateRow());
 
             ReportTemplateRow categoryRow = categoryMap.get(categoryName);
             ReportTemplateRow itemRow = itemMap.get(itemKey);
 
+            // Set category and item details
             if (bi.getItem() != null) {
                 categoryRow.setCategory(bi.getItem().getCategory());
                 itemRow.setItem(bi.getItem());
             }
 
-            long countModifier = 1;
+            // Initialize financial values
             double grossValue = bi.getGrossValue();
             double hospitalFee = bi.getHospitalFee();
             double discount = bi.getDiscount();
             double staffFee = bi.getStaffFee();
             double netValue = bi.getNetValue();
 
-            switch (bi.getBill().getBillClassType()) {
-                case CancelledBill:
-                case RefundBill:
-                    countModifier = -1;
-                    // Apply abs to ensure all values are positive before negating
-                    grossValue = -Math.abs(grossValue);
-                    hospitalFee = -Math.abs(hospitalFee);
-                    discount = -Math.abs(discount);
-                    staffFee = -Math.abs(staffFee);
-                    netValue = -Math.abs(netValue);
-                    break;
-                case BilledBill:
-                case Bill:
-                    // Positive adjustments, no need to change the sign or apply abs
-                    break;
-                default:
-                    // Do nothing for other types of bills
-                    continue;  // Skip processing for unrecognized or unhandled bill types
+            // Determine quantity modifier based on bill class type
+            long qtyModifier = (bi.getBill().getBillClassType() == BillClassType.CancelledBill
+                    || bi.getBill().getBillClassType() == BillClassType.RefundBill) ? -1 : 1;
+
+            // Adjust financial values for cancelled/refunded items
+            if (qtyModifier == -1) {
+                grossValue = -Math.abs(grossValue);
+                hospitalFee = -Math.abs(hospitalFee);
+                discount = -Math.abs(discount);
+                staffFee = -Math.abs(staffFee);
+                netValue = -Math.abs(netValue);
             }
+
+            // Calculate the adjusted quantity
+            long quantity = (long) (bi.getQtyAbsolute() * qtyModifier);
+
+            // Accumulate the total collection
             totalOpdServiceCollection += netValue;
+
             System.out.println("hospitalFee = " + hospitalFee);
-            updateRow(categoryRow, countModifier, grossValue, hospitalFee, discount, staffFee, netValue);
-            updateRow(itemRow, countModifier, grossValue, hospitalFee, discount, staffFee, netValue);
+
+            // Update the rows with the adjusted values
+            updateRow(categoryRow, quantity, grossValue, hospitalFee, discount, staffFee, netValue);
+            updateRow(itemRow, quantity, grossValue, hospitalFee, discount, staffFee, netValue);
         }
 
-        // Only add rows that are properly initialized and grouped
+        // Add the rows to the report template bundle
         categoryMap.forEach((categoryName, catRow) -> {
             System.out.println("Adding category row to bundle: " + categoryName);
             rowsToAdd.add(catRow);
-            itemMap.values().stream()
-                    .filter(iRow -> iRow.getItem() != null && iRow.getItem().getCategory() != null && iRow.getItem().getCategory().getName().equals(categoryName))
-                    .forEach(iRow -> {
-                        System.out.println("Adding item row to bundle under category " + categoryName + ": " + iRow.getItem().getName());
-                        rowsToAdd.add(iRow);
+
+            itemMap.entrySet().stream()
+                    .filter(entry -> entry.getKey().startsWith(categoryName + "->"))
+                    .forEach(entry -> {
+                        System.out.println("Adding item row to bundle under category " + categoryName + ": " + entry.getValue().getItem().getName());
+                        rowsToAdd.add(entry.getValue());
                     });
         });
 
-        System.out.println("rowsToAdd = " + rowsToAdd);
-        System.out.println("rtrb.getReportTemplateRows() = " + rtrb.getReportTemplateRows());
+        System.out.println("Total collected: " + totalOpdServiceCollection);
         rtrb.getReportTemplateRows().addAll(rowsToAdd);
         rtrb.setTotal(totalOpdServiceCollection);
     }
