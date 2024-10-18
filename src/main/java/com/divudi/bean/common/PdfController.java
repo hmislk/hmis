@@ -74,85 +74,85 @@ public class PdfController {
         }
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        Document document = new Document(PageSize.A4);
-        PdfWriter writer = PdfWriter.getInstance(document, outputStream);
-        document.open();
-
-        PdfContentByte canvas = writer.getDirectContent();
-
-        float pageWidth = document.getPageSize().getWidth();
-        float pageHeight = document.getPageSize().getHeight();
-
-        // Process patient report item values
-        System.out.println("Processing patient report item values...");
-        if (report.getPatientReportItemValues() != null) {
-            for (PatientReportItemValue prv : report.getPatientReportItemValues()) {
-                System.out.println("Processing PatientReportItemValue: " + prv);
-                InvestigationItem item = prv.getInvestigationItem();
-                if (item.isRetired()) {
-                    System.out.println("Item is retired, skipping.");
-                    continue;
-                }
-
-                String cssStyle = item.getCssStyle();
-                System.out.println("CSS Style: " + cssStyle);
-                Map<String, String> styleMap = parseCssStyle(cssStyle);
-                System.out.println("Parsed Style Map: " + styleMap);
-
-                float left = parseFloat(styleMap.get("left"), 0, pageWidth);
-                float top = parseFloat(styleMap.get("top"), 0, pageHeight);
-                float fontSize = parseFloat(styleMap.get("font-size"), 12, 0);
-                String color = styleMap.get("color");
-
-                System.out.println("Position - Left: " + left + ", Top: " + top + ", Font Size: " + fontSize + ", Color: " + color);
-
-                String value = getValueBasedOnItemType(prv);
-                System.out.println("Value to display: " + value);
-
-                if (value != null && !value.isEmpty()) {
-                    // Convert CSS top position to PDF coordinate (from bottom)
-                    float yPosition = pageHeight - top;
-
-                    if (containsHtml(value)) {
-                        // Create a PdfTemplate to hold the HTML content
-                        PdfTemplate template = canvas.createTemplate(pageWidth, pageHeight);
-
-                        // Create a new Document for the template
-                        Rectangle rect = new Rectangle(0, 0, pageWidth, pageHeight);
-                        Document tmpDoc = new Document(rect);
-                        PdfWriter tmpWriter = PdfWriter.getInstance(tmpDoc, new ByteArrayOutputStream());
-                        tmpWriter.setDirectContent(template);
-                        tmpDoc.open();
-
-                        // Parse the HTML content
-                        XMLWorkerHelper.getInstance().parseXHtml(tmpWriter, tmpDoc, new StringReader(value));
-
-                        tmpDoc.close();
-
-                        // Add the template to the main document at the desired position
-                        canvas.addTemplate(template, left, yPosition - template.getHeight());
-
-                    } else {
-                        // For plain text, create a ColumnText to position the text
-                        Font font = FontFactory.getFont(FontFactory.HELVETICA, fontSize);
-                        if (color != null) {
-                            BaseColor baseColor = parseBaseColor(color);
-                            font.setColor(baseColor);
-                        }
-
-                        ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase(value, font), left, yPosition, 0);
-                    }
-                } else {
-                    System.out.println("Value is null or empty, skipping.");
-                }
-            }
-        } else {
-            System.out.println("Patient report item values are null.");
-        }
+//        Document document = new Document(PageSize.A4);
+//        PdfWriter writer = PdfWriter.getInstance(document, outputStream);
+//        document.open();
+//
+//        PdfContentByte canvas = writer.getDirectContent();
+//
+//        float pageWidth = document.getPageSize().getWidth();
+//        float pageHeight = document.getPageSize().getHeight();
+//
+//        // Process patient report item values
+//        System.out.println("Processing patient report item values...");
+//        if (report.getPatientReportItemValues() != null) {
+//            for (PatientReportItemValue prv : report.getPatientReportItemValues()) {
+//                System.out.println("Processing PatientReportItemValue: " + prv);
+//                InvestigationItem item = prv.getInvestigationItem();
+//                if (item.isRetired()) {
+//                    System.out.println("Item is retired, skipping.");
+//                    continue;
+//                }
+//
+//                String cssStyle = item.getCssStyle();
+//                System.out.println("CSS Style: " + cssStyle);
+//                Map<String, String> styleMap = parseCssStyle(cssStyle);
+//                System.out.println("Parsed Style Map: " + styleMap);
+//
+//                float left = parseFloat(styleMap.get("left"), 0, pageWidth);
+//                float top = parseFloat(styleMap.get("top"), 0, pageHeight);
+//                float fontSize = parseFloat(styleMap.get("font-size"), 12, 0);
+//                String color = styleMap.get("color");
+//
+//                System.out.println("Position - Left: " + left + ", Top: " + top + ", Font Size: " + fontSize + ", Color: " + color);
+//
+//                String value = getValueBasedOnItemType(prv);
+//                System.out.println("Value to display: " + value);
+//
+//                if (value != null && !value.isEmpty()) {
+//                    // Convert CSS top position to PDF coordinate (from bottom)
+//                    float yPosition = pageHeight - top;
+//
+//                    if (containsHtml(value)) {
+//                        // Create a PdfTemplate to hold the HTML content
+//                        PdfTemplate template = canvas.createTemplate(pageWidth, pageHeight);
+//
+//                        // Create a new Document for the template
+//                        Rectangle rect = new Rectangle(0, 0, pageWidth, pageHeight);
+//                        Document tmpDoc = new Document(rect);
+//                        PdfWriter tmpWriter = PdfWriter.getInstance(tmpDoc, new ByteArrayOutputStream());
+//                        tmpWriter.setDirectContent(template);
+//                        tmpDoc.open();
+//
+//                        // Parse the HTML content
+//                        XMLWorkerHelper.getInstance().parseXHtml(tmpWriter, tmpDoc, new StringReader(value));
+//
+//                        tmpDoc.close();
+//
+//                        // Add the template to the main document at the desired position
+//                        canvas.addTemplate(template, left, yPosition - template.getHeight());
+//
+//                    } else {
+//                        // For plain text, create a ColumnText to position the text
+//                        Font font = FontFactory.getFont(FontFactory.HELVETICA, fontSize);
+//                        if (color != null) {
+//                            BaseColor baseColor = parseBaseColor(color);
+//                            font.setColor(baseColor);
+//                        }
+//
+//                        ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase(value, font), left, yPosition, 0);
+//                    }
+//                } else {
+//                    System.out.println("Value is null or empty, skipping.");
+//                }
+//            }
+//        } else {
+//            System.out.println("Patient report item values are null.");
+//        }
 
         // Process report items (Labels)
         // Similar code for labels...
-        document.close();
+//        document.close();
         System.out.println("Document closed.");
 
         InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
