@@ -246,12 +246,11 @@
                                 scrollWidth="100%">
 
 
-                                <p:column headerText="ID" width="5em" sortBy="#{row.bill.deptId}" filterBy="#{row.bill.deptId}">
+                                <p:column rendered="#{webUserController.hasPrivilege('Developers')}" headerText="ID" width="5em" sortBy="#{row.bill.deptId}" filterBy="#{row.bill.deptId}">
                                     <p:outputLabel value="#{row.bill.id}" />
-
                                 </p:column>
 
-                                <p:column headerText="Type" width="10em"  >
+                                <p:column headerText="Type" width="10em"   rendered="#{webUserController.hasPrivilege('Developers')}" >
                                     <p:outputLabel value="#{row.bill.billTypeAtomic}" >
                                     </p:outputLabel>
                                 </p:column>
@@ -299,14 +298,6 @@
                                           sortBy="#{row.bill.creater.webUserPerson.name}" 
                                           filterBy="#{row.bill.creater.webUserPerson.name}">
                                     <p:outputLabel value="#{row.bill.creater.webUserPerson.name}" />
-                                </p:column>
-
-                                <p:column headerText="Payment Type" 
-                                          width="10em" 
-                                          style="text-align: left;" 
-                                          sortBy="#{row.bill.billTypeAtomic.label}" 
-                                          filterBy="#{row.bill.billTypeAtomic.label}">
-                                    <p:outputLabel value="#{row.bill.billTypeAtomic.label}" />
                                 </p:column>
 
                                 <p:column headerText="Date" width="10em" style="text-align: left;" rendered="false">
