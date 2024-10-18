@@ -3,6 +3,7 @@ package com.divudi.bean.lab;
 import com.divudi.bean.common.ApplicationController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ItemForItemController;
+import com.divudi.bean.common.PdfController;
 import com.divudi.bean.common.SecurityController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.TransferController;
@@ -104,6 +105,7 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.persistence.TemporalType;
 import javax.servlet.http.HttpSession;
+import org.primefaces.model.StreamedContent;
 
 /**
  *
@@ -139,6 +141,8 @@ public class PatientReportController implements Serializable {
     @EJB
     ClinicalFindingValueFacade clinicalFindingValueFacade;
     //Controllers
+    @Inject
+    PdfController pdfController;
     @Inject
     private PatientReportBean prBean;
     @Inject
@@ -189,6 +193,18 @@ public class PatientReportController implements Serializable {
     private ClinicalFindingValue clinicalFindingValue;
     private String comment;
 
+    
+    
+    public StreamedContent getBundleAsPdf() {
+        StreamedContent pdfSc = null;
+        try {
+            pdfSc = pdfController.createPdfForPatientReport(currentPatientReport);
+        } catch (IOException e) {
+            System.err.println("e = " + e);
+        }
+        return pdfSc;
+    }
+    
     public String searchRecentReportsOrderedByMyself() {
         Doctor doctor;
         String j = "Select r from PatientReport r "

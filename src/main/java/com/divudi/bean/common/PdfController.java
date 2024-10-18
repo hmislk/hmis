@@ -1,7 +1,13 @@
 package com.divudi.bean.common;
 
+import com.divudi.data.InvestigationItemType;
+import com.divudi.data.InvestigationItemValueType;
 import com.divudi.data.ReportTemplateRow;
 import com.divudi.data.ReportTemplateRowBundle;
+import com.divudi.entity.lab.InvestigationItem;
+import com.divudi.entity.lab.PatientReport;
+import com.divudi.entity.lab.PatientReportItemValue;
+import com.itextpdf.io.font.constants.StandardFonts;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import java.io.ByteArrayInputStream;
@@ -23,7 +29,15 @@ import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.LineSeparator;
 import com.itextpdf.kernel.colors.ColorConstants;
+import com.itextpdf.kernel.colors.DeviceRgb;
+import com.itextpdf.kernel.font.PdfFont;
+import com.itextpdf.kernel.font.PdfFontFactory;
+import com.itextpdf.kernel.geom.PageSize;
+import com.itextpdf.kernel.pdf.PdfPage;
+import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
 import com.itextpdf.layout.properties.TextAlignment;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -38,6 +52,190 @@ public class PdfController {
      * Creates a new instance of PdfController
      */
     public PdfController() {
+    }
+
+    public StreamedContent createPdfForPatientReport(PatientReport report) throws IOException {
+        if (report == null) {
+            return null;
+        }
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        PdfWriter writer = new PdfWriter(outputStream);
+        PdfDocument pdfDoc = new PdfDocument(writer);
+        Document document = new Document(pdfDoc);
+
+        // Assuming A4 size page
+        PdfPage page = pdfDoc.addNewPage(PageSize.A4);
+        PdfCanvas canvas = new PdfCanvas(page);
+
+        // Set default font
+        PdfFont font = PdfFontFactory.createFont(StandardFonts.HELVETICA);
+        canvas.setFontAndSize(font, 12);
+
+        // Process patient report item values
+        for (PatientReportItemValue prv : report.getPatientReportItemValues()) {
+            InvestigationItem item = prv.getInvestigationItem();
+            if (item.isRetired()) {
+                continue;
+            }
+
+            String cssStyle = item.getCssStyle();
+            Map<String, String> styleMap = parseCssStyle(cssStyle);
+
+            float left = parseFloat(styleMap.get("left"), 0);
+            float top = parseFloat(styleMap.get("top"), 0);
+            float fontSize = parseFloat(styleMap.get("font-size"), 12);
+            String color = styleMap.get("color");
+
+            // Set font size
+            canvas.setFontAndSize(font, fontSize);
+
+            // Set font color if specified
+            if (color != null) {
+                DeviceRgb rgbColor = parseColor(color);
+                canvas.setFillColor(rgbColor);
+            } else {
+                canvas.setFillColor(ColorConstants.BLACK);
+            }
+
+            String value = getValueBasedOnItemType(prv);
+
+            if (value != null && !value.isEmpty()) {
+                // Convert CSS top position to PDF coordinate (from bottom)
+                float yPosition = page.getPageSize().getHeight() - top;
+                canvas.beginText();
+                canvas.moveText(left, yPosition);
+                canvas.showText(value);
+                canvas.endText();
+            }
+        }
+
+        // Process report items (Labels)
+        if (report.getItem() != null && report.getItem().getReportItems() != null) {
+            for (InvestigationItem myIi : report.getItem().getReportItems()) {
+                if (myIi.isRetired()) {
+                    continue;
+                }
+
+                if ("Label".equals(myIi.getIxItemType())) {
+                    String cssStyle = myIi.getCssStyle();
+                    Map<String, String> styleMap = parseCssStyle(cssStyle);
+
+                    float left = parseFloat(styleMap.get("left"), 0);
+                    float top = parseFloat(styleMap.get("top"), 0);
+                    float fontSize = parseFloat(styleMap.get("font-size"), 12);
+                    String color = styleMap.get("color");
+
+                    // Set font size
+                    canvas.setFontAndSize(font, fontSize);
+
+                    // Set font color if specified
+                    if (color != null) {
+                        DeviceRgb rgbColor = parseColor(color);
+                        canvas.setFillColor(rgbColor);
+                    } else {
+                        canvas.setFillColor(ColorConstants.BLACK);
+                    }
+
+                    String value = myIi.getHtmltext();
+                    if (value != null && !value.isEmpty()) {
+                        float yPosition = page.getPageSize().getHeight() - top;
+                        canvas.beginText();
+                        canvas.moveText(left, yPosition);
+                        canvas.showText(value);
+                        canvas.endText();
+                    }
+                }
+            }
+        }
+
+        document.close();
+
+        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+
+        // Return the generated PDF as StreamedContent
+        return DefaultStreamedContent.builder()
+                .name("lab_report.pdf")
+                .contentType("application/pdf")
+                .stream(() -> inputStream)
+                .build();
+    }
+
+// Helper method to parse CSS style string into a Map
+    private Map<String, String> parseCssStyle(String cssStyle) {
+        Map<String, String> styleMap = new HashMap<>();
+        if (cssStyle != null) {
+            String[] styles = cssStyle.split(";");
+            for (String style : styles) {
+                String[] keyValue = style.split(":");
+                if (keyValue.length == 2) {
+                    styleMap.put(keyValue[0].trim(), keyValue[1].trim());
+                }
+            }
+        }
+        return styleMap;
+    }
+
+// Helper method to parse float values with default
+    private float parseFloat(String value, float defaultValue) {
+        if (value == null || value.isEmpty()) {
+            return defaultValue;
+        }
+        try {
+            // Remove units like 'px' if present
+            value = value.replace("px", "").trim();
+            return Float.parseFloat(value);
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
+    }
+
+// Helper method to parse CSS color into DeviceRgb
+    private DeviceRgb parseColor(String colorStr) {
+        if (colorStr == null || colorStr.isEmpty()) {
+            return (DeviceRgb) ColorConstants.BLACK;
+        }
+        colorStr = colorStr.trim();
+        if (colorStr.startsWith("#")) {
+            colorStr = colorStr.substring(1);
+            int r = Integer.parseInt(colorStr.substring(0, 2), 16);
+            int g = Integer.parseInt(colorStr.substring(2, 4), 16);
+            int b = Integer.parseInt(colorStr.substring(4, 6), 16);
+            return new DeviceRgb(r, g, b);
+        }
+        // Add more color parsing if needed (e.g., RGB function)
+        return (DeviceRgb) ColorConstants.BLACK;
+    }
+
+// Helper method to get value based on item type
+    private String getValueBasedOnItemType(PatientReportItemValue prv) {
+        InvestigationItem item = prv.getInvestigationItem();
+        InvestigationItemType ixItemType = item.getIxItemType();
+        InvestigationItemValueType ixItemValueType = item.getIxItemValueType();
+
+        if (ixItemType == InvestigationItemType.Value && ixItemValueType == InvestigationItemValueType.Memo) {
+            return prv.getLobValue();
+        } else if (ixItemType == InvestigationItemType.Template) {
+            return prv.getLobValue();
+        } else if (ixItemType == InvestigationItemType.Value && ixItemValueType == InvestigationItemValueType.Varchar) {
+            return prv.getStrValue();
+        } else if (ixItemType == InvestigationItemType.Value && ixItemValueType == InvestigationItemValueType.Double) {
+            return prv.getDisplayValue();
+        } else if (ixItemType == InvestigationItemType.DynamicLabel) {
+            return prv.getStrValue();
+        } else if (ixItemType == InvestigationItemType.Flag) {
+            return prv.getStrValue();
+        } else if (ixItemType == InvestigationItemType.Calculation) {
+            if (ixItemValueType == InvestigationItemValueType.Double) {
+                Double doubleValue = prv.getDoubleValue();
+                if (doubleValue != null) {
+                    return String.format("%.1f", doubleValue);
+                }
+            } else if (ixItemValueType == InvestigationItemValueType.Varchar) {
+                return prv.getStrValue();
+            }
+        }
+        return null;
     }
 
     public StreamedContent createPdfForBundle(ReportTemplateRowBundle rootBundle) throws IOException {
@@ -135,8 +333,6 @@ public class PdfController {
         // Optionally, add spacing or a separator between tables
         document.add(new Paragraph("\n"));
     }
-
-    
 
     private void populateTableForCreditCards(Document document, ReportTemplateRowBundle addingBundle) {
         if (addingBundle.getReportTemplateRows() == null || addingBundle.getReportTemplateRows().isEmpty()) {
