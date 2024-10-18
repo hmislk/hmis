@@ -36,13 +36,13 @@
                                 <p:printer target="divPrint" />
                             </p:commandButton>
                             <p:commandButton 
-                                value="Download PDF" 
+                                value="Download PDF*" 
                                 ajax="false" 
                                 icon="pi pi-file-pdf" 
                                 class="ui-button-info  m-1"
                                 style="background-color: #17a2b8; border-color: #17a2b8;" 
                                 onclick="PrimeFaces.monitorDownload(start, stop);">
-                                <p:fileDownload value="#{searchController.bundleAsPdf}" />
+                                <p:fileDownload value="#{patientReportController.reportAsPdf}" />
                             </p:commandButton>
                         </f:facet>
 

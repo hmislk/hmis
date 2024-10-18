@@ -195,7 +195,8 @@ public class PatientReportController implements Serializable {
 
     
     
-    public StreamedContent getBundleAsPdf() {
+    public StreamedContent getReportAsPdf() {
+        System.out.println("getReportAsPdf");
         StreamedContent pdfSc = null;
         try {
             pdfSc = pdfController.createPdfForPatientReport(currentPatientReport);
