@@ -54,8 +54,14 @@
                                 <h:outputText value="#{drawerentry.payment}" />
                             </p:column>
 
-                            <p:column headerText="Payment Method" style=" padding: 6px;">
-                                <h:outputText value="#{drawerentry.paymentMethod}" />
+                            <p:column headerText="Payment Method" style=" padding: 6px; text-align: center;">
+                                <div class="d-flex justify-content-center">
+                                    <p:badge rendered="#{drawerentry.paymentMethod eq 'Cash'}"  value="#{drawerentry.paymentMethod}" severity="success" styleClass="mr-2"></p:badge>
+                                <p:badge rendered="#{drawerentry.paymentMethod eq 'Card'}"  value="#{drawerentry.paymentMethod}" severity="warning" styleClass="mr-2"></p:badge>     
+                                <p:badge rendered="#{not (drawerentry.paymentMethod eq 'Card' or drawerentry.paymentMethod eq 'Cash')}"  value="#{drawerentry.paymentMethod}" severity="info" styleClass="mr-2"></p:badge>    
+                  
+                                </div>
+                                
                             </p:column>
 
                             <p:column headerText="Department" style=" padding: 6px;">
