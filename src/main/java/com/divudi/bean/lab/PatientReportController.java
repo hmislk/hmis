@@ -48,6 +48,7 @@ import com.divudi.data.lab.PatientInvestigationStatus;
 import com.divudi.entity.clinical.ClinicalFindingValue;
 import com.divudi.entity.lab.ReportFormat;
 import com.divudi.facade.ClinicalFindingValueFacade;
+import com.itextpdf.text.DocumentException;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -196,12 +197,14 @@ public class PatientReportController implements Serializable {
     
     
     public StreamedContent getReportAsPdf() {
-        System.out.println("getReportAsPdf");
+        System.out.println("");
         StreamedContent pdfSc = null;
         try {
             pdfSc = pdfController.createPdfForPatientReport(currentPatientReport);
         } catch (IOException e) {
             System.err.println("e = " + e);
+        } catch (DocumentException ex) {
+            Logger.getLogger(PatientReportController.class.getName()).log(Level.SEVERE, null, ex);
         }
         return pdfSc;
     }
