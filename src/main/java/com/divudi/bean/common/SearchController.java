@@ -5003,18 +5003,18 @@ public class SearchController implements Serializable {
         temMap.put("btp", BillType.OpdBill);
         temMap.put("btpc", BillType.CollectingCentreBill);
 
-        billFees = getBillFeeFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
-        List<BillFee> removeingBillFees = new ArrayList<>();
-        for (BillFee bf : billFees) {
-            sql = "SELECT bi FROM BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + bf.getBillItem().getId();
-            BillItem rbi = getBillItemFacade().findFirstByJpql(sql);
-
-            if (rbi != null) {
-                removeingBillFees.add(bf);
-            }
-
-        }
-        billFees.removeAll(removeingBillFees);
+//        billFees = getBillFeeFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
+//        List<BillFee> removeingBillFees = new ArrayList<>();
+//        for (BillFee bf : billFees) {
+//            sql = "SELECT bi FROM BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + bf.getBillItem().getId();
+//            BillItem rbi = getBillItemFacade().findFirstByJpql(sql);
+//
+//            if (rbi != null) {
+//                removeingBillFees.add(bf);
+//            }
+//
+//        }
+//        billFees.removeAll(removeingBillFees);
         calTotal();
 
     }
@@ -8374,6 +8374,90 @@ public class SearchController implements Serializable {
     }
 
     public ReportTemplateRowBundle createBundleByKeywordForBills(List<BillTypeAtomic> billTypesAtomics,
+            Institution ins, Department dep,
+            Institution fromIns,
+            Department fromDep,
+            Institution toIns,
+            Department toDep) {
+        ReportTemplateRowBundle outputBundle = new ReportTemplateRowBundle();
+        List<ReportTemplateRow> outputRows;
+        bills = null;
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select new com.divudi.data.ReportTemplateRow(b) "
+                + " from Bill b "
+                + " where b.billTypeAtomic in :billTypesAtomics "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false ";
+
+        if (ins != null) {
+            sql += " and b.institution=:ins ";
+            temMap.put("ins", ins);
+        }
+
+        if (dep != null) {
+            sql += " and b.department=:dep ";
+            temMap.put("dep", dep);
+        }
+
+        if (toDep != null) {
+            sql += " and b.toDepartment=:todep ";
+            temMap.put("todep", toDep);
+        }
+
+        if (fromDep != null) {
+            sql += " and b.fromDepartment=:fromdep ";
+            temMap.put("fromdep", fromDep);
+        }
+
+        if (fromIns != null) {
+            sql += " and b.fromInstitution=:fromins ";
+            temMap.put("fromins", fromIns);
+        }
+
+        if (toIns != null) {
+            sql += " and b.toInstitution=:toins ";
+            temMap.put("toins", toIns);
+        }
+
+        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
+            sql += " and  ((b.patient.person.name) like :patientName )";
+            temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
+            sql += " and  ((b.patient.person.phone) like :patientPhone )";
+            temMap.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and  b.deptId like :billNo";
+            temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
+            sql += " and  ((b.netTotal) like :netTotal )";
+            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
+            sql += " and  ((b.total) like :total )";
+            temMap.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+        }
+
+        sql += " order by b.createdAt desc  ";
+//    
+        temMap.put("billTypesAtomics", billTypesAtomics);
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+
+        outputRows = (List<ReportTemplateRow>) getBillFacade().findLightsByJpql(sql, temMap, TemporalType.TIMESTAMP);
+        outputBundle.setReportTemplateRows(outputRows);
+        return outputBundle;
+    }
+    
+    public ReportTemplateRowBundle createBundleForBills(List<BillTypeAtomic> billTypesAtomics,
             Institution ins, Department dep,
             Institution fromIns,
             Department fromDep,
