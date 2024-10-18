@@ -203,8 +203,6 @@ public class PatientReportController implements Serializable {
             pdfSc = pdfController.createPdfForPatientReport(currentPatientReport);
         } catch (IOException e) {
             System.err.println("e = " + e);
-        } catch (DocumentException ex) {
-            Logger.getLogger(PatientReportController.class.getName()).log(Level.SEVERE, null, ex);
         }
         return pdfSc;
     }

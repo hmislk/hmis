@@ -8,10 +8,7 @@ import com.divudi.data.ReportTemplateRowBundle;
 import com.divudi.entity.lab.InvestigationItem;
 import com.divudi.entity.lab.PatientReport;
 import com.divudi.entity.lab.PatientReportItemValue;
-import com.itextpdf.html2pdf.ConverterProperties;
-import com.itextpdf.io.font.constants.StandardFonts;
-import com.itextpdf.kernel.pdf.PdfDocument;
-import com.itextpdf.kernel.pdf.PdfWriter;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -20,35 +17,34 @@ import javax.inject.Named;
 import javax.enterprise.context.RequestScoped;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
-import com.itextpdf.layout.element.Table;
-import com.itextpdf.layout.element.Cell;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.Objects;
 import com.itextpdf.kernel.pdf.canvas.draw.SolidLine;
 import java.util.Optional;
-import com.itextpdf.layout.Document;
-import com.itextpdf.layout.element.Paragraph;
-import com.itextpdf.layout.element.LineSeparator;
-import com.itextpdf.kernel.colors.ColorConstants;
-import com.itextpdf.kernel.colors.DeviceRgb;
-import com.itextpdf.kernel.font.PdfFont;
-import com.itextpdf.kernel.font.PdfFontFactory;
-import com.itextpdf.kernel.geom.PageSize;
-import com.itextpdf.kernel.pdf.PdfPage;
-import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
-import com.itextpdf.html2pdf.HtmlConverter;
-import com.itextpdf.html2pdf.resolver.font.DefaultFontProvider;
-import com.itextpdf.kernel.geom.Rectangle;
-import com.itextpdf.layout.Canvas;
-import com.itextpdf.text.*;
-import com.itextpdf.text.pdf.*;
-import com.itextpdf.layout.properties.TextAlignment;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.itextpdf.html2pdf.HtmlConverter;
+import com.itextpdf.io.font.constants.StandardFonts;
+import com.itextpdf.kernel.colors.Color;
+import com.itextpdf.kernel.colors.ColorConstants;
+import com.itextpdf.kernel.colors.DeviceRgb;
+import com.itextpdf.kernel.font.PdfFont;
+import com.itextpdf.kernel.font.PdfFontFactory;
+import com.itextpdf.kernel.geom.Rectangle;
+import com.itextpdf.kernel.pdf.*;
+import com.itextpdf.layout.Canvas;
+import com.itextpdf.kernel.geom.PageSize;
+import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.Cell;
+import com.itextpdf.layout.element.LineSeparator;
+import com.itextpdf.layout.element.Paragraph;
+import com.itextpdf.layout.element.Table;
+import com.itextpdf.layout.properties.TextAlignment;
 
 /**
  *
@@ -65,7 +61,7 @@ public class PdfController {
     public PdfController() {
     }
 
-    public StreamedContent createPdfForPatientReport(PatientReport report) throws IOException, DocumentException {
+    public StreamedContent createPdfForPatientReport(PatientReport report) throws IOException {
         System.out.println("createPdfForPatientReport");
         System.out.println("Report: " + report);
         if (report == null) {
@@ -74,85 +70,74 @@ public class PdfController {
         }
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-//        Document document = new Document(PageSize.A4);
-//        PdfWriter writer = PdfWriter.getInstance(document, outputStream);
-//        document.open();
-//
-//        PdfContentByte canvas = writer.getDirectContent();
-//
-//        float pageWidth = document.getPageSize().getWidth();
-//        float pageHeight = document.getPageSize().getHeight();
-//
-//        // Process patient report item values
-//        System.out.println("Processing patient report item values...");
-//        if (report.getPatientReportItemValues() != null) {
-//            for (PatientReportItemValue prv : report.getPatientReportItemValues()) {
-//                System.out.println("Processing PatientReportItemValue: " + prv);
-//                InvestigationItem item = prv.getInvestigationItem();
-//                if (item.isRetired()) {
-//                    System.out.println("Item is retired, skipping.");
-//                    continue;
-//                }
-//
-//                String cssStyle = item.getCssStyle();
-//                System.out.println("CSS Style: " + cssStyle);
-//                Map<String, String> styleMap = parseCssStyle(cssStyle);
-//                System.out.println("Parsed Style Map: " + styleMap);
-//
-//                float left = parseFloat(styleMap.get("left"), 0, pageWidth);
-//                float top = parseFloat(styleMap.get("top"), 0, pageHeight);
-//                float fontSize = parseFloat(styleMap.get("font-size"), 12, 0);
-//                String color = styleMap.get("color");
-//
-//                System.out.println("Position - Left: " + left + ", Top: " + top + ", Font Size: " + fontSize + ", Color: " + color);
-//
-//                String value = getValueBasedOnItemType(prv);
-//                System.out.println("Value to display: " + value);
-//
-//                if (value != null && !value.isEmpty()) {
-//                    // Convert CSS top position to PDF coordinate (from bottom)
-//                    float yPosition = pageHeight - top;
-//
-//                    if (containsHtml(value)) {
-//                        // Create a PdfTemplate to hold the HTML content
-//                        PdfTemplate template = canvas.createTemplate(pageWidth, pageHeight);
-//
-//                        // Create a new Document for the template
-//                        Rectangle rect = new Rectangle(0, 0, pageWidth, pageHeight);
-//                        Document tmpDoc = new Document(rect);
-//                        PdfWriter tmpWriter = PdfWriter.getInstance(tmpDoc, new ByteArrayOutputStream());
-//                        tmpWriter.setDirectContent(template);
-//                        tmpDoc.open();
-//
-//                        // Parse the HTML content
-//                        XMLWorkerHelper.getInstance().parseXHtml(tmpWriter, tmpDoc, new StringReader(value));
-//
-//                        tmpDoc.close();
-//
-//                        // Add the template to the main document at the desired position
-//                        canvas.addTemplate(template, left, yPosition - template.getHeight());
-//
-//                    } else {
-//                        // For plain text, create a ColumnText to position the text
-//                        Font font = FontFactory.getFont(FontFactory.HELVETICA, fontSize);
-//                        if (color != null) {
-//                            BaseColor baseColor = parseBaseColor(color);
-//                            font.setColor(baseColor);
-//                        }
-//
-//                        ColumnText.showTextAligned(canvas, Element.ALIGN_LEFT, new Phrase(value, font), left, yPosition, 0);
-//                    }
-//                } else {
-//                    System.out.println("Value is null or empty, skipping.");
-//                }
-//            }
-//        } else {
-//            System.out.println("Patient report item values are null.");
-//        }
+        PdfWriter writer = new PdfWriter(outputStream);
+        PdfDocument pdfDoc = new PdfDocument(writer);
+        Document document = new Document(pdfDoc, PageSize.A4);
 
-        // Process report items (Labels)
-        // Similar code for labels...
-//        document.close();
+        float pageWidth = pdfDoc.getDefaultPageSize().getWidth();
+        float pageHeight = pdfDoc.getDefaultPageSize().getHeight();
+
+        // Process patient report item values
+        System.out.println("Processing patient report item values...");
+        if (report.getPatientReportItemValues() != null) {
+            for (PatientReportItemValue prv : report.getPatientReportItemValues()) {
+                System.out.println("Processing PatientReportItemValue: " + prv);
+                InvestigationItem item = prv.getInvestigationItem();
+                if (item.isRetired()) {
+                    System.out.println("Item is retired, skipping.");
+                    continue;
+                }
+
+                String cssStyle = item.getCssStyle();
+                System.out.println("CSS Style: " + cssStyle);
+                Map<String, String> styleMap = parseCssStyle(cssStyle);
+                System.out.println("Parsed Style Map: " + styleMap);
+
+                float left = parseFloat(styleMap.get("left"), 0, pageWidth);
+                float top = parseFloat(styleMap.get("top"), 0, pageHeight);
+                float fontSize = parseFloat(styleMap.get("font-size"), 12, 0);
+                String color = styleMap.get("color");
+
+                System.out.println("Position - Left: " + left + ", Top: " + top + ", Font Size: " + fontSize + ", Color: " + color);
+
+                String value = getValueBasedOnItemType(prv);
+                System.out.println("Value to display: " + value);
+
+                if (value != null && !value.isEmpty()) {
+                    // Convert CSS top position to PDF coordinate (from bottom)
+                    float yPosition = pageHeight - top;
+
+                    if (containsHtml(value)) {
+                        // Handling of HTML content at specific positions requires additional code
+                        // For now, we can render the HTML content to the document directly
+                        System.out.println("HTML content detected, adding to document.");
+
+                        // Convert HTML to PDF elements
+                        ByteArrayInputStream htmlStream = new ByteArrayInputStream(value.getBytes());
+                        HtmlConverter.convertToPdf(htmlStream, pdfDoc);
+
+                    } else {
+                        // For plain text, use Paragraph and set fixed position
+                        PdfFont font = PdfFontFactory.createFont(StandardFonts.HELVETICA);
+                        Color colorRgb = parseColor(color);
+
+                        Paragraph paragraph = new Paragraph(value)
+                                .setFont(font)
+                                .setFontSize(fontSize)
+                                .setFontColor(colorRgb)
+                                .setFixedPosition(left, yPosition, pageWidth - left);
+
+                        document.add(paragraph);
+                    }
+                } else {
+                    System.out.println("Value is null or empty, skipping.");
+                }
+            }
+        } else {
+            System.out.println("Patient report item values are null.");
+        }
+
+        document.close();
         System.out.println("Document closed.");
 
         InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
@@ -165,16 +150,17 @@ public class PdfController {
                 .build();
     }
 
-// Helper method to parse color strings into BaseColor
-    private BaseColor parseBaseColor(String colorStr) {
+    private Color parseColor(String colorStr) {
         if (colorStr == null || colorStr.isEmpty()) {
-            return BaseColor.BLACK;
+            return ColorConstants.BLACK;
         }
         colorStr = colorStr.trim();
         if (colorStr.startsWith("#")) {
             // Handle hex color codes
-            int color = Integer.parseInt(colorStr.substring(1), 16);
-            return new BaseColor(color);
+            int r = Integer.parseInt(colorStr.substring(1, 3), 16);
+            int g = Integer.parseInt(colorStr.substring(3, 5), 16);
+            int b = Integer.parseInt(colorStr.substring(5, 7), 16);
+            return new DeviceRgb(r, g, b);
         } else if (colorStr.startsWith("rgb")) {
             // Handle rgb(r, g, b) format
             Pattern pattern = Pattern.compile("rgb\\s*\\(\\s*(\\d+),\\s*(\\d+),\\s*(\\d+)\\s*\\)");
@@ -183,19 +169,17 @@ public class PdfController {
                 int r = Integer.parseInt(matcher.group(1));
                 int g = Integer.parseInt(matcher.group(2));
                 int b = Integer.parseInt(matcher.group(3));
-                return new BaseColor(r, g, b);
+                return new DeviceRgb(r, g, b);
             }
         }
         // Fallback or handle named colors
-        return BaseColor.BLACK;
+        return ColorConstants.BLACK;
     }
 
-// Helper method to check if the string contains HTML tags
     private boolean containsHtml(String value) {
         return value != null && value.matches(".*\\<[^>]+>.*");
     }
 
-// Helper method to parse CSS style string into a Map
     private Map<String, String> parseCssStyle(String cssStyle) {
         Map<String, String> styleMap = new HashMap<>();
         if (cssStyle != null) {
@@ -233,23 +217,6 @@ public class PdfController {
         }
     }
 
-    private DeviceRgb parseColor(String colorStr) {
-        if (colorStr == null || colorStr.isEmpty()) {
-            return (DeviceRgb) ColorConstants.BLACK;
-        }
-        colorStr = colorStr.trim();
-        if (colorStr.startsWith("#")) {
-            colorStr = colorStr.substring(1);
-            int r = Integer.parseInt(colorStr.substring(0, 2), 16);
-            int g = Integer.parseInt(colorStr.substring(2, 4), 16);
-            int b = Integer.parseInt(colorStr.substring(4, 6), 16);
-            return new DeviceRgb(r, g, b);
-        }
-        // Add more color parsing if needed (e.g., RGB function)
-        return (DeviceRgb) ColorConstants.BLACK;
-    }
-
-// Helper method to get value based on item type
     private String getValueBasedOnItemType(PatientReportItemValue prv) {
         InvestigationItem item = prv.getInvestigationItem();
         InvestigationItemType ixItemType = item.getIxItemType();
