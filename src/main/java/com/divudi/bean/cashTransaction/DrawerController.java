@@ -127,7 +127,7 @@ public class DrawerController implements Serializable {
         }
         
         //update Drover History
-   //     drawerEntryUpdate(payment,drawer);
+//        drawerEntryUpdate(payment,drawer);
 
         synchronized (drawer) {
             switch (payment.getPaymentMethod()) {
