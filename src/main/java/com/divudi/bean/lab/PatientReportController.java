@@ -197,13 +197,13 @@ public class PatientReportController implements Serializable {
     
     public StreamedContent getReportAsPdf() {
         System.out.println("getReportAsPdf");
-        StreamedContent pdfSc = null;
-        try {
-            pdfSc = pdfController.createPdfForPatientReport(currentPatientReport);
-        } catch (IOException e) {
-            System.err.println("e = " + e);
-        }
-        return pdfSc;
+//        StreamedContent pdfSc = null;
+//        try {
+////            pdfSc = pdfController.createPdfForPatientReport(currentPatientReport);
+//        } catch (IOException e) {
+//            System.err.println("e = " + e);
+//        }
+        return null;
     }
     
     public String searchRecentReportsOrderedByMyself() {
