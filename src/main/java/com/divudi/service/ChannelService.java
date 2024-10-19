@@ -1,5 +1,6 @@
 package com.divudi.service;
 
+import com.divudi.bean.channel.BookingControllerViewScope;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
@@ -79,6 +80,9 @@ public class ChannelService {
     private PaymentFacade paymentFacade;
     @EJB
     private SessionInstanceFacade sessionInstanceFacade;
+    
+    @Inject
+    private BookingControllerViewScope bookingControllerViewScope;
 
     public ServiceSessionBean getServiceSessionBean() {
         return serviceSessionBean;
@@ -531,6 +535,119 @@ public class ChannelService {
         return sessionInstanceFacade.findByJpql(jpql, parms);
 
     }
+    
+    private BillSession cancelBillSession(BillSession selectedBillSession, CancelledBill can, BillItem canBillItem) {
+        BillSession bs = new BillSession();
+        bs.copy(selectedBillSession);
+        bs.setBill(can);
+        bs.setBillItem(canBillItem);
+        bs.setCreatedAt(new Date());
+      //  bs.setCreater(getSessionController().getLoggedUser());
+        getBillSessionFacade().create(bs);
+
+        can.setSingleBillSession(bs);
+        getBillFacade().edit(can);
+
+        return bs;
+    }
+
+    
+     public BillSession cancelBookingBill(Bill bill) {
+         
+        BillSession bs = bill.getSingleBillSession();
+        CancelledBill cb = createCancelBill1(bill);
+        BillItem cItem = cancelBillItems(bs.getBillItem(), cb);
+        BillSession cbs = cancelBillSession(bs, cb, cItem);
+        bill.getSingleBillSession().getBill().setCancelled(true);
+        bs.getBill().setCancelledBill(cb);
+        getBillFacade().edit(bs.getBill());
+        bs.setReferenceBillSession(cbs);
+        billSessionFacade.edit(bs);
+        return cbs;
+
+      //  sendSmsOnChannelCancellationBookings();
+
+    }
+     
+     private BillItem cancelBillItems(BillItem bi, CancelledBill can) {
+
+        BillItem b = new BillItem();
+        b.setBill(can);
+        b.copy(bi);
+        b.invertValue(bi);
+        b.setCreatedAt(new Date());
+      // b.setCreater(getSessionController().getLoggedUser());
+
+        getBillItemFacade().create(b);
+        String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + bi.getId();
+        List<BillFee> tmp = getBillFeeFacade().findByJpql(sql);
+        cancelBillFee(can, b, tmp);
+
+        return b;
+    }
+     
+      private void cancelBillFee(Bill can, BillItem bt, List<BillFee> tmp) {
+        for (BillFee nB : tmp) {
+            BillFee bf = new BillFee();
+            bf.copy(nB);
+            bf.invertValue(nB);
+            bf.setBill(can);
+            bf.setBillItem(bt);
+
+            bf.setCreatedAt(new Date());
+         //   bf.setCreater(getSessionController().getLoggedUser());
+
+            getBillFeeFacade().create(bf);
+        }
+    }
+     
+      private CancelledBill createCancelBill1(Bill bill) {
+        CancelledBill cb = new CancelledBill();
+
+        cb.copy(bill);
+        cb.invertValue(bill);
+        cb.setBilledBill(bill);
+        cb.setBillDate(new Date());
+        cb.setBillTime(new Date());
+        cb.setCreatedAt(new Date());
+       // cb.setCreater(getSessionController().getLoggedUser());
+       // cb.setDepartment(getSessionController().getLoggedUser().getDepartment());
+      //  cb.setInstitution(getSessionController().getInstitution());
+       // cb.setComments(comment);
+
+//        cb.setInsId(billNumberBean.institutionChannelBillNumberGenerator(sessionController.getInstitution(), cb));
+        String insId = bookingControllerViewScope.generateBillNumberInsId(cb);
+
+        if (insId.equals("")) {
+            return null;
+        }
+        cb.setInsId(insId);
+
+        String deptId = generateBillNumberDeptId(cb);
+
+        if (deptId.equals("")) {
+            return null;
+        }
+        cb.setDeptId(deptId);
+        getBillFacade().create(cb);
+        cb.setPaymentMethod(bill.getPaymentMethod());
+
+//        if (bill.getPaymentMethod() == PaymentMethod.Agent) {
+//            cb.setPaymentMethod(cancelPaymentMethod);
+////            if (cancelPaymentMethod == PaymentMethod.Agent) {
+////                updateBallance(cb.getCreditCompany(), Math.abs(bill.getNetTotal()), HistoryType.ChannelBooking, cb, selectedBillSession.getBillItem(), selectedBillSession, selectedBillSession.getBill().getReferralNumber());
+////            }
+//        } else {
+//            cb.setPaymentMethod(bill.getPaymentMethod());
+//        }
+
+        getBillFacade().edit(cb);
+        return cb;
+    }
+      
+      
+
+
 
     public Bill settleCredit(BillSession bs) {
         Bill b = savePaidBill(bs);

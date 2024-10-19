@@ -987,6 +987,12 @@ public class ChannelApi {
             String json = responseError.toString();
             return Response.status(Response.Status.ACCEPTED).entity(responseError.toString()).build();
         }
+        
+        String refNo = requestBody.get("refNo");
+        List<Bill> billList = channelService.findBillFromRefNo(refNo);
+        BillSession bs = channelService.cancelBookingBill(billList.get(0));
+        
+        Person p = bs.getBill().getPatient().getPerson();
 
         return Response.status(Response.Status.ACCEPTED).entity("Cancel booking Api").build();
     }
