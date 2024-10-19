@@ -38,8 +38,8 @@
                                         <h:outputLabel value="To" for="toDate" class="mx-3"/>
                                     </h:panelGroup>
                                     <p:calendar 
-                                        styleClass="w-75" 
-                                        inputStyleClass="w-75 form-control" 
+                                        styleClass="w-100" 
+                                        inputStyleClass="w-100 form-control" 
                                         id="toDate" 
                                         value="#{searchController.toDate}" 
                                         navigator="false" 
@@ -57,6 +57,7 @@
                                     </h:panelGroup>
                                     <p:selectOneMenu
                                         id="cmbIns"
+                                        class="w-100"
                                         styleClass="w-100 form-control" 
                                         value="#{searchController.institution}" 
                                         filter="true">
@@ -73,7 +74,8 @@
                                     </h:panelGroup>
                                     <p:selectOneMenu
                                         id="cmbSite"
-                                        styleClass="w-100 form-control" 
+                                        class="w-100"
+                                        styleClass="w-100 form-control"  
                                         value="#{searchController.site}" 
                                         filter="true">
                                         <f:selectItem itemLabel="All Institutions" />
@@ -81,23 +83,21 @@
                                         <p:ajax process="cmbSite" update="cmbDept" />
                                     </p:selectOneMenu>
 
-                                    <p:spacer ></p:spacer>
+                                    <p:spacer  ></p:spacer>
 
                                     <h:panelGroup layout="block" styleClass="form-group">
                                         <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
                                         <h:outputLabel value="Booked Department" for="cmbDept" class="mx-3"/>
                                     </h:panelGroup>
-                                    <h:panelGroup id="cmbDept" >
                                         <p:selectOneMenu
-                                            rendered="#{searchController.institution ne null and searchController.site ne null}"
-                                            styleClass="w-100 form-control"  
+                                            id="cmbDept"
+                                            style="width: 350px;"  
+                                            class="w-100" 
                                             value="#{searchController.department}" 
                                             filter="true">
                                             <f:selectItem itemLabel="All Departments" />
-                                            <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                            <f:selectItems value="#{departmentController.getInstitutionDepartments(searchController.institution)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
                                         </p:selectOneMenu>
-                                    </h:panelGroup>
-
 
 
                                     <h:panelGroup layout="block" styleClass="form-group">
@@ -106,7 +106,8 @@
                                     </h:panelGroup>
                                     <p:selectOneMenu
                                         id="cmbToIns"
-                                        styleClass="w-100 form-control" 
+                                        class="w-100"
+                                        styleClass="w-100 form-control"   
                                         value="#{searchController.toInstitution}" 
                                         filter="true">
                                         <f:selectItem itemLabel="All Institutions" />
@@ -114,7 +115,7 @@
                                         <p:ajax process="cmbToIns" update="cmbToDept" />
                                     </p:selectOneMenu>
 
-                                    <p:spacer ></p:spacer>
+                                    <p:spacer  ></p:spacer>
 
                                     <h:panelGroup layout="block" styleClass="form-group">
                                         <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
@@ -122,7 +123,8 @@
                                     </h:panelGroup>
                                     <p:selectOneMenu
                                         id="cmbToSite"
-                                        styleClass="w-100 form-control" 
+                                        class="w-100"
+                                        styleClass="w-100 form-control"  
                                         value="#{searchController.toSite}" 
                                         filter="true">
                                         <f:selectItem itemLabel="All Institutions" />
@@ -136,28 +138,32 @@
                                         <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
                                         <h:outputLabel value="Channel Department" for="cmbToDept" class="mx-3"/>
                                     </h:panelGroup>
-                                    <h:panelGroup id="cmbToDept" >
                                         <p:selectOneMenu
-                                            rendered="#{searchController.toInstitution ne null and searchController.toSite ne null}"
-                                            styleClass="w-100 form-control"  
+                                            id="cmbToDept"
+                                            style="width: 350px;"  
+                                            class="w-100"
                                             value="#{searchController.toDepartment}" 
                                             filter="true">
                                             <f:selectItem itemLabel="All Departments" />
-                                            <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.toInstitution, searchController.toSite)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                            <f:selectItems value="#{departmentController.getInstitutionDepartments(searchController.toInstitution)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
                                         </p:selectOneMenu>
-                                    </h:panelGroup>
+                                    
 
 
                                     <h:panelGroup layout="block" styleClass="form-group">
                                         <h:outputText styleClass="fas fa-user mr-2" />
                                         <h:outputLabel value="User" class="mx-3"/>
                                     </h:panelGroup>
-                                    <p:selectOneMenu class="w-100" filter="true" value="#{searchController.webUser}" id="acIx">
+                                    <p:selectOneMenu 
+                                        class="w-100"
+                                        styleClass="w-100 form-control"   
+                                        filter="true" 
+                                        value="#{searchController.webUser}" id="acIx">
                                         <f:selectItem itemLabel="Select a user"/>
                                         <f:selectItems value="#{webUserController.items}" var="st" itemLabel="#{st.name}" itemValue="#{st}"/>
                                     </p:selectOneMenu>
 
-
+                                   
 
 
                                 </h:panelGrid>

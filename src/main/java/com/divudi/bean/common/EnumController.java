@@ -77,6 +77,7 @@ public class EnumController implements Serializable {
     List<PaymentMethod> paymentMethodsForChannelSettling;
     List<PaymentMethod> paymentMethodsForPharmacyBilling;
     private List<PaymentMethod> paymentMethodsForPatientDepositRefund;
+     private List<PaymentMethod> paymentMethodsForPatientDepositCancel;
     private List<PaymentMethod> paymentMethodsForStaffCreditSettle;
     private List<PaymentMethod> paymentMethodsForPatientDeposit;
     private List<PaymentMethod> paymentMethodsForOpdBillCanceling;
@@ -927,6 +928,21 @@ public class EnumController implements Serializable {
 
     public void setPaymentMethodsForOpdBillCanceling(List<PaymentMethod> paymentMethodsForOpdBillCanceling) {
         this.paymentMethodsForOpdBillCanceling = paymentMethodsForOpdBillCanceling;
+    }
+
+    public List<PaymentMethod> getPaymentMethodsForPatientDepositCancel() {
+        paymentMethodsForPatientDepositCancel = new ArrayList<>();
+        for (PaymentMethod pm : PaymentMethod.values()) {
+            boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Patient Deposit Cancel", true);
+            if (include) {
+                paymentMethodsForPatientDepositCancel.add(pm);
+            }
+        }
+        return paymentMethodsForPatientDepositCancel;
+    }
+
+    public void setPaymentMethodsForPatientDepositCancel(List<PaymentMethod> paymentMethodsForPatientDepositCancel) {
+        this.paymentMethodsForPatientDepositCancel = paymentMethodsForPatientDepositCancel;
     }
 
 }
