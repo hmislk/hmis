@@ -4,6 +4,8 @@
  */
 package com.divudi.data;
 
+import com.divudi.entity.Person;
+
 /**
  *
  * @author Damiya
@@ -15,12 +17,15 @@ public class TestWiseCountReport {
 
     private Integer serial;
     private String testName;
+    private Person doctor;
     private Long count;
     private Double hosFee;
     private Double ccFee;
     private Double proFee;
     private Double total;
     private Double discount;
+    private boolean refunded;
+    private boolean cancelled;
 
 
     public TestWiseCountReport(String testName, Long count, Double hosFee, Double ccFee, Double proFee, Double total) {
@@ -40,6 +45,18 @@ public class TestWiseCountReport {
         this.proFee = proFee;
         this.discount = discount;
         this.total = total;
+    }
+    
+    public TestWiseCountReport(Person person, Long count, Double hosFee, Double ccFee, Double proFee, Double discount, Double total, boolean cancelled, boolean refunded) {
+        this.doctor = person;
+        this.count = count;
+        this.hosFee = hosFee;
+        this.ccFee = ccFee;
+        this.proFee = proFee;
+        this.discount = discount;
+        this.total = total;
+        this.cancelled = cancelled;
+        this.refunded = refunded;
     }
     
     public Integer getSerial() {
@@ -105,6 +122,28 @@ public class TestWiseCountReport {
     public void setDiscount(Double discount) {
         this.discount = discount;
     }
-    
-    
+
+    public Person getDoctor() {
+        return doctor;
+    }
+
+    public void setDoctor(Person doctor) {
+        this.doctor = doctor;
+    }
+
+    public boolean isRefunded() {
+        return refunded;
+    }
+
+    public void setRefunded(boolean refunded) {
+        this.refunded = refunded;
+    }
+
+    public boolean isCancelled() {
+        return cancelled;
+    }
+
+    public void setCancelled(boolean cancelled) {
+        this.cancelled = cancelled;
+    }
 }

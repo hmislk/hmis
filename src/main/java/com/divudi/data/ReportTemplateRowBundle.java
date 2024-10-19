@@ -698,6 +698,8 @@ public class ReportTemplateRowBundle implements Serializable {
     
     public void calculateTotalNetTotalTaxByBills() {
         total = 0.0;
+        grossTotal=0.0;
+        tax=0.0;
         if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
             for (ReportTemplateRow row : this.reportTemplateRows) {
                 if (row.getBill() == null) {

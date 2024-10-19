@@ -47,11 +47,10 @@ public class DrawerController implements Serializable {
     SessionController sessionController;
     @EJB
     private DrawerFacade ejbFacade;
-    
+
     @Inject
     DrawerEntryController drawerEntryController;
-    
-    
+
     DrawerEntry drawerEntry;
     private Drawer current;
     private List<Drawer> items = null;
@@ -65,39 +64,64 @@ public class DrawerController implements Serializable {
             updateDrawerForIns(payment);
         }
     }
-    
-    public void drawerEntryUpdate(Payment payment, Drawer currentDrawer){
+
+    public void drawerEntryUpdate(Payment payment, Drawer currentDrawer) {
         System.out.println("Drawer Entry Update");
-        System.out.println("current Drawer = " + currentDrawer);
-        System.out.println("payment = " + payment);
+        //System.out.println("current Drawer = " + currentDrawer);
+        //System.out.println("payment = " + payment);
         if (payment == null) {
-            System.out.println("Null");
+            //System.out.println("Null");
             return;
         }
-        
+
         drawerEntry = new DrawerEntry();
         drawerEntry.setPayment(payment);
         drawerEntry.setPaymentMethod(payment.getPaymentMethod());
         drawerEntry.setBill(payment.getBill());
         drawerEntry.setDrawer(currentDrawer);
         drawerEntry.setWebUser(payment.getCreater());
-        
-        if(payment.getPaymentMethod() == PaymentMethod.Cash){
-            System.out.println("Cash");
-            drawerEntry.setBeforeInHandValue(currentDrawer.getCashInHandValue());
-            drawerEntry.setAfterInHandValue(currentDrawer.getCashInHandValue() + payment.getPaidValue());
+
+        if (payment.getPaymentMethod() == PaymentMethod.Cash) {
+            //System.out.println("Cash");
+
+            double beforeInHandValue;
+            if (currentDrawer.getCashInHandValue() == null) {
+                beforeInHandValue = 0.0;
+            } else {
+                beforeInHandValue = currentDrawer.getCashInHandValue();
+            }
+            //System.out.println("beforeInHandValue = " + beforeInHandValue);
+
+            drawerEntry.setBeforeInHandValue(beforeInHandValue);
+            drawerEntry.setAfterInHandValue(beforeInHandValue + payment.getPaidValue());
         }
+
+        double totalBalance;
+        if (currentDrawer.getCashInHandValue() == null) {
+            totalBalance = 0.0;
+        } else {
+            totalBalance = currentDrawer.getTotalBalance();
+        }
+        //System.out.println("totalBalance = " + totalBalance);
         
-        drawerEntry.setBeforeBalance(currentDrawer.getTotalBalance());
-        drawerEntry.setAfterBalance(currentDrawer.getTotalBalance() + payment.getPaidValue());
+        drawerEntry.setBeforeBalance(totalBalance);
+        drawerEntry.setAfterBalance(totalBalance + payment.getPaidValue());
+
+        double totalShortageOrExcess;
+        if (currentDrawer.getCashInHandValue() == null) {
+            totalShortageOrExcess = 0.0;
+        } else {
+            totalShortageOrExcess = currentDrawer.getTotalShortageOrExcess();
+        }
+        //System.out.println("totalShortageOrExcess = " + totalShortageOrExcess);
         
-        drawerEntry.setBeforeShortageExcess(currentDrawer.getTotalShortageOrExcess());
-        drawerEntry.setAfterShortageExcess(currentDrawer.getTotalShortageOrExcess());
-        
+        drawerEntry.setBeforeShortageExcess(totalShortageOrExcess);
+        drawerEntry.setAfterShortageExcess(totalShortageOrExcess);
+
         drawerEntryController.saveCurrent(drawerEntry);
-        
-        System.out.println("Drawer Entry Created = " + drawerEntry);
-        
+
+        //System.out.println("Drawer Entry Created = " + drawerEntry);
+
     }
 
     public void updateDrawerForOuts(List<Payment> payments) {
@@ -115,6 +139,8 @@ public class DrawerController implements Serializable {
     }
 
     public void updateDrawer(Payment payment, double paidValue) {
+        System.out.println("paidValue = " + paidValue);
+        System.out.println("payment = " + payment);
         if (payment == null || payment.getCreater() == null) {
             System.err.println("Payment or payment creator is null.");
             return;
@@ -125,9 +151,9 @@ public class DrawerController implements Serializable {
             System.err.println("No drawer found for the user.");
             return;
         }
-        
+
         //update Drover History
-//        drawerEntryUpdate(payment,drawer);
+        drawerEntryUpdate(payment, drawer);
 
         synchronized (drawer) {
             switch (payment.getPaymentMethod()) {
