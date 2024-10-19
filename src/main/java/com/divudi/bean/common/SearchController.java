@@ -5016,7 +5016,6 @@ public class SearchController implements Serializable {
 //        }
 //        billFees.removeAll(removeingBillFees);
         calTotal();
-
     }
 
     public void createDueFeeTableAndPaidFeeTable() {
