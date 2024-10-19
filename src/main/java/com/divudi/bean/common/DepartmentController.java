@@ -237,7 +237,6 @@ public class DepartmentController implements Serializable {
     }
 
     public List<Department> getDepartmentsOfInstitutionAndSite(Institution ins, Institution site) {
-        System.out.println("getDepartmentsOfInstitutionAndSite = " );
         if(ins==null && site==null){
             return new ArrayList<>();
         }

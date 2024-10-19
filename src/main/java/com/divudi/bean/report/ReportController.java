@@ -213,6 +213,10 @@ public class ReportController implements Serializable {
     private double totalDiscount;
     private double totalNetHosFee;
     private double totalNetTotal;
+    private Double staffFeeTotal;
+    private Double grossFeeTotal;
+    private Double discountTotal;
+    private Double netTotal;
 
     private List<String> voucherStatusOnDebtorSettlement;
     private String selectedVoucherStatusOnDebtorSettlement;
@@ -220,6 +224,7 @@ public class ReportController implements Serializable {
 
     private String type;
     private String reportType;
+    private Speciality speciality;
 
     public void generateItemMovementByBillReport() {
         billAndItemDataRows = new ArrayList<>();
@@ -294,7 +299,7 @@ public class ReportController implements Serializable {
             Bill bill = bi.getBill();
             BillAndItemDataRow row = billMap.getOrDefault(bill, new BillAndItemDataRow());
             row.setBill(bill);
-            
+
             if (row.getItemDetailCells().isEmpty()) {
                 for (int i = 0; i < sortedItems.size(); i++) {
                     row.getItemDetailCells().add(new ItemDetailsCell());
@@ -854,15 +859,183 @@ public class ReportController implements Serializable {
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
 
+        if (institution != null) {
+            jpql += " AND bi.bill.institution = :ins";
+            m.put("ins", institution);
+        }
+
+        if (site != null) {
+            jpql += " AND bi.bill.department.site = :site";
+            m.put("site", site);
+        }
+
+        if (category != null) {
+            jpql += " AND bi.item.category = :cat";
+            m.put("cat", category);
+        }
+
+        if (investigation != null) {
+            jpql += " AND bi.patientInvestigation.investigation = :inv";
+            m.put("inv", investigation);
+        }
+
+        if (type != null) {
+            jpql += " AND bi.bill.ipOpOrCc = :type";
+            m.put("type", type);
+        }
+
+        if (collectingCentre != null) {
+            jpql += " AND bi.bill.collectingCentre = :cc";
+            m.put("cc", collectingCentre);
+        }
+
+        if (doctor != null) {
+            jpql += " AND bi.bill.referredBy = :doc";
+            m.put("doc", doctor);
+        }
+
         jpql += " AND bi.createdAt BETWEEN :fromDate AND :toDate";
         m.put("fromDate", getFromDate());
         m.put("toDate", getToDate());
 
         billItems = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+
+        // Initialize totals
+        hospitalFeeTotal = 0.0;
+        ccFeeTotal = 0.0;
+        staffFeeTotal = 0.0;
+        grossFeeTotal = 0.0;
+        discountTotal = 0.0;
+        netTotal = 0.0;
+
+        if (billItems != null) {
+            for (BillItem billItem : billItems) {
+                hospitalFeeTotal += billItem.getHospitalFee();
+                ccFeeTotal += billItem.getCollectingCentreFee();
+                staffFeeTotal += billItem.getStaffFee();
+                grossFeeTotal += billItem.getGrossValue();
+                discountTotal += billItem.getDiscount();
+                netTotal += billItem.getNetValue();
+            }
+        }
     }
 
     public void createReferringDoctorWiseRevenueSummaryReport() {
+        String jpql = "select new com.divudi.data.TestWiseCountReport("
+                + "bi.bill.referredBy.person, "
+                + "count(bi.item.name), "
+                + "sum(bi.hospitalFee), "
+                + "sum(bi.collectingCentreFee), "
+                + "sum(bi.staffFee), "
+                + "sum(bi.discount), "
+                + "sum(bi.netValue), "
+                + "bi.bill.cancelled, "
+                + "bi.bill.refunded "
+                + ") "
+                + "from BillItem bi "
+                + "where bi.retired = :ret ";
 
+        Map<String, Object> params = new HashMap<>();
+
+        // Filters based on the provided conditions
+        if (institution != null) {
+            jpql += " AND bi.bill.institution = :ins";
+            params.put("ins", institution);
+        }
+
+        if (site != null) {
+            jpql += " AND bi.bill.department.site = :site";
+            params.put("site", site);
+        }
+
+        if (category != null) {
+            jpql += " AND bi.item.category = :cat";
+            params.put("cat", category);
+        }
+
+        if (investigation != null) {
+            jpql += " AND bi.patientInvestigation.investigation = :inv";
+            params.put("inv", investigation);
+        }
+
+        if (type != null) {
+            jpql += " AND bi.bill.ipOpOrCc = :type";
+            params.put("type", type);
+        }
+
+        if (collectingCentre != null) {
+            jpql += " AND bi.bill.collectingCentre = :cc";
+            params.put("cc", collectingCentre);
+        }
+
+        if (doctor != null) {
+            jpql += " AND bi.bill.referredBy = :doc";
+            params.put("doc", doctor);
+        }
+
+        jpql += " AND bi.bill.billDate between :fd and :td "
+                + " AND bi.bill.referredBy IS NOT NULL "
+                + " GROUP BY bi.bill.referredBy.person, bi.bill.cancelled, bi.bill.refunded";
+
+        params.put("ret", false);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+
+        List<TestWiseCountReport> rawResults = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        // Process results to handle cancellations and refunds
+        Map<String, TestWiseCountReport> resultMap = new HashMap<>();
+
+        for (TestWiseCountReport result : rawResults) {
+            String doctorName = result.getDoctor().getNameWithTitle(); 
+            TestWiseCountReport existingResult = resultMap.get(doctorName);
+
+            if (existingResult == null) {
+                existingResult = result;
+            } else {
+                existingResult.setCount(existingResult.getCount() + result.getCount());
+                existingResult.setHosFee(existingResult.getHosFee() + result.getHosFee());
+                existingResult.setCcFee(existingResult.getCcFee() + result.getCcFee());
+                existingResult.setProFee(existingResult.getProFee() + result.getProFee());
+                existingResult.setTotal(existingResult.getTotal() + result.getTotal());
+                existingResult.setDiscount(existingResult.getDiscount() + result.getDiscount());
+            }
+
+            // Check if the bill was cancelled or refunded and adjust totals accordingly
+            if (result.isCancelled() || result.isRefunded()) {
+                existingResult.setCount(existingResult.getCount() - Math.abs(result.getCount()));
+                existingResult.setHosFee(existingResult.getHosFee() - Math.abs(result.getHosFee()));
+                existingResult.setCcFee(existingResult.getCcFee() - Math.abs(result.getCcFee()));
+                existingResult.setProFee(existingResult.getProFee() - Math.abs(result.getProFee()));
+                existingResult.setTotal(existingResult.getTotal() - Math.abs(result.getTotal()));
+                existingResult.setDiscount(existingResult.getDiscount() - Math.abs(result.getDiscount()));
+            }
+
+            resultMap.put(doctorName, existingResult);
+        }
+
+        // Convert the map to a list for further processing or reporting
+        testWiseCounts = new ArrayList<>(resultMap.values());
+
+        // Initialize totals
+        totalCount = 0.0;
+        totalHosFee = 0.0;
+        totalCCFee = 0.0;
+        totalProFee = 0.0;
+        totalNetTotal = 0.0;
+        totalDiscount = 0.0;
+        totalNetHosFee = 0.0;
+
+        // Calculate total values
+        for (TestWiseCountReport twc : testWiseCounts) {
+            totalCount += twc.getCount();
+            totalHosFee += (twc.getHosFee() + twc.getDiscount() + twc.getProFee());
+            totalCCFee += twc.getCcFee();
+            totalProFee += twc.getProFee();
+            totalNetTotal += twc.getTotal();
+            totalDiscount += twc.getDiscount();
+            totalNetHosFee += twc.getHosFee();
+        }
     }
 
     public double getTotalCredit() {
@@ -964,7 +1137,7 @@ public class ReportController implements Serializable {
         m.put("bts", bts);
 
         if (institution != null) {
-            jpql += "AND cb.creditCompany = : cc ";
+            jpql += "AND cb.creditCompany = :cc ";
             m.put("cc", institution);
         }
 
@@ -1071,6 +1244,12 @@ public class ReportController implements Serializable {
         m.put("toDate", getToDate());
 
         bills = billFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        
+        netTotal = 0.0;
+        
+        for(Bill b : bills){
+            netTotal += b.getTotal();
+        }
     }
 
     public String navigatetoOPDLabReportByMenu() {
@@ -3277,6 +3456,46 @@ public class ReportController implements Serializable {
 
     public void setTotalNetHosFee(double totalNetHosFee) {
         this.totalNetHosFee = totalNetHosFee;
+    }
+
+    public Speciality getSpeciality() {
+        return speciality;
+    }
+
+    public void setSpeciality(Speciality speciality) {
+        this.speciality = speciality;
+    }
+
+    public Double getStaffFeeTotal() {
+        return staffFeeTotal;
+    }
+
+    public void setStaffFeeTotal(Double staffFeeTotal) {
+        this.staffFeeTotal = staffFeeTotal;
+    }
+
+    public Double getGrossFeeTotal() {
+        return grossFeeTotal;
+    }
+
+    public void setGrossFeeTotal(Double grossFeeTotal) {
+        this.grossFeeTotal = grossFeeTotal;
+    }
+
+    public Double getDiscountTotal() {
+        return discountTotal;
+    }
+
+    public void setDiscountTotal(Double discountTotal) {
+        this.discountTotal = discountTotal;
+    }
+
+    public Double getNetTotal() {
+        return netTotal;
+    }
+
+    public void setNetTotal(Double netTotal) {
+        this.netTotal = netTotal;
     }
 
 }
