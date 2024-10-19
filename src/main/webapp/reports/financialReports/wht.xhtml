@@ -336,7 +336,10 @@
                                     </f:facet>
                                 </p:column>
 
-                                <p:column style="text-align: right;" headerText="WHT" width="100" sortBy="#{row.bill.tax}" filterBy="#{row.bill.tax}" >                              
+                                <p:column 
+                                    style="text-align: right;" 
+                                    headerText="WHT" 
+                                    sortBy="#{row.bill.tax}" filterBy="#{row.bill.tax}" >                              
                                     <h:outputLabel value="#{row.bill.tax}" >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
@@ -347,7 +350,9 @@
                                     </f:facet>
                                 </p:column>
 
-                                <p:column style="text-align: right;" headerText="Value" width="100" sortBy="#{row.bill.netTotal}" filterBy="#{row.bill.netTotal}" >                              
+                                <p:column 
+                                    style="text-align: right;" headerText="Value" 
+                                    sortBy="#{row.bill.netTotal}" filterBy="#{row.bill.netTotal}" >                              
                                     <h:outputLabel value="#{row.bill.netTotal}" >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
@@ -361,7 +366,9 @@
 
 
 
-                                <p:column headerText="Status" width="400"  rendered="false">
+                                <p:column 
+                                    headerText="Status"
+                                    rendered="false">
 
                                     <f:facet name="header">
                                         <h:outputLabel value="Status" class="w-100 d-flex justify-content-center" />
@@ -381,7 +388,9 @@
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
                                             </h:outputLabel>
                                         </h:panelGroup>
-                                        <h:panelGroup rendered="#{row.bill.refunded}" class="d-flex gap-2">
+                                        <h:panelGroup 
+                                            rendered="#{row.bill.refunded}" 
+                                            class="d-flex gap-2">
                                             <p:badge value="Refunded" severity="warning" styleClass="mr-2"></p:badge>
                                             <h:outputLabel value="By " />
                                             <h:outputLabel 
