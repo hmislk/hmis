@@ -24,6 +24,7 @@ import com.divudi.entity.Department;
 import com.divudi.entity.Patient;
 import com.divudi.entity.Payment;
 import com.divudi.entity.WebUser;
+import com.divudi.entity.cashTransaction.CashBook;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PaymentFacade;
@@ -49,8 +50,10 @@ BillFacade billFacade;
 PaymentFacade paymentFacade;
 @EJB
 StaffBean staffBean;
+@EJB
+CashbookService cashbookService;
 
-public List<Payment> createPayment(Bill bill, PaymentMethod pm, PaymentMethodData paymentMethodData, Department department, WebUser webUser, Patient patient) {
+public List<Payment> createPayment(Bill bill, PaymentMethod pm, PaymentMethodData paymentMethodData, Department department, WebUser webUser, Patient patient, CashBook cashbook) {
         List<Payment> ps = new ArrayList<>();
         if (pm == PaymentMethod.MultiplePaymentMethods) {
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
@@ -107,16 +110,16 @@ public List<Payment> createPayment(Bill bill, PaymentMethod pm, PaymentMethodDat
                 }
 
                 paymentFacade.create(p);
-                cashBookEntryController.writeCashBookEntryAtPaymentCreation(p);
+                cashbookService.writeCashBookEntryAtPaymentCreation(p, webUser, cashbook, department);
                 ps.add(p);
             }
         } else {
             Payment p = new Payment();
             p.setBill(bill);
-            p.setInstitution(getSessionController().getInstitution());
-            p.setDepartment(getSessionController().getDepartment());
+            p.setInstitution(department.getInstitution());
+            p.setDepartment(department);
             p.setCreatedAt(new Date());
-            p.setCreater(getSessionController().getLoggedUser());
+            p.setCreater(webUser);
             p.setPaymentMethod(pm);
 
             switch (pm) {
@@ -154,7 +157,6 @@ public List<Payment> createPayment(Bill bill, PaymentMethod pm, PaymentMethodDat
 
             p.setPaidValue(p.getBill().getNetTotal());
             paymentFacade.create(p);
-            cashBookEntryController.writeCashBookEntryAtPaymentCreation(p);
             ps.add(p);
         }
         return ps;
