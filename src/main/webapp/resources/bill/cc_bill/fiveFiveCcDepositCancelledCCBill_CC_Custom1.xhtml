@@ -169,7 +169,7 @@
                     </div>
                     <div>
                         <h:outputLabel value="#{sessionController.currentDate}" >
-                            <f:convertDateTime pattern="dd/mm/yyyy hh:mm" />
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
                         </h:outputLabel>
                     </div>
                 </div>
