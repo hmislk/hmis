@@ -13,6 +13,7 @@ import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.BillListWithTotals;
+import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.PharmacyStockRow;
 import com.divudi.ejb.BillEjb;
 import com.divudi.ejb.BillNumberGenerator;
@@ -117,6 +118,8 @@ public class PharmacyPurchaseController implements Serializable {
 
     BillListWithTotals billListWithTotals;
     private double billItemsTotalQty;
+
+    private PaymentMethodData paymentMethodData;
 
     public void createGrnAndPurchaseBillsWithCancellsAndReturnsOfSingleDepartment() {
         Date startTime = new Date();
@@ -388,7 +391,7 @@ public class PharmacyPurchaseController implements Serializable {
 
     public void calNetTotal() {
         double grossTotal = 0.0;
-        if (getBill().getDiscount() > 0 || getBill().getTax()>0) {
+        if (getBill().getDiscount() > 0 || getBill().getTax() > 0) {
             grossTotal = getBill().getTotal() + getBill().getDiscount() - getBill().getTax();
             ////// // System.out.println("gross" + grossTotal);
             ////// // System.out.println("net1" + getBill().getNetTotal());
@@ -848,6 +851,17 @@ public class PharmacyPurchaseController implements Serializable {
 
     public void setBillItemsTotalQty(double billItemsTotalQty) {
         this.billItemsTotalQty = billItemsTotalQty;
+    }
+
+    public PaymentMethodData getPaymentMethodData() {
+        if (paymentMethodData == null) {
+            paymentMethodData = new PaymentMethodData();
+        }
+        return paymentMethodData;
+    }
+
+    public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
+        this.paymentMethodData = paymentMethodData;
     }
 
 }
