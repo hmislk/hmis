@@ -10,11 +10,15 @@ package com.divudi.bean.cashTransaction;
 
 import com.divudi.bean.common.*;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.PaymentMethod;
 import com.divudi.entity.Payment;
 import com.divudi.facade.PaymentFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -23,6 +27,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -40,6 +45,86 @@ public class PaymentController implements Serializable {
     private PaymentFacade ejbFacade;
     private Payment current;
     private List<Payment> items = null;
+    private Date fromDate;
+    private Date toDate;
+
+    public String navigateToPayCheques() {
+        items = null;
+        current = null;
+        return "/payments/cheque/pay_cheque?faces-redirect=true";
+    }
+
+    public String navigateToMarkChequesAsCleared() {
+        items = null;
+        current = null;
+        return "/payments/cheque/mark_cheque?faces-redirect=true";
+    }
+
+    public void listChequesToPay() {
+        String jpql = "select p "
+                + " from Payment p"
+                + " where p.retired=:retired"
+                + " and p.paymentMethod=:paymentMethod"
+                + " and p.createdAt between :fromDate and :toDate"
+                + " and p.chequePaid<>:cp";
+        Map<String, Object> params = new HashMap<>();
+        params.put("retired", false);
+        params.put("cp", true);
+        params.put("paymentMethod", PaymentMethod.Cheque);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+        items = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        System.out.println("params = " + params);
+        System.out.println("jpql = " + jpql);
+        System.out.println("items = " + items);
+    }
+
+    public void listChequesToMarkAsRealized() {
+        String jpql = "select p from Payment p"
+                + " where p.retired = :retired"
+                + " and p.paymentMethod = :paymentMethod"
+                + " and p.createdAt between :fromDate and :toDate"
+                + " and p.chequeRealized<>:cr";
+        Map<String, Object> params = new HashMap<>();
+        params.put("retired", false);
+        params.put("cr", true);
+        params.put("paymentMethod", PaymentMethod.Cheque);
+
+        items = getFacade().findByJpql(jpql, params);
+        System.out.println("params = " + params);
+        System.out.println("jpql = " + jpql);
+        System.out.println("items = " + items);
+    }
+
+    public void listAllCheques() {
+        String jpql = "select p "
+                + " from Payment p"
+                + " where p.retired=:retired"
+                + " and p.createdAt between :fromDate and :toDate"
+                + " and p.paymentMethod=:paymentMethod";
+        Map<String, Object> params = new HashMap<>();
+        params.put("retired", false);
+        params.put("paymentMethod", PaymentMethod.Cheque);
+        items = getFacade().findByJpql(jpql, params);
+        System.out.println("params = " + params);
+        System.out.println("jpql = " + jpql);
+        System.out.println("items = " + items);
+    }
+
+    public void listChequesRealized() {
+        String jpql = "select p from Payment p"
+                + " where p.retired=:retired"
+                + " and p.createdAt between :fromDate and :toDate"
+                + " and p.paymentMethod=:paymentMethod"
+                + " and p.chequeRealized=true";  // Only cheques that have been realized
+        Map<String, Object> params = new HashMap<>();
+        params.put("retired", false);
+        params.put("paymentMethod", PaymentMethod.Cheque);
+        items = getFacade().findByJpql(jpql, params);
+        System.out.println("params = " + params);
+        System.out.println("jpql = " + jpql);
+        System.out.println("items = " + items);
+    }
 
     public void save(Payment payment) {
         if (payment == null) {
@@ -127,6 +212,36 @@ public class PaymentController implements Serializable {
 
     private PaymentFacade getFacade() {
         return ejbFacade;
+    }
+
+    public List<Payment> getItems() {
+        return items;
+    }
+
+    public void setItems(List<Payment> items) {
+        this.items = items;
+    }
+
+    public Date getFromDate() {
+        if (fromDate == null) {
+            fromDate = CommonFunctions.getStartOfMonth();
+        }
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        if (toDate == null) {
+            toDate = CommonFunctions.getEndOfDay();
+        }
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
     }
 
     /**
