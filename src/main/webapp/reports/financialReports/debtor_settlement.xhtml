@@ -125,7 +125,7 @@
                                     <h:outputText value="#{pc.deptId}" ></h:outputText>
                                 </p:column>
                                 <p:column headerText="Voucher Status" >
-                                    
+                                    <h:outputLabel value="#{reportController.findVoucherIsAvailable(pc).bill.approveUser ne null ? 'Approved' : 'Not Approved' }" rendered="#{reportController.findVoucherIsAvailable(pc) ne null}" />
                                 </p:column>
                                 <p:column headerText="Settlement Status" >
                                    <h:outputText value="Settled" rendered="#{pc.netTotal eq reportController.findVoucherIsAvailable(pc).bill.netTotal}" />
