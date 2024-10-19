@@ -4995,14 +4995,11 @@ public class SearchController implements Serializable {
             sql += " and  ((b.paidForBillFee.bill.patientEncounter.bhtNo) like :bht )";
             temMap.put("bht", "%" + getSearchKeyword().getBhtNo().trim().toUpperCase() + "%");
         }
-
         sql += "  order by b.staff.id    ";
-
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("btp", BillType.OpdBill);
         temMap.put("btpc", BillType.CollectingCentreBill);
-
         billFees = getBillFeeFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 //        List<BillFee> removeingBillFees = new ArrayList<>();
 //        for (BillFee bf : billFees) {
