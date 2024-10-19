@@ -37,23 +37,24 @@ import javax.ejb.Stateless;
 /**
  *
  * @author Dr M H B Ariyaratne
- * 
+ *
  */
 @Stateless
 public class PaymentService {
 
-@EJB
-PatientFacade patientFacade;
-@EJB
-BillFacade billFacade;
-@EJB
-PaymentFacade paymentFacade;
-@EJB
-StaffBean staffBean;
-@EJB
-CashbookService cashbookService;
+    @EJB
+    PatientFacade patientFacade;
+    @EJB
+    BillFacade billFacade;
+    @EJB
+    PaymentFacade paymentFacade;
+    @EJB
+    StaffBean staffBean;
+    @EJB
+    CashbookService cashbookService;
 
-public List<Payment> createPayment(Bill bill, PaymentMethod pm, PaymentMethodData paymentMethodData, Department department, WebUser webUser, Patient patient, CashBook cashbook) {
+    public List<Payment> createPayment(Bill bill, PaymentMethod pm, PaymentMethodData paymentMethodData, Department department, WebUser webUser, Patient patient) {
+        CashBook cashbook = cashbookService.findAndSaveCashBookBySite(department.getSite(), department.getInstitution(), department);
         List<Payment> ps = new ArrayList<>();
         if (pm == PaymentMethod.MultiplePaymentMethods) {
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
@@ -161,5 +162,5 @@ public List<Payment> createPayment(Bill bill, PaymentMethod pm, PaymentMethodDat
         }
         return ps;
     }
-    
+
 }

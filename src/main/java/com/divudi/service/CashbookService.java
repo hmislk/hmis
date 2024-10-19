@@ -3,11 +3,13 @@ package com.divudi.service;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.PaymentMethod;
 import com.divudi.entity.Department;
+import com.divudi.entity.Institution;
 import com.divudi.entity.Payment;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.cashTransaction.CashBook;
 import com.divudi.entity.cashTransaction.CashBookEntry;
 import com.divudi.facade.CashBookEntryFacade;
+import com.divudi.facade.CashBookFacade;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,6 +26,8 @@ public class CashbookService {
     
     @EJB
     CashBookEntryFacade cashbookEntryFacade;
+    @EJB
+    CashBookFacade cashbookFacade;
 
     public void writeCashBookEntryAtPaymentCreation(Payment p, WebUser user, CashBook cashbook, Department department) {
         if (p == null) {
@@ -83,4 +87,41 @@ public class CashbookService {
         }
     }
 
+    public CashBook findAndSaveCashBookBySite(Institution site, Institution ins, Department dept) {
+        if (site==null) {
+            return null;
+        }
+        
+        if (ins==null) {
+            return null;
+        }
+        
+        if (dept==null) {
+            return null;
+        }
+        
+        String sql;
+        Map m = new HashMap();
+        m.put("ins", ins);
+        m.put("dept", dept);
+        m.put("site", site);
+        m.put("ret", false);
+        sql = "select cb "
+                + " from CashBook cb "
+                + " where cb.institution=:ins"
+                + " and cb.department=:dept"
+                + " and cb.site=:site"
+                + " and cb.retired=:ret";
+        CashBook cb = cashbookFacade.findFirstByJpql(sql, m);
+
+        if (cb == null) {
+            cb = new CashBook();
+            cb.setInstitution(ins);
+            cb.setDepartment(dept);
+            cb.setSite(site);
+            cashbookFacade.create(cb);
+        } 
+        return cb;
+    }
+    
 }
