@@ -16,6 +16,14 @@
                         <p:outputLabel for="toDate" value="To Date:" />
                         <p:calendar id="toDate" value="#{paymentController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                     </p:panelGrid>
+                    
+                    
+                    <p:commandButton
+                        value="List All Cheques" 
+                        action="#{paymentController.listAllCheques}"
+                        ajax="false"
+                        class="m-1" 
+                        icon="pi pi-database"/>
 
                     <p:commandButton 
                         value="List Cheques to Pay"
@@ -23,12 +31,7 @@
                         ajax="false"
                         class="m-1"
                         icon="pi pi-list"/>
-                    <p:commandButton
-                        value="List All Cheques" 
-                        action="#{paymentController.listAllCheques}"
-                        ajax="false"
-                        class="m-1" 
-                        icon="pi pi-database"/>
+
                     <p:commandButton 
                         value="List Cheques to Realize" 
                         action="#{paymentController.listChequesToMarkAsRealized}"
