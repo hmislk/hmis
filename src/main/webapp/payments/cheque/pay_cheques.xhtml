@@ -19,7 +19,7 @@
                     
                     
                     <p:commandButton
-                        value="List All Cheques" 
+                        value="Pay Cheques" 
                         action="#{paymentController.listAllCheques}"
                         ajax="false"
                         class="m-1" 
@@ -47,13 +47,18 @@
                         icon="pi pi-check"/>
 
 
-                    <p:dataTable value="#{paymentController.items}" var="cheque" rowKey="#{cheque.id}" 
+                    <p:dataTable value="#{paymentController.items}" 
+                                 var="cheque"
+                                 rowKey="#{cheque.id}" 
+                                 selectionMode="multiple"
                                  paginator="true" rows="10" paginatorPosition="bottom" 
                                  paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                  rowsPerPageTemplate="5,10,15"
                                  filterDelay="300" liveScroll="true"
                                  lazy="true" sortMode="multiple">
 
+                        <p:column selectionBox="true" ></p:column>
+                        
                         <p:column headerText="Recorded Date" sortBy="#{cheque.createdAt}" filterBy="#{cheque.createdAt}" >
                             <h:outputText value="#{cheque.createdAt}">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
