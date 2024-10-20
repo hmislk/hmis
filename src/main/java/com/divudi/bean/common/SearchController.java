@@ -913,6 +913,11 @@ public class SearchController implements Serializable {
         bundle = new ReportTemplateRowBundle();
         return "/reports/cashier_reports/all_cashier_summary?faces-redirect=true";
     }
+    
+    public String navigatToDepartmentWiseIncomeReport(){
+        bundle = new ReportTemplateRowBundle();
+        return "/reports/cashier_reports/department_wise_income_report?faces-redirect=true";
+    }
 
     public String navigatToShiftStartAndEnds() {
         bundle = new ReportTemplateRowBundle();
@@ -15338,6 +15343,59 @@ public class SearchController implements Serializable {
         parameters.put("td", toDate);
 
         jpql += "GROUP BY bill.department, FUNCTION('date', p.createdAt), p.creater";
+
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+        bundle = new ReportTemplateRowBundle();
+        bundle.setReportTemplateRows(rs);
+        bundle.calculateTotals();
+    }
+    
+    public void generateDepartmentWiseIncomeReport() {
+        Map<String, Object> parameters = new HashMap<>();
+        String jpql = "SELECT new com.divudi.data.ReportTemplateRow("
+                + "bill.department, bill.billTypeAtomic, "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Cash THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Card THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.MultiplePaymentMethods THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Staff THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Credit THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Staff_Welfare THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Voucher THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.IOU THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Agent THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Cheque THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Slip THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.ewallet THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.PatientDeposit THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.PatientPoints THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.OnlineSettlement THEN p.paidValue ELSE 0 END)) "
+                + "FROM Payment p "
+                + "JOIN p.bill bill "
+                + "WHERE p.retired <> :bfr AND bill.retired <> :br ";
+
+        parameters.put("bfr", true);
+        parameters.put("br", true);
+
+        if (institution != null) {
+            jpql += "AND bill.department.institution = :ins ";
+            parameters.put("ins", institution);
+        }
+        if (department != null) {
+            jpql += "AND bill.department = :dep ";
+            parameters.put("dep", department);
+        }
+        if (site != null) {
+            jpql += "AND bill.department.site = :site ";
+            parameters.put("site", site);
+        }
+        
+
+        jpql += "AND p.createdAt BETWEEN :fd AND :td ";
+        parameters.put("fd", fromDate);
+        parameters.put("td", toDate);
+
+        jpql += "GROUP BY bill.department, bill.billTypeAtomic";
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
