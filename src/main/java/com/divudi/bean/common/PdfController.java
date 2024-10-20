@@ -3,6 +3,7 @@ package com.divudi.bean.common;
 import ca.uhn.fhir.model.api.IElement;
 import com.divudi.bean.hr.StaffImageController;
 import com.divudi.bean.lab.CommonReportItemController;
+import com.divudi.bean.lab.PatientInvestigationController;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.InvestigationItemValueType;
 import com.divudi.data.ReportItemType;
@@ -14,6 +15,7 @@ import com.divudi.entity.lab.CommonReportItem;
 import com.divudi.entity.lab.InvestigationItem;
 import com.divudi.entity.lab.PatientReport;
 import com.divudi.entity.lab.PatientReportItemValue;
+import com.divudi.entity.lab.PatientSampleComponant;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -71,6 +73,8 @@ public class PdfController {
     StaffImageController staffImageController;
     @Inject
     CommonReportItemController commonReportItemController;
+    @Inject
+    PatientInvestigationController patientInvestigationController;
 
     /**
      * Creates a new instance of PdfController
@@ -378,16 +382,16 @@ public class PdfController {
                                     ? report.getPatientInvestigation().getBillItem().getBill().getReferredBy().getPerson().getNameWithTitle() : "";
                             break;
                         case SampledAt:
-                            value = (report.getPatientInvestigation() != null) ? 
-                                    CommonController.formatDate(report.getPatientInvestigation().getSampledAt(), "dd/MM/yyyy hh:mm a") : "";
+                            value = (report.getPatientInvestigation() != null)
+                                    ? CommonController.formatDate(report.getPatientInvestigation().getSampledAt(), "dd/MM/yyyy hh:mm a") : "";
                             break;
                         case ApprovedAt:
                             value = (report.getPatientInvestigation() != null)
                                     ? CommonController.formatDate(report.getPatientInvestigation().getApproveAt(), "dd/MM/yyyy hh:mm a") : "";
                             break;
                         case ReceivedAt:
-                            value = (report.getPatientInvestigation() != null) ? 
-                                    CommonController.formatDate(report.getPatientInvestigation().getReceivedAt(), "dd/MM/yyyy hh:mm a") : "";
+                            value = (report.getPatientInvestigation() != null)
+                                    ? CommonController.formatDate(report.getPatientInvestigation().getReceivedAt(), "dd/MM/yyyy hh:mm a") : "";
                             break;
                         case PrintedAt:
                             value = (report.getPatientInvestigation() != null)
@@ -414,8 +418,13 @@ public class PdfController {
                                     ? report.getPatientInvestigation().getBillItem().getBill().getIpOpOrCc() : "";
                             break;
                         case SampledID:
-                            value = (report.getPatientInvestigation() != null )
-                                    ? report.getPatientInvestigation().getSampleIds() : "";
+                            List<PatientSampleComponant> pscs = patientInvestigationController.getPatientSampleComponentsByInvestigation(report.getPatientInvestigation());
+                            String sampleIds = "";
+                            for (PatientSampleComponant psc : pscs) {
+                                Long sid = psc.getSample().getId();
+                                sampleIds += sid + " ";
+                            }
+                            value = sampleIds;
                             break;
                         default:
                             break;
