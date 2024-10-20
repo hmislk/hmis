@@ -10,111 +10,92 @@
         <ui:composition template="/payments/pay_index.xhtml">
             <ui:define name="admin">
                 <h:form id="chequeForm">
-                    <p:panelGrid columns="2" style="margin-bottom:10px;" columnClasses="label,value">
-                        <p:outputLabel for="fromDate" value="From Date:" />
-                        <p:calendar id="fromDate" value="#{paymentController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                        <p:outputLabel for="toDate" value="To Date:" />
-                        <p:calendar id="toDate" value="#{paymentController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                    </p:panelGrid>
-                    
-                    
-                    <p:commandButton
-                        value="Pay Cheques" 
-                        action="#{paymentController.listAllCheques}"
-                        ajax="false"
-                        class="m-1" 
-                        icon="pi pi-database"/>
+                    <p:panel >
+                        <f:facet name="header" >
+                            <h:outputText value="Pay Cheques" ></h:outputText>
+                        </f:facet>
 
-                    <p:commandButton 
-                        value="List Cheques to Pay"
-                        action="#{paymentController.listChequesToPay}" 
-                        ajax="false"
-                        class="m-1"
-                        icon="pi pi-list"/>
+                        <p:panelGrid columns="2" >
+                            <h:outputText value="Total Amount" />
+                            <h:outputText value="#{paymentController.total}" />
 
-                    <p:commandButton 
-                        value="List Cheques to Realize" 
-                        action="#{paymentController.listChequesToMarkAsRealized}"
-                        ajax="false"
-                        class="m-1"
-                        icon="pi pi-check-circle"/>
+                            <h:outputText value="Number of Cheques" />
+                            <h:outputText value="#{paymentController.items.size()}" />
 
-                    <p:commandButton 
-                        value="List Realized Cheques"
-                        action="#{paymentController.listChequesRealized}" 
-                        ajax="false"
-                        class="m-1"
-                        icon="pi pi-check"/>
+                            <h:outputText value="Bank Account" />
+                            <p:selectOneMenu value="#{paymentController.bankAccount}" var="acc">
+                                <f:selectItem value="Select" ></f:selectItem>
+                                <f:selectItems value="#{bankAccountController.items}" var="ba" itemLabel="#{ba.accountNo}" value="#{ba}" >
+                                    <p:column headerText="Bank" >
+                                        <h:outputLabel value="#{acc.bank.name}" ></h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Branch" >
+                                        <h:outputLabel value="#{acc.bankBranch.name}" ></h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Account Number" >
+                                        <h:outputLabel value="#{acc.accountNo}" ></h:outputLabel>
+                                    </p:column>
+                                </f:selectItems>
+                            </p:selectOneMenu>
 
+                            <p:spacer/>
+                            <p:commandButton
+                                value="Pay Cheques" 
+                                action="#{paymentController.listAllCheques}"
+                                ajax="false"
+                                class="m-1" 
+                                icon="pi pi-database"/>
 
-                    <p:dataTable value="#{paymentController.items}" 
-                                 var="cheque"
-                                 rowKey="#{cheque.id}" 
-                                 selectionMode="multiple"
-                                 paginator="true" rows="10" paginatorPosition="bottom" 
-                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                 rowsPerPageTemplate="5,10,15"
-                                 filterDelay="300" liveScroll="true"
-                                 lazy="true" sortMode="multiple">
-
-                        <p:column selectionBox="true" ></p:column>
-                        
-                        <p:column headerText="Recorded Date" sortBy="#{cheque.createdAt}" filterBy="#{cheque.createdAt}" >
-                            <h:outputText value="#{cheque.createdAt}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                            </h:outputText>
-                        </p:column>
-
-                        <p:column headerText="Cheque Date" sortBy="#{cheque.chequeDate}" filterBy="#{cheque.chequeDate}" >
-                            <h:outputText value="#{cheque.chequeDate}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                            </h:outputText>
-                        </p:column>
-
-                        <p:column headerText="Bank" sortBy="#{cheque.bank.name}" filterBy="#{cheque.bank.name}">
-                            <h:outputText value="#{cheque.bank.name}" />
-                        </p:column>
-
-                        <p:column headerText="Number" sortBy="#{cheque.chequeRefNo}" filterBy="#{cheque.chequeRefNo}">
-                            <h:outputText value="#{cheque.chequeRefNo}" />
-                        </p:column>
-
-                        <p:column headerText="From" sortBy="#{cheque.fromInstitution.name}" filterBy="#{cheque.fromInstitution.name}">
-                            <h:outputText value="#{cheque.fromInstitution.name}" />
-                        </p:column>
-
-                        <p:column headerText="To" sortBy="#{cheque.toInstitution.name}" filterBy="#{cheque.toInstitution.name}">
-                            <h:outputText value="#{cheque.toInstitution.name}" />
-                        </p:column>
-
-                        <p:column headerText="Value" sortBy="#{cheque.paidValue}" filterBy="#{cheque.paidValue}">
-                            <h:outputText value="#{cheque.paidValue}" />
-                        </p:column>
-
-                        <p:column headerText="Paid" style="text-align:center;">
-                            <h:outputText value="pi pi-check-circle" rendered="#{cheque.chequePaid}">
-                                <f:facet name="icon">
-                                    <p:graphicImage name="/resources/icons/check.png" rendered="#{cheque.chequePaid}" />
-                                </f:facet>
-                                <f:facet name="noIcon">
-                                    <p:graphicImage name="/resources/icons/cross.png" rendered="#{not cheque.chequePaid}" />
-                                </f:facet>
-                            </h:outputText>
-                        </p:column>
-
-                        <p:column headerText="Realized" style="text-align:center;">
-                            <h:outputText value="pi pi-check-square" rendered="#{cheque.chequeRealized}">
-                                <f:facet name="icon">
-                                    <p:graphicImage name="/resources/icons/check.png" rendered="#{cheque.chequeRealized}" />
-                                </f:facet>
-                                <f:facet name="noIcon">
-                                    <p:graphicImage name="/resources/icons/cross.png" rendered="#{not cheque.chequeRealized}" />
-                                </f:facet>
-                            </h:outputText>
-                        </p:column>
+                        </p:panelGrid>
 
 
-                    </p:dataTable>
+
+
+
+
+
+
+
+                        <p:dataTable value="#{paymentController.items}" 
+                                     var="cheque"
+                                     rowKey="#{cheque.id}" >
+
+                            <p:column headerText="Recorded Date" >
+                                <h:outputText value="#{cheque.createdAt}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Cheque Date" >
+                                <h:outputText value="#{cheque.chequeDate}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Bank" >
+                                <h:outputText value="#{cheque.bank.name}" />
+                            </p:column>
+
+                            <p:column headerText="Number" >
+                                <h:outputText value="#{cheque.chequeRefNo}" />
+                            </p:column>
+
+                            <p:column headerText="From" >
+                                <h:outputText value="#{cheque.fromInstitution.name}" />
+                            </p:column>
+
+                            <p:column headerText="To" >
+                                <h:outputText value="#{cheque.toInstitution.name}" />
+                            </p:column>
+
+                            <p:column headerText="Value" >
+                                <h:outputText value="#{cheque.paidValue}" />
+                            </p:column>
+
+
+                        </p:dataTable>
+
+                    </p:panel>
 
 
                 </h:form>

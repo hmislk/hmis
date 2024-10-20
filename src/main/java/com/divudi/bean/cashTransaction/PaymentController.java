@@ -12,6 +12,7 @@ import com.divudi.bean.common.*;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.PaymentMethod;
 import com.divudi.entity.Payment;
+import com.divudi.entity.hr.BankAccount;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
@@ -50,6 +51,7 @@ public class PaymentController implements Serializable {
     private Date fromDate;
     private Date toDate;
     private Double total;
+    private BankAccount bankAccount;
 
     public String navigateToPayCheques() {
         items = null;
@@ -97,7 +99,7 @@ public class PaymentController implements Serializable {
         items = itemsSelected;
         itemsSelected = null;
         printPreview=false;
-        return "/payments/cheque/realize_cheques?faces-redirect=true";
+        return "/payments/cheque/pay_cheques?faces-redirect=true";
     }
 
     public String navigateToMarkSelectedAsRealized() {
@@ -327,6 +329,15 @@ public class PaymentController implements Serializable {
     public void setPrintPreview(boolean printPreview) {
         this.printPreview = printPreview;
     }
+
+    public BankAccount getBankAccount() {
+        return bankAccount;
+    }
+
+    public void setBankAccount(BankAccount bankAccount) {
+        this.bankAccount = bankAccount;
+    }
+    
     
     
     
