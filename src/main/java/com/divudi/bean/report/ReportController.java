@@ -987,7 +987,7 @@ public class ReportController implements Serializable {
         Map<String, TestWiseCountReport> resultMap = new HashMap<>();
 
         for (TestWiseCountReport result : rawResults) {
-            String doctorName = result.getDoctor().getNameWithTitle(); 
+            String doctorName = result.getDoctor().getNameWithTitle();
             TestWiseCountReport existingResult = resultMap.get(doctorName);
 
             if (existingResult == null) {
@@ -1151,6 +1151,14 @@ public class ReportController implements Serializable {
             bills = filterBillsByStatus(bills, selectedVoucherStatusOnDebtorSettlement);
 
         }
+        netTotal = 0.0;
+
+        for (Bill b : bills) {
+            BillItem voucher = findVoucherIsAvailable(b);  // Call it once per loop
+            if (voucher != null) {
+                netTotal += voucher.getBill().getNetTotal();
+            }
+        }
     }
 
     private List<Bill> filterBillsByStatus(List<Bill> bills, String statusFilter) {
@@ -1244,10 +1252,10 @@ public class ReportController implements Serializable {
         m.put("toDate", getToDate());
 
         bills = billFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
-        
+
         netTotal = 0.0;
-        
-        for(Bill b : bills){
+
+        for (Bill b : bills) {
             netTotal += b.getTotal();
         }
     }
