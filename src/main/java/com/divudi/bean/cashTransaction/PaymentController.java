@@ -44,6 +44,7 @@ public class PaymentController implements Serializable {
     @EJB
     private PaymentFacade ejbFacade;
     private Payment current;
+    private boolean printPreview;
     private List<Payment> items = null;
     private List<Payment> itemsSelected = null;
     private Date fromDate;
@@ -53,15 +54,22 @@ public class PaymentController implements Serializable {
     public String navigateToPayCheques() {
         items = null;
         current = null;
+        printPreview=false;
         return "/payments/cheque/list_cheques?faces-redirect=true";
     }
 
     public String navigateToMarkChequesAsCleared() {
         items = null;
         current = null;
+        printPreview=false;
         return "/payments/cheque/mark_cheque?faces-redirect=true";
     }
 
+    public void relazieCheques(){
+        
+        printPreview=true;
+    }
+    
     public String navigateToPaySelectedCheques() {
         if (itemsSelected == null) {
             JsfUtil.addErrorMessage("Select one or more cheques");
@@ -72,6 +80,7 @@ public class PaymentController implements Serializable {
             return null;
         }
         total=0.0;
+        
         for (Payment p : itemsSelected) {
             total += p.getPaidValue();
             if (p.isRealized()) {
@@ -87,6 +96,7 @@ public class PaymentController implements Serializable {
         }
         items = itemsSelected;
         itemsSelected = null;
+        printPreview=false;
         return "/payments/cheque/realize_cheques?faces-redirect=true";
     }
 
@@ -115,6 +125,7 @@ public class PaymentController implements Serializable {
         }
         items = itemsSelected;
         itemsSelected = null;
+        printPreview=false;
         return "/payments/cheque/realize_cheques?faces-redirect=true";
     }
 
@@ -308,6 +319,15 @@ public class PaymentController implements Serializable {
     public void setTotal(Double total) {
         this.total = total;
     }
+
+    public boolean isPrintPreview() {
+        return printPreview;
+    }
+
+    public void setPrintPreview(boolean printPreview) {
+        this.printPreview = printPreview;
+    }
+    
     
     
 

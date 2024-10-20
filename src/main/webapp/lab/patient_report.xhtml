@@ -301,6 +301,9 @@
 
                                 <p:panel header="Report Details"  >
                                     <p:panelGrid columns="2" >
+                                        <p:outputLabel for="sampleIDs" value="sampleIDs" ></p:outputLabel>
+                                        <p:inputText id="sampleIDs" value="#{patientReportController.currentPatientReport.sampleIDs}" ></p:inputText>
+
                                         <p:outputLabel for="refIns" value="Referring Institution" ></p:outputLabel>
                                         <p:autoComplete 
                                             id="refIns" 
@@ -780,7 +783,7 @@
                                     <td>
                                         #{prv.investigationItem.ixItemType}
                                     </td>
-                                    
+
                                     <td>
                                         #{prv.investigationItem.retired}
                                     </td>
