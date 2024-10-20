@@ -13426,6 +13426,15 @@ public class SearchController implements Serializable {
         pharmacyCreditRefundBundle.setName("Pharmacy Credit Refunds");
         bundle.getBundles().add(pharmacyCreditRefundBundle);
         collectionForTheDay += getSafeTotal(pharmacyCreditRefundBundle);
+        
+        //Genarate Agency accept
+        List<BillTypeAtomic> agencyDeposit = new ArrayList<>();
+        agencyDeposit.add(BillTypeAtomic.AGENCY_PAYMENT_RECEIVED);
+        ReportTemplateRowBundle agencyPaymentBundle =generatePaymentMethodColumnsByBills(agencyDeposit);
+        agencyPaymentBundle.setBundleType("AgencyDeposit");
+        agencyPaymentBundle.setName("Agency Accept Payments");
+        bundle.getBundles().add(agencyPaymentBundle);
+        collectionForTheDay += getSafeTotal(agencyPaymentBundle);
 
         // Final net cash for the day
         ReportTemplateRowBundle netCashForTheDayBundle = new ReportTemplateRowBundle();
