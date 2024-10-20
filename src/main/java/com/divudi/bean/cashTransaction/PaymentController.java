@@ -45,13 +45,15 @@ public class PaymentController implements Serializable {
     private PaymentFacade ejbFacade;
     private Payment current;
     private List<Payment> items = null;
+    private List<Payment> itemsSelected = null;
     private Date fromDate;
     private Date toDate;
+    private Double total;
 
     public String navigateToPayCheques() {
         items = null;
         current = null;
-        return "/payments/cheque/pay_cheque?faces-redirect=true";
+        return "/payments/cheque/list_cheques?faces-redirect=true";
     }
 
     public String navigateToMarkChequesAsCleared() {
@@ -60,6 +62,64 @@ public class PaymentController implements Serializable {
         return "/payments/cheque/mark_cheque?faces-redirect=true";
     }
 
+    public String navigateToPaySelectedCheques() {
+        if (itemsSelected == null) {
+            JsfUtil.addErrorMessage("Select one or more cheques");
+            return null;
+        }
+        if (itemsSelected.isEmpty()) {
+            JsfUtil.addErrorMessage("Select one or more cheques");
+            return null;
+        }
+        total=0.0;
+        for (Payment p : itemsSelected) {
+            total += p.getPaidValue();
+            if (p.isRealized()) {
+                total=0.0;
+                JsfUtil.addErrorMessage("You have selected some already realized cheques.");
+                return null;
+            }
+            if (p.getPaymentMethod() != PaymentMethod.Cheque) {
+                total=0.0;
+                JsfUtil.addErrorMessage("Only CHeques are managed here.");
+                return null;
+            }
+        }
+        items = itemsSelected;
+        itemsSelected = null;
+        return "/payments/cheque/realize_cheques?faces-redirect=true";
+    }
+
+    public String navigateToMarkSelectedAsRealized() {
+        if (itemsSelected == null) {
+            JsfUtil.addErrorMessage("Select one or more cheques");
+            return null;
+        }
+        if (itemsSelected.isEmpty()) {
+            JsfUtil.addErrorMessage("Select one or more cheques");
+            return null;
+        }
+        total=0.0;
+        for (Payment p : itemsSelected) {
+            total += p.getPaidValue();
+            if (p.isRealized()) {
+                total=0.0;
+                JsfUtil.addErrorMessage("You have selected some already realized cheques.");
+                return null;
+            }
+            if (p.getPaymentMethod() != PaymentMethod.Cheque) {
+                total=0.0;
+                JsfUtil.addErrorMessage("Only CHeques are managed here.");
+                return null;
+            }
+        }
+        items = itemsSelected;
+        itemsSelected = null;
+        return "/payments/cheque/realize_cheques?faces-redirect=true";
+    }
+
+    
+    
     public void listChequesToPay() {
         String jpql = "select p from Payment p"
                 + " where p.retired = :retired"
@@ -232,6 +292,24 @@ public class PaymentController implements Serializable {
     public void setToDate(Date toDate) {
         this.toDate = toDate;
     }
+
+    public List<Payment> getItemsSelected() {
+        return itemsSelected;
+    }
+
+    public void setItemsSelected(List<Payment> itemsSelected) {
+        this.itemsSelected = itemsSelected;
+    }
+
+    public Double getTotal() {
+        return total;
+    }
+
+    public void setTotal(Double total) {
+        this.total = total;
+    }
+    
+    
 
     /**
      *

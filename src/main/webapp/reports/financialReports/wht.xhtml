@@ -211,13 +211,8 @@
                                 value="List Payment Receipts"
                                 action="#{searchController.searchWhtBills()}"/>
 
-                            <p:commandButton 
-                                class="ui-button-warning mx-1" 
-                                ajax="false" 
-                                value="Process" 
-                                icon="fas fa-cogs" 
-                                action="#{reportController.processLabTestCount()}" >
-                            </p:commandButton>
+
+
                             <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
                             </p:commandButton>
                             <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download" action="#{reportController.downloadLabTestCount}">
@@ -338,12 +333,22 @@
                                     <h:outputLabel value="#{row.bill.total}" >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
+                                    <f:facet name="footer" >
+                                        <h:outputText value="#{searchController.bundle.grossTotal}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputText>
+                                    </f:facet>
                                 </p:column>
 
                                 <p:column style="text-align: right;" headerText="WHT" width="100" sortBy="#{row.bill.tax}" filterBy="#{row.bill.tax}" >                              
                                     <h:outputLabel value="#{row.bill.tax}" >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
+                                    <f:facet name="footer" >
+                                        <h:outputText value="#{searchController.bundle.tax}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputText>
+                                    </f:facet>
                                 </p:column>
 
                                 <p:column style="text-align: right;" headerText="Value" width="100" sortBy="#{row.bill.netTotal}" filterBy="#{row.bill.netTotal}" >                              
