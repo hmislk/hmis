@@ -93,7 +93,7 @@ public class PdfController {
         float pageWidth = pdfDoc.getDefaultPageSize().getWidth();
         float pageHeight = pdfDoc.getDefaultPageSize().getHeight();
 
-        // Process patient report item values
+        // <editor-fold defaultstate="collapsed" desc="Report Item Values">
         System.out.println("Processing patient report item values...");
         if (report.getPatientReportItemValues() != null) {
             for (PatientReportItemValue prv : report.getPatientReportItemValues()) {
@@ -153,7 +153,8 @@ public class PdfController {
             System.out.println("Patient report item values are null.");
         }
 
-        // Process report items (Labels)
+        // </editor-fold>  
+        // <editor-fold defaultstate="collapsed" desc="Report Labels">
         System.out.println("Processing report items (Labels)...");
         if (report.getItem() != null && report.getItem().getReportItems() != null) {
             for (InvestigationItem ii : report.getItem().getReportItems()) {
@@ -238,7 +239,8 @@ public class PdfController {
             System.out.println("Report items are null.");
         }
 
-                // Assuming you have access to the commonReportFormat (Category)
+        // </editor-fold>  
+        // <editor-fold defaultstate="collapsed" desc="Common Report Items">
         Category commonReportFormat = report.getReportFormat(); // Adjust as per your code
 
         // Get the list of common report items
@@ -246,6 +248,14 @@ public class PdfController {
 
         if (commonReportItems != null) {
             for (CommonReportItem myCli : commonReportItems) {
+
+                System.out.println("myCli.getReportItemType() = " + myCli.getReportItemType());
+                System.out.println("myCli.getItem() = " + myCli.getItem());
+                System.out.println("myCli.getIxItemType() = " + myCli.getIxItemType());
+                System.out.println("myCli.getInnerCssStyle() = " + myCli.getInnerCssStyle());
+                System.out.println("myCli.getHtPix() = " + myCli.getHtPix());
+                System.out.println("myCli.getWtPix() = " + myCli.getWtPix());
+
                 if (myCli.isRetired()) {
                     continue;
                 }
@@ -277,6 +287,130 @@ public class PdfController {
                     value = getValueForReportItemType(reportItemType, report);
                 }
 
+                if (null != myCli.getReportItemType()) switch (myCli.getReportItemType()) {
+                    case PatientName:
+                        value = (report.getPatientInvestigation() != null && report.getPatientInvestigation().getPatient() != null
+                                && report.getPatientInvestigation().getPatient().getPerson() != null)
+                                ? report.getPatientInvestigation().getPatient().getPerson().getNameWithTitle() : "";
+                        break;
+                    case Phone:
+                        value = (report.getPatientInvestigation() != null && report.getPatientInvestigation().getPatient() != null
+                                && report.getPatientInvestigation().getPatient().getPerson() != null)
+                                ? report.getPatientInvestigation().getPatient().getPerson().getPhone() : "";
+                        break;
+                    case PatientAge:
+                        value = (report.getPatientInvestigation() != null && report.getPatientInvestigation().getPatient() != null
+                                && report.getPatientInvestigation().getPatient().getPerson() != null)
+                                ? report.getPatientInvestigation().getPatient().getPerson().getAgeAsShortString() : "";
+                        break;
+                    case PatientAgeOnBillDate:
+                        value = (report.getPatientInvestigation() != null && report.getPatientInvestigation().getPatient() != null
+                                && report.getPatientInvestigation().getBillItem() != null && report.getPatientInvestigation().getBillItem().getBill() != null)
+                                ? report.getPatientInvestigation().getPatient().getAgeOnBilledDate(report.getPatientInvestigation().getBillItem().getBill().getCreatedAt()) : "";
+                        break;
+                    case PatientAgeandGender:
+                        value = (report.getPatientInvestigation() != null && report.getPatientInvestigation().getPatient() != null
+                                && report.getPatientInvestigation().getPatient().getPerson() != null)
+                                ? report.getPatientInvestigation().getPatient().getPerson().getAgeAsShortString() + " / "
+                                + report.getPatientInvestigation().getPatient().getPerson().getSex() : "";
+                        break;
+                    case PatientSex:
+                        value = (report.getPatientInvestigation() != null && report.getPatientInvestigation().getPatient() != null
+                                && report.getPatientInvestigation().getPatient().getPerson() != null)
+                                ? report.getPatientInvestigation().getPatient().getPerson().getSex().getLabel() : "";
+                        break;
+                    case InvestigationName:
+                        value = (report.getPatientInvestigation() != null && report.getPatientInvestigation().getInvestigation() != null)
+                                ? report.getPatientInvestigation().getInvestigation().getName() : "";
+                        break;
+                    case Speciman:
+                        value = (report.getPatientInvestigation() != null && report.getPatientInvestigation().getInvestigation() != null
+                                && report.getPatientInvestigation().getInvestigation().getSample() != null)
+                                ? report.getPatientInvestigation().getInvestigation().getSample().getName() : "";
+                        break;
+                    case SampledTime:
+                        value = (report.getPatientInvestigation() != null)
+                                ? CommonController.formatDate(report.getPatientInvestigation().getSampledAt(), "hh:mm a") : "";
+                        break;
+                    case CollectingCenter:
+                        value = (report.getPatientInvestigation() != null && report.getPatientInvestigation().getBillItem() != null
+                                && report.getPatientInvestigation().getBillItem().getBill() != null
+                                && report.getPatientInvestigation().getBillItem().getBill().getCollectingCentre() != null)
+                                ? report.getPatientInvestigation().getBillItem().getBill().getCollectingCentre().getChequePrintingName() : "";
+                        break;
+                    case BilledDate:
+                        value = (report.getPatientInvestigation() != null && report.getPatientInvestigation().getBillItem() != null
+                                && report.getPatientInvestigation().getBillItem().getBill() != null)
+                                ? CommonController.formatDate(report.getPatientInvestigation().getBillItem().getBill().getCreatedAt(), "dd/MM/yyyy") : "";
+                        break;
+                    case BilledTime:
+                        value = (report.getPatientInvestigation() != null && report.getPatientInvestigation().getBillItem() != null
+                                && report.getPatientInvestigation().getBillItem().getBill() != null)
+                                ? CommonController.formatDate(report.getPatientInvestigation().getBillItem().getBill().getCreatedAt(), "hh:mm a") : "";
+                        break;
+                    case SampledDate:
+                        value = (report.getPatientInvestigation() != null)
+                                ? CommonController.formatDate(report.getPatientInvestigation().getSampledAt(), "dd/MM/yyyy") : "";
+                        break;
+                    case BillNo:
+                        value = (report.getPatientInvestigation() != null && report.getPatientInvestigation().getBillItem() != null
+                                && report.getPatientInvestigation().getBillItem().getBill() != null)
+                                ? report.getPatientInvestigation().getBillItem().getBill().getDeptId() : "";
+                        break;
+                    case DepartmentBillNo:
+                        value = (report.getPatientInvestigation() != null && report.getPatientInvestigation().getBillItem() != null
+                                && report.getPatientInvestigation().getBillItem().getBill() != null)
+                                ? report.getPatientInvestigation().getBillItem().getBill().getDeptId() : "";
+                        break;
+                    case ReportedDate:
+                        value = (report.getCreatedAt() != null) ? CommonController.formatDate(report.getCreatedAt(), "dd/MM/yyyy") : "";
+                        break;
+                    case ReportedTime:
+                        value = (report.getCreatedAt() != null) ? CommonController.formatDate(report.getCreatedAt(), "hh:mm a") : "";
+                        break;
+                    case ReferringDoctor:
+                        value = (report.getPatientInvestigation() != null && report.getPatientInvestigation().getBillItem() != null
+                                && report.getPatientInvestigation().getBillItem().getBill() != null
+                                && report.getPatientInvestigation().getBillItem().getBill().getReferredBy() != null
+                                && report.getPatientInvestigation().getBillItem().getBill().getReferredBy().getPerson() != null)
+                                ? report.getPatientInvestigation().getBillItem().getBill().getReferredBy().getPerson().getNameWithTitle() : "";
+                        break;
+                    case SampledAt:
+                        value = (report.getPatientInvestigation() != null)
+                                ? CommonController.formatDate(report.getPatientInvestigation().getSampledAt(), "dd/MM/yyyy hh:mm a") : "";
+                        break;
+                    case ApprovedAt:
+                        value = (report.getPatientInvestigation() != null)
+                                ? CommonController.formatDate(report.getPatientInvestigation().getApproveAt(), "dd/MM/yyyy hh:mm a") : "";
+                        break;
+                    case ReceivedAt:
+                        value = (report.getPatientInvestigation() != null)
+                                ? CommonController.formatDate(report.getPatientInvestigation().getReceivedAt(), "dd/MM/yyyy hh:mm a") : "";
+                        break;
+                    case PrintedAt:
+                        value = (report.getPatientInvestigation() != null)
+                                ? CommonController.formatDate(report.getPatientInvestigation().getPrintingAt(), "dd/MM/yyyy hh:mm a") : "";
+                        break;
+                    case AutherizedCode:
+                        value = (report.getApproveUser() != null && report.getApproveUser().getStaff() != null)
+                                ? report.getApproveUser().getStaff().getCode() : "";
+                        break;
+                    case AutherizedPosition:
+                        value = (report.getApproveUser() != null && report.getApproveUser().getStaff() != null)
+                                ? report.getApproveUser().getStaff().getSpeciality().getName() : "";
+                        break;
+                    case AutherizedQualification:
+                        value = (report.getApproveUser() != null && report.getApproveUser().getStaff() != null)
+                                ? report.getApproveUser().getStaff().getQualification() : "";
+                        break;
+                    case MRN:
+                        value = (report.getPatientInvestigation() != null && report.getPatientInvestigation().getPatient() != null)
+                                ? report.getPatientInvestigation().getPatient().getPhn() : "";
+                        break;
+                    default:
+                        break;
+                }
+
                 if (value != null && !value.isEmpty()) {
                     // Handle content rendering
                     PdfFont font = PdfFontFactory.createFont(StandardFonts.HELVETICA);
@@ -295,7 +429,6 @@ public class PdfController {
             System.out.println("Common report items are null.");
         }
 
-        
         if (report.getApproveUser() != null && report.getApproveUser().getStaff() != null) {
             StreamedContent signatureContent = staffImageController.getSignatureForPatientReport(report);
             if (signatureContent != null && signatureContent.getStream() != null) {
@@ -331,8 +464,8 @@ public class PdfController {
                 System.out.println("Signature content is null or has no stream.");
             }
         }
-        
-        
+
+        // </editor-fold>  
         document.close();
         System.out.println("Document closed.");
 
@@ -346,7 +479,6 @@ public class PdfController {
                 .build();
     }
 
-    
     private String getValueForReportItemType(ReportItemType reportItemType, PatientReport report) {
         switch (reportItemType) {
             case PatientName:
@@ -410,7 +542,7 @@ public class PdfController {
                 return "";
         }
     }
-    
+
     private Color parseColor(String colorStr) {
         if (colorStr == null || colorStr.isEmpty()) {
             return ColorConstants.BLACK;
