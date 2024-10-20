@@ -111,14 +111,22 @@
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'AutherizedPosition' and myCli.retired eq false  and cc.attrs.patientReport.approveUser.staff.id ne null}"  value="#{cc.attrs.patientReport.approveUser.staff.speciality.name}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'AutherizedQualification' and myCli.retired eq false  and cc.attrs.patientReport.approveUser.staff.id ne null}" value="#{cc.attrs.patientReport.approveUser.staff.qualification}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
 
-                <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'MRN' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.patient.phn}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
-                <h:panelGroup rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'SampledID' and myCli.retired eq false }"  >
-                    <ui:repeat value="#{patientInvestigationController.getPatientSampleComponentsByInvestigation(cc.attrs.patientReport.patientInvestigation)}" var="psc">
-                        <div class="d-flex gap-2">
-                            <h:outputText value="#{psc.patientSample.id}"  />
-                        </div>
-                    </ui:repeat>
+                <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'MRN' and myCli.retired eq false }"  
+                              value="#{cc.attrs.patientReport.patientInvestigation.patient.phn}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
+                <h:panelGroup rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'SampledID' and myCli.retired eq false}">
+                    <h:panelGroup rendered="#{empty cc.attrs.patientReport.sampleIDs}">
+                        <ui:repeat value="#{patientInvestigationController.getPatientSampleComponentsByInvestigation(cc.attrs.patientReport.patientInvestigation)}" var="psc">
+                            <div class="d-flex gap-2">
+                                <h:outputText value="#{psc.patientSample.id}" />
+                            </div>
+                        </ui:repeat>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{not empty cc.attrs.patientReport.sampleIDs}">
+                        <h:outputText value="#{cc.attrs.patientReport.sampleIDs}" />
+                    </h:panelGroup>
                 </h:panelGroup>
+
+
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'BillingDepartment' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.billItem.bill.department.name}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'PerformDepartment' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.billItem.bill.toDepartment.name}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'BillingInstitution' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.billItem.bill.institution.name}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>

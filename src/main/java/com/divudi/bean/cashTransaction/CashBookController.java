@@ -39,7 +39,7 @@ public class CashBookController implements Serializable {
     
     private CashBook cashBook;
 
-    
+    @Deprecated //Use CashbookService
     public CashBook findAndSaveCashBookBySite(Institution site, Institution ins, Department dept) {
         if (site==null) {
             return null;

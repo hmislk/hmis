@@ -171,12 +171,29 @@
                                 </h:panelGrid>
 
                                 <p:commandButton 
-                                    id="btnList" 
-                                    class="m-1 ui-button-danger"
-                                    icon="fas fa-list"
+                                    id="btnListAll" 
+                                    class="m-1 ui-button-info"
+                                    icon="fas fa-money-check-alt"
                                     ajax="false" 
-                                    value="View List"
-                                    action="#{searchController.createProfessionalFees()}" />
+                                    value="Professional Payments - All"
+                                    action="#{searchController.generateOpdProfessionalFees('ALL')}" />
+
+                                <p:commandButton 
+                                    id="btnListDone" 
+                                    class="m-1 ui-button-success"
+                                    icon="fas fa-check-circle"
+                                    ajax="false" 
+                                    value="Professional Payments - Done"
+                                    action="#{searchController.generateOpdProfessionalFees('DONE')}" />
+
+                                <p:commandButton 
+                                    id="btnListDue" 
+                                    class="m-1 ui-button-warning"
+                                    icon="fas fa-exclamation-circle"
+                                    ajax="false" 
+                                    value="Professional Payments - Due"
+                                    action="#{searchController.generateOpdProfessionalFees('DUE')}" />
+
 
                                 <p:commandButton 
                                     id="btnPdf" 
@@ -339,7 +356,7 @@
                                 <f:facet name="header">
                                     <h:outputText value="Payment Status" />
                                 </f:facet>
-                                <h:outputText value="#{row.billFee.completedPayment?'Paid':'Not Paid'}">
+                                <h:outputText value="#{row.billFee.paidValue gt 1.0 ?'Paid':'Not Paid'}">
                                 </h:outputText>
                             </p:column>
 

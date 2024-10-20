@@ -450,7 +450,7 @@ public class StaffPaymentBillController implements Serializable {
         System.out.println("Paid Value: " + paidValue);
         System.out.println("Withholding Tax Limit: " + getWithholdingTaxLimit());
         if (getWithholdingTaxLimit() < paidValue) {
-            withholdingTax = totalPaying * (getWithholdingTaxPercentage() / 100 );
+            withholdingTax = totalPaying * (getWithholdingTaxPercentage() / 100);
             System.out.println("Withholding Tax Percentage: " + getWithholdingTaxPercentage());
             System.out.println("Withholding Tax Calculated: " + withholdingTax);
         } else {
@@ -536,15 +536,15 @@ public class StaffPaymentBillController implements Serializable {
         tmp.setBillTypeAtomic(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES);
         tmp.setCreatedAt(Calendar.getInstance().getTime());
         tmp.setCreater(getSessionController().getLoggedUser());
-        tmp.setDepartment(getSessionController().getLoggedUser().getDepartment());
-
-        tmp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.PaymentBill, BillClassType.BilledBill, BillNumberSuffix.PROPAY));
-        tmp.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PaymentBill, BillClassType.BilledBill, BillNumberSuffix.PROPAY));
+        tmp.setDepartment(getSessionController().getDepartment());
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL);
+        tmp.setDeptId(deptId);
+        tmp.setInsId(deptId);
 
         tmp.setDiscount(0.0);
         tmp.setDiscountPercent(0.0);
 
-        tmp.setInstitution(getSessionController().getLoggedUser().getInstitution());
+        tmp.setInstitution(getSessionController().getInstitution());
         tmp.setNetTotal(0 - totalPayingWithoutWht);
         tmp.setTax(withholdingTax);
         tmp.setPaymentMethod(paymentMethod);
