@@ -61,22 +61,17 @@ public class PaymentController implements Serializable {
     }
 
     public void listChequesToPay() {
-        String jpql = "select p "
-                + " from Payment p"
-                + " where p.retired=:retired"
-                + " and p.paymentMethod=:paymentMethod"
+        String jpql = "select p from Payment p"
+                + " where p.retired = :retired"
+                + " and p.paymentMethod = :paymentMethod"
                 + " and p.createdAt between :fromDate and :toDate"
-                + " and p.chequePaid<>:cp";
+                + " and p.chequePaid = false";
         Map<String, Object> params = new HashMap<>();
         params.put("retired", false);
-        params.put("cp", true);
         params.put("paymentMethod", PaymentMethod.Cheque);
         params.put("fromDate", fromDate);
         params.put("toDate", toDate);
         items = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
-        System.out.println("params = " + params);
-        System.out.println("jpql = " + jpql);
-        System.out.println("items = " + items);
     }
 
     public void listChequesToMarkAsRealized() {
@@ -84,46 +79,40 @@ public class PaymentController implements Serializable {
                 + " where p.retired = :retired"
                 + " and p.paymentMethod = :paymentMethod"
                 + " and p.createdAt between :fromDate and :toDate"
-                + " and p.chequeRealized<>:cr";
+                + " and p.chequeRealized = false";
         Map<String, Object> params = new HashMap<>();
         params.put("retired", false);
-        params.put("cr", true);
         params.put("paymentMethod", PaymentMethod.Cheque);
-
-        items = getFacade().findByJpql(jpql, params);
-        System.out.println("params = " + params);
-        System.out.println("jpql = " + jpql);
-        System.out.println("items = " + items);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+        items = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     public void listAllCheques() {
-        String jpql = "select p "
-                + " from Payment p"
-                + " where p.retired=:retired"
+        String jpql = "select p from Payment p"
+                + " where p.retired = :retired"
                 + " and p.createdAt between :fromDate and :toDate"
-                + " and p.paymentMethod=:paymentMethod";
+                + " and p.paymentMethod = :paymentMethod";
         Map<String, Object> params = new HashMap<>();
         params.put("retired", false);
         params.put("paymentMethod", PaymentMethod.Cheque);
-        items = getFacade().findByJpql(jpql, params);
-        System.out.println("params = " + params);
-        System.out.println("jpql = " + jpql);
-        System.out.println("items = " + items);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+        items = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     public void listChequesRealized() {
         String jpql = "select p from Payment p"
-                + " where p.retired=:retired"
+                + " where p.retired = :retired"
                 + " and p.createdAt between :fromDate and :toDate"
-                + " and p.paymentMethod=:paymentMethod"
-                + " and p.chequeRealized=true";  // Only cheques that have been realized
+                + " and p.paymentMethod = :paymentMethod"
+                + " and p.chequeRealized = true";
         Map<String, Object> params = new HashMap<>();
         params.put("retired", false);
         params.put("paymentMethod", PaymentMethod.Cheque);
-        items = getFacade().findByJpql(jpql, params);
-        System.out.println("params = " + params);
-        System.out.println("jpql = " + jpql);
-        System.out.println("items = " + items);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+        items = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     public void save(Payment payment) {
