@@ -95,6 +95,10 @@ public class PaymentController implements Serializable {
             JsfUtil.addErrorMessage("Select one or more cheques");
             return null;
         }
+        if (bankAccount == null) {
+            JsfUtil.addErrorMessage("Select bank account");
+            return null;
+        }
         double absTotal = Math.abs(total);
         if (absTotal < 1) {
             JsfUtil.addErrorMessage("Select one or more cheques");
@@ -125,6 +129,8 @@ public class PaymentController implements Serializable {
         bill.setNetTotal(total);
         bill.setGrantTotal(total);
         bill.setBillDate(new Date());
+        bill.setBankAccount(bankAccount);
+        bill.setBank(bankAccount.getBank());
         billEjb.save(bill, sessionController.getLoggedUser());
         for (Payment p : items) {
             p.setChequePaid(true);

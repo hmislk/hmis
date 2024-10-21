@@ -120,12 +120,26 @@
                                 <div class="col-6">
                                     #{paymentController.items.size()}
                                 </div>
+                                
+                                <div class="col-6">
+                                    <strong>Bank:</strong>
+                                </div>
+                                <div class="col-6">
+                                    #{paymentController.bill.bank.name}
+                                </div>
 
                                 <div class="col-6">
                                     <strong>Bank Account:</strong>
                                 </div>
                                 <div class="col-6">
-                                    #{paymentController.bankAccount.accountNo}
+                                    #{paymentController.bill.bankAccount.accountNo}
+                                </div>
+                                
+                                <div class="col-6">
+                                    <strong>User:</strong>
+                                </div>
+                                <div class="col-6">
+                                    #{paymentController.bill.creater.webUserPerson.name}
                                 </div>
                             </div>
 
