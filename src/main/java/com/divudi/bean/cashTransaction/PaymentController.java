@@ -10,11 +10,15 @@ package com.divudi.bean.cashTransaction;
 
 import com.divudi.bean.common.*;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.PaymentMethod;
 import com.divudi.entity.Payment;
 import com.divudi.facade.PaymentFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -23,6 +27,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -39,7 +44,147 @@ public class PaymentController implements Serializable {
     @EJB
     private PaymentFacade ejbFacade;
     private Payment current;
+    private boolean printPreview;
     private List<Payment> items = null;
+    private List<Payment> itemsSelected = null;
+    private Date fromDate;
+    private Date toDate;
+    private Double total;
+
+    public String navigateToPayCheques() {
+        items = null;
+        current = null;
+        printPreview=false;
+        return "/payments/cheque/list_cheques?faces-redirect=true";
+    }
+
+    public String navigateToMarkChequesAsCleared() {
+        items = null;
+        current = null;
+        printPreview=false;
+        return "/payments/cheque/mark_cheque?faces-redirect=true";
+    }
+
+    public void relazieCheques(){
+        
+        printPreview=true;
+    }
+    
+    public String navigateToPaySelectedCheques() {
+        if (itemsSelected == null) {
+            JsfUtil.addErrorMessage("Select one or more cheques");
+            return null;
+        }
+        if (itemsSelected.isEmpty()) {
+            JsfUtil.addErrorMessage("Select one or more cheques");
+            return null;
+        }
+        total=0.0;
+        
+        for (Payment p : itemsSelected) {
+            total += p.getPaidValue();
+            if (p.isRealized()) {
+                total=0.0;
+                JsfUtil.addErrorMessage("You have selected some already realized cheques.");
+                return null;
+            }
+            if (p.getPaymentMethod() != PaymentMethod.Cheque) {
+                total=0.0;
+                JsfUtil.addErrorMessage("Only CHeques are managed here.");
+                return null;
+            }
+        }
+        items = itemsSelected;
+        itemsSelected = null;
+        printPreview=false;
+        return "/payments/cheque/realize_cheques?faces-redirect=true";
+    }
+
+    public String navigateToMarkSelectedAsRealized() {
+        if (itemsSelected == null) {
+            JsfUtil.addErrorMessage("Select one or more cheques");
+            return null;
+        }
+        if (itemsSelected.isEmpty()) {
+            JsfUtil.addErrorMessage("Select one or more cheques");
+            return null;
+        }
+        total=0.0;
+        for (Payment p : itemsSelected) {
+            total += p.getPaidValue();
+            if (p.isRealized()) {
+                total=0.0;
+                JsfUtil.addErrorMessage("You have selected some already realized cheques.");
+                return null;
+            }
+            if (p.getPaymentMethod() != PaymentMethod.Cheque) {
+                total=0.0;
+                JsfUtil.addErrorMessage("Only CHeques are managed here.");
+                return null;
+            }
+        }
+        items = itemsSelected;
+        itemsSelected = null;
+        printPreview=false;
+        return "/payments/cheque/realize_cheques?faces-redirect=true";
+    }
+
+    
+    
+    public void listChequesToPay() {
+        String jpql = "select p from Payment p"
+                + " where p.retired = :retired"
+                + " and p.paymentMethod = :paymentMethod"
+                + " and p.createdAt between :fromDate and :toDate"
+                + " and p.chequePaid = false";
+        Map<String, Object> params = new HashMap<>();
+        params.put("retired", false);
+        params.put("paymentMethod", PaymentMethod.Cheque);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+        items = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+
+    public void listChequesToMarkAsRealized() {
+        String jpql = "select p from Payment p"
+                + " where p.retired = :retired"
+                + " and p.paymentMethod = :paymentMethod"
+                + " and p.createdAt between :fromDate and :toDate"
+                + " and p.chequeRealized = false";
+        Map<String, Object> params = new HashMap<>();
+        params.put("retired", false);
+        params.put("paymentMethod", PaymentMethod.Cheque);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+        items = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+
+    public void listAllCheques() {
+        String jpql = "select p from Payment p"
+                + " where p.retired = :retired"
+                + " and p.createdAt between :fromDate and :toDate"
+                + " and p.paymentMethod = :paymentMethod";
+        Map<String, Object> params = new HashMap<>();
+        params.put("retired", false);
+        params.put("paymentMethod", PaymentMethod.Cheque);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+        items = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+
+    public void listChequesRealized() {
+        String jpql = "select p from Payment p"
+                + " where p.retired = :retired"
+                + " and p.createdAt between :fromDate and :toDate"
+                + " and p.paymentMethod = :paymentMethod"
+                + " and p.chequeRealized = true";
+        Map<String, Object> params = new HashMap<>();
+        params.put("retired", false);
+        params.put("paymentMethod", PaymentMethod.Cheque);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+        items = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
 
     public void save(Payment payment) {
         if (payment == null) {
@@ -128,6 +273,63 @@ public class PaymentController implements Serializable {
     private PaymentFacade getFacade() {
         return ejbFacade;
     }
+
+    public List<Payment> getItems() {
+        return items;
+    }
+
+    public void setItems(List<Payment> items) {
+        this.items = items;
+    }
+
+    public Date getFromDate() {
+        if (fromDate == null) {
+            fromDate = CommonFunctions.getStartOfMonth();
+        }
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        if (toDate == null) {
+            toDate = CommonFunctions.getEndOfDay();
+        }
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
+    public List<Payment> getItemsSelected() {
+        return itemsSelected;
+    }
+
+    public void setItemsSelected(List<Payment> itemsSelected) {
+        this.itemsSelected = itemsSelected;
+    }
+
+    public Double getTotal() {
+        return total;
+    }
+
+    public void setTotal(Double total) {
+        this.total = total;
+    }
+
+    public boolean isPrintPreview() {
+        return printPreview;
+    }
+
+    public void setPrintPreview(boolean printPreview) {
+        this.printPreview = printPreview;
+    }
+    
+    
+    
 
     /**
      *
