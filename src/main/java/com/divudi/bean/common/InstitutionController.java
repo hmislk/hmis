@@ -210,6 +210,14 @@ public class InstitutionController implements Serializable {
     }
 
     public List<Institution> completeInstitution(String qry, InstitutionType[] types) {
+        return completeInstitution(qry, types, null);
+    }
+
+    public List<Institution> completeInstitution(String qry, InstitutionType type, Institution parent) {
+        return completeInstitution(qry, new InstitutionType[]{type}, parent);
+    }
+
+    public List<Institution> completeInstitution(String qry, InstitutionType[] types, Institution parent) {
         String sql;
         HashMap hm = new HashMap();
         sql = "select c from Institution c "
@@ -222,6 +230,10 @@ public class InstitutionController implements Serializable {
             List<InstitutionType> lstTypes = Arrays.asList(types);
             hm.put("types", lstTypes);
             sql += "  and c.institutionType in :types";
+        }
+        if (parent != null) {
+            hm.put("parent", parent);
+            sql += "  and c.parentInstitution=:parent";
         }
         sql += " order by c.name";
         return getFacade().findByJpql(sql, hm);
@@ -332,6 +344,10 @@ public class InstitutionController implements Serializable {
             banks = completeInstitution(null, InstitutionType.Bank);
         }
         return banks;
+    }
+
+    public List<Institution> getBranches(Institution bank) {
+        return completeInstitution(null, InstitutionType.branch, bank);
     }
 
     public Institution getInstitutionByName(String name, InstitutionType type) {

@@ -211,13 +211,8 @@
                                 value="Process Report"
                                 action="#{searchController.processWhtReport()}"/>
 
-                            <p:commandButton 
-                                class="ui-button-warning mx-1" 
-                                ajax="false" 
-                                value="Process" 
-                                icon="fas fa-cogs" 
-                                action="#{reportController.processLabTestCount()}" >
-                            </p:commandButton>
+
+
                             <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
                             </p:commandButton>
                             <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download" action="#{reportController.downloadLabTestCount}">

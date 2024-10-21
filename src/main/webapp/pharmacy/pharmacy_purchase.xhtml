@@ -5,6 +5,7 @@
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
                 xmlns:pharmacy="http://xmlns.jcp.org/jsf/composite/pharmacy">
 
     <ui:define name="content">
@@ -12,10 +13,31 @@
         <h:form id="bill">
             <p:growl id="msg"/>
             <p:panel rendered="#{!pharmacyPurchaseController.printPreview}" style="height: 100vh">
-                <f:facet name="header" > 
-                    <h:outputText styleClass="fas fa-shopping-bag"/>
-                    <h:outputText  class="mx-4" value="Pharmacy Purchase" />  
+                <f:facet name="header">
+                    <div class="d-flex justify-content-between align-items-center w-100">
+                        <div>
+                            <h:outputText styleClass="fas fa-shopping-bag"/>
+                            <h:outputText class="mx-4" value="Pharmacy Direct Purchase" />
+                        </div>
+                        <div>
+                            <p:commandButton value="Settle" 
+                                             action="#{pharmacyPurchaseController.settle}"
+                                             styleClass="ui-button-success" 
+                                             ajax="false"
+                                             icon="pi pi-check-circle" 
+                                             style="margin-right: 8px;">
+                            </p:commandButton>
+                            <p:commandButton value="New Direct Purchase Bill" 
+                                             ajax="false"
+                                             styleClass="ui-button-warning"
+                                             icon="pi pi-plus"
+                                             action="#{pharmacyPurchaseController.makeNull()}" 
+                                             style="margin-right: 8px;">
+                            </p:commandButton>
+                        </div>
+                    </div>
                 </f:facet>
+
 
                 <div class="row">
                     <div class="col-6">
@@ -43,33 +65,27 @@
                             <f:facet name="header" > 
                                 <h:outputText styleClass="fa fa-money-bill-wave"/>
                                 <h:outputText  class="mx-4" value="Payment Details" />  
-                            </f:facet>
-                            
-                            <div class="row">
-                                <div class="col-6">
-                                    <h:panelGrid columns="2">
-                                <p:outputLabel value="Payment Method"/>
-                                <p:selectOneMenu class="mx-4"  id="cmbPs" value="#{pharmacyPurchaseController.bill.paymentMethod}">       
-                                    <f:selectItem itemLabel="Select Payment Method" />
-                                    <f:selectItems value="#{enumController.paymentMethodsForPo}" />
-                                </p:selectOneMenu>
 
-                            </h:panelGrid>
-                                </div>
-                                <div class="col-6">
-                                    <div class="d-flex align-items-center justify-content-end">
-                                <p:commandButton  value="Settle" 
-                                                  action="#{pharmacyPurchaseController.settle}"
-                                                  class="mx-2 ui-button-success"
-                                                  ajax="false"
-                                                  icon="fas fa-check-circle">
-                                </p:commandButton>
-                                <p:commandButton value="New Bill" ajax="false"
-                                                 class="mx-2 ui-button-warning"
-                                                 icon="fas fa-plus"
-                                                 action="#{pharmacyPurchaseController.makeNull()}" >
-                                </p:commandButton>
-                            </div>
+                            </f:facet>
+
+                            <div class="row">
+                                <div class="col-12">
+                                    <h:panelGrid columns="2">
+                                        <p:outputLabel value="Payment Method"/>
+                                        <p:selectOneMenu class="mx-4"  id="cmbPs" value="#{pharmacyPurchaseController.bill.paymentMethod}">       
+                                            <f:selectItem itemLabel="Select Payment Method" />
+                                            <f:selectItems value="#{enumController.paymentMethodsForPo}" />
+                                            <p:ajax event="change" process="cmbPs" update="paymentMethodDetails" ></p:ajax>
+                                        </p:selectOneMenu>
+                                    </h:panelGrid>
+                                    <h:panelGrid id="paymentMethodDetails" class="w-100 b-1" >
+                                        <h:panelGroup
+                                            class="row my-1"
+                                            layout="block" 
+                                            id="cheque"  rendered="#{pharmacyPurchaseController.bill.paymentMethod eq 'Cheque'}" >
+                                            <pa:cheque paymentMethodData="#{pharmacyPurchaseController.paymentMethodData}"/>
+                                        </h:panelGroup>
+                                    </h:panelGrid>
                                 </div>
                             </div>
                             <p:spacer height="40px"></p:spacer>
@@ -229,9 +245,9 @@
                                     execute="item qty freeQty purchase retail" listener="#{pharmacyPurchaseController.onEdit(ph)}" ></f:ajax> 
                         </p:inputText>
                     </p:column> 
-                    
-                    
-                    
+
+
+
                     <p:column headerText="P. Rate" style="width:8em; padding: 0px;" styleClass="#{ph.item.category.profitMargin > ((ph.pharmaceuticalBillItem.retailRate - ph.pharmaceuticalBillItem.purchaseRate) / ph.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">                     
                         <p:inputText autocomplete="off" id="purchase" value="#{ph.pharmaceuticalBillItem.purchaseRate}" style="width: 70px; text-align: right;">
                             <f:ajax event="blur" render="itemList totalSaleValue :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="@this qty item qty freeQty purchase retail" listener="#{pharmacyPurchaseController.onEditPurchaseRate(ph)}" ></f:ajax> 
@@ -370,14 +386,14 @@
                             </div>
                             <div>
                                 <p:commandButton ajax="false" 
-                                             class="ui-button-success"
-                                             icon="fa fa-plus"
-                                             action="#{pharmacyPurchaseController.makeNull()}" value="New Bill"/>                    
-                            <p:commandButton value="Print" ajax="false" action="#" 
-                                             class="ui-button-info mx-2"
-                                             icon="fas fa-print">
-                                <p:printer target="gpBillPreview" ></p:printer>
-                            </p:commandButton>
+                                                 class="ui-button-success"
+                                                 icon="fa fa-plus"
+                                                 action="#{pharmacyPurchaseController.makeNull()}" value="New Bill"/>                    
+                                <p:commandButton value="Print" ajax="false" action="#" 
+                                                 class="ui-button-info mx-2"
+                                                 icon="fas fa-print">
+                                    <p:printer target="gpBillPreview" ></p:printer>
+                                </p:commandButton>
                             </div>
                         </div>
                     </f:facet>

@@ -364,7 +364,7 @@
                                                         ajax="false">
                                                     </p:commandButton>
                                                 </div>
-                                                <div class="row">
+                                                <div class="row  my-2">
                                                     <p:commandButton 
                                                         icon="fa fa-file-text"
                                                         value="To Reports" 
@@ -372,6 +372,45 @@
                                                         ajax="false" 
                                                         action="#{patientInvestigationController.navigateToPatientReportsFromSelectedInvestigation(patientInvestigation)}" >
                                                     </p:commandButton>
+                                                </div>
+                                                <div class="row" >
+                                                    <p:commandButton 
+                                                        value="Add Alternative Report" 
+                                                        onclick="PF('dialogAlternativeReport').show()"
+                                                        >
+                                                    </p:commandButton>
+
+                                                    <p:dialog id="dialogAlternativeReport" widgetVar="dialogAlternativeReport" header="Add Alternative Report">
+                                                        <p:panelGrid columns="2" >
+                                                            <p:outputLabel value="Select Alternative Report" ></p:outputLabel>
+                                                            <p:selectOneMenu value="#{patientReportController.currentReportInvestigation}" >
+                                                                <f:selectItem itemLabel="Select alternative report" ></f:selectItem>
+                                                                <f:selectItems 
+                                                                    value="#{itemForItemController.getItemsForParentItem(patientInvestigation.investigation)}" 
+                                                                    var="alternativeReport"
+                                                                    itemLabel="#{alternativeReport.name}"
+                                                                    itemValue="#{alternativeReport}">
+                                                                </f:selectItems>
+                                                            </p:selectOneMenu>
+
+                                                            <p:outputLabel value="Select Sample" ></p:outputLabel>
+                                                            <p:selectOneMenu value="#{patientReportController.currentPatientSampleComponant}" >
+                                                                <f:selectItem itemLabel="Select Sample" ></f:selectItem>
+                                                                <f:selectItems 
+                                                                    value="#{patientInvestigationController.getPatientSampleComponentsByInvestigation(patientInvestigation)}" 
+                                                                    var="psc"
+                                                                    itemValue="#{psc}"
+                                                                    itemLabel="#{psc.patientSample.idStr}">
+                                                                </f:selectItems>
+                                                            </p:selectOneMenu>
+
+                                                            <p:commandButton 
+                                                                ajax="false" 
+                                                                value="Add New Alternative Report" 
+                                                                action="#{patientReportController.enterNewAlternativeReportFormat(patientInvestigation)}" ></p:commandButton>
+
+                                                        </p:panelGrid>
+                                                    </p:dialog>
                                                 </div>
 
                                             </h:panelGroup>

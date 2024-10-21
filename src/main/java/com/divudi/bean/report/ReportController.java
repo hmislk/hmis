@@ -299,7 +299,7 @@ public class ReportController implements Serializable {
             Bill bill = bi.getBill();
             BillAndItemDataRow row = billMap.getOrDefault(bill, new BillAndItemDataRow());
             row.setBill(bill);
-
+            
             if (row.getItemDetailCells().isEmpty()) {
                 for (int i = 0; i < sortedItems.size(); i++) {
                     row.getItemDetailCells().add(new ItemDetailsCell());
@@ -973,7 +973,7 @@ public class ReportController implements Serializable {
             params.put("doc", doctor);
         }
 
-        jpql += " AND bi.bill.billDate between :fd and :td "
+        jpql += " AND bi.bill.createdAt between :fd and :td "
                 + " AND bi.bill.referredBy IS NOT NULL "
                 + " GROUP BY bi.bill.referredBy.person, bi.bill.cancelled, bi.bill.refunded";
 
@@ -1112,13 +1112,17 @@ public class ReportController implements Serializable {
         sql = "select a from AgentReferenceBook a "
                 + " where a.retired=false "
                 + " and a.deactivate=false "
+                + " and a.createdAt between :fd and :td "
                 + " and a.fullyUtilized=false ";
 
         if (collectingCentre != null) {
             sql += "and a.institution=:ins order by a.id";
             m.put("ins", collectingCentre);
         }
-        agentReferenceBooks = agentReferenceBookFacade.findByJpql(sql, m);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        
+        agentReferenceBooks = agentReferenceBookFacade.findByJpql(sql, m,TemporalType.TIMESTAMP);
 
     }
 
@@ -1137,7 +1141,7 @@ public class ReportController implements Serializable {
         m.put("bts", bts);
 
         if (institution != null) {
-            jpql += "AND cb.creditCompany = :cc ";
+            jpql += "AND cb.creditCompany = : cc ";
             m.put("cc", institution);
         }
 
@@ -1149,7 +1153,6 @@ public class ReportController implements Serializable {
         if (selectedVoucherStatusOnDebtorSettlement != null) {
             // Filter the bills list based on the statusFilter
             bills = filterBillsByStatus(bills, selectedVoucherStatusOnDebtorSettlement);
-
         }
         netTotal = 0.0;
 
@@ -3061,7 +3064,7 @@ public class ReportController implements Serializable {
                 + ") "
                 + "from BillItem bi "
                 + "where bi.retired = :ret "
-                + "and bi.bill.billDate between :fd and :td "
+                + "and bi.bill.createdAt between :fd and :td "
                 + "and bi.bill.billTypeAtomic IN :bType " // Corrected IN clause
                 + "and type(bi.item) = :invType ";
 
@@ -3102,15 +3105,14 @@ public class ReportController implements Serializable {
         }
 
         // Fetch results for OpdBill
-        List<TestWiseCountReport> positiveResults = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m);
-
+        List<TestWiseCountReport> positiveResults = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
         // Now fetch results for OpdBillCancel (use a list for single bType)
         m.put("bType", Collections.singletonList(BillTypeAtomic.OPD_BILL_CANCELLATION));
-        List<TestWiseCountReport> cancelResults = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m);
+        List<TestWiseCountReport> cancelResults = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
 
         // Now fetch results for OpdBillRefund (use a list for single bType)
         m.put("bType", Collections.singletonList(BillTypeAtomic.OPD_BILL_REFUND));
-        List<TestWiseCountReport> refundResults = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m);
+        List<TestWiseCountReport> refundResults = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
 
         // Subtract cancel and refund results from the main results
         Map<String, TestWiseCountReport> resultMap = new HashMap<>();

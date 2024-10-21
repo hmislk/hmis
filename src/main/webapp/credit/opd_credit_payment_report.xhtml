@@ -15,86 +15,122 @@
                 <h:form >
                     <p:panel >
                         <f:facet name="header" >
-                            <h:outputLabel value="OPD Payment Report" ></h:outputLabel>
+                            <div class="d-flex justify-content-between">
+                                <h:outputLabel value="OPD Payment Report" class="mt-2"/>
+                                <div class="d-flex gap-2">
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Excel"   
+                                        class="ui-button-success mx-1"
+                                        icon="fas fa-file-excel">
+                                        <p:dataExporter type="xlsx" target="tb1" fileName="bht_income_by_categories"  />
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        value="Print" 
+                                        ajax="false" 
+                                        action="#" 
+                                        class="ui-button-info mx-1" 
+                                        icon="fas fa-print">
+                                        <p:printer target="gpBillPreview" ></p:printer>
+                                    </p:commandButton>
+                                </div>
+                            </div>
                         </f:facet>
 
 
-                        <h:panelGrid columns="2" >
-                            <h:outputLabel value="From : " ></h:outputLabel>
-                            <p:calendar value="#{inwardReportController1.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
-                            <h:outputLabel value="To : " ></h:outputLabel>
-                            <p:calendar value="#{inwardReportController1.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>                            
-                            <h:outputLabel value="Credit Company : " ></h:outputLabel>
-                            <p:selectOneMenu  id="lstCc"   value="#{inwardReportController1.institution}" >
-                                <f:selectItem itemLabel="All Credit Companies"/>
-                                <f:selectItems  value="#{creditCompanyController.creditCompanies}" var="cc" 
-                                                itemValue="#{cc}" itemLabel="#{cc.name}"></f:selectItems>
-                            </p:selectOneMenu>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="form d-flex flex-column" >
+                                    <h:panelGroup id="searchKeyword">
+                                        <h:outputLabel value="From" class="my-1"></h:outputLabel>
+                                        <p:calendar 
+                                            value="#{inwardReportController1.fromDate}" 
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  
+                                            inputStyleClass="form-control">
+                                        </p:calendar>
+                                        <h:outputLabel value="To" class="my-1"></h:outputLabel>
+                                        <p:calendar 
+                                            value="#{inwardReportController1.toDate}" 
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  
+                                            inputStyleClass="form-control">
+                                        </p:calendar>                            
+                                        <h:outputLabel value="Credit Company" style="margin: 5px 0px;"></h:outputLabel>
+                                        <p:selectOneMenu  
+                                            id="lstCc"   
+                                            value="#{inwardReportController1.institution}"
+                                            class="w-100 mb-1">
+                                            <f:selectItem itemLabel="All Credit Companies"/>
+                                            <f:selectItems  value="#{creditCompanyController.creditCompanies}" var="cc" 
+                                                            itemValue="#{cc}" itemLabel="#{cc.name}"></f:selectItems>
+                                        </p:selectOneMenu>
+                                        <h:outputLabel value="Service Name" />
+                                        <p:autoComplete 
+                                            value="#{inwardReportController1.service}" 
+                                            completeMethod="#{itemController.completeService}" 
+                                            var="ix" 
+                                            itemLabel="#{ix.name}" 
+                                            itemValue="#{ix}" 
+                                            size="41"  
+                                            forceSelection="true" 
+                                            class="my-1">
+                                            <p:column>
+                                                #{ix.name}
+                                            </p:column>
+                                            <p:column>
+                                                #{ix.department.name}
+                                            </p:column>  
+                                            <p:column>
+                                                #{ix.category.name}
+                                            </p:column> 
+                                        </p:autoComplete>
+                                        <h:outputText value="Service Category/Sub Category"></h:outputText>
+                                        <p:autoComplete 
+                                            completeMethod="#{categoryController.completeServiceCategory}"
+                                            var="pta" 
+                                            itemLabel="#{pta.name} #{pta.parentCategory}" 
+                                            itemValue="#{pta}" 
+                                            forceSelection="true" 
+                                            value="#{inwardReportController1.category}" 
+                                            size="41"
+                                            class="my-1">                                    
+                                            <p:column>#{pta.name}</p:column>
+                                            <p:column>#{pta.parentCategory}</p:column>                                        
+                                        </p:autoComplete>
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            value="Process" 
+                                            action="#{inwardReportController1.opdCreditPayments()}"   
+                                            class="ui-button-warning my-3 w-100"
+                                            icon="fas fa-cogs">
+                                        </p:commandButton>
+                                    </h:panelGroup>
+                                </div>
+                            </div>
 
-                            <h:outputLabel value="Service Name"/>
+                            <div class="col-md-9">
+                                <p:panel id="gpBillPreview" > 
+                                    <p:dataTable id="tb1" value="#{inwardReportController1.billItems}" var="rm"> 
+                                        <f:facet name="header" >
+                                            <h:outputLabel value="Credit Company OPD Collection"/>
+                                        </f:facet>
+                                        <p:column headerText="Bill No">
+                                            #{rm.bill.deptId}
+                                        </p:column>
+                                        <p:column headerText="Service Name ">
+                                            #{rm.item.name}
+                                        </p:column>
+                                        <p:column headerText="Value">
+                                            <h:outputLabel value="#{rm.netValue}">
+                                            </h:outputLabel>
 
-                            <p:autoComplete value="#{inwardReportController1.service}" completeMethod="#{itemController.completeService}" var="ix" 
-                                            itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;" forceSelection="true" >
-                                <p:column>
-                                    #{ix.name}
-                                </p:column>
-                                <p:column>
-                                    #{ix.department.name}
-                                </p:column>  
-                                <p:column>
-                                    #{ix.category.name}
-                                </p:column> 
-                            </p:autoComplete>
-
-                            <h:outputText value="Service Category/Sub Category" ></h:outputText>
-                            <p:autoComplete completeMethod="#{categoryController.completeServiceCategory}"
-                                            var="pta" itemLabel="#{pta.name} #{pta.parentCategory}" itemValue="#{pta}" forceSelection="true" value="#{inwardReportController1.category}" >                                    
-                                <p:column>#{pta.name}</p:column>
-                                <p:column>#{pta.parentCategory}</p:column>                                        
-                            </p:autoComplete>
-
-
-                        </h:panelGrid>
-
-
-
-                        <p:panelGrid columns="3">
-                        <p:commandButton ajax="false" value="Process" action="#{inwardReportController1.opdCreditPayments()}"   ></p:commandButton>
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
-                            <p:dataExporter type="xlsx" target="tb1" fileName="bht_income_by_categories"  />
-                        </p:commandButton>
-                        <p:commandButton value="Print" ajax="false" action="#" >
-                            <p:printer target="gpBillPreview" ></p:printer>
-                        </p:commandButton>
-                        </p:panelGrid>
-                        
-                        <p:panel id="gpBillPreview" > 
-
-
-                            <p:dataTable id="tb1" value="#{inwardReportController1.billItems}" var="rm"> 
-                                
-                                <f:facet name="header" >
-                                    <h:outputLabel value="Credit Company OPD Collection"/>
-                                </f:facet>
-
-                                <p:column headerText="Bill No">
-                                    #{rm.bill.deptId}
-                                </p:column>
-                                <p:column headerText="Service Name ">
-                                    #{rm.item.name}
-                                </p:column>
-                                <p:column headerText="Value">
-                                    <h:outputLabel value="#{rm.netValue}">
-                                    </h:outputLabel>
-
-                                    <f:facet name="footer">
-                                        <h:outputLabel value="#{inwardReportController1.billItemNetValue}"/>
-                                    </f:facet> 
-                                </p:column>
-
-                            </p:dataTable>
-                        </p:panel>
-
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="#{inwardReportController1.billItemNetValue}"/>
+                                            </f:facet> 
+                                        </p:column>
+                                    </p:dataTable>
+                                </p:panel>
+                            </div>
+                        </div>
 
                     </p:panel>
 
