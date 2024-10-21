@@ -137,7 +137,7 @@
                                 </p:column>
                                 <p:column headerText="Settlement Status" >
                                    <h:outputText value="Settled" rendered="#{pc.netTotal eq reportController.findVoucherIsAvailable(pc).bill.netTotal}" />
-                                    <h:outputText value="Partially Settled" rendered="#{pc.netTotal lt reportController.findVoucherIsAvailable(pc).bill.netTotal}" />
+                                    <h:outputText value="Partially Settled" rendered="#{reportController.findVoucherIsAvailable(pc).bill.netTotal lt pc.netTotal}" />
                                     <h:outputText value="Unsettled" rendered="#{reportController.findVoucherIsAvailable(pc) eq null}" />
                                 </p:column>
                                 <p:column headerText="Created By" >
