@@ -104,9 +104,17 @@
                                     <h:outputText value="#{reportController.findVoucherIsAvailable(pc).bill.createdAt}" rendered="#{reportController.findVoucherIsAvailable(pc) ne null}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputText value="Grand Total" />
+                                    </f:facet>
                                 </p:column>
                                 <p:column headerText="Voucher Amount" >
                                     <h:outputText value="#{reportController.findVoucherIsAvailable(pc).bill.netTotal}" rendered="#{reportController.findVoucherIsAvailable(pc) ne null}" ></h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputText value="#{reportController.netTotal}" >
+                                       <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                    </f:facet>
                                 </p:column>
                                 <p:column headerText="Adjusted Amount" >
                                     <h:outputText value="#{reportController.findVoucherIsAvailable(pc).bill.adjustedTotal}" rendered="#{reportController.findVoucherIsAvailable(pc) ne null}" >
