@@ -6622,7 +6622,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         return bs;
     }
 
-    private String generateBillNumberInsId(Bill bill) {
+    public String generateBillNumberInsId(Bill bill) {
         String suffix = getSessionController().getInstitution().getInstitutionCode();
         BillClassType billClassType = null;
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff, BillType.ChannelCredit};

@@ -12,6 +12,7 @@ import com.divudi.data.PaymentMethod;
 import com.divudi.data.inward.SurgeryBillType;
 import com.divudi.data.lab.PatientInvestigationStatus;
 import com.divudi.entity.cashTransaction.CashTransaction;
+import com.divudi.entity.hr.BankAccount;
 import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.entity.pharmacy.StockVarientBillItem;
 import java.io.Serializable;
@@ -302,6 +303,8 @@ public class Bill implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     private WebUser fromWebUser;
     double claimableTotal;
+    
+    private BankAccount bankAccount;
 
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date appointmentAt;
@@ -2272,6 +2275,8 @@ public class Bill implements Serializable {
     public String getLocalNumber() {
         return localNumber;
     }
+    
+    
 
     public void setLocalNumber(String localNumber) {
         this.localNumber = localNumber;
@@ -2404,6 +2409,14 @@ public class Bill implements Serializable {
 
     public void setCompletedAt(Date completedAt) {
         this.completedAt = completedAt;
+    }
+
+    public BankAccount getBankAccount() {
+        return bankAccount;
+    }
+
+    public void setBankAccount(BankAccount bankAccount) {
+        this.bankAccount = bankAccount;
     }
 
     

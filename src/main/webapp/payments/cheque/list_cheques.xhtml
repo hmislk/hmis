@@ -1,0 +1,138 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/payments/pay_index.xhtml">
+            <ui:define name="admin">
+                <h:form id="chequeForm">
+                    <p:panelGrid columns="2" style="margin-bottom:10px;" columnClasses="label,value">
+                        <p:outputLabel for="fromDate" value="From Date:" />
+                        <p:calendar id="fromDate" value="#{paymentController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                        <p:outputLabel for="toDate" value="To Date:" />
+                        <p:calendar id="toDate" value="#{paymentController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                    </p:panelGrid>
+                    
+                    
+                    <p:commandButton
+                        value="List All Cheques" 
+                        action="#{paymentController.listAllCheques}"
+                        ajax="false"
+                        class="m-1" 
+                        icon="pi pi-database"/>
+
+                    <p:commandButton 
+                        value="List Cheques to Pay"
+                        action="#{paymentController.listChequesToPay}" 
+                        ajax="false"
+                        class="m-1"
+                        icon="pi pi-list"/>
+
+                    <p:commandButton 
+                        value="List Cheques to Realize" 
+                        action="#{paymentController.listChequesToMarkAsRealized}"
+                        ajax="false"
+                        class="m-1"
+                        icon="pi pi-check-circle"/>
+
+                    <p:commandButton 
+                        value="List Realized Cheques"
+                        action="#{paymentController.listChequesRealized}" 
+                        ajax="false"
+                        class="m-1"
+                        icon="pi pi-check"/>
+                    
+                    <p:commandButton 
+                        value="To Pay Selected Cheques"
+                        action="#{paymentController.navigateToPaySelectedCheques()}" 
+                        ajax="false"
+                        class="m-1"
+                        icon="pi pi-check"/>
+
+
+                    <p:dataTable value="#{paymentController.items}" 
+                                 var="cheque"
+                                 rowKey="#{cheque.id}" 
+                                 selectionMode="multiple"
+                                 selection="#{paymentController.itemsSelected}"
+                                 paginator="true" 
+                                 rows="10" 
+                                 paginatorAlwaysVisible="false"
+                                 paginatorPosition="bottom" 
+                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                 rowsPerPageTemplate="5,10,15"
+                                 filterDelay="300" 
+                                 liveScroll="true"
+                                 lazy="true" 
+                                 sortMode="multiple">
+
+                        <p:column selectionBox="true" ></p:column>
+                        
+                        <p:column headerText="Recorded Date" sortBy="#{cheque.createdAt}" filterBy="#{cheque.createdAt}" >
+                            <h:outputText value="#{cheque.createdAt}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                            </h:outputText>
+                        </p:column>
+
+                        <p:column headerText="Cheque Date" sortBy="#{cheque.chequeDate}" filterBy="#{cheque.chequeDate}" >
+                            <h:outputText value="#{cheque.chequeDate}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                            </h:outputText>
+                        </p:column>
+
+                        <p:column headerText="Bank" sortBy="#{cheque.bank.name}" filterBy="#{cheque.bank.name}">
+                            <h:outputText value="#{cheque.bank.name}" />
+                        </p:column>
+
+                        <p:column headerText="Number" sortBy="#{cheque.chequeRefNo}" filterBy="#{cheque.chequeRefNo}">
+                            <h:outputText value="#{cheque.chequeRefNo}" />
+                        </p:column>
+
+                        <p:column headerText="From" sortBy="#{cheque.fromInstitution.name}" filterBy="#{cheque.fromInstitution.name}">
+                            <h:outputText value="#{cheque.fromInstitution.name}" />
+                        </p:column>
+
+                        <p:column headerText="To" sortBy="#{cheque.toInstitution.name}" filterBy="#{cheque.toInstitution.name}">
+                            <h:outputText value="#{cheque.toInstitution.name}" />
+                        </p:column>
+
+                        <p:column headerText="Value" sortBy="#{cheque.paidValue}" filterBy="#{cheque.paidValue}">
+                            <h:outputText value="#{cheque.paidValue}" />
+                        </p:column>
+
+                        <p:column headerText="Paid" style="text-align:center;">
+                            <h:outputText value="pi pi-check-circle" rendered="#{cheque.chequePaid}">
+                                <f:facet name="icon">
+                                    <p:graphicImage name="/resources/icons/check.png" rendered="#{cheque.chequePaid}" />
+                                </f:facet>
+                                <f:facet name="noIcon">
+                                    <p:graphicImage name="/resources/icons/cross.png" rendered="#{not cheque.chequePaid}" />
+                                </f:facet>
+                            </h:outputText>
+                        </p:column>
+
+                        <p:column headerText="Realized" style="text-align:center;">
+                            <h:outputText value="pi pi-check-square" rendered="#{cheque.chequeRealized}">
+                                <f:facet name="icon">
+                                    <p:graphicImage name="/resources/icons/check.png" rendered="#{cheque.chequeRealized}" />
+                                </f:facet>
+                                <f:facet name="noIcon">
+                                    <p:graphicImage name="/resources/icons/cross.png" rendered="#{not cheque.chequeRealized}" />
+                                </f:facet>
+                            </h:outputText>
+                        </p:column>
+
+
+                    </p:dataTable>
+
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
+

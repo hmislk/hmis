@@ -309,6 +309,35 @@
                                         </h:panelGroup>
                                     </p:tab>
                                     <p:tab title="Refunded" >
+                                        <p:dataTable var="b" value="#{billSearch.refuendedBills}" scrollable="true" scrollHeight="200">
+                                            <p:column headerText="Bill No" style="width: 20em; padding: 6px;">
+                                                <h:outputText value="#{b.deptId}"/>
+                                            </p:column>
+                                            <p:column headerText="Refunded Date" style="width: 10em; padding: 6px;">
+                                                <h:outputText value="#{b.createdAt}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column headerText="Refunded Time" style="width: 7em; padding: 6px;">
+                                                <h:outputText value="#{b.createdAt}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" ></f:convertDateTime>
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column headerText="Refunded By" style="width: 9em; padding: 6px;">
+                                                <h:outputText value="#{b.creater.webUserPerson.name}"/>
+                                            </p:column>
+                                            <p:column headerText="Paid" style="width: 8em; padding: 6px;">
+                                                <h:outputText value="#{b.netTotal}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column headerText="View Bill" style="width: 6em; padding: 6px;">
+                                                <p:commandButton ajax="false" value="View Bill" action="#{billReturnController.navigateToRefundBillViewFormOPDBillSearch()}">
+                                                    <f:setPropertyActionListener value="#{b}" target="#{billReturnController.newlyReturnedBill}"/>
+                                                </p:commandButton>
+                                            </p:column>
+                                        </p:dataTable>
+
                                         <h:panelGroup rendered="#{not billSearch.viewingBill.refunded}" >
                                             <p:outputLabel value="Not Refunded" class="ui-message-error m-2 p-2 b-1 w-100 text-center" ></p:outputLabel>
                                         </h:panelGroup>
