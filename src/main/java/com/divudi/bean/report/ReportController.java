@@ -973,7 +973,7 @@ public class ReportController implements Serializable {
             params.put("doc", doctor);
         }
 
-        jpql += " AND bi.bill.billDate between :fd and :td "
+        jpql += " AND bi.bill.createdAt between :fd and :td "
                 + " AND bi.bill.referredBy IS NOT NULL "
                 + " GROUP BY bi.bill.referredBy.person, bi.bill.cancelled, bi.bill.refunded";
 
@@ -3060,7 +3060,7 @@ public class ReportController implements Serializable {
                 + ") "
                 + "from BillItem bi "
                 + "where bi.retired = :ret "
-                + "and bi.bill.billDate between :fd and :td "
+                + "and bi.bill.createdAt between :fd and :td "
                 + "and bi.bill.billTypeAtomic IN :bType " // Corrected IN clause
                 + "and type(bi.item) = :invType ";
 
@@ -3101,15 +3101,14 @@ public class ReportController implements Serializable {
         }
 
         // Fetch results for OpdBill
-        List<TestWiseCountReport> positiveResults = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m);
-
+        List<TestWiseCountReport> positiveResults = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
         // Now fetch results for OpdBillCancel (use a list for single bType)
         m.put("bType", Collections.singletonList(BillTypeAtomic.OPD_BILL_CANCELLATION));
-        List<TestWiseCountReport> cancelResults = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m);
+        List<TestWiseCountReport> cancelResults = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
 
         // Now fetch results for OpdBillRefund (use a list for single bType)
         m.put("bType", Collections.singletonList(BillTypeAtomic.OPD_BILL_REFUND));
-        List<TestWiseCountReport> refundResults = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m);
+        List<TestWiseCountReport> refundResults = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
 
         // Subtract cancel and refund results from the main results
         Map<String, TestWiseCountReport> resultMap = new HashMap<>();

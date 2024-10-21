@@ -140,7 +140,7 @@
                                                          onclick="if (!confirm('Are you sure you want to approve this ?'))
                                                                 return false;"
                                                                 action="#{pettyCashBillController.approveBill(bill)}"
-                                                         disabled="#{bill.approveAt ne null}" />
+                                                         disabled="#{bill.approveAt ne null or pettyCashBillController.checkForExpireofApproval(bill)}" />
                                     </p:column>
                                 </p:dataTable>
                             </div>
