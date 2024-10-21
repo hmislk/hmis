@@ -739,7 +739,9 @@ public class ChannelService {
         temp.setReferenceBill(bs.getBill());
         temp.setBillType(BillType.ChannelPaid);
         temp.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
-        String deptId = generateBillNumberDeptId(temp);
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(bs.getDepartment(), BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
+       // String deptId = generateBillNumberDeptId(temp);
+        System.out.println(deptId);
         temp.setInsId(deptId);
         temp.setDeptId(deptId);
         temp.setBookingId(deptId);
