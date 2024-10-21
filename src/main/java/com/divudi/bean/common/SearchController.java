@@ -12198,7 +12198,7 @@ public class SearchController implements Serializable {
         Map temMap = new HashMap();
         System.out.println("getFromDate() = " + getFromDate());
         System.out.println("getToDate() = " + getToDate());
-        sql = "select b from Bill b where b.billTypeAtomic IN :billTypes and b.createdAt between :fromDate and :toDate and b.retired=false";
+        sql = "select b from Bill b where b.billTypeAtomic IN :billTypes and b.createdAt between :fromDate and :toDate and b.retired=false order by b.id desc";
         System.out.println("sql = " + sql);
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());

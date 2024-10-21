@@ -24,11 +24,11 @@
                             <p:commandButton id="btnAdd" value="Add New" 
                                              icon="fas fa-plus"
                                              action="#{bankAccountController.prepareAdd()}" class="ui-button-success" process="btnAdd"
-                                    update="lstSelect gpDetail" >
+                                             update="lstSelect gpDetail" >
                             </p:commandButton>
                             <p:commandButton id="btnDelete" onclick="if (!confirm('Are you sure you want to delete this record?'))
                                         return false;" action="#{bankAccountController.delete()}"  value="Delete" class=" m-1 ui-button-danger w-25" process="btnDelete"
-                                                update="lstSelect gpDetail msg" icon="fas fa-trash">
+                                             update="lstSelect gpDetail msg" icon="fas fa-trash">
                             </p:commandButton>
                             <p:selectOneListbox  id="lstSelect"   value="#{bankAccountController.current}" class="w-100" filter="true">
                                 <f:selectItems  value="#{bankAccountController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.accountNo} - #{myItem.bank.name}" ></f:selectItems>
@@ -45,23 +45,31 @@
                                     <p:selectOneMenu id="cmbIns" value="#{bankAccountController.current.bank}" class="w-100 p-1" >
                                         <f:selectItem itemLabel="Select the Bank" />
                                         <f:selectItems value="#{institutionController.banks}" var="i" itemLabel="#{i.name}" itemValue="#{i}" />
+                                        <p:ajax process="cmbIns" update="gpBranch" ></p:ajax>
                                     </p:selectOneMenu>
-<!--                                     <h:outputText  value="Branch" ></h:outputText>
-                                     <p:selectOneMenu id="cmbbB" value="#{bankAccountController.current.bankBranch}" class="w-100 p-1" >
-                                        <f:selectItem itemLabel="Select the Brnach" />
-                                        <f:selectItems value="#{InstitutionBranchController.selectedItems}" var="i" itemLabel="#{i.name - i.institution.name}" itemValue="#{i}" />
-                                    </p:selectOneMenu>-->
+                                    <h:outputText  value="Branch" ></h:outputText>
+                                    <h:panelGroup id="gpBranch" >
+                                        <p:selectOneMenu 
+                                            id="cmbbB"
+                                            rendered="#{bankAccountController.current.bank ne null}"
+                                            value="#{bankAccountController.current.bankBranch}" 
+                                            class="w-100 p-1" >
+                                            <f:selectItem itemLabel="Select the Brnach" />
+                                            <f:selectItems value="#{institutionController.getBranches(bankAccountController.current.bank)}" var="i" itemLabel="#{i.name}" itemValue="#{i}" />
+                                        </p:selectOneMenu>
+                                    </h:panelGroup>
+
                                 </h:panelGrid>
-                               <p:commandButton id="btnSave" value="Save" 
-                                                icon="fas fa-save"
-                                                action="#{bankAccountController.saveSelected()}" process="btnSave gpDetail" 
-                                                         update="lstSelect msg" class=" m-1 ui-button-warning w-25">
-                                    </p:commandButton>
-                                    <p:defaultCommand target="btnSave"/>
-                                   
-                               
+                                <p:commandButton id="btnSave" value="Save" 
+                                                 icon="fas fa-save"
+                                                 action="#{bankAccountController.saveSelected()}" process="btnSave gpDetail" 
+                                                 update="lstSelect msg" class=" m-1 ui-button-warning w-25">
+                                </p:commandButton>
+                                <p:defaultCommand target="btnSave"/>
+
+
                             </p:panel>
-                             
+
                         </div>
                     </div>
 
