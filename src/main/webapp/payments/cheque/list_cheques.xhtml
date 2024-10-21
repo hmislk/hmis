@@ -45,17 +45,30 @@
                         ajax="false"
                         class="m-1"
                         icon="pi pi-check"/>
+                    
+                    <p:commandButton 
+                        value="To Pay Selected Cheques"
+                        action="#{paymentController.navigateToPaySelectedCheques()}" 
+                        ajax="false"
+                        class="m-1"
+                        icon="pi pi-check"/>
 
 
                     <p:dataTable value="#{paymentController.items}" 
                                  var="cheque"
                                  rowKey="#{cheque.id}" 
                                  selectionMode="multiple"
-                                 paginator="true" rows="10" paginatorPosition="bottom" 
+                                 selection="#{paymentController.itemsSelected}"
+                                 paginator="true" 
+                                 rows="10" 
+                                 paginatorAlwaysVisible="false"
+                                 paginatorPosition="bottom" 
                                  paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                  rowsPerPageTemplate="5,10,15"
-                                 filterDelay="300" liveScroll="true"
-                                 lazy="true" sortMode="multiple">
+                                 filterDelay="300" 
+                                 liveScroll="true"
+                                 lazy="true" 
+                                 sortMode="multiple">
 
                         <p:column selectionBox="true" ></p:column>
                         
