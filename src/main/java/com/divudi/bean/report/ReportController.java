@@ -1112,13 +1112,17 @@ public class ReportController implements Serializable {
         sql = "select a from AgentReferenceBook a "
                 + " where a.retired=false "
                 + " and a.deactivate=false "
+                + " and a.createdAt between :fd and :td "
                 + " and a.fullyUtilized=false ";
 
         if (collectingCentre != null) {
             sql += "and a.institution=:ins order by a.id";
             m.put("ins", collectingCentre);
         }
-        agentReferenceBooks = agentReferenceBookFacade.findByJpql(sql, m);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        
+        agentReferenceBooks = agentReferenceBookFacade.findByJpql(sql, m,TemporalType.TIMESTAMP);
 
     }
 
