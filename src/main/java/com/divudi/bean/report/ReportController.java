@@ -973,7 +973,7 @@ public class ReportController implements Serializable {
             params.put("doc", doctor);
         }
 
-        jpql += " AND bi.bill.billDate between :fd and :td "
+        jpql += " AND bi.bill.createdAt between :fd and :td "
                 + " AND bi.bill.referredBy IS NOT NULL "
                 + " GROUP BY bi.bill.referredBy.person, bi.bill.cancelled, bi.bill.refunded";
 
@@ -987,7 +987,7 @@ public class ReportController implements Serializable {
         Map<String, TestWiseCountReport> resultMap = new HashMap<>();
 
         for (TestWiseCountReport result : rawResults) {
-            String doctorName = result.getDoctor().getNameWithTitle(); 
+            String doctorName = result.getDoctor().getNameWithTitle();
             TestWiseCountReport existingResult = resultMap.get(doctorName);
 
             if (existingResult == null) {
@@ -1151,6 +1151,14 @@ public class ReportController implements Serializable {
             bills = filterBillsByStatus(bills, selectedVoucherStatusOnDebtorSettlement);
 
         }
+        netTotal = 0.0;
+
+        for (Bill b : bills) {
+            BillItem voucher = findVoucherIsAvailable(b);  // Call it once per loop
+            if (voucher != null) {
+                netTotal += voucher.getBill().getNetTotal();
+            }
+        }
     }
 
     private List<Bill> filterBillsByStatus(List<Bill> bills, String statusFilter) {
@@ -1244,10 +1252,10 @@ public class ReportController implements Serializable {
         m.put("toDate", getToDate());
 
         bills = billFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
-        
+
         netTotal = 0.0;
-        
-        for(Bill b : bills){
+
+        for (Bill b : bills) {
             netTotal += b.getTotal();
         }
     }
@@ -3053,7 +3061,7 @@ public class ReportController implements Serializable {
                 + ") "
                 + "from BillItem bi "
                 + "where bi.retired = :ret "
-                + "and bi.bill.billDate between :fd and :td "
+                + "and bi.bill.createdAt between :fd and :td "
                 + "and bi.bill.billTypeAtomic IN :bType " // Corrected IN clause
                 + "and type(bi.item) = :invType ";
 
@@ -3094,15 +3102,14 @@ public class ReportController implements Serializable {
         }
 
         // Fetch results for OpdBill
-        List<TestWiseCountReport> positiveResults = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m);
-
+        List<TestWiseCountReport> positiveResults = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
         // Now fetch results for OpdBillCancel (use a list for single bType)
         m.put("bType", Collections.singletonList(BillTypeAtomic.OPD_BILL_CANCELLATION));
-        List<TestWiseCountReport> cancelResults = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m);
+        List<TestWiseCountReport> cancelResults = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
 
         // Now fetch results for OpdBillRefund (use a list for single bType)
         m.put("bType", Collections.singletonList(BillTypeAtomic.OPD_BILL_REFUND));
-        List<TestWiseCountReport> refundResults = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m);
+        List<TestWiseCountReport> refundResults = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
 
         // Subtract cancel and refund results from the main results
         Map<String, TestWiseCountReport> resultMap = new HashMap<>();

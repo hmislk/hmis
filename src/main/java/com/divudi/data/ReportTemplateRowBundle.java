@@ -527,9 +527,9 @@ public class ReportTemplateRowBundle implements Serializable {
                 = this.cashValue + this.cardValue + this.multiplePaymentMethodsValue + this.staffValue
                 + this.creditValue + this.staffWelfareValue + this.voucherValue + this.iouValue
                 + this.agentValue + this.chequeValue + this.slipValue + this.eWalletValue
-                + this.patientDepositValue + this.patientPointsValue + this.onlineSettlementValue;
-//                + this.grossTotal + this.discount 
-//                + this.hospitalTotal + this.staffTotal + this.ccTotal + 0.0;
+                + this.patientDepositValue + this.patientPointsValue + this.onlineSettlementValue
+                + this.grossTotal + this.discount 
+                + this.hospitalTotal + this.staffTotal + this.ccTotal + 0.0;
     }
 
     public void calculateTotalsByChildBundles() {
