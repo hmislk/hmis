@@ -287,7 +287,7 @@ public class ChannelApi {
             JSONObject responseError = new JSONObject();
             responseError = errorMessageNotValidKey();
             String json = responseError.toString();
-            return Response.status(Response.Status.ACCEPTED).entity(responseError.toString()).build();
+            return Response.status(Response.Status.UNAUTHORIZED).entity(responseError.toString()).build();
         }
         // Get the list of institutions from the controller
         List<Institution> institutions = institutionController.getCompanies();
@@ -338,7 +338,7 @@ public class ChannelApi {
             JSONObject responseError = new JSONObject();
             responseError = errorMessageNotValidKey();
             String json = responseError.toString();
-            return Response.status(Response.Status.ACCEPTED).entity(responseError.toString()).build();
+            return Response.status(Response.Status.UNAUTHORIZED).entity(responseError.toString()).build();
         }
 
         String type = requestBody.get("type");
@@ -404,7 +404,7 @@ public class ChannelApi {
             JSONObject responseError = new JSONObject();
             responseError = errorMessageNotValidKey();
             String json = responseError.toString();
-            return Response.status(Response.Status.ACCEPTED).entity(responseError.toString()).build();
+            return Response.status(Response.Status.UNAUTHORIZED).entity(responseError.toString()).build();
         }
         String type = (String) requestBody.get("type");
         String bookingChannel = (String) requestBody.get("bookingChannel");
@@ -505,7 +505,7 @@ public class ChannelApi {
             JSONObject responseError = new JSONObject();
             responseError = errorMessageNotValidKey();
             String json = responseError.toString();
-            return Response.status(Response.Status.ACCEPTED).entity(responseError.toString()).build();
+            return Response.status(Response.Status.UNAUTHORIZED).entity(responseError.toString()).build();
         }
         // Search logic and build the JSON response
         JSONObject results = searchDoctor(hosID, docNo, docName, specID, offset, page, sessionDate);
@@ -590,12 +590,12 @@ public class ChannelApi {
 
             session.put("sessionID", s.getId());
             session.put("hosName", s.getInstitution().getName());
-            session.put("docName", s.getStaff().getPerson().getNameWithInitials());
+            session.put("docName", s.getStaff().getPerson().getNameWithTitle());
             session.put("docNo", s.getStaff().getId());
             session.put("foreignAmount", s.getOriginatingSession().getTotalForForeigner());
             session.put("hosId", s.getInstitution().getId());
-            session.put("hosFee", hosFee);
-            session.put("docFee", doctorFee);
+            session.put("hosFee", s.getOriginatingSession().getChannelHosFee());
+            session.put("docFee", s.getOriginatingSession().getChannelStaffFee());
             session.put("startTime", forTime.format(s.getStartingTime()));
             session.put("amount", s.getOriginatingSession().getTotal());
             session.put("appDate", forDate.format(s.getSessionDate()));
@@ -630,14 +630,14 @@ public class ChannelApi {
             JSONObject responseError = new JSONObject();
             responseError = errorMessageNotValidKey();
             String json = responseError.toString();
-            return Response.status(Response.Status.ACCEPTED).entity(responseError.toString()).build();
+            return Response.status(Response.Status.UNAUTHORIZED).entity(responseError.toString()).build();
         }
         long sessionId;
         try {
             sessionId = Integer.parseInt(requestBody.get("sessionID"));
         } catch (Exception e) {
             JSONObject responseError = notValidId();
-            return Response.status(Response.Status.ACCEPTED).entity(responseError.toString()).build();
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(responseError.toString()).build();
         }
 
         String bookingChannel = requestBody.get("bookingChannel;");
@@ -649,7 +649,7 @@ public class ChannelApi {
 
         if (session == null) {
             JSONObject responseError = notValidId();
-            return Response.status(Response.Status.ACCEPTED).entity(responseError.toString()).build();
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(responseError.toString()).build();
         }
 
         double doctorFee = 0;
@@ -667,13 +667,13 @@ public class ChannelApi {
 
         Map<String, Object> sessionData = new HashMap<>();
         sessionData.put("sessionID", session.getId());
-
-        sessionData.put("docName", session.getStaff().getPerson().getNameWithInitials());
+ 
+        sessionData.put("docName", session.getStaff().getPerson().getNameWithTitle());
         sessionData.put("docNo", session.getStaff().getId());
         sessionData.put("foreignAmount", session.getOriginatingSession().getTotalForForeigner());
         sessionData.put("hosId", session.getInstitution().getId());
-        sessionData.put("hosFee", hosFee);
-        sessionData.put("docFee", doctorFee);
+        sessionData.put("hosFee", session.getOriginatingSession().getChannelHosFee());
+        sessionData.put("docFee", session.getOriginatingSession().getChannelStaffFee());
         sessionData.put("startTime", forTime.format(session.getSessionTime()));
         sessionData.put("amount", session.getOriginatingSession().getTotal());
         sessionData.put("appDate", forDate.format(session.getSessionDate()));
@@ -712,7 +712,7 @@ public class ChannelApi {
         System.out.println(session);
         if (session == null) {
             JSONObject response = commonFunctionToErrorResponse("Session id is invalid");
-            return Response.status(Response.Status.NOT_FOUND).entity(response).build();
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response).build();
         }
 
         if (patientDetails == null || patientDetails.isEmpty()) {
@@ -720,7 +720,7 @@ public class ChannelApi {
             response.put("Code", "401");
             response.put("type", "error");
             response.put("message", "No patient details");
-            return Response.status(Response.Status.ACCEPTED).entity(response).build();
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response).build();
         }
 
         String patientPhoneNo = patientDetails.get("teleNo");
@@ -755,7 +755,7 @@ public class ChannelApi {
         if (newPatient == null && toSelectOneFromALot == false) {
             if (patientPhoneNumberLong == null) {
                 JSONObject response = commonFunctionToErrorResponse("Not a Valid Phone number");
-                return Response.status(Response.Status.ACCEPTED).entity(response).build();
+                return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response).build();
             }
         } else if (newPatient == null && toSelectOneFromALot) {
             if (patients != null) {
@@ -802,7 +802,7 @@ public class ChannelApi {
 
         if (titleForPatienFromSystem == null) {
             JSONObject response = commonFunctionToErrorResponse("Invalid title for the patient");
-            return Response.status(Response.Status.ACCEPTED).entity(response).build();
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response).build();
         }
         if (patientType.toUpperCase().equals("YES")) {
             isForeigner = true;
@@ -855,7 +855,7 @@ public class ChannelApi {
             JSONObject responseError = new JSONObject();
             responseError = errorMessageNotValidKey();
             String json = responseError.toString();
-            return Response.status(Response.Status.ACCEPTED).entity(responseError.toString()).build();
+            return Response.status(Response.Status.UNAUTHORIZED).entity(responseError.toString()).build();
         }
 
         String refNo = requestBody.get("refNo");
@@ -882,17 +882,21 @@ public class ChannelApi {
     @Path("/complete")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response completeBooking(@Context HttpServletRequest requestContext, Map<String, String> requestBody) {
+    public Response completeBooking(@Context HttpServletRequest requestContext, Map<String, Object> requestBody) {
         String key = requestContext.getHeader("Finance");
         if (!isValidKey(key)) {
             JSONObject responseError = new JSONObject();
             responseError = errorMessageNotValidKey();
             String json = responseError.toString();
-            return Response.status(Response.Status.ACCEPTED).entity(responseError.toString()).build();
+            return Response.status(Response.Status.UNAUTHORIZED).entity(responseError.toString()).build();
         }
 
-        String refNo = requestBody.get("refNo");
+        String refNo = (String)requestBody.get("refNo");
         List<Bill> billList = channelService.findBillFromRefNo(refNo);
+        if(billList == null || billList.isEmpty()){
+            JSONObject response = commonFunctionToErrorResponse("No bill reference with RefNo");
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response).build();
+        }
         Bill bill = channelService.settleCredit(billList.get(0).getSingleBillSession());
         List<SessionInstance> ss = channelService.findSessionInstanceFromId(bill.getSessionId());
         SessionInstance session = ss.get(0);
@@ -963,7 +967,7 @@ public class ChannelApi {
     @Path("/channelHistoryByRef")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getBookingDetails(@Context HttpServletRequest requestContext, Map<String, String> requestBody) {
+    public Response getBookingDetails(@Context HttpServletRequest requestContext, Map<String, Object> requestBody) {
         String key = requestContext.getHeader("Finance");
         if (!isValidKey(key)) {
             JSONObject responseError = new JSONObject();
@@ -987,6 +991,12 @@ public class ChannelApi {
             String json = responseError.toString();
             return Response.status(Response.Status.ACCEPTED).entity(responseError.toString()).build();
         }
+        
+        String refNo = requestBody.get("refNo");
+        List<Bill> billList = channelService.findBillFromRefNo(refNo);
+        BillSession bs = channelService.cancelBookingBill(billList.get(0));
+        
+        Person p = bs.getBill().getPatient().getPerson();
 
         return Response.status(Response.Status.ACCEPTED).entity("Cancel booking Api").build();
     }
