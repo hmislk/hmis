@@ -173,14 +173,39 @@ public class Payment implements Serializable {
     private Payment cancelledPayment;
     @ManyToOne
     private Bill cancelledBill;
-    
+
     private PaymentHandover transientPaymentHandover;
+
+    // New attributes for marking a cheque as paid
+    @ManyToOne
+    private WebUser chequePayer;  // User who marked the cheque as paid
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date chequePaidAt;  // Timestamp when the cheque was marked as paid
+    private boolean chequePaid;  // Indicates if the cheque has been marked as paid
+    @ManyToOne
+    private Bill chequePaidBill;  // Reference to the Bill where the cheque was marked as paid
+
+    // New attributes for marking a cheque as realized
+    @ManyToOne
+    private WebUser chequeRealizer;  // User who marked the cheque as realized
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date chequeRealizedAt;  // Timestamp when the cheque was marked as realized
+    private boolean chequeRealized;  // Indicates if the cheque has been marked as realized
+    @ManyToOne
+    private Bill chequeRealizedBill;  // Reference to the Bill where the cheque was marked as realized
+
+    @ManyToOne
+    private Institution fromInstitution;
+    @ManyToOne
+    private Institution toInstitution;
 
     public Payment() {
         cashbookEntryStated = false;
         cashbookEntryCompleted = false;
         paymentRecordStated = false;
         paymentRecordCompleted = false;
+        chequeRealized = false;
+        chequePaid = false;
         paymentDate = new Date();
     }
 
@@ -796,8 +821,87 @@ public class Payment implements Serializable {
     public void setTransientPaymentHandover(PaymentHandover transientPaymentHandover) {
         this.transientPaymentHandover = transientPaymentHandover;
     }
+
+    public WebUser getChequePayer() {
+        return chequePayer;
+    }
+
+    public void setChequePayer(WebUser chequePayer) {
+        this.chequePayer = chequePayer;
+    }
+
+    public Date getChequePaidAt() {
+        return chequePaidAt;
+    }
+
+    public void setChequePaidAt(Date chequePaidAt) {
+        this.chequePaidAt = chequePaidAt;
+    }
+
+    public boolean isChequePaid() {
+        return chequePaid;
+    }
+
+    public void setChequePaid(boolean chequePaid) {
+        this.chequePaid = chequePaid;
+    }
+
     
     
-    
+    public WebUser getChequeRealizer() {
+        return chequeRealizer;
+    }
+
+    public void setChequeRealizer(WebUser chequeRealizer) {
+        this.chequeRealizer = chequeRealizer;
+    }
+
+    public Date getChequeRealizedAt() {
+        return chequeRealizedAt;
+    }
+
+    public void setChequeRealizedAt(Date chequeRealizedAt) {
+        this.chequeRealizedAt = chequeRealizedAt;
+    }
+
+    public boolean isChequeRealized() {
+        return chequeRealized;
+    }
+
+    public void setChequeRealized(boolean chequeRealized) {
+        this.chequeRealized = chequeRealized;
+    }
+
+    public Bill getChequePaidBill() {
+        return chequePaidBill;
+    }
+
+    public void setChequePaidBill(Bill chequePaidBill) {
+        this.chequePaidBill = chequePaidBill;
+    }
+
+    public Bill getChequeRealizedBill() {
+        return chequeRealizedBill;
+    }
+
+    public void setChequeRealizedBill(Bill chequeRealizedBill) {
+        this.chequeRealizedBill = chequeRealizedBill;
+    }
+
+    public Institution getFromInstitution() {
+        return fromInstitution;
+    }
+
+    public void setFromInstitution(Institution fromInstitution) {
+        this.fromInstitution = fromInstitution;
+    }
+
+    public Institution getToInstitution() {
+        return toInstitution;
+    }
+
+    public void setToInstitution(Institution toInstitution) {
+        this.toInstitution = toInstitution;
+    }
 
 }

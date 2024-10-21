@@ -24,6 +24,7 @@ public enum Privileges {
     CashTransaction("Cash Transaction"),
     ChangeCreditLimitInCC("Change Credit Limit in Collecting Centre"),
     PettyCashBillCancellationApprove("Petty Cash Bill Cancellation Approval"),
+    PettyCashBillApprove("Petty Cash Bill Approval"),
     // Submenu Privileges
     OpdBilling("OPD Billing"),
     OpdCollectingCentreBillingMenu("OPD Collecting Centre Billing Menu"),

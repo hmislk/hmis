@@ -239,6 +239,31 @@ public class ReportTemplateRow implements Serializable {
         this.patientPointsValue = patientPointsValue;
         this.onlineSettlementValue = onlineSettlementValue;
     }
+    
+    public ReportTemplateRow(Department department,BillTypeAtomic billTypeAtomic,
+            double cashValue, double cardValue, double multiplePaymentMethodsValue,
+            double staffValue, double creditValue, double staffWelfareValue,
+            double voucherValue, double iouValue, double agentValue,
+            double chequeValue, double slipValue, double eWalletValue,
+            double patientDepositValue, double patientPointsValue, double onlineSettlementValue) {
+        this.department = department;
+        this.billTypeAtomic = billTypeAtomic;
+        this.cashValue = cashValue;
+        this.cardValue = cardValue;
+        this.multiplePaymentMethodsValue = multiplePaymentMethodsValue;
+        this.staffValue = staffValue;
+        this.creditValue = creditValue;
+        this.staffWelfareValue = staffWelfareValue;
+        this.voucherValue = voucherValue;
+        this.iouValue = iouValue;
+        this.agentValue = agentValue;
+        this.chequeValue = chequeValue;
+        this.slipValue = slipValue;
+        this.eWalletValue = eWalletValue;
+        this.patientDepositValue = patientDepositValue;
+        this.patientPointsValue = patientPointsValue;
+        this.onlineSettlementValue = onlineSettlementValue;
+    }
 
     public ReportTemplateRow(Bill bill,
             double cashValue, double cardValue, double multiplePaymentMethodsValue,
