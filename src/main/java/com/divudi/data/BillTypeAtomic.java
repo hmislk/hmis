@@ -250,6 +250,10 @@ public enum BillTypeAtomic {
     // Additional Income
     SUPPLEMENTARY_INCOME("Supplementary Income", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.CASH_IN, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_COLLECTION),
     SUPPLEMENTARY_INCOME_CANCELLED("Supplementary Income - Cancelled", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.CASH_OUT, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_COLLECTION),
+    CHEQUE_REALIZED("Cheque Realized", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.NONE, PaymentCategory.NO_PAYMENT),
+    CHEQUE_REALIZED_CANCELLATION("Cheque Realized Cancellation", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.NONE, PaymentCategory.NO_PAYMENT),
+    CHEQUE_PAID("Cheque Paid", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.NONE, PaymentCategory.NO_PAYMENT),
+    CHEQUE_PAID_CANCELLATION("Cheque Paid Cancellation", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.NONE, PaymentCategory.NO_PAYMENT),
     // Operational Expenses
     OPERATIONAL_EXPENSES("Operational Expenses", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.CASH_OUT, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND),
     OPERATIONAL_EXPENSES_CANCELLED("Operational Expenses - Cancelled", BillCategory.CANCELLATION, ServiceType.OTHER, BillFinanceType.CASH_IN, CountedServiceType.OTHER, PaymentCategory.NON_CREDIT_SPEND);

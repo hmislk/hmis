@@ -10,12 +10,12 @@
         <ui:composition template="/payments/pay_index.xhtml">
             <ui:define name="admin">
                 <h:form id="chequeForm">
-                    <p:panel >
+                    <p:panel rendered="#{not paymentController.printPreview}" >
                         <f:facet name="header" >
                             <h:outputText value="Pay Cheques" ></h:outputText>
                         </f:facet>
 
-                        <p:panelGrid columns="2" >
+                        <p:panelGrid columns="2" class="w-100">
                             <h:outputText value="Total Amount" />
                             <h:outputText value="#{paymentController.total}" />
 
@@ -23,37 +23,25 @@
                             <h:outputText value="#{paymentController.items.size()}" />
 
                             <h:outputText value="Bank Account" />
-                            <p:selectOneMenu value="#{paymentController.bankAccount}" var="acc">
-                                <f:selectItem value="Select" ></f:selectItem>
-                                <f:selectItems value="#{bankAccountController.items}" var="ba" itemLabel="#{ba.accountNo}" value="#{ba}" >
-                                    <p:column headerText="Bank" >
-                                        <h:outputLabel value="#{acc.bank.name}" ></h:outputLabel>
-                                    </p:column>
-                                    <p:column headerText="Branch" >
-                                        <h:outputLabel value="#{acc.bankBranch.name}" ></h:outputLabel>
-                                    </p:column>
-                                    <p:column headerText="Account Number" >
-                                        <h:outputLabel value="#{acc.accountNo}" ></h:outputLabel>
-                                    </p:column>
+                            <p:selectOneMenu value="#{paymentController.bankAccount}" class="w-100">
+                                <f:selectItem itemLabel="Select" ></f:selectItem>
+                                <f:selectItems 
+                                    value="#{bankAccountController.items}" 
+                                    var="ba" 
+                                    itemLabel="#{ba.accountNo}" 
+                                    itemValue="#{ba}" >
                                 </f:selectItems>
                             </p:selectOneMenu>
 
                             <p:spacer/>
                             <p:commandButton
                                 value="Pay Cheques" 
-                                action="#{paymentController.listAllCheques}"
+                                action="#{paymentController.settlePayCheques()}"
                                 ajax="false"
                                 class="m-1" 
                                 icon="pi pi-database"/>
 
                         </p:panelGrid>
-
-
-
-
-
-
-
 
 
                         <p:dataTable value="#{paymentController.items}" 
@@ -95,6 +83,93 @@
 
                         </p:dataTable>
 
+                    </p:panel>
+
+                    <p:panel rendered="#{paymentController.printPreview}" styleClass="card">
+                        <h2 class="card-header text-center">Payment Receipt</h2>
+
+                        <div class="card-body">
+                            <!-- Institution and Summary Information -->
+                            <div class="row mb-4">
+                                <div class="col-6">
+                                    <strong>Institution:</strong>
+                                </div>
+                                <div class="col-6">
+                                    #{paymentController.bill.institution.name}
+                                </div>
+
+                                <div class="col-6">
+                                    <strong>Department:</strong>
+                                </div>
+                                <div class="col-6">
+                                    #{paymentController.bill.department.name}
+                                </div>
+
+                                <div class="col-6">
+                                    <strong>Total Amount:</strong>
+                                </div>
+                                <div class="col-6">
+                                    <h:outputText value="#{paymentController.bill.netTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </div>
+
+                                <div class="col-6">
+                                    <strong>Number of Cheques:</strong>
+                                </div>
+                                <div class="col-6">
+                                    #{paymentController.items.size()}
+                                </div>
+
+                                <div class="col-6">
+                                    <strong>Bank Account:</strong>
+                                </div>
+                                <div class="col-6">
+                                    #{paymentController.bankAccount.accountNo}
+                                </div>
+                            </div>
+
+                            <!-- Cheque Details Table -->
+                            <h3 class="mt-4">Cheque Details</h3>
+                            <table class="table table-bordered table-striped">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>Recorded Date</th>
+                                        <th>Cheque Date</th>
+                                        <th>Bank</th>
+                                        <th>Number</th>
+                                        <th>From</th>
+                                        <th>To</th>
+                                        <th>Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <ui:repeat value="#{paymentController.items}" var="cheque">
+                                        <tr>
+                                            <td>
+                                                <h:outputText value="#{cheque.createdAt}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                </h:outputText>
+                                            </td>
+                                            <td>
+                                                <h:outputText value="#{cheque.chequeDate}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                </h:outputText>
+                                            </td>
+                                            <td>#{cheque.bank.name}</td>
+                                            <td>#{cheque.chequeRefNo}</td>
+                                            <td>#{cheque.fromInstitution.name}</td>
+                                            <td>#{cheque.toInstitution.name}</td>
+                                            <td>
+                                                <h:outputText value="#{cheque.paidValue}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                    </ui:repeat>
+                                </tbody>
+                            </table>
+                        </div>
                     </p:panel>
 
 

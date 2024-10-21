@@ -10,11 +10,16 @@ package com.divudi.bean.cashTransaction;
 
 import com.divudi.bean.common.*;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.PaymentMethod;
+import com.divudi.ejb.BillEjb;
+import com.divudi.entity.Bill;
 import com.divudi.entity.Payment;
 import com.divudi.entity.hr.BankAccount;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.java.CommonFunctions;
+import com.divudi.service.PaymentService;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -44,6 +49,10 @@ public class PaymentController implements Serializable {
     SessionController sessionController;
     @EJB
     private PaymentFacade ejbFacade;
+    @EJB
+    PaymentService paymentService;
+    @EJB
+    BillEjb billEjb;
     private Payment current;
     private boolean printPreview;
     private List<Payment> items = null;
@@ -52,26 +61,82 @@ public class PaymentController implements Serializable {
     private Date toDate;
     private Double total;
     private BankAccount bankAccount;
+    private Bill bill;
 
     public String navigateToPayCheques() {
         items = null;
         current = null;
-        printPreview=false;
+        printPreview = false;
         return "/payments/cheque/list_cheques?faces-redirect=true";
     }
 
     public String navigateToMarkChequesAsCleared() {
         items = null;
         current = null;
-        printPreview=false;
+        printPreview = false;
         return "/payments/cheque/mark_cheque?faces-redirect=true";
     }
 
-    public void relazieCheques(){
-        
-        printPreview=true;
+    public void relazieCheques() {
+
+        printPreview = true;
     }
-    
+
+    public String settlePayCheques() {
+        if (items == null) {
+            JsfUtil.addErrorMessage("Select one or more cheques");
+            return null;
+        }
+        if (items.isEmpty()) {
+            JsfUtil.addErrorMessage("Select one or more cheques");
+            return null;
+        }
+        if (total == null) {
+            JsfUtil.addErrorMessage("Select one or more cheques");
+            return null;
+        }
+        double absTotal = Math.abs(total);
+        if (absTotal < 1) {
+            JsfUtil.addErrorMessage("Select one or more cheques");
+            return null;
+        }
+        total = 0.0;
+        for (Payment p : items) {
+            total += p.getPaidValue();
+            if (p.isRealized()) {
+                total = 0.0;
+                JsfUtil.addErrorMessage("You have selected some already realized cheques.");
+                return null;
+            }
+            if (p.getPaymentMethod() != PaymentMethod.Cheque) {
+                total = 0.0;
+                JsfUtil.addErrorMessage("Only CHeques are managed here.");
+                return null;
+            }
+        }
+        bill = new Bill() ;
+        bill.setCreatedAt(new Date());
+        bill.setCreater(sessionController.getLoggedUser());
+        bill.setDepartment(sessionController.getDepartment());
+        bill.setInstitution(sessionController.getInstitution());
+        bill.setBillType(BillType.CHEQUE_PAID);
+        bill.setBillTypeAtomic(BillTypeAtomic.CHEQUE_PAID);
+        bill.setTotal(total);
+        bill.setNetTotal(total);
+        bill.setGrantTotal(total);
+        bill.setBillDate(new Date());
+        billEjb.save(bill, sessionController.getLoggedUser());
+        for (Payment p : items) {
+            p.setChequePaid(true);
+            p.setChequePaidAt(new Date());
+            p.setChequePaidBill(bill);
+            p.setChequePayer(sessionController.getLoggedUser());
+            save(p);
+        }
+        printPreview = true;
+        return "/payments/cheque/pay_cheques?faces-redirect=true";
+    }
+
     public String navigateToPaySelectedCheques() {
         if (itemsSelected == null) {
             JsfUtil.addErrorMessage("Select one or more cheques");
@@ -81,24 +146,24 @@ public class PaymentController implements Serializable {
             JsfUtil.addErrorMessage("Select one or more cheques");
             return null;
         }
-        total=0.0;
-        
+        total = 0.0;
+
         for (Payment p : itemsSelected) {
             total += p.getPaidValue();
             if (p.isRealized()) {
-                total=0.0;
+                total = 0.0;
                 JsfUtil.addErrorMessage("You have selected some already realized cheques.");
                 return null;
             }
             if (p.getPaymentMethod() != PaymentMethod.Cheque) {
-                total=0.0;
+                total = 0.0;
                 JsfUtil.addErrorMessage("Only CHeques are managed here.");
                 return null;
             }
         }
         items = itemsSelected;
         itemsSelected = null;
-        printPreview=false;
+        printPreview = false;
         return "/payments/cheque/pay_cheques?faces-redirect=true";
     }
 
@@ -111,28 +176,26 @@ public class PaymentController implements Serializable {
             JsfUtil.addErrorMessage("Select one or more cheques");
             return null;
         }
-        total=0.0;
+        total = 0.0;
         for (Payment p : itemsSelected) {
             total += p.getPaidValue();
             if (p.isRealized()) {
-                total=0.0;
+                total = 0.0;
                 JsfUtil.addErrorMessage("You have selected some already realized cheques.");
                 return null;
             }
             if (p.getPaymentMethod() != PaymentMethod.Cheque) {
-                total=0.0;
+                total = 0.0;
                 JsfUtil.addErrorMessage("Only CHeques are managed here.");
                 return null;
             }
         }
         items = itemsSelected;
         itemsSelected = null;
-        printPreview=false;
+        printPreview = false;
         return "/payments/cheque/realize_cheques?faces-redirect=true";
     }
 
-    
-    
     public void listChequesToPay() {
         String jpql = "select p from Payment p"
                 + " where p.retired = :retired"
@@ -337,8 +400,14 @@ public class PaymentController implements Serializable {
     public void setBankAccount(BankAccount bankAccount) {
         this.bankAccount = bankAccount;
     }
-    
-    
+
+    public Bill getBill() {
+        return bill;
+    }
+
+    public void setBill(Bill bill) {
+        this.bill = bill;
+    }
     
     
 
