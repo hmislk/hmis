@@ -125,12 +125,12 @@
                                     <h:outputText value="#{pc.deptId}" ></h:outputText>
                                 </p:column>
                                 <p:column headerText="Voucher Status" >
-                                    <h:outputText value="Settled" rendered="#{pc.netTotal eq reportController.findVoucherIsAvailable(pc).bill.netTotal}" />
-                                    <h:outputText value="Partially Settled" rendered="#{pc.netTotal lt reportController.findVoucherIsAvailable(pc).bill.netTotal}" />
-                                    <h:outputText value="Unsettled" rendered="#{reportController.findVoucherIsAvailable(pc) eq null}" />
+                                    
                                 </p:column>
                                 <p:column headerText="Settlement Status" >
-                                    <h:outputText value="#{pc.total}" ></h:outputText>
+                                   <h:outputText value="Settled" rendered="#{pc.netTotal eq reportController.findVoucherIsAvailable(pc).bill.netTotal}" />
+                                    <h:outputText value="Partially Settled" rendered="#{pc.netTotal lt reportController.findVoucherIsAvailable(pc).bill.netTotal}" />
+                                    <h:outputText value="Unsettled" rendered="#{reportController.findVoucherIsAvailable(pc) eq null}" />
                                 </p:column>
                                 <p:column headerText="Created By" >
                                     <h:outputText value="#{reportController.findVoucherIsAvailable(pc).bill.creater.name}" rendered="#{reportController.findVoucherIsAvailable(pc) ne null}"></h:outputText>
