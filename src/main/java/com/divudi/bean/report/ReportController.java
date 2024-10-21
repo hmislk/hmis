@@ -299,7 +299,7 @@ public class ReportController implements Serializable {
             Bill bill = bi.getBill();
             BillAndItemDataRow row = billMap.getOrDefault(bill, new BillAndItemDataRow());
             row.setBill(bill);
-
+            
             if (row.getItemDetailCells().isEmpty()) {
                 for (int i = 0; i < sortedItems.size(); i++) {
                     row.getItemDetailCells().add(new ItemDetailsCell());
@@ -1137,7 +1137,7 @@ public class ReportController implements Serializable {
         m.put("bts", bts);
 
         if (institution != null) {
-            jpql += "AND cb.creditCompany = :cc ";
+            jpql += "AND cb.creditCompany = : cc ";
             m.put("cc", institution);
         }
 
@@ -1149,7 +1149,6 @@ public class ReportController implements Serializable {
         if (selectedVoucherStatusOnDebtorSettlement != null) {
             // Filter the bills list based on the statusFilter
             bills = filterBillsByStatus(bills, selectedVoucherStatusOnDebtorSettlement);
-
         }
         netTotal = 0.0;
 
