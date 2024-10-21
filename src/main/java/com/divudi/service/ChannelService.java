@@ -514,7 +514,7 @@ public class ChannelService {
     public List<Bill> findBillFromRefNo(String refNo){
         String jpql = "Select b from Bill b"
                 + " where b.agentRefNo = :ref"
-                + " and b.Cancelled = false"
+                + " and b.cancelled = false"
                 + " and b.retired = false";
         
         Map params = new HashMap();
