@@ -33,7 +33,9 @@ public class BankAccount implements Serializable {
     private Institution bankBranch;   
     private String accountNo;
     
+    @ManyToOne
     private Institution bank;
+    @ManyToOne
     private Institution institution;
     //Created Properties
     @ManyToOne

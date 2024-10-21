@@ -44,7 +44,7 @@ public class BankAccountController implements Serializable {
     private BankAccountFacade ejbFacade;
     private BankAccount current;
     private List<BankAccount> items = null;
-    
+
     public String manageBankAccounts() {
         current = new BankAccount();
         return "/admin/institutions/bank_account?faces-redirect=true";
@@ -161,13 +161,12 @@ public class BankAccountController implements Serializable {
     }
 
     public List<BankAccount> getItems() {
-        if (items == null) {
-            String j;
-            j = "select ba "
-                    + " from BankAccount ba "
-                    + " where ba.retired=false "
-                    + " order by ba.accountNo";
+        if (items == null || items.isEmpty()) {
+            String j = "SELECT ba FROM BankAccount ba WHERE ba.retired = false ORDER BY ba.accountNo";
             items = getFacade().findByJpql(j);
+            if (items == null) {
+                items = new ArrayList<>();
+            }
         }
         return items;
     }
