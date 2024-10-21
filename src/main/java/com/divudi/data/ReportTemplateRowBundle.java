@@ -527,9 +527,9 @@ public class ReportTemplateRowBundle implements Serializable {
                 = this.cashValue + this.cardValue + this.multiplePaymentMethodsValue + this.staffValue
                 + this.creditValue + this.staffWelfareValue + this.voucherValue + this.iouValue
                 + this.agentValue + this.chequeValue + this.slipValue + this.eWalletValue
-                + this.patientDepositValue + this.patientPointsValue + this.onlineSettlementValue;
-//                + this.grossTotal + this.discount 
-//                + this.hospitalTotal + this.staffTotal + this.ccTotal + 0.0;
+                + this.patientDepositValue + this.patientPointsValue + this.onlineSettlementValue
+                + this.grossTotal + this.discount 
+                + this.hospitalTotal + this.staffTotal + this.ccTotal + 0.0;
     }
 
     public void calculateTotalsByChildBundles() {
@@ -698,6 +698,8 @@ public class ReportTemplateRowBundle implements Serializable {
     
     public void calculateTotalNetTotalTaxByBills() {
         total = 0.0;
+        grossTotal=0.0;
+        tax=0.0;
         if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
             for (ReportTemplateRow row : this.reportTemplateRows) {
                 if (row.getBill() == null) {

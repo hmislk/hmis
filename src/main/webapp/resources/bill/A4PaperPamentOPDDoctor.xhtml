@@ -11,7 +11,7 @@
     <!-- INTERFACE -->
     <cc:interface>
         <cc:attribute name="controller" />
-        <cc:attribute name="bill" />
+        <cc:attribute name="bill" type="com.divudi.entity.Bill" />
         <cc:attribute name="dup" />
     </cc:interface>
 
@@ -64,7 +64,7 @@
                             <td><h:outputLabel value="Bill ID" class="billDetailsFiveFive" ></h:outputLabel></td>
                             <td style="text-align: center;" >:</td>
                             <td>
-                                <h:outputLabel value="#{cc.attrs.bill.id}" class="billDetailsFiveFive" ></h:outputLabel>
+                                <h:outputLabel value="#{cc.attrs.bill.deptId}" class="billDetailsFiveFive" ></h:outputLabel>
                             </td>
                             <td width="2%" />
                             <td width="" ><h:outputLabel value="Payment Type" class="billDetailsFiveFive" ></h:outputLabel></td>
@@ -236,7 +236,18 @@
                 </div>
 
                 <div class="footer" >
-                    <h:outputLabel value="casher :  #{sessionController.loggedUser.name}"/>
+                    <div class="row" >
+                        <div class="col-4" >
+                            <h:outputLabel value="Casher :  #{cc.attrs.bill.creater.webUserPerson.name}"/>
+                        </div>
+                        <div class="col-4" >
+                            <h:outputLabel value="Nurse :  "/>
+                        </div>
+                        <div class="col-4" >
+                            <h:outputLabel value="Profesional :  #{cc.attrs.bill.toStaff.person.nameWithTitle}"/>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </h:panelGroup>

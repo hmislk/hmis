@@ -156,6 +156,24 @@ public class DoctorController implements Serializable {
         m.put("ret", false);
         selectedItems = getFacade().findByJpql(j, m);
     }
+    
+    public List<Doctor> fillDoctorsIncludingConsultantsWithSpeciality(Speciality speciality) {
+        String j;
+        Map m = new HashMap();
+        j = "select c "
+                + " from Doctor c "
+                + " where c.retired=:ret";
+        if(speciality != null){
+           j += " and c.speciality=:sp";
+           m.put("sp", speciality);
+        }        
+        j += " order by c.person.name";
+       
+        m.put("ret", false);
+       List<Doctor> docList = getFacade().findByJpql(j, m);
+       
+       return docList;
+    }
 
     public void prepareAdd() {
         current = new Doctor();

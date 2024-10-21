@@ -124,7 +124,7 @@
                                 filter="true">
                                 <f:selectItem itemLabel="All Departments" />
                                 <f:selectItems 
-                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}" 
+                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(reportController.institution, reportController.site)}" 
                                     var="d" 
                                     itemLabel="#{d.name}" 
                                     itemValue="#{d}" />
@@ -204,6 +204,8 @@
                             <p:column headerText="Casheir"><h:outputText value="#{pc.creater.webUserPerson.name}" ></h:outputText></p:column>
                             <p:column headerText="Bill No" width="">
                                 <h:outputText value="#{pc.deptId}" ></h:outputText>
+                                <p:badge value="Cancelled - #{pc.cancelledBill.deptId}" severity="danger" rendered="#{pc.cancelledBill ne null}" />
+                                <p:badge value="Refunded - #{pc.refundedBill.deptId}" severity="warning" rendered="#{pc.refundedBill ne null}" />
                             </p:column>
                             <p:column headerText="Bill Date" >
                                 <h:outputText value="#{pc.billDate}" >
@@ -219,7 +221,8 @@
                                 </h:outputText>
                             </p:column>
                             <p:column headerText="For Whome" >
-                                <h:outputText value="#{pc.staff.person.name}" ></h:outputText>
+                                <h:outputText value="#{pc.staff.person.name}" rendered="#{pc.staff ne null}" ></h:outputText>
+                                <h:outputText value="#{pc.person.name}" rendered="#{pc.person ne null}" ></h:outputText>
                             </p:column>
                             <p:column headerText="Paid For" >
                                 <h:outputText value="#{pc.toDepartment.name}" ></h:outputText>
@@ -235,6 +238,9 @@
                             </p:column>
                             <p:column headerText="Amount" >
                                 <h:outputText value="#{pc.total}" ></h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{reportController.netTotal}" ></h:outputText>
+                                </f:facet>
                             </p:column>
 
 
