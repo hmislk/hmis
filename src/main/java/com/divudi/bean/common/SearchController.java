@@ -4172,13 +4172,22 @@ public class SearchController implements Serializable {
         bills = new ArrayList<>();  // Initialize to avoid null issues
         List<BillTypeAtomic> bta = new ArrayList<>();
         bta.add(BillTypeAtomic.SUPPLEMENTARY_INCOME);
+        bta.add(BillTypeAtomic.SUPPLEMENTARY_INCOME_CANCELLED);
         bta.add(BillTypeAtomic.OPERATIONAL_EXPENSES);
+        bta.add(BillTypeAtomic.OPERATIONAL_EXPENSES_CANCELLED);
 
-        String sql = "select bi from Bill bi where bi.billTypeAtomic IN :bTypeList";
+        String sql = "select bi "
+                + " from Bill bi "
+                + " where bi.retired=:ret "
+                + " and bi.billTypeAtomic IN :bTypeList"
+                + " and bi.createdAt BETWEEN :fd and :td ";
         Map<String, Object> m = new HashMap<>();
         m.put("bTypeList", bta);
+        m.put("ret", false);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
 
-        bills = getBillFacade().findByJpql(sql, m);
+        bills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
     }
 
     public void createDrawerAdjustmentTable() {

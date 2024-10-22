@@ -87,6 +87,7 @@ import static com.divudi.data.BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_
 import static com.divudi.data.BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION;
 import static com.divudi.data.BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES;
 import static com.divudi.data.BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN;
+import static com.divudi.data.BillTypeAtomic.SUPPLEMENTARY_INCOME;
 import com.divudi.data.CountedServiceType;
 import com.divudi.data.InstitutionType;
 import com.divudi.data.OptionScope;
@@ -3141,6 +3142,25 @@ public class BillSearch implements Serializable {
         return "/opd/view/opd_bill?faces-redirect=true;";
     }
 
+    public String navigateToViewIncomeBill() {
+        if (viewingBill == null) {
+            JsfUtil.addErrorMessage("No Bill to Dsiplay");
+            return "";
+        }
+        findRefuendedBills(viewingBill);
+        return "/opd/view/opd_bill?faces-redirect=true;";
+    }
+
+    public String navigateToManageIncomeBill() {
+        if (viewingBill == null) {
+            JsfUtil.addErrorMessage("No Bill to Dsiplay");
+            return "";
+        }
+        financialTransactionController.setCurrentBill(viewingBill);
+        financialTransactionController.setCurrentBillPayments(viewingBillPayments);
+        return "/opd/view/opd_bill?faces-redirect=true;";
+    }
+
     public String navigateToAdminOpdBill() {
         if (viewingBill == null) {
             JsfUtil.addErrorMessage("No Bill to Dsiplay");
@@ -3291,11 +3311,6 @@ public class BillSearch implements Serializable {
         channelSearchController.setBill(bill);
         channelSearchController.setPrintPreview(true);
         return "/channel/channel_payment_bill_reprint?faces-redirect=true;";
-    }
-
-    public String navigateToViewSupplimentaryIncomeBill(Bill bill) {
-        loadBillDetails(bill);
-        return "/cashier/income_bill_reprint?faces-redirect=true;";
     }
 
     public String navigateToViewCashierShiftShortageBill(Bill bill) {
@@ -3468,6 +3483,8 @@ public class BillSearch implements Serializable {
             case PHARMACY_RETAIL_SALE_CANCELLED:
                 pharmacyBillSearch.setBill(bill);
                 return pharmacyBillSearch.navigateToViewPharmacyGrn();
+            case SUPPLEMENTARY_INCOME:
+                return navigateToViewIncomeBill();
 
         }
 
@@ -3635,7 +3652,7 @@ public class BillSearch implements Serializable {
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION:
                 return navigateToViewChannelingProfessionalPaymentBill();
             case SUPPLEMENTARY_INCOME:
-                return navigateToViewSupplimentaryIncomeBill(bill);
+                return navigateToManageIncomeBill();
             case FUND_SHIFT_SHORTAGE_BILL:
                 return navigateToViewCashierShiftShortageBill(bill);
 
