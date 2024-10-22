@@ -15117,7 +15117,7 @@ public class SearchController implements Serializable {
         }
 
         if (webUser != null) {
-            jpql += " AND b.creator = :wu ";
+            jpql += " AND b.creater = :wu ";
             m.put("wu", webUser);
         }
 
@@ -15181,10 +15181,6 @@ public class SearchController implements Serializable {
         if (department != null) {
             jpql += "AND bill.department = :dep ";
             parameters.put("dep", department);
-        }
-        if (item != null) {
-            jpql += "AND :item MEMBER OF bill.billItems ";
-            parameters.put("item", item);
         }
 
         if (speciality != null) {
