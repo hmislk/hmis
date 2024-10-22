@@ -214,6 +214,8 @@ public class BillSearch implements Serializable {
     PatientDepositController patientDepositController;
     @Inject
     OpdBillController opdBillController;
+    @Inject
+    SearchController searchController;
 
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
@@ -2109,7 +2111,7 @@ public class BillSearch implements Serializable {
         cb.setBillTypeAtomic(BillTypeAtomic.OPD_BILL_CANCELLATION);
 
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.OPD_BILL_CANCELLATION);
-        
+
         cb.setDeptId(deptId);
         cb.setInsId(deptId);
 
@@ -2756,7 +2758,7 @@ public class BillSearch implements Serializable {
             b.setDeptId(nB.getDeptId());
             b.setInsId(nB.getInsId());
             b.setDiscount(0 - nB.getDiscount());
-            b.setQty(0-nB.getQty());
+            b.setQty(0 - nB.getQty());
             b.setRate(nB.getRate());
 
             b.setCreatedAt(new Date());
@@ -2843,7 +2845,7 @@ public class BillSearch implements Serializable {
             newCancellingBillFee.setFee(originalProfessionalPaymentFeeForBillItem.getFee());
             newCancellingBillFee.setPatienEncounter(originalProfessionalPaymentFeeForBillItem.getPatienEncounter());
             newCancellingBillFee.setPatient(originalProfessionalPaymentFeeForBillItem.getPatient());
-            if(originalProfessionalPaymentFeeForBillItem.getReferenceBillFee() != null && newCancellingBillFee.getPatient() == null){
+            if (originalProfessionalPaymentFeeForBillItem.getReferenceBillFee() != null && newCancellingBillFee.getPatient() == null) {
                 newCancellingBillFee.setPatient(originalProfessionalPaymentFeeForBillItem.getReferenceBillFee().getBill().getPatient());
             }
             newCancellingBillFee.setDepartment(originalProfessionalPaymentFeeForBillItem.getDepartment());
@@ -3099,7 +3101,7 @@ public class BillSearch implements Serializable {
     public String navigateToViewChannelBillSession() {
         return "/channel/manage_booking_by_date?faces-redirect=true;";
     }
-    
+
     private List<Bill> refuendedBills = new ArrayList();
 
     public void findRefuendedBills(Bill bill) {
@@ -3134,8 +3136,8 @@ public class BillSearch implements Serializable {
         findRefuendedBills(viewingBill);
         return "/opd/view/opd_bill?faces-redirect=true;";
     }
-    
-     public String navigateToAdminOpdBill() {
+
+    public String navigateToAdminOpdBill() {
         if (viewingBill == null) {
             JsfUtil.addErrorMessage("No Bill to Dsiplay");
             return "";
@@ -3158,7 +3160,7 @@ public class BillSearch implements Serializable {
         }
         return "/opd/view/opd_refund_bill_admin?faces-redirect=true;";
     }
-    
+
     public String navigateToAdminOpdCancellationBill() {
         if (viewingBill == null) {
             JsfUtil.addErrorMessage("No Bill to Dsiplay");
@@ -3196,6 +3198,12 @@ public class BillSearch implements Serializable {
         return "/opd/professional_payments/opd_search_professional_payment_done?faces-redirect=true;";
     }
 
+    public String navigateToViewOpdProfessionalPaymentsDoneByUser() {
+        searchController.getReportKeyWord().setWebUser(sessionController.getLoggedUser());
+        searchController.createPaymentTableAll();
+        return "/opd/professional_payments/opd_search_professional_payment_done?faces-redirect=true;";
+    }
+
     public String navigateToViewOpdProfessionalPaymentsDue() {
         return "/opd/professional_payments/opd_search_professional_payment_due?faces-redirect=true;";
     }
@@ -3203,7 +3211,6 @@ public class BillSearch implements Serializable {
 //    public String navigateToViewOpdPayProfessionalPayments() {
 //        return "/opd/professional_payments/payment_staff_bill?faces-redirect=true;";
 //    }
-
     public String navigateToViewCancallationOpdbATCHBill() {
         if (viewingBill == null) {
             JsfUtil.addErrorMessage("Nothing to cancel");
@@ -3960,7 +3967,7 @@ public class BillSearch implements Serializable {
 
         return billFees;
     }
-    
+
     public List<BillFee> getPayingBillFees() {
         if (getBill() != null) {
             String sql = "SELECT b FROM BillFee b WHERE b.retired=false and b.bill.id=" + getBill().getId();
