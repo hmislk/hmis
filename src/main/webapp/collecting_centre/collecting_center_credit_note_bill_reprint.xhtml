@@ -16,9 +16,18 @@
                             <hr/>
                             
                             <p:commandButton ajax="false"
-                                             value="Cancel"
+                                             value="Back"
+                                             class="ui-button-warning mx-3"
+                                             style="float: right; width: 150px;"
+                                             action="collecting_center_credit_note_bill_search_own.xhtml">                           
+                            </p:commandButton>
+                            
+                            <p:commandButton ajax="false"
+                                             value="To Cancel"
+                                             class="ui-button-danger mx-3"
+                                             style="float: right; width: 150px;"
                                              action="collecting_center_credit_note_bill_cancel"
-                                             disabled="#{agentPaymentReceiveSearchController.bill.cancelled}" >                           
+                                             disabled="#{agentPaymentReceiveSearchController.bill.cancelled}">                           
                             </p:commandButton>
                             
                         </f:facet>
