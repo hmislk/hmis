@@ -4170,14 +4170,15 @@ public class SearchController implements Serializable {
 
     public void createPaymentHistoryTable() {
         bills = new ArrayList<>();  // Initialize to avoid null issues
-        String sql;
-        Map<String, Object> m = new HashMap<>();
+        List<BillTypeAtomic> bta = new ArrayList<>();
+        bta.add(BillTypeAtomic.SUPPLEMENTARY_INCOME);
+        bta.add(BillTypeAtomic.OPERATIONAL_EXPENSES);
 
-        sql = "select bi from Bill bi where bi.billTypeAtomic = :bType ";
-        m.put("bType", BillTypeAtomic.SUPPLEMENTARY_INCOME);
+        String sql = "select bi from Bill bi where bi.billTypeAtomic IN :bTypeList";
+        Map<String, Object> m = new HashMap<>();
+        m.put("bTypeList", bta);
 
         bills = getBillFacade().findByJpql(sql, m);
-
     }
 
     public void createDrawerAdjustmentTable() {

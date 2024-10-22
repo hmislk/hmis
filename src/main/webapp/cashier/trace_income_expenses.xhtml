@@ -156,6 +156,12 @@
                                             </h:panelGrid>
                                         </p:tooltip>
                                     </p:column>
+                                    
+                                    <p:column headerText="Bill Type">
+                                       <p:badge rendered="#{bill.billTypeAtomic eq 'SUPPLEMENTARY_INCOME'}" value="Income Bill" severity="success" styleClass="mr-2"></p:badge>
+                                       <p:badge rendered="#{bill.billTypeAtomic eq 'OPERATIONAL_EXPENSES'}" value="Expense Bill" severity="warning" styleClass="mr-2"></p:badge>
+                                        
+                                    </p:column>
 
                                     <p:column headerText="Value" sortBy="#{bill.total}" 
                                               styleClass="averageNumericColumn">
