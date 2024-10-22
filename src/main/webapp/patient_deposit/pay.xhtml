@@ -463,7 +463,7 @@
 
                                 <div class="d-flex flex-wrap w-100">
                                     <p:selectOneMenu id="cmbPs" value="#{patientController.bill.paymentMethod}">
-                                        <f:selectItems value="#{enumController.paymentMethodsForPatientDepositRefund}"/>
+                                        <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
                                         <p:ajax process="cmbPs" update="panelGroup creditCard cheque slip eWallet" event="change" listener="#{patientController.listnerForPaymentMethodChange()}" />
                                     </p:selectOneMenu>
 
