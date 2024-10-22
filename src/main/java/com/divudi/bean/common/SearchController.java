@@ -15117,7 +15117,7 @@ public class SearchController implements Serializable {
         }
 
         if (webUser != null) {
-            jpql += " AND b.creator = :wu ";
+            jpql += " AND b.creater = :wu ";
             m.put("wu", webUser);
         }
 
