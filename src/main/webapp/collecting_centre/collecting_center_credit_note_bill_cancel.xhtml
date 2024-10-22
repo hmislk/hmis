@@ -16,8 +16,11 @@
                                                required="true" disabled="true"  >
                                 <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
                             </p:selectOneMenu>
-                            <p:commandButton ajax="false" value="Cancel" action="#{agentPaymentReceiveSearchController.collectingCenterCreditNoteCancelBill}" style="float: right;"  
-                                             rendered="#{agentPaymentReceiveSearchController.bill.billType eq 'CollectingCentreCreditNoteBill'}" onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
+                            <p:commandButton ajax="false" value="Cancel"
+                                             action="#{agentPaymentReceiveSearchController.collectingCenterCreditNoteCancelBill(agentPaymentReceiveSearchController.bill)}"
+                                             style="float: right;"  
+                                             rendered="#{agentPaymentReceiveSearchController.bill.billType eq 'CollectingCentreCreditNoteBill'}"
+                                             onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
                                                          return false;"/>
                             
                         </p:panel>
