@@ -53,6 +53,8 @@ import com.divudi.facade.WebUserFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
+import com.divudi.data.BillCategory;
+import com.divudi.data.BillFinanceType;
 import com.divudi.data.BillTypeAtomic;
 import static com.divudi.data.BillTypeAtomic.CC_BILL;
 import static com.divudi.data.BillTypeAtomic.CC_BILL_CANCELLATION;
@@ -76,6 +78,7 @@ import static com.divudi.data.BillTypeAtomic.OPD_BILL_REFUND;
 import static com.divudi.data.BillTypeAtomic.OPD_BILL_WITH_PAYMENT;
 import static com.divudi.data.BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL;
 import static com.divudi.data.BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL_RETURN;
+import static com.divudi.data.BillTypeAtomic.PHARMACY_RETAIL_SALE;
 import static com.divudi.data.BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED;
 import static com.divudi.data.BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE;
 import static com.divudi.data.BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES;
@@ -84,8 +87,11 @@ import static com.divudi.data.BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_
 import static com.divudi.data.BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION;
 import static com.divudi.data.BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES;
 import static com.divudi.data.BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN;
+import com.divudi.data.CountedServiceType;
 import com.divudi.data.InstitutionType;
 import com.divudi.data.OptionScope;
+import com.divudi.data.PaymentCategory;
+import com.divudi.data.ServiceType;
 import com.divudi.entity.Doctor;
 import com.divudi.entity.PatientDeposit;
 import com.divudi.facade.FeeFacade;
@@ -2109,7 +2115,7 @@ public class BillSearch implements Serializable {
         cb.setBillTypeAtomic(BillTypeAtomic.OPD_BILL_CANCELLATION);
 
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.OPD_BILL_CANCELLATION);
-        
+
         cb.setDeptId(deptId);
         cb.setInsId(deptId);
 
@@ -2756,7 +2762,7 @@ public class BillSearch implements Serializable {
             b.setDeptId(nB.getDeptId());
             b.setInsId(nB.getInsId());
             b.setDiscount(0 - nB.getDiscount());
-            b.setQty(0-nB.getQty());
+            b.setQty(0 - nB.getQty());
             b.setRate(nB.getRate());
 
             b.setCreatedAt(new Date());
@@ -2843,7 +2849,7 @@ public class BillSearch implements Serializable {
             newCancellingBillFee.setFee(originalProfessionalPaymentFeeForBillItem.getFee());
             newCancellingBillFee.setPatienEncounter(originalProfessionalPaymentFeeForBillItem.getPatienEncounter());
             newCancellingBillFee.setPatient(originalProfessionalPaymentFeeForBillItem.getPatient());
-            if(originalProfessionalPaymentFeeForBillItem.getReferenceBillFee() != null && newCancellingBillFee.getPatient() == null){
+            if (originalProfessionalPaymentFeeForBillItem.getReferenceBillFee() != null && newCancellingBillFee.getPatient() == null) {
                 newCancellingBillFee.setPatient(originalProfessionalPaymentFeeForBillItem.getReferenceBillFee().getBill().getPatient());
             }
             newCancellingBillFee.setDepartment(originalProfessionalPaymentFeeForBillItem.getDepartment());
@@ -3099,7 +3105,7 @@ public class BillSearch implements Serializable {
     public String navigateToViewChannelBillSession() {
         return "/channel/manage_booking_by_date?faces-redirect=true;";
     }
-    
+
     private List<Bill> refuendedBills = new ArrayList();
 
     public void findRefuendedBills(Bill bill) {
@@ -3134,8 +3140,8 @@ public class BillSearch implements Serializable {
         findRefuendedBills(viewingBill);
         return "/opd/view/opd_bill?faces-redirect=true;";
     }
-    
-     public String navigateToAdminOpdBill() {
+
+    public String navigateToAdminOpdBill() {
         if (viewingBill == null) {
             JsfUtil.addErrorMessage("No Bill to Dsiplay");
             return "";
@@ -3158,7 +3164,7 @@ public class BillSearch implements Serializable {
         }
         return "/opd/view/opd_refund_bill_admin?faces-redirect=true;";
     }
-    
+
     public String navigateToAdminOpdCancellationBill() {
         if (viewingBill == null) {
             JsfUtil.addErrorMessage("No Bill to Dsiplay");
@@ -3203,7 +3209,6 @@ public class BillSearch implements Serializable {
 //    public String navigateToViewOpdPayProfessionalPayments() {
 //        return "/opd/professional_payments/payment_staff_bill?faces-redirect=true;";
 //    }
-
     public String navigateToViewCancallationOpdbATCHBill() {
         if (viewingBill == null) {
             JsfUtil.addErrorMessage("Nothing to cancel");
@@ -3340,9 +3345,6 @@ public class BillSearch implements Serializable {
         BillTypeAtomic billTypeAtomic = bill.getBillTypeAtomic();
         loadBillDetails(bill);
         switch (billTypeAtomic) {
-            case PHARMACY_RETAIL_SALE_CANCELLED:
-                pharmacyBillSearch.setBill(bill);
-                return pharmacyBillSearch.navigateToViewPharmacyGrn();
             case OPD_BILL_REFUND:
                 return navigateToViewOpdRefundBill();
             case OPD_BILL_CANCELLATION:
@@ -3407,6 +3409,65 @@ public class BillSearch implements Serializable {
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN:
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION:
                 return navigateToViewChannelingProfessionalPaymentBill();
+
+            case PHARMACY_RETAIL_SALE_PRE:
+            case PHARMACY_RETAIL_SALE:
+            case PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS:
+            case PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER:
+            case PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER:
+            case PHARMACY_RETAIL_SALE_REFUND:
+            case PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY:
+            case PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS:
+            case PHARMACY_SALE_WITHOUT_STOCK:
+            case PHARMACY_SALE_WITHOUT_STOCK_PRE:
+            case PHARMACY_SALE_WITHOUT_STOCK_CANCELLED:
+            case PHARMACY_SALE_WITHOUT_STOCK_REFUND:
+            case PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK:
+            case PHARMACY_WHOLESALE:
+            case PHARMACY_WHOLESALE_PRE:
+            case PHARMACY_WHOLESALE_CANCELLED:
+            case PHARMACY_WHOLESALE_REFUND:
+                pharmacyBillSearch.setBill(bill);
+                return pharmacyBillSearch.navigateToViewPharmacyBill();
+
+            case PHARMACY_ORDER:
+            case PHARMACY_ORDER_PRE:
+            case PHARMACY_ORDER_CANCELLED:
+            case PHARMACY_ORDER_APPROVAL:
+            case PHARMACY_ORDER_APPROVAL_CANCELLED:
+            case PHARMACY_DIRECT_PURCHASE:
+            case PHARMACY_DIRECT_PURCHASE_CANCELLED:
+            case PHARMACY_DIRECT_PURCHASE_REFUND:
+            case PHARMACY_GRN:
+            case PHARMACY_GRN_PRE:
+            case PHARMACY_GRN_WHOLESALE:
+            case PHARMACY_GRN_CANCELLED:
+            case PHARMACY_GRN_REFUND:
+            case PHARMACY_GRN_RETURN:
+            case PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL:
+            case PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL_CANCELLED:
+            case PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL_REFUND:
+            case PHARMACY_WHOLESALE_GRN_BILL:
+            case PHARMACY_WHOLESALE_GRN_BILL_CANCELLED:
+            case PHARMACY_WHOLESALE_GRN_BILL_REFUND:
+            case PHARMACY_GRN_PAYMENT:
+            case PHARMACY_GRN_PAYMENT_CANCELLED:
+            case PHARMACY_ADJUSTMENT:
+            case PHARMACY_ADJUSTMENT_CANCELLED:
+            case PHARMACY_TRANSFER_REQUEST:
+            case PHARMACY_TRANSFER_REQUEST_PRE:
+            case PHARMACY_TRANSFER_REQUEST_CANCELLED:
+            case PHARMACY_ISSUE:
+            case PHARMACY_ISSUE_CANCELLED:
+            case PHARMACY_DIRECT_ISSUE:
+            case PHARMACY_DIRECT_ISSUE_CANCELLED:
+            case PHARMACY_RECEIVE_PRE:
+            case PHARMACY_RECEIVE_CANCELLED:
+            case MULTIPLE_PHARMACY_ORDER_CANCELLED_BILL:
+            case PHARMACY_RETURN_ITEMS_AND_PAYMENTS_CANCELLATION:
+            case PHARMACY_RETAIL_SALE_CANCELLED:
+                pharmacyBillSearch.setBill(bill);
+                return pharmacyBillSearch.navigateToViewPharmacyGrn();
 
         }
 
@@ -3960,7 +4021,7 @@ public class BillSearch implements Serializable {
 
         return billFees;
     }
-    
+
     public List<BillFee> getPayingBillFees() {
         if (getBill() != null) {
             String sql = "SELECT b FROM BillFee b WHERE b.retired=false and b.bill.id=" + getBill().getId();
