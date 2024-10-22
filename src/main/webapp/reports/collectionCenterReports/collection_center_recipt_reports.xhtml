@@ -200,7 +200,7 @@
                             <p:column headerText="Type" rendered="#{webUserController.hasPrivilege('Developers')}" >
                                 <h:outputText value="#{row.bill.billTypeAtomic}" ></h:outputText>
                             </p:column>
-                            <p:column headerText="Bill No" >
+                            <p:column headerText="Bill No" sortBy="#{row.bill.deptId}" filterBy="#{row.bill.deptId}" filterMatchMode="contains">
                                 <h:outputText value="#{row.bill.deptId}" ></h:outputText>
                                 <p:commandLink 
                                     ajax="false"
@@ -222,9 +222,9 @@
                                 </p:commandLink>
 
                             </p:column>
-                            <p:column headerText="Billed at" >
+                            <p:column headerText="Billed At" >
                                 <h:outputText value="#{row.bill.createdAt}" >
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
                                 </h:outputText>
                             </p:column>
                             <p:column headerText="Billed By" >
@@ -233,14 +233,16 @@
                             <p:column headerText="Payment Method" >
                                 <h:outputText value="#{row.bill.paymentMethod}" ></h:outputText>
                             </p:column>
-                            <p:column headerText="Agent Code" >
+                            <p:column headerText="Agent Code" sortBy="#{row.bill.fromInstitution.code}" filterBy="#{row.bill.fromInstitution.code}" filterMatchMode="contains" >
                                 <h:outputText value="#{row.bill.fromInstitution.code}" ></h:outputText>
                             </p:column>
                             <p:column headerText="Agent Name" >
                                 <h:outputText value="#{row.bill.fromInstitution.name}" ></h:outputText>
                             </p:column>
-                            <p:column headerText="Amount" class="text-end">
-                                <h:outputText value="#{row.bill.total}" ></h:outputText>
+                            <p:column headerText="Amount" class="text-end" sortBy="#{row.bill.total}">
+                                <h:outputText value="#{row.bill.total}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputText>
                                 <f:facet name="footer" >
                                     <h:outputLabel value="#{reportController.bundle.total}" >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
