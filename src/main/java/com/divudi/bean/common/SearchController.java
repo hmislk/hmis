@@ -241,6 +241,7 @@ public class SearchController implements Serializable {
     private double discount;
     ServiceSession selectedServiceSession;
     Staff currentStaff;
+    private String mrnNo;
     List<BillItem> billItem;
     List<PatientInvestigation> userPatientInvestigations;
 
@@ -1999,6 +2000,14 @@ public class SearchController implements Serializable {
 
     public void setReportType(String reportType) {
         this.reportType = reportType;
+    }
+
+    public String getMrnNo() {
+        return mrnNo;
+    }
+
+    public void setMrnNo(String mrnNo) {
+        this.mrnNo = mrnNo;
     }
 
     public class billsWithbill {
@@ -13799,7 +13808,11 @@ public class SearchController implements Serializable {
 
         // Add payment status condition
         if (paymentStatus == PaymentStatus.DUE) {
-            jpql += " and (bf.paidValue IS NULL OR bf.paidValue = 0) ";
+            jpql += " and (bf.paidValue IS NULL OR bf.paidValue = 0) "
+                  + " and bi.bill.cancelled = :can "
+                  + " and bi.refunded = :refu";
+           m.put("can", false);
+           m.put("refu", false);
         } else if (paymentStatus == PaymentStatus.DONE) {
             jpql += " and bf.paidValue > 0 ";
         }
@@ -13841,7 +13854,11 @@ public class SearchController implements Serializable {
             jpql += " and bf.staff=:staff ";
             m.put("staff", staff);
         }
-
+//        if (mrnNo != null || mrnNo.isEmpty()) {
+//            jpql += " and bi.bill.patient.phn=:phn ";
+//            m.put("phn", mrnNo);
+//        }
+        
         System.out.println("jpql = " + jpql);
         System.out.println("m = " + m);
 

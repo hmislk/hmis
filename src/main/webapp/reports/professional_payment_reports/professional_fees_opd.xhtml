@@ -167,6 +167,15 @@
                                             itemLabel="#{staff.person.nameWithTitle}" 
                                             itemValue="#{staff}" />
                                     </p:selectOneMenu>
+                                    
+                                    <p:spacer ></p:spacer>
+
+                                    <!-- New Doctor Field with Icon -->
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf0f0;" styleClass="fa mr-2" /> 
+                                        <h:outputLabel value="MRN" for="scMRN" class="mx-3" />
+                                        <p:inputText value="#{searchController.mrnNo}" />
+                                    </h:panelGroup>
 
                                 </h:panelGrid>
 
@@ -394,6 +403,13 @@
 
                                 </h:panelGroup>
 
+                            </p:column>
+                            <p:column class="text-end">
+                                <f:facet name="header">
+                                    <h:outputText value="Paid By" />
+                                </f:facet>
+                                <h:outputText value="#{row.billFee.referenceBillFee.bill.creater.name}">
+                                </h:outputText>
                             </p:column>
 
                             <p:column class="text-end">
