@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
@@ -63,6 +64,8 @@ public class SaleReturnController implements Serializable {
     private PharmaceuticalItemController pharmaceuticalItemController;
     @Inject
     private PharmacyController pharmacyController;
+    @Inject
+    DrawerController drawerController;
     @Inject
     private SessionController sessionController;
     @EJB
@@ -421,6 +424,7 @@ public class SaleReturnController implements Serializable {
 //        saveSaleComponent(b);
         //saveSaleComponent and billfees and billFeePayment
         Payment p = createPayment(b, b.getPaymentMethod());
+        drawerController.updateDrawerForOuts(p);
         saveSaleComponent(b, p);
 
         getReturnBill().getReturnCashBills().add(b);

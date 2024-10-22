@@ -241,6 +241,7 @@ public class SearchController implements Serializable {
     private double discount;
     ServiceSession selectedServiceSession;
     Staff currentStaff;
+    private String mrnNo;
     List<BillItem> billItem;
     List<PatientInvestigation> userPatientInvestigations;
 
@@ -649,6 +650,7 @@ public class SearchController implements Serializable {
 
     public String navigateToProfessionalFees() {
         bundle = new ReportTemplateRowBundle();
+        recreateProPayementModel();
         return "/reports/professional_payment_reports/professional_fees_opd?faces-redirect=true";
     }
 
@@ -740,6 +742,17 @@ public class SearchController implements Serializable {
     public String toListAllPayments() {
         bills = null;
         return "/dataAdmin/list_payments?faces-redirect=true";
+    }
+
+    private void recreateProPayementModel() {
+        institution = null;
+        site = null;
+        department = null;
+        category = null;
+        item = null;
+        mrnNo = null;
+        speciality = null;
+        staff = null;
     }
 
     public void listAllBills() {
@@ -1999,6 +2012,14 @@ public class SearchController implements Serializable {
 
     public void setReportType(String reportType) {
         this.reportType = reportType;
+    }
+
+    public String getMrnNo() {
+        return mrnNo;
+    }
+
+    public void setMrnNo(String mrnNo) {
+        this.mrnNo = mrnNo;
     }
 
     public class billsWithbill {
@@ -4149,14 +4170,15 @@ public class SearchController implements Serializable {
 
     public void createPaymentHistoryTable() {
         bills = new ArrayList<>();  // Initialize to avoid null issues
-        String sql;
-        Map<String, Object> m = new HashMap<>();
+        List<BillTypeAtomic> bta = new ArrayList<>();
+        bta.add(BillTypeAtomic.SUPPLEMENTARY_INCOME);
+        bta.add(BillTypeAtomic.OPERATIONAL_EXPENSES);
 
-        sql = "select bi from Bill bi where bi.billTypeAtomic = :bType ";
-        m.put("bType", BillTypeAtomic.SUPPLEMENTARY_INCOME);
+        String sql = "select bi from Bill bi where bi.billTypeAtomic IN :bTypeList";
+        Map<String, Object> m = new HashMap<>();
+        m.put("bTypeList", bta);
 
         bills = getBillFacade().findByJpql(sql, m);
-
     }
 
     public void createDrawerAdjustmentTable() {
@@ -7537,7 +7559,8 @@ public class SearchController implements Serializable {
         temMap.put("fromDate", getFromDate());
         //  temMap.put("ins", getSessionController().getInstitution());
 
-        //System.err.println("Sql " + sql);
+        System.err.println("Sql " + sql);
+        System.out.println("temMap = " + temMap);
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
 
     }
@@ -13803,7 +13826,11 @@ public class SearchController implements Serializable {
 
         // Add payment status condition
         if (paymentStatus == PaymentStatus.DUE) {
-            jpql += " and (bf.paidValue IS NULL OR bf.paidValue = 0) ";
+            jpql += " and (bf.paidValue IS NULL OR bf.paidValue = 0) "
+                    + " and bi.bill.cancelled = :can "
+                    + " and bi.refunded = :refu";
+            m.put("can", false);
+            m.put("refu", false);
         } else if (paymentStatus == PaymentStatus.DONE) {
             jpql += " and bf.paidValue > 0 ";
         }
@@ -13844,6 +13871,10 @@ public class SearchController implements Serializable {
         if (staff != null) {
             jpql += " and bf.staff=:staff ";
             m.put("staff", staff);
+        }
+        if (mrnNo != null && !mrnNo.isEmpty()) {
+            jpql += " and UPPER(bi.bill.patient.phn) LIKE :phn ";
+            m.put("phn", "%" + mrnNo.toUpperCase() + "%");
         }
 
         System.out.println("jpql = " + jpql);
@@ -15091,7 +15122,7 @@ public class SearchController implements Serializable {
         }
 
         if (webUser != null) {
-            jpql += " AND b.creator = :wu ";
+            jpql += " AND b.creater = :wu ";
             m.put("wu", webUser);
         }
 

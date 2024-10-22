@@ -15,7 +15,7 @@
                         <f:facet name="header">
                             <i class="fa fa-money-bill-wave mt-2"/>
                             <p:outputLabel value="Record Income" class="mx-2 mt-2"></p:outputLabel>
-                            <p:commandButton 
+                             <p:commandButton 
                                 icon="pi pi-play"
                                 class="ui-button-success"
                                 value="Settle Income" 
@@ -23,7 +23,16 @@
                                 style="float: right;"
                                 action="#{financialTransactionController.settleIncomeBill()}" >
                             </p:commandButton>
+                          
+                            <div  style="float: right;" class="mx-3">
+                                <p:outputLabel value="Comment" class="mx-2"></p:outputLabel>
+                                <p:inputText value="#{financialTransactionController.currentBill.comments}" ></p:inputText>
+                            </div>
+                            
+                            
                         </f:facet>
+                        
+                        
 
 
 
@@ -112,10 +121,6 @@
                                     </h:panelGroup>
 
                                 </div>
-                                <!--                                    <div class="col-md-1">
-                                                                        <p:inputTextarea value="#{financialTransactionController.currentPayment.comments}" ></p:inputTextarea>
-                                                                    </div>-->
-
                                 <div class="col-md-1">
                                     <p:commandButton
                                         id="btnAdd"
@@ -126,6 +131,12 @@
                                     </p:commandButton>
                                 </div>
                             </div>
+
+                            <div class="col-md-6">
+                                <p:outputLabel value="Comment" class="mt-2"></p:outputLabel>
+                                <p:inputText value="#{financialTransactionController.currentPayment.comments}" class="m-2"></p:inputText>
+                            </div>
+
                             <p:messages ></p:messages>
                         </p:panel>
 
