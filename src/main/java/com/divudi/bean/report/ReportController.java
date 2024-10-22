@@ -299,7 +299,7 @@ public class ReportController implements Serializable {
             Bill bill = bi.getBill();
             BillAndItemDataRow row = billMap.getOrDefault(bill, new BillAndItemDataRow());
             row.setBill(bill);
-
+            
             if (row.getItemDetailCells().isEmpty()) {
                 for (int i = 0; i < sortedItems.size(); i++) {
                     row.getItemDetailCells().add(new ItemDetailsCell());
@@ -1112,13 +1112,17 @@ public class ReportController implements Serializable {
         sql = "select a from AgentReferenceBook a "
                 + " where a.retired=false "
                 + " and a.deactivate=false "
+                + " and a.createdAt between :fd and :td "
                 + " and a.fullyUtilized=false ";
 
         if (collectingCentre != null) {
             sql += "and a.institution=:ins order by a.id";
             m.put("ins", collectingCentre);
         }
-        agentReferenceBooks = agentReferenceBookFacade.findByJpql(sql, m);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        
+        agentReferenceBooks = agentReferenceBookFacade.findByJpql(sql, m,TemporalType.TIMESTAMP);
 
     }
 
@@ -1137,7 +1141,7 @@ public class ReportController implements Serializable {
         m.put("bts", bts);
 
         if (institution != null) {
-            jpql += "AND cb.creditCompany = :cc ";
+            jpql += "AND cb.creditCompany = : cc ";
             m.put("cc", institution);
         }
 
@@ -1149,7 +1153,6 @@ public class ReportController implements Serializable {
         if (selectedVoucherStatusOnDebtorSettlement != null) {
             // Filter the bills list based on the statusFilter
             bills = filterBillsByStatus(bills, selectedVoucherStatusOnDebtorSettlement);
-
         }
         netTotal = 0.0;
 
@@ -1240,6 +1243,11 @@ public class ReportController implements Serializable {
         if (site != null) {
             jpql += " AND pc.department.site=:site ";
             m.put("site", site);
+        }
+        
+        if (department != null) {
+            jpql += " AND pc.department=:dept ";
+            m.put("dept", department);
         }
 
         if (webUser != null) {

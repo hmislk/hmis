@@ -185,8 +185,14 @@
                 <p:column width="5rem" toggleable="true" headerText="Bill Type" sortBy="#{agentHx.bill.billTypeAtomic.label}" filterBy="#{agentHx.bill.billTypeAtomic.label}" filterMatchMode="contains">
                     <h:outputText value="#{agentHx.bill.billTypeAtomic.label}" />
                 </p:column>
+                
+                <p:column rendered="#{webUserController.hasPrivilege('Developers')}" width="5rem" toggleable="true" headerText="History Type" sortBy="#{agentHx.bill.billTypeAtomic.label}" filterBy="#{agentHx.bill.billTypeAtomic.label}" filterMatchMode="contains">
+                    <h:outputText value="#{agentHx.historyType}" />
+                </p:column>
+                
                 <p:column toggleable="true" headerText="CC Code" sortBy="#{agentHx.bill.billTypeAtomic.label}" filterBy="#{agentHx.bill.billTypeAtomic.label}" filterMatchMode="contains">
-                    <h:outputText value="#{agentHx.bill.collectingCentre.code}" style="text-align: right; display: block;"/>
+<!--                    <h:outputText value="#{agentHx.bill.collectingCentre.code}" style="text-align: right; display: block;"/>-->
+                    <h:outputText value="#{agentHx.bill.fromInstitution.code}" style="text-align: right; display: block;" />
                 </p:column>
                 <p:column width="5rem" toggleable="true" headerText="Leaf No." sortBy="#{agentHx.bill.referenceNumber}" filterBy="#{agentHx.bill.referenceNumber}" filterMatchMode="contains">
                     <h:outputText value="#{agentHx.bill.referenceNumber}" style="text-align: right; display: block;"/>

@@ -3099,12 +3099,39 @@ public class BillSearch implements Serializable {
     public String navigateToViewChannelBillSession() {
         return "/channel/manage_booking_by_date?faces-redirect=true;";
     }
+    
+    private List<Bill> refuendedBills = new ArrayList();
+
+    public void findRefuendedBills(Bill bill) {
+        System.out.println("findRefuendedBills");
+        refuendedBills = new ArrayList<>();
+        Map p = new HashMap();
+        String jpql = "SELECT b"
+                + " FROM Bill b"
+                + " WHERE b.retired =:ret"
+                + " and b.referenceBill =:refBill";
+
+        p.put("ret", false);
+        p.put("refBill", bill);
+
+        refuendedBills = billFacade.findByJpql(jpql, p);
+        System.out.println("refuendedBills = " + refuendedBills);
+    }
+
+    public List<Bill> getRefuendedBills() {
+        return refuendedBills;
+    }
+
+    public void setRefuendedBills(List<Bill> refuendedBills) {
+        this.refuendedBills = refuendedBills;
+    }
 
     public String navigateToViewOpdBill() {
         if (viewingBill == null) {
             JsfUtil.addErrorMessage("No Bill to Dsiplay");
             return "";
         }
+        findRefuendedBills(viewingBill);
         return "/opd/view/opd_bill?faces-redirect=true;";
     }
     
@@ -3933,7 +3960,7 @@ public class BillSearch implements Serializable {
 
         return billFees;
     }
-
+    
     public List<BillFee> getPayingBillFees() {
         if (getBill() != null) {
             String sql = "SELECT b FROM BillFee b WHERE b.retired=false and b.bill.id=" + getBill().getId();

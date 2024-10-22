@@ -12,6 +12,7 @@ import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.RefundBill;
+import com.divudi.entity.WebUser;
 import com.divudi.entity.inward.AdmissionType;
 import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.facade.BillFacade;
@@ -50,6 +51,23 @@ public class BillEjb implements Serializable {
     ItemFacade itemFacade;
     @EJB
     PatientInvestigationFacade piFacade;
+    
+    public void save(Bill savingBill, WebUser user) {
+        if (savingBill == null) {
+            return;
+        }
+        if (savingBill.getId() == null) {
+            savingBill.setCreatedAt(new Date());
+            savingBill.setCreater(user);
+            try {
+                billFacade.create(savingBill);
+            } catch (Exception e) {
+                billFacade.edit(savingBill);
+            }
+        } else {
+            billFacade.edit(savingBill);
+        }
+    }
 
     public BillListWithTotals findBillsAndTotals(Date fromDate, Date toDate, BillType[] billTypes,
             Class[] billClasses,

@@ -42,6 +42,7 @@ RENAME TABLE detailedfinancialbill TO temp_detailedfinancialbill; RENAME TABLE t
 RENAME TABLE doctorinstitution TO temp_doctorinstitution; RENAME TABLE temp_doctorinstitution TO DOCTORINSTITUTION;
 RENAME TABLE documenttemplate TO temp_documenttemplate; RENAME TABLE temp_documenttemplate TO DOCUMENTTEMPLATE;
 RENAME TABLE drawer TO temp_drawer; RENAME TABLE temp_drawer TO DRAWER;
+RENAME TABLE drawerentry TO temp_drawerentry; RENAME TABLE temp_drawerentry TO DRAWERENTRY;
 RENAME TABLE encountercomponent TO temp_encountercomponent; RENAME TABLE temp_encountercomponent TO ENCOUNTERCOMPONENT;
 RENAME TABLE encountercreditcompany TO temp_encountercreditcompany; RENAME TABLE temp_encountercreditcompany TO ENCOUNTERCREDITCOMPANY;
 RENAME TABLE family TO temp_family; RENAME TABLE temp_family TO FAMILY;
