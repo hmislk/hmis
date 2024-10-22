@@ -3158,7 +3158,7 @@ public class BillSearch implements Serializable {
         }
         financialTransactionController.setCurrentBill(viewingBill);
         financialTransactionController.setCurrentBillPayments(viewingBillPayments);
-        return "/opd/view/opd_bill?faces-redirect=true;";
+        return "/cashier/income_bill_print?faces-redirect=true;";
     }
 
     public String navigateToAdminOpdBill() {

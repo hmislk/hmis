@@ -13,53 +13,84 @@
             <ui:define name="subcontent">
                 <h:form >
                     <p:panel header="Cashier Summary" class="m-1">
-                        <p:panelGrid columns="2" class="w-100 text-center">
-                            <p:panelGrid columns="2" class="w-100">
-                                <h:outputLabel value="From"/>
-                                <p:calendar 
-                                    class="w-100 " 
-                                    inputStyleClass="w-100" 
-                                    id="fromDate" 
-                                    value="#{searchController.fromDate}" 
-                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
-                                </p:calendar>
-                                <h:outputLabel value="To"/>                                
-                                <p:calendar 
-                                    class="w-100 " 
-                                    inputStyleClass="w-100" 
-                                    id="toDate" 
-                                    value="#{searchController.toDate}" 
-                                    navigator="false" 
-                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
-                                </p:calendar>
-                                <h:outputLabel value="User"/> 
-                                <p:autoComplete
-                                    completeMethod="#{webUserController.completeUser}"
-                                    class="w-100"
-                                    id="acStaff" 
-                                    inputStyleClass="w-100"
-                                    value="#{searchController.webUser}" 
-                                    var="user"
-                                    scrollHeight="450"
-                                    itemLabel="#{user.webUserPerson.name}" 
-                                    itemValue="#{user}" >
-                                    <p:column headerText="Username" >
-                                        <h:outputText value="#{user.name}" ></h:outputText>
-                                    </p:column>
-                                    <p:column headerText="Name" >
-                                        <h:outputText value="#{user.webUserPerson.name}" ></h:outputText>
-                                    </p:column>
-                                </p:autoComplete>
-                            </p:panelGrid>
-                            <p:panelGrid columns="1"  >
-                                <p:commandButton  
-                                    value="Process" 
-                                    ajax="false"
-                                    action="#{searchController.generateCashierSummary}" 
-                                    class="ui-button-warning" icon="fas fa-cogs">
-                                </p:commandButton>
-                            </p:panelGrid>
-                        </p:panelGrid>
+
+                        <h:panelGrid columns="8" class="w-100">
+                            <h:outputLabel value="From"/>
+                            <p:calendar 
+                                class="w-100 " 
+                                inputStyleClass="w-100" 
+                                id="fromDate" 
+                                value="#{searchController.fromDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            </p:calendar>
+
+                            <p:spacer width="20" ></p:spacer>
+
+                            <h:outputLabel value="To"/>                                
+                            <p:calendar 
+                                class="w-100 " 
+                                inputStyleClass="w-100" 
+                                id="toDate" 
+                                value="#{searchController.toDate}" 
+                                navigator="false" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            </p:calendar>
+
+                            <p:spacer ></p:spacer>
+                            <p:spacer ></p:spacer>
+                            <p:spacer ></p:spacer>
+
+                            <h:outputLabel value="Institution"/>                                
+                            <p:selectOneMenu class="w-100 " value="#{searchController.institution}" filter="true" >
+                                <f:selectItem itemLabel="All Institution" ></f:selectItem>
+                                <f:selectItems value="#{sessionController.loggableInstitutions}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20" ></p:spacer>
+
+                            <h:outputLabel value="Department"/>                                
+                            <p:selectOneMenu class="w-100 "  value="#{searchController.department}" filter="true">
+                                <f:selectItem itemLabel="All Departments" ></f:selectItem>
+                                <f:selectItems value="#{sessionController.loggableDepartments}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20" ></p:spacer>
+
+                            <h:outputLabel value="Site"/>   
+                            <p:selectOneMenu class="w-100 "  value="#{searchController.site}" filter="true">
+                                <f:selectItem itemLabel="All Departments" ></f:selectItem>
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <h:outputLabel value="User"/> 
+                            <p:autoComplete
+                                completeMethod="#{webUserController.completeUser}"
+                                class="w-100"
+                                id="acStaff" 
+                                inputStyleClass="w-100"
+                                value="#{searchController.webUser}" 
+                                var="user"
+                                scrollHeight="450"
+                                itemLabel="#{user.webUserPerson.name}" 
+                                itemValue="#{user}" >
+                                <p:column headerText="Username" >
+                                    <h:outputText value="#{user.name}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Name" >
+                                    <h:outputText value="#{user.webUserPerson.name}" ></h:outputText>
+                                </p:column>
+                            </p:autoComplete>
+
+                        </h:panelGrid>
+
+                        <p:commandButton  
+                            value="Process" 
+                            ajax="false"
+                            action="#{searchController.generateCashierSummary}" 
+                            class="ui-button-warning" icon="fas fa-cogs">
+                        </p:commandButton>
+
+                        
 
 
                         <ui:repeat value="#{searchController.bundle.bundles}" var="myBundle">

@@ -12824,6 +12824,20 @@ public class SearchController implements Serializable {
         webUser = sessionController.getLoggedUser();
         generateCashierSummary();
     }
+    
+    public String navigateToSelectedCashierSummary(WebUser wu) {
+        bundle = new ReportTemplateRowBundle();
+        webUser = wu;
+        generateCashierSummary();
+        return "/reports/cashier_reports/cashier_summary?faces-redirect=true";
+    }
+    
+    public String navigateToSelectedCashierDetails(WebUser wu) {
+        bundle = new ReportTemplateRowBundle();
+        webUser = wu;
+        generateCashierDetailed();
+        return "/reports/cashier_reports/cashier_detailed?faces-redirect=true";
+    }
 
     public void generateCashierSummary() {
         bundle = new ReportTemplateRowBundle();
