@@ -15183,10 +15183,6 @@ public class SearchController implements Serializable {
             jpql += "AND bill.department = :dep ";
             parameters.put("dep", department);
         }
-        if (item != null) {
-            jpql += "AND :item MEMBER OF bill.billItems ";
-            parameters.put("item", item);
-        }
 
         if (speciality != null) {
             jpql += "AND bill.staff.speciality = :spec ";
