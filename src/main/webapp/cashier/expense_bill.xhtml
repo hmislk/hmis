@@ -23,6 +23,12 @@
                                 style="float: right;"
                                 action="#{financialTransactionController.settleExpensesBill()}" >
                             </p:commandButton>
+                            
+                            <div  style="float: right;" class="mx-3">
+                                <p:outputLabel value="Comment" class="mx-2"></p:outputLabel>
+                                <p:inputText value="#{financialTransactionController.currentBill.comments}" ></p:inputText>
+                            </div>
+                            
                         </f:facet>
 
 
