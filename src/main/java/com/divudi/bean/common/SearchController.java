@@ -7554,7 +7554,8 @@ public class SearchController implements Serializable {
         temMap.put("fromDate", getFromDate());
         //  temMap.put("ins", getSessionController().getInstitution());
 
-        //System.err.println("Sql " + sql);
+        System.err.println("Sql " + sql);
+        System.out.println("temMap = " + temMap);
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
 
     }
