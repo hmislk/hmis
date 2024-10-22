@@ -125,11 +125,17 @@
                                                     itemLabel="#{item.name}"
                                                     itemValue="#{item}">
                                     </p:autoComplete>
+                                    
+                                     <p:spacer ></p:spacer>
+                                    
+                                    <!-- New Doctor Field with Icon -->
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf0f0;" styleClass="fa mr-2" /> 
+                                        <h:outputLabel value="MRN" for="scMRN" class="mx-3" />
+                                    </h:panelGroup>
+                                    
+                                    <p:inputText value="#{searchController.mrnNo}" class="w-100"/>
 
-                                    <p:spacer width="50" ></p:spacer>
-
-                                    <p:spacer width="50" ></p:spacer>
-                                    <p:spacer width="50" ></p:spacer>
 
                                     <!-- New Speciality Field with Icon -->
                                     <h:panelGroup layout="block" styleClass="form-group">
@@ -167,6 +173,8 @@
                                             itemLabel="#{staff.person.nameWithTitle}" 
                                             itemValue="#{staff}" />
                                     </p:selectOneMenu>
+                                    
+                                    <p:spacer ></p:spacer>
 
                                 </h:panelGrid>
 
@@ -394,6 +402,13 @@
 
                                 </h:panelGroup>
 
+                            </p:column>
+                            <p:column class="text-end">
+                                <f:facet name="header">
+                                    <h:outputText value="Paid By" />
+                                </f:facet>
+                                <h:outputText value="#{row.billFee.referenceBillFee.bill.creater.name}">
+                                </h:outputText>
                             </p:column>
 
                             <p:column class="text-end">

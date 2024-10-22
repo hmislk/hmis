@@ -237,9 +237,13 @@
 <!--                                <h:outputText value="#{pc.approveUser != null ? 'Approved': 'Not Approved'}" ></h:outputText>-->
                             </p:column>
                             <p:column headerText="Amount" >
-                                <h:outputText value="#{pc.total}" ></h:outputText>
+                                <h:outputText value="#{pc.total lt 0 ? pc.total * -1 : pc.total * -1}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{reportController.netTotal}" ></h:outputText>
+                                    <h:outputText value="#{reportController.netTotal lt 0 ? reportController.netTotal * -1 : reportController.netTotal * -1}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
                                 </f:facet>
                             </p:column>
 
