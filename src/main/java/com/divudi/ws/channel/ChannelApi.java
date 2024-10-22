@@ -1146,8 +1146,63 @@ public class ChannelApi {
             String json = responseError.toString();
             return Response.status(Response.Status.ACCEPTED).entity(responseError.toString()).build();
         }
+        
+        String refNo = (String)requestBody.get("refNo");
+        
+        List<Bill> billList = channelService.findBillFromRefNo(refNo);
+        if (billList == null || billList.isEmpty()) {
+            JSONObject response = commonFunctionToErrorResponse("No bill reference with RefNo");
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response).build();
+        }
+        
+        Bill bill = billList.get(0);
+        List<SessionInstance> ss = channelService.findSessionInstanceFromId(bill.getSessionId());
+        SessionInstance session = ss.get(0);
 
-        return Response.status(Response.Status.ACCEPTED).entity("view Booking details Api").build();
+        Map<String, Object> appoinment = new HashMap<>();
+        appoinment.put("refNo", bill.getAgentRefNo());
+
+        Map<String, Object> sessionDetails = new HashMap<>();
+        Item i = bill.getSingleBillSession().getItem();
+        sessionDetails.put("hosId", i.getInstitution().getId());
+        sessionDetails.put("docname", i.getStaff().getPerson().getNameWithInitials());
+        sessionDetails.put("amount", i.getTotalFee());
+        sessionDetails.put("hosAmount", i.getChannelHosFee());
+        sessionDetails.put("docAmount", i.getChannelStaffFee());
+        sessionDetails.put("specialization", i.getStaff().getSpeciality().getName());
+        sessionDetails.put("theDate", session.getSessionDate());
+        sessionDetails.put("theDay", session.getDayString());
+        sessionDetails.put("startTime", session.getSessionTime());
+        sessionDetails.put("hosLocation", session.getInstitution().getAddress());
+        sessionDetails.put("hosName", session.getInstitution().getName());
+        sessionDetails.put("sessionStarted", session.isStarted());
+
+        Patient p = bill.getPatient();
+        Map<String, Object> patientDetails = new HashMap<>();
+        patientDetails.put("titile", p.getPerson().getTitle());
+        patientDetails.put("foreign", p.getPerson().isForeigner());
+        patientDetails.put("teleNo", bill.getPatient().getPatientMobileNumber() != null ? bill.getPatient().getPatientMobileNumber() : bill.getPatient().getPatientPhoneNumber());
+        patientDetails.put("patientName", p.getPerson().getName());
+        patientDetails.put("patientFullName", p.getPerson().getNameWithInitials());
+        patientDetails.put("nid", p.getPerson().getNic());
+
+        Map<String, Object> priceDetails = new HashMap<>();
+        priceDetails.put("totalAmount", bill.getTotal());
+        priceDetails.put("docCharge", session.getChannelStaffFee());
+        priceDetails.put("hosCharge", session.getChannelHosFee());
+
+        appoinment.put("sessionDetails", sessionDetails);
+        appoinment.put("patient", patientDetails);
+        appoinment.put("price", priceDetails);
+
+        Map response = new HashMap();
+        response.put("data", appoinment);
+        response.put("message", "Booking completed");
+        response.put("detailMessage", "Your booking is setted");
+
+        return Response.status(Response.Status.ACCEPTED).entity(response).build();
+
+      
     }
 
     @POST
