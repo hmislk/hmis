@@ -19,6 +19,12 @@
                                     action="#{reportController.processCurrentCollectionCenterBalance}" >
                                 </p:commandButton>
                             </div>
+                             <p:commandButton id="btnExcel" class="mx-2 ui-button-success"
+                                                     style="width: 150px"
+                                                     icon="fas fa-file-excel"
+                                                     ajax="false" value="Excel">
+                                        <p:dataExporter type="xlsx" fileName="Collecting Center Current Balance Report" target="agentHistoriesTable"  />
+                                    </p:commandButton>
                         </div>
 
                         <p:dataTable 

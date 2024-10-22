@@ -134,7 +134,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         if (patient == null) {
             return;
         }
-        if (patient.getId() == null){
+        if (patient.getId() == null) {
             return;
         }
         current = getDepositOfThePatient(patient, sessionController.getDepartment());
@@ -158,6 +158,10 @@ public class PatientDepositController implements Serializable, ControllerWithPat
     public void settlePatientDeposit() {
         if (patient == null) {
             JsfUtil.addErrorMessage("Please Select a Patient");
+            return;
+        }
+        if (current == null) {
+            JsfUtil.addErrorMessage("No Patient Deposit");
             return;
         }
         if (patientController.validatePaymentMethodData()) {
@@ -187,7 +191,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
             JsfUtil.addErrorMessage("Please Select a Patient");
             return;
         }
-        if(patient.getId() == null){
+        if (patient.getId() == null) {
             JsfUtil.addErrorMessage("Entered Patient is Not Registered");
         }
         current = getDepositOfThePatient(patientController.getBill().getPatient(), sessionController.getDepartment());
@@ -388,7 +392,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
     }
 
     public PatientDeposit checkDepositOfThePatient(Patient p, Department d) {
-        if(p == null){
+        if (p == null) {
             return new PatientDeposit();
         }
         Map m = new HashMap<>();
