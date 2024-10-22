@@ -1684,6 +1684,7 @@ public class PharmacyBillSearch implements Serializable {
 
             //for Payment,billFee and BillFeepayment
             Payment p = pharmacySaleController.createPayment(cb, paymentMethod);
+            drawerController.updateDrawerForOuts(p);
             pharmacyCancelBillItems(cb, p);
 
             getBill().setCancelled(true);
