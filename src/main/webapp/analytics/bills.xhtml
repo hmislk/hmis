@@ -270,7 +270,8 @@
                                     <p:commandButton 
                                         value="View" 
                                         icon="fa fa-eye" 
-                                        class="m-1 ui-button-info" 
+                                        class="m-1 ui-button-info"
+                                        style="width: 100px;"
                                         action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
                                         ajax="false">
                                         <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" />
@@ -279,7 +280,8 @@
                                     <p:commandButton 
                                         value="Manage" 
                                         icon="fa fa-tools" 
-                                        class="m-1 ui-button-primary" 
+                                        class="m-1 ui-button-warning" 
+                                        style="width: 100px;"
                                         action="#{billSearch.navigateToManageBillByAtomicBillType()}" 
                                         ajax="false">
                                         <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" />
@@ -289,6 +291,7 @@
                                         value="Admin" 
                                         icon="fa fa-shield-alt" 
                                         class="m-1 ui-button-danger" 
+                                        style="width: 100px;"
                                         action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
                                         ajax="false" 
                                         rendered="#{webUserController.hasPrivilege('Developers')}">
