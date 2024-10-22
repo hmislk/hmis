@@ -650,6 +650,7 @@ public class SearchController implements Serializable {
 
     public String navigateToProfessionalFees() {
         bundle = new ReportTemplateRowBundle();
+        recreateProPayementModel();
         return "/reports/professional_payment_reports/professional_fees_opd?faces-redirect=true";
     }
 
@@ -741,6 +742,17 @@ public class SearchController implements Serializable {
     public String toListAllPayments() {
         bills = null;
         return "/dataAdmin/list_payments?faces-redirect=true";
+    }
+
+    private void recreateProPayementModel() {
+        institution = null;
+        site = null;
+        department = null;
+        category = null;
+        item = null;
+        mrnNo = null;
+        speciality = null;
+        staff = null;
     }
 
     public void listAllBills() {
@@ -13809,10 +13821,10 @@ public class SearchController implements Serializable {
         // Add payment status condition
         if (paymentStatus == PaymentStatus.DUE) {
             jpql += " and (bf.paidValue IS NULL OR bf.paidValue = 0) "
-                  + " and bi.bill.cancelled = :can "
-                  + " and bi.refunded = :refu";
-           m.put("can", false);
-           m.put("refu", false);
+                    + " and bi.bill.cancelled = :can "
+                    + " and bi.refunded = :refu";
+            m.put("can", false);
+            m.put("refu", false);
         } else if (paymentStatus == PaymentStatus.DONE) {
             jpql += " and bf.paidValue > 0 ";
         }
@@ -13854,11 +13866,11 @@ public class SearchController implements Serializable {
             jpql += " and bf.staff=:staff ";
             m.put("staff", staff);
         }
-//        if (mrnNo != null || mrnNo.isEmpty()) {
-//            jpql += " and bi.bill.patient.phn=:phn ";
-//            m.put("phn", mrnNo);
-//        }
-        
+        if (mrnNo != null && !mrnNo.isEmpty()) {
+            jpql += " and UPPER(bi.bill.patient.phn) LIKE :phn ";
+            m.put("phn", "%" + mrnNo.toUpperCase() + "%");
+        }
+
         System.out.println("jpql = " + jpql);
         System.out.println("m = " + m);
 
