@@ -336,6 +336,12 @@ public class ReportController implements Serializable {
         }
 
         billAndItemDataRows = new ArrayList<>(billMap.values());
+        
+        netTotal = 0.0;
+        
+        for(BillAndItemDataRow bir : billAndItemDataRows){
+            netTotal += bir.getGrandTotal();
+        }
     }
 
     @Deprecated
@@ -577,6 +583,7 @@ public class ReportController implements Serializable {
                 .mapToDouble(row -> Optional.ofNullable(row.getItemNetTotal()).orElse(0.0))
                 .sum();
 
+        totalCount = 0 - Math.abs(totalCount);
         // Set the calculated values to the bundle.
         crBundle.setCount(totalCount);
         crBundle.setHospitalTotal(totalHospitalFee);

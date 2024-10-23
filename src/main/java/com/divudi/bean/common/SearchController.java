@@ -5781,6 +5781,10 @@ public class SearchController implements Serializable {
             sql += " and  b.paidForBillFee.bill.creditCompany=:cc ";
             temMap.put("cc", getReportKeyWord().getInstitution());
         }
+        if (getReportKeyWord().getWebUser() != null) {
+            sql += " and  b.creater=:creater ";
+            temMap.put("creater", getReportKeyWord().getWebUser());
+        }
 
         if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
             sql += " and  ((b.paidForBillFee.bill.patientEncounter.bhtNo) like :bht )";
