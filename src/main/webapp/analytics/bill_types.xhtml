@@ -112,49 +112,17 @@
                             </p:selectOneMenu>
 
 
-
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf0f0;" styleClass="fa mr-2" /> 
-                                <h:outputLabel value="Bill Type (Atomic)" for="billTypeAtomic" class="mx-3" />
-                            </h:panelGroup>
-                            <p:selectOneMenu
-                                id="billTypeAtomic" 
-                                class=""  value="#{searchController.billTypeAtomic}" >
-                                <f:selectItem itemLabel="All Types" ></f:selectItem>
-                                <f:selectItems 
-                                    var="billTypeAtomic"
-                                    itemLabel="#{billTypeAtomic.label}"           
-                                    itemValue="#{billTypeAtomic}" 
-                                    value="#{enumController.billTypesAtomic}" ></f:selectItems>
-                            </p:selectOneMenu>
-
-                            <p:spacer ></p:spacer>
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf0f0;" styleClass="fa mr-2" /> 
-                                <h:outputLabel value="Bill Type" for="billType" class="mx-3" />
-                            </h:panelGroup>
-                            <p:selectOneMenu id="billType" class="w-100  "  value="#{searchController.billType}" >
-                                <f:selectItem itemLabel="All Types" ></f:selectItem>
-                                <f:selectItems 
-                                    var="billType"
-                                    itemLabel="#{billType.label}"           
-                                    itemValue="#{billType}" 
-                                    value="#{enumController.billTypes}" ></f:selectItems>
-                            </p:selectOneMenu>
-                            <p:spacer ></p:spacer>
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf0f0;" styleClass="fa mr-2" /> 
-                                <h:outputLabel value="Class Type" for="billClass" class="mx-3" />
-                            </h:panelGroup>
-                            <p:selectOneMenu id="billClass" class="w-100  "  value="#{searchController.billClassType}" >
-                                <f:selectItem itemLabel="All Class Types" ></f:selectItem>
-                                <f:selectItems var="billclass" itemLabel="#{billclass}" value="#{enumController.billClassTypes}" ></f:selectItems>
-                            </p:selectOneMenu>
-
                         </h:panelGrid>
 
+                        <p:outputPanel class="ui-widget-error">
+                            <h1>
+                                <p:outputLabel 
+                                    class="ui-message-error"
+                                    value="PLEASE NOTE THAT THIS REPORT CONTAINS PREBILLS AND OTHER DATA HOLDING BILLS, SO THE TOTAL DO NOT REFLECT ACTUALS. THIS IS JUST FOR DEVELOPERS TO CROSS CHECK." >
+                                </p:outputLabel>
+                            </h1>
+
+                        </p:outputPanel>
 
                         <h:panelGrid columns="6" class="my-2" >
                             <p:commandButton 
@@ -163,110 +131,69 @@
                                 id="btnSearch"
                                 ajax="false" 
                                 value="List" 
-                                action="#{searchController.listBills()}"/>
+                                action="#{searchController.listBillTypes}"/>
                             <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" id="btnExcel" ajax="false" value="Excel" >
-                                <p:dataExporter fileName="All Bills" type="xls" target="tblBills" ></p:dataExporter>
+                                <p:dataExporter fileName="All Bills" type="xls" target="tbl" ></p:dataExporter>
                             </p:commandButton>
                         </h:panelGrid>
 
 
                         <div style="width: 100%; overflow-x: auto;">
-                            <p:dataTable rowIndexVar="i" id="tblBills" 
-                                         value="#{searchController.bills}" 
-                                         scrollable="true"
-                                         var="bill"
-                                         rows="10"
-                                         paginator="true"
-                                         paginatorPosition="top"
-                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                         rowsPerPageTemplate="5,10,15"
-                                         >
+                            <p:dataTable 
+                                rowIndexVar="i" 
+                                id="tbl" 
+                                value="#{searchController.bundle.reportTemplateRows}" 
+                                scrollable="true"
+                                var="row"
+                                rows="10"
+                                paginator="true"
+                                paginatorPosition="top"
+                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="5,10,15"
+                                >
 
-                                <p:column headerText="Bill No" >                                
-                                    <h:outputLabel value="#{bill.deptId}"/>
+                                <p:column headerText="Bill Type" >                                
+                                    <h:outputLabel value="#{row.billType}"/>
                                 </p:column>
                                 <p:column headerText="Bill Class" >                                
-                                    <h:outputLabel value="#{bill.billClass}"/>
+                                    <h:outputLabel value="#{row.billClassType}"/>
                                 </p:column>
-                                <p:column headerText="Bill Type" >                                
-                                    <h:outputLabel value="#{bill.billTypeAtomic}"/>
-                                </p:column>
-                                <p:column headerText="Date/Time">
-                                    <p:outputLabel value="#{bill.createdAt}" >
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
-                                    </p:outputLabel>
-                                </p:column>
-                                <p:column headerText="Status">
-                                    <h:panelGroup>
-                                        <p:badge value="Retired" styleClass="ui-badge-info" rendered="#{bill.retired}" />
-                                        <p:badge value="Cancelled" styleClass="ui-badge-danger" rendered="#{bill.cancelled}" />
-                                        <p:badge value="Returned" styleClass="ui-badge-warning" rendered="#{bill.refunded}" />
-                                    </h:panelGroup>
+                                <p:column headerText="Bill Type (Atomic)" >                                
+                                    <h:outputLabel value="#{row.billTypeAtomic}"/>
                                 </p:column>
 
                                 <p:column headerText="Gross Value" styleClass="averageNumericColumn">
-                                    <h:outputLabel value="#{bill.total}">
+                                    <h:outputLabel value="#{row.grossTotal}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                     <f:facet name="footer">
-                                        <h:outputText value="#{searchController.total}">
+                                        <h:outputText value="#{searchController.bundle.grossTotal}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="Discount" styleClass="averageNumericColumn">
-                                    <h:outputLabel value="#{bill.discount}">
+                                    <h:outputLabel value="#{row.discount}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                     <f:facet name="footer">
-                                        <h:outputText value="#{searchController.discount}">
+                                        <h:outputText value="#{searchController.bundle.discount}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="Net Value" styleClass="averageNumericColumn">
-                                    <h:outputLabel value="#{bill.netTotal}">
+                                    <h:outputLabel value="#{row.total}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                     <f:facet name="footer">
-                                        <h:outputText value="#{searchController.netTotal}">
+                                        <h:outputText value="#{searchController.bundle.total}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                     </f:facet>
                                 </p:column>
 
-                                <p:column headerText="No" styleClass="alignTop">
-                                    <p:commandButton 
-                                        value="View" 
-                                        icon="fa fa-eye" 
-                                        class="m-1 ui-button-info"
-                                        style="width: 100px;"
-                                        action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
-                                        ajax="false">
-                                        <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" />
-                                    </p:commandButton>
 
-                                    <p:commandButton 
-                                        value="Manage" 
-                                        icon="fa fa-tools" 
-                                        class="m-1 ui-button-warning" 
-                                        style="width: 100px;"
-                                        action="#{billSearch.navigateToManageBillByAtomicBillType()}" 
-                                        ajax="false">
-                                        <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" />
-                                    </p:commandButton>
-
-                                    <p:commandButton 
-                                        value="Admin" 
-                                        icon="fa fa-shield-alt" 
-                                        class="m-1 ui-button-danger" 
-                                        style="width: 100px;"
-                                        action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
-                                        ajax="false" 
-                                        rendered="#{webUserController.hasPrivilege('Developers')}">
-                                        <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" />
-                                    </p:commandButton>
-                                </p:column>
 
                             </p:dataTable>
 
