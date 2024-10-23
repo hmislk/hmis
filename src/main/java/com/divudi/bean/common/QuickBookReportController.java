@@ -1444,7 +1444,7 @@ public class QuickBookReportController implements Serializable {
                         qbf.setName("Cash AR");
                     }
                     if (Investigation.class == i.getClass()) {
-                        if (cat != null && cat.getDescription() != null && !cat.getDescription().trim().equals("")) {
+                        if (cat.getDescription() != null && !cat.getDescription().trim().equals("")) {
                             qbf.setAccnt(cat.getDescription());
                         } else {
                             qbf.setAccnt("RHD LAB INCOME:RHD OPD Sale");
