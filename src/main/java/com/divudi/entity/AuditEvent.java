@@ -37,6 +37,8 @@ public class AuditEvent implements Serializable {
     private Long eventDuration;
     private String eventStatus;
     private String ipAddress;
+    
+    private String entityType;
 
     public Long getId() {
         return id;
@@ -176,5 +178,15 @@ public class AuditEvent implements Serializable {
     public void setUuid(String uuid) {
         this.uuid = uuid;
     }
+
+    public String getEntityType() {
+        return entityType;
+    }
+
+    public void setEntityType(String entityType) {
+        this.entityType = entityType;
+    }
+    
+    
 
 }

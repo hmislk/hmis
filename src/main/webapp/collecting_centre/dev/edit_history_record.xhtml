@@ -1,0 +1,78 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill">
+
+    <h:body>
+        <ui:composition template="/collecting_centre/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form  >
+                    <p:panelGrid columns="2" >
+                        <f:facet name="header" >
+                            <h:outputText value="Edit History Record" ></h:outputText>
+                        </f:facet>
+
+                        <p:outputLabel 
+                            value="Agency" for="agency" />
+                        <p:selectOneMenu 
+                            id="agency" 
+                            value="#{collectingCentreController.agentHistory.agency}">
+                            <f:selectItems 
+                                value="#{collectingCentreController.items}" 
+                                var="agency"
+                                itemLabel="#{agency.name}" 
+                                itemValue="#{agency}" />
+                        </p:selectOneMenu>
+
+                        <p:outputLabel value="Balance Before" ></p:outputLabel>
+                        <p:inputText value="#{collectingCentreController.agentHistory.balanceBeforeTransaction}" ></p:inputText>
+
+                        <p:outputLabel value="Balance After" for="balanceAfterTransaction" />
+                        <p:inputText id="balanceAfterTransaction" 
+                                     value="#{collectingCentreController.agentHistory.balanceAfterTransaction}" />
+
+                        <p:outputLabel value="Transaction Value" for="transactionValue" />
+                        <p:inputText id="transactionValue" 
+                                     value="#{collectingCentreController.agentHistory.transactionValue}" />
+
+                        <p:outputLabel value="History Type" for="historyType" />
+                        <p:selectOneMenu id="historyType" 
+                                         value="#{collectingCentreController.agentHistory.historyType}">
+                            <f:selectItems value="#{enumController.historyTypes}" 
+                                           var="type" itemLabel="#{type}" itemValue="#{type}" />
+                        </p:selectOneMenu>
+
+                        <p:outputLabel value="Creater" />
+                        <p:outputLabel 
+                            value="#{collectingCentreController.agentHistory.creater.webUserPerson.name}">
+                        </p:outputLabel>
+
+                        <p:outputLabel value="Institution" for="institution" />
+                        <p:outputLabel id="institution" 
+                                       value="#{collectingCentreController.agentHistory.institution.name}">
+                        </p:outputLabel>
+
+                        <p:outputLabel value="Department" for="department" />
+                        <p:outputLabel id="department" 
+                                       value="#{collectingCentreController.agentHistory.department.name}">
+                        </p:outputLabel>
+
+
+
+                        <f:facet name="footer" >
+                            <p:commandButton value="Update History" ajax="false" action="#{collectingCentreController.saveAgentHistory}" ></p:commandButton>
+                        </f:facet>
+                    </p:panelGrid>
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
+
+

@@ -21,6 +21,7 @@ import com.divudi.entity.Payment;
 import com.divudi.facade.AgentHistoryFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.InstitutionFacade;
+import com.divudi.service.AgentHistoryService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -63,9 +64,11 @@ public class CollectingCentreController implements Serializable {
     AgentHistoryFacade agentHistoryFacade;
     @EJB
     BillFacade billFacade;
+    @EJB
+    AgentHistoryService agentHistoryService;
 
     private int ccManagementIndex = 0;
-    
+
     List<Institution> selectedItems;
     private Institution current;
     private List<Institution> items = null;
@@ -77,6 +80,9 @@ public class CollectingCentreController implements Serializable {
     private Institution institution;
     private Bill bill;
     private Payment payment;
+    private AgentHistory agentHistory;
+    private Object auditDataBefore;
+    private Object auditDataAfter;
 
     public String navigateToPayToCollectingCentre() {
         bill = new Bill();
@@ -99,6 +105,26 @@ public class CollectingCentreController implements Serializable {
 
     }
 
+    public String navigateToEditCollectingCentreBalanceEntry(AgentHistory agentHx) {
+        if(agentHx==null){
+            JsfUtil.addErrorMessage("No history selected");
+            return "";
+        }
+        this.agentHistory=agentHx;
+        auditDataBefore=agentHx;
+        auditDataAfter=null;
+        return "/collecting_centre/dev/?faces-redirect=true";
+    }
+
+    public void saveAgentHistory(){
+        if(agentHistory==null){
+            JsfUtil.addErrorMessage("Nothing selected");
+            return;
+        }
+        agentHistoryService.save(agentHistory, sessionController.getLoggedUser());
+    }
+    
+    
     public void settlePaymentBillToCollectingCentrePaymenMade() {
         if (bill == null) {
             JsfUtil.addErrorMessage("Error");
@@ -484,7 +510,31 @@ public class CollectingCentreController implements Serializable {
     public void setCcManagementIndex(int ccManagementIndex) {
         this.ccManagementIndex = ccManagementIndex;
     }
-    
-    
 
+    public AgentHistory getAgentHistory() {
+        return agentHistory;
+    }
+
+    public void setAgentHistory(AgentHistory agentHistory) {
+        this.agentHistory = agentHistory;
+    }
+
+    public Object getAuditDataBefore() {
+        return auditDataBefore;
+    }
+
+    public void setAuditDataBefore(Object auditDataBefore) {
+        this.auditDataBefore = auditDataBefore;
+    }
+
+    public Object getAuditDataAfter() {
+        return auditDataAfter;
+    }
+
+    public void setAuditDataAfter(Object auditDataAfter) {
+        this.auditDataAfter = auditDataAfter;
+    }
+
+    
+    
 }

@@ -153,8 +153,6 @@
                 sortMode="multiple"
                 reflow="true">
 
-
-
                 <p:column width="5rem" headerText="Bill Number*" sortBy="#{agentHx.bill.deptId}" filterBy="#{agentHx.bill.deptId}" filterMatchMode="contains">
                     <p:commandLink 
                         value="#{agentHx.bill.deptId}" 
@@ -165,16 +163,12 @@
 
                     <p:badge value="#{agentHx.bill.cancelled ? 'Cancelled' : ''}" severity="danger" rendered="#{agentHx.bill.cancelled}" />
                     <p:badge value="#{agentHx.bill.refunded ? 'Refunded' : ''}" severity="warning" rendered="#{agentHx.bill.refunded}" />
-
-<!--                    <p:commandLink value="Original Bill - #{agentHx.bill.deptId}" 
-               ajax="false"
-               rendered="#{agentHx.bill.billedBill}"
-               action="#{billSearch.navigateToViewBillByAtomicBillType()}" >
-    <f:setPropertyActionListener value="#{agentHx.bill.billedBill}" target="#{billSearch.bill}" />
-</p:commandLink>-->
-
                 </p:column>
 
+                <p:column headerText="Actions" rendered="#{webUserController.hasPrivilege('Developers')}">
+                    <p:commandButton ajax="false" value="Edit Record" action="#{collectingCentreController.navigateToEditCollectingCentreBalanceEntry(agentHx)}" >
+                    </p:commandButton>
+                </p:column>
 
                 <p:column width="5rem" headerText="Data &nbsp; Time" sortBy="#{agentHx.createdAt}" filterBy="#{agentHx.createdAt}" filterMatchMode="contains">
                     <h:outputText value="#{agentHx.createdAt}" >
