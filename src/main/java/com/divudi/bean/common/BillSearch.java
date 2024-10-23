@@ -3527,8 +3527,6 @@ public class BillSearch implements Serializable {
                 return navigateToAdminOpdCancellationBill();
             case OPD_BILL_WITH_PAYMENT:
                 return navigateToAdminOpdBill();
-            default:
-                return navigateToAdminBill();
         }
         return navigateToAdminBill();
     }
