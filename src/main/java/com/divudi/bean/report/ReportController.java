@@ -239,6 +239,7 @@ public class ReportController implements Serializable {
         bta.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
         bta.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
         bta.add(BillTypeAtomic.OPD_BILL_REFUND);
+        bta.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
         bta.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL);
         bta.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL_RETURN);
         
