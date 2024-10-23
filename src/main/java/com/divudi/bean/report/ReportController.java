@@ -336,6 +336,12 @@ public class ReportController implements Serializable {
         }
 
         billAndItemDataRows = new ArrayList<>(billMap.values());
+        
+        netTotal = 0.0;
+        
+        for(BillAndItemDataRow bir : billAndItemDataRows){
+            netTotal += bir.getGrandTotal();
+        }
     }
 
     @Deprecated

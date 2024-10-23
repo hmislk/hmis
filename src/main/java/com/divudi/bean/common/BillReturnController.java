@@ -41,7 +41,6 @@ import javax.inject.Inject;
 @SessionScoped
 public class BillReturnController implements Serializable {
 
-
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
     BillFacade billFacade;
@@ -49,9 +48,7 @@ public class BillReturnController implements Serializable {
     BillNumberGenerator billNumberGenerator;
 
     // </editor-fold>
-
     // <editor-fold defaultstate="collapsed" desc="Controllers">
-
     @Inject
     SessionController sessionController;
     @Inject
@@ -69,7 +66,6 @@ public class BillReturnController implements Serializable {
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Class Variable">
-
     private Bill originalBillToReturn;
     private List<BillItem> originalBillItemsAvailableToReturn;
     private List<BillItem> originalBillItemsToSelectedToReturn;
@@ -80,7 +76,7 @@ public class BillReturnController implements Serializable {
     private List<Payment> returningBillPayments;
 
     private PaymentMethod paymentMethod;
-  
+
     private boolean returningStarted = false;
 
     private double refundingTotalAmount;
@@ -88,15 +84,12 @@ public class BillReturnController implements Serializable {
     private boolean selectAll;
 
     // </editor-fold>
-
     // <editor-fold defaultstate="collapsed" desc="Method">
-  
     /**
      * Creates a new instance of BillReturnController
      */
     public BillReturnController() {
     }
-
 
     public void makeNull() {
 
@@ -130,7 +123,7 @@ public class BillReturnController implements Serializable {
     public String navigateToRefundBillViewFormOPDBillSearch() {
         return "/opd/bill_return_print?faces-redirect=true";
     }
-    
+
     public void selectAllItems() {
         originalBillItemsToSelectedToReturn = new ArrayList();
         for (BillItem selectedBillItemToReturn : originalBillItemsAvailableToReturn) {
@@ -158,15 +151,19 @@ public class BillReturnController implements Serializable {
         }
         return canReturn;
     }
-  
+
     public boolean checkDraverBalance(Drawer drawer, PaymentMethod paymentMethod) {
         boolean canReturn = false;
         switch (paymentMethod) {
             case Cash:
-                if (drawer.getCashInHandValue() < refundingTotalAmount) {
+                if (drawer.getCashInHandValue() != null) {
+                    if (drawer.getCashInHandValue() < refundingTotalAmount) {
+                        canReturn = false;
+                    } else {
+                        canReturn = true;
+                    }
+                }else{
                     canReturn = false;
-                } else {
-                    canReturn = true;
                 }
                 break;
             case Card:
@@ -198,7 +195,7 @@ public class BillReturnController implements Serializable {
         }
         return canReturn;
     }
-    
+
     public String settleOpdReturnBill() {
         if (returningStarted) {
             JsfUtil.addErrorMessage("Already Returning Started");
@@ -273,7 +270,7 @@ public class BillReturnController implements Serializable {
         newlyReturnedBillItems = new ArrayList<>();
         returningBillPayments = new ArrayList<>();
         newlyReturnedBillFees = new ArrayList<>();
-      
+
         for (BillItem selectedBillItemToReturn : originalBillItemsToSelectedToReturn) {
 
             returningTotal += selectedBillItemToReturn.getGrossValue();
@@ -293,7 +290,7 @@ public class BillReturnController implements Serializable {
             selectedBillItemToReturn.setReferanceBillItem(newlyCreatedReturningItem);
             billItemController.save(selectedBillItemToReturn);
             List<BillFee> originalBillFeesOfSelectedBillItem = billBeanController.fetchBillFees(selectedBillItemToReturn);
-          
+
             if (originalBillFeesOfSelectedBillItem != null) {
                 for (BillFee origianlFee : originalBillFeesOfSelectedBillItem) {
                     BillFee newlyCreatedBillFeeToReturn = new BillFee();
@@ -337,7 +334,6 @@ public class BillReturnController implements Serializable {
         return "/opd/bill_return_print?faces-redirect=true";
 
     }
-
 
     public void calculateRefundingAmount() {
         refundingTotalAmount = 0.0;
@@ -450,5 +446,4 @@ public class BillReturnController implements Serializable {
     }
 
     // </editor-fold>
-
 }
