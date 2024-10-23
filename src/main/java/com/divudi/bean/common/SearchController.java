@@ -54,6 +54,8 @@ import com.divudi.data.BillClassType;
 import static com.divudi.data.BillClassType.Bill;
 import static com.divudi.data.BillClassType.BilledBill;
 import static com.divudi.data.BillClassType.CancelledBill;
+import static com.divudi.data.BillClassType.OtherBill;
+import static com.divudi.data.BillClassType.PreBill;
 import static com.divudi.data.BillClassType.RefundBill;
 import com.divudi.data.BillFinanceType;
 import com.divudi.data.BillTypeAtomic;
@@ -391,11 +393,6 @@ public class SearchController implements Serializable {
         return "/analytics/user_financial_transaction_summary_by_bill?faces-redirect=true";
     }
 
-    public String navigateToListPayments() {
-        billSummaryRows = null;
-        return "/analytics/payments?faces-redirect=true";
-    }
-
     public String navigateToAllFinancialTransactionSummaryCashier() {
         billSummaryRows = null;
         return "/analytics/all_financial_transaction_summary_by_user?faces-redirect=true";
@@ -616,6 +613,60 @@ public class SearchController implements Serializable {
         return "/analytics/sms_list?faces-redirect=true";
     }
 
+    public String navigateToBillList() {
+        resetAllFiltersExceptDateRange();
+        return "/analytics/bills?faces-redirect=true";
+    }
+
+    public String navigateToBillTypeList() {
+        resetAllFiltersExceptDateRange();
+        return "/analytics/bill_types?faces-redirect=true";
+    }
+    
+    public String navigateToUserBillTypeList(WebUser wu) {
+        resetAllFiltersExceptDateRange();
+        webUser = wu;
+        listBillTypes();
+        return "/analytics/bill_types?faces-redirect=true";
+    }
+    
+    public String navigateToUserBillPaymentList(WebUser wu) {
+        billSummaryRows = null;
+        resetAllFiltersExceptDateRange();
+        resetTotals();
+        webUser = wu;
+        listPayments();
+        return "/analytics/payments?faces-redirect=true";
+    }
+
+    public String navigateToUserBillList(WebUser wu) {
+        resetAllFiltersExceptDateRange();
+        webUser = wu;
+        listBills();
+        return "/analytics/bills?faces-redirect=true";
+    }
+
+    public String navigateToBillItemList() {
+        resetAllFiltersExceptDateRange();
+        return "/analytics/bill_items?faces-redirect=true";
+    }
+
+    public String navigateToBillFeeList() {
+        resetAllFiltersExceptDateRange();
+        return "/analytics/bill_fees?faces-redirect=true";
+    }
+
+    public String navigateToBillPaymentList() {
+        billSummaryRows = null;
+        resetAllFiltersExceptDateRange();
+        resetTotals();
+        return "/analytics/payments?faces-redirect=true";
+    }
+
+//    public String navigateToBillPaymentList() {
+//        resetAllFiltersExceptDateRange();
+//        return "/analytics/bill_fees?faces-redirect=true";
+//    }
     public String navigateToStaffCreditBillList() {
         bills = null;
         return "/analytics/staff_credit_bill_list?faces-redirect=true";
@@ -918,11 +969,35 @@ public class SearchController implements Serializable {
     }
 
     public String navigatToTotalCashierSummary() {
+        resetAllFiltersExceptDateRange();
         bundle = new ReportTemplateRowBundle();
         return "/reports/cashier_reports/total_cashier_summary?faces-redirect=true";
     }
 
+    public void resetAllFiltersExceptDateRange() {
+        institution = null;
+        department = null;
+        webUser = null;
+        site = null;
+        department = null;
+        departments = null;
+        paymentMethod = null;
+        searchKeyword = null;
+    }
+
+    public void resetAllFilters() {
+        institution = null;
+        department = null;
+        webUser = null;
+        site = null;
+        fromDate = null;
+        toDate = null;
+        paymentMethod = null;
+        searchKeyword = null;
+    }
+
     public String navigatToAllCashierSummary() {
+        resetAllFiltersExceptDateRange();
         bundle = new ReportTemplateRowBundle();
         return "/reports/cashier_reports/all_cashier_summary?faces-redirect=true";
     }
@@ -938,16 +1013,19 @@ public class SearchController implements Serializable {
     }
 
     public String navigatToCashierSummary() {
+        resetAllFiltersExceptDateRange();
         bundle = new ReportTemplateRowBundle();
         return "/reports/cashier_reports/cashier_summary?faces-redirect=true";
     }
 
     public String navigatToShiftEndSummary() {
+        resetAllFiltersExceptDateRange();
         bundle = new ReportTemplateRowBundle();
         return "/reports/cashier_reports/shift_end_summary?faces-redirect=true";
     }
 
     public String navigatToCashierDetails() {
+        resetAllFiltersExceptDateRange();
         bundle = new ReportTemplateRowBundle();
         return "/reports/cashier_reports/cashier_detailed?faces-redirect=true";
     }
@@ -3235,6 +3313,22 @@ public class SearchController implements Serializable {
         totalPaying = 0.0;
     }
 
+    public void resetTotals() {
+        bills = null;
+        billSummaryRows = null;
+        netTotal = 0.0;
+        discount = 0.0;
+        grossTotal = 0.0;
+
+        cashTotal = 0.0;
+        cardTotal = 0.0;
+        chequeTotal = 0.0;
+        slipTotal = 0.0;
+        totalOfOtherPayments = 0.0;
+        billCount = 0.0;
+        totalPaying = 0.0;
+    }
+
     public void createTableByBillType() {
         Date startTime = new Date();
 
@@ -4170,14 +4264,24 @@ public class SearchController implements Serializable {
 
     public void createPaymentHistoryTable() {
         bills = new ArrayList<>();  // Initialize to avoid null issues
-        String sql;
+        List<BillTypeAtomic> bta = new ArrayList<>();
+        bta.add(BillTypeAtomic.SUPPLEMENTARY_INCOME);
+        bta.add(BillTypeAtomic.SUPPLEMENTARY_INCOME_CANCELLED);
+        bta.add(BillTypeAtomic.OPERATIONAL_EXPENSES);
+        bta.add(BillTypeAtomic.OPERATIONAL_EXPENSES_CANCELLED);
+
+        String sql = "select bi "
+                + " from Bill bi "
+                + " where bi.retired=:ret "
+                + " and bi.billTypeAtomic IN :bTypeList"
+                + " and bi.createdAt BETWEEN :fd and :td ";
         Map<String, Object> m = new HashMap<>();
+        m.put("bTypeList", bta);
+        m.put("ret", false);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
 
-        sql = "select bi from Bill bi where bi.billTypeAtomic = :bType ";
-        m.put("bType", BillTypeAtomic.SUPPLEMENTARY_INCOME);
-
-        bills = getBillFacade().findByJpql(sql, m);
-
+        bills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
     }
 
     public void createDrawerAdjustmentTable() {
@@ -5676,6 +5780,10 @@ public class SearchController implements Serializable {
         if (getReportKeyWord().getInstitution() != null) {
             sql += " and  b.paidForBillFee.bill.creditCompany=:cc ";
             temMap.put("cc", getReportKeyWord().getInstitution());
+        }
+        if (getReportKeyWord().getWebUser() != null) {
+            sql += " and  b.creater=:creater ";
+            temMap.put("creater", getReportKeyWord().getWebUser());
         }
 
         if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
@@ -10081,6 +10189,16 @@ public class SearchController implements Serializable {
             }
         }
 
+        if (billType != null) {
+            jpql.append(" and b.billType=:billType ");
+            params.put("billType", billType);
+        }
+
+        if (billTypeAtomic != null) {
+            jpql.append(" and b.billTypeAtomic=:billTypeAtomic ");
+            params.put("billTypeAtomic", billTypeAtomic);
+        }
+
         // Order by bill ID
         jpql.append(" order by b.id ");
 
@@ -10089,6 +10207,64 @@ public class SearchController implements Serializable {
 
         // Execute the query
         bills = getBillFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        if (bills != null) {
+            for (Bill bill : bills) {
+                if (bill != null) {
+                    total += bill.getTotal();
+                    netTotal += bill.getNetTotal();
+                    discount += bill.getDiscount();
+                }
+            }
+        }
+
+    }
+
+    public void listBillTypes() {
+        bundle = new ReportTemplateRowBundle();
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("select new com.divudi.data.ReportTemplateRow("
+                + "b.billType, b.billClassType, b.billTypeAtomic, count(b), sum(b.total), sum(b.discount), sum(b.netTotal))"
+                + " from Bill b where b.retired=:ret ");
+        params.put("ret", false);
+        if (toDate != null && fromDate != null) {
+            jpql.append(" and b.createdAt between :fromDate and :toDate ");
+            params.put("toDate", toDate);
+            params.put("fromDate", fromDate);
+        }
+
+        if (institution != null) {
+            params.put("ins", institution);
+            jpql.append(" and b.department.institution = :ins ");
+        }
+
+        if (department != null) {
+            params.put("dep", department);
+            jpql.append(" and b.department = :dept ");
+        }
+
+        if (site != null) {
+            params.put("site", site);
+            jpql.append(" and b.department = :site ");
+        }
+
+        if (webUser != null) {
+            jpql.append(" and b.creater=:wu ");
+            params.put("wu", webUser);
+        }
+
+        jpql.append(" group by b.billType, b.billClassType, b.billTypeAtomic ");
+        
+      
+
+        System.out.println("jpql.toString() = " + jpql.toString());
+        System.out.println("params = " + params);
+
+        // Execute the query
+        List<ReportTemplateRow> rows = (List<ReportTemplateRow>) getBillFacade().findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        bundle.setReportTemplateRows(rows);
+        bundle.calculateTotalByValues();
 
     }
 
@@ -12815,6 +12991,20 @@ public class SearchController implements Serializable {
         generateCashierSummary();
     }
 
+    public String navigateToSelectedCashierSummary(WebUser wu) {
+        bundle = new ReportTemplateRowBundle();
+        webUser = wu;
+        generateCashierSummary();
+        return "/reports/cashier_reports/cashier_summary?faces-redirect=true";
+    }
+
+    public String navigateToSelectedCashierDetails(WebUser wu) {
+        bundle = new ReportTemplateRowBundle();
+        webUser = wu;
+        generateCashierDetailed();
+        return "/reports/cashier_reports/cashier_detailed?faces-redirect=true";
+    }
+
     public void generateCashierSummary() {
         bundle = new ReportTemplateRowBundle();
         institution = null;
@@ -15117,7 +15307,7 @@ public class SearchController implements Serializable {
         }
 
         if (webUser != null) {
-            jpql += " AND b.creator = :wu ";
+            jpql += " AND b.creater = :wu ";
             m.put("wu", webUser);
         }
 
@@ -15181,10 +15371,6 @@ public class SearchController implements Serializable {
         if (department != null) {
             jpql += "AND bill.department = :dep ";
             parameters.put("dep", department);
-        }
-        if (item != null) {
-            jpql += "AND :item MEMBER OF bill.billItems ";
-            parameters.put("item", item);
         }
 
         if (speciality != null) {

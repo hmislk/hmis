@@ -243,7 +243,8 @@
                             <p:column headerText="Bill" style="text-align: left;" >
                                 <p:outputLabel value="#{row.billFee.billItem.referanceBillItem.bill.deptId}" >
                                 </p:outputLabel>
-                                <p:commandLink 
+                                <p:badge severity="warning" value="Cancelled" rendered="#{row.billFee.billItem.bill.cancelled}" ></p:badge>
+<!--                                <p:commandLink 
                                     ajax="false"
                                     class="m-1"
                                     rendered="#{row.billFee ne null}"
@@ -262,7 +263,7 @@
                                     <f:setPropertyActionListener 
                                         value="#{row.billFee.billItem.referanceBillItem.bill}" 
                                         target="#{billSearch.bill}" />
-                                </p:commandLink>
+                                </p:commandLink>-->
 
                             </p:column>
                             <p:column 

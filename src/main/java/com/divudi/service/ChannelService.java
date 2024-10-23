@@ -46,6 +46,8 @@ import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.SessionInstanceFacade;
 import com.divudi.java.CommonFunctions;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -53,9 +55,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -80,7 +85,7 @@ public class ChannelService {
     private PaymentFacade paymentFacade;
     @EJB
     private SessionInstanceFacade sessionInstanceFacade;
-    
+
     @Inject
     private BookingControllerViewScope bookingControllerViewScope;
 
@@ -200,7 +205,6 @@ public class ChannelService {
         Bill savingBill = createBill(patient, session);
         BillItem savingBillItemForSession = createSessionItem(savingBill, refNo, session);
         savingBill.setAgentRefNo(refNo);
-       
 
 //        PriceMatrix priceMatrix;
 //        if (itemsAddedToBooking != null || itemsAddedToBooking.isEmpty()) {
@@ -435,7 +439,7 @@ public class ChannelService {
     private BillItem createSessionItem(Bill bill, String refNo, SessionInstance session) {
         BillItem bi = new BillItem();
         bi.setAdjustedValue(0.0);
-        bi.setAgentRefNo(refNo);      
+        bi.setAgentRefNo(refNo);
         bi.setBill(bill);
         bi.setBillTime(new Date());
         bi.setCreatedAt(new Date());
@@ -510,50 +514,74 @@ public class ChannelService {
         m.put("i", i);
         return itemFeeFacade.findByJpql(sql, m);
     }
-    
-    public List<Bill> findBillFromRefNo(String refNo){
+
+    public List<Bill> findBillFromRefNo(String refNo) {
         String jpql = "Select b from Bill b"
                 + " where b.agentRefNo = :ref"
                 + " and b.cancelled = false"
                 + " and b.retired = false";
-        
+
         Map params = new HashMap();
         params.put("ref", refNo);
         return billFacade.findByJpql(jpql, params);
 
     }
-    
-    public List<SessionInstance> findSessionInstanceFromId(String id){
+
+    public List<SessionInstance> findSessionInstanceFromId(String id) {
         String jpql = "Select ss from SessionInstance ss "
                 + " Where ss.completed = false "
                 + " and ss.id = :id";
-        
+
         Long idLong = Long.parseLong(id);
         Map parms = new HashMap();
         parms.put("id", idLong);
-        
+
         return sessionInstanceFacade.findByJpql(jpql, parms);
 
     }
-    
+
     private BillSession cancelBillSession(BillSession selectedBillSession, CancelledBill can, BillItem canBillItem) {
         BillSession bs = new BillSession();
         bs.copy(selectedBillSession);
         bs.setBill(can);
         bs.setBillItem(canBillItem);
         bs.setCreatedAt(new Date());
-      //  bs.setCreater(getSessionController().getLoggedUser());
+        //  bs.setCreater(getSessionController().getLoggedUser());
         getBillSessionFacade().create(bs);
-
+        System.out.println(can);
         can.setSingleBillSession(bs);
         getBillFacade().edit(can);
 
         return bs;
     }
-
     
-     public BillSession cancelBookingBill(Bill bill) {
-         
+    public List<Bill> viewBookingHistorybyDate(String fromDate, String toDate){
+        try {
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+            Date startDate = formatter.parse(fromDate);
+            Date endDate = formatter.parse(toDate);
+            Bill b = new Bill();
+            b.getBillTypeAtomic();
+            
+            BillTypeAtomic billType = BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT;
+            String jpql = "Select b from Bill b "
+                    + " where b.billDate between :fd And :td "
+                    + " and b.billTypeAtomic = :bt";
+            
+            Map params = new HashMap();
+            params.put("fd", startDate);
+            params.put("td", endDate);
+            params.put("bt", billType);
+            
+            return billFacade.findByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
+        } catch (ParseException ex) {
+            Logger.getLogger(ChannelService.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
+    public BillSession cancelBookingBill(Bill bill) {
+
         BillSession bs = bill.getSingleBillSession();
         CancelledBill cb = createCancelBill1(bill);
         BillItem cItem = cancelBillItems(bs.getBillItem(), cb);
@@ -565,18 +593,17 @@ public class ChannelService {
         billSessionFacade.edit(bs);
         return cbs;
 
-      //  sendSmsOnChannelCancellationBookings();
-
+        //  sendSmsOnChannelCancellationBookings();
     }
-     
-     private BillItem cancelBillItems(BillItem bi, CancelledBill can) {
+
+    private BillItem cancelBillItems(BillItem bi, CancelledBill can) {
 
         BillItem b = new BillItem();
         b.setBill(can);
         b.copy(bi);
         b.invertValue(bi);
         b.setCreatedAt(new Date());
-      // b.setCreater(getSessionController().getLoggedUser());
+        // b.setCreater(getSessionController().getLoggedUser());
 
         getBillItemFacade().create(b);
         String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + bi.getId();
@@ -585,8 +612,8 @@ public class ChannelService {
 
         return b;
     }
-     
-      private void cancelBillFee(Bill can, BillItem bt, List<BillFee> tmp) {
+
+    private void cancelBillFee(Bill can, BillItem bt, List<BillFee> tmp) {
         for (BillFee nB : tmp) {
             BillFee bf = new BillFee();
             bf.copy(nB);
@@ -595,13 +622,13 @@ public class ChannelService {
             bf.setBillItem(bt);
 
             bf.setCreatedAt(new Date());
-         //   bf.setCreater(getSessionController().getLoggedUser());
+            //   bf.setCreater(getSessionController().getLoggedUser());
 
             getBillFeeFacade().create(bf);
         }
     }
-     
-      private CancelledBill createCancelBill1(Bill bill) {
+
+    private CancelledBill createCancelBill1(Bill bill) {
         CancelledBill cb = new CancelledBill();
 
         cb.copy(bill);
@@ -610,21 +637,23 @@ public class ChannelService {
         cb.setBillDate(new Date());
         cb.setBillTime(new Date());
         cb.setCreatedAt(new Date());
-       // cb.setCreater(getSessionController().getLoggedUser());
-       // cb.setDepartment(getSessionController().getLoggedUser().getDepartment());
-      //  cb.setInstitution(getSessionController().getInstitution());
-       // cb.setComments(comment);
+        // cb.setCreater(getSessionController().getLoggedUser());
+        // cb.setDepartment(getSessionController().getLoggedUser().getDepartment());
+        //  cb.setInstitution(getSessionController().getInstitution());
+        // cb.setComments(comment);
 
-//        cb.setInsId(billNumberBean.institutionChannelBillNumberGenerator(sessionController.getInstitution(), cb));
-        String insId = bookingControllerViewScope.generateBillNumberInsId(cb);
-
+        //     cb.setInsId(billNumberBean.institutionChannelBillNumberGenerator(bill.getInstitution(), cb));
+        // String insId = bookingControllerViewScope.generateBillNumberInsId(cb);
+        String insId = billNumberBean.institutionChannelBillNumberGenerator(bill.getSingleBillSession().getSessionInstance().getOriginatingSession().getInstitution(), cb);
+        System.out.println(insId);
         if (insId.equals("")) {
             return null;
         }
         cb.setInsId(insId);
 
-        String deptId = generateBillNumberDeptId(cb);
-
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(bill.getSingleBillSession().getSessionInstance().getOriginatingSession().getDepartment(), BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
+        // String deptId = generateBillNumberDeptId(cb);
+        System.out.println(deptId);
         if (deptId.equals("")) {
             return null;
         }
@@ -640,36 +669,31 @@ public class ChannelService {
 //        } else {
 //            cb.setPaymentMethod(bill.getPaymentMethod());
 //        }
-
         getBillFacade().edit(cb);
         return cb;
     }
-      
-      
 
+    public Bill settleCredit(BillSession preBillSession, String refNo) {
+        Bill paidBill = savePaidBill(preBillSession, refNo);
+        BillItem paidBillItem = savePaidBillItem(paidBill, preBillSession);
+        savePaidBillFee(paidBill, paidBillItem, preBillSession);
+        BillSession paidBillSession = savePaidBillSession(paidBill, paidBillItem, preBillSession);
+        preBillSession.setPaidBillSession(paidBillSession);
+        getBillSessionFacade().edit(paidBillSession);
+        getBillSessionFacade().edit(preBillSession);
 
+        preBillSession.getBill().setPaidAmount(paidBill.getPaidAmount());
+        preBillSession.getBill().setBalance(0.0);
+        preBillSession.getBill().setPaidBill(paidBill);
 
-    public Bill settleCredit(BillSession bs) {
-        Bill b = savePaidBill(bs);
-        BillItem bi = savePaidBillItem(b, bs);
-        savePaidBillFee(b, bi, bs);
-        BillSession newBillSession = savePaidBillSession(b, bi, bs);
-        bs.setPaidBillSession(newBillSession);
-        getBillSessionFacade().edit(newBillSession);
-        getBillSessionFacade().edit(bs);
+        getBillFacade().edit(preBillSession.getBill());
 
-        bs.getBill().setPaidAmount(b.getPaidAmount());
-        bs.getBill().setBalance(0.0);
-        bs.getBill().setPaidBill(b);
+        paidBill.setSingleBillItem(paidBillItem);
+        paidBill.setSingleBillSession(paidBillSession);
+        getBillFacade().editAndCommit(paidBill);
 
-        getBillFacade().edit(bs.getBill());
-
-        b.setSingleBillItem(bi);
-        b.setSingleBillSession(bs);
-        getBillFacade().editAndCommit(b);
-
-        List<Payment> p = createPayment(b, PaymentMethod.OnlineSettlement);
-        return b;
+        List<Payment> p = createPayment(paidBill, PaymentMethod.OnlineSettlement);
+        return paidBill;
         // drawerController.updateDrawerForIns(p);
     }
 
@@ -716,21 +740,22 @@ public class ChannelService {
         }
     }
 
-    private BillSession savePaidBillSession(Bill bill, BillItem billItem, BillSession bs) {
-        BillSession newbs = new BillSession();
-        bs.copy(bs);
-        bs.setBill(bill);
-        bs.setBillItem(billItem);
-        bs.setCreatedAt(new Date());
+    private BillSession savePaidBillSession(Bill paidBill, BillItem paidBillItem, BillSession preBillSession) {
+        BillSession paidBillSession = new BillSession();
+        paidBillSession.copy(preBillSession);
+        paidBillSession.setBill(paidBill);
+        paidBillSession.setBillItem(paidBillItem);
+        paidBillSession.setCreatedAt(new Date());
         //  bs.setCreater(getSessionController().getLoggedUser());
 
-        getBillSessionFacade().create(bs);
-        return bs;
+        getBillSessionFacade().create(paidBillSession);
+        return paidBillSession;
 
     }
 
-    private Bill savePaidBill(BillSession bs) {
+    private Bill savePaidBill(BillSession bs, String refNo) {
         Bill temp = new BilledBill();
+        temp.setAgentRefNo(refNo);
         temp.copy(bs.getBill());
         temp.copyValue(bs.getBill());
         temp.setPaidAmount(bs.getBill().getNetTotal());
@@ -740,7 +765,7 @@ public class ChannelService {
         temp.setBillType(BillType.ChannelPaid);
         temp.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(bs.getDepartment(), BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
-       // String deptId = generateBillNumberDeptId(temp);
+        // String deptId = generateBillNumberDeptId(temp);
         System.out.println(deptId);
         temp.setInsId(deptId);
         temp.setDeptId(deptId);
