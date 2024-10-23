@@ -2314,9 +2314,11 @@ public class BillSearch implements Serializable {
             return;
         }
 
-        if (financialTransactionController.getLoggedUserDrawer().getCashInHandValue() < getBill().getBillTotal()) {
-            JsfUtil.addErrorMessage("Not enough cash in the Drawer");
-            return;
+        if (paymentMethod != PaymentMethod.PatientDeposit) {
+            if (financialTransactionController.getLoggedUserDrawer().getCashInHandValue() < getBill().getBillTotal()) {
+                JsfUtil.addErrorMessage("Not enough cash in the Drawer");
+                return;
+            }
         }
 
         if (paymentMethod == PaymentMethod.PatientDeposit) {
@@ -3162,7 +3164,7 @@ public class BillSearch implements Serializable {
         financialTransactionController.setCurrentBillPayments(viewingBillPayments);
         return "/cashier/income_bill_print?faces-redirect=true;";
     }
-    
+
     public String navigateToManageExpenseBill() {
         if (viewingBill == null) {
             JsfUtil.addErrorMessage("No Bill to Dsiplay");
