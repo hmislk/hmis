@@ -191,17 +191,9 @@
 
                             </h:panelGrid> 
 
-
-
-
-
-
-
-
                         </h:panelGrid><br/>
 
                         <div class="d-flex align-items-center">
-
 
                             <p:commandButton 
                                 id="btnSearch" 
@@ -210,8 +202,6 @@
                                 ajax="false" 
                                 value="Process Report"
                                 action="#{searchController.processWhtReport()}"/>
-
-
 
                             <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
                             </p:commandButton>
@@ -224,8 +214,49 @@
 
 
                         <h:panelGroup >
+                            <p:panel header="Individual Receipts Wise WHT Report " rendered="#{searchController.reportType eq 'irs'}">
+                            
+                            <h:panelGroup>
+
+                            <div class="row w-50" >
+                                <div class="col-3">
+                                    <h:outputLabel style="width: 100px; font-weight:bold ">From Date</h:outputLabel><span>:</span>
+                                </div>
+                                <div class="col-3">
+                                    <h:outputLabel value="#{reportController.fromDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    </h:outputLabel>
+                                </div>
+                                <div class="col-3">
+                                    <h:outputLabel style="width: 100px ; font-weight:bold ">To Date</h:outputLabel><span>:</span>
+                                </div>
+                                <div class="col-3">
+                                    <h:outputLabel value="#{reportController.toDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    </h:outputLabel>
+                                </div>
+                            </div>                     
+
+                                <h:panelGroup rendered="#{reportController.institution ne null}">
+                                <div class="row w-50" >
+                                    <div class="col-3">
+                                        <h:outputLabel style="width: 100px ; font-weight:bold ">Branch</h:outputLabel><span>:</span>
+                                    </div>
+                                    <div class="col-3">
+                                        <h:outputLabel value="#{reportController.institution.name}" ></h:outputLabel>
+                                    </div>
+                                    <div class="col-3">
+                                        <h:outputLabel style="width: 100px ; font-weight:bold ">Department</h:outputLabel><span>:</span>
+                                    </div>
+                                    <div class="col-3">
+                                        <h:outputLabel value="#{reportController.site.name}" ></h:outputLabel>
+                                    </div>
+                                </div>
+                            </h:panelGroup>
+
+                        </h:panelGroup>
+                            
                             <p:dataTable 
-                                rendered="#{searchController.reportType eq 'irs'}"
                                 rowIndexVar="i" 
                                 id="tbl" 
                                 value="#{searchController.bundle.reportTemplateRows}" 
@@ -402,6 +433,9 @@
                                     </div>
                                 </p:column>
                             </p:dataTable>
+                            
+                            </p:panel>
+                        
                         </h:panelGroup>
 
 
