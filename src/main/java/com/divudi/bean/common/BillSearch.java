@@ -3158,7 +3158,7 @@ public class BillSearch implements Serializable {
         }
         financialTransactionController.setCurrentBill(viewingBill);
         financialTransactionController.setCurrentBillPayments(viewingBillPayments);
-        return "/opd/view/opd_bill?faces-redirect=true;";
+        return "/cashier/income_bill_print?faces-redirect=true;";
     }
 
     public String navigateToAdminOpdBill() {
@@ -3167,6 +3167,22 @@ public class BillSearch implements Serializable {
             return "";
         }
         return "/opd/view/opd_bill_admin?faces-redirect=true;";
+    }
+    
+    public String navigateToAdminCcDepositBill() {
+        if (viewingBill == null) {
+            JsfUtil.addErrorMessage("No Bill to Dsiplay");
+            return "";
+        }
+        return "/opd/view/cc_deposit_bill_admin?faces-redirect=true;";
+    }
+    
+    public String navigateToAdminBill() {
+        if (viewingBill == null) {
+            JsfUtil.addErrorMessage("No Bill to Dsiplay");
+            return "";
+        }
+        return "/opd/view/bill_admin?faces-redirect=true;";
     }
 
     public String navigateToViewOpdRefundBill() {
@@ -3503,77 +3519,16 @@ public class BillSearch implements Serializable {
         BillTypeAtomic billTypeAtomic = bill.getBillTypeAtomic();
         loadBillDetails(bill);
         switch (billTypeAtomic) {
-            case PHARMACY_RETAIL_SALE_CANCELLED:
-                pharmacyBillSearch.setBill(bill);
-                return pharmacyBillSearch.navigateToViewPharmacyGrn();
+            case CC_DEBIT_NOTE:
+                return navigateToAdminCcDepositBill();
             case OPD_BILL_REFUND:
                 return navigateToAdminOpdRefundBill();
             case OPD_BILL_CANCELLATION:
                 return navigateToAdminOpdCancellationBill();
-            case OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER:
-                return navigateToManageOpdBill();
-            case OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION:
-                return navigateToManageOpdBill();
-            case OPD_PROFESSIONAL_PAYMENT_BILL:
-                return navigateToManageOpdBill();
             case OPD_BILL_WITH_PAYMENT:
                 return navigateToAdminOpdBill();
-            case OPD_BATCH_BILL_WITH_PAYMENT:
-                return navigateToViewOpdBatchBill();
-
-            case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES:
-                return navigateToViewOpdProfessionalPaymentBill();
-
-            case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN:
-                return navigateToViewOpdProfessionalPaymentCancelledBill();
-            case CHANNEL_BOOKING_WITH_PAYMENT:
-                return "";
-            case CC_BILL:
-                return navigateToViewCcBill(bill);
-
-            case CC_BILL_CANCELLATION:
-                return navigateToViewCcBillCancellation(bill);
-
-            case CC_BILL_REFUND:
-                return navigateToViewCcBillRefund(bill);
-
-            case CC_CREDIT_NOTE:
-                return navigateToViewCcCreditNote(bill);
-
-            case CC_DEBIT_NOTE:
-                return navigateToViewCcDebitNote(bill);
-
-            case CC_CREDIT_NOTE_CANCELLATION:
-                return navigateToViewCcCreditNoteCancellation(bill);
-
-            case CC_DEBIT_NOTE_CANCELLATION:
-                return navigateToViewCcDebitNoteCancellation(bill);
-
-            case CC_PAYMENT_CANCELLATION_BILL:
-                return navigateToViewCcPaymentCancellationBill(bill);
-
-            case CC_PAYMENT_MADE_BILL:
-                return navigateToViewCcPaymentMadeBill(bill);
-
-            case CC_PAYMENT_MADE_CANCELLATION_BILL:
-                return navigateToViewCcPaymentMadeCancellationBill(bill);
-
-            case CC_PAYMENT_RECEIVED_BILL:
-                return navigateToViewCcPaymentReceivedBill(bill);
-
-            case CHANNEL_REFUND:
-                return "";
-            case CHANNEL_PAYMENT_FOR_BOOKING_BILL:
-            case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE:
-            case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES:
-            case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES_RETURN:
-            case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN:
-            case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION:
-                return navigateToViewChannelingProfessionalPaymentBill();
-
         }
-
-        return "";
+        return navigateToAdminBill();
     }
 
     public String navigateToManageBillByAtomicBillType() {
