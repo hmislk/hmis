@@ -492,6 +492,19 @@ public class ReportTemplateRowBundle implements Serializable {
         }
     }
 
+    public void calculateTotalByValues() {
+        total = 0.0;
+        grossTotal = 0.0;
+        discount = 0.0;
+        count = 0l;
+        for (ReportTemplateRow r : getReportTemplateRows()) {
+            grossTotal += r.getGrossTotal();
+            discount += r.getDiscount();
+            total += r.getTotal();
+            count += r.getRowCount();
+        }
+    }
+
     public void calculateTotals() {
         System.out.println("calculateTotals = ");
         resetTotalsAndFlags();
@@ -695,11 +708,11 @@ public class ReportTemplateRowBundle implements Serializable {
             }
         }
     }
-    
+
     public void calculateTotalNetTotalTaxByBills() {
         total = 0.0;
-        grossTotal=0.0;
-        tax=0.0;
+        grossTotal = 0.0;
+        tax = 0.0;
         if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
             for (ReportTemplateRow row : this.reportTemplateRows) {
                 if (row.getBill() == null) {
@@ -710,7 +723,7 @@ public class ReportTemplateRowBundle implements Serializable {
                 Double billTax = safeDouble(row.getBill().getTax());
                 total += billTotal;
                 grossTotal += billGrossTotal;
-                tax +=billTax;
+                tax += billTax;
             }
         }
     }
@@ -1839,7 +1852,5 @@ public class ReportTemplateRowBundle implements Serializable {
     public void setTax(Double tax) {
         this.tax = tax;
     }
-    
-    
 
 }
