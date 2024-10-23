@@ -340,7 +340,7 @@ public class ReportController implements Serializable {
         netTotal = 0.0;
         
         for(BillAndItemDataRow bir : billAndItemDataRows){
-            netTotal = bir.getGrandTotal();
+            netTotal += bir.getGrandTotal();
         }
     }
 
