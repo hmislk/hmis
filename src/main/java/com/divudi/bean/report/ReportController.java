@@ -229,13 +229,27 @@ public class ReportController implements Serializable {
     public void generateItemMovementByBillReport() {
         billAndItemDataRows = new ArrayList<>();
         Map<String, Object> params = new HashMap<>();
-
+        List<BillTypeAtomic> bta = new ArrayList<>();
+        bta.add(BillTypeAtomic.OPD_BATCH_BILL_TO_COLLECT_PAYMENT_AT_CASHIER);
+        bta.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        bta.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+        bta.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
+        bta.add(BillTypeAtomic.OPD_BILL_TO_COLLECT_PAYMENT_AT_CASHIER);
+        bta.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        bta.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+        bta.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        bta.add(BillTypeAtomic.OPD_BILL_REFUND);
+        bta.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+        bta.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL);
+        bta.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL_RETURN);
+        
         // Update JPQL to include all bills, regardless of their status
-        StringBuilder jpql = new StringBuilder("SELECT bi FROM BillItem bi WHERE bi.retired=:bir AND bi.bill.retired=:br AND bi.bill.createdAt BETWEEN :fd AND :td");
+        StringBuilder jpql = new StringBuilder("SELECT bi FROM BillItem bi WHERE bi.retired=:bir AND bi.bill.retired=:br AND bi.bill.createdAt BETWEEN :fd AND :td AND bi.bill.billTypeAtomic IN :bTypeList ");
         params.put("bir", false);
         params.put("br", false);
         params.put("fd", fromDate);
         params.put("td", toDate);
+        params.put("bTypeList", bta);
 
         if (institution != null) {
             jpql.append(" AND bi.bill.institution=:ins");
