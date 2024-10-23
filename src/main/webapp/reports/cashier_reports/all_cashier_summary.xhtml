@@ -135,15 +135,24 @@
                                       sortBy="#{summary.user.webUserPerson.name}" 
                                       filterBy="#{summary.user.webUserPerson.name}">
                                 <h:outputText value="#{summary.user.webUserPerson.name} (#{summary.user.name})" />
-                                <p:commandButton
-                                    ajax="false"
-                                    value="Cashier Summary"
-                                    action="#{searchController.navigateToSelectedCashierSummary(summary.user)}" ></p:commandButton>
-                                <p:commandButton
-                                    ajax="false"
-                                    value="Cashier Details"
-                                    action="#{searchController.navigateToSelectedCashierDetails(summary.user)}" ></p:commandButton>
+                                <p:commandButton icon="fa fa-bar-chart" title="Cashier Summary"
+                                                 styleClass="m-1"
+                                                 ajax="false"
+                                                 action="#{searchController.navigateToSelectedCashierSummary(summary.user)}" />
+                                <p:commandButton icon="fa fa-address-card" title="Cashier Details"
+                                                 styleClass="m-1"
+                                                 ajax="false"
+                                                 action="#{searchController.navigateToSelectedCashierDetails(summary.user)}" />
+                                <p:commandButton icon="fa fa-list" title="Bill List"
+                                                 styleClass="m-1"
+                                                 ajax="false"
+                                                 action="#{searchController.navigateToUserBillTypeList(summary.user)}" />
+                                <p:commandButton icon="fa fa-credit-card" title="Payment List"
+                                                 styleClass="m-1"
+                                                 ajax="false"
+                                                 action="#{searchController.navigateToUserBillPaymentList(summary.user)}" />
                             </p:column>
+
 
                             <p:column headerText="Institution" sortBy="#{summary.department.institution.name}" filterBy="#{summary.department.institution.name}">
                                 <h:outputText value="#{summary.department.institution.name}" />
@@ -331,11 +340,18 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Grand Total">
+                            <p:column headerText="Grand Total" class="text-end">
+                                <h:outputText value="#{summary.cashValue + summary.cardValue + summary.multiplePaymentMethodsValue + 
+                                                       summary.creditValue + summary.staffWelfareValue + summary.staffValue + summary.voucherValue + 
+                                                       summary.iouValue + summary.chequeValue + summary.slipValue + 
+                                                       summary.ewalletValue + summary.patientDepositValue + summary.patientPointsValue + summary.onlineSettlementValue}" 
+                                              style="text-align: right;">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
                                 <f:facet name="footer">
                                     <h:outputText value="#{searchController.bundle.cashValue + searchController.bundle.cardValue + searchController.bundle.multiplePaymentMethodsValue + 
                                                            searchController.bundle.creditValue + searchController.bundle.staffWelfareValue + searchController.bundle.staffValue + searchController.bundle.voucherValue + 
-                                                           searchController.bundle.iouValue + searchController.bundle.agentValue + searchController.bundle.chequeValue + searchController.bundle.slipValue + 
+                                                           searchController.bundle.iouValue + searchController.bundle.chequeValue + searchController.bundle.slipValue + 
                                                            searchController.bundle.ewalletValue + searchController.bundle.patientDepositValue + searchController.bundle.patientPointsValue + searchController.bundle.onlineSettlementValue}" 
                                                   style="text-align: right;">
                                         <f:convertNumber pattern="#,##0.00" />

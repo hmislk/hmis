@@ -3168,6 +3168,22 @@ public class BillSearch implements Serializable {
         }
         return "/opd/view/opd_bill_admin?faces-redirect=true;";
     }
+    
+    public String navigateToAdminCcDepositBill() {
+        if (viewingBill == null) {
+            JsfUtil.addErrorMessage("No Bill to Dsiplay");
+            return "";
+        }
+        return "/opd/view/cc_deposit_bill_admin?faces-redirect=true;";
+    }
+    
+    public String navigateToAdminBill() {
+        if (viewingBill == null) {
+            JsfUtil.addErrorMessage("No Bill to Dsiplay");
+            return "";
+        }
+        return "/opd/view/bill_admin?faces-redirect=true;";
+    }
 
     public String navigateToViewOpdRefundBill() {
         if (viewingBill == null) {
