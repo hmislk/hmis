@@ -9,24 +9,24 @@ public enum InstitutionType {
     Agency("Agency"),
     Bank("Bank"),
     Site("Site"),
-    branch("Branch"), // Original enum spelling retained
+    branch("Branch"), 
     CollectingCentre("Collecting Centre"),
     Company("Company"),
     CreditCompany("Credit Company"),
     Dealer("Dealer"),
-    Distributor("Distributor"), // Added new
-    EducationalInstitute("Educational Institute"), // Added new
-    Government("Government"), // Added new
+    Distributor("Distributor"),
+    EducationalInstitute("Educational Institute"), 
+    Government("Government"), 
     Hospital("Hospital"),
     Importer("Importer"),
     Lab("Lab"),
     Manufacturer("Manufacturer"),
-    NonProfit("Non-Profit"), // Added new
+    NonProfit("Non-Profit"), 
     Other("Other"),
-    Pharmacy("Pharmacy"), // Added new
-    PrivatePractice("Private Practice"), // Added new
-    StoreDealor("Store Dealer"), // Original enum spelling retained
-    Wholesaler("Wholesaler"); // Added new
+    Pharmacy("Pharmacy"), 
+    PrivatePractice("Private Practice"), 
+    StoreDealor("Store Dealer"), 
+    Wholesaler("Wholesaler"); 
 
     private final String label;
 

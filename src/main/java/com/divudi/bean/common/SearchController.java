@@ -241,6 +241,7 @@ public class SearchController implements Serializable {
     private double discount;
     ServiceSession selectedServiceSession;
     Staff currentStaff;
+    private String mrnNo;
     List<BillItem> billItem;
     List<PatientInvestigation> userPatientInvestigations;
 
@@ -649,6 +650,7 @@ public class SearchController implements Serializable {
 
     public String navigateToProfessionalFees() {
         bundle = new ReportTemplateRowBundle();
+        recreateProPayementModel();
         return "/reports/professional_payment_reports/professional_fees_opd?faces-redirect=true";
     }
 
@@ -740,6 +742,17 @@ public class SearchController implements Serializable {
     public String toListAllPayments() {
         bills = null;
         return "/dataAdmin/list_payments?faces-redirect=true";
+    }
+
+    private void recreateProPayementModel() {
+        institution = null;
+        site = null;
+        department = null;
+        category = null;
+        item = null;
+        mrnNo = null;
+        speciality = null;
+        staff = null;
     }
 
     public void listAllBills() {
@@ -913,8 +926,8 @@ public class SearchController implements Serializable {
         bundle = new ReportTemplateRowBundle();
         return "/reports/cashier_reports/all_cashier_summary?faces-redirect=true";
     }
-    
-    public String navigatToDepartmentWiseIncomeReport(){
+
+    public String navigatToDepartmentWiseIncomeReport() {
         bundle = new ReportTemplateRowBundle();
         return "/reports/cashier_reports/department_wise_income_report?faces-redirect=true";
     }
@@ -1999,6 +2012,14 @@ public class SearchController implements Serializable {
 
     public void setReportType(String reportType) {
         this.reportType = reportType;
+    }
+
+    public String getMrnNo() {
+        return mrnNo;
+    }
+
+    public void setMrnNo(String mrnNo) {
+        this.mrnNo = mrnNo;
     }
 
     public class billsWithbill {
@@ -12198,7 +12219,7 @@ public class SearchController implements Serializable {
         Map temMap = new HashMap();
         System.out.println("getFromDate() = " + getFromDate());
         System.out.println("getToDate() = " + getToDate());
-        sql = "select b from Bill b where b.billTypeAtomic IN :billTypes and b.createdAt between :fromDate and :toDate and b.retired=false";
+        sql = "select b from Bill b where b.billTypeAtomic IN :billTypes and b.createdAt between :fromDate and :toDate and b.retired=false order by b.id desc";
         System.out.println("sql = " + sql);
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
@@ -12596,7 +12617,6 @@ public class SearchController implements Serializable {
 //    public void createProfessionalFees() {
 //        bundle = generateOpdProfessionalFees();
 //    }
-
     public void generateDailyReturn() {
 
         bundle = new ReportTemplateRowBundle();
@@ -13426,11 +13446,11 @@ public class SearchController implements Serializable {
         pharmacyCreditRefundBundle.setName("Pharmacy Credit Refunds");
         bundle.getBundles().add(pharmacyCreditRefundBundle);
         collectionForTheDay += getSafeTotal(pharmacyCreditRefundBundle);
-        
+
         //Genarate Agency accept
         List<BillTypeAtomic> agencyDeposit = new ArrayList<>();
         agencyDeposit.add(BillTypeAtomic.AGENCY_PAYMENT_RECEIVED);
-        ReportTemplateRowBundle agencyPaymentBundle =generatePaymentMethodColumnsByBills(agencyDeposit);
+        ReportTemplateRowBundle agencyPaymentBundle = generatePaymentMethodColumnsByBills(agencyDeposit);
         agencyPaymentBundle.setBundleType("AgencyDeposit");
         agencyPaymentBundle.setName("Agency Accept Payments");
         bundle.getBundles().add(agencyPaymentBundle);
@@ -13800,7 +13820,11 @@ public class SearchController implements Serializable {
 
         // Add payment status condition
         if (paymentStatus == PaymentStatus.DUE) {
-            jpql += " and (bf.paidValue IS NULL OR bf.paidValue = 0) ";
+            jpql += " and (bf.paidValue IS NULL OR bf.paidValue = 0) "
+                    + " and bi.bill.cancelled = :can "
+                    + " and bi.refunded = :refu";
+            m.put("can", false);
+            m.put("refu", false);
         } else if (paymentStatus == PaymentStatus.DONE) {
             jpql += " and bf.paidValue > 0 ";
         }
@@ -13841,6 +13865,10 @@ public class SearchController implements Serializable {
         if (staff != null) {
             jpql += " and bf.staff=:staff ";
             m.put("staff", staff);
+        }
+        if (mrnNo != null && !mrnNo.isEmpty()) {
+            jpql += " and UPPER(bi.bill.patient.phn) LIKE :phn ";
+            m.put("phn", "%" + mrnNo.toUpperCase() + "%");
         }
 
         System.out.println("jpql = " + jpql);
@@ -14118,7 +14146,6 @@ public class SearchController implements Serializable {
 //
 //        return oiBundle;
 //    }
-
     public ReportTemplateRowBundle generateItemizedSalesReportOpd() {
         ReportTemplateRowBundle oiBundle = new ReportTemplateRowBundle();
         String jpql = "select bi "
@@ -15425,7 +15452,7 @@ public class SearchController implements Serializable {
         bundle.setReportTemplateRows(rs);
         bundle.calculateTotals();
     }
-    
+
     public void generateDepartmentWiseIncomeReport() {
         Map<String, Object> parameters = new HashMap<>();
         String jpql = "SELECT new com.divudi.data.ReportTemplateRow("
@@ -15464,7 +15491,6 @@ public class SearchController implements Serializable {
             jpql += "AND bill.department.site = :site ";
             parameters.put("site", site);
         }
-        
 
         jpql += "AND p.createdAt BETWEEN :fd AND :td ";
         parameters.put("fd", fromDate);
@@ -15695,6 +15721,7 @@ public class SearchController implements Serializable {
         public void setAdjusetedVal(double adjusetedVal) {
             this.adjusetedVal = adjusetedVal;
         }
+
     }
 
     public Date getToDate() {

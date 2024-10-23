@@ -127,6 +127,10 @@ public class BillReturnController implements Serializable {
         return "/opd/opd_bill_search?faces-redirect=true";
     }
 
+    public String navigateToRefundBillViewFormOPDBillSearch() {
+        return "/opd/bill_return_print?faces-redirect=true";
+    }
+    
     public void selectAllItems() {
         originalBillItemsToSelectedToReturn = new ArrayList();
         for (BillItem selectedBillItemToReturn : originalBillItemsAvailableToReturn) {
@@ -246,6 +250,7 @@ public class BillReturnController implements Serializable {
         newlyReturnedBill.setComments(refundComment);
         newlyReturnedBill.setInstitution(sessionController.getInstitution());
         newlyReturnedBill.setDepartment(sessionController.getDepartment());
+        newlyReturnedBill.setReferenceBill(originalBillToReturn);
         newlyReturnedBill.invertValue();
 
         String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.OPD_BILL_REFUND);
