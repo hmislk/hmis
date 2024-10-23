@@ -227,6 +227,10 @@
                     <p:column headerText="Collecting Centre" filterBy="#{billItem.bill.collectingCentre.name}" sortBy="#{billItem.bill.collectingCentre.name}">
                         <h:outputLabel value="#{billItem.bill.collectingCentre.name}" />
                     </p:column>
+                    
+                     <p:column headerText="CC Code" filterBy="#{billItem.bill.collectingCentre.code}" sortBy="#{billItem.bill.collectingCentre.code}">
+                        <h:outputLabel value="#{billItem.bill.collectingCentre.code}" />
+                    </p:column>
 
                     <!-- Lab Institution Column -->
                     <p:column headerText="Lab" filterBy="#{billItem.bill.toInstitution.name}" sortBy="#{billItem.bill.toInstitution.name}">

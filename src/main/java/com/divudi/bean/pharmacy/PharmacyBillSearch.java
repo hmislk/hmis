@@ -616,6 +616,22 @@ public class PharmacyBillSearch implements Serializable {
         bill.setTransTotalSaleValue(tmp);
         return "/pharmacy/pharmacy_reprint_grn?faces-redirect=true";
     }
+    public String navigateToViewPharmacyBill() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill");
+            return "";
+        }
+        double tmp = 0;
+        for (BillItem b : bill.getBillItems()) {
+            if (b.getPharmaceuticalBillItem() == null) {
+                continue;
+            }
+            double tmp2 = (b.getPharmaceuticalBillItem().getQty() * b.getPharmaceuticalBillItem().getRetailRate());
+            tmp += tmp2;
+        }
+        bill.setTransTotalSaleValue(tmp);
+        return "/pharmacy/pharmacy_reprint_bill?faces-redirect=true";
+    }
 
     public WebUser getUser() {
         return user;
@@ -1684,6 +1700,7 @@ public class PharmacyBillSearch implements Serializable {
 
             //for Payment,billFee and BillFeepayment
             Payment p = pharmacySaleController.createPayment(cb, paymentMethod);
+            drawerController.updateDrawerForOuts(p);
             pharmacyCancelBillItems(cb, p);
 
             getBill().setCancelled(true);
