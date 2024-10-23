@@ -33,34 +33,6 @@
                                 </h:panelGroup>
 
                                 <p:tabView orientation="left">
-                                    <p:tab title="Patient Details" >
-                                        <p:panel header="">
-                                            <f:facet name="header">
-                                                <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
-                                                <h:outputLabel value="Patient Details" class="mx-4"></h:outputLabel>
-                                            </f:facet>
-                                            <common:patient patient="#{billSearch.viewingBill.patient}" class="w-100"/>
-                                        </p:panel>
-                                    </p:tab>
-
-                                    <p:tab title="Batch Bill Details" >
-                                        <p:panel>
-                                            <f:facet name="header">
-                                                <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
-                                                <h:outputLabel value="Batch Bill Details" class="mx-4"></h:outputLabel>
-                                                <p:commandButton 
-                                                    value="View Batch Bill" 
-                                                    ajax="false"
-                                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}">
-                                                    <f:setPropertyActionListener 
-                                                        value="#{billSearch.viewingBill.backwardReferenceBill}" 
-                                                        target="#{billSearch.bill}" ></f:setPropertyActionListener>
-                                                </p:commandButton> 
-                                            </f:facet>
-                                            <view:out bill="#{billSearch.viewingBill.backwardReferenceBill}"/>
-                                        </p:panel>
-                                    </p:tab>
-
                                     <p:tab title="Bill Details" >
                                         <p:panel>
                                             <f:facet name="header">
@@ -220,7 +192,7 @@
                             <p:commandButton class="my-2" ajax="false" value="Save" action="#{billSearch.editBillDetails()}" />
                         </f:facet>
                     </p:dialog>
-                  
+
 
 
 

@@ -135,23 +135,32 @@
                                       sortBy="#{summary.user.webUserPerson.name}" 
                                       filterBy="#{summary.user.webUserPerson.name}">
                                 <h:outputText value="#{summary.user.webUserPerson.name} (#{summary.user.name})" />
-                                <p:commandButton icon="fa fa-bar-chart" title="Cashier Summary"
-                                                 styleClass="m-1"
-                                                 ajax="false"
-                                                 action="#{searchController.navigateToSelectedCashierSummary(summary.user)}" />
-                                <p:commandButton icon="fa fa-address-card" title="Cashier Details"
-                                                 styleClass="m-1"
-                                                 ajax="false"
-                                                 action="#{searchController.navigateToSelectedCashierDetails(summary.user)}" />
-                                <p:commandButton icon="fa fa-list" title="Bill List"
+                            </p:column>
+                            <p:column headerText="Navigate" exportable="false">
+                                <p:commandButton 
+                                    icon="fa fa-bar-chart" title="Cashier Summary"
+                                    styleClass="m-1"
+                                    ajax="false"
+                                    action="#{searchController.navigateToSelectedCashierSummary(summary.user)}" />
+                                <p:commandButton 
+                                    icon="fa fa-address-card" title="Cashier Details"
+                                    styleClass="m-1"
+                                    ajax="false"
+                                    action="#{searchController.navigateToSelectedCashierDetails(summary.user)}" />
+                                <p:commandButton icon="fa fa-file-alt" title="Bill Types"
                                                  styleClass="m-1"
                                                  ajax="false"
                                                  action="#{searchController.navigateToUserBillTypeList(summary.user)}" />
-                                <p:commandButton icon="fa fa-credit-card" title="Payment List"
+                                <p:commandButton icon="fa fa-list-alt" title="Bill List"
+                                                 styleClass="m-1"
+                                                 ajax="false"
+                                                 action="#{searchController.navigateToUserBillList(summary.user)}" />
+                                <p:commandButton icon="fa fa-money-bill-alt" title="Payment List"
                                                  styleClass="m-1"
                                                  ajax="false"
                                                  action="#{searchController.navigateToUserBillPaymentList(summary.user)}" />
                             </p:column>
+
 
 
                             <p:column headerText="Institution" sortBy="#{summary.department.institution.name}" filterBy="#{summary.department.institution.name}">

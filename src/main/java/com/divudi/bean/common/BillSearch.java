@@ -221,6 +221,8 @@ public class BillSearch implements Serializable {
     PatientDepositController patientDepositController;
     @Inject
     OpdBillController opdBillController;
+    @Inject
+    SearchController searchController;
 
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
@@ -3235,6 +3237,12 @@ public class BillSearch implements Serializable {
     }
 
     public String navigateToViewOpdProfessionalPaymentsDone() {
+        return "/opd/professional_payments/opd_search_professional_payment_done?faces-redirect=true;";
+    }
+
+    public String navigateToViewOpdProfessionalPaymentsDoneByUser() {
+        searchController.getReportKeyWord().setWebUser(sessionController.getLoggedUser());
+        searchController.createPaymentTableAll();
         return "/opd/professional_payments/opd_search_professional_payment_done?faces-redirect=true;";
     }
 
