@@ -3529,10 +3529,8 @@ public class BillSearch implements Serializable {
                 return navigateToAdminOpdBill();
             default:
                 return navigateToAdminBill();
-
         }
-
-        return "";
+        return navigateToAdminBill();
     }
 
     public String navigateToManageBillByAtomicBillType() {
