@@ -280,6 +280,9 @@ public class FinancialTransactionController implements Serializable {
 
     public String navigateToNewExpenseBill() {
         resetClassVariables();
+        currentBill = new Bill();
+        currentBill.setBillType(BillType.OPERATIONAL_EXPENSES);
+        currentBill.setBillTypeAtomic(BillTypeAtomic.OPERATIONAL_EXPENSES);
         fillFundTransferBillsForMeToReceive();
         return "/cashier/expense_bill?faces-redirect=true;";
     }
@@ -2171,6 +2174,38 @@ public class FinancialTransactionController implements Serializable {
         drawerController.updateDrawerForIns(getCurrentBillPayments());
         return "/cashier/income_bill_print?faces-redirect=true";
     }
+    
+    
+    public String settleExpensesBill() {
+        if (currentBill == null) {
+            JsfUtil.addErrorMessage("Error");
+            return "";
+        }
+        if (currentBill.getBillType() != BillType.OPERATIONAL_EXPENSES) {
+            JsfUtil.addErrorMessage("Error");
+            return "";
+        }
+        currentBill.setDepartment(sessionController.getDepartment());
+        currentBill.setInstitution(sessionController.getInstitution());
+        currentBill.setStaff(sessionController.getLoggedUser().getStaff());
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.SUPPLEMENTARY_INCOME);
+        currentBill.setBillDate(new Date());
+        currentBill.setBillTime(new Date());
+        currentBill.setDeptId(deptId);
+        currentBill.setInsId(deptId);
+        billController.save(currentBill);
+        for (Payment p : getCurrentBillPayments()) {
+            p.setBill(currentBill);
+            p.setDepartment(sessionController.getDepartment());
+            p.setInstitution(sessionController.getInstitution());
+            // Serialize denominations before saving
+            p.serializeDenominations();
+            paymentController.save(p);
+        }
+        drawerController.updateDrawerForIns(getCurrentBillPayments());
+        return "/cashier/expense_bill_print?faces-redirect=true";
+    }
+    
 
     public String settleFundTransferBill() {
         if (currentBill == null) {
@@ -5009,6 +5044,30 @@ public class FinancialTransactionController implements Serializable {
         calculateIncometBillTotal();
         currentPayment = null;
     }
+    
+    
+    public void addPaymentToExpenseBill() {
+        if (currentBill == null) {
+            JsfUtil.addErrorMessage("Error");
+            return;
+        }
+        if (currentBill.getBillTypeAtomic() != BillTypeAtomic.OPERATIONAL_EXPENSES) {
+            JsfUtil.addErrorMessage("Error");
+            return;
+        }
+        if (currentPayment == null) {
+            JsfUtil.addErrorMessage("Error");
+            return;
+        }
+        if (currentPayment.getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Select a Payment Method");
+            return;
+        }
+        getCurrentBillPayments().add(currentPayment);
+        calculateIncometBillTotal();
+        currentPayment = null;
+    }
+    
 
     public void addShortageRecord() {
         if (currentPayment == null) {

@@ -19,7 +19,7 @@
             </f:facet>
             <p:outputLabel value="Bill ID" ></p:outputLabel>
             <p:outputLabel value="#{cc.attrs.bill.id}" ></p:outputLabel>
-            
+
             <p:outputLabel value="Bill Created at" ></p:outputLabel>
             <p:outputLabel value="#{cc.attrs.bill.createdAt}" >
                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
@@ -42,6 +42,22 @@
 
             <h:outputLabel value="Payment Type " ></h:outputLabel>
             <h:outputLabel value="#{billSearch.viewingBill.paymentMethod}" />
+
+           
+            <p:outputLabel value="Institution" ></p:outputLabel>
+            <p:outputLabel value="#{cc.attrs.bill.institution.name}" ></p:outputLabel>
+            
+             <p:outputLabel value="Department" ></p:outputLabel>
+            <p:outputLabel value="#{cc.attrs.bill.department.name}" ></p:outputLabel>
+
+            
+             <p:outputLabel value="User" ></p:outputLabel>
+             <p:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}" ></p:outputLabel>
+
+
+            
+            <p:separator/>
+            <p:separator/>
 
             <h:outputLabel value="Total" ></h:outputLabel>
             <h:outputLabel value="#{billSearch.viewingBill.total}" ></h:outputLabel>
