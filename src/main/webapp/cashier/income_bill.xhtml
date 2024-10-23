@@ -77,11 +77,30 @@
                             </div>
                             <div class="row">
                                 <h:panelGroup id="paymentDetails" layout="block" class="col-md-12" >
+
+
+                                    <h:panelGroup     
+                                        id="card"  
+                                        rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'Card'}" >
+
+                                        <p:outputLabel value="Bank" class="m-1"></p:outputLabel>
+                                        <p:selectOneMenu  value="#{financialTransactionController.currentPayment.bank}" style="width: 10em;">
+                                            <f:selectItem itemLabel="Select Bank"/>
+                                            <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
+                                            <p:ajax process="@this" ></p:ajax>
+                                        </p:selectOneMenu>
+                                        <p:outputLabel value="Card Last 4 Digits" class="ms-5 m-1"></p:outputLabel>
+                                        <p:inputText class="m-1" autocomplete="off"  value="#{financialTransactionController.currentPayment.creditCardRefNo}">
+                                            <p:ajax process="@this" ></p:ajax>
+                                        </p:inputText>
+                                    </h:panelGroup>
+
+
                                     <h:panelGroup
                                         id="cheque" 
                                         rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'Cheque'}" >
 
-                                        <p:outputLabel value="Cheque No" class="m-1"></p:outputLabel>
+                                        <p:outputLabel value="Bank" class="m-1"></p:outputLabel>
                                         <p:selectOneMenu  value="#{financialTransactionController.currentPayment.bank}" style="width: 10em;">
                                             <f:selectItem itemLabel="Select Bank"/>
                                             <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
@@ -95,20 +114,22 @@
                                         <p:calendar class="m-1" value="#{financialTransactionController.currentPayment.chequeDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" id="ChequeDate">                            
                                             <p:ajax process="@this" ></p:ajax>
                                         </p:calendar>
-
-                                    </h:panelGroup>
+                                    </h:panelGroup>                                  
 
 
                                     <h:panelGroup
-                                        class="d-flex"
-                                        layout="block" 
-                                        id="card"  
-                                        rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'Card'}" >
-                                       
+                                        id="slip" 
+                                        rendered="#{financialTransactionController.currentPayment.paymentMethod eq 'Slip'}" >
 
-
+                                        <p:outputLabel value="Bank" class="m-1"></p:outputLabel>
+                                        <p:selectOneMenu  value="#{financialTransactionController.currentPayment.bank}" style="width: 10em;">
+                                            <f:selectItem itemLabel="Select Bank"/>
+                                            <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
+                                            <p:ajax process="@this" ></p:ajax>
+                                        </p:selectOneMenu>               
                                     </h:panelGroup>
-
+                                    
+                                    
                                 </h:panelGroup>
 
                             </div>
@@ -150,12 +171,19 @@
                                 </p:column>
 
                                 <p:column headerText="Details"  >
+                                    <h:panelGroup rendered="#{bp.paymentMethod eq 'Card'}">
+                                        <h:outputLabel value="Bank Name : #{bp.bank.name}" ></h:outputLabel>
+                                        <h:outputLabel value="Cheque No : #{bp.creditCardRefNo}" ></h:outputLabel>
+                                    </h:panelGroup>
                                     <h:panelGroup rendered="#{bp.paymentMethod eq 'Cheque'}">
                                         <h:outputLabel value="Bank Name : #{bp.bank.name}" ></h:outputLabel>
                                         <h:outputLabel value="Cheque No : #{bp.chequeRefNo}" ></h:outputLabel>
                                         <h:outputLabel value="Cheque Date : #{bp.chequeDate}" >
                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"  ></f:convertDateTime>
                                         </h:outputLabel>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{bp.paymentMethod eq 'Slip'}">
+                                        <h:outputLabel value="Bank Name : #{bp.bank.name}" ></h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>
 
