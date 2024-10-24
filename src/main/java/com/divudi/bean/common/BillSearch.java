@@ -2584,6 +2584,7 @@ public class BillSearch implements Serializable {
 
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(cancellationProfessionalPaymentBill, getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
+        bill = cancellationProfessionalPaymentBill;
         printPreview = true;
 
     }
