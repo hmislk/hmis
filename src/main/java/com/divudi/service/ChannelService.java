@@ -8,6 +8,7 @@ import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.FeeType;
 import com.divudi.data.HistoryType;
+import com.divudi.data.InstitutionType;
 import com.divudi.data.PaymentMethod;
 import static com.divudi.data.PaymentMethod.Agent;
 import static com.divudi.data.PaymentMethod.Card;
@@ -27,6 +28,8 @@ import com.divudi.entity.BillItem;
 import com.divudi.entity.BillSession;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
+import com.divudi.entity.Consultant;
+import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.ItemFee;
 import com.divudi.entity.Patient;
@@ -34,17 +37,21 @@ import com.divudi.entity.Payment;
 import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.ServiceSession;
+import com.divudi.entity.Speciality;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.channel.SessionInstance;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.BillSessionFacade;
+import com.divudi.facade.ConsultantFacade;
+import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.SessionInstanceFacade;
+import com.divudi.facade.SpecialityFacade;
 import com.divudi.java.CommonFunctions;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -85,9 +92,47 @@ public class ChannelService {
     private PaymentFacade paymentFacade;
     @EJB
     private SessionInstanceFacade sessionInstanceFacade;
+    @EJB
+    private InstitutionFacade institutionFacade;
+    @EJB
+    private SpecialityFacade specialityFacade;
+    @EJB
+    private ConsultantFacade consultantFacade;
 
     @Inject
     private BookingControllerViewScope bookingControllerViewScope;
+
+    public PaymentFacade getPaymentFacade() {
+        return paymentFacade;
+    }
+
+    public void setPaymentFacade(PaymentFacade paymentFacade) {
+        this.paymentFacade = paymentFacade;
+    }
+
+    public SessionInstanceFacade getSessionInstanceFacade() {
+        return sessionInstanceFacade;
+    }
+
+    public void setSessionInstanceFacade(SessionInstanceFacade sessionInstanceFacade) {
+        this.sessionInstanceFacade = sessionInstanceFacade;
+    }
+
+    public InstitutionFacade getInstitutionFacade() {
+        return institutionFacade;
+    }
+
+    public void setInstitutionFacade(InstitutionFacade institutionFacade) {
+        this.institutionFacade = institutionFacade;
+    }
+
+    public BookingControllerViewScope getBookingControllerViewScope() {
+        return bookingControllerViewScope;
+    }
+
+    public void setBookingControllerViewScope(BookingControllerViewScope bookingControllerViewScope) {
+        this.bookingControllerViewScope = bookingControllerViewScope;
+    }
 
     public ServiceSessionBean getServiceSessionBean() {
         return serviceSessionBean;
@@ -554,25 +599,25 @@ public class ChannelService {
 
         return bs;
     }
-    
-    public List<Bill> viewBookingHistorybyDate(String fromDate, String toDate){
+
+    public List<Bill> viewBookingHistorybyDate(String fromDate, String toDate) {
         try {
             SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
             Date startDate = formatter.parse(fromDate);
             Date endDate = formatter.parse(toDate);
             Bill b = new Bill();
             b.getBillTypeAtomic();
-            
+
             BillTypeAtomic billType = BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT;
             String jpql = "Select b from Bill b "
                     + " where b.billDate between :fd And :td "
                     + " and b.billTypeAtomic = :bt";
-            
+
             Map params = new HashMap();
             params.put("fd", startDate);
             params.put("td", endDate);
             params.put("bt", billType);
-            
+
             return billFacade.findByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
         } catch (ParseException ex) {
             Logger.getLogger(ChannelService.class.getName()).log(Level.SEVERE, null, ex);
@@ -671,6 +716,58 @@ public class ChannelService {
 //        }
         getBillFacade().edit(cb);
         return cb;
+    }
+
+    public List<Institution> findHospitals() {
+        Map params = new HashMap();
+        String jpql = "select c from Institution c "
+                + " where c.retired=false "
+                + " and c.institutionType =:type";
+
+        params.put("type", InstitutionType.Company);
+
+        return institutionFacade.findByJpql(jpql, params);
+    }
+    
+    public List<SessionInstance> findSessionInstancesForDoctor(Institution institution, Long id){
+        String jpql = "Select i from SessionInstance i where i.retired = false"
+                + " and i.originatingSession.institution=:ins "
+                + " and i.cancelled = false and i.completed = false "
+                + " and i.originatingSession.staff.id = :id";
+        
+        Map params = new HashMap();
+        params.put("ins", institution);
+        params.put("id", id);
+        return sessionInstanceFacade.findByJpql(jpql, params);
+        
+    }
+    
+    public Institution findInstitutionFromId(Long id) {
+        String jpql = "Select i from Institution i where i.retired = false and i.id = :id";
+        Map params = new HashMap();
+        params.put("id", id);
+        return institutionFacade.findFirstByJpql(jpql, params);
+    }
+
+    public Speciality findSpecilityFromId(Long id) {
+        String jpql = "select s from Speciality s where s.retired=:ret and s.id=:id";
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("id", id);
+        return specialityFacade.findFirstByJpql(jpql, params);
+    }
+
+    public Consultant findConsultantFromName(String name) {
+        StringBuffer jpql = new StringBuffer("select c from Consultant c where c.retired=:ret");
+        Map m = new HashMap();
+        m.put("ret", false);
+        
+        if(name != null && !name.isEmpty()){
+            jpql.append(" and c.person.name like :name");
+            m.put("name", name);
+        }
+
+        return consultantFacade.findFirstByJpql(jpql.toString(), m);
     }
 
     public Bill settleCredit(BillSession preBillSession, String refNo) {
