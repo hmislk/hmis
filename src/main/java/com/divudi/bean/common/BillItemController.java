@@ -108,60 +108,60 @@ public class BillItemController implements Serializable {
         return billItemFacade;
     }
 
-    @FacesConverter("temBillItemConverter")
-    public static class TemBillItemConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                ////// // System.out.println("value = " + value);
-//                ////// // System.out.println("value.length() = " + value.length());
-                return null;
-            }
-            BillItemController controller = (BillItemController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "billItemController");
-            if (controller == null) {
-                ////// // System.out.println("null controller");
-                return null;
-            }
-            if (getKey(value) == null) {
-                ////// // System.out.println("value null");
-                return null;
-            }
-            return controller.findBillItemInListBySerial(getKey(value));
-        }
-
-        java.lang.Integer getKey(String value) {
-            java.lang.Integer key = null;
-            try {
-                key = Integer.valueOf(value);
-            } catch (NumberFormatException e) {
-            }
-
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof BillItem) {
-                BillItem o = (BillItem) object;
-                return getStringKey(o.getId());
-            } else {
-                Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "object {0} is of type {1}; expected type: {2}", new Object[]{object, object.getClass().getName(), BillItem.class.getName()});
-                return null;
-            }
-        }
-
-    }
+//    @FacesConverter("temBillItemConverter")
+//    public static class TemBillItemConverter implements Converter {
+//
+//        @Override
+//        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
+//            if (value == null || value.length() == 0) {
+//                ////// // System.out.println("value = " + value);
+////                ////// // System.out.println("value.length() = " + value.length());
+//                return null;
+//            }
+//            BillItemController controller = (BillItemController) facesContext.getApplication().getELResolver().
+//                    getValue(facesContext.getELContext(), null, "billItemController");
+//            if (controller == null) {
+//                ////// // System.out.println("null controller");
+//                return null;
+//            }
+//            if (getKey(value) == null) {
+//                ////// // System.out.println("value null");
+//                return null;
+//            }
+//            return controller.findBillItemInListBySerial(getKey(value));
+//        }
+//
+//        java.lang.Integer getKey(String value) {
+//            java.lang.Integer key = null;
+//            try {
+//                key = Integer.valueOf(value);
+//            } catch (NumberFormatException e) {
+//            }
+//
+//            return key;
+//        }
+//
+//        String getStringKey(java.lang.Long value) {
+//            StringBuilder sb = new StringBuilder();
+//            sb.append(value);
+//            return sb.toString();
+//        }
+//
+//        @Override
+//        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
+//            if (object == null) {
+//                return null;
+//            }
+//            if (object instanceof BillItem) {
+//                BillItem o = (BillItem) object;
+//                return getStringKey(o.getId());
+//            } else {
+//                Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "object {0} is of type {1}; expected type: {2}", new Object[]{object, object.getClass().getName(), BillItem.class.getName()});
+//                return null;
+//            }
+//        }
+//
+//    }
 
     @FacesConverter(forClass = BillItem.class)
     public static class BillItemControllerConverter implements Converter {
