@@ -33,43 +33,46 @@
                                         target="#{patientController.current}" >
                                     </f:setPropertyActionListener>
                                 </p:commandButton>
-                                <p:commandButton value="New OPD Bill" 
-                                                 class="ui-button-primary mx-1"
-                                                 icon="fa fa-plus"
-                                                 action="#{opdBillController.navigateToNewOpdBill()}"
-                                                 ajax="false">
+                                <p:commandButton 
+                                    value="New OPD Bill" 
+                                    class="ui-button-primary mx-1"
+                                    icon="fa fa-plus"
+                                    action="#{opdBillController.navigateToNewOpdBill()}"
+                                    ajax="false">
                                 </p:commandButton>
 
                                 <!-- Print Lookup Button -->
-                                <p:commandButton value="Patient Lookup" 
-                                                 class="ui-button-warning mx-1"
-                                                 icon="fa fa-search"
-                                                 action="#{opdBillController.navigateToSearchPatients()}"
-                                                 ajax="false">
+                                <p:commandButton 
+                                    value="Patient Lookup" 
+                                    class="ui-button-warning mx-1"
+                                    icon="fa fa-search"
+                                    action="#{opdBillController.navigateToSearchPatients()}"
+                                    ajax="false">
                                 </p:commandButton>
 
                                 <!-- Patient Profile Button -->
-                                <p:commandButton value="Patient Profile" 
-                                                 class="ui-button-secondary mx-1"
-                                                 icon="fa fa-user"
-                                                 action="#{patientController.navigateToOpdPatientProfile()}"
-                                                 ajax="false">
+                                <p:commandButton 
+                                    value="Patient Profile" 
+                                    class="ui-button-secondary mx-1"
+                                    icon="fa fa-user"
+                                    action="#{patientController.navigateToOpdPatientProfile()}"
+                                    ajax="false">
                                     <f:setPropertyActionListener 
                                         value="#{opdBillController.bills[0].patient}" 
                                         target="#{patientController.current}" />
                                 </p:commandButton>
 
-                                <p:commandButton value="New Opd Token" 
-                                                 class="ui-button-secondary mx-1"
-                                                 action="#{opdTokenController.navigateToCreateNewOpdToken()}"
-                                                 ajax="false">
+                                <p:commandButton 
+                                    value="New Opd Token" 
+                                    class="ui-button-secondary mx-1"
+                                    action="#{opdTokenController.navigateToCreateNewOpdToken()}"
+                                    ajax="false">
                                     <f:setPropertyActionListener 
                                         value="#{opdBillController.bills[0]}" 
                                         target="#{opdTokenController.bill}" />
                                 </p:commandButton>
 
                             </div>
-
 
                         </f:facet>
 
@@ -198,22 +201,32 @@
                                                       class="text-end">
                                                 <h:outputText value="#{b.netTotal}" ></h:outputText>
                                             </p:column>
-                                            <p:column width="12em" headerText="Actions" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
+                                            <p:column width="18em" headerText="Actions" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
                                                 <!-- To Bill Details Button -->
-                                                <p:commandButton ajax="false"
-                                                                 rendered="false"
-                                                                 title="View Bill"
-                                                                 class="ui-button-success m-1"
-                                                                 icon="fa fa-file-invoice"
-                                                                 action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                                                <p:commandButton 
+                                                    ajax="false"
+                                                    rendered="false"
+                                                    title="View Bill"
+                                                    class="ui-button-success m-1"
+                                                    icon="fa fa-file-invoice"
+                                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}">
                                                     <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}"/>
                                                 </p:commandButton>
-                                                <p:commandButton ajax="false"
-                                                                 title="Manage Bill"
-                                                                 class="ui-button-warning m-1"
-                                                                 icon="fa fa-file-invoice"
-                                                                 action="#{billSearch.navigateToManageBillByAtomicBillType()}">
+                                                <p:commandButton 
+                                                    ajax="false"
+                                                    title="Manage Bill"
+                                                    class="ui-button-warning m-1"
+                                                    icon="fa fa-file-invoice"
+                                                    action="#{billSearch.navigateToManageBillByAtomicBillType()}">
                                                     <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}"/>
+                                                </p:commandButton>
+
+                                                <p:commandButton 
+                                                    value="To Sample Management" 
+                                                    icon="fas fa-flask"
+                                                    class="ui-button-raised mx-1"
+                                                    action="#{patientInvestigationController.navigateToSampleManagementFromOPDBatchBillView(b)}"
+                                                    ajax="false">
                                                 </p:commandButton>
 
                                                 <!-- To Cancel Button -->
@@ -227,7 +240,6 @@
                                                     icon="fa fa-times">
                                                     <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}"/>
                                                 </p:commandButton>
-
 
                                             </p:column>
                                         </p:dataTable>
@@ -247,18 +259,20 @@
                                                         target="#{billController.batchBill}">
                                                     </f:setPropertyActionListener>
                                                 </p:commandButton>
-                                                <p:commandButton ajax="false"
-                                                                 title="View Batch Bill"
-                                                                 class="ui-button-success m-1"
-                                                                 icon="fa fa-file-invoice"
-                                                                 action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                                                <p:commandButton 
+                                                    ajax="false"
+                                                    title="View Batch Bill"
+                                                    class="ui-button-success m-1"
+                                                    icon="fa fa-file-invoice"
+                                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}">
                                                     <f:setPropertyActionListener value="#{opdBillController.batchBill}" target="#{billSearch.bill}"/>
                                                 </p:commandButton>
-                                                <p:commandButton ajax="false"
-                                                                 title="Manage Batch Bill"
-                                                                 class="ui-button-warning m-1"
-                                                                 icon="fa fa-file-invoice"
-                                                                 action="#{billSearch.navigateToManageBillByAtomicBillType()}">
+                                                <p:commandButton 
+                                                    ajax="false"
+                                                    title="Manage Batch Bill"
+                                                    class="ui-button-warning m-1"
+                                                    icon="fa fa-file-invoice"
+                                                    action="#{billSearch.navigateToManageBillByAtomicBillType()}">
                                                     <f:setPropertyActionListener value="#{opdBillController.batchBill}" target="#{billSearch.bill}"/>
                                                 </p:commandButton>
                                             </f:facet>
@@ -301,20 +315,8 @@
                                     </p:tab>
                                 </p:tabView>
 
-
-
-
-
-
-
-
-
                             </div>
                         </div>
-
-
-
-
 
                     </p:panel>
                 </h:form>
