@@ -1,5 +1,6 @@
 package com.divudi.entity;
 
+import com.google.gson.Gson;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
@@ -8,6 +9,12 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.Column;
+import javax.persistence.Transient;
+import com.google.gson.reflect.TypeToken;
+import java.lang.reflect.Type;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  *
@@ -41,6 +48,9 @@ public class AuditEvent implements Serializable {
     private String ipAddress;
     
     private String entityType;
+    
+    @Transient
+    private String difference;
 
     public Long getId() {
         return id;
@@ -73,6 +83,51 @@ public class AuditEvent implements Serializable {
     @Override
     public String toString() {
         return "com.divudi.entity.AuditEvent[ id=" + id + " ]";
+    }
+    
+    public void calculateDifference() {
+        if (beforeJson == null || afterJson == null) {
+            this.difference = "";
+            return;
+        }
+        try {
+            Gson gson = new Gson();
+            Type type = new TypeToken<Map<String, Object>>() {}.getType();
+            Map<String, Object> beforeMap = gson.fromJson(beforeJson, type);
+            Map<String, Object> afterMap = gson.fromJson(afterJson, type);
+            this.difference = formatDifference(getDifference(beforeMap, afterMap));
+        } catch (Exception e) {
+            e.printStackTrace();
+            this.difference = "";
+        }
+    }
+    
+    private Map<String, String> getDifference(Map<String, Object> before, Map<String, Object> after) {
+        Map<String, String> diff = new HashMap<>();
+        Set<String> allKeys = before.keySet();
+        allKeys.addAll(after.keySet());
+        for (String key : allKeys) {
+            Object beforeValue = before.get(key);
+            Object afterValue = after.get(key);
+            if ((beforeValue == null && afterValue != null) ||
+                (beforeValue != null && !beforeValue.equals(afterValue))) {
+                diff.put(key, "Before: " + beforeValue + ", After: " + afterValue);
+            }
+        }
+        return diff;
+    }
+
+    private String formatDifference(Map<String, String> diff) {
+        StringBuilder sb = new StringBuilder();
+        diff.forEach((key, value) -> sb.append(key).append(": ").append(value).append("\n"));
+        return sb.toString();
+    }
+
+    public String getDifference() {
+        if (difference == null) {
+            calculateDifference();
+        }
+        return difference;
     }
 
     public Date getEventDataTime() {
