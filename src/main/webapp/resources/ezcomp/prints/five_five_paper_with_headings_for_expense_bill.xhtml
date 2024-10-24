@@ -9,6 +9,7 @@
 
     <cc:interface>
         <cc:attribute name="bill" type="com.divudi.entity.Bill" />
+        <cc:attribute name="payments" />
         <cc:attribute name="duplicate" type="java.lang.Boolean"/>
     </cc:interface>
 
@@ -97,46 +98,11 @@
 
             <div class="itemHeadingsFiveFive">
                 <table width="100%">
-                    <ui:repeat value="#{cc.attrs.bill.payments}" var="bip">
+                    <ui:repeat value="#{cc.attrs.payments}" var="bip">
                         <tr>
                             <td style="overflow: visible;">
                                 <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.paymentMethod}" style="text-transform: capitalize!important;"></h:outputLabel>
-                            </td>
-                            <td>
-                                <h:panelGroup rendered="#{bip.paymentMethod eq 'Cash'}">
-                                    <ui:repeat value="#{bip.humanReadableDenominations}" var="denomination">
-                                        <h:outputText value="#{denomination}"/>
-                                        <br/>
-                                    </ui:repeat>
-                                </h:panelGroup>
-                                <h:panelGroup rendered="#{bip.paymentMethod eq 'Cheque'}">
-                                    <h:outputText value="#{bip.bank.name} " />
-                                    <h:outputText value="#{bip.chequeRefNo} " />
-                                    <h:outputText value="#{bip.chequeDate}">
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"></f:convertDateTime>
-                                    </h:outputText>
-                                </h:panelGroup>
-                                <h:panelGroup rendered="#{bip.paymentMethod eq 'Card'}">
-                                    <h:outputText value="#{bip.paidValue} " />
-                                    <h:outputText value="#{bip.creditCardRefNo} " />
-                                    <h:outputText value="#{bip.institution.name} " />
-                                    <h:outputText value="#{bip.comments}" />
-                                </h:panelGroup>
-                                <h:panelGroup rendered="#{bip.paymentMethod eq 'ewallet'}">
-                                    <h:outputText value="#{bip.paidValue} " />
-                                    <h:outputText value="#{bip.chequeRefNo} " />
-                                    <h:outputText value="#{bip.institution.name} " />
-                                    <h:outputText value="#{bip.comments}" />
-                                </h:panelGroup>
-                                <h:panelGroup rendered="#{bip.paymentMethod eq 'Slip'}">
-                                    <h:outputText value="#{bip.paidValue} " />
-                                    <h:outputText value="#{bip.bank.name} " />
-                                    <h:outputText value="#{bip.chequeDate}">
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"></f:convertDateTime>
-                                    </h:outputText>
-                                    <h:outputText value=" #{bip.comments}" />
-                                </h:panelGroup>
-                            </td>
+                            </td>                           
                             <td style="text-align: right;">
                                 <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.comments}">
                                 </h:outputLabel>
