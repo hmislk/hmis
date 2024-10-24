@@ -18,16 +18,16 @@
                         </f:facet>
 
                         <p:outputLabel 
-                            value="Agency" for="agency" />
-                        <p:selectOneMenu 
-                            id="agency" 
-                            value="#{collectingCentreController.agentHistory.agency}">
-                            <f:selectItems 
-                                value="#{collectingCentreController.items}" 
-                                var="agency"
-                                itemLabel="#{agency.name}" 
-                                itemValue="#{agency}" />
-                        </p:selectOneMenu>
+                            value="Agency Name" />
+                        <p:outputLabel 
+                            value="#{collectingCentreController.agentHistory.agency.name}">
+                        </p:outputLabel>
+
+                        <p:outputLabel 
+                            value="Agency Code"  />
+                        <p:outputLabel 
+                            value="#{collectingCentreController.agentHistory.agency.code}">
+                        </p:outputLabel>
 
                         <p:outputLabel value="Balance Before" ></p:outputLabel>
                         <p:inputText value="#{collectingCentreController.agentHistory.balanceBeforeTransaction}" ></p:inputText>

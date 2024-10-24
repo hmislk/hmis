@@ -22,6 +22,7 @@ import com.divudi.facade.AgentHistoryFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.InstitutionFacade;
 import com.divudi.service.AgentHistoryService;
+import com.divudi.service.AuditService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -33,6 +34,7 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import org.apache.commons.lang3.SerializationUtils;
 
 /**
  *
@@ -66,6 +68,8 @@ public class CollectingCentreController implements Serializable {
     BillFacade billFacade;
     @EJB
     AgentHistoryService agentHistoryService;
+    @EJB
+    AuditService auditService;
 
     private int ccManagementIndex = 0;
 
@@ -106,25 +110,43 @@ public class CollectingCentreController implements Serializable {
     }
 
     public String navigateToEditCollectingCentreBalanceEntry(AgentHistory agentHx) {
-        if(agentHx==null){
+        if (agentHx == null) {
             JsfUtil.addErrorMessage("No history selected");
             return "";
         }
-        this.agentHistory=agentHx;
-        auditDataBefore=agentHx;
-        auditDataAfter=null;
-        return "/collecting_centre/dev/?faces-redirect=true";
+        this.agentHistory = agentHx;
+        // Clone the object to preserve the original state
+        auditDataBefore = SerializationUtils.clone(agentHx);
+        auditDataAfter = null;
+        return "/collecting_centre/dev/edit_history_record?faces-redirect=true";
     }
 
-    public void saveAgentHistory(){
-        if(agentHistory==null){
+    public String saveAgentHistory() {
+        if (agentHistory == null) {
             JsfUtil.addErrorMessage("Nothing selected");
-            return;
+            return "";
         }
+
         agentHistoryService.save(agentHistory, sessionController.getLoggedUser());
+
+        // Capture the latest state after saving
+        auditDataAfter = SerializationUtils.clone(agentHistory);
+
+        auditService.logAudit(
+                auditDataBefore,
+                auditDataAfter,
+                sessionController.getLoggedUser(),
+                AgentHistory.class.getSimpleName(),
+                "Update Agent History"
+        );
+
+        // Clear the audit data after logging
+        auditDataAfter = null;
+        auditDataBefore = null;
+
+        return "reports/collectionCenterReports/collection_center_statement_report?faces-redirect=true";
     }
-    
-    
+
     public void settlePaymentBillToCollectingCentrePaymenMade() {
         if (bill == null) {
             JsfUtil.addErrorMessage("Error");
@@ -535,6 +557,4 @@ public class CollectingCentreController implements Serializable {
         this.auditDataAfter = auditDataAfter;
     }
 
-    
-    
 }
