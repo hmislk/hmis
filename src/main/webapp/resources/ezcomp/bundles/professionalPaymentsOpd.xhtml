@@ -129,7 +129,7 @@
                 </p:column>
 
                 <p:column   rendered="#{cc.attrs.bundle.hasCreditTransaction}" >
-                    <h:outputText value="#{summary.creditValue}" >
+                    <h:outputText value="#{row.creditValue}" >
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputText>
                     <f:facet name="footer">
@@ -141,7 +141,7 @@
 
                 <!-- Continuing from Credit -->
                 <p:column  class="text-end"  rendered="#{cc.attrs.bundle.hasStaffWelfareTransaction}" >
-                    <h:outputText value="#{summary.staffWelfareValue}" >
+                    <h:outputText value="#{row.staffWelfareValue}" >
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputText>
                     <f:facet name="footer">
@@ -152,7 +152,7 @@
                 </p:column>
 
                 <p:column  class="text-end"  rendered="#{cc.attrs.bundle.hasVoucherTransaction}" >
-                    <h:outputText value="#{summary.voucherValue}" >
+                    <h:outputText value="#{row.voucherValue}" >
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputText>
                     <f:facet name="footer">
@@ -163,7 +163,7 @@
                 </p:column>
 
                 <p:column  class="text-end"  headerText="IOU"   rendered="#{cc.attrs.bundle.hasIouTransaction}" >
-                    <h:outputText value="#{summary.iouValue}" >
+                    <h:outputText value="#{row.iouValue}" >
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputText>
                     <f:facet name="footer">
@@ -173,8 +173,8 @@
                     </f:facet>
                 </p:column>
 
-                <p:column  class="text-end"  headerText="Agent"  filterBy="#{summary.agentValue}"  rendered="#{cc.attrs.bundle.hasAgentTransaction}" >
-                    <h:outputText value="#{summary.agentValue}" >
+                <p:column  class="text-end"  headerText="Agent"  filterBy="#{row.agentValue}"  rendered="#{cc.attrs.bundle.hasAgentTransaction}" >
+                    <h:outputText value="#{row.agentValue}" >
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputText>
                     <f:facet name="footer">
@@ -185,7 +185,7 @@
                 </p:column>
 
                 <p:column  class="text-end"  headerText="Cheque" rendered="#{cc.attrs.bundle.hasChequeTransaction}" >
-                    <h:outputText value="#{summary.chequeValue}" >
+                    <h:outputText value="#{row.chequeValue}" >
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputText>
                     <f:facet name="footer">
@@ -196,7 +196,7 @@
                 </p:column>
 
                 <p:column  class="text-end"  headerText="Slip"   rendered="#{cc.attrs.bundle.hasSlipTransaction}" >
-                    <h:outputText value="#{summary.slipValue}" >
+                    <h:outputText value="#{row.slipValue}" >
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputText>
                     <f:facet name="footer">
@@ -207,7 +207,7 @@
                 </p:column>
 
                 <p:column  class="text-end"  headerText="eWallet"  rendered="#{cc.attrs.bundle.hasEWalletTransaction}" >
-                    <h:outputText value="#{summary.ewalletValue}" >
+                    <h:outputText value="#{row.ewalletValue}" >
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputText>
                     <f:facet name="footer">
@@ -218,7 +218,7 @@
                 </p:column>
 
                 <p:column  class="text-end"  headerText="Patient Deposit"  rendered="#{cc.attrs.bundle.hasPatientDepositTransaction}" >
-                    <h:outputText value="#{summary.patientDepositValue}" >
+                    <h:outputText value="#{row.patientDepositValue}" >
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputText>
                     <f:facet name="footer">
@@ -229,7 +229,7 @@
                 </p:column>
 
                 <p:column  class="text-end"  headerText="Patient Points"  rendered="#{cc.attrs.bundle.hasPatientPointsTransaction}" >
-                    <h:outputText value="#{summary.patientPointsValue}" >
+                    <h:outputText value="#{row.patientPointsValue}" >
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputText>
                     <f:facet name="footer">
@@ -240,7 +240,7 @@
                 </p:column>
 
                 <p:column  class="text-end"  headerText="Online Settlement" rendered="#{cc.attrs.bundle.hasOnCallTransaction}" >
-                    <h:outputText value="#{summary.onlineSettlementValue}" >
+                    <h:outputText value="#{row.onlineSettlementValue}" >
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputText>
                     <f:facet name="footer">

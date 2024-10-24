@@ -18,6 +18,7 @@ import com.divudi.data.DepartmentListMethod;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.DiscountType;
 import com.divudi.data.FeeType;
+import com.divudi.data.HistoryType;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.InvestigationItemValueType;
 import com.divudi.data.InvestigationReportType;
@@ -229,6 +230,10 @@ public class EnumController implements Serializable {
 
     public List<Priority> getPriorities() {
         return Arrays.asList(Priority.values());
+    }
+    
+    public List<HistoryType> getHistoryTypes() {
+        return Arrays.asList(HistoryType.values());
     }
 
     public Dashboard[] getDashboardTypes() {
