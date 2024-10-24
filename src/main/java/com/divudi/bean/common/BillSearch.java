@@ -2173,6 +2173,9 @@ public class BillSearch implements Serializable {
             cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), originalBill.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.PROCAN));
             cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), originalBill.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.PROCAN));
         }
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN);
+        cb.setDeptId(deptId);
+        cb.setInsId(deptId);
         cb.setBillTypeAtomic(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN);
         cb.setBalance(0.0);
         cb.setPaymentMethod(paymentMethod);
@@ -2314,9 +2317,11 @@ public class BillSearch implements Serializable {
             return;
         }
 
-        if (financialTransactionController.getLoggedUserDrawer().getCashInHandValue() < getBill().getBillTotal()) {
-            JsfUtil.addErrorMessage("Not enough cash in the Drawer");
-            return;
+        if (paymentMethod != PaymentMethod.PatientDeposit) {
+            if (financialTransactionController.getLoggedUserDrawer().getCashInHandValue() < getBill().getBillTotal()) {
+                JsfUtil.addErrorMessage("Not enough cash in the Drawer");
+                return;
+            }
         }
 
         if (paymentMethod == PaymentMethod.PatientDeposit) {
@@ -2579,6 +2584,7 @@ public class BillSearch implements Serializable {
 
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(cancellationProfessionalPaymentBill, getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
+        bill = cancellationProfessionalPaymentBill;
         printPreview = true;
 
     }
@@ -3150,7 +3156,7 @@ public class BillSearch implements Serializable {
             return "";
         }
         findRefuendedBills(viewingBill);
-        return "/opd/view/opd_bill?faces-redirect=true;";
+        return "/cashier/income_bill_print?faces-redirect=true;";
     }
 
     public String navigateToManageIncomeBill() {
@@ -3160,7 +3166,44 @@ public class BillSearch implements Serializable {
         }
         financialTransactionController.setCurrentBill(viewingBill);
         financialTransactionController.setCurrentBillPayments(viewingBillPayments);
-        return "/cashier/income_bill_print?faces-redirect=true;";
+        return "/cashier/income_bill_reprint?faces-redirect=true;";
+    }
+    
+    public String navigateToCancelIncomeBill() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Nothing to cancel");
+            return "";
+        }
+        printPreview = false;
+        return "/cashier/income_bill_cancel?faces-redirect=true;";
+    }
+    
+     public String navigateToViewExpenseBill() {
+        if (viewingBill == null) {
+            JsfUtil.addErrorMessage("No Bill to Dsiplay");
+            return "";
+        }
+        findRefuendedBills(viewingBill);
+        return "/cashier/expense_bill_print?faces-redirect=true;";
+    }
+
+    public String navigateToManageExpenseBill() {
+        if (viewingBill == null) {
+            JsfUtil.addErrorMessage("No Bill to Dsiplay");
+            return "";
+        }
+        financialTransactionController.setCurrentBill(viewingBill);
+        financialTransactionController.setCurrentBillPayments(viewingBillPayments);
+        return "/cashier/expense_bill_reprint?faces-redirect=true;";
+    }
+    
+    public String navigateToCancelExpenseBill() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Nothing to cancel");
+            return "";
+        }
+        printPreview = false;
+        return "/cashier/expense_bill_cancel?faces-redirect=true;";
     }
 
     public String navigateToAdminOpdBill() {
@@ -3170,7 +3213,7 @@ public class BillSearch implements Serializable {
         }
         return "/opd/view/opd_bill_admin?faces-redirect=true;";
     }
-    
+
     public String navigateToAdminCcDepositBill() {
         if (viewingBill == null) {
             JsfUtil.addErrorMessage("No Bill to Dsiplay");
@@ -3178,7 +3221,7 @@ public class BillSearch implements Serializable {
         }
         return "/opd/view/cc_deposit_bill_admin?faces-redirect=true;";
     }
-    
+
     public String navigateToAdminBill() {
         if (viewingBill == null) {
             JsfUtil.addErrorMessage("No Bill to Dsiplay");
@@ -3509,6 +3552,8 @@ public class BillSearch implements Serializable {
                 return pharmacyBillSearch.navigateToViewPharmacyGrn();
             case SUPPLEMENTARY_INCOME:
                 return navigateToViewIncomeBill();
+            case OPERATIONAL_EXPENSES:
+                return navigateToViewExpenseBill();
 
         }
 
@@ -3616,6 +3661,8 @@ public class BillSearch implements Serializable {
                 return navigateToViewChannelingProfessionalPaymentBill();
             case SUPPLEMENTARY_INCOME:
                 return navigateToManageIncomeBill();
+            case OPERATIONAL_EXPENSES:
+                return navigateToManageExpenseBill();
             case FUND_SHIFT_SHORTAGE_BILL:
                 return navigateToViewCashierShiftShortageBill(bill);
 

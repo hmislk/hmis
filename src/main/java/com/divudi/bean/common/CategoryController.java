@@ -68,6 +68,10 @@ public class CategoryController implements Serializable {
         fillFeeItemListTypes();
         return "/admin/pricing/fee_list_types?faces-redirect=true";
     }
+    
+    public String navigateToManageCategories() {
+        return "/admin/items/category.xhtml?faces-redirect=true";
+    }
 
     private void fillFeeItemListTypes() {
         String jpql = "Select c "
