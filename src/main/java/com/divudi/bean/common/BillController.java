@@ -1768,12 +1768,13 @@ public class BillController implements Serializable {
             patientDepositController.updateBalance(cancellationBatchBill, pd);
         }
 
-        createPaymentForOpdBatchBillCancellation(cancellationBatchBill, batchBill.getPaymentMethod());
+        createPaymentForOpdBatchBillCancellation(cancellationBatchBill, paymentMethod);
 
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cancellationBatchBill, getSessionController().getLoggedUser());
         opdBillController.setBills(bills);
         opdBillController.setBatchBill(batchBill);
         getSessionController().setLoggedUser(wb);
+
         printPreview = true;
         return "/opd/opd_batch_bill_print?faces-redirect=true";
     }
