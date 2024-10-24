@@ -1002,9 +1002,9 @@ public class SearchController implements Serializable {
         return "/reports/cashier_reports/all_cashier_summary?faces-redirect=true";
     }
 
-    public String navigatToDepartmentWiseIncomeReport() {
+    public String navigatToDepartmentRevenueReport() {
         bundle = new ReportTemplateRowBundle();
-        return "/reports/cashier_reports/department_wise_income_report?faces-redirect=true";
+        return "/reports/financialReports/department_revenue_report?faces-redirect=true";
     }
 
     public String navigatToShiftStartAndEnds() {
@@ -15644,10 +15644,10 @@ public class SearchController implements Serializable {
         bundle.calculateTotals();
     }
 
-    public void generateDepartmentWiseIncomeReport() {
+    public void generateDepartmentRevenueReport() {
         Map<String, Object> parameters = new HashMap<>();
         String jpql = "SELECT new com.divudi.data.ReportTemplateRow("
-                + "bill.department, bill.billTypeAtomic, "
+                + "bill.toDepartment, bill.billTypeAtomic, "
                 + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Cash THEN p.paidValue ELSE 0 END), "
                 + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.Card THEN p.paidValue ELSE 0 END), "
                 + "SUM(CASE WHEN p.paymentMethod = com.divudi.data.PaymentMethod.MultiplePaymentMethods THEN p.paidValue ELSE 0 END), "
@@ -15682,15 +15682,31 @@ public class SearchController implements Serializable {
             jpql += "AND bill.department.site = :site ";
             parameters.put("site", site);
         }
+        
+        if (toInstitution != null) {
+            jpql += "AND bill.toDepartment.institution = :ins ";
+            parameters.put("ins", institution);
+        }
+        if (toDepartment != null) {
+            jpql += "AND bill.toDepartment = :dep ";
+            parameters.put("dep", department);
+        }
+        if (toSite != null) {
+            jpql += "AND bill.toDepartment.site = :site ";
+            parameters.put("site", site);
+        }
 
         jpql += "AND p.createdAt BETWEEN :fd AND :td ";
         parameters.put("fd", fromDate);
         parameters.put("td", toDate);
 
-        jpql += "GROUP BY bill.department, bill.billTypeAtomic";
-
+        jpql += "GROUP BY bill.toDepartment, bill.billTypeAtomic";
+        System.out.println("jpql = " + jpql);
+        System.out.println("parameters = " + parameters);
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
+        System.out.println("rs = " + rs);
+        
         bundle = new ReportTemplateRowBundle();
         bundle.setReportTemplateRows(rs);
         bundle.calculateTotals();
