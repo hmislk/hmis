@@ -13,6 +13,7 @@ import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.CollectingCentrePaymentMethod;
 import com.divudi.data.HistoryType;
 import com.divudi.data.InstitutionType;
+import com.divudi.data.dto.AgentHistoryDTO;
 import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BilledBill;
@@ -116,7 +117,8 @@ public class CollectingCentreController implements Serializable {
         }
         this.agentHistory = agentHx;
         // Clone the object to preserve the original state
-        auditDataBefore = SerializationUtils.clone(agentHx);
+        AgentHistoryDTO ahdto = new AgentHistoryDTO(agentHistory);
+        auditDataBefore = ahdto;
         auditDataAfter = null;
         return "/collecting_centre/dev/edit_history_record?faces-redirect=true";
     }
@@ -129,14 +131,15 @@ public class CollectingCentreController implements Serializable {
 
         agentHistoryService.save(agentHistory, sessionController.getLoggedUser());
 
+        AgentHistoryDTO ahdto = new AgentHistoryDTO(agentHistory);
         // Capture the latest state after saving
-        auditDataAfter = SerializationUtils.clone(agentHistory);
+        auditDataAfter = ahdto;
 
         auditService.logAudit(
                 auditDataBefore,
                 auditDataAfter,
                 sessionController.getLoggedUser(),
-                AgentHistory.class.getSimpleName(),
+                AgentHistoryDTO.class.getSimpleName(),
                 "Update Agent History"
         );
 
