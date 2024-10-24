@@ -49,9 +49,9 @@ public class AuditEvent implements Serializable {
     private Long eventDuration;
     private String eventStatus;
     private String ipAddress;
-    
+
     private String entityType;
-    
+
     @Transient
     private String difference;
 
@@ -87,16 +87,29 @@ public class AuditEvent implements Serializable {
     public String toString() {
         return "com.divudi.entity.AuditEvent[ id=" + id + " ]";
     }
-       public void calculateDifference() {
+
+    public void calculateDifference() {
         if (beforeJson == null || afterJson == null) {
-            this.difference = "No differences: One or both JSON values are null.";
+            this.difference = "One or both JSON values are null.";
+            System.out.println("Before JSON: " + beforeJson);
+            System.out.println("After JSON: " + afterJson);
             return;
         }
         try {
             Gson gson = new Gson();
-            Type type = new TypeToken<Map<String, Object>>() {}.getType();
+            Type type = new TypeToken<Map<String, Object>>() {
+            }.getType();
+
             Map<String, Object> beforeMap = gson.fromJson(beforeJson, type);
             Map<String, Object> afterMap = gson.fromJson(afterJson, type);
+
+            // Ensure JSON was parsed successfully
+            if (beforeMap == null || afterMap == null) {
+                this.difference = "Failed to parse JSON.";
+                System.out.println("Failed to parse JSON.");
+                return;
+            }
+
             this.difference = formatDifference(getDifference(beforeMap, afterMap));
         } catch (Exception e) {
             e.printStackTrace();
@@ -112,8 +125,8 @@ public class AuditEvent implements Serializable {
         for (String key : allKeys) {
             Object beforeValue = before.get(key);
             Object afterValue = after.get(key);
-            if ((beforeValue == null && afterValue != null) ||
-                (beforeValue != null && !beforeValue.equals(afterValue))) {
+            if ((beforeValue == null && afterValue != null)
+                    || (beforeValue != null && !beforeValue.equals(afterValue))) {
                 diff.put(key, "Before: " + beforeValue + ", After: " + afterValue);
             }
         }
@@ -135,7 +148,6 @@ public class AuditEvent implements Serializable {
         }
         return difference;
     }
-    
 
     public Date getEventDataTime() {
         return eventDataTime;
@@ -225,8 +237,6 @@ public class AuditEvent implements Serializable {
         this.ipAddress = ipAddress;
     }
 
-  
-
     public Date getEventEndTime() {
         return eventEndTime;
     }
@@ -250,7 +260,5 @@ public class AuditEvent implements Serializable {
     public void setEntityType(String entityType) {
         this.entityType = entityType;
     }
-    
-    
 
 }
