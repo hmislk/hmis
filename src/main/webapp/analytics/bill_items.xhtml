@@ -93,7 +93,7 @@
                             <p:dataTable rowIndexVar="i" id="tblBillItems" 
                                          value="#{searchController.billItems}" 
                                          scrollable="true"
-                                         var="billItem"
+                                         var="mbi"
                                          rows="10"
                                          paginator="true"
                                          paginatorPosition="top"
@@ -101,10 +101,10 @@
                                          rowsPerPageTemplate="5,10,15"
                                          >
                                 <p:column >
-                                    <p:outputLabel value="#{billItem.id}" ></p:outputLabel>
+                                    <p:outputLabel value="#{mbi.bill}" ></p:outputLabel>
                                 </p:column>
                                 <p:column >
-                                    <p:outputLabel value="#{billItem.bill.deptId}" ></p:outputLabel>
+                                    <p:outputLabel value="#{mbi}" ></p:outputLabel>
                                 </p:column>
 
                             </p:dataTable>
