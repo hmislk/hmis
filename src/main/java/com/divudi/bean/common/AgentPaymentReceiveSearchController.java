@@ -469,6 +469,7 @@ public class AgentPaymentReceiveSearchController implements Serializable {
 
     public void collectingCenterCreditNoteCancelBill(Bill originalBill) {
         cancelBill(BillType.CollectingCentreCreditNoteBill, BillNumberSuffix.CCCNCAN, HistoryType.CollectingCentreCreditNoteCancel, BillTypeAtomic.CC_CREDIT_NOTE_CANCELLATION,originalBill);
+        JsfUtil.addSuccessMessage("Cancelled Successfully");
     }
 
     public void collectingCenterDebitNoteCancelBill(Bill originalBill) {

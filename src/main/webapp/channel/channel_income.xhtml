@@ -113,21 +113,8 @@
                                             itemValue="#{staff}" />
                                     </p:selectOneMenu>
                                     
-
-                                    <h:panelGroup layout="block" styleClass="form-group">
-                                        <h:outputText value="&#xf0f6;" styleClass="fa mr-2" />
-                                        <h:outputLabel value="Item" class="mx-3"/>
-                                    </h:panelGroup>
-                                    <p:autoComplete value="#{searchController.item}"
-                                                    class="w-100"
-                                                    inputStyleClass="w-100"
-                                                    completeMethod="#{itemController.completeAllServicesAndInvestigations}" 
-                                                    var="item"
-                                                    itemLabel="#{item.name}"
-                                                    itemValue="#{item}">
-                                    </p:autoComplete>
                                     
-                                    <p:spacer width="50" ></p:spacer>
+
                                     
                                     <h:panelGroup layout="block" styleClass="form-group">
                                         <h:outputText styleClass="fas fa-user mr-2" />
