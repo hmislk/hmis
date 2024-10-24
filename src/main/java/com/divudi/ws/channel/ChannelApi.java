@@ -174,7 +174,7 @@ public class ChannelApi {
         JSONObject requestJson = new JSONObject(requestBody);
         String type = requestJson.getString("type");
         String bookingChannel = requestJson.getString("bookingChannel");
-        String key = requestContext.getHeader("Finance");
+        String key = requestContext.getHeader("Token");
         JSONObject response = new JSONObject();
         if (!isValidKey(key)) {
             response = errorMessageNotValidKey();
@@ -338,7 +338,7 @@ public class ChannelApi {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDoctorList(@Context HttpServletRequest requestContext, Map<String, String> requestBody) {
 
-        String key = requestContext.getHeader("Finance");
+        String key = requestContext.getHeader("Token");
         if (!isValidKey(key)) {
             JSONObject responseError = new JSONObject();
             responseError = errorMessageNotValidKey();
@@ -1375,7 +1375,7 @@ public class ChannelApi {
 
         Bill bill = billList.get(0);
 
-        if (bill.isCancelled()) {
+        if (bill.getBilledBill().isCancelled()) {
             JSONObject response = commonFunctionToErrorResponse("Bill for ref No already Cancelled");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }

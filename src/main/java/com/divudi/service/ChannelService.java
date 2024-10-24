@@ -763,10 +763,10 @@ public class ChannelService {
         m.put("ret", false);
         
         if(name != null && !name.isEmpty()){
-            jpql.append(" and and c.person.name like :name");
+            jpql.append(" and c.person.name like :name");
             m.put("name", name);
         }
-        
+
         return consultantFacade.findFirstByJpql(jpql.toString(), m);
     }
 
