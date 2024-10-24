@@ -15,6 +15,7 @@ import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import javax.persistence.Temporal;
 
 /**
  *
@@ -27,7 +28,9 @@ public class AuditEvent implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date eventDataTime;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date eventEndTime;
     private Long webUserId;
     @Column(columnDefinition = "CHAR(36)")
@@ -84,10 +87,9 @@ public class AuditEvent implements Serializable {
     public String toString() {
         return "com.divudi.entity.AuditEvent[ id=" + id + " ]";
     }
-    
-    public void calculateDifference() {
+       public void calculateDifference() {
         if (beforeJson == null || afterJson == null) {
-            this.difference = "";
+            this.difference = "No differences: One or both JSON values are null.";
             return;
         }
         try {
@@ -98,14 +100,15 @@ public class AuditEvent implements Serializable {
             this.difference = formatDifference(getDifference(beforeMap, afterMap));
         } catch (Exception e) {
             e.printStackTrace();
-            this.difference = "";
+            this.difference = "Error calculating difference: " + e.getMessage();
         }
     }
-    
+
     private Map<String, String> getDifference(Map<String, Object> before, Map<String, Object> after) {
         Map<String, String> diff = new HashMap<>();
         Set<String> allKeys = before.keySet();
         allKeys.addAll(after.keySet());
+
         for (String key : allKeys) {
             Object beforeValue = before.get(key);
             Object afterValue = after.get(key);
@@ -118,6 +121,9 @@ public class AuditEvent implements Serializable {
     }
 
     private String formatDifference(Map<String, String> diff) {
+        if (diff.isEmpty()) {
+            return "No differences found.";
+        }
         StringBuilder sb = new StringBuilder();
         diff.forEach((key, value) -> sb.append(key).append(": ").append(value).append("\n"));
         return sb.toString();
@@ -129,6 +135,7 @@ public class AuditEvent implements Serializable {
         }
         return difference;
     }
+    
 
     public Date getEventDataTime() {
         return eventDataTime;
