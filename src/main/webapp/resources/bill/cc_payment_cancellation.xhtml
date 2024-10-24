@@ -9,7 +9,7 @@
     <cc:interface>
         <cc:attribute name="bill" />
         <cc:attribute name="billController" />
-        <cc:attribute name="dup" />
+        <cc:attribute name="dup" default="false"/>
     </cc:interface>
 
     <cc:implementation>
@@ -81,8 +81,9 @@
 
             <div class="receipt-header">
                 <h:outputLabel value="Collecting Centre Payment Cancellation" style="font-size: 1.2em"/>
+                <h:outputLabel rendered="#{cc.attrs.dup}" value="** Duplicate **" style="font-size: 0.8em"/>
             </div>
-
+            
             <div class="receipt-info">
                 <div>
                     <label>Receipt No:</label>
