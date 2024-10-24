@@ -1078,22 +1078,18 @@ public class ReportController implements Serializable {
                 + " where ah.retired <> :ret "
                 + " and ah.createdAt < :hxDate "
                 + " and ah.agency.institutionType=:insType "
-                + " and ah.id = (select max(subAh.id) " // Using max ID for tie-breaking
+                + " and ah.id = (select max(subAh.id) "
                 + " from AgentHistory subAh "
                 + " where subAh.retired <> :ret "
                 + " and subAh.agency = ah.agency "
-                + " and subAh.agency.institutionType=:insType "
-                + " and subAh.createdAt = (select max(innerSubAh.createdAt) " // Ensuring it's the latest timestamp
-                + " from AgentHistory innerSubAh "
-                + " where innerSubAh.agency = subAh.agency "
-                + " and innerSubAh.retired <> :ret "
-                + " and innerSubAh.createdAt < :hxDate))";
+                + " and subAh.agency.institutionType=:insType  "
+                + " and subAh.createdAt < :hxDate)";
 
         Date nextDayStart = CommonFunctions.getNextDateStart(getFromDate());
 
-        parameters.put("ret", false); // Note: setting this to false if 'retired' means inactive
-        parameters.put("hxDate", nextDayStart); // Ensure this is the first millisecond of the next day
-        parameters.put("insType", InstitutionType.CollectingCentre); // Ensure correct type is passed
+        parameters.put("ret", true);
+        parameters.put("hxDate", nextDayStart);  // Ensure this is the first millisecond of the next day
+        parameters.put("insType", InstitutionType.CollectingCentre);  // Ensure correct type is passed
 
         if (collectingCentre != null) {
             jpql += " and ah.agency = :cc";
