@@ -33,8 +33,26 @@
                                         class="ui-button-warning m-1 w-25" 
                                         icon="fa fa-money-bill-wave">                          
                                     </p:commandButton>
-                                    <p:commandButton ajax="false" value="Cancel All Bills of this Patient" action="#{billController.cancellAll}" disabled="#{billSearch.bill.cancelled or billSearch.bill.refundedBill ne null}" class="w-50 m-1"
-                                                     onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
+                                    
+                                    <p:commandButton
+                                        ajax="false" 
+                                        value="To Return" 
+                                        action="#{billReturnController.navigateToReturnCCBill()}" 
+                                        disabled="#{billSearch.bill.cancelled}" 
+                                        class="ui-button-warning m-1 w-25" 
+                                        icon="fa fa-money-bill-wave">      
+                                        <f:setPropertyActionListener 
+                                            value="#{billSearch.bill}" 
+                                            target="#{billReturnController.originalBillToReturn}" />
+                                    </p:commandButton>
+                                    
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Cancel All Bills of this Patient" 
+                                        action="#{billController.cancellAll}" 
+                                        disabled="#{billSearch.bill.cancelled or billSearch.bill.refundedBill ne null}" 
+                                        class="w-50 m-1"
+                                        onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
                                                                  return false;" icon="fa fa-ban"/>
                                     <!-- Print Button -->
 
