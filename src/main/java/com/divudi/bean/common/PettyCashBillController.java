@@ -152,14 +152,7 @@ public class PettyCashBillController implements Serializable {
 //            JsfUtil.addErrorMessage("Can't settle without Person");
 //            return true;
 //        }
-        if (getCurrent().getPaymentMethod() != null && getCurrent().getPaymentMethod() == PaymentMethod.Cheque) {
-            if (getCurrent().getBank() == null || getCurrent().getChequeRefNo() == null || getCurrent().getChequeDate() == null) {
-                JsfUtil.addErrorMessage("Please select Cheque Number,Bank and Cheque Date");
-                return true;
-            }
-
-        }
-
+        
         if (getPaymentSchemeController().checkPaymentMethodError(getCurrent().getPaymentMethod(), paymentMethodData)) {
             return true;
         }
