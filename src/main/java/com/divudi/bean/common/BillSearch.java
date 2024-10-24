@@ -3162,6 +3162,16 @@ public class BillSearch implements Serializable {
         financialTransactionController.setCurrentBillPayments(viewingBillPayments);
         return "/cashier/income_bill_print?faces-redirect=true;";
     }
+    
+    public String navigateToManageExpenseBill() {
+        if (viewingBill == null) {
+            JsfUtil.addErrorMessage("No Bill to Dsiplay");
+            return "";
+        }
+        financialTransactionController.setCurrentBill(viewingBill);
+        financialTransactionController.setCurrentBillPayments(viewingBillPayments);
+        return "/cashier/expense_bill_print?faces-redirect=true;";
+    }
 
     public String navigateToAdminOpdBill() {
         if (viewingBill == null) {
@@ -3170,7 +3180,7 @@ public class BillSearch implements Serializable {
         }
         return "/opd/view/opd_bill_admin?faces-redirect=true;";
     }
-    
+
     public String navigateToAdminCcDepositBill() {
         if (viewingBill == null) {
             JsfUtil.addErrorMessage("No Bill to Dsiplay");
@@ -3178,7 +3188,7 @@ public class BillSearch implements Serializable {
         }
         return "/opd/view/cc_deposit_bill_admin?faces-redirect=true;";
     }
-    
+
     public String navigateToAdminBill() {
         if (viewingBill == null) {
             JsfUtil.addErrorMessage("No Bill to Dsiplay");
@@ -3616,6 +3626,8 @@ public class BillSearch implements Serializable {
                 return navigateToViewChannelingProfessionalPaymentBill();
             case SUPPLEMENTARY_INCOME:
                 return navigateToManageIncomeBill();
+            case OPERATIONAL_EXPENSES:
+                return navigateToManageExpenseBill();
             case FUND_SHIFT_SHORTAGE_BILL:
                 return navigateToViewCashierShiftShortageBill(bill);
 
