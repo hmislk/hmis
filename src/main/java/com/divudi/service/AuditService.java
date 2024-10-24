@@ -28,8 +28,8 @@ public class AuditService {
             audit.setWebUserId(user.getId());
             audit.setEntityType(entityType);
             audit.setEventTrigger(eventTrigger);
-            audit.setBeforeEdit(before != null ? gson.toJson(before) : null);
-            audit.setAfterEdit(after != null ? gson.toJson(after) : null);
+            audit.setBeforeJson(before != null ? gson.toJson(before) : null);
+            audit.setAfterJson(after != null ? gson.toJson(after) : null);
             auditEventFacade.create(audit);
         } catch (Exception e) {
             e.printStackTrace();

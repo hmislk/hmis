@@ -32,8 +32,10 @@ public class AuditEvent implements Serializable {
     private Long institutionId;
     private Long departmentId;
 
-    private String beforeEdit;
-    private String afterEdit;
+    @Lob
+    private String beforeJson;
+    @Lob
+    private String afterJson;
     private Long eventDuration;
     private String eventStatus;
     private String ipAddress;
@@ -121,20 +123,20 @@ public class AuditEvent implements Serializable {
         this.departmentId = departmentId;
     }
 
-    public String getBeforeEdit() {
-        return beforeEdit;
+    public String getBeforeJson() {
+        return beforeJson;
     }
 
-    public void setBeforeEdit(String beforeEdit) {
-        this.beforeEdit = beforeEdit;
+    public void setBeforeJson(String beforeJson) {
+        this.beforeJson = beforeJson;
     }
 
-    public String getAfterEdit() {
-        return afterEdit;
+    public String getAfterJson() {
+        return afterJson;
     }
 
-    public void setAfterEdit(String afterEdit) {
-        this.afterEdit = afterEdit;
+    public void setAfterJson(String afterJson) {
+        this.afterJson = afterJson;
     }
 
     public Long getEventDuration() {

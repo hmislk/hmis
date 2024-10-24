@@ -24,6 +24,7 @@ import com.divudi.facade.BillFacade;
 import com.divudi.facade.InstitutionFacade;
 import com.divudi.service.AgentHistoryService;
 import com.divudi.service.AuditService;
+import com.google.common.collect.HashBiMap;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -36,6 +37,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 import org.apache.commons.lang3.SerializationUtils;
+import org.bouncycastle.jcajce.provider.digest.GOST3411;
 
 /**
  *
@@ -110,6 +112,34 @@ public class CollectingCentreController implements Serializable {
 
     }
 
+    public String navigateToEditNextCollectingCentreBalanceEntry(AgentHistory agentHx) {
+        AgentHistory nahx = nextAgentHistory(agentHx);
+        return navigateToEditCollectingCentreBalanceEntry(nahx);
+    }
+
+    public String navigateToEditPreviousCollectingCentreBalanceEntry(AgentHistory agentHx) {
+        AgentHistory nahx = previousAgentHistory(agentHx);
+        return navigateToEditCollectingCentreBalanceEntry(nahx);
+    }
+
+    public void fixStartingBalanceFromLastEntry() {
+        if (agentHistory == null) {
+            return;
+        }
+        AgentHistory previousAgentHistory = previousAgentHistory(agentHistory);
+        if (previousAgentHistory == null) {
+            return;
+        }
+        agentHistory.setBalanceBeforeTransaction(previousAgentHistory.getBalanceAfterTransaction());
+    }
+
+    public void fixEndingBalance() {
+        if (agentHistory == null) {
+            return;
+        }
+        agentHistory.setBalanceAfterTransaction(agentHistory.getBalanceBeforeTransaction()+ agentHistory.getTransactionValue());
+    }
+
     public String navigateToEditCollectingCentreBalanceEntry(AgentHistory agentHx) {
         if (agentHx == null) {
             JsfUtil.addErrorMessage("No history selected");
@@ -123,16 +153,13 @@ public class CollectingCentreController implements Serializable {
         return "/collecting_centre/dev/edit_history_record?faces-redirect=true";
     }
 
-    public String saveAgentHistory() {
+    public void saveAgentHistory() {
         if (agentHistory == null) {
             JsfUtil.addErrorMessage("Nothing selected");
-            return "";
+            return;
         }
-
         agentHistoryService.save(agentHistory, sessionController.getLoggedUser());
-
         AgentHistoryDTO ahdto = new AgentHistoryDTO(agentHistory);
-        // Capture the latest state after saving
         auditDataAfter = ahdto;
 
         auditService.logAudit(
@@ -142,12 +169,64 @@ public class CollectingCentreController implements Serializable {
                 AgentHistoryDTO.class.getSimpleName(),
                 "Update Agent History"
         );
-
-        // Clear the audit data after logging
         auditDataAfter = null;
         auditDataBefore = null;
+    }
 
-        return "reports/collectionCenterReports/collection_center_statement_report?faces-redirect=true";
+    public String saveAgentHistoryAndNavigateBackToCcStatement() {
+        if (agentHistory == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return "";
+        }
+        saveAgentHistory();
+        return "/reports/collectionCenterReports/collection_center_statement_report?faces-redirect=true";
+    }
+    
+    public String saveAgentHistoryAndNavigateToNextRecord() {
+        if (agentHistory == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return "";
+        }
+        saveAgentHistory();
+        return navigateToEditNextCollectingCentreBalanceEntry(agentHistory);
+    }
+
+    public AgentHistory nextAgentHistory(AgentHistory ahx) {
+        if (ahx == null || ahx.getAgency() == null || ahx.getId() == null) {
+            return null;
+        }
+        String jpql = "SELECT ah FROM AgentHistory ah "
+                + "WHERE ah.retired = :ret "
+                + "AND ah.agency = :agency "
+                + "AND ah.id > :thisid "
+                + // Note: '>' to get the next record
+                "ORDER BY ah.id ASC"; // Ascending order to get the next one
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("agency", ahx.getAgency());
+        params.put("thisid", ahx.getId());
+
+        return agentHistoryFacade.findFirstByJpql(jpql, params);
+    }
+
+    public AgentHistory previousAgentHistory(AgentHistory ahx) {
+        if (ahx == null || ahx.getAgency() == null || ahx.getId() == null) {
+            return null;
+        }
+        String jpql = "SELECT ah FROM AgentHistory ah "
+                + "WHERE ah.retired = :ret "
+                + "AND ah.agency = :agency "
+                + "AND ah.id < :thisid "
+                + // '<' to get the previous record
+                "ORDER BY ah.id DESC"; // Descending order to get the most recent previous one
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("agency", ahx.getAgency());
+        params.put("thisid", ahx.getId());
+
+        return agentHistoryFacade.findFirstByJpql(jpql, params);
     }
 
     public void settlePaymentBillToCollectingCentrePaymenMade() {
