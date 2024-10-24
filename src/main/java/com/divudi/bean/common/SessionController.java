@@ -1901,9 +1901,15 @@ public class SessionController implements Serializable, HttpSessionListener {
         thisLogin.setIpaddress(ip);
         thisLogin.setComputerName(host);
         // This should print null if the ID is not set.
-
+        
         if (thisLogin.getId() == null) {
-            getLoginsFacade().create(thisLogin);
+            try{
+                getLoginsFacade().create(thisLogin);
+            }catch(Exception e){
+                getLoginsFacade().edit(thisLogin);
+                System.err.println("e = " + e);
+            }
+            
         } else {
             getLoginsFacade().edit(thisLogin);
         }
