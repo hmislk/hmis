@@ -1,6 +1,7 @@
 package com.divudi.bean.collectingCentre;
 
 import com.divudi.bean.lab.PatientInvestigationController;
+import com.divudi.entity.Bill;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -13,6 +14,8 @@ import javax.inject.Inject;
 @Named
 @SessionScoped
 public class CourierController implements Serializable {
+    
+    private Bill currentCCBill;
 
     @Inject
     PatientInvestigationController patientInvestigationController;
@@ -61,10 +64,24 @@ public class CourierController implements Serializable {
         activeIndex = 6;
         return "/collecting_centre/courier/viewBillReports.xhtml?faces-redirect=true";
     }
+    
+    public String navigateToCourierViewReciptReports() {
+        activeIndex = 7;
+        return "/reports/collectionCenterReports/collection_center_recipt_reports_c?faces-redirect=true";
+    }
 
     public String navigateToCourierViewPaymentReports() {
-        activeIndex = 7;
+        activeIndex = 8;
         return "/collecting_centre/courier/viewPaymentReports.xhtml?faces-redirect=true";
+    }
+    
+    public String navigateToCCBillViewFormPaymentReports() {
+        return "/collecting_centre/courier/cc_bill_reprint_view?faces-redirect=true";
+    }
+    
+    public String navigateToViewReciptFromCCBillView() {
+        activeIndex = 7;
+        return "/reports/collectionCenterReports/collection_center_recipt_reports_c?faces-redirect=true";
     }
 
     public int getActiveIndex() {
@@ -73,5 +90,13 @@ public class CourierController implements Serializable {
 
     public void setActiveIndex(int activeIndex) {
         this.activeIndex = activeIndex;
+    }
+
+    public Bill getCurrentCCBill() {
+        return currentCCBill;
+    }
+
+    public void setCurrentCCBill(Bill currentCCBill) {
+        this.currentCCBill = currentCCBill;
     }
 }

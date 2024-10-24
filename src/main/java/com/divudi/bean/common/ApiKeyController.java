@@ -116,7 +116,7 @@ public class ApiKeyController implements Serializable {
         current = new ApiKey();
         current.setWebUser(sessionController.getLoggedUser());
         current.setInstitution(sessionController.getInstitution());
-        current.setKeyType(ApiKeyType.Finance);
+        current.setKeyType(ApiKeyType.Token);
         current.setKeyValue(uuid.toString());
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);

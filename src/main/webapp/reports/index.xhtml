@@ -88,13 +88,8 @@
                                             action="#{searchController.navigateToAllCashierHandovers()}"
                                             value="5. Handovers" >
                                         </p:commandButton>
-                                        
-                                        <p:commandButton  
-                                            action="#{searchController.navigatToDepartmentWiseIncomeReport}"
-                                            class="w-100"  
-                                            ajax="false" 
-                                            value="6. Department Wise Income" >
-                                        </p:commandButton>
+
+
                                     </div>
                                 </p:tab>
                                 <p:tab title="Collection Center Reports">
@@ -150,7 +145,12 @@
                                         <p:commandButton   class="w-100"  ajax="false" value="23. Package Report" />
                                         <p:commandButton   class="w-100"  ajax="false" value="24. Debtor Analysis" />
                                         <p:commandButton   class="w-100"  ajax="false" value="25. Drawer History" action="/reports/financialReports/drawer_history?faces-redirect=true"/>
-
+                                        <p:commandButton  
+                                            action="#{searchController.navigatToDepartmentRevenueReport}"
+                                            class="w-100"  
+                                            ajax="false" 
+                                            value="26. Department Revenue" >
+                                        </p:commandButton>
                                     </div>
                                 </p:tab>
                                 <p:tab title="Professional Payment Reports">
