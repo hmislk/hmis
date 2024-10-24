@@ -236,12 +236,12 @@
                                          severity="#{pc.approveUser != null ? 'success': 'danger'}" />
 <!--                                <h:outputText value="#{pc.approveUser != null ? 'Approved': 'Not Approved'}" ></h:outputText>-->
                             </p:column>
-                            <p:column headerText="Amount" >
-                                <h:outputText value="#{pc.total lt 0 ? pc.total * -1 : pc.total * -1}" >
+                            <p:column headerText="Amount" style="text-align: right"  >
+                                <h:outputText value="#{0-pc.total}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{reportController.netTotal lt 0 ? reportController.netTotal * -1 : reportController.netTotal * -1}" >
+                                    <h:outputText value="#{0 - reportController.netTotal}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
