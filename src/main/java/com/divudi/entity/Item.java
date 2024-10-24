@@ -235,6 +235,7 @@ public class Item implements Serializable, Comparable<Item> {
     @ManyToOne
     private MeasurementUnit issueUnit;
     private Double issueUnitsPerPackUnit;
+    @ManyToOne
     private MeasurementUnit packUnit;
     private Double baseUnitsPerIssueUnit;
 

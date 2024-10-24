@@ -242,7 +242,7 @@ public class ReportController implements Serializable {
         bta.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
         bta.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL);
         bta.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL_RETURN);
-        
+
         // Update JPQL to include all bills, regardless of their status
         StringBuilder jpql = new StringBuilder("SELECT bi FROM BillItem bi WHERE bi.retired=:bir AND bi.bill.retired=:br AND bi.bill.createdAt BETWEEN :fd AND :td AND bi.bill.billTypeAtomic IN :bTypeList ");
         params.put("bir", false);
@@ -313,7 +313,7 @@ public class ReportController implements Serializable {
             Bill bill = bi.getBill();
             BillAndItemDataRow row = billMap.getOrDefault(bill, new BillAndItemDataRow());
             row.setBill(bill);
-            
+
             if (row.getItemDetailCells().isEmpty()) {
                 for (int i = 0; i < sortedItems.size(); i++) {
                     row.getItemDetailCells().add(new ItemDetailsCell());
@@ -350,10 +350,10 @@ public class ReportController implements Serializable {
         }
 
         billAndItemDataRows = new ArrayList<>(billMap.values());
-        
+
         netTotal = 0.0;
-        
-        for(BillAndItemDataRow bir : billAndItemDataRows){
+
+        for (BillAndItemDataRow bir : billAndItemDataRows) {
             netTotal += bir.getGrandTotal();
         }
     }
@@ -1078,7 +1078,7 @@ public class ReportController implements Serializable {
                 + " where ah.retired <> :ret "
                 + " and ah.createdAt < :hxDate "
                 + " and ah.agency.institutionType=:insType "
-                + " and ah.createdAt = (select max(subAh.createdAt) "
+                + " and ah.id = (select max(subAh.id) "
                 + " from AgentHistory subAh "
                 + " where subAh.retired <> :ret "
                 + " and subAh.agency = ah.agency "
@@ -1142,8 +1142,8 @@ public class ReportController implements Serializable {
         }
         m.put("fd", fromDate);
         m.put("td", toDate);
-        
-        agentReferenceBooks = agentReferenceBookFacade.findByJpql(sql, m,TemporalType.TIMESTAMP);
+
+        agentReferenceBooks = agentReferenceBookFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -1265,7 +1265,7 @@ public class ReportController implements Serializable {
             jpql += " AND pc.department.site=:site ";
             m.put("site", site);
         }
-        
+
         if (department != null) {
             jpql += " AND pc.department=:dept ";
             m.put("dept", department);
