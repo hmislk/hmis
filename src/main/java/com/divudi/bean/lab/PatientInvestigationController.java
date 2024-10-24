@@ -178,7 +178,7 @@ public class PatientInvestigationController implements Serializable {
     List<PatientInvestigation> selectedItems;
     private PatientInvestigation current;
     Investigation currentInvestigation;
-    private PatientSample currentPatientSample;
+
     List<InvestigationItem> currentInvestigationItems;
     private List<PatientInvestigation> items = null;
     private List<Bill> bills = null;
@@ -236,7 +236,7 @@ public class PatientInvestigationController implements Serializable {
     private Set<PatientSample> patientSamplesSet;
 
     private String samplingRequestResponse;
-
+    private PatientSample currentPatientSample;
     private String inputBillId;
     private String username;
     private String password;
@@ -273,7 +273,25 @@ public class PatientInvestigationController implements Serializable {
     public String navigateToPatientSampelIndex() {
         return "/lab/sample_index?faces-redirect=true";
     }
+    
+    public String navigateToSampleManagementFromOPDBatchBillView(Bill bill) {
+        listingEntity = ListingEntity.BILLS;
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+        jpql = "SELECT pi.billItem.bill "
+                + " FROM PatientInvestigation pi"
+                + " WHERE pi.billItem.bill.retired = :ret"
+                + " and pi.billItem.bill =:b"
+                + " GROUP BY pi.billItem.bill ";
 
+        params.put("b", bill);
+        params.put("ret", false);
+
+        bills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        
+        return "/lab/generate_barcode_p?faces-redirect=true";
+    }
+    
     public String navigateToPrintBarcodesFromSampellingPage(PatientInvestigation ptIx) {
         if (ptIx == null) {
             JsfUtil.addErrorMessage("Patient Investigation is NOT selected");
@@ -3094,10 +3112,10 @@ public class PatientInvestigationController implements Serializable {
             jpql += " AND b.bill.toDepartment = :department ";
             params.put("department", getDepartment());
         }
-        
+
         jpql += " and type(b.item) = :invType ";
         params.put("invType", Investigation.class);
-        
+
         jpql += " AND b.bill.billTypeAtomic in :bts ";
         params.put("bts", btas);
 
@@ -4329,14 +4347,6 @@ public class PatientInvestigationController implements Serializable {
         this.shift2 = shift2;
     }
 
-    public PatientSample getCurrentPatientSample() {
-        return currentPatientSample;
-    }
-
-    public void setCurrentPatientSample(PatientSample currentPatientSample) {
-        this.currentPatientSample = currentPatientSample;
-    }
-
     public SmsManagerEjb getSmsManagerEjb() {
         return smsManagerEjb;
     }
@@ -4714,6 +4724,14 @@ public class PatientInvestigationController implements Serializable {
 
     public void setSite(Institution site) {
         this.site = site;
+    }
+
+    public PatientSample getCurrentPatientSample() {
+        return currentPatientSample;
+    }
+
+    public void setCurrentPatientSample(PatientSample currentPatientSample) {
+        this.currentPatientSample = currentPatientSample;
     }
 
     /**
@@ -5386,6 +5404,8 @@ public class PatientInvestigationController implements Serializable {
         }
 
     }
+    
+    
 
     public List<PatientSampleComponant> getPatientSampleComponentsByPatientSample(PatientSample patientSample) {
         List<PatientSampleComponant> ptsc;

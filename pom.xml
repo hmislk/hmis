@@ -102,14 +102,33 @@
             <version>2.2</version>
         </dependency>
 
-        <!-- iText -->
-        <!-- https://mvnrepository.com/artifact/com.itextpdf/itextpdf -->
+        <!-- iText 7 Core Dependency -->
         <dependency>
             <groupId>com.itextpdf</groupId>
-            <artifactId>itextpdf</artifactId>
-            <version>5.5.13.4</version>
+            <artifactId>kernel</artifactId>
+            <version>8.0.5</version> <!-- Use the latest version available -->
+        </dependency>
+        <dependency>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>layout</artifactId>
+            <version>8.0.5</version>
+            <type>jar</type>
         </dependency>
 
+        <!-- iText 7 HTML to PDF Dependency -->
+        <dependency>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>html2pdf</artifactId>
+            <version>5.0.5</version> <!-- Use the latest version available -->
+        </dependency>
+
+
+        <!-- Add to your Maven dependencies -->
+        <dependency>
+            <groupId>com.google.zxing</groupId>
+            <artifactId>core</artifactId>
+            <version>3.4.1</version>
+        </dependency>
        
 
         
@@ -319,8 +338,8 @@
         </dependency>
         <dependency>
             <groupId>com.itextpdf</groupId>
-            <artifactId>layout</artifactId>
-            <version>8.0.5</version>
+            <artifactId>itextpdf</artifactId>
+            <version>5.5.13.4</version>
             <type>jar</type>
         </dependency>
         <dependency>

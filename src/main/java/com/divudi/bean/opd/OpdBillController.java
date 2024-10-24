@@ -1873,6 +1873,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         saveBatchBill();
         createPaymentsForBills(getBatchBill(), getLstBillEntries());
         
+        
+        
         drawerController.updateDrawerForIns(payments);
         saveBillItemSessions();
         if (toStaff != null && getPaymentMethod() == PaymentMethod.Staff_Welfare) {

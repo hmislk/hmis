@@ -37,7 +37,7 @@
                                             class="w-100" 
                                             ajax="false" 
                                             value="List Completed Professional Payments" 
-                                            action="#{billSearch.navigateToViewOpdProfessionalPaymentsDone()}" 
+                                            action="#{billSearch.navigateToViewOpdProfessionalPaymentsDoneByUser()}" 
                                             actionListener="#{searchController.makeListNull}"
                                             icon="fa fa-check-circle"
                                             rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}"/>
@@ -93,6 +93,24 @@
                                     </div>
                                 </p:tab>
 
+                                <p:tab title="Cheques">
+                                    <div class="d-grid gap-2">
+                                        <p:commandButton 
+                                            class="w-100 btn btn-success" 
+                                            icon="pi pi-money-bill" 
+                                            styleClass="ui-button-success m-1" 
+                                            ajax="false" 
+                                            action="#{paymentController.navigateToPayCheques()}" 
+                                            value="Pay Cheques" />
+                                        <p:commandButton 
+                                            class="w-100 btn btn-info" 
+                                            icon="pi pi-check-circle" 
+                                            styleClass="ui-button-info m-1" 
+                                            ajax="false" 
+                                            action="#{paymentController.navigateToMarkChequesAsCleared()}" 
+                                            value="Mark Cheques as Cleared"/>
+                                    </div>
+                                </p:tab>
 
                                 <p:tab title="Petty Cash" >
                                     <div class="d-grid gap-2">

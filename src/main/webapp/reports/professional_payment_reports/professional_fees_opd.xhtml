@@ -125,11 +125,17 @@
                                                     itemLabel="#{item.name}"
                                                     itemValue="#{item}">
                                     </p:autoComplete>
+                                    
+                                     <p:spacer ></p:spacer>
+                                    
+                                    <!-- New Doctor Field with Icon -->
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf0f0;" styleClass="fa mr-2" /> 
+                                        <h:outputLabel value="MRN" for="scMRN" class="mx-3" />
+                                    </h:panelGroup>
+                                    
+                                    <p:inputText value="#{searchController.mrnNo}" class="w-100"/>
 
-                                    <p:spacer width="50" ></p:spacer>
-
-                                    <p:spacer width="50" ></p:spacer>
-                                    <p:spacer width="50" ></p:spacer>
 
                                     <!-- New Speciality Field with Icon -->
                                     <h:panelGroup layout="block" styleClass="form-group">
@@ -167,16 +173,35 @@
                                             itemLabel="#{staff.person.nameWithTitle}" 
                                             itemValue="#{staff}" />
                                     </p:selectOneMenu>
+                                    
+                                    <p:spacer ></p:spacer>
 
                                 </h:panelGrid>
 
                                 <p:commandButton 
-                                    id="btnList" 
-                                    class="m-1 ui-button-danger"
-                                    icon="fas fa-list"
+                                    id="btnListAll" 
+                                    class="m-1 ui-button-info"
+                                    icon="fas fa-money-check-alt"
                                     ajax="false" 
-                                    value="View List"
-                                    action="#{searchController.createProfessionalFees()}" />
+                                    value="Professional Payments - All"
+                                    action="#{searchController.generateOpdProfessionalFees('ALL')}" />
+
+                                <p:commandButton 
+                                    id="btnListDone" 
+                                    class="m-1 ui-button-success"
+                                    icon="fas fa-check-circle"
+                                    ajax="false" 
+                                    value="Professional Payments - Done"
+                                    action="#{searchController.generateOpdProfessionalFees('DONE')}" />
+
+                                <p:commandButton 
+                                    id="btnListDue" 
+                                    class="m-1 ui-button-warning"
+                                    icon="fas fa-exclamation-circle"
+                                    ajax="false" 
+                                    value="Professional Payments - Due"
+                                    action="#{searchController.generateOpdProfessionalFees('DUE')}" />
+
 
                                 <p:commandButton 
                                     id="btnPdf" 
@@ -339,7 +364,7 @@
                                 <f:facet name="header">
                                     <h:outputText value="Payment Status" />
                                 </f:facet>
-                                <h:outputText value="#{row.billFee.completedPayment?'Paid':'Not Paid'}">
+                                <h:outputText value="#{row.billFee.paidValue gt 1.0 ?'Paid':'Not Paid'}">
                                 </h:outputText>
                             </p:column>
 
@@ -351,7 +376,7 @@
                                 </h:outputText>
 
 
-                                <p:commandLink 
+<!--                                <p:commandLink 
                                     ajax="false"
                                     class="m-1"
                                     rendered="#{row.billFee ne null}"
@@ -360,11 +385,11 @@
                                     <f:setPropertyActionListener 
                                         value="#{row.billFee.referenceBillFee.bill}" 
                                         target="#{billSearch.bill}" />
-                                </p:commandLink>
+                                </p:commandLink>-->
 
                                 <h:panelGroup rendered="#{row.billFee.referenceBillFee.bill.cancelled}" >
                                     <p:badge severity="warning" value="Cancelled" ></p:badge>
-                                    <p:commandLink 
+<!--                                    <p:commandLink 
                                         ajax="false"
                                         class="m-1 ui-button-danger"
                                         rendered="#{row.billFee ne null}"
@@ -373,25 +398,32 @@
                                         <f:setPropertyActionListener 
                                             value="#{row.billFee.referenceBillFee.bill.cancelledBill}" 
                                             target="#{billSearch.bill}" />
-                                    </p:commandLink>
+                                    </p:commandLink>-->
 
                                 </h:panelGroup>
 
+                            </p:column>
+                            <p:column class="text-end">
+                                <f:facet name="header">
+                                    <h:outputText value="Paid By" />
+                                </f:facet>
+                                <h:outputText value="#{row.billFee.referenceBillFee.bill.creater.name}">
+                                </h:outputText>
                             </p:column>
 
                             <p:column class="text-end">
                                 <h:panelGroup rendered="#{row.billFee.referenceBillFee.bill.cancelled}" >
                                     <p:badge severity="warning" value="Cancelled" ></p:badge>
-                                    <p:commandLink 
+<!--                                    <p:commandLink 
                                         ajax="false"
                                         class="m-1 ui-button-danger"
                                         rendered="#{row.billFee ne null}"
                                         action="#{billSearch.navigateToViewBillByAtomicBillType()}">
-                                        <i class="pi pi-eye" style="font-size:14px;" title="View Payment Bill"></i> <!-- Using PrimeIcons -->
+                                        <i class="pi pi-eye" style="font-size:14px;" title="View Payment Bill"></i>  Using PrimeIcons 
                                         <f:setPropertyActionListener 
                                             value="#{row.billFee.referenceBillFee.bill.cancelledBill}" 
                                             target="#{billSearch.bill}" />
-                                    </p:commandLink>
+                                    </p:commandLink>-->
 
                                 </h:panelGroup>
 

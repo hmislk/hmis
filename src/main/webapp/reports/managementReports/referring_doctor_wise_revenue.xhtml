@@ -64,7 +64,7 @@
                             <p:selectOneMenu
                                 id="siteMenu"
                                 styleClass="w-100 form-control"  
-                                value="#{patientInvestigationController.site}" 
+                                value="#{reportController.site}" 
                                 filter="true"
                                 filterMatchMode="contains">
                                 <f:selectItem itemLabel="All Sites" />
@@ -135,13 +135,14 @@
                             <p:selectOneMenu 
                                 id="speciality"
                                 style="width: 100%"
-                                value="#{reportController.fromDepartment}" 
+                                value="#{reportController.speciality}" 
                                 filter="true">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value="#{departmentController.getInsDepartments(reportController.fromInstitution)}"
+                                <f:selectItems value="#{specialityController.items}"
                                                var="d"
                                                itemLabel="#{d.name}"
                                                itemValue="#{d}" ></f:selectItems>
+                                <p:ajax process="@this" update="consultant pnlaa" event="itemSelect" />
                             </p:selectOneMenu>
 
                             <h:panelGroup class="mx-2">
@@ -151,10 +152,11 @@
                             <p:selectOneMenu 
                                 id="consultant"
                                 style="width: 100%"
-                                value="#{reportController.fromDepartment}" 
-                                filter="true">
+                                value="#{reportController.doctor}" 
+                                filter="true"
+                                filterMatchMode="contains">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value="#{departmentController.getInsDepartments(reportController.fromInstitution)}"
+                                <f:selectItems value="#{doctorController.fillDoctorsIncludingConsultantsWithSpeciality(reportController.speciality)}"
                                                var="d"
                                                itemLabel="#{d.name}"
                                                itemValue="#{d}" ></f:selectItems>
@@ -265,7 +267,9 @@
                                     <h:outputLabel style="width: 100px; font-weight:bold ">From Date</h:outputLabel><span>:</span>
                                 </div>
                                 <div class="col-3">
-                                    <h:outputLabel></h:outputLabel>
+                                    <h:outputLabel value="#{reportController.fromDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    </h:outputLabel>
                                 </div>
                             </div>
 
@@ -274,23 +278,27 @@
                                     <h:outputLabel style="width: 100px ; font-weight:bold ">To Date</h:outputLabel><span>:</span>
                                 </div>
                                 <div class="col-3">
-                                    <h:outputLabel></h:outputLabel>
+                                    <h:outputLabel value="#{reportController.toDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    </h:outputLabel>
                                 </div>
                             </div>
 
-                            <div class="row w-50" >
-                                <div class="col-3">
-                                    <h:outputLabel style="width: 100px ; font-weight:bold ">Branch</h:outputLabel><span>:</span>
+                            <h:panelGroup rendered="#{reportController.institution ne null}">
+                                <div class="row w-50" >
+                                    <div class="col-3">
+                                        <h:outputLabel style="width: 100px ; font-weight:bold ">Branch</h:outputLabel><span>:</span>
+                                    </div>
+                                    <div class="col-3">
+                                        <h:outputLabel value="#{reportController.institution.name}" ></h:outputLabel>
+                                    </div>
                                 </div>
-                                <div class="col-3">
-                                    <h:outputLabel ></h:outputLabel>
-                                </div>
-                            </div>
+                            </h:panelGroup>
 
                         </h:panelGroup>
 
 
-                        <p:dataTable id="tbl" value="" var="catReport"
+                        <p:dataTable id="tbl" value="#{reportController.testWiseCounts}" var="item" rowIndexVar="rowIndex"
                                      paginator="true"
                                      rows="10"
                                      paginatorPosition="bottom"
@@ -298,35 +306,66 @@
 
                                      >
                             <p:column headerText="S. NO" width="5rem">
-                                <h:outputText value="#{item.testName}" />
+                                <h:outputText value="#{rowIndex+1}" />
                             </p:column>
 
                             <p:column headerText="Referring Doctor " width="5rem">
-                                <h:outputText value="#{item.testCount}" />
+                                <h:outputText value="#{item.doctor.nameWithTitle}" />
                             </p:column>
 
                             <p:column headerText="Agent Name" width="5rem">
-                                <h:outputText value="#{item.testCount}" />
+                                <h:outputText value="" />
                             </p:column>
 
                             <p:column headerText="Count" width="5rem">
-                                <h:outputText value="#{item.testCount}" />
+                                <h:outputText value="#{item.count}" />
+                                <f:facet name="footer">
+                                    <h:outputText value="#{reportController.totalCount}" ></h:outputText>
+                                </f:facet>
                             </p:column>
 
                             <p:column headerText="Gross Amount" width="5rem">
-                                <h:outputText value="#{item.testCount}" />
+                                <h:outputText value="#{item.hosFee + item.proFee + item.discount}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                 <f:facet name="footer">
+                                    <h:outputText value="#{reportController.totalHosFee}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
 
                             <p:column headerText="CC Amount" width="5rem">
-                                <h:outputText value="#{item.testCount}" />
+                                <h:outputText value="#{item.ccFee}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{reportController.totalCCFee}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
 
                             <p:column headerText="Discount Amount " width="5rem">
-                                <h:outputText value="#{item.testCount}" />
+                                <h:outputText value="#{item.discount}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{reportController.totalDiscount}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
 
                             <p:column headerText="Net Amount" width="5rem">
-                                <h:outputText value="#{item.testCount}" />
+                                <h:outputText value="#{item.total}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{reportController.totalNetTotal}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
 
                         </p:dataTable>
@@ -364,14 +403,16 @@
                                 </div>
                             </div>
 
-                            <div class="row w-50" >
-                                <div class="col-3">
-                                    <h:outputLabel style="width: 100px ; font-weight:bold ">Branch</h:outputLabel><span>:</span>
+                            <h:panelGroup rendered="#{reportController.institution ne null}">
+                                <div class="row w-50" >
+                                    <div class="col-3">
+                                        <h:outputLabel style="width: 100px ; font-weight:bold ">Branch</h:outputLabel><span>:</span>
+                                    </div>
+                                    <div class="col-3">
+                                        <h:outputLabel value="#{reportController.institution.name}" ></h:outputLabel>
+                                    </div>
                                 </div>
-                                <div class="col-3">
-                                    <h:outputLabel ></h:outputLabel>
-                                </div>
-                            </div>
+                            </h:panelGroup>
 
 
                         </h:panelGroup>
@@ -420,7 +461,9 @@
                             </p:column>
 
                             <p:column headerText="Date " width="5rem">
-                                <h:outputText value="#{bi.bill.createdAt}" />
+                                <h:outputText value="#{bi.bill.createdAt}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
+                                </h:outputText>
                             </p:column>
 
                             <p:column headerText="Status" width="5rem">
@@ -429,15 +472,47 @@
                             </p:column>
 
                             <p:column headerText="CC Amt" width="5rem">
-                                <h:outputText value="#{bi.collectingCentreFee}" />
+                                <h:outputText value="#{bi.collectingCentreFee}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{reportController.ccFeeTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
 
                             <p:column headerText="Hos Amt" width="5rem">
-                                <h:outputText value="#{bi.hospitalFee}" />
+                                <h:outputText value="#{bi.hospitalFee}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{reportController.hospitalFeeTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+                            
+                            <p:column headerText="Pro Amt" width="5rem">
+                                <h:outputText value="#{bi.staffFee}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{reportController.staffFeeTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
 
                             <p:column headerText="Net Amt" width="5rem">
-                                <h:outputText value="#{bi.netValue}" />
+                                <h:outputText value="#{bi.netValue}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{reportController.netTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
 
                         </p:dataTable>

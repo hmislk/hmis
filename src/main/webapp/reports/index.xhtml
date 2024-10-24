@@ -88,10 +88,13 @@
                                             action="#{searchController.navigateToAllCashierHandovers()}"
                                             value="5. Handovers" >
                                         </p:commandButton>
+
+
                                     </div>
                                 </p:tab>
                                 <p:tab title="Collection Center Reports">
                                     <div class="d-grid gap-2">
+                                        <p:commandButton   class="w-100"  ajax="false" value="Courier Lab Reports Print" action="/reports/collectionCenterReports/courier_lab_report_print?faces-redirect=true"></p:commandButton>
                                         <p:commandButton   class="w-100"  ajax="false" value="1. Collection Center Reports Print" action="/reports/collectionCenterReports/collection_center_report_print?faces-redirect=true"></p:commandButton>
                                         <p:commandButton   class="w-100"  ajax="false" value="2. Collection Center Current Balance" action="/reports/collectionCenterReports/collection_center_current_balance_report?faces-redirect=true" ></p:commandButton>
                                         <p:commandButton   class="w-100"  ajax="false" value="2. Collection Center Balance" action="/reports/collectionCenterReports/collection_center_balance_report?faces-redirect=true" ></p:commandButton>
@@ -142,7 +145,12 @@
                                         <p:commandButton   class="w-100"  ajax="false" value="23. Package Report" />
                                         <p:commandButton   class="w-100"  ajax="false" value="24. Debtor Analysis" />
                                         <p:commandButton   class="w-100"  ajax="false" value="25. Drawer History" action="/reports/financialReports/drawer_history?faces-redirect=true"/>
-
+                                        <p:commandButton  
+                                            action="#{searchController.navigatToDepartmentRevenueReport}"
+                                            class="w-100"  
+                                            ajax="false" 
+                                            value="26. Department Revenue" >
+                                        </p:commandButton>
                                     </div>
                                 </p:tab>
                                 <p:tab title="Professional Payment Reports">

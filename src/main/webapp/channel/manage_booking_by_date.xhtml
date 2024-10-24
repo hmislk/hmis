@@ -813,7 +813,7 @@
                                                     </h:outputText>
                                                 </p:column>
                                                 <p:column headerText="Value">
-                                                    <p:inputText id="txtFee" value="#{bf.feeGrossValue}" onfocus="this.select()">
+                                                    <p:inputText id="txtFee" value="#{bf.feeValue}" onfocus="this.select()">
                                                         <f:convertNumber pattern="#,##0.00"></f:convertNumber>
                                                         <p:ajax event="keyup" 
                                                                 process="txtFee paymentDetails" 

@@ -41,7 +41,6 @@ import javax.inject.Inject;
 @SessionScoped
 public class BillReturnController implements Serializable {
 
-
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
     BillFacade billFacade;
@@ -49,9 +48,8 @@ public class BillReturnController implements Serializable {
     BillNumberGenerator billNumberGenerator;
 
     // </editor-fold>
-
+    
     // <editor-fold defaultstate="collapsed" desc="Controllers">
-
     @Inject
     SessionController sessionController;
     @Inject
@@ -69,7 +67,6 @@ public class BillReturnController implements Serializable {
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Class Variable">
-
     private Bill originalBillToReturn;
     private List<BillItem> originalBillItemsAvailableToReturn;
     private List<BillItem> originalBillItemsToSelectedToReturn;
@@ -80,23 +77,58 @@ public class BillReturnController implements Serializable {
     private List<Payment> returningBillPayments;
 
     private PaymentMethod paymentMethod;
-  
+
     private boolean returningStarted = false;
 
     private double refundingTotalAmount;
     private String refundComment;
     private boolean selectAll;
-
+    
+    
     // </editor-fold>
+    
+    // <editor-fold defaultstate="collapsed" desc="Navigation Method">
+    public String navigateToReturnOpdBill() {
+        if (originalBillToReturn == null) {
+            return null;
+        }
 
-    // <editor-fold defaultstate="collapsed" desc="Method">
-  
-    /**
-     * Creates a new instance of BillReturnController
-     */
-    public BillReturnController() {
+        originalBillItemsAvailableToReturn = billBeanController.fetchBillItems(originalBillToReturn);
+        returningStarted = false;
+        paymentMethod = originalBillToReturn.getPaymentMethod();
+        return "/opd/bill_return?faces-redirect=true";
+    }
+    
+    public String navigateToReturnCCBill() {
+        if (originalBillToReturn == null) {
+            return null;
+        }
+        System.out.println("Original Bill= " + originalBillToReturn);
+        originalBillItemsAvailableToReturn = billBeanController.fetchBillItems(originalBillToReturn);
+        System.out.println("Bill Items Available To Return = " + originalBillItemsAvailableToReturn.size());
+        returningStarted = false;
+        paymentMethod = originalBillToReturn.getPaymentMethod();
+        System.out.println("Method = " + paymentMethod);
+        return "/collecting_centre/bill_return?faces-redirect=true";
     }
 
+    public String navigateToOPDBillSearchFormRefundOpdBillView() {
+        return "/opd/opd_bill_search?faces-redirect=true";
+    }
+
+    public String navigateToRefundBillViewFormOPDBillSearch() {
+        return "/opd/bill_return_print?faces-redirect=true";
+    }
+    
+    public String navigateToRefundCCBillViewFormCCBillSearch() {
+        return "/opd/bill_return_print?faces-redirect=true";
+    }
+    // </editor-fold>
+    
+    // <editor-fold defaultstate="collapsed" desc="Method">
+
+    public BillReturnController() {
+    }
 
     public void makeNull() {
 
@@ -110,21 +142,6 @@ public class BillReturnController implements Serializable {
         newlyReturnedBillItems = null;
         originalBillItemsToSelectedToReturn = null;
         selectAll = true;
-    }
-
-    public String navigateToReturnOpdBill() {
-        if (originalBillToReturn == null) {
-            return null;
-        }
-
-        originalBillItemsAvailableToReturn = billBeanController.fetchBillItems(originalBillToReturn);
-        returningStarted = false;
-        paymentMethod = originalBillToReturn.getPaymentMethod();
-        return "/opd/bill_return?faces-redirect=true";
-    }
-
-    public String navigateToOPDBillSearchFormRefundOpdBillView() {
-        return "/opd/opd_bill_search?faces-redirect=true";
     }
 
     public void selectAllItems() {
@@ -154,15 +171,19 @@ public class BillReturnController implements Serializable {
         }
         return canReturn;
     }
-  
+
     public boolean checkDraverBalance(Drawer drawer, PaymentMethod paymentMethod) {
         boolean canReturn = false;
         switch (paymentMethod) {
             case Cash:
-                if (drawer.getCashInHandValue() < refundingTotalAmount) {
+                if (drawer.getCashInHandValue() != null) {
+                    if (drawer.getCashInHandValue() < refundingTotalAmount) {
+                        canReturn = false;
+                    } else {
+                        canReturn = true;
+                    }
+                }else{
                     canReturn = false;
-                } else {
-                    canReturn = true;
                 }
                 break;
             case Card:
@@ -194,7 +215,7 @@ public class BillReturnController implements Serializable {
         }
         return canReturn;
     }
-    
+
     public String settleOpdReturnBill() {
         if (returningStarted) {
             JsfUtil.addErrorMessage("Already Returning Started");
@@ -246,6 +267,7 @@ public class BillReturnController implements Serializable {
         newlyReturnedBill.setComments(refundComment);
         newlyReturnedBill.setInstitution(sessionController.getInstitution());
         newlyReturnedBill.setDepartment(sessionController.getDepartment());
+        newlyReturnedBill.setReferenceBill(originalBillToReturn);
         newlyReturnedBill.invertValue();
 
         String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.OPD_BILL_REFUND);
@@ -268,7 +290,7 @@ public class BillReturnController implements Serializable {
         newlyReturnedBillItems = new ArrayList<>();
         returningBillPayments = new ArrayList<>();
         newlyReturnedBillFees = new ArrayList<>();
-      
+
         for (BillItem selectedBillItemToReturn : originalBillItemsToSelectedToReturn) {
 
             returningTotal += selectedBillItemToReturn.getGrossValue();
@@ -288,7 +310,7 @@ public class BillReturnController implements Serializable {
             selectedBillItemToReturn.setReferanceBillItem(newlyCreatedReturningItem);
             billItemController.save(selectedBillItemToReturn);
             List<BillFee> originalBillFeesOfSelectedBillItem = billBeanController.fetchBillFees(selectedBillItemToReturn);
-          
+
             if (originalBillFeesOfSelectedBillItem != null) {
                 for (BillFee origianlFee : originalBillFeesOfSelectedBillItem) {
                     BillFee newlyCreatedBillFeeToReturn = new BillFee();
@@ -333,7 +355,6 @@ public class BillReturnController implements Serializable {
 
     }
 
-
     public void calculateRefundingAmount() {
         refundingTotalAmount = 0.0;
         for (BillItem selectedBillItemToReturn : originalBillItemsToSelectedToReturn) {
@@ -345,6 +366,150 @@ public class BillReturnController implements Serializable {
             selectAll = false;
         }
     }
+    
+    public String settleCCReturnBill() {
+        if (returningStarted) {
+            JsfUtil.addErrorMessage("Already Returning Started");
+            return null;
+        }
+        if (originalBillToReturn == null) {
+            JsfUtil.addErrorMessage("Already Returning Started");
+            returningStarted = false;
+            return null;
+        }
+        if (originalBillItemsToSelectedToReturn == null || originalBillItemsToSelectedToReturn.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing selected to return");
+            returningStarted = false;
+            return null;
+        }
+
+        if (refundComment == null || refundComment.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Enter Refund Comment");
+            returningStarted = false;
+            return null;
+        }
+        
+        calculateRefundingAmount();
+
+//        Drawer loggedUserDraver = drawerController.getUsersDrawer(sessionController.getLoggedUser());
+
+//        if (!checkDraverBalance(loggedUserDraver, paymentMethod)) {
+//            JsfUtil.addErrorMessage("Your Draver does not have enough Money");
+//            returningStarted = false;
+//            return null;
+//        }
+
+        originalBillToReturn = billFacade.findWithoutCache(originalBillToReturn.getId());
+        if (originalBillToReturn.isCancelled()) {
+            JsfUtil.addErrorMessage("Already Cancelled");
+            returningStarted = false;
+            return null;
+        }
+        //TO DO: Check weather selected items is refunded
+        if (!checkCanReturnBill(originalBillToReturn)) {
+            JsfUtil.addErrorMessage("All Items are Already Refunded");
+            returningStarted = false;
+            return null;
+        }
+
+        // fetch original bill now, checked alteady returned, cancelled, , 
+        newlyReturnedBill = new RefundBill();
+        newlyReturnedBill.copy(originalBillToReturn);
+        newlyReturnedBill.setBillTypeAtomic(BillTypeAtomic.CC_BILL_REFUND);
+        newlyReturnedBill.setComments(refundComment);
+        newlyReturnedBill.setInstitution(sessionController.getInstitution());
+        newlyReturnedBill.setDepartment(sessionController.getDepartment());
+        newlyReturnedBill.setReferenceBill(originalBillToReturn);
+        newlyReturnedBill.invertValue();
+
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.CC_BILL_REFUND);
+        newlyReturnedBill.setDeptId(deptId);
+        newlyReturnedBill.setInsId(deptId);
+        billController.save(newlyReturnedBill);
+
+        List<Bill> refundBillList = originalBillToReturn.getRefundBills();
+        refundBillList.add(newlyReturnedBill);
+        originalBillToReturn.setRefunded(true);
+        originalBillToReturn.setRefundBills(refundBillList);
+
+        billController.save(originalBillToReturn);
+        double returningTotal = 0.0;
+        double returningNetTotal = 0.0;
+        double returningHospitalTotal = 0.0;
+        double returningStaffTotal = 0.0;
+        double returningDiscount = 0.0;
+
+        newlyReturnedBillItems = new ArrayList<>();
+        returningBillPayments = new ArrayList<>();
+        newlyReturnedBillFees = new ArrayList<>();
+
+//        for (BillItem selectedBillItemToReturn : originalBillItemsToSelectedToReturn) {
+//
+//            returningTotal += selectedBillItemToReturn.getGrossValue();
+//            returningNetTotal += selectedBillItemToReturn.getNetValue();
+//            returningHospitalTotal += selectedBillItemToReturn.getHospitalFee();
+//            returningStaffTotal += selectedBillItemToReturn.getStaffFee();
+//            returningDiscount += selectedBillItemToReturn.getDiscount();
+//
+//            BillItem newlyCreatedReturningItem = new BillItem();
+//            newlyCreatedReturningItem.copy(selectedBillItemToReturn);
+//            newlyCreatedReturningItem.invertValue();
+//            newlyCreatedReturningItem.setBill(newlyReturnedBill);
+//            newlyCreatedReturningItem.setReferanceBillItem(selectedBillItemToReturn);
+//            billItemController.save(newlyCreatedReturningItem);
+//            newlyReturnedBillItems.add(newlyCreatedReturningItem);
+//            selectedBillItemToReturn.setRefunded(true);
+//            selectedBillItemToReturn.setReferanceBillItem(newlyCreatedReturningItem);
+//            billItemController.save(selectedBillItemToReturn);
+//            List<BillFee> originalBillFeesOfSelectedBillItem = billBeanController.fetchBillFees(selectedBillItemToReturn);
+//
+//            if (originalBillFeesOfSelectedBillItem != null) {
+//                for (BillFee origianlFee : originalBillFeesOfSelectedBillItem) {
+//                    BillFee newlyCreatedBillFeeToReturn = new BillFee();
+//                    newlyCreatedBillFeeToReturn.copy(origianlFee);
+//                    newlyCreatedBillFeeToReturn.invertValue();
+//                    newlyCreatedBillFeeToReturn.setBill(newlyReturnedBill);
+//                    newlyCreatedBillFeeToReturn.setBillItem(newlyCreatedReturningItem);
+//                    newlyCreatedBillFeeToReturn.setReferenceBillFee(origianlFee);
+//                    newlyCreatedBillFeeToReturn.setReferenceBillItem(selectedBillItemToReturn);
+//                    billFeeController.save(newlyCreatedBillFeeToReturn);
+//                    newlyReturnedBillFees.add(newlyCreatedBillFeeToReturn);
+//
+//                    origianlFee.setReturned(true);
+//                    origianlFee.setReferenceBillFee(newlyCreatedBillFeeToReturn);
+//                    origianlFee.setReferenceBillItem(newlyCreatedReturningItem);
+//                    billFeeController.save(origianlFee);
+//
+//                }
+//            }
+//        }
+//
+//        newlyReturnedBill.setGrantTotal(0 - returningTotal);
+//        newlyReturnedBill.setNetTotal(0 - returningNetTotal);
+//        newlyReturnedBill.setTotal(0 - returningTotal);
+//        newlyReturnedBill.setHospitalFee(0 - returningHospitalTotal);
+//        newlyReturnedBill.setProfessionalFee(0 - returningStaffTotal);
+//        newlyReturnedBill.setDiscount(0 - returningDiscount);
+//        billController.save(newlyReturnedBill);
+//
+//        Payment returningPayment = new Payment();
+//        returningPayment.setBill(newlyReturnedBill);
+//        returningPayment.setPaymentMethod(paymentMethod);
+//        returningPayment.setPaidValue(newlyReturnedBill.getNetTotal());
+//        paymentController.save(returningPayment);
+//        returningBillPayments.add(returningPayment);
+
+        // drawer Update
+//        drawerController.updateDrawerForOuts(returningPayment);
+
+//        returningStarted = false;
+//        return "/opd/bill_return_print?faces-redirect=true";
+
+        return "";
+
+    }
+    
+    
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Getter & Setter">
@@ -445,5 +610,4 @@ public class BillReturnController implements Serializable {
     }
 
     // </editor-fold>
-
 }

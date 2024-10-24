@@ -13,6 +13,7 @@ import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.BillListWithTotals;
+import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.PharmacyStockRow;
 import com.divudi.ejb.BillEjb;
 import com.divudi.ejb.BillNumberGenerator;
@@ -42,6 +43,7 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.java.CommonFunctions;
+import com.divudi.service.PaymentService;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -88,6 +90,8 @@ public class PharmacyPurchaseController implements Serializable {
     PaymentFacade paymentFacade;
     @EJB
     BillEjb billEjb;
+    @EJB
+    PaymentService paymentService;
 
     /**
      * Controllers
@@ -117,6 +121,8 @@ public class PharmacyPurchaseController implements Serializable {
 
     BillListWithTotals billListWithTotals;
     private double billItemsTotalQty;
+
+    private PaymentMethodData paymentMethodData;
 
     public void createGrnAndPurchaseBillsWithCancellsAndReturnsOfSingleDepartment() {
         Date startTime = new Date();
@@ -388,7 +394,7 @@ public class PharmacyPurchaseController implements Serializable {
 
     public void calNetTotal() {
         double grossTotal = 0.0;
-        if (getBill().getDiscount() > 0 || getBill().getTax()>0) {
+        if (getBill().getDiscount() > 0 || getBill().getTax() > 0) {
             grossTotal = getBill().getTotal() + getBill().getDiscount() - getBill().getTax();
             ////// // System.out.println("gross" + grossTotal);
             ////// // System.out.println("net1" + getBill().getNetTotal());
@@ -399,10 +405,6 @@ public class PharmacyPurchaseController implements Serializable {
     }
 
     public void settle() {
-
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
 
         if (getBill().getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Select Payment Method");
@@ -434,7 +436,9 @@ public class PharmacyPurchaseController implements Serializable {
         saveBill();
         //   saveBillComponent();
 
-        Payment p = createPayment(getBill());
+//        Payment p = createPayment(getBill());
+        List<Payment> ps = paymentService.createPayment(getBill(), getBill().getPaymentMethod(), paymentMethodData, sessionController.getDepartment(), sessionController.getLoggedUser(), null);
+
         billItemsTotalQty = 0;
         for (BillItem i : getBillItems()) {
             if (i.getPharmaceuticalBillItem().getQty() + i.getPharmaceuticalBillItem().getFreeQty() == 0.0) {
@@ -460,7 +464,7 @@ public class PharmacyPurchaseController implements Serializable {
 
             i.setPharmaceuticalBillItem(tmpPh);
             getBillItemFacade().edit(i);
-            saveBillFee(i, p);
+            saveBillFee(i);
             ItemBatch itemBatch = getPharmacyBillBean().saveItemBatch(i);
             double addingQty = tmpPh.getQtyInUnit() + tmpPh.getFreeQtyInUnit();
 
@@ -523,7 +527,7 @@ public class PharmacyPurchaseController implements Serializable {
 
     }
 
-    public void saveBillFee(BillItem bi, Payment p) {
+    public void saveBillFee(BillItem bi) {
         BillFee bf = new BillFee();
         bf.setCreatedAt(Calendar.getInstance().getTime());
         bf.setCreater(getSessionController().getLoggedUser());
@@ -541,9 +545,10 @@ public class PharmacyPurchaseController implements Serializable {
         if (bf.getId() == null) {
             getBillFeeFacade().create(bf);
         }
-        createBillFeePaymentAndPayment(bf, p);
+//        createBillFeePaymentAndPayment(bf, p);
     }
 
+    @Deprecated
     public void createBillFeePaymentAndPayment(BillFee bf, Payment p) {
         BillFeePayment bfp = new BillFeePayment();
         bfp.setBillFee(bf);
@@ -848,6 +853,17 @@ public class PharmacyPurchaseController implements Serializable {
 
     public void setBillItemsTotalQty(double billItemsTotalQty) {
         this.billItemsTotalQty = billItemsTotalQty;
+    }
+
+    public PaymentMethodData getPaymentMethodData() {
+        if (paymentMethodData == null) {
+            paymentMethodData = new PaymentMethodData();
+        }
+        return paymentMethodData;
+    }
+
+    public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
+        this.paymentMethodData = paymentMethodData;
     }
 
 }

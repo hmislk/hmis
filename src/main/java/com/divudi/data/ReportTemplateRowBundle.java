@@ -54,6 +54,7 @@ public class ReportTemplateRowBundle implements Serializable {
     private Double grossTotal;
     private Double discount;
     private Double total;
+    private Double tax;
 
     private Double hospitalTotal;
     private Double staffTotal;
@@ -491,7 +492,20 @@ public class ReportTemplateRowBundle implements Serializable {
         }
     }
 
-    public void calculateTotals() {
+    public void calculateTotalByValues() {
+        total = 0.0;
+        grossTotal = 0.0;
+        discount = 0.0;
+        count = 0l;
+        for (ReportTemplateRow r : getReportTemplateRows()) {
+            grossTotal += r.getGrossTotal();
+            discount += r.getDiscount();
+            total += r.getTotal();
+            count += r.getRowCount();
+        }
+    }
+
+    public void calculateTotalsForAllPaymentMethods() {
         System.out.println("calculateTotals = ");
         resetTotalsAndFlags();
 
@@ -527,8 +541,44 @@ public class ReportTemplateRowBundle implements Serializable {
                 + this.creditValue + this.staffWelfareValue + this.voucherValue + this.iouValue
                 + this.agentValue + this.chequeValue + this.slipValue + this.eWalletValue
                 + this.patientDepositValue + this.patientPointsValue + this.onlineSettlementValue;
-//                + this.grossTotal + this.discount 
-//                + this.hospitalTotal + this.staffTotal + this.ccTotal + 0.0;
+
+    }
+
+    public void calculateTotals() {
+        System.out.println("calculateTotals = ");
+        resetTotalsAndFlags();
+
+        // Check if the list of rows is not null and not empty
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            // Aggregate values from each row and update transaction flags
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                addValueAndUpdateFlag("cash", safeDouble(row.getCashValue()));
+                addValueAndUpdateFlag("card", safeDouble(row.getCardValue()));
+                addValueAndUpdateFlag("multiplePaymentMethods", safeDouble(row.getMultiplePaymentMethodsValue()));
+                addValueAndUpdateFlag("staff", safeDouble(row.getStaffValue()));
+                addValueAndUpdateFlag("credit", safeDouble(row.getCreditValue()));
+                addValueAndUpdateFlag("staffWelfare", safeDouble(row.getStaffWelfareValue()));
+                addValueAndUpdateFlag("voucher", safeDouble(row.getVoucherValue()));
+                addValueAndUpdateFlag("iou", safeDouble(row.getIouValue()));
+                addValueAndUpdateFlag("agent", safeDouble(row.getAgentValue()));
+                addValueAndUpdateFlag("cheque", safeDouble(row.getChequeValue()));
+                addValueAndUpdateFlag("slip", safeDouble(row.getSlipValue()));
+                addValueAndUpdateFlag("eWallet", safeDouble(row.getEwalletValue()));
+                addValueAndUpdateFlag("patientDeposit", safeDouble(row.getPatientDepositValue()));
+                addValueAndUpdateFlag("patientPoints", safeDouble(row.getPatientPointsValue()));
+                addValueAndUpdateFlag("onlineSettlement", safeDouble(row.getOnlineSettlementValue()));
+                addValueAndUpdateFlag("grossTotal", safeDouble(row.getGrossTotal()));
+                addValueAndUpdateFlag("discount", safeDouble(row.getDiscount()));
+                addValueAndUpdateFlag("total", safeDouble(row.getTotal()));
+                addValueAndUpdateFlag("hospitalTotal", safeDouble(row.getHospitalTotal()));
+                addValueAndUpdateFlag("staffTotal", safeDouble(row.getStaffTotal()));
+                addValueAndUpdateFlag("ccTotal", safeDouble(row.getCcTotal()));
+            }
+        }
+        total
+                = this.cashValue + this.cardValue +  this.voucherValue + this.iouValue
+                + this.chequeValue + this.slipValue + this.eWalletValue;
+
     }
 
     public void calculateTotalsByChildBundles() {
@@ -691,6 +741,25 @@ public class ReportTemplateRowBundle implements Serializable {
                 }
                 Double amount = safeDouble(row.getBill().getNetTotal());
                 total += amount;
+            }
+        }
+    }
+
+    public void calculateTotalNetTotalTaxByBills() {
+        total = 0.0;
+        grossTotal = 0.0;
+        tax = 0.0;
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getBill() == null) {
+                    continue;
+                }
+                Double billTotal = safeDouble(row.getBill().getNetTotal());
+                Double billGrossTotal = safeDouble(row.getBill().getTotal());
+                Double billTax = safeDouble(row.getBill().getTax());
+                total += billTotal;
+                grossTotal += billGrossTotal;
+                tax += billTax;
             }
         }
     }
@@ -988,7 +1057,7 @@ public class ReportTemplateRowBundle implements Serializable {
                     this.slipValue += amount;
                     this.hasSlipTransaction = true;
                     break;
-                case "Wallet":
+                case "eWallet":
                     this.eWalletValue += amount;
                     this.hasEWalletTransaction = true;
                     break;
@@ -1810,6 +1879,14 @@ public class ReportTemplateRowBundle implements Serializable {
 
     public void setDenominations(List<com.divudi.entity.cashTransaction.Denomination> denominations) {
         this.denominations = denominations;
+    }
+
+    public Double getTax() {
+        return tax;
+    }
+
+    public void setTax(Double tax) {
+        this.tax = tax;
     }
 
 }

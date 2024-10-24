@@ -49,7 +49,7 @@
                                 <f:selectItems value="#{sessionController.loggableDepartments}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
                             </p:selectOneMenu>
 
-                            <h:outputLabel value="Site*"/>   
+                            <h:outputLabel value="Site"/>   
                             <p:selectOneMenu class="w-100 "  value="#{searchController.site}" filter="true">
                                 <f:selectItem itemLabel="All Departments" ></f:selectItem>
                                 <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" ></f:selectItems>
@@ -93,7 +93,7 @@
                             <p:dataTable rowIndexVar="i" id="tblBillItems" 
                                          value="#{searchController.billItems}" 
                                          scrollable="true"
-                                         var="billItem"
+                                         var="mbi"
                                          rows="10"
                                          paginator="true"
                                          paginatorPosition="top"
@@ -101,10 +101,10 @@
                                          rowsPerPageTemplate="5,10,15"
                                          >
                                 <p:column >
-                                    <p:outputLabel value="#{billItem.id}" ></p:outputLabel>
+                                    <p:outputLabel value="#{mbi.bill}" ></p:outputLabel>
                                 </p:column>
                                 <p:column >
-                                    <p:outputLabel value="#{billItem.bill.deptId}" ></p:outputLabel>
+                                    <p:outputLabel value="#{mbi}" ></p:outputLabel>
                                 </p:column>
 
                             </p:dataTable>
