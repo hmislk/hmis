@@ -1244,6 +1244,11 @@ public class ReportController implements Serializable {
             jpql += " AND pc.department.site=:site ";
             m.put("site", site);
         }
+        
+        if (department != null) {
+            jpql += " AND pc.department=:dept ";
+            m.put("dept", department);
+        }
 
         if (webUser != null) {
             jpql += " AND pc.creater=:wu ";
