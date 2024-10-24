@@ -18,8 +18,7 @@ public class AuditService {
 
     @EJB
     AuditEventFacade auditEventFacade;
-
-    private final Gson gson = new Gson(); // Instantiate Gson object
+    private final Gson gson = GsonProvider.getGson();
 
     public void logAudit(Object before, Object after, WebUser user, String entityType, String eventTrigger) {
         try {
@@ -35,4 +34,5 @@ public class AuditService {
             e.printStackTrace();
         }
     }
+
 }
