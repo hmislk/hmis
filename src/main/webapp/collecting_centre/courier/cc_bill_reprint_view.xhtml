@@ -1,0 +1,58 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
+      xmlns:dbi="http://xmlns.jcp.org/jsf/composite/bill/cc_bill">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+                    <p:panel header="CC Bill View" >
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between">
+                                <p:outputLabel value="CC Bill View" class="mt-2"></p:outputLabel>
+                                <p:commandButton 
+                                    ajax="false" 
+                                    class="ui-button-warning"
+                                    icon="fa fa-arrow-left"
+                                    action="#{courierController.navigateToViewReciptFromCCBillView()}"
+                                    value="Back to List">
+                                </p:commandButton>
+                            </div>
+                        </f:facet>
+
+                        <div class="row">
+                            <div class="d-flex justify-content-end gap-2">
+                                <p:outputLabel value="Paper Type" class="mt-2"></p:outputLabel>
+                                <p:selectOneMenu value="#{sessionController.departmentPreference.opdBillPaperType}" style="width: 13em;">
+                                    <f:selectItem itemLabel="Please Select Paper Type" />
+                                    <f:selectItems value="#{enumController.paperTypes}" />
+                                </p:selectOneMenu>
+                                <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button" title="Redraw Bill"></p:commandButton>
+                            </div>
+
+                            <h:panelGroup id="groupPrint" >
+                                <h:panelGroup rendered="#{courierController.currentCCBill.billTypeAtomic eq 'CC_PAYMENT_RECEIVED_BILL'}">
+                                    <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}" >
+                                        <dbi:fiveFiveCcDepositCCBill_CC_Custom1 bill="#{courierController.currentCCBill}" dup="true"/>                                                  
+                                    </h:panelGroup>
+                                </h:panelGroup>
+                                
+                                <h:panelGroup rendered="#{courierController.currentCCBill.billTypeAtomic eq 'CC_PAYMENT_CANCELLATION_BILL'}">
+                                    <bi:cc_payment_cancellation billController ="#{courierController}" bill="#{courierController.currentCCBill}" dup="true"/>  
+                                </h:panelGroup>
+                            </h:panelGroup>
+                        </div>
+                        
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
