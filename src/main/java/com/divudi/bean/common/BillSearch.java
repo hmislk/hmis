@@ -3151,7 +3151,8 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage("No Bill to Dsiplay");
             return "";
         }
-        findRefuendedBills(viewingBill);
+        financialTransactionController.setCurrentBill(viewingBill);
+        financialTransactionController.setCurrentBillPayments(viewingBillPayments);
         return "/cashier/income_bill_print?faces-redirect=true;";
     }
 
@@ -3179,7 +3180,8 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage("No Bill to Dsiplay");
             return "";
         }
-        findRefuendedBills(viewingBill);
+        financialTransactionController.setCurrentBill(viewingBill);
+        financialTransactionController.setCurrentBillPayments(viewingBillPayments);
         return "/cashier/expense_bill_print?faces-redirect=true;";
     }
 
