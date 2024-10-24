@@ -263,6 +263,11 @@
                                 <h:outputText value="#{pc.grandTotal}" >
                                     <f:convertNumber integerOnly="true" />
                                 </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{reportController.netTotal}">
+                                         <f:convertNumber integerOnly="true" />
+                                    </h:outputLabel>
+                                </f:facet>
                             </p:column>
                             <p:columns 
                                 width="5em"

@@ -14,7 +14,7 @@
                             <h:outputLabel value="ALL BILL LIST"/>                          
                         </f:facet>
 
-                        <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
+                        <h:panelGrid columns="8" styleClass="w-100" >
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
                                 <h:outputLabel value="From" for="fromDate" class="mx-3"/>
@@ -44,8 +44,24 @@
 
                             <p:spacer width="50" ></p:spacer>
 
-                            <p:spacer width="50" ></p:spacer>
-                            <p:spacer width="50" ></p:spacer>
+                            <!-- New Doctor Field with Icon -->
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0f0;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="User" for="user" class="mx-3" />
+                            </h:panelGroup>
+                            <p:autoComplete 
+                                forceSelection="true"
+                                value="#{searchController.webUser}"
+                                placeholder="Select User"
+                                completeMethod="#{webUserController.completeUser}" 
+                                id="user"
+                                var="u" 
+                                itemLabel="#{u.webUserPerson.name}" 
+                                itemValue="#{u}"
+                                class="w-100"
+                                inputStyleClass="w-100"
+                                >
+                            </p:autoComplete>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
@@ -99,104 +115,41 @@
 
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText title="Category" value="&#xf02d;" styleClass="fa mr-2" /> <!-- FontAwesome book icon -->
-                                <h:outputLabel value="Category"  class="mx-3"/>
-                            </h:panelGroup>
-                            <p:autoComplete value="#{searchController.category}"
-                                            completeMethod="#{categoryController.completeCategory}" 
-                                            var="category"
-                                            class="w-100"
-                                            inputStyleClass="w-100"
-                                            itemLabel="#{category.name}"
-                                            itemValue="#{category}">
-                            </p:autoComplete>
-
-                            <p:spacer ></p:spacer>
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText title="Item" value="&#xf0f6;" styleClass="fa mr-2" /> <!-- FontAwesome box icon -->
-                                <h:outputLabel value="Item"  class="mx-3"/>
-                            </h:panelGroup>
-                            <p:autoComplete value="#{searchController.item}"
-                                            class="w-100"
-                                            inputStyleClass="w-100"
-                                            completeMethod="#{itemController.completeAllServicesAndInvestigations}" 
-                                            var="item"
-                                            itemLabel="#{item.name}"
-                                            itemValue="#{item}">
-                            </p:autoComplete>
-
-                            <p:spacer width="50" ></p:spacer>
-
-                            <p:spacer width="50" ></p:spacer>
-                            <p:spacer width="50" ></p:spacer>
-
-                            <!-- New Speciality Field with Icon -->
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf2b9;" styleClass="fa mr-2" /> <!-- FontAwesome user-md icon for Speciality -->
-                                <h:outputLabel value="Speciality" for="acSpeciality" class="mx-3" />
-                            </h:panelGroup>
-                            <p:autoComplete id="acSpeciality" 
-                                            value="#{searchController.speciality}" 
-                                            completeMethod="#{specialityController.completeSpeciality}" 
-                                            var="speciality" 
-                                            itemLabel="#{speciality.name}" 
-                                            itemValue="#{speciality}"
-                                            inputStyleClass="w-100"
-                                            styleClass="w-100">
-                                <p:ajax event="itemSelect" update="scStaff" />
-                            </p:autoComplete>
-
-                            <p:spacer ></p:spacer>
-
-                            <!-- New Doctor Field with Icon -->
-                            <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf0f0;" styleClass="fa mr-2" /> 
-                                <h:outputLabel value="Doctor" for="scStaff" class="mx-3" />
+                                <h:outputLabel value="Bill Type (Atomic)" for="billTypeAtomic" class="mx-3" />
                             </h:panelGroup>
-                            <h:panelGroup id="scStaff">
-                                <p:selectOneMenu  
-                                    value="#{searchController.staff}" 
-                                    filter="true" 
-                                    rendered="#{searchController.speciality ne null}"
-                                    filterMatchMode="contains" 
-                                    styleClass="w-100 form-control">
-                                    <f:selectItem itemLabel="Please Select" noSelectionOption="true" />
-                                    <f:selectItems
-                                        value="#{staffController.getSpecialityStaff(searchController.speciality)}" 
-                                        var="staff" 
-                                        itemLabel="#{staff.person.nameWithTitle}" 
-                                        itemValue="#{staff}" />
-                                </p:selectOneMenu>
-                            </h:panelGroup>
-
-                            <p:spacer ></p:spacer>
-
-                            <!-- New Doctor Field with Icon -->
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf0f0;" styleClass="fa mr-2" /> 
-                                <h:outputLabel value="User" for="user" class="mx-3" />
-                            </h:panelGroup>
-                            <p:autoComplete 
-                                forceSelection="true"
-                                value="#{searchController.webUser}"
-                                placeholder="Select User"
-                                completeMethod="#{webUserController.completeUser}" 
-                                id="user"
-                                var="u" 
-                                itemLabel="#{u.webUserPerson.name}" 
-                                itemValue="#{u}"
-                                class="w-100"
-                                inputStyleClass="w-100"
-                                >
-                            </p:autoComplete>
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf0f0;" styleClass="fa mr-2" /> 
-                                <h:outputLabel value="Type" for="billType" class="mx-3" />
-                            </h:panelGroup>
-                            <p:selectOneMenu id="billType" class="w-100  "  value="#{searchController.billClassType}" >
+                            <p:selectOneMenu
+                                id="billTypeAtomic" 
+                                class=""  value="#{searchController.billTypeAtomic}" >
                                 <f:selectItem itemLabel="All Types" ></f:selectItem>
+                                <f:selectItems 
+                                    var="billTypeAtomic"
+                                    itemLabel="#{billTypeAtomic.label}"           
+                                    itemValue="#{billTypeAtomic}" 
+                                    value="#{enumController.billTypesAtomic}" ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:spacer ></p:spacer>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0f0;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="Bill Type" for="billType" class="mx-3" />
+                            </h:panelGroup>
+                            <p:selectOneMenu id="billType" class="w-100  "  value="#{searchController.billType}" >
+                                <f:selectItem itemLabel="All Types" ></f:selectItem>
+                                <f:selectItems 
+                                    var="billType"
+                                    itemLabel="#{billType.label}"           
+                                    itemValue="#{billType}" 
+                                    value="#{enumController.billTypes}" ></f:selectItems>
+                            </p:selectOneMenu>
+                            <p:spacer ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0f0;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="Class Type" for="billClass" class="mx-3" />
+                            </h:panelGroup>
+                            <p:selectOneMenu id="billClass" class="w-100  "  value="#{searchController.billClassType}" >
+                                <f:selectItem itemLabel="All Class Types" ></f:selectItem>
                                 <f:selectItems var="billclass" itemLabel="#{billclass}" value="#{enumController.billClassTypes}" ></f:selectItems>
                             </p:selectOneMenu>
 
@@ -252,25 +205,42 @@
                                 </p:column>
 
                                 <p:column headerText="Gross Value" styleClass="averageNumericColumn">
-                                    <h:outputLabel value="#{bill.total}" >
+                                    <h:outputLabel value="#{bill.total}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputText value="#{searchController.total}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </f:facet>
                                 </p:column>
                                 <p:column headerText="Discount" styleClass="averageNumericColumn">
-                                    <h:outputLabel value="#{bill.discount}" >
+                                    <h:outputLabel value="#{bill.discount}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputText value="#{searchController.discount}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </f:facet>
                                 </p:column>
                                 <p:column headerText="Net Value" styleClass="averageNumericColumn">
-                                    <h:outputLabel value="#{bill.netTotal}" >
+                                    <h:outputLabel value="#{bill.netTotal}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
-                                </p:column>  
+                                    <f:facet name="footer">
+                                        <h:outputText value="#{searchController.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+
                                 <p:column headerText="No" styleClass="alignTop">
                                     <p:commandButton 
                                         value="View" 
                                         icon="fa fa-eye" 
-                                        class="m-1 ui-button-info" 
+                                        class="m-1 ui-button-info"
+                                        style="width: 100px;"
                                         action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
                                         ajax="false">
                                         <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" />
@@ -279,7 +249,8 @@
                                     <p:commandButton 
                                         value="Manage" 
                                         icon="fa fa-tools" 
-                                        class="m-1 ui-button-primary" 
+                                        class="m-1 ui-button-warning" 
+                                        style="width: 100px;"
                                         action="#{billSearch.navigateToManageBillByAtomicBillType()}" 
                                         ajax="false">
                                         <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" />
@@ -289,6 +260,7 @@
                                         value="Admin" 
                                         icon="fa fa-shield-alt" 
                                         class="m-1 ui-button-danger" 
+                                        style="width: 100px;"
                                         action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
                                         ajax="false" 
                                         rendered="#{webUserController.hasPrivilege('Developers')}">
