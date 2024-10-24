@@ -302,37 +302,43 @@ public class AgentAndCcPaymentController implements Serializable {
                 getCurrent().getNetTotal(),
                 HistoryType.CollectingCentreDeposit,
                 getCurrent());
+
         if ((getCurrent().getNetTotal() > (getCurrent().getFromInstitution().getMaxCreditLimit() - getCurrent().getFromInstitution().getStandardCreditLimit())) && (getCurrent().getFromInstitution().getMaxCreditLimit() != getCurrent().getFromInstitution().getStandardCreditLimit())) {
             getCurrent().getFromInstitution().setAllowedCredit(getCurrent().getFromInstitution().getStandardCreditLimit());
             getInstitutionFacade().edit(getCurrent().getFromInstitution());
-            collectingCentreApplicationController.updateCcBalance(
-                    current.getFromInstitution(),
-                    0,
-                    0,
-                    0,
-                    0,
-                    HistoryType.CollectingCentreBalanceUpdateBill,
-                    getCurrent(),
-                    "Agent Payment Allowed Credit Limit Reset");
         }
+
+//        if ((getCurrent().getNetTotal() > (getCurrent().getFromInstitution().getMaxCreditLimit() - getCurrent().getFromInstitution().getStandardCreditLimit())) && (getCurrent().getFromInstitution().getMaxCreditLimit() != getCurrent().getFromInstitution().getStandardCreditLimit())) {
+//            getCurrent().getFromInstitution().setAllowedCredit(getCurrent().getFromInstitution().getStandardCreditLimit());
+//            getInstitutionFacade().edit(getCurrent().getFromInstitution());
+//            collectingCentreApplicationController.updateCcBalance(
+//                    current.getFromInstitution(),
+//                    0,
+//                    0,
+//                    0,
+//                    0,
+//                    HistoryType.CollectingCentreBalanceUpdateBill,
+//                    getCurrent(),
+//                    "Agent Payment Allowed Credit Limit Reset");
+//        }
         JsfUtil.addSuccessMessage("Bill Saved");
         ccDepositSettlingStarted = false;
         printPreview = true;
     }
-    
-     public void updateBallance(Institution ins, double transactionValue, HistoryType historyType, Bill bill) {
+
+    public void updateBallance(Institution ins, double transactionValue, HistoryType historyType, Bill bill) {
         AgentHistory agentHistory = new AgentHistory();
         agentHistory.setCreatedAt(new Date());
         agentHistory.setCreater(getSessionController().getLoggedUser());
         agentHistory.setBill(bill);
-       // agentHistory.setBillItem(billItem);
+        // agentHistory.setBillItem(billItem);
         //agentHistory.setBillSession(selectedBillSession);
         agentHistory.setBalanceBeforeTransaction(ins.getBallance());
         agentHistory.setTransactionValue(transactionValue);
         //agentHistory.setReferenceNumber(refNo);
         agentHistory.setHistoryType(historyType);
         agentHistoryFacade.create(agentHistory);
-        
+
         ins.setBallance(ins.getBallance() + transactionValue);
         getInstitutionFacade().edit(ins);
 
@@ -343,15 +349,14 @@ public class AgentAndCcPaymentController implements Serializable {
             return;
         }
         addPaymentMethordValueToTotal(current, getCurrent().getPaymentMethod());
-        
+
         if (getCurrent().getNetTotal() <= 0) {
             JsfUtil.addErrorMessage("Add Valid Amount");
             return;
         }
-        
+
         createAndAddBillItemToCcPaymentReceiptBill();
-       
-        
+
         getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
 
         getCurrent().setTotal(getCurrent().getNetTotal());
@@ -384,7 +389,7 @@ public class AgentAndCcPaymentController implements Serializable {
         } else {
             getBillFacade().edit(getCurrent());
         }
-        
+
         updateBallance(current.getFromInstitution(), current.getNetTotal(), HistoryType.AgentBalanceUpdateBill, current);
         System.out.println(current.getFromInstitution().getBallance());
         saveBillItem();
@@ -413,7 +418,7 @@ public class AgentAndCcPaymentController implements Serializable {
 //                    getCurrent(),
 //                    "Agent Payment Allowed Credit Limit Reset");
 //        }
-        
+
         JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
     }

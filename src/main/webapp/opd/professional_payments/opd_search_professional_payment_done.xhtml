@@ -41,6 +41,10 @@
                                     <p:dataExporter type="xlsx" target="tblBills" fileName="opd_search_professional_payment_done"  />
                                 </p:commandButton>
                                 <p:defaultCommand target="btnSearch" />
+                                <h:outputLabel value="User"/>
+                                <h:outputLabel value="#{searchController.reportKeyWord.webUser.name}"/>
+                                
+
                                 <h:outputLabel value="OPD Bill No"/>
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="w-100 my-1"/>
                                 <h:outputLabel value="Payment Bill No"/>
@@ -82,7 +86,7 @@
                                              paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                              rowsPerPageTemplate="5,10,25,50"
                                              rowIndexVar="i" >
-                                    
+
                                     <p:column headerText="OPD Bill No" filterBy="#{bi.paidForBillFee.bill.deptId}">
                                         <h:outputLabel value="#{bi.paidForBillFee.bill.deptId}" ></h:outputLabel>
                                     </p:column>
@@ -128,7 +132,7 @@
                                             </h:outputLabel>
                                         </h:panelGroup>
                                     </p:column>  
-                                     
+
                                     <p:column headerText="Paid By" >
 
                                         <h:outputLabel value="#{bi.bill.creater.webUserPerson.name}" >                                      

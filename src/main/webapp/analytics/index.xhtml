@@ -39,11 +39,18 @@
                                     <p:tab title="Lists">
                                         <div class="d-grid gap-2">
 
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Bill Type List" 
+                                                action="#{searchController.navigateToBillTypeList()}"
+                                                class="w-100">
+                                            </p:commandButton>
+                                            
 
                                             <p:commandButton 
                                                 ajax="false" 
                                                 value="Bill List" 
-                                                action="bills"
+                                                action="#{searchController.navigateToBillList}"
                                                 class="w-100">
                                             </p:commandButton>
 
@@ -51,14 +58,14 @@
                                             <p:commandButton 
                                                 ajax="false" 
                                                 value="Bill Item List" 
-                                                action="bill_items"
+                                                action="#{searchController.navigateToBillItemList()}"
                                                 class="w-100">
                                             </p:commandButton>
 
                                             <p:commandButton 
                                                 ajax="false" 
                                                 value="Bill Fee List" 
-                                                action="bill_fees"
+                                                action="#{searchController.navigateToBillFeeList()}"
                                                 class="w-100">
                                             </p:commandButton>
 
@@ -66,7 +73,7 @@
                                                 ajax="false" 
                                                 value="Payment List" 
                                                 actionListener="#{searchController.makeNull()}"
-                                                action="#{searchController.navigateToListPayments()}"
+                                                action="#{searchController.navigateToBillPaymentList()}"
                                                 class="w-100">
                                             </p:commandButton>
 

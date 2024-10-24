@@ -40,6 +40,12 @@ public class ReportTemplateRow implements Serializable {
     private BillFee billFee;
     private Payment payment;
 
+        
+    private BillType billType;
+    private BillClassType billClassType;
+    BillTypeAtomic billTypeAtomic;
+    
+    
     private boolean selected;
 
     private Item item;
@@ -88,7 +94,6 @@ public class ReportTemplateRow implements Serializable {
     private Long long10;
 
     private ServiceType serviceType;
-    private BillTypeAtomic billTypeAtomic;
     private Institution creditCompany;
     private Department toDepartment;
     private Department itemDepartment;
@@ -289,6 +294,29 @@ public class ReportTemplateRow implements Serializable {
         this.onlineSettlementValue = onlineSettlementValue;
     }
 
+    public ReportTemplateRow(BillType billType, BillClassType billClassType, BillTypeAtomic billTypeAtomic, Long rowCount, Double grossTotal, Double discount, Double total) {
+        this.billType = billType;
+        this.billClassType = billClassType;
+        this.billTypeAtomic = billTypeAtomic;
+        this.rowCount = rowCount;
+        this.grossTotal = grossTotal;
+        this.discount = discount;
+        this.total = total;
+    }
+    
+    public ReportTemplateRow(BillTypeAtomic billTypeAtomic, Long rowCount, Double grossTotal, Double discount, Double total) {
+        this.billTypeAtomic = billTypeAtomic;
+        this.rowCount = rowCount;
+        this.grossTotal = grossTotal;
+        this.discount = discount;
+        this.total = total;
+    }
+
+    public ReportTemplateRow(BillTypeAtomic billTypeAtomic, Long rowCount) {
+        this.billTypeAtomic = billTypeAtomic;
+        this.rowCount = rowCount;
+    }
+    
     public ReportTemplateRow(Department department, Date date, WebUser user,
             double cashValue, double cardValue, double multiplePaymentMethodsValue,
             double staffValue, double creditValue, double staffWelfareValue,
@@ -1248,6 +1276,23 @@ public class ReportTemplateRow implements Serializable {
     public void setPaymentHandover(PaymentHandover paymentHandover) {
         this.paymentHandover = paymentHandover;
     }
+
+    public BillType getBillType() {
+        return billType;
+    }
+
+    public void setBillType(BillType billType) {
+        this.billType = billType;
+    }
+
+    public BillClassType getBillClassType() {
+        return billClassType;
+    }
+
+    public void setBillClassType(BillClassType billClassType) {
+        this.billClassType = billClassType;
+    }
+    
     
     
 

@@ -49,33 +49,40 @@
                                      paginatorPosition="bottom"
                                      rows="10"
                                      paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     rowsPerPageTemplate="5,10,15"
-                                     >
-                            <p:column headerText="ID"  >
-                                <h:outputLabel value="#{ae.id}">
-                                </h:outputLabel>
+                                     rowsPerPageTemplate="5,10,15">
+
+                            <p:column headerText="ID">
+                                <h:outputLabel value="#{ae.id}" />
                             </p:column>
-                            <p:column headerText="Name" sortBy="#{ae.eventTrigger}" filterBy="#{ae.eventTrigger}" filterMatchMode="contains" >
-                                <h:outputLabel value="#{ae.eventTrigger}"/>
+                            
+                             <p:column headerText="User ID">
+                                <h:outputLabel value="#{ae.webUserId}" />
                             </p:column>
-                            <p:column  headerText="Duration">
-                                <h:outputLabel value="#{ae.eventDuration}"/>
-                            </p:column>
-                            <p:column headerText="Status"  sortBy="#{ae.eventStatus}" filterBy="#{ae.eventStatus}" filterMatchMode="contains">
-                                <h:outputLabel value="#{ae.eventStatus}"/>
-                            </p:column>
-                            <p:column headerText="Start"  >
+
+                            <p:column headerText="Time">
                                 <h:outputLabel value="#{ae.eventDataTime}">
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
-                                </h:outputLabel>
-                            </p:column>
-                            <p:column headerText="End"  >
-                                <h:outputLabel value="#{ae.eventEndTime}">
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>
 
+                            <p:column headerText="Name" sortBy="#{ae.eventTrigger}" filterBy="#{ae.eventTrigger}" filterMatchMode="contains">
+                                <h:outputLabel value="#{ae.eventTrigger}" />
+                            </p:column>
+
+                            <p:column headerText="Before">
+                                <h:outputLabel value="#{ae.beforeJson}" />
+                            </p:column>
+
+                            <p:column headerText="After">
+                                <h:outputLabel value="#{ae.afterJson}" />
+                            </p:column>
+
+                            <p:column headerText="Difference">
+                                <h:outputLabel value="#{ae.difference}" />
+                            </p:column>
+
                         </p:dataTable>
+
 
 
 
