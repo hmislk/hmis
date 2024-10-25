@@ -334,7 +334,7 @@ public class DealorPaymentBillSearch implements Serializable {
     }
 
     @Inject
-    PharmacyDealorBill pharmacyDealorBill;
+    PharmacyDealerController pharmacyDealorBill;
 
     public void cancelBill() {
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
