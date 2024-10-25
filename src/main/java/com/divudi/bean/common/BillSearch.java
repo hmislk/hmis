@@ -3178,6 +3178,7 @@ public class BillSearch implements Serializable {
         printPreview = false;
         return "/cashier/income_bill_cancel?faces-redirect=true;";
     }
+
     
      public String navigateToViewExpenseBill() {
         if (viewingBill == null) {
@@ -3188,6 +3189,7 @@ public class BillSearch implements Serializable {
         financialTransactionController.setCurrentBillPayments(viewingBillPayments);
         return "/cashier/expense_bill_print?faces-redirect=true;";
     }
+
 
     public String navigateToManageExpenseBill() {
         if (viewingBill == null) {
