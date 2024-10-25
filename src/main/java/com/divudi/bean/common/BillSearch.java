@@ -3152,7 +3152,7 @@ public class BillSearch implements Serializable {
             return "";
         }
         findRefuendedBills(viewingBill);
-        return "/opd/view/opd_bill?faces-redirect=true;";
+        return "/cashier/income_bill_print?faces-redirect=true;";
     }
 
     public String navigateToManageIncomeBill() {
@@ -3162,8 +3162,28 @@ public class BillSearch implements Serializable {
         }
         financialTransactionController.setCurrentBill(viewingBill);
         financialTransactionController.setCurrentBillPayments(viewingBillPayments);
-        return "/cashier/income_bill_print?faces-redirect=true;";
+        return "/cashier/income_bill_reprint?faces-redirect=true;";
     }
+    
+    public String navigateToCancelIncomeBill() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Nothing to cancel");
+            return "";
+        }
+        printPreview = false;
+        return "/cashier/income_bill_cancel?faces-redirect=true;";
+    }
+
+    
+     public String navigateToViewExpenseBill() {
+        if (viewingBill == null) {
+            JsfUtil.addErrorMessage("No Bill to Dsiplay");
+            return "";
+        }
+        findRefuendedBills(viewingBill);
+        return "/cashier/expense_bill_print?faces-redirect=true;";
+    }
+
 
     public String navigateToManageExpenseBill() {
         if (viewingBill == null) {
@@ -3172,7 +3192,16 @@ public class BillSearch implements Serializable {
         }
         financialTransactionController.setCurrentBill(viewingBill);
         financialTransactionController.setCurrentBillPayments(viewingBillPayments);
-        return "/cashier/expense_bill_print?faces-redirect=true;";
+        return "/cashier/expense_bill_reprint?faces-redirect=true;";
+    }
+    
+    public String navigateToCancelExpenseBill() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Nothing to cancel");
+            return "";
+        }
+        printPreview = false;
+        return "/cashier/expense_bill_cancel?faces-redirect=true;";
     }
 
     public String navigateToAdminOpdBill() {
@@ -3521,6 +3550,8 @@ public class BillSearch implements Serializable {
                 return pharmacyBillSearch.navigateToViewPharmacyGrn();
             case SUPPLEMENTARY_INCOME:
                 return navigateToViewIncomeBill();
+            case OPERATIONAL_EXPENSES:
+                return navigateToViewExpenseBill();
 
         }
 
