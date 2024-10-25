@@ -98,9 +98,10 @@
                                      value="Print">
                         <p:printer target="profpaycancelbill" />
                         </p:commandButton>
+                    
 
                     <h:panelGroup id="profpaycancelbill" rendered="#{billSearch.printPreview}" >                       
-                         <bi:A4PaperPamentOPDDoctor controller="#{billSearch}" bill="#{billSearch.bill}" />
+                         <bi:A4PaperPamentOPDDoctorCancellation  bill="#{billSearch.bill}" />
                     </h:panelGroup>
 
 

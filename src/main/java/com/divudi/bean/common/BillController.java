@@ -1768,12 +1768,13 @@ public class BillController implements Serializable {
             patientDepositController.updateBalance(cancellationBatchBill, pd);
         }
 
-        createPaymentForOpdBatchBillCancellation(cancellationBatchBill, batchBill.getPaymentMethod());
+        createPaymentForOpdBatchBillCancellation(cancellationBatchBill, paymentMethod);
 
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cancellationBatchBill, getSessionController().getLoggedUser());
         opdBillController.setBills(bills);
         opdBillController.setBatchBill(batchBill);
         getSessionController().setLoggedUser(wb);
+
         printPreview = true;
         return "/opd/opd_batch_bill_print?faces-redirect=true";
     }
@@ -1882,11 +1883,11 @@ public class BillController implements Serializable {
         }
         //createPayment(cancellationBill, cancellationBatchBill.getPaymentMethod());
 
-        String deptId = getBillNumberGenerator().generateBillNumber(cancellationBill.getFromDepartment(), cancellationBill.getToDepartment(), cancellationBill.getBillType(), cancellationBill.getBillClassType());
-        String insId = getBillNumberGenerator().generateBillNumber(cancellationBill.getInstitution(), cancellationBill.getBillType(), cancellationBill.getBillClassType());
+        String deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(cancellationBill.getDepartment(), BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+//        String insId = getBillNumberGenerator().generateBillNumber(cancellationBill.getInstitution(), cancellationBill.getBillType(), cancellationBill.getBillClassType());
 
         cancellationBill.setDeptId(deptId);
-        cancellationBill.setInsId(insId);
+        cancellationBill.setInsId(deptId);
 
         cancellationBill.setBalance(0.0);
         cancellationBill.setPaymentMethod(cancellationBatchBill.getPaymentMethod());
@@ -2028,7 +2029,7 @@ public class BillController implements Serializable {
             newBillItem.setDeptId(originalBillItem.getDeptId());
             newBillItem.setInsId(originalBillItem.getInsId());
             newBillItem.setDiscount(0 - originalBillItem.getDiscount());
-            newBillItem.setQty(1.0);
+            newBillItem.setQty(0 - originalBillItem.getQty());
             newBillItem.setRate(originalBillItem.getRate());
             newBillItem.setCreatedAt(new Date());
             newBillItem.setCreater(getSessionController().getLoggedUser());
