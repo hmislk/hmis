@@ -273,7 +273,25 @@ public class PatientInvestigationController implements Serializable {
     public String navigateToPatientSampelIndex() {
         return "/lab/sample_index?faces-redirect=true";
     }
+    
+    public String navigateToSampleManagementFromOPDBatchBillView(Bill bill) {
+        listingEntity = ListingEntity.BILLS;
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+        jpql = "SELECT pi.billItem.bill "
+                + " FROM PatientInvestigation pi"
+                + " WHERE pi.billItem.bill.retired = :ret"
+                + " and pi.billItem.bill =:b"
+                + " GROUP BY pi.billItem.bill ";
 
+        params.put("b", bill);
+        params.put("ret", false);
+
+        bills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        
+        return "/lab/generate_barcode_p?faces-redirect=true";
+    }
+    
     public String navigateToPrintBarcodesFromSampellingPage(PatientInvestigation ptIx) {
         if (ptIx == null) {
             JsfUtil.addErrorMessage("Patient Investigation is NOT selected");
