@@ -131,6 +131,9 @@ public class AuditEventController implements Serializable {
         hm.put("fd", fromDate);
         hm.put("td", toDate);
         items = getFacade().findByJpql(jpql, hm, TemporalType.TIMESTAMP);
+        for (AuditEvent ae : items) {
+            ae.calculateDifference();  
+        }
     }
 
     public void prepareAdd() {
