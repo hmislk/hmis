@@ -273,7 +273,7 @@ public class PatientInvestigationController implements Serializable {
     public String navigateToPatientSampelIndex() {
         return "/lab/sample_index?faces-redirect=true";
     }
-    
+
     public String navigateToSampleManagementFromOPDBatchBillView(Bill bill) {
         listingEntity = ListingEntity.BILLS;
         String jpql;
@@ -288,10 +288,10 @@ public class PatientInvestigationController implements Serializable {
         params.put("ret", false);
 
         bills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
-        
+
         return "/lab/generate_barcode_p?faces-redirect=true";
     }
-    
+
     public String navigateToPrintBarcodesFromSampellingPage(PatientInvestigation ptIx) {
         if (ptIx == null) {
             JsfUtil.addErrorMessage("Patient Investigation is NOT selected");
@@ -1883,8 +1883,10 @@ public class PatientInvestigationController implements Serializable {
             jpql += " AND (pi.billItem.bill.collectingCentre = :collectionCenter OR pi.billItem.bill.fromInstitution = :collectionCenter) ";
             params.put("collectionCenter", getCollectionCenter());
         } else {
-            jpql += " AND (pi.billItem.bill.collectingCentre IN :collectionCenters OR pi.billItem.bill.fromInstitution IN :collectionCenters) ";
-            params.put("collectionCenters", sessionController.getLoggableCollectingCentres());
+            if (!sessionController.getLoggableCollectingCentres().isEmpty()) {
+                jpql += " AND (pi.billItem.bill.collectingCentre IN :collectionCenters OR pi.billItem.bill.fromInstitution IN :collectionCenters) ";
+                params.put("collectionCenters", sessionController.getLoggableCollectingCentres());
+            }
         }
 
         if (patientName != null && !patientName.trim().isEmpty()) {
@@ -2100,8 +2102,10 @@ public class PatientInvestigationController implements Serializable {
             jpql += " AND (r.patientInvestigation.billItem.bill.collectingCentre = :collectionCenter OR r.patientInvestigation.billItem.bill.fromInstitution = :collectionCenter) ";
             params.put("collectionCenter", getCollectionCenter());
         } else {
-            jpql += " AND (r.patientInvestigation.billItem.bill.collectingCentre IN :collectionCenters OR r.patientInvestigation.billItem.bill.fromInstitution IN :collectionCenters) ";
-            params.put("collectionCenters", sessionController.getLoggableCollectingCentres());
+            if (!sessionController.getLoggableCollectingCentres().isEmpty()) {
+                jpql += " AND (pi.billItem.bill.collectingCentre IN :collectionCenters OR pi.billItem.bill.fromInstitution IN :collectionCenters) ";
+                params.put("collectionCenters", sessionController.getLoggableCollectingCentres());
+            }
         }
 //         jpql += " AND (r.patientInvestigation.billItem.bill.collectingCentre.route = :route OR r.patientInvestigation.billItem.bill.fromInstitution.route = :route) ";
 //        params.put("route", sessionController.getDepartment());
@@ -2488,8 +2492,10 @@ public class PatientInvestigationController implements Serializable {
             jpql += " AND (i.billItem.bill.collectingCentre =:collectionCenter OR i.billItem.bill.fromInstitution =:collectionCenter) ";
             params.put("collectionCenter", getCollectionCenter());
         } else {
-            jpql += " AND (i.billItem.bill.collectingCentre IN :collectionCenters OR i.billItem.bill.fromInstitution IN :collectionCenters) ";
-            params.put("collectionCenters", sessionController.getLoggableCollectingCentres());
+            if (!sessionController.getLoggableCollectingCentres().isEmpty()) {
+                jpql += " AND (pi.billItem.bill.collectingCentre IN :collectionCenters OR pi.billItem.bill.fromInstitution IN :collectionCenters) ";
+                params.put("collectionCenters", sessionController.getLoggableCollectingCentres());
+            }
         }
 
         if (patientName != null && !patientName.trim().isEmpty()) {
@@ -5404,8 +5410,6 @@ public class PatientInvestigationController implements Serializable {
         }
 
     }
-    
-    
 
     public List<PatientSampleComponant> getPatientSampleComponentsByPatientSample(PatientSample patientSample) {
         List<PatientSampleComponant> ptsc;
