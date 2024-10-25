@@ -291,9 +291,9 @@
                                                 ></p:ajax>
                                         </p:selectBooleanCheckbox>
                                     </p:column>
-                                    
-                                     <p:column headerText="Type" >
-                                         <h:outputText value="#{summary.paymentHandover.description}" />
+
+                                    <p:column headerText="Type" >
+                                        <h:outputText value="#{summary.paymentHandover.description}" />
                                     </p:column>
 
                                     <p:column headerText="Institution" >
@@ -325,14 +325,7 @@
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
 
-                                        <!-- Icon-Only Link to Open Dialog -->
-                                        <p:commandLink 
 
-                                            oncomplete="PF('detailsDialog').show();"
-                                            styleClass="ui-icon ui-icon-info mx-3"
-                                            title="View Details">
-                                            <span class="pi pi-info-circle" aria-hidden="true"></span>
-                                        </p:commandLink>
 
 
 
@@ -341,48 +334,7 @@
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputText>
                                         </f:facet>
-                                        <!-- Separate Dialog Component -->
-                                        <p:dialog 
-                                            widgetVar="detailsDialog" 
-                                            header="Cash Transaction Details" 
-                                            modal="true" 
-                                            class="w-75"
-                                            style="min-height: 60vh;"
-                                            draggable="true"
-                                            resizable="false">
-                                            <p:ajax event="open" update="cashDetailsTable" />
 
-                                            <!-- DataTable inside Dialog -->
-                                            <p:dataTable id="cashDetailsTable" 
-                                                         value="#{summary.reportTemplateRows}" 
-                                                         var="cashRow"
-                                                         rowIndexVar="n"
-                                                         rowKey="#{cashRow.id}"
-                                                         paginator="true"
-                                                         rows="10"
-                                                         paginatorPosition="bottom"
-                                                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                                         rowsPerPageTemplate="5,10,15">
-
-                                                <p:column headerText="Bill Type">
-                                                    <h:outputText value="#{cashRow.payment.bill.billTypeAtomic.label}" />
-                                                </p:column>
-                                                
-                                                <p:column headerText="From">
-                                                    <h:outputText value="#{cashRow.payment.bill.fromWebUser.name}" />
-                                                     <h:outputText value="#{cashRow.payment.bill.toWebUser.name}" />
-                                                     <h:outputText rendered="#{cashRow.payment.bill.billTypeAtomic eq ''}" value="#{cashRow.payment.bill.completed?'Completed':'Pending'}" />
-                                                </p:column>
-
-                                                <p:column headerText="Value" class="text-end">
-                                                    <h:outputText value="#{cashRow.payment.paidValue}">
-                                                        <f:convertNumber pattern="#,##0.00" />
-                                                    </h:outputText>
-                                                </p:column>
-                                            </p:dataTable>
-
-
-                                        </p:dialog>
 
 
                                     </p:column>
@@ -792,6 +744,19 @@
                                             styleClass="ui-button-warning m-1 mx-2" 
                                             action="#{financialTransactionController.navigateToSelectPaymentsForHandoverCreate(summary, 'OnCall')}" >
                                         </p:commandButton>
+                                    </p:column>
+
+                                    <p:column headerText="Actions" >
+                                        <p:commandLink 
+                                            styleClass="ui-icon ui-icon-info mx-3"
+                                            title="View Details"
+                                            ajax="false"
+                                            value="View Details"
+                                            action="handover_start_all_bill_type_details"
+                                            target="_blank">
+                                            <f:setPropertyActionListener value="#{summary}" target="#{financialTransactionController.selectedBundle}" />
+                                            <span class="pi pi-info-circle" aria-hidden="true"></span>
+                                        </p:commandLink>
                                     </p:column>
 
 

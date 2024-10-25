@@ -50,7 +50,7 @@
                                      paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      rowsPerPageTemplate="5,10,15">
 
-                            <p:column headerText="ID">
+                            <p:column headerText="ID" rendered="false">
                                 <h:outputLabel value="#{ae.id}" />
                             </p:column>
                             
@@ -68,15 +68,8 @@
                                 <h:outputLabel value="#{ae.eventTrigger}" />
                             </p:column>
 
-                            <p:column headerText="Before">
-                                <h:outputLabel value="#{ae.beforeJson}" />
-                            </p:column>
-
-                            <p:column headerText="After">
-                                <h:outputLabel value="#{ae.afterJson}" />
-                            </p:column>
-
-                            <p:column headerText="Difference">
+                            
+                            <p:column headerText="Changes" rendered="true">
                                 <h:outputLabel value="#{ae.difference}" />
                             </p:column>
 
