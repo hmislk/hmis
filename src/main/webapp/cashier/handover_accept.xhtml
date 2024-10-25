@@ -67,9 +67,9 @@
                                         <h:panelGroup>
                                             <p:badge 
                                                 value="Shift Not Yet Ended" 
-                                                     rendered="#{financialTransactionController.bundle.endBill eq null}" 
-                                                     styleClass="ui-badge-danger" 
-                                                     icon="pi pi-times">
+                                                rendered="#{financialTransactionController.bundle.endBill eq null}" 
+                                                styleClass="ui-badge-danger" 
+                                                icon="pi pi-times">
                                             </p:badge>
 
                                             <p:panelGrid columns="2" rendered="#{financialTransactionController.bundle.endBill ne null}">
@@ -131,7 +131,7 @@
                                                         action="#{financialTransactionController.rejectToReceiveHandoverBill()}"
                                                         ajax="false"
                                                         onclick="if (!confirm('Are you sure you want to Reject this record?'))
-                                                                        return false;" 
+                                                                    return false;" 
                                                         class="m-1 ui-button-danger"
                                                         icon="pi pi-times-circle">
                                                     </p:commandButton>
