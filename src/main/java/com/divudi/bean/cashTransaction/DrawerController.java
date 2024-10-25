@@ -61,11 +61,12 @@ import javax.inject.Named;
 public class DrawerController implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    @Inject
-    SessionController sessionController;
+
     @EJB
     private DrawerFacade ejbFacade;
 
+    @Inject
+    SessionController sessionController;
     @Inject
     DrawerEntryController drawerEntryController;
 
@@ -83,11 +84,11 @@ public class DrawerController implements Serializable {
             updateDrawerForIns(payment, webUser);
         }
     }
-    
-    public void updateDrawerForIns(Payment payment , WebUser webUser) {
+
+    public void updateDrawerForIns(Payment payment, WebUser webUser) {
         updateDrawer(payment, Math.abs(payment.getPaidValue()), webUser);
     }
-    
+
     public void updateDrawer(Payment payment, double paidValue, WebUser webUser) {
         System.out.println("paidValue = " + paidValue);
         System.out.println("payment = " + payment);
@@ -187,22 +188,20 @@ public class DrawerController implements Serializable {
             ejbFacade.editAndCommit(drawer);
         }
     }
-    
+
     // </editor-fold>  
-    
     // <editor-fold defaultstate="collapsed" desc="Down">
     public void updateDrawerForOuts(List<Payment> payments, WebUser webUser) {
         for (Payment payment : payments) {
             updateDrawerForOuts(payment, webUser);
         }
     }
-    
+
     public void updateDrawerForOuts(Payment payment, WebUser webUser) {
         updateDrawer(payment, -Math.abs(payment.getPaidValue()), webUser);
     }
-    
+
     // </editor-fold>  
-    
     public void updateDrawerForIns(List<Payment> payments) {
         if (payments == null) {
             return;
