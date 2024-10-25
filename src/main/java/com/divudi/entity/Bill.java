@@ -291,6 +291,7 @@ public class Bill implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     private Bill backwardReferenceBill;
     private double hospitalFee;
+    private double collctingCentreFee;
     private double professionalFee;
     @Transient
     private double tmpReturnTotal;
@@ -2417,6 +2418,14 @@ public class Bill implements Serializable {
 
     public void setBankAccount(BankAccount bankAccount) {
         this.bankAccount = bankAccount;
+    }
+
+    public double getCollctingCentreFee() {
+        return collctingCentreFee;
+    }
+
+    public void setCollctingCentreFee(double collctingCentreFee) {
+        this.collctingCentreFee = collctingCentreFee;
     }
 
     
