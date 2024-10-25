@@ -795,23 +795,23 @@ public class ChannelApi {
         String patientPhoneNo = patientDetails.get("teleNo");
         String patientName = patientDetails.get("patientName");
         String patientType = patientDetails.get("foreign");
-        boolean isForeigner = false;
+        boolean isForeigner = Integer.parseInt(patientType) == 1 ? true:false;
         String patientTitle = patientDetails.get("title");
         String nic = patientDetails.get("nid");
         String clientsReferanceNo = patientDetails.get("clientRefNumber");
         Long patientPhoneNumberLong = CommonFunctions.removeSpecialCharsInPhonenumber(patientPhoneNo);
 
-        if (clientsReferanceNo.isEmpty() || clientsReferanceNo == null) {
+        if (clientsReferanceNo == null  || clientsReferanceNo.isEmpty()) {
             JSONObject response = commonFunctionToErrorResponse("Invalid Ref No");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
-        if (patientPhoneNo.isEmpty() || patientPhoneNo == null) {
+        if (patientPhoneNo == null  || patientPhoneNo.isEmpty()) {
             JSONObject response = commonFunctionToErrorResponse("Invalid Phone Number");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
-        if (String.valueOf(patientPhoneNumberLong).length() < 9 && String.valueOf(patientPhoneNumberLong).length() > 10) {
+        if (String.valueOf(patientPhoneNumberLong).length() != 10) {
             JSONObject response = commonFunctionToErrorResponse("Invalid Phone Number");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
@@ -981,7 +981,7 @@ public class ChannelApi {
 
         Map<String, Object> apoinmentDetailsResponse = new HashMap<>();
         apoinmentDetailsResponse.put("refNo", clientsReferanceNo);
-        apoinmentDetailsResponse.put("patientNo", bill.getInvoiceNumber());
+        apoinmentDetailsResponse.put("patientNo", bill.getSingleBillSession().getSerialNoStr());
         apoinmentDetailsResponse.put("allPatientNo", session.getPaidPatientCount());
         apoinmentDetailsResponse.put("showPno", null);
         apoinmentDetailsResponse.put("showTime", null);
@@ -1117,7 +1117,7 @@ public class ChannelApi {
 
         Map<String, Object> apoinmentDetailsResponse = new HashMap<>();
         apoinmentDetailsResponse.put("refNo", clientsReferanceNo);
-        apoinmentDetailsResponse.put("patientNo", bill.getInvoiceNumber());
+        apoinmentDetailsResponse.put("patientNo", bill.getSingleBillSession().getSerialNoStr());
         apoinmentDetailsResponse.put("allPatientNo", session.getPaidPatientCount());
         apoinmentDetailsResponse.put("showPno", null);
         apoinmentDetailsResponse.put("showTime", null);
@@ -1170,7 +1170,7 @@ public class ChannelApi {
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
-        if (bill.getPaymentMethod() == PaymentMethod.OnlineSettlement) {
+        if (bill.getBilledBill().getPaymentMethod() == PaymentMethod.OnlineSettlement) {
             JSONObject response = commonFunctionToErrorResponse("Booking for the ref no already completed.");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }

@@ -249,8 +249,9 @@ public class ChannelService {
         saveSelected(patient);
         Bill savingBill = createBill(patient, session);
         BillItem savingBillItemForSession = createSessionItem(savingBill, refNo, session);
-        savingBill.setAgentRefNo(refNo);
-
+        savingBill.setAgentRefNo(refNo);   
+        
+       
 //        PriceMatrix priceMatrix;
 //        if (itemsAddedToBooking != null || itemsAddedToBooking.isEmpty()) {
 //            for (Item ai : itemsAddedToBooking) {

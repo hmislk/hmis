@@ -50,7 +50,9 @@ import javax.inject.Named;
  */
 @Named
 @SessionScoped
-public class PharmacyDealorBill implements Serializable {
+public class PharmacyDealerController implements Serializable {
+    
+    //OLD Name - PharmacyDealerController
 
     //Atribtes
     private boolean printPreview;
@@ -509,7 +511,7 @@ public class PharmacyDealorBill implements Serializable {
     /**
      * Creates a new instance of pharmacyDealorBill
      */
-    public PharmacyDealorBill() {
+    public PharmacyDealerController() {
     }
 
     public boolean isPrintPreview() {
