@@ -53,7 +53,7 @@ public class DealorDueController implements Serializable {
     @Inject
     private BillController billController;
     @Inject
-    private PharmacyDealorBill pharmacyDealorBill;
+    private PharmacyDealerController pharmacyDealorBill;
 
     private Date fromDate;
     private Date toDate;
@@ -395,11 +395,11 @@ public class DealorDueController implements Serializable {
         this.billController = billController;
     }
 
-    public PharmacyDealorBill getPharmacyDealorBill() {
+    public PharmacyDealerController getPharmacyDealorBill() {
         return pharmacyDealorBill;
     }
 
-    public void setPharmacyDealorBill(PharmacyDealorBill pharmacyDealorBill) {
+    public void setPharmacyDealorBill(PharmacyDealerController pharmacyDealorBill) {
         this.pharmacyDealorBill = pharmacyDealorBill;
     }
 
