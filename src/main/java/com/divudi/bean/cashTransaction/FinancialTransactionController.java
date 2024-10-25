@@ -27,7 +27,6 @@ import com.divudi.data.PaymentMethodValues;
 import com.divudi.data.PaymentSelectionMode;
 import static com.divudi.data.PaymentSelectionMode.SELECT_FOR_HANDOVER_RECEIPT;
 import static com.divudi.data.PaymentSelectionMode.SELECT_FOR_HANDOVER_RECORD;
-import com.divudi.data.PaymentType;
 import com.divudi.data.ReportTemplateRow;
 import com.divudi.data.ReportTemplateRowBundle;
 import com.divudi.data.ServiceType;
