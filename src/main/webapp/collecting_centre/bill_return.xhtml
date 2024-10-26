@@ -77,7 +77,7 @@
                                     <common:patient patient="#{billReturnController.originalBillToReturn.patient}" class="w-100"/>
                                 </p:panel>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-4">
                                 <p:panel>
                                     <f:facet name="header">
                                         <h:outputText styleClass="fas fa-list-alt"></h:outputText>
@@ -86,6 +86,10 @@
                                     <p:panelGrid columns="2">
                                         <h:outputLabel value="Bill No :" ></h:outputLabel>
                                         <h:outputLabel value="#{billReturnController.originalBillToReturn.deptId}" ></h:outputLabel>
+                                        <h:outputLabel value="Code :" ></h:outputLabel>
+                                        <h:outputLabel value="#{billReturnController.originalBillToReturn.collectingCentre.code}" ></h:outputLabel>
+                                        <h:outputLabel value="Collcting Centre :" ></h:outputLabel>
+                                        <h:outputLabel value="#{billReturnController.originalBillToReturn.collectingCentre.name}" ></h:outputLabel>
                                         <h:outputLabel value="Total :" ></h:outputLabel>
                                         <h:outputLabel value="#{billReturnController.originalBillToReturn.total}" >
                                             <f:convertNumber pattern="#,##0.00" />
@@ -101,7 +105,7 @@
                                     </p:panelGrid>
                                 </p:panel>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-5">
                                 <p:panel id="panelItems">
                                     <f:facet name="header">
                                         <h:outputText styleClass="fas fa-list-alt" class="mt-2"></h:outputText>
