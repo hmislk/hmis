@@ -19,11 +19,30 @@
                                     <p:commandButton 
                                         class="w-100"
                                         ajax="false"
-                                        value="Dealer Due Search"
+                                        value="Payment to Settle"
                                         icon="fas fa-search-dollar"
                                         styleClass="p-button-info"
                                         action="#{supplierPaymentController.navigateToDealerDueSearch}"
                                         rendered="#{webUserController.hasPrivilege('PharmacyDealerDueSearch')}" />
+
+                                    <p:commandButton 
+                                        class="w-100"
+                                        ajax="false"
+                                        value="Supplier Payments Made"
+                                        icon="fas fa-check-circle"
+                                        styleClass="p-button-success"
+                                        action="#{supplierPaymentController.navigateToGRNPaymentDoneSearch}"
+                                        rendered="#{webUserController.hasPrivilege('PharmacyGRNPaymentDoneSearch')}" />
+
+
+                                </div>
+                            </p:tab>
+
+                            <!-- Payment Tab -->
+                            <p:tab 
+                                title="Developers"
+                                rendered="#{webUserController.hasPrivilege('Developers')}">
+                                <div class="d-grid gap-2">
 
                                     <!-- Dealer Due By Age -->
                                     <p:commandButton class="w-100"
@@ -33,12 +52,7 @@
                                                      styleClass="p-button-info"
                                                      action="#{supplierPaymentController.navigateToDealerDueByAge}"
                                                      rendered="#{webUserController.hasPrivilege('PharmacyDealerDueByAge')}" />
-                                </div>
-                            </p:tab>
 
-                            <!-- Payment Tab -->
-                            <p:tab title="Payment" rendered="#{webUserController.hasPrivilege('PharmacyPayment')}">
-                                <div class="d-grid gap-2">
                                     <!-- By Dealer -->
                                     <p:commandButton class="w-100"
                                                      ajax="false"
@@ -72,13 +86,6 @@
                                                      rendered="#{webUserController.hasPrivilege('PharmacyGRNPaymentApprove')}" />
 
                                     <!-- GRN Payment Done Search -->
-                                    <p:commandButton class="w-100"
-                                                     ajax="false"
-                                                     value="GRN Payment Done Search"
-                                                     icon="fas fa-check-circle"
-                                                     styleClass="p-button-success"
-                                                     action="#{supplierPaymentController.navigateToGRNPaymentDoneSearch}"
-                                                     rendered="#{webUserController.hasPrivilege('PharmacyGRNPaymentDoneSearch')}" />
 
                                     <!-- Credit Dues and Access -->
                                     <p:commandButton class="w-100"
