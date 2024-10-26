@@ -1221,7 +1221,7 @@ public class ReportController implements Serializable {
             return "Settled";
         }
 
-        if (bill.getNetTotal() < voucher.getBill().getNetTotal()) {
+        if (bill.getNetTotal() > voucher.getBill().getNetTotal()) {
             return "Partially Settled";
         }
 
