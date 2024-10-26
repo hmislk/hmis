@@ -11,7 +11,7 @@
         <ui:composition template="./../index.xhtml">
             <ui:define name="subcontent">
                 <h:form >
-                    <p:panel   header="Department Wise Income Report" class="m-1">
+                    <p:panel   header="Department Revenue Report" class="m-1">
 
                         <h:panelGrid columns="8" class="w-100">
                             <h:outputLabel value="From"/>
@@ -69,7 +69,7 @@
                             <p:commandButton  
                                 value="Process" 
                                 ajax="false"
-                                action="#{searchController.generateDepartmentWiseIncomeReport()}" 
+                                action="#{searchController.generateDepartmentRevenueReport()}" 
                                 class="ui-button-warning" icon="fas fa-cogs">
                             </p:commandButton>
 

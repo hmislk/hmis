@@ -13,6 +13,7 @@ import javax.persistence.Transient;
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import javax.persistence.Temporal;
@@ -89,10 +90,11 @@ public class AuditEvent implements Serializable {
     }
 
     public void calculateDifference() {
+        System.out.println("calculateDifference");
+        System.out.println("Before JSON: " + beforeJson);
+        System.out.println("After JSON: " + afterJson);
         if (beforeJson == null || afterJson == null) {
             this.difference = "One or both JSON values are null.";
-            System.out.println("Before JSON: " + beforeJson);
-            System.out.println("After JSON: " + afterJson);
             return;
         }
         try {
@@ -118,27 +120,36 @@ public class AuditEvent implements Serializable {
     }
 
     private Map<String, String> getDifference(Map<String, Object> before, Map<String, Object> after) {
+        System.out.println("getDifference");
         Map<String, String> diff = new HashMap<>();
-        Set<String> allKeys = before.keySet();
-        allKeys.addAll(after.keySet());
+
+        // Create a new HashSet with the keys from 'before' to ensure it's modifiable
+        Set<String> allKeys = new HashSet<>(before.keySet());
+        allKeys.addAll(after.keySet()); // Now this operation is safe
 
         for (String key : allKeys) {
+            System.out.println("key = " + key);
             Object beforeValue = before.get(key);
             Object afterValue = after.get(key);
             if ((beforeValue == null && afterValue != null)
                     || (beforeValue != null && !beforeValue.equals(afterValue))) {
                 diff.put(key, "Before: " + beforeValue + ", After: " + afterValue);
+                System.out.println("diff = " + diff);
             }
         }
         return diff;
     }
 
     private String formatDifference(Map<String, String> diff) {
+        System.out.println("formatDifference");
+        System.out.println("diff = " + diff);
+
         if (diff.isEmpty()) {
             return "No differences found.";
         }
         StringBuilder sb = new StringBuilder();
         diff.forEach((key, value) -> sb.append(key).append(": ").append(value).append("\n"));
+        System.out.println("sb = " + sb);
         return sb.toString();
     }
 

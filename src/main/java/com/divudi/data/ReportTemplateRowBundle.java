@@ -1057,7 +1057,7 @@ public class ReportTemplateRowBundle implements Serializable {
                     this.slipValue += amount;
                     this.hasSlipTransaction = true;
                     break;
-                case "Wallet":
+                case "eWallet":
                     this.eWalletValue += amount;
                     this.hasEWalletTransaction = true;
                     break;
