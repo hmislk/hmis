@@ -106,9 +106,10 @@ public class BillReturnController implements Serializable {
         if (originalBillToReturn == null) {
             return null;
         }
-        System.out.println("Original Bill= " + originalBillToReturn);
+        
+        //System.out.println("Original Bill= " + originalBillToReturn);
         originalBillItemsAvailableToReturn = billBeanController.fetchBillItems(originalBillToReturn);
-        System.out.println("Bill Items Available To Return = " + originalBillItemsAvailableToReturn.size());
+        //System.out.println("Bill Items Available To Return = " + originalBillItemsAvailableToReturn.size());
         returningStarted = false;
         paymentMethod = originalBillToReturn.getPaymentMethod();
         System.out.println("Method = " + paymentMethod);
@@ -394,14 +395,6 @@ public class BillReturnController implements Serializable {
         
         calculateRefundingAmount();
 
-//        Drawer loggedUserDraver = drawerController.getUsersDrawer(sessionController.getLoggedUser());
-
-//        if (!checkDraverBalance(loggedUserDraver, paymentMethod)) {
-//            JsfUtil.addErrorMessage("Your Draver does not have enough Money");
-//            returningStarted = false;
-//            return null;
-//        }
-
         originalBillToReturn = billFacade.findWithoutCache(originalBillToReturn.getId());
         if (originalBillToReturn.isCancelled()) {
             JsfUtil.addErrorMessage("Already Cancelled");
@@ -505,8 +498,16 @@ public class BillReturnController implements Serializable {
 
         System.out.println("CC Balance Update ");
         //Update Centre Balanace
+//        System.out.println("Institution = " + originalBillToReturn.getCollectingCentre());
+//        System.out.println("Hospital Fee = " + newlyReturnedBill.getHospitalFee());
+//        System.out.println("CollctingCentre Fee = " + newlyReturnedBill.getCollctingCentreFee());
+//        System.out.println("Professional Fee = " + newlyReturnedBill.getProfessionalFee());
+//        System.out.println("Net Total = " + newlyReturnedBill.getNetTotal());
+//        System.out.println("History Type = " + HistoryType.CollectingCentreBillingRefund);
+//        System.out.println("Bill = " + newlyReturnedBill);
+        
         agentAndCcApplicationController.updateCcBalance(
-                newlyReturnedBill.getInstitution(),
+                originalBillToReturn.getCollectingCentre(),
                 newlyReturnedBill.getHospitalFee(),
                 newlyReturnedBill.getCollctingCentreFee(),
                 newlyReturnedBill.getProfessionalFee(),
@@ -515,7 +516,7 @@ public class BillReturnController implements Serializable {
                 newlyReturnedBill);
         
         // drawer Update (No Need Update Drawer)
-//        drawerController.updateDrawerForOuts(returningPayment);
+//      drawerController.updateDrawerForOuts(returningPayment);
 
         returningStarted = false;
         return "/collecting_centre/cc_bill_return_print?faces-redirect=true";
