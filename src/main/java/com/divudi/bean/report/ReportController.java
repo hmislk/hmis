@@ -1172,7 +1172,7 @@ public class ReportController implements Serializable {
         m.put("bts", bts);
 
         if (institution != null) {
-            jpql += "AND cb.creditCompany = : cc ";
+            jpql += "AND cb.creditCompany = :cc ";
             m.put("cc", institution);
         }
 
@@ -1221,7 +1221,7 @@ public class ReportController implements Serializable {
             return "Settled";
         }
 
-        if (bill.getNetTotal() < voucher.getBill().getNetTotal()) {
+        if (bill.getNetTotal() > voucher.getBill().getNetTotal()) {
             return "Partially Settled";
         }
 
@@ -1241,8 +1241,25 @@ public class ReportController implements Serializable {
         List<BillType> bts = new ArrayList<>();
         bts.add(BillType.CashRecieveBill);
         m.put("bts", bts);
-
-        voucherItem = billItemFacade.findFirstByJpql(jpql, m);
+        
+        List<BillItem> bis = billItemFacade.findByJpql(jpql, m);
+        
+        if(bis.size() == 1){
+           voucherItem = billItemFacade.findFirstByJpql(jpql, m);
+           if(voucherItem.getBill().getNetTotal() < b.getNetTotal()){
+               voucherItem.getBill().setAdjustedTotal(Math.abs(b.getNetTotal()) - Math.abs(voucherItem.getBill().getNetTotal()));
+           }
+        }else{
+            Double NetTotal = 0.0;
+           for(BillItem bi : bis){
+             voucherItem = bi;
+             NetTotal += voucherItem.getBill().getNetTotal();
+            } 
+           voucherItem.getBill().setNetTotal(NetTotal);
+        }
+        
+        
+        
         return voucherItem;
     }
 

@@ -83,10 +83,10 @@
                                     </p:column>
 
                                     <p:column headerText="Doctor" >
-                                        <h:commandLink action="#{staffPaymentBillController.navigateToStaffPaymentFromDuePayment(bf.staff)}" >
-                                            <h:outputLabel value="#{bf.staff.person.name}">
-                                            </h:outputLabel>
-                                        </h:commandLink>
+                                        <p:commandLink
+                                            action="#{staffPaymentBillController.navigateToStaffPaymentFromDuePayment(bf.staff)}"
+                                            value="#{bf.staff.person.name}">
+                                        </p:commandLink>
                                     </p:column>
 
                                     <p:column headerText="Patient" >
@@ -124,20 +124,9 @@
                                 </p:dataTable>
                             </div>
                         </div>
-
-
-
-
-
-
-
                     </p:panel>
-
                 </h:form>
             </ui:define>
-
-
         </ui:composition>
-
     </h:body>
 </html>
