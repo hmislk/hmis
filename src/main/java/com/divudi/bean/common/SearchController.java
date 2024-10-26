@@ -15006,6 +15006,7 @@ public class SearchController implements Serializable {
     }
 
     public void billItemsToBundleForOpdUnderCategory(ReportTemplateRowBundle rtrb, List<BillItem> billItems) {
+        System.out.println("billItemsToBundleForOpdUnderCategory");
         Map<String, ReportTemplateRow> categoryMap = new HashMap<>();
         Map<String, ReportTemplateRow> itemMap = new HashMap<>();
         List<ReportTemplateRow> rowsToAdd = new ArrayList<>();
@@ -15018,13 +15019,16 @@ public class SearchController implements Serializable {
             if (bi.getBill() == null || bi.getBill().getPaymentMethod() == null
                     || bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.NONE
                     || bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.CREDIT) {
+                System.out.println("continue 1");
                 continue;
             }
 
             // Identify category and item
             String categoryName = bi.getItem() != null && bi.getItem().getCategory() != null
                     ? bi.getItem().getCategory().getName() : "No Category";
+            System.out.println("categoryName = " + categoryName);
             String itemName = bi.getItem() != null ? bi.getItem().getName() : "No Item";
+            System.out.println("itemName = " + itemName);
             String itemKey = categoryName + "->" + itemName;
 
             System.out.println("Item Key: " + itemKey);
