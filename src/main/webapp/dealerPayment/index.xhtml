@@ -11,7 +11,8 @@
             <div class="col-md-3">
                 <h:form>
                     <p:panel header="Supplier Payments">
-                        <p:accordionPanel>
+                        <p:accordionPanel activeIndex="#{supplierPaymentController.tabIndex}">
+                            <p:ajax process="@this" ></p:ajax>
                             <p:tab title="Pharmacy">
                                 <div class="d-grid gap-2">
                                     <!-- Dealer Due Search -->
