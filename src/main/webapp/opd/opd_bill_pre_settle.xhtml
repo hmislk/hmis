@@ -63,8 +63,7 @@
                                         <div class="col-9">
                                             <p:selectOneMenu
                                                 id="cmbPs"
-                                                value="#{opdPreSettleController.preBill.paymentMethod}"  
-                                                disabled="#{not sessionController.departmentPreference.allowtoChangePaymentMethodDuringPayment}">                                                                     
+                                                value="#{opdPreSettleController.preBill.paymentMethod}">                                                                     
                                                 <f:selectItems value="#{enumController.paymentMethodsForOpdBilling}" />
                                                 <p:ajax process="@this cmbPs" 
                                                         listener="#{opdPreSettleController.listnerForPaymentMethodChange()}"
