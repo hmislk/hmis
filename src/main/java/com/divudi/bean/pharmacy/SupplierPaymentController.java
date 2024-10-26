@@ -89,32 +89,32 @@ public class SupplierPaymentController implements Serializable {
    } 
    
    public String navigateToDealerDueSearch() {
-        return "/dealorPayment/dealor_due?faces-redirect=true";
+        return "/dealerPayment/dealor_due?faces-redirect=true";
     }
 
     public String navigateToDealerDueByAge() {
         makeNull();
-        return "/dealorPayment/dealor_due_age?faces-redirect=true";
+        return "/dealerPayment/dealor_due_age?faces-redirect=true";
     }
 
     public String navigateToByDealer() {
         makeNull();
-        return "/dealorPayment/bill_dealor_all?faces-redirect=true";
+        return "/dealerPayment/bill_dealor_all?faces-redirect=true";
     }
 
     public String navigateToByBill() {
         makeNull();
-        return "/dealorPayment/bill_dealor?faces-redirect=true";
+        return "/dealerPayment/bill_dealor?faces-redirect=true";
     }
 
     public String navigateToGRNPaymentApprove() {
         makeNull();
-        return "/dealorPayment/search_dealor_payment_pre?faces-redirect=true";
+        return "/dealerPayment/search_dealor_payment_pre?faces-redirect=true";
     }
 
     public String navigateToGRNPaymentDoneSearch() {
         makeNull();
-        return "/dealorPayment/search_dealor_payment?faces-redirect=true";
+        return "/dealerPayment/search_dealor_payment?faces-redirect=true";
     }
 
     public String navigateToCreditDuesAndAccess() {
