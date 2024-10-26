@@ -50,7 +50,8 @@ import javax.inject.Named;
  */
 @Named
 @SessionScoped
-public class PharmacyDealorBill implements Serializable {
+public class PharmacyDealerController implements Serializable {
+    
 
     //Atribtes
     private boolean printPreview;
@@ -80,6 +81,44 @@ public class PharmacyDealorBill implements Serializable {
     @Inject
     CommonController commonController;
     
+    
+   public String navigateToDealerPaymentIndex(){
+       return "/dealerPayment/index?faces-redirect=true";
+   } 
+   
+   public String navigateToDealerDueSearch() {
+        return "/dealorPayment/dealor_due?faces-redirect=true";
+    }
+
+    public String navigateToDealerDueByAge() {
+        makeNull();
+        return "/dealorPayment/dealor_due_age?faces-redirect=true";
+    }
+
+    public String navigateToByDealer() {
+        makeNull();
+        return "/dealorPayment/bill_dealor_all?faces-redirect=true";
+    }
+
+    public String navigateToByBill() {
+        makeNull();
+        return "/dealorPayment/bill_dealor?faces-redirect=true";
+    }
+
+    public String navigateToGRNPaymentApprove() {
+        makeNull();
+        return "/dealorPayment/search_dealor_payment_pre?faces-redirect=true";
+    }
+
+    public String navigateToGRNPaymentDoneSearch() {
+        makeNull();
+        return "/dealorPayment/search_dealor_payment?faces-redirect=true";
+    }
+
+    public String navigateToCreditDuesAndAccess() {
+        return "/credit/index_pharmacy_due_access?faces-redirect=true";
+    }
+
 
     public void makeNull() {
         printPreview = false;
@@ -509,7 +548,7 @@ public class PharmacyDealorBill implements Serializable {
     /**
      * Creates a new instance of pharmacyDealorBill
      */
-    public PharmacyDealorBill() {
+    public PharmacyDealerController() {
     }
 
     public boolean isPrintPreview() {
