@@ -22,7 +22,7 @@
                                                      value="Dealer Due Search"
                                                      icon="fas fa-search-dollar"
                                                      styleClass="p-button-info"
-                                                     action="#{pharmacyDealerController.navigateToDealerDueSearch}"
+                                                     action="#{supplierPaymentController .navigateToDealerDueSearch}"
                                                      rendered="#{webUserController.hasPrivilege('PharmacyDealerDueSearch')}" />
 
                                     <!-- Dealer Due By Age -->
@@ -31,7 +31,7 @@
                                                      value="Dealer Due By Age"
                                                      icon="fas fa-hourglass-half"
                                                      styleClass="p-button-info"
-                                                     action="#{pharmacyDealerController.navigateToDealerDueByAge}"
+                                                     action="#{supplierPaymentController .navigateToDealerDueByAge}"
                                                      rendered="#{webUserController.hasPrivilege('PharmacyDealerDueByAge')}" />
                                 </div>
                             </p:tab>
@@ -45,7 +45,7 @@
                                                      value="By Dealer"
                                                      icon="fas fa-user-tie"
                                                      styleClass="p-button-success"
-                                                     action="#{pharmacyDealerController.navigateToByDealer}"
+                                                     action="#{supplierPaymentController .navigateToByDealer}"
                                                      rendered="#{webUserController.hasPrivilege('PharmacyPayment')}" />
 
                                     <!-- By Bill -->
@@ -54,7 +54,7 @@
                                                      value="By Bill"
                                                      icon="fas fa-file-invoice-dollar"
                                                      styleClass="p-button-success"
-                                                     action="#{pharmacyDealerController.navigateToByBill}"
+                                                     action="#{supplierPaymentController .navigateToByBill}"
                                                      rendered="#{webUserController.hasPrivilege('PharmacyPayment')}" />
                                 </div>
                             </p:tab>
@@ -68,7 +68,7 @@
                                                      value="GRN Payment Approve"
                                                      icon="fas fa-thumbs-up"
                                                      styleClass="p-button-warning"
-                                                     action="#{pharmacyDealerController.navigateToGRNPaymentApprove}"
+                                                     action="#{supplierPaymentController .navigateToGRNPaymentApprove}"
                                                      rendered="#{webUserController.hasPrivilege('PharmacyGRNPaymentApprove')}" />
 
                                     <!-- GRN Payment Done Search -->
@@ -77,7 +77,7 @@
                                                      value="GRN Payment Done Search"
                                                      icon="fas fa-check-circle"
                                                      styleClass="p-button-success"
-                                                     action="#{pharmacyDealerController.navigateToGRNPaymentDoneSearch}"
+                                                     action="#{supplierPaymentController .navigateToGRNPaymentDoneSearch}"
                                                      rendered="#{webUserController.hasPrivilege('PharmacyGRNPaymentDoneSearch')}" />
 
                                     <!-- Credit Dues and Access -->
@@ -86,7 +86,7 @@
                                                      value="Credit Dues and Access"
                                                      icon="fas fa-university"
                                                      styleClass="p-button-danger"
-                                                     action="#{pharmacyDealerController.navigateToCreditDuesAndAccess}"
+                                                     action="#{supplierPaymentController .navigateToCreditDuesAndAccess}"
                                                      rendered="#{webUserController.hasPrivilege('PharmacyCreditDueAndAccess')}" />
                                 </div>
                             </p:tab>

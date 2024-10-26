@@ -1387,7 +1387,7 @@
                             ajax="false" 
                             action="/dealorPayment/bill_dealor_all?faces-redirect=true"
                             rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}" 
-                            actionListener="#{pharmacyDealerController.makeNull()}"
+                            actionListener="#{supplierPaymentController.makeNull()}"
                             styleClass="svg-link" >
                             <p:graphicImage library="image" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="By Supplier" />
@@ -1404,7 +1404,7 @@
                             ajax="false" 
                             action="/dealorPayment/bill_dealor?faces-redirect=true" 
                             rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}" 
-                            actionListener="#{pharmacyDealerController.makeNull()}"
+                            actionListener="#{supplierPaymentController.makeNull()}"
                             styleClass="svg-link" >
                             <p:graphicImage library="image" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="By Bill" />

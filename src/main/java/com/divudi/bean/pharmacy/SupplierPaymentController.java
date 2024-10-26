@@ -50,9 +50,11 @@ import javax.inject.Named;
  */
 @Named
 @SessionScoped
-public class PharmacyDealerController implements Serializable {
+public class SupplierPaymentController implements Serializable {
     
-
+//PharmacyDealerController
+    //pharmacyDealerController
+    
     //Atribtes
     private boolean printPreview;
     private Bill current;
@@ -548,7 +550,7 @@ public class PharmacyDealerController implements Serializable {
     /**
      * Creates a new instance of pharmacyDealorBill
      */
-    public PharmacyDealerController() {
+    public SupplierPaymentController() {
     }
 
     public boolean isPrintPreview() {
