@@ -1172,7 +1172,7 @@ public class ReportController implements Serializable {
         m.put("bts", bts);
 
         if (institution != null) {
-            jpql += "AND cb.creditCompany = : cc ";
+            jpql += "AND cb.creditCompany = :cc ";
             m.put("cc", institution);
         }
 
