@@ -760,8 +760,8 @@
                     <p:menuitem  
                         ajax="false" 
                         icon="fas fa-hand-holding-usd"
-                        action="/dealorPayment/dealor_due?faces-redirect=true"  
-                        value="Dealer Due Search"  
+                        action="#{pharmacyDealerController.navigateToDealerPaymentIndex()}"  
+                        value="Dealer Payments"  
                         rendered="#{webUserController.hasPrivilege('PharmacyDealerDueSearch')}" ></p:menuitem>
 
                     <p:submenu label="Dealer Payments" icon="fas fa-hand-holding-usd" rendered="#{webUserController.hasPrivilege('PharmacyDealerPaymentMenue')}">
