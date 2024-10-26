@@ -2978,6 +2978,8 @@ public class BillBeanController implements Serializable {
                 case Cash:
                     break;
                 case ewallet:
+                    p.setBank(paymentMethodData.getEwallet().getInstitution());
+                    p.setReferenceNo(paymentMethodData.getEwallet().getNo());
                     break;
                 case Agent:
                     break;
