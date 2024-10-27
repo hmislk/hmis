@@ -92,8 +92,8 @@
                             <div class="col-2">
                                 <h:panelGrid columns="1" class="w-100">
                                     <p:commandButton ajax="false" action="#{patientInvestigationController.searchBillsForCourier}" value="Bills" icon="fas fa-file-invoice-dollar" styleClass="ui-button-success w-100"/>
-                                    <p:commandButton ajax="false" action="#{patientInvestigationController.searchPatientInvestigationsForCourier}" value="Investigations" icon="fas fa-search" styleClass="my-1 ui-button-primary w-100"/>
-                                    <p:commandButton ajax="false" action="#{patientInvestigationController.searchPatientReportsForCourier}"  value="Reports" icon="fas fa-file-medical" styleClass=" ui-button-danger w-100"/>
+                                    <p:commandButton ajax="false" action="#{patientInvestigationController.searchPatientInvestigationsForCourier}" value="Reports" icon="fas fa-file-medical" styleClass="my-1 ui-button-danger w-100"/>
+                                    <!--<p:commandButton ajax="false" action="#{patientInvestigationController.searchPatientReportsForCourier}"  value="Reports" icon="fas fa-file-medical" styleClass=" ui-button-danger w-100"/>-->
                                     <p:commandButton ajax="false" action="#{patientInvestigationController.clearFilters}" value="Clear"  icon="fas fa-eraser" styleClass="ui-button-secondary w-100 my-1"/>
                                 </h:panelGrid>
                             </div>
@@ -315,7 +315,7 @@
                                     </p:dataTable>
                                 </h:panelGroup>
 
-                                <!--PATIENT_REPORTS-->
+<!--                                PATIENT_REPORTS
                                 <h:panelGroup rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_REPORTS'}" >
                                     <div class="d-flex justify-content-center mb-4">
                                         <h:outputText value="Patient Reports" style="font-size: 44px; font-weight: 800"/>
@@ -365,7 +365,7 @@
                                         </p:column>
 
                                         <p:column headerText="Investigations" style="vertical-align: top; padding: 8px;">
-                                            <i class="fas fa-vial text-danger"></i> <!-- Investigation Icon -->
+                                            <i class="fas fa-vial text-danger"></i>  Investigation Icon 
                                             <h:outputLabel value="#{dpr.patientInvestigation.investigation.name}" class="mx-2"/>
                                         </p:column>
 
@@ -384,7 +384,7 @@
                                         <p:column headerText="Actions" style="vertical-align: top; width:5em; padding: 8px;">
 
                                             <div class="d-flex gap-3">
-                                                <!-- Print Report CommandLink 1 -->
+                                                 Print Report CommandLink 1 
                                                 <p:commandLink 
                                                     id="cmdOldReportPrint1" 
                                                     ajax="false" 
@@ -396,7 +396,7 @@
                                                     <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}" />
                                                 </p:commandLink>
 
-                                                <!-- Print Report CommandLink 2 -->
+                                                 Print Report CommandLink 2 
                                                 <p:commandLink 
                                                     id="cmdOldReportPrint2" 
                                                     ajax="false" 
@@ -412,7 +412,7 @@
                                         </p:column>
 
                                     </p:dataTable>
-                                </h:panelGroup>
+                                </h:panelGroup>-->
 
                             </div>
                         </div>
