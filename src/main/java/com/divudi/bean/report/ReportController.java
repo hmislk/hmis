@@ -914,6 +914,11 @@ public class ReportController implements Serializable {
             jpql += " AND bi.bill.referredBy = :doc";
             m.put("doc", doctor);
         }
+        
+        if (speciality != null) {
+            jpql += " AND bi.bill.referredBy.speciality = :speci";
+            m.put("speci", speciality);
+        }
 
         jpql += " AND bi.createdAt BETWEEN :fromDate AND :toDate";
         m.put("fromDate", getFromDate());
@@ -931,7 +936,7 @@ public class ReportController implements Serializable {
 
         if (billItems != null) {
             for (BillItem billItem : billItems) {
-                hospitalFeeTotal += billItem.getHospitalFee();
+                hospitalFeeTotal += billItem.getHospitalFee() + billItem.getDiscount();
                 ccFeeTotal += billItem.getCollectingCentreFee();
                 staffFeeTotal += billItem.getStaffFee();
                 grossFeeTotal += billItem.getGrossValue();
@@ -992,6 +997,11 @@ public class ReportController implements Serializable {
         if (doctor != null) {
             jpql += " AND bi.bill.referredBy = :doc";
             params.put("doc", doctor);
+        }
+        
+        if (speciality != null) {
+            jpql += " AND bi.bill.referredBy.speciality = :speci";
+            params.put("speci", speciality);
         }
 
         jpql += " AND bi.bill.createdAt between :fd and :td "
@@ -1162,7 +1172,7 @@ public class ReportController implements Serializable {
         m.put("bts", bts);
 
         if (institution != null) {
-            jpql += "AND cb.creditCompany = : cc ";
+            jpql += "AND cb.creditCompany = :cc ";
             m.put("cc", institution);
         }
 
@@ -1211,7 +1221,7 @@ public class ReportController implements Serializable {
             return "Settled";
         }
 
-        if (bill.getNetTotal() < voucher.getBill().getNetTotal()) {
+        if (bill.getNetTotal() > voucher.getBill().getNetTotal()) {
             return "Partially Settled";
         }
 

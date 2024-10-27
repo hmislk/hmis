@@ -79,6 +79,7 @@ public class AgentAndCcApplicationController {
                 handleCollectingCentreBilling(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill);
                 break;
             case CollectingCentreBillingRefund:
+                //System.out.println("Refund");
                 handleCcBillingRefund(collectingCentre, hospitalFee, collectingCentreFee, staffFee, transactionValue, bill);
                 break;
             case CollectingentrePaymentMadeBill:
@@ -195,7 +196,10 @@ public class AgentAndCcApplicationController {
 
             double balanceBeforeTx = collectingCentre.getBallance();
             double balanceAfterTx = balanceBeforeTx + Math.abs(hospitalFee);
-
+            
+            System.out.println("Before Balance = " + collectingCentre.getBallance());
+            System.out.println("Refund Value = " + hospitalFee);
+            
             agentHistory.setBalanceBeforeTransaction(balanceBeforeTx);
             agentHistory.setBalanceAfterTransaction(balanceAfterTx);
 
@@ -203,6 +207,8 @@ public class AgentAndCcApplicationController {
 
             collectingCentre.setBallance(balanceAfterTx);
             institutionFacade.edit(collectingCentre);
+            
+            System.out.println("After Balance = " + collectingCentre.getBallance());
 
         } finally {
             lock.unlock();
