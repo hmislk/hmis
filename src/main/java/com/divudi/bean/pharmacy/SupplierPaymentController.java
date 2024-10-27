@@ -15,9 +15,11 @@ import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
+import com.divudi.data.InstitutionType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.InstitutionBills;
 import com.divudi.data.dataStructure.PaymentMethodData;
+import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.data.table.String1Value5;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
@@ -40,8 +42,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import javax.ejb.EJB;
@@ -49,6 +53,7 @@ import javax.enterprise.context.Dependent;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -87,6 +92,7 @@ public class SupplierPaymentController implements Serializable {
     private Date toDate;
     //Atribtes
     private boolean printPreview;
+    private SearchKeyword searchKeyword;
     private Bill current;
     private PaymentMethodData paymentMethodData;
     private BillItem currentBillItem;
@@ -119,6 +125,7 @@ public class SupplierPaymentController implements Serializable {
     }
 
     public String navigateToDealerDueSearch() {
+        bills = new ArrayList<>();
         return "/dealerPayment/dealor_due?faces-redirect=true";
     }
 
@@ -146,9 +153,101 @@ public class SupplierPaymentController implements Serializable {
         makeNull();
         return "/dealerPayment/search_dealor_payment?faces-redirect=true";
     }
+    
+    public String navigateToSupplierPaymentDoneSearch() {
+        bills = null;
+        return "/dealerPayment/search_dealor_payment?faces-redirect=true";
+    }
 
     public String navigateToCreditDuesAndAccess() {
         return "/credit/index_pharmacy_due_access?faces-redirect=true";
+    }
+
+    public void fillPharmacySupplierPayments(){
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.SUPPLIER_PAYMENT);
+        List<InstitutionType> institutionTypes =  new ArrayList<>();
+        institutionTypes.add(InstitutionType.Dealer);
+        createGrnPaymentTable(institutionTypes, btas);
+    }
+    
+    public void fillStoreSupplierPayments(){
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.SUPPLIER_PAYMENT);
+        List<InstitutionType> institutionTypes =  new ArrayList<>();
+        institutionTypes.add(InstitutionType.StoreDealor);
+        createGrnPaymentTable(institutionTypes, btas);
+    }
+    
+    public void fillSupplierPayments(){
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.SUPPLIER_PAYMENT);
+        createGrnPaymentTable(null, btas);
+    }
+    
+
+    private void createGrnPaymentTable(List<InstitutionType> institutionTypes, List<BillTypeAtomic> billTypes) {
+        bills = null;
+        String jpql;
+        Map params = new HashMap();
+
+        jpql = "select b from Bill b "
+                + " where b.billTypeAtomic in :billTypes "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false ";
+
+        if (institutionTypes != null) {
+            jpql += " and b.toInstitution.institutionType in :insTps ";
+            params.put("insTps", institutionTypes);
+        }
+
+        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
+            jpql += " and  ((b.patient.person.name) like :patientName )";
+            params.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
+            jpql += " and  ((b.patient.person.phone) like :patientPhone )";
+            params.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            jpql += " and  ((b.insId) like :billNo )";
+            params.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
+            jpql += " and  ((b.netTotal) like :netTotal )";
+            params.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
+            jpql += " and  ((b.total) like :total )";
+            params.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+        }
+
+        jpql += " order by b.createdAt desc  ";
+//    
+        params.put("billTypes", billTypes);
+
+        params.put("toDate", getToDate());
+        params.put("fromDate", getFromDate());
+
+        System.err.println("Sql " + jpql);
+        System.out.println("temMap = " + params);
+        bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+    }
+
+    public SearchKeyword getSearchKeyword() {
+        if (searchKeyword == null) {
+            searchKeyword = new SearchKeyword();
+        }
+        return searchKeyword;
+    }
+
+    public void setSearchKeyword(SearchKeyword searchKeyword) {
+        this.searchKeyword = searchKeyword;
     }
 
     @Deprecated //Create or Use Spefici prepare methods
@@ -164,7 +263,7 @@ public class SupplierPaymentController implements Serializable {
 
     public void prepareForNewSupplierPayment() {
         printPreview = false;
-        current = new Bill();
+        current = new BilledBill();
         current.setBillType(BillType.GrnPayment);
         current.setBillTypeAtomic(BillTypeAtomic.SUPPLIER_PAYMENT);
         currentBillItem = null;
@@ -289,11 +388,11 @@ public class SupplierPaymentController implements Serializable {
         getCurrent().setTotal(-n);
         getCurrent().setNetTotal(0 - n);
     }
-    
+
     public void calTotalAtSupplierPaymentBillSettling() {
         double n = 0.0;
         for (BillItem payingBillItem : billItems) {
-            double biNetTotal = 0- Math.abs(payingBillItem.getNetValue());
+            double biNetTotal = 0 - Math.abs(payingBillItem.getNetValue());
             payingBillItem.setNetValue(biNetTotal);
             payingBillItem.setGrossValue(biNetTotal);
             n += payingBillItem.getNetValue();
@@ -302,8 +401,8 @@ public class SupplierPaymentController implements Serializable {
             double payingThisTime = Math.abs(biNetTotal);
             double totalInitialToBePaid = Math.abs(originalBill.getNetTotal());
             double totalRefundsToOrigianl = Math.abs(originalBill.getRefundAmount());
-            double originalBillBallance = (totalInitialToBePaid-(totalRefundsToOrigianl)) - (previouslyPaidAmount+payingThisTime);
-            originalBill.setPaidAmount(previouslyPaidAmount+payingThisTime);
+            double originalBillBallance = (totalInitialToBePaid - (totalRefundsToOrigianl)) - (previouslyPaidAmount + payingThisTime);
+            originalBill.setPaidAmount(previouslyPaidAmount + payingThisTime);
             originalBill.setBalance(originalBillBallance);
             billFacade.edit(originalBill);
         }
@@ -399,6 +498,38 @@ public class SupplierPaymentController implements Serializable {
 
     public void fillUnsettledCreditPharmacyBills() {
         BillTypeAtomic[] billTypesArrayBilled = {BillTypeAtomic.PHARMACY_GRN, BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL, BillTypeAtomic.PHARMACY_DIRECT_PURCHASE, BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL, BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL};
+        List<BillTypeAtomic> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
+        bills = billController.findUnpaidBills(fromDate, toDate, billTypesListBilled, PaymentMethod.Credit, 0.01);
+        netTotal = 0.0;
+        paidAmount = 0.0;
+        refundAmount = 0.0;
+        balance = 0.0;
+        for (Bill b : bills) {
+            netTotal += b.getNetTotal();
+            paidAmount += b.getPaidAmount();
+            balance += b.getBalance();
+            refundAmount += b.getRefundAmount();
+        }
+    }
+    
+    public void fillUnsettledCreditStoreBills() {
+        BillTypeAtomic[] billTypesArrayBilled = {BillTypeAtomic.STORE_GRN, BillTypeAtomic.STORE_DIRECT_PURCHASE};
+        List<BillTypeAtomic> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
+        bills = billController.findUnpaidBills(fromDate, toDate, billTypesListBilled, PaymentMethod.Credit, 0.01);
+        netTotal = 0.0;
+        paidAmount = 0.0;
+        refundAmount = 0.0;
+        balance = 0.0;
+        for (Bill b : bills) {
+            netTotal += b.getNetTotal();
+            paidAmount += b.getPaidAmount();
+            balance += b.getBalance();
+            refundAmount += b.getRefundAmount();
+        }
+    }
+    
+    public void fillUnsettledCreditBills() {
+        BillTypeAtomic[] billTypesArrayBilled = {BillTypeAtomic.PHARMACY_GRN, BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL, BillTypeAtomic.PHARMACY_DIRECT_PURCHASE, BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL, BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL, BillTypeAtomic.STORE_GRN, BillTypeAtomic.STORE_DIRECT_PURCHASE};
         List<BillTypeAtomic> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
         bills = billController.findUnpaidBills(fromDate, toDate, billTypesListBilled, PaymentMethod.Credit, 0.01);
         netTotal = 0.0;
@@ -527,6 +658,8 @@ public class SupplierPaymentController implements Serializable {
         currentBillItem.setNetValue(-settlingValue);
         currentBillItem.setGrossValue(-settlingValue);
         getBillItems().add(currentBillItem);
+        calTotalBySelectedBillTems();
+        calTotal();
         return "/dealerPayment/pay_supplier?faces-redirect=true";
     }
 
@@ -561,7 +694,7 @@ public class SupplierPaymentController implements Serializable {
         calTotal();
         return "/dealerPayment/pay_supplier?faces-redirect=true";
     }
-    
+
     public void settleSupplierPayment() {
         if (errorCheck()) {
             return;
@@ -569,7 +702,7 @@ public class SupplierPaymentController implements Serializable {
         calTotalAtSupplierPaymentBillSettling();
         getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
         getCurrent().setTotal(getCurrent().getNetTotal());
-        
+
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.SUPPLIER_PAYMENT);
 
         getCurrent().setInsId(deptId);
@@ -594,8 +727,7 @@ public class SupplierPaymentController implements Serializable {
         } else {
             getBillFacade().edit(getCurrent());
         }
-        
-        
+
         Payment p = createPayment(getCurrent(), getCurrent().getPaymentMethod());
         saveBillItemBySelectedItems(p);
 
@@ -959,8 +1091,6 @@ public class SupplierPaymentController implements Serializable {
         return toDate;
     }
 
-    
-    
     public Double getNetTotal() {
         return netTotal;
     }

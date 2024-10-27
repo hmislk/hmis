@@ -14,7 +14,7 @@
                     <p:panel>
                         <f:facet name="header" > 
                             <h:outputText styleClass="fas fa-file-invoice"/>
-                            <h:outputLabel class="mx-4" value="Pharmacy Supplier Bill Search"/>  
+                            <h:outputLabel class="mx-4" value="Supplier Bill Search"/>  
                         </f:facet>
                         <div class="row">
                             <div class="col-2">
@@ -35,25 +35,43 @@
                                     value="List Pharmacy Credit Bills to Settle" 
                                     action="#{supplierPaymentController.fillUnsettledCreditPharmacyBills}" 
                                     ajax="false"  
-                                    icon="fas fa-search" 
-                                    class="my-1 w-100 ui-button-success" />
+                                    icon="fas fa-prescription-bottle-alt" 
+                                    class="my-1 w-100 ui-button-info" />
+
                                 <p:commandButton 
-                                    rendered="#{webUserController.hasPrivilege('Develoeprs')}"
-                                    value="List GRNs to Settle Payment (Old Method for Developers to cross check)" 
-                                    action="#{supplierPaymentController.fillPharmacyDue}" 
+                                    value="List Store Credit Bills to Settle" 
+                                    action="#{supplierPaymentController.fillUnsettledCreditStoreBills()}" 
                                     ajax="false"  
-                                    icon="fas fa-search" 
-                                    class="my-1 w-100 ui-button-secondary" />
-                                <hl/>
-                                <p:commandButton value="Process Store Due" action="#{supplierPaymentController.fillStoreDue()}" ajax="false"  icon="fas fa-search" class="my-1 w-100  ui-button-secondary" />
-                                <p:commandButton value="Process All Due" action="#{supplierPaymentController.fillPharmacyStoreDue()}" ajax="false"  icon="fas fa-search" class="my-1 w-100  ui-button-secondary" />
-                                <p:separator></p:separator>
+                                    icon="fas fa-store-alt" 
+                                    class="my-1 w-100  ui-button-warning" />
+
                                 <p:commandButton 
-                                    value="Navigate To Settle Selected Bills" 
+                                    value="List All Credit Bills to Settle"
+                                    action="#{supplierPaymentController.fillUnsettledCreditBills()}"
+                                    ajax="false"
+                                    icon="fas fa-file-invoice-dollar"
+                                    class="my-1 w-100  ui-button-danger" />
+
+                                <p:separator></p:separator>
+
+                                <p:commandButton 
+                                    value="Navigate to Settle Selected Bills" 
                                     action="#{supplierPaymentController.navigateToStartSupplierPaymentOfSelectedBills()}" 
                                     ajax="false" 
-                                    icon="fas fa-search" 
-                                    class="my-1 w-100  ui-button-secondary" />
+                                    icon="fas fa-hand-point-right" 
+                                    class="my-1 w-100  ui-button-primary" />
+
+                                <p:separator></p:separator>
+
+                                <p:commandButton 
+                                    rendered="#{webUserController.hasPrivilege('Developers')}"
+                                    value="List GRNs to Settle Payment (Old Method for Developers to Cross Check)" 
+                                    action="#{supplierPaymentController.fillPharmacyDue}" 
+                                    ajax="false"  
+                                    icon="fas fa-history" 
+                                    class="my-1 w-100 ui-button-dark" />
+
+                                <p:separator ></p:separator>
                             </div>
                             <div class="col-10">
                                 <p:dataTable 
@@ -68,9 +86,9 @@
                                     rowsPerPageTemplate="5,10,15">
 
                                     <p:column selectionBox="true" width="20">
-                                    
+
                                     </p:column>
-                                    
+
                                     <p:column headerText="Bill No" sortBy="#{b.deptId}" filterBy="#{b.deptId}">
                                         <h:outputText value="#{b.deptId}" />
                                     </p:column>

@@ -7,68 +7,78 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
-        <ui:composition template="/resources/template/template.xhtml">
-            <ui:define name="content">
+        <ui:composition template="/dealerPayment/index.xhtml">
+            <ui:define name="subcontent">
                 <h:form>
                     <p:panel >
-
                         <f:facet name="header" >
                             <h:outputText styleClass="fa-solid fa-file-invoice"/>
-                            <h:outputLabel value="GRN Supplier Payment Bill Search " class="mx-4"/>    
-
+                            <h:outputLabel value="Supplier Payment Search" class="mx-4"/>    
                         </f:facet>
                         <div class="row">
                             <div class="col-2">
                                 <h:outputLabel value="From Date"/>
-                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100" inputStyleClass="w-100">      
-                                </p:calendar>
+                                <p:datePicker
+                                    showTime="true"
+                                    styleClass="dateTimePicker"
+                                    id="fromDate"
+                                    value="#{supplierPaymentController.fromDate}"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                    class="w-100" inputStyleClass="w-100">      
+                                </p:datePicker>
                                 <h:outputLabel value="To Date"/>
-                                <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100" inputStyleClass="w-100">                                                                              
-                                </p:calendar>
+                                <p:datePicker 
+                                    id="toDate"
+                                    showTime="true"
+                                    value="#{supplierPaymentController.toDate}" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                    class="w-100" 
+                                    inputStyleClass="w-100">                                                                              
+                                </p:datePicker>
 
-                                <p:commandButton id="btnSearch"
-                                                 ajax="false" 
-                                                 value="Search Pharmacy Payment" 
-                                                 class="my-1 w-100 ui-button-warning" 
-                                                 icon="fas fa-search"
-                                                 action="#{searchController.createPharmacyPayment()}"/>
+                                <p:commandButton id="btnSearch" 
+                                                 ajax="false" value="List Pharmacy Payment to Settle" 
+                                                 class="my-1 w-100 ui-button-success" 
+                                                 icon="fas fa-pills"
+                                                 action="#{supplierPaymentController.fillPharmacySupplierPayments()}"/>
+
                                 <p:commandButton ajax="false" 
-                                                 value="Search Store Payment"
+                                                 class="my-1 w-100 ui-button-info" 
+                                                 icon="fas fa-store"
+                                                 value="List Store Payments to Settle"
+                                                 action="#{supplierPaymentController.fillStoreSupplierPayments()}"/>
+
+                                <p:commandButton ajax="false" value="List All Payments to Settle" 
                                                  class="my-1 w-100 ui-button-warning" 
-                                                 icon="fas fa-search"
-                                                 action="#{searchController.createStorePayment()}"/>
-                                <p:commandButton ajax="false" 
-                                                 value="Search All Payment" 
-                                                 class="my-1 w-100 ui-button-warning" 
-                                                 icon="fas fa-search"
-                                                 action="#{searchController.createStorePaharmacyPayment()}"/>
+                                                 icon="fas fa-search-dollar"
+                                                 action="#{supplierPaymentController.fillSupplierPayments()}"/>
+
 
                                 <h:outputLabel value="Bill No"/>
-                                <p:inputText autocomplete="off"  value="#{billSearch.searchKeyword.billNo}" class="w-100"/>
-                                <h:outputLabel value="Distributor Name"/> 
-                                <p:inputText autocomplete="off" value="#{billSearch.searchKeyword.toInstitution}" class="w-100" />                
+                                <p:inputText autocomplete="off" class="w-100" value="#{billSearch.searchKeyword.billNo}" />
+                                <h:outputLabel value="Distributor Name"/>              
+                                <p:inputText autocomplete="off" class="w-100" value="#{billSearch.searchKeyword.toInstitution}" />
                                 <h:outputLabel value="Net Total"/>
-                                <p:inputText autocomplete="off" value="#{billSearch.searchKeyword.netTotal}" class="w-100"/>
+                                <p:inputText autocomplete="off" class="w-100" value="#{billSearch.searchKeyword.netTotal}"/>
                                 <h:outputLabel value="Bank"/>
-                                <p:inputText autocomplete="off" value="#{billSearch.searchKeyword.bank}" class="w-100"/>
+                                <p:inputText autocomplete="off" class="w-100" value="#{billSearch.searchKeyword.bank}"/>
                                 <h:outputLabel value="Check No"/>
-
-                                <p:inputText autocomplete="off" value="#{billSearch.searchKeyword.number}" class="w-100"/>
+                                <p:inputText autocomplete="off" value="#{billSearch.searchKeyword.number}"/>
                             </div>
                             <div class="col-10">
                                 <p:dataTable 
                                     id="tblBills" 
-                                    value="#{searchController.bills}" 
+                                    value="#{supplierPaymentController.bills}" 
                                     var="bill"  
-                                    paginator="true"
                                     paginatorPosition="bottom"
                                     rows="10"
+                                    paginator="true"
                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                     rowsPerPageTemplate="5,10,15"
                                     >
-                                    
+
                                     <p:column headerText="Bill No" >                                
-                                        <h:outputLabel value="#{bill.id}"  ></h:outputLabel>                                    
+                                        <h:outputLabel value="#{bill.deptId}"  ></h:outputLabel>                                    
                                     </p:column>
                                     <p:column headerText="Supplier Name">                             
                                         <h:outputLabel value="#{bill.toInstitution.name}" />
@@ -107,7 +117,7 @@
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Bank" >                                
-                                        <h:outputLabel value="#{bill.bank}" >                                        
+                                        <h:outputLabel value="#{bill.bank.name}" >                                        
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Cheque No" >                               
@@ -124,21 +134,15 @@
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column>
-                                        <p:commandButton ajax="false" value="View" action="reprint_bill_dealor">
-                                            <f:setPropertyActionListener value="#{bill}" target="#{dealorPaymentBillSearch.bill}"/>
+                                        <p:commandButton ajax="false" value="Approve" action="reprint_bill_dealor">
+                                            <f:setPropertyActionListener value="#{bill}" 
+                                                                         target="#{dealorPaymentBillSearch.bill}"/>
                                         </p:commandButton>
-                                    </p:column>
-
-                                    <p:column>
-                                        <p:commandButton ajax="false" value="Print Cheque" action="cheque_print" >
-                                            <f:setPropertyActionListener value="#{bill}" target="#{dealorPaymentBillSearch.bill}"/>
-                                        </p:commandButton>
-                                    </p:column>
-
+                                    </p:column> 
                                 </p:dataTable>
-
                             </div>
                         </div>
+
 
 
 

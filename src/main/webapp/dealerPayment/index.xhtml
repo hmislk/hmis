@@ -19,7 +19,7 @@
                                     <p:commandButton 
                                         class="w-100"
                                         ajax="false"
-                                        value="Payment to Settle"
+                                        value="Payments to Settle"
                                         icon="fas fa-search-dollar"
                                         styleClass="p-button-info"
                                         action="#{supplierPaymentController.navigateToDealerDueSearch}"
@@ -28,10 +28,10 @@
                                     <p:commandButton 
                                         class="w-100"
                                         ajax="false"
-                                        value="Supplier Payments Made"
+                                        value="Settled Payments"
                                         icon="fas fa-check-circle"
                                         styleClass="p-button-success"
-                                        action="#{supplierPaymentController.navigateToGRNPaymentDoneSearch}"
+                                        action="#{supplierPaymentController.navigateToSupplierPaymentDoneSearch}"
                                         rendered="#{webUserController.hasPrivilege('PharmacyGRNPaymentDoneSearch')}" />
 
 
