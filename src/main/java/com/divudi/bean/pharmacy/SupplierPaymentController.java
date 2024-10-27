@@ -153,6 +153,11 @@ public class SupplierPaymentController implements Serializable {
         makeNull();
         return "/dealerPayment/search_dealor_payment?faces-redirect=true";
     }
+    
+    public String navigateToSupplierPaymentDoneSearch() {
+        bills = null;
+        return "/dealerPayment/search_dealor_payment?faces-redirect=true";
+    }
 
     public String navigateToCreditDuesAndAccess() {
         return "/credit/index_pharmacy_due_access?faces-redirect=true";
