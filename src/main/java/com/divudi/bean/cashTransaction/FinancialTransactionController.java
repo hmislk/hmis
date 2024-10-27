@@ -2121,6 +2121,9 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("A shift start fund bill is already available for closure.");
             return "";
         }
+        
+        List<Payment> payments = new ArrayList();
+        
         billController.save(currentBill);
         for (Payment p : getCurrentBillPayments()) {
             p.setBill(currentBill);
@@ -2129,11 +2132,13 @@ public class FinancialTransactionController implements Serializable {
             // Serialize denominations before saving
             p.serializeDenominations();
             paymentController.save(p);
+            payments.add(p);
         }
+        
+        drawerController.updateDrawerForIns(payments);
 
         if (configOptionApplicationController.getBooleanValueByKey("Allow to Denomination for shift Starting Process", false)) {
             for (DenominationTransaction dt : getDenominationTransactions()) {
-
                 denominationTransactionController.save(dt);
             }
         }
