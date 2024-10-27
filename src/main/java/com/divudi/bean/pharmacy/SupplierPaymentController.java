@@ -202,7 +202,7 @@ public class SupplierPaymentController implements Serializable {
         String sql;
         Map temMap = new HashMap();
 
-        sql = "select b from BilledBill b "
+        sql = "select b from Bill b "
                 + " where b.billTypeAtomic in :billTypes "
                 + " and b.createdAt between :fromDate and :toDate "
                 + " and b.retired=false ";
