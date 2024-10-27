@@ -1835,6 +1835,11 @@ public class FinancialTransactionController implements Serializable {
         return "/cashier/handover_bills_for_me_to_receive?faces-redirect=true";
     }
 
+    public String navigateToMyHandovers() {
+        fillMyHandovers();
+        return "/cashier/handover_bills_from_me?faces-redirect=true";
+    }
+
     private void prepareToAddNewInitialFundBill() {
         currentBill = new Bill();
         currentBill.setBillType(BillType.ShiftStartFundBill);
@@ -2121,9 +2126,9 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("A shift start fund bill is already available for closure.");
             return "";
         }
-        
+
         List<Payment> payments = new ArrayList();
-        
+
         billController.save(currentBill);
         for (Payment p : getCurrentBillPayments()) {
             p.setBill(currentBill);
@@ -2134,7 +2139,7 @@ public class FinancialTransactionController implements Serializable {
             paymentController.save(p);
             payments.add(p);
         }
-        
+
         drawerController.updateDrawerForIns(payments);
 
         if (configOptionApplicationController.getBooleanValueByKey("Allow to Denomination for shift Starting Process", false)) {
@@ -4619,6 +4624,25 @@ public class FinancialTransactionController implements Serializable {
 
     }
 
+    public void fillMyHandovers() {
+        String sql;
+        currentBills = new ArrayDeque<>();
+        Map tempMap = new HashMap();
+        sql = "select s "
+                + "from Bill s "
+                + "where s.retired=:ret "
+                + "and s.billTypeAtomic=:btype "
+                + "and s.toWebUser=:user "
+                + "and s.createdAt between :fd and :td "
+                + "order by s.createdAt ";
+        tempMap.put("btype", BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE);
+        tempMap.put("ret", false);
+        tempMap.put("fd", getFromDate());
+        tempMap.put("td", getToDate());
+        tempMap.put("user", sessionController.getLoggedUser());
+        currentBills = billFacade.findByJpql(sql, tempMap);
+    }
+
     public List<Bill> findHandoverCompletionBills(ReportTemplateRow row) {
         String sql;
         Staff forStaff = row.getUser().getStaff();
@@ -4751,7 +4775,6 @@ public class FinancialTransactionController implements Serializable {
 
 //        System.out.println("Sender = " + sender);
 //        System.out.println("Reciver = " + reciver);
-
         for (ReportTemplateRowBundle shiftBundle : bundle.getBundles()) {
             String id = billNumberGenerator.departmentBillNumberGeneratorYearly(department, BillTypeAtomic.FUND_SHIFT_COMPONANT_HANDOVER_CREATE);
             Bill shiftHandoverComponantAcceptBill = new Bill();
@@ -4808,16 +4831,15 @@ public class FinancialTransactionController implements Serializable {
 
         return "/cashier/handover_creation_bill_print?faces-redirect=true";
     }
-    
-    public void updateDraverForHandover(List<Payment> payments, WebUser reciver, WebUser sender){
+
+    public void updateDraverForHandover(List<Payment> payments, WebUser reciver, WebUser sender) {
         //System.out.println("Update Resiver Drawer Start");//Accepted Cashier Dravr Update
         drawerController.updateDrawerForIns(payments, reciver);
         //System.out.println("Update Resiver Drawer End");
 
         //System.out.println("*******************************************");
-
         //System.out.println("Update Sender Drawer Start");//Sended Cashier Dravr Update
-        drawerController.updateDrawerForOuts(payments,sender);
+        drawerController.updateDrawerForOuts(payments, sender);
         //System.out.println("Update Sender Drawer End");
     }
 
@@ -4917,11 +4939,11 @@ public class FinancialTransactionController implements Serializable {
                 p.setCashbookEntryCompleted(true);
 
                 paymentController.save(p);
-                
+
                 payments.add(p);
             }
         }
-        
+
         System.out.println("payments = " + payments.size());
 
         updateDraverForHandover(payments, reciver, sender);
