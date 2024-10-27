@@ -1521,8 +1521,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         }
         return result.toString().trim();
     }
-    
-    public void savePatient(Patient p){
+
+    public void savePatient(Patient p) {
         setPatient(p);
         savePatient();
     }
@@ -1872,9 +1872,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
         saveBatchBill();
         createPaymentsForBills(getBatchBill(), getLstBillEntries());
-        
-        
-        
+
         drawerController.updateDrawerForIns(payments);
         saveBillItemSessions();
         if (toStaff != null && getPaymentMethod() == PaymentMethod.Staff_Welfare) {
@@ -2228,6 +2226,15 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             String creditRefNo = paymentMethodData.getCredit().getReferenceNo();
             newBill.setReferenceNumber(creditRefNo);
         }
+        if (paymentMethod == PaymentMethod.Card ) {
+            if (comment == null) {
+                String cardComment = paymentMethodData.getCreditCard().getComment();
+                newBill.setComments(cardComment);
+            } else {
+                newBill.setComments(comment);
+            }
+        }
+
         String deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(bt, BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
 //        newBill.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(patient, getSessionController().getApplicationPreference().isMembershipExpires()));
         newBill.setPaymentScheme(getPaymentScheme());
@@ -2240,13 +2247,13 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
         newBill.setInsId(deptId);
         newBill.setDeptId(deptId);
-        
+
         if (newBill.getId() == null) {
             getFacade().create(newBill);
         } else {
             getFacade().edit(newBill);
         }
-        
+
         switch (sessionController.getDepartmentPreference().getOpdTokenNumberGenerationStrategy()) {
             case NO_TOKEN_GENERATION:
                 newBill.setSessionId(null);
@@ -2437,7 +2444,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             JsfUtil.addErrorMessage("Can not bill without a name for the Patient !");
             return true;
         }
-        if (getPatient().getPerson().getSex()== null) {
+        if (getPatient().getPerson().getSex() == null) {
             JsfUtil.addErrorMessage("Can not bill without sex for the Patient !");
             return true;
         }

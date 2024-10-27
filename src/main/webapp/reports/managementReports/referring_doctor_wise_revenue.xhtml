@@ -381,7 +381,7 @@
                         <h:panelGroup>
 
 
-                            <div class="row " >
+                            <div class="row w-50" >
                                 <div class="col-3">
                                     <h:outputLabel style="width: 100px; font-weight:bold ">From Date</h:outputLabel><span>:</span>
                                 </div>
@@ -410,6 +410,17 @@
                                     </div>
                                     <div class="col-3">
                                         <h:outputLabel value="#{reportController.institution.name}" ></h:outputLabel>
+                                    </div>
+                                </div>
+                            </h:panelGroup>
+                            
+                            <h:panelGroup rendered="#{reportController.category ne null}">
+                                <div class="row w-50" >
+                                    <div class="col-3">
+                                        <h:outputLabel style="width: 100px ; font-weight:bold ">S. Group</h:outputLabel><span>:</span>
+                                    </div>
+                                    <div class="col-3">
+                                        <h:outputLabel value="#{reportController.category.name}" ></h:outputLabel>
                                     </div>
                                 </div>
                             </h:panelGroup>
@@ -467,8 +478,7 @@
                             </p:column>
 
                             <p:column headerText="Status" width="5rem">
-                                <h:outputText value="#{bi.patientInvestigation.status}" rendered="#{bi.patientInvestigation ne null}" />
-                                <h:outputText value="#{bi.referanceBillItem.patientInvestigation.status}" rendered="#{bi.patientInvestigation eq null}"  />
+                                <h:outputText value="#{patientInvestigationController.getPatientInvestigationFromBillItem(bi).status}" />
                             </p:column>
 
                             <p:column headerText="CC Amt" width="5rem">
@@ -483,7 +493,7 @@
                             </p:column>
 
                             <p:column headerText="Hos Amt" width="5rem">
-                                <h:outputText value="#{bi.hospitalFee}" >
+                                <h:outputText value="#{bi.hospitalFee + bi.discount}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer">
