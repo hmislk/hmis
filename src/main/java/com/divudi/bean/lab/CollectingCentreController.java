@@ -90,6 +90,7 @@ public class CollectingCentreController implements Serializable {
     private AgentHistory agentHistory;
     private Object auditDataBefore;
     private Object auditDataAfter;
+    private int activeIndex;
 
     public String navigateToPayToCollectingCentre() {
         bill = new Bill();
@@ -137,7 +138,7 @@ public class CollectingCentreController implements Serializable {
         if (agentHistory == null) {
             return;
         }
-        agentHistory.setBalanceAfterTransaction(agentHistory.getBalanceBeforeTransaction()+ agentHistory.getTransactionValue());
+        agentHistory.setBalanceAfterTransaction(agentHistory.getBalanceBeforeTransaction() + agentHistory.getTransactionValue());
     }
 
     public String navigateToEditCollectingCentreBalanceEntry(AgentHistory agentHx) {
@@ -181,7 +182,7 @@ public class CollectingCentreController implements Serializable {
         saveAgentHistory();
         return "/reports/collectionCenterReports/collection_center_statement_report?faces-redirect=true";
     }
-    
+
     public String saveAgentHistoryAndNavigateToNextRecord() {
         if (agentHistory == null) {
             JsfUtil.addErrorMessage("Nothing selected");
@@ -226,6 +227,31 @@ public class CollectingCentreController implements Serializable {
         params.put("agency", ahx.getAgency());
         params.put("thisid", ahx.getId());
 
+        return agentHistoryFacade.findFirstByJpql(jpql, params);
+    }
+
+    public Double lastAgentBalance(Institution cc) {
+        AgentHistory ah = lastAgentHistory(cc);
+        if (ah == null) {
+            return 0.0;
+        }
+        return ah.getBalanceAfterTransaction();
+    }
+    
+    
+
+    public AgentHistory lastAgentHistory(Institution cc) {
+        if (cc == null || cc.getId() == null) {
+            return null;
+        }
+        String jpql = "SELECT ah FROM AgentHistory ah "
+                + "WHERE ah.retired = :ret "
+                + "AND ah.agency = :agency "
+                + "ORDER BY ah.id DESC";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("agency", cc);
         return agentHistoryFacade.findFirstByJpql(jpql, params);
     }
 
@@ -637,6 +663,14 @@ public class CollectingCentreController implements Serializable {
 
     public void setAuditDataAfter(Object auditDataAfter) {
         this.auditDataAfter = auditDataAfter;
+    }
+
+    public int getActiveIndex() {
+        return activeIndex;
+    }
+
+    public void setActiveIndex(int activeIndex) {
+        this.activeIndex = activeIndex;
     }
 
 }

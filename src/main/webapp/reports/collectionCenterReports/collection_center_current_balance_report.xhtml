@@ -75,6 +75,16 @@
                                     <f:convertNumber groupingUsed="true" maxFractionDigits="2" minFractionDigits="2" />
                                 </h:outputText>
                             </p:column>
+                            
+                             <p:column
+                                 rendered="#{webUserController.hasPrivilege('Developers')}"
+                                 headerText="Last Hx Balance" >
+                                 <h:outputText value="#{collectingCentreController.lastAgentBalance(ah.institution)}">
+                                    <f:convertNumber groupingUsed="true" maxFractionDigits="2" minFractionDigits="2" />
+                                </h:outputText>
+                                 
+                                 
+                            </p:column>
 
                         </p:dataTable>
 

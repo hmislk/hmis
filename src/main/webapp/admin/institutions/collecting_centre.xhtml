@@ -52,8 +52,8 @@
                                     </div>
                                 </f:facet>
 
-                                <p:tabView>
-                                    <p:tab title="Basic Derails">
+                                <p:tabView activeIndex="#{collectingCentreController.activeIndex}">
+                                    <p:tab title="Basic Details">
                                         <p:panelGrid 
                                             layout="tabular"
                                             columns="2" 
@@ -96,17 +96,12 @@
                                             </h:panelGroup>
 
 
-                                            <h:outputText value="Active" >                                        
-                                            </h:outputText>
-                                            <p:selectBooleanButton class="form-control" onIcon="fas fa-times" offIcon="fas fa-check" value="#{collectingCentreController.current.inactive}"  />
 
 
                                             <h:outputText value="Description" >                                        
                                             </h:outputText>
                                             <p:inputTextarea styleClass="longText" value="#{collectingCentreController.current.descreption}" class="w-100" >
                                             </p:inputTextarea> 
-
-
 
                                             <h:outputText id="lblRoute" value="Route" ></h:outputText>
                                             <p:selectOneMenu 
@@ -144,28 +139,15 @@
                                                     rendered="#{collectingCentreController.current.labInstitution eq null}"></p:outputLabel>
                                             </h:panelGroup>
 
-
-
-
-
-
-
-
                                             <h:outputText id="lblAcc" value="Account No" ></h:outputText>
                                             <p:inputText autocomplete="off" id="txtAcc" value="#{collectingCentreController.current.accountNo}" class="w-100" ></p:inputText>
 
-                                            <h:outputText value="Creator" ></h:outputText>
-                                            <h:outputText value="#{collectingCentreController.current.creater.webUserPerson.name}" ></h:outputText>
 
-                                            <h:outputText value="Created At" ></h:outputText>
-                                            <h:outputText value="#{collectingCentreController.current.createdAt}" >
-                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
-                                            </h:outputText>
 
                                         </p:panelGrid>
                                     </p:tab>
                                     <p:tab title="Pricing" >
-                                        <p:panelGrid layout="tabular" columns="2" >
+                                        <p:panelGrid layout="tabular" columns="2" class="w-100" >
                                             <h:outputText value="Percentage" >                                        
                                             </h:outputText>
                                             <p:inputText autocomplete="off"  value="#{collectingCentreController.current.percentage}"  class="w-100">
@@ -228,7 +210,7 @@
 
                                     </p:tab>
                                     <p:tab title="Contact Details" >
-                                        <p:panelGrid columns="2" layout="tabular" >
+                                        <p:panelGrid columns="2" layout="tabular" class="w-100">
                                             <h:outputText value="Contact Number" >                                        
                                             </h:outputText>
                                             <p:inputText autocomplete="off"  value="#{collectingCentreController.current.phone}"  class="w-100">
@@ -255,6 +237,21 @@
                                         </p:panelGrid>
                                     </p:tab>
 
+                                    <p:tab title="Metadata" >
+                                        <p:panelGrid columns="2" layout="tabular" class="w-100" >
+                                            <h:outputText value="Active" >                                        
+                                            </h:outputText>
+                                            <p:selectBooleanButton class="form-control" onIcon="fas fa-times" offIcon="fas fa-check" value="#{collectingCentreController.current.inactive}"  />
+
+                                            <h:outputText value="Creator" ></h:outputText>
+                                            <h:outputText value="#{collectingCentreController.current.creater.webUserPerson.name}" ></h:outputText>
+
+                                            <h:outputText value="Created At" ></h:outputText>
+                                            <h:outputText value="#{collectingCentreController.current.createdAt}" >
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
+                                            </h:outputText>
+                                        </p:panelGrid>
+                                    </p:tab>
                                 </p:tabView>
 
                             </p:panel>
