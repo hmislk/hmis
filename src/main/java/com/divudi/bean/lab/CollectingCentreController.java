@@ -115,6 +115,10 @@ public class CollectingCentreController implements Serializable {
 
     public String navigateToEditNextCollectingCentreBalanceEntry(AgentHistory agentHx) {
         AgentHistory nahx = nextAgentHistory(agentHx);
+        if (nahx == null) {
+            JsfUtil.addErrorMessage("This is the Latest Record");
+            return null;
+        }
         return navigateToEditCollectingCentreBalanceEntry(nahx);
     }
 
@@ -237,8 +241,6 @@ public class CollectingCentreController implements Serializable {
         }
         return ah.getBalanceAfterTransaction();
     }
-    
-    
 
     public AgentHistory lastAgentHistory(Institution cc) {
         if (cc == null || cc.getId() == null) {
