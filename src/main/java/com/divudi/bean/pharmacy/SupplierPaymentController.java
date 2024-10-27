@@ -658,6 +658,8 @@ public class SupplierPaymentController implements Serializable {
         currentBillItem.setNetValue(-settlingValue);
         currentBillItem.setGrossValue(-settlingValue);
         getBillItems().add(currentBillItem);
+        calTotalBySelectedBillTems();
+        calTotal();
         return "/dealerPayment/pay_supplier?faces-redirect=true";
     }
 
