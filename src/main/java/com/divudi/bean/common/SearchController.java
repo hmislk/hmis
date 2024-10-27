@@ -622,14 +622,14 @@ public class SearchController implements Serializable {
         resetAllFiltersExceptDateRange();
         return "/analytics/bill_types?faces-redirect=true";
     }
-    
+
     public String navigateToUserBillTypeList(WebUser wu) {
         resetAllFiltersExceptDateRange();
         webUser = wu;
         listBillTypes();
         return "/analytics/bill_types?faces-redirect=true";
     }
-    
+
     public String navigateToUserBillPaymentList(WebUser wu) {
         billSummaryRows = null;
         resetAllFiltersExceptDateRange();
@@ -7594,28 +7594,22 @@ public class SearchController implements Serializable {
 
     }
 
+    @Deprecated //Use supplierPaymentController
     public void createPharmacyPaymentPre() {
-        Date startTime = new Date();
-
         InstitutionType[] institutionTypes = {InstitutionType.Dealer};
         createGrnPaymentTable(Arrays.asList(institutionTypes), BillType.GrnPaymentPre);
-
     }
 
+    @Deprecated //Use supplierPaymentController
     public void createStorePaymentPre() {
-        Date startTime = new Date();
-
         InstitutionType[] institutionTypes = {InstitutionType.StoreDealor};
         createGrnPaymentTable(Arrays.asList(institutionTypes), BillType.GrnPaymentPre);
-
     }
 
+    @Deprecated //Use supplierPaymentController
     public void createStorePaharmacyPaymentPre() {
-        Date startTime = new Date();
-
         InstitutionType[] institutionTypes = {InstitutionType.Dealer, InstitutionType.StoreDealor};
         createGrnPaymentTable(Arrays.asList(institutionTypes), BillType.GrnPaymentPre);
-
     }
 
     private void createGrnPaymentTable(List<InstitutionType> institutionTypes, BillType billType) {
@@ -10254,8 +10248,6 @@ public class SearchController implements Serializable {
         }
 
         jpql.append(" group by b.billType, b.billClassType, b.billTypeAtomic ");
-        
-      
 
         System.out.println("jpql.toString() = " + jpql.toString());
         System.out.println("params = " + params);
@@ -15682,7 +15674,7 @@ public class SearchController implements Serializable {
             jpql += "AND bill.department.site = :site ";
             parameters.put("site", site);
         }
-        
+
         if (toInstitution != null) {
             jpql += "AND bill.toDepartment.institution = :ins ";
             parameters.put("ins", institution);
@@ -15706,7 +15698,7 @@ public class SearchController implements Serializable {
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
         System.out.println("rs = " + rs);
-        
+
         bundle = new ReportTemplateRowBundle();
         bundle.setReportTemplateRows(rs);
         bundle.calculateTotals();

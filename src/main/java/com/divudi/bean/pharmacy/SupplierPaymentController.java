@@ -15,9 +15,11 @@ import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
+import com.divudi.data.InstitutionType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.InstitutionBills;
 import com.divudi.data.dataStructure.PaymentMethodData;
+import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.data.table.String1Value5;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
@@ -40,8 +42,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import javax.ejb.EJB;
@@ -49,6 +53,7 @@ import javax.enterprise.context.Dependent;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -87,6 +92,7 @@ public class SupplierPaymentController implements Serializable {
     private Date toDate;
     //Atribtes
     private boolean printPreview;
+    private SearchKeyword searchKeyword;
     private Bill current;
     private PaymentMethodData paymentMethodData;
     private BillItem currentBillItem;
@@ -149,6 +155,111 @@ public class SupplierPaymentController implements Serializable {
 
     public String navigateToCreditDuesAndAccess() {
         return "/credit/index_pharmacy_due_access?faces-redirect=true";
+    }
+
+    public void fillPharmacySupplierPayments(){
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.SUPPLIER_PAYMENT);
+        List<InstitutionType> institutionTypes =  new ArrayList<>();
+        institutionTypes.add(InstitutionType.Dealer);
+        createGrnPaymentTable(institutionTypes, btas);
+    }
+    
+    public void fillStoreSupplierPayments(){
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.SUPPLIER_PAYMENT);
+        List<InstitutionType> institutionTypes =  new ArrayList<>();
+        institutionTypes.add(InstitutionType.StoreDealor);
+        createGrnPaymentTable(institutionTypes, btas);
+    }
+    
+    public void fillSupplierPayments(){
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.SUPPLIER_PAYMENT);
+        createGrnPaymentTable(null, btas);
+    }
+    
+//    @Deprecated
+//    public void createPharmacyPaymentPre() {
+//        InstitutionType[] institutionTypes = {InstitutionType.Dealer};
+//        createGrnPaymentTable(Arrays.asList(institutionTypes), BillType.GrnPaymentPre);
+//    }
+
+//    @Deprecated
+//    public void createStorePaymentPre() {
+//        InstitutionType[] institutionTypes = {InstitutionType.StoreDealor};
+//        createGrnPaymentTable(Arrays.asList(institutionTypes), BillType.GrnPaymentPre);
+//    }
+//
+//    @Deprecated
+//    public void createStorePaharmacyPaymentPre() {
+//        InstitutionType[] institutionTypes = {InstitutionType.Dealer, InstitutionType.StoreDealor};
+//        createGrnPaymentTable(Arrays.asList(institutionTypes), BillType.GrnPaymentPre);
+//    }
+
+    private void createGrnPaymentTable(List<InstitutionType> institutionTypes, List<BillTypeAtomic> billTypes) {
+        bills = null;
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select b from BilledBill b "
+                + " where b.billTypeAtomic in :billTypes "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false ";
+
+        if (institutionTypes != null) {
+            sql += " and b.toInstitution.institutionType in :insTps ";
+            temMap.put("insTps", institutionTypes);
+        }
+
+        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
+            sql += " and  ((b.patient.person.name) like :patientName )";
+            temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
+            sql += " and  ((b.patient.person.phone) like :patientPhone )";
+            temMap.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and  ((b.insId) like :billNo )";
+            temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
+            sql += " and  ((b.netTotal) like :netTotal )";
+            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
+            sql += " and  ((b.total) like :total )";
+            temMap.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+        }
+
+        sql += " order by b.createdAt desc  ";
+//    
+        temMap.put("billTypes", billTypes);
+
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        //  temMap.put("ins", getSessionController().getInstitution());
+
+        System.err.println("Sql " + sql);
+        System.out.println("temMap = " + temMap);
+        bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
+
+    }
+
+    public SearchKeyword getSearchKeyword() {
+        if (searchKeyword == null) {
+            searchKeyword = new SearchKeyword();
+        }
+        return searchKeyword;
+    }
+
+    public void setSearchKeyword(SearchKeyword searchKeyword) {
+        this.searchKeyword = searchKeyword;
     }
 
     @Deprecated //Create or Use Spefici prepare methods
@@ -289,11 +400,11 @@ public class SupplierPaymentController implements Serializable {
         getCurrent().setTotal(-n);
         getCurrent().setNetTotal(0 - n);
     }
-    
+
     public void calTotalAtSupplierPaymentBillSettling() {
         double n = 0.0;
         for (BillItem payingBillItem : billItems) {
-            double biNetTotal = 0- Math.abs(payingBillItem.getNetValue());
+            double biNetTotal = 0 - Math.abs(payingBillItem.getNetValue());
             payingBillItem.setNetValue(biNetTotal);
             payingBillItem.setGrossValue(biNetTotal);
             n += payingBillItem.getNetValue();
@@ -302,8 +413,8 @@ public class SupplierPaymentController implements Serializable {
             double payingThisTime = Math.abs(biNetTotal);
             double totalInitialToBePaid = Math.abs(originalBill.getNetTotal());
             double totalRefundsToOrigianl = Math.abs(originalBill.getRefundAmount());
-            double originalBillBallance = (totalInitialToBePaid-(totalRefundsToOrigianl)) - (previouslyPaidAmount+payingThisTime);
-            originalBill.setPaidAmount(previouslyPaidAmount+payingThisTime);
+            double originalBillBallance = (totalInitialToBePaid - (totalRefundsToOrigianl)) - (previouslyPaidAmount + payingThisTime);
+            originalBill.setPaidAmount(previouslyPaidAmount + payingThisTime);
             originalBill.setBalance(originalBillBallance);
             billFacade.edit(originalBill);
         }
@@ -561,7 +672,7 @@ public class SupplierPaymentController implements Serializable {
         calTotal();
         return "/dealerPayment/pay_supplier?faces-redirect=true";
     }
-    
+
     public void settleSupplierPayment() {
         if (errorCheck()) {
             return;
@@ -569,7 +680,7 @@ public class SupplierPaymentController implements Serializable {
         calTotalAtSupplierPaymentBillSettling();
         getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
         getCurrent().setTotal(getCurrent().getNetTotal());
-        
+
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.SUPPLIER_PAYMENT);
 
         getCurrent().setInsId(deptId);
@@ -594,8 +705,7 @@ public class SupplierPaymentController implements Serializable {
         } else {
             getBillFacade().edit(getCurrent());
         }
-        
-        
+
         Payment p = createPayment(getCurrent(), getCurrent().getPaymentMethod());
         saveBillItemBySelectedItems(p);
 
@@ -959,8 +1069,6 @@ public class SupplierPaymentController implements Serializable {
         return toDate;
     }
 
-    
-    
     public Double getNetTotal() {
         return netTotal;
     }
