@@ -125,6 +125,7 @@ public class SupplierPaymentController implements Serializable {
     }
 
     public String navigateToDealerDueSearch() {
+        bills = new ArrayList<>();
         return "/dealerPayment/dealor_due?faces-redirect=true";
     }
 
@@ -179,75 +180,57 @@ public class SupplierPaymentController implements Serializable {
         createGrnPaymentTable(null, btas);
     }
     
-//    @Deprecated
-//    public void createPharmacyPaymentPre() {
-//        InstitutionType[] institutionTypes = {InstitutionType.Dealer};
-//        createGrnPaymentTable(Arrays.asList(institutionTypes), BillType.GrnPaymentPre);
-//    }
-
-//    @Deprecated
-//    public void createStorePaymentPre() {
-//        InstitutionType[] institutionTypes = {InstitutionType.StoreDealor};
-//        createGrnPaymentTable(Arrays.asList(institutionTypes), BillType.GrnPaymentPre);
-//    }
-//
-//    @Deprecated
-//    public void createStorePaharmacyPaymentPre() {
-//        InstitutionType[] institutionTypes = {InstitutionType.Dealer, InstitutionType.StoreDealor};
-//        createGrnPaymentTable(Arrays.asList(institutionTypes), BillType.GrnPaymentPre);
-//    }
 
     private void createGrnPaymentTable(List<InstitutionType> institutionTypes, List<BillTypeAtomic> billTypes) {
         bills = null;
-        String sql;
-        Map temMap = new HashMap();
+        String jpql;
+        Map params = new HashMap();
 
-        sql = "select b from Bill b "
+        jpql = "select b from Bill b "
                 + " where b.billTypeAtomic in :billTypes "
                 + " and b.createdAt between :fromDate and :toDate "
                 + " and b.retired=false ";
 
         if (institutionTypes != null) {
-            sql += " and b.toInstitution.institutionType in :insTps ";
-            temMap.put("insTps", institutionTypes);
+            jpql += " and b.toInstitution.institutionType in :insTps ";
+            params.put("insTps", institutionTypes);
         }
 
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
-            sql += " and  ((b.patient.person.name) like :patientName )";
-            temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+            jpql += " and  ((b.patient.person.name) like :patientName )";
+            params.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
-            sql += " and  ((b.patient.person.phone) like :patientPhone )";
-            temMap.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
+            jpql += " and  ((b.patient.person.phone) like :patientPhone )";
+            params.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
-            sql += " and  ((b.insId) like :billNo )";
-            temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+            jpql += " and  ((b.insId) like :billNo )";
+            params.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            jpql += " and  ((b.netTotal) like :netTotal )";
+            params.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
-            sql += " and  ((b.total) like :total )";
-            temMap.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+            jpql += " and  ((b.total) like :total )";
+            params.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
         }
 
-        sql += " order by b.createdAt desc  ";
+        jpql += " order by b.createdAt desc  ";
 //    
-        temMap.put("billTypes", billTypes);
+        params.put("billTypes", billTypes);
 
-        temMap.put("toDate", getToDate());
-        temMap.put("fromDate", getFromDate());
-        //  temMap.put("ins", getSessionController().getInstitution());
+        params.put("toDate", getToDate());
+        params.put("fromDate", getFromDate());
 
-        System.err.println("Sql " + sql);
-        System.out.println("temMap = " + temMap);
-        bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
+        System.err.println("Sql " + jpql);
+        System.out.println("temMap = " + params);
+        bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
     }
 
@@ -275,7 +258,7 @@ public class SupplierPaymentController implements Serializable {
 
     public void prepareForNewSupplierPayment() {
         printPreview = false;
-        current = new Bill();
+        current = new BilledBill();
         current.setBillType(BillType.GrnPayment);
         current.setBillTypeAtomic(BillTypeAtomic.SUPPLIER_PAYMENT);
         currentBillItem = null;
@@ -510,6 +493,38 @@ public class SupplierPaymentController implements Serializable {
 
     public void fillUnsettledCreditPharmacyBills() {
         BillTypeAtomic[] billTypesArrayBilled = {BillTypeAtomic.PHARMACY_GRN, BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL, BillTypeAtomic.PHARMACY_DIRECT_PURCHASE, BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL, BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL};
+        List<BillTypeAtomic> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
+        bills = billController.findUnpaidBills(fromDate, toDate, billTypesListBilled, PaymentMethod.Credit, 0.01);
+        netTotal = 0.0;
+        paidAmount = 0.0;
+        refundAmount = 0.0;
+        balance = 0.0;
+        for (Bill b : bills) {
+            netTotal += b.getNetTotal();
+            paidAmount += b.getPaidAmount();
+            balance += b.getBalance();
+            refundAmount += b.getRefundAmount();
+        }
+    }
+    
+    public void fillUnsettledCreditStoreBills() {
+        BillTypeAtomic[] billTypesArrayBilled = {BillTypeAtomic.STORE_GRN, BillTypeAtomic.STORE_DIRECT_PURCHASE};
+        List<BillTypeAtomic> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
+        bills = billController.findUnpaidBills(fromDate, toDate, billTypesListBilled, PaymentMethod.Credit, 0.01);
+        netTotal = 0.0;
+        paidAmount = 0.0;
+        refundAmount = 0.0;
+        balance = 0.0;
+        for (Bill b : bills) {
+            netTotal += b.getNetTotal();
+            paidAmount += b.getPaidAmount();
+            balance += b.getBalance();
+            refundAmount += b.getRefundAmount();
+        }
+    }
+    
+    public void fillUnsettledCreditBills() {
+        BillTypeAtomic[] billTypesArrayBilled = {BillTypeAtomic.PHARMACY_GRN, BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL, BillTypeAtomic.PHARMACY_DIRECT_PURCHASE, BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL, BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL, BillTypeAtomic.STORE_GRN, BillTypeAtomic.STORE_DIRECT_PURCHASE};
         List<BillTypeAtomic> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
         bills = billController.findUnpaidBills(fromDate, toDate, billTypesListBilled, PaymentMethod.Credit, 0.01);
         netTotal = 0.0;

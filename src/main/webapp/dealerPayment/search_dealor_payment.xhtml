@@ -18,14 +18,26 @@
                         <div class="row">
                             <div class="col-2">
                                 <h:outputLabel value="From Date"/>
-                                <p:datePicker styleClass="dateTimePicker" id="fromDate" value="#{supplierPaymentController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100" inputStyleClass="w-100">      
+                                <p:datePicker
+                                    showTime="true"
+                                    styleClass="dateTimePicker"
+                                    id="fromDate"
+                                    value="#{supplierPaymentController.fromDate}"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                    class="w-100" inputStyleClass="w-100">      
                                 </p:datePicker>
                                 <h:outputLabel value="To Date"/>
-                                <p:datePicker id="toDate" value="#{supplierPaymentController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100" inputStyleClass="w-100">                                                                              
+                                <p:datePicker 
+                                    id="toDate"
+                                    showTime="true"
+                                    value="#{supplierPaymentController.toDate}" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                    class="w-100" 
+                                    inputStyleClass="w-100">                                                                              
                                 </p:datePicker>
 
                                 <p:commandButton id="btnSearch" 
-                                                 ajax="false" value="List Pharmacy Payment" 
+                                                 ajax="false" value="List Pharmacy Payment to Settle" 
                                                  class="my-1 w-100 ui-button-success" 
                                                  icon="fas fa-pills"
                                                  action="#{supplierPaymentController.fillPharmacySupplierPayments()}"/>
@@ -33,10 +45,10 @@
                                 <p:commandButton ajax="false" 
                                                  class="my-1 w-100 ui-button-info" 
                                                  icon="fas fa-store"
-                                                 value="List Store Payment"
+                                                 value="List Store Payments to Settle"
                                                  action="#{supplierPaymentController.fillStoreSupplierPayments()}"/>
 
-                                <p:commandButton ajax="false" value="List All Payments" 
+                                <p:commandButton ajax="false" value="List All Payments to Settle" 
                                                  class="my-1 w-100 ui-button-warning" 
                                                  icon="fas fa-search-dollar"
                                                  action="#{supplierPaymentController.fillSupplierPayments()}"/>
