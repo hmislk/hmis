@@ -4632,7 +4632,7 @@ public class FinancialTransactionController implements Serializable {
                 + "from Bill s "
                 + "where s.retired=:ret "
                 + "and s.billTypeAtomic=:btype "
-                + "and s.toWebUser=:user "
+                + "and s.fromWebUser=:user "
                 + "and s.createdAt between :fd and :td "
                 + "order by s.createdAt ";
         tempMap.put("btype", BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE);
