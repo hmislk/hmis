@@ -1768,6 +1768,57 @@ public class FinancialTransactionController implements Serializable {
         }
         return navigateToReceiveHandoverBillsForMe();
     }
+    
+    public String recallMyHandoverBill() {
+        if (selectedBill == null) {
+            JsfUtil.addErrorMessage("Please select a bill.");
+            return null;
+        }
+        if (selectedBill.getBillTypeAtomic() != BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE) {
+            JsfUtil.addErrorMessage("Wrong Bill Type.");
+            return null;
+        }
+
+        selectedBill.setCancelled(true);
+        selectedBill.setCompleted(true);
+        selectedBill.setCompletedAt(new Date());
+        selectedBill.setCompletedBy(sessionController.getLoggedUser());
+        billController.save(selectedBill);
+
+        Bill denoBill = billSearch.fetchReferredBill(BillTypeAtomic.FUND_SHIFT_DENOMINATION_HANDOVER_CREATE, selectedBill);
+        List<DenominationTransaction> dts = denominationTransactionController.fetchDenominationTransactionFromBill(denoBill);
+        if (dts != null && !dts.isEmpty()) {
+            for (DenominationTransaction dt : dts) {
+                dt.setCancelled(true);
+                dt.setCancelledAt(new Date());
+                dt.setCancelledBy(sessionController.getLoggedUser());
+                denominationTransactionController.save(dt);
+            }
+        }
+        List<Bill> shiftHandoverCompletionBills = billSearch.fetchReferredBills(BillTypeAtomic.FUND_SHIFT_COMPONANT_HANDOVER_CREATE, selectedBill);
+        if (shiftHandoverCompletionBills != null) {
+            for (Bill b : shiftHandoverCompletionBills) {
+                b.setCancelled(true);
+                b.setCompleted(true);
+                b.setCompletedAt(new Date());
+                b.setCompletedBy(sessionController.getLoggedUser());
+                billController.save(b);
+
+                List<Payment> payments = fetchPaymentsForSummaryHandoverCreation(b);
+                if (payments != null && !payments.isEmpty()) {
+                    for (Payment p : payments) {
+                        p.setHandingOverCompleted(false);
+                        p.setHandingOverStarted(false);
+                        p.setHandoverCreatedBill(null);
+                        p.setHandoverShiftBill(null);
+                        p.setHandoverShiftComponantBill(null);
+                        paymentController.save(p);
+                    }
+                }
+            }
+        }
+        return navigateToMyHandovers();
+    }
 
     @Deprecated
     public String navigateToReceiveNewHandoverBill(boolean old) {
@@ -1958,7 +2009,7 @@ public class FinancialTransactionController implements Serializable {
         Map m = new HashMap();
         m.put("b", b);
         m.put("ret", false);
-        return paymentFacade.findByJpql(jpql, m);
+        return paymentFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
     }
 
     public void addPaymentToInitialFundBill() {
@@ -2844,7 +2895,7 @@ public class FinancialTransactionController implements Serializable {
         m.put("ret", false);
         m.put("cid", nonClosedShiftStartFundBill.getId());
         System.out.println("m = " + m);
-        paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m);
+        paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
 
 //        paymentMethodValues = new PaymentMethodValues(PaymentMethod.values());
         atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
@@ -2873,7 +2924,7 @@ public class FinancialTransactionController implements Serializable {
 
         m.put("ret", false);
         System.out.println("jpql = " + jpql);
-        paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m);
+        paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
 
         atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
         currentBillPayments = paymentsFromShiftSratToNow;
@@ -2939,7 +2990,7 @@ public class FinancialTransactionController implements Serializable {
         m.put("ret", false);
         m.put("cid", shiftStartBillId);
         System.out.println("jpql = " + jpql);
-        paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m);
+        paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
 
         atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
 
@@ -2997,7 +3048,7 @@ public class FinancialTransactionController implements Serializable {
 
         m.put("ret", false);
         System.out.println("jpql = " + jpql);
-        paymts = paymentFacade.findByJpql(jpql, m);
+        paymts = paymentFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         return paymts;
 
 //        atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
@@ -3073,7 +3124,7 @@ public class FinancialTransactionController implements Serializable {
         m.put("ret", false);
         m.put("cid", shiftStartBillId);
         System.out.println("jpql = " + jpql);
-        paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m);
+        paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
 
 // Filter and collect unique cancelled bills
         Set<Bill> cancelledBills = paymentsFromShiftSratToNow.stream()
@@ -3278,7 +3329,7 @@ public class FinancialTransactionController implements Serializable {
 
         String jpql = jpqlBuilder.toString();
 
-        List<Payment> shiftPayments = paymentFacade.findByJpql(jpql, m);
+        List<Payment> shiftPayments = paymentFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         System.out.println("shiftPayments = " + shiftPayments);
         List<Payment> shiftPaymentsToEnd = new ArrayList<>();
         for (Payment p : shiftPayments) {
@@ -3329,7 +3380,7 @@ public class FinancialTransactionController implements Serializable {
 
         String jpql = jpqlBuilder.toString();
 
-        List<Payment> shiftPayments = paymentFacade.findByJpql(jpql, m);
+        List<Payment> shiftPayments = paymentFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         System.out.println("shiftPayments = " + shiftPayments);
         List<Payment> shiftPaymentsToEnd = new ArrayList<>();
         for (Payment p : shiftPayments) {
@@ -3581,7 +3632,7 @@ public class FinancialTransactionController implements Serializable {
         params.put("can", false);
         params.put("hs", false);
         String jpql = jpqlBuilder.toString();
-        List<Payment> othersPayments = paymentFacade.findByJpql(jpql, params);
+        List<Payment> othersPayments = paymentFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         return othersPayments;
     }
 
@@ -3712,7 +3763,7 @@ public class FinancialTransactionController implements Serializable {
 
         String jpql = jpqlBuilder.toString();
 
-        List<Payment> shiftPayments = paymentFacade.findByJpql(jpql, m);
+        List<Payment> shiftPayments = paymentFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         System.out.println("shiftPayments = " + shiftPayments);
         // To hold grouped data
         Map<String, ReportTemplateRowBundle> groupedBundles = new HashMap<>();
@@ -3779,7 +3830,7 @@ public class FinancialTransactionController implements Serializable {
         m.put("cr", user);
         m.put("ret", false);
         m.put("cid", shiftStartBillId);
-        paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m);
+        paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
         for (Payment p : paymentsFromShiftSratToNow) {
             if (p.getBill().getBillTypeAtomic() == null) {
@@ -3818,7 +3869,7 @@ public class FinancialTransactionController implements Serializable {
 
         System.out.println("m = " + m);
 
-        paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m);
+        paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
         for (Payment p : paymentsFromShiftSratToNow) {
             if (p.getBill().getBillTypeAtomic() == null) {
@@ -3856,7 +3907,7 @@ public class FinancialTransactionController implements Serializable {
 
         System.out.println("m = " + m);
 
-        paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m);
+        paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
         for (Payment p : paymentsFromShiftSratToNow) {
             if (p.getBill().getBillTypeAtomic() == null) {
@@ -3895,7 +3946,7 @@ public class FinancialTransactionController implements Serializable {
         m.put("btas", billTypesToFilter);
         m.put("ret", false);
         m.put("cid", shiftStartBillId);
-        currentBills = billFacade.findByJpql(jpql, m);
+        currentBills = billFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
 //        paymentMethodValues = new PaymentMethodValues(PaymentMethod.values());
         atomicBillTypeTotalsByBills = new AtomicBillTypeTotals();
         for (Bill p : currentBills) {
@@ -4095,7 +4146,7 @@ public class FinancialTransactionController implements Serializable {
         m.put("staff", sessionController.getLoggedUser().getStaff());
         m.put("ret", false);
         m.put("ofb", BillType.ShiftStartFundBill);
-        shiftStartFundBill = billFacade.findByJpql(jpql, m);
+        shiftStartFundBill = billFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -4591,7 +4642,7 @@ public class FinancialTransactionController implements Serializable {
         tempMap.put("ret", false);
         tempMap.put("logStaff", sessionController.getLoggedUser().getStaff());
         tempMap.put("logUsr", sessionController.getLoggedUser());
-        fundTransferBillsToReceive = billFacade.findByJpql(sql, tempMap);
+        fundTransferBillsToReceive = billFacade.findByJpql(sql, tempMap, TemporalType.TIMESTAMP);
         fundTransferBillsToReceiveCount = fundTransferBillsToReceive.size();
 
     }
@@ -4614,7 +4665,7 @@ public class FinancialTransactionController implements Serializable {
         tempMap.put("com", false);
         tempMap.put("can", false);
         tempMap.put("user", sessionController.getLoggedUser());
-        handovertBillsToReceive = billFacade.findByJpql(sql, tempMap);
+        handovertBillsToReceive = billFacade.findByJpql(sql, tempMap, TemporalType.TIMESTAMP);
 
         try {
             handoverBillsToReceiveCount = handovertBillsToReceive.size();
@@ -4640,7 +4691,7 @@ public class FinancialTransactionController implements Serializable {
         tempMap.put("fd", getFromDate());
         tempMap.put("td", getToDate());
         tempMap.put("user", sessionController.getLoggedUser());
-        currentBills = billFacade.findByJpql(sql, tempMap);
+        currentBills = billFacade.findByJpql(sql, tempMap, TemporalType.TIMESTAMP);
     }
 
     public List<Bill> findHandoverCompletionBills(ReportTemplateRow row) {
@@ -4662,7 +4713,7 @@ public class FinancialTransactionController implements Serializable {
         tempMap.put("btype", BillType.CashHandoverAcceptBill);
         tempMap.put("ret", false);
         tempMap.put("logStaff", sessionController.getLoggedUser().getStaff());
-        bills = billFacade.findByJpql(sql, tempMap);
+        bills = billFacade.findByJpql(sql, tempMap, TemporalType.TIMESTAMP);
         return bills;
     }
 
@@ -6303,7 +6354,7 @@ public class FinancialTransactionController implements Serializable {
         Map m = new HashMap();
         m.put("ret", false);
         m.put("b", b);
-        return paymentFacade.findByJpql(jpql, m);
+        return paymentFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
     }
 
     public Drawer getLoggedUserDrawer() {

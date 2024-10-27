@@ -74,11 +74,22 @@
                                 </h:outputText>
                             </p:column>
 
+                            <p:column headerText="Value">
+                                <p:badge value="&nbsp;&nbsp;Awaiting" severity="info" icon="pi pi-hourglass" 
+                                         rendered="#{bp.completed and not bp.cancelled}" ></p:badge>
+                                <p:badge value="&nbsp;&nbsp;Rejected" severity="danger" icon="pi pi-times" 
+                                         rendered="#{bp.cancelled}" ></p:badge>
+                                         <p:badge value="&nbsp;&nbsp;Completed" severity="success" icon="pi pi-check" 
+                                         rendered="#{bp.completed and not bp.cancelled}" ></p:badge>
+                            </p:column>
+
+
                             <p:column headerText="Actions">
 
                                 <p:commandButton 
+                                    rendered="#{not bp.completed and not bp.cancelled}"
                                     value="Recall"
-                                    action="#{financialTransactionController.rejectToReceiveHandoverBill()}"
+                                    action="#{financialTransactionController.recallMyHandoverBill()}"
                                     ajax="false"
                                     onclick="if (!confirm('Are you sure you want to Reject this record?'))
                                                 return false;" 
