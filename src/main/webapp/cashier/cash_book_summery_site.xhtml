@@ -16,28 +16,24 @@
 
                     <p:panel header="Cashbook Summery by Site" >
 
-                        <p:panelGrid columns="12" class="w-100" >
+                        <p:panelGrid columns="2" class="w-100" >
                             <h:outputLabel value="From"/>
-                            <p:calendar 
+                            <p:datePicker 
                                 class="w-100 " 
                                 inputStyleClass="w-100" 
                                 id="fromDate" 
                                 value="#{cashBookEntryController.fromDate}" 
-                                navigator="false" 
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
-                            </p:calendar>
-                            <p:spacer ></p:spacer>
+                                pattern="#{sessionController.applicationPreference.longDateFormat}" >
+                            </p:datePicker>
 
                             <h:outputLabel value="To"/>                                
-                            <p:calendar 
+                            <p:datePicker 
                                 class="w-100 " 
                                 inputStyleClass="w-100" 
                                 id="toDate" 
                                 value="#{cashBookEntryController.toDate}" 
-                                navigator="false" 
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
-                            </p:calendar>
-                            <p:spacer ></p:spacer>
+                                pattern="#{sessionController.applicationPreference.longDateFormat}" >
+                            </p:datePicker>
                             <p:commandButton  
                                 value="Process" 
                                 ajax="false"
@@ -94,13 +90,14 @@
                                         </td>
                                         <ui:repeat value="#{cashBookEntryController.sitesGroupedIntoInstitutionses}" var="sid">
                                             <ui:repeat value="#{sid.sites}" var="s">
-                                                <td class="text-end">#{cashBookEntryController.fetchStartingBalanceForToSite(date,s)}</td>
+                                                <td class="text-end">#{cashBookEntryController.fetchStartingBalanceForFromSite(date,s)}</td>
                                                 <td class="text-end">
-                                                    <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForToSite(date,s)}" >
+                                                    
+                                                    <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(date,s)}" >
                                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                     </h:outputText> 
                                                 </td>
-                                                <td class="text-end">#{cashBookEntryController.fetchEndingBalanceForToSite(date,s)}</td>
+                                                <td class="text-end">#{cashBookEntryController.fetchEndingBalanceForFromSite(date,s)}</td>
                                             </ui:repeat>
                                         </ui:repeat>
                                     </tr>

@@ -462,8 +462,8 @@ public class PdfController {
                             System.out.println("pscs.size = " + pscs.size());
                             for (PatientSampleComponant psc : pscs) {
                                 System.out.println("psc = " + psc);
-                                System.out.println("psc.getSample() = " + psc.getSample());
-                                System.out.println("psc.getSample().getId() = " + psc.getSample().getId());
+                                System.out.println("psc.getSample() = " + psc.getPatientSample());
+                                System.out.println("psc.getSample().getId() = " + psc.getPatientSample().getId());
                                 System.out.println("");
                             }
                             value = sampleIds;
