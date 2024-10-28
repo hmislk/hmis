@@ -129,6 +129,8 @@ public class DrawerEntryController implements Serializable {
         m.put("ret", false);
         List<DrawerEntry> result = new ArrayList();
         result = ejbFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        
+        
 
         // Reverse the list to get the last entry at the end
         Collections.reverse(result);
