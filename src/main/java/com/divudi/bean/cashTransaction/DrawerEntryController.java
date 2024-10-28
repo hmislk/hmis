@@ -4,6 +4,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.WebUser;
+import com.divudi.entity.cashTransaction.Drawer;
 import com.divudi.entity.cashTransaction.DrawerEntry;
 import com.divudi.facade.DrawerEntryFacade;
 import com.divudi.java.CommonFunctions;
@@ -100,6 +101,36 @@ public class DrawerEntryController implements Serializable {
         } else {
             result = ejbFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP, resultCount);
         }
+
+        // Reverse the list to get the last entry at the end
+        Collections.reverse(result);
+
+        // Assign to the class field
+        userDrawerEntry = result;
+        System.out.println("userDrawerEntry = " + userDrawerEntry);
+    }
+    
+    public void findAllUsersDrawerDetails(){
+        userDrawerEntry = new ArrayList();
+        String jpql = "select de"
+                + " from DrawerEntry de"
+                + " where de.retired=:ret";
+
+        Map m = new HashMap();
+
+        if (fromDate != null && toDate != null) {
+            jpql += " and de.createdAt between :fd and :td";
+            m.put("fd", fromDate);
+            m.put("td", toDate);
+        }
+
+        jpql += " order by de.id desc";
+
+        m.put("ret", false);
+        List<DrawerEntry> result = new ArrayList();
+        result = ejbFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        
+        
 
         // Reverse the list to get the last entry at the end
         Collections.reverse(result);
