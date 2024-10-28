@@ -90,9 +90,10 @@
                                         </td>
                                         <ui:repeat value="#{cashBookEntryController.sitesGroupedIntoInstitutionses}" var="sid">
                                             <ui:repeat value="#{sid.sites}" var="s">
-                                                <td class="text-end">#{cashBookEntryController.fetchStartingBalanceForToSite(date,s)}</td>
+                                                <td class="text-end">#{cashBookEntryController.fetchStartingBalanceForFromSite(date,s)}</td>
                                                 <td class="text-end">
-                                                    <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForToSite(date,s)}" >
+                                                    
+                                                    <h:outputText value="#{cashBookEntryController.fetchSumOfEntryValuesForFromSite(date,s)}" >
                                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                     </h:outputText> 
                                                 </td>

@@ -198,7 +198,7 @@ public class CashBookEntryController implements Serializable {
 
     
     public Double fetchStartingBalanceForFromSite(Date date, Institution site) {
-        String jpql = "select cbe.toSiteBalanceAfter "
+        String jpql = "select cbe.fromSiteBalanceAfter "
                 + " from CashBookEntry cbe "
                 + " where cbe.retired=:ret "
                 + " and cbe.fromSite=:site"
@@ -216,7 +216,7 @@ public class CashBookEntryController implements Serializable {
     }
 
     public Double fetchEndingBalanceForFromSite(Date date, Institution site) {
-        String jpql = "select cbe.toSiteBalanceAfter "
+        String jpql = "select cbe.fromSiteBalanceAfter "
                 + " from CashBookEntry cbe "
                 + " where cbe.retired=:ret "
                 + " and cbe.fromSite=:site"
