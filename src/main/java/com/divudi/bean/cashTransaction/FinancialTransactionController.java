@@ -4763,127 +4763,129 @@ public class FinancialTransactionController implements Serializable {
         return "/cashier/fund_transfer_receive_bill_print?faces-redirect=true";
     }
 
-    public String acceptHandoverBill() {
-        if (bundle == null) {
-            JsfUtil.addErrorMessage("Error - Null Bundle");
-            return null;
-        }
-        if (bundle.getBundles() == null) {
-            JsfUtil.addErrorMessage("No Payments");
-            return null;
-        }
-        if (bundle.getBundles().isEmpty()) {
-            JsfUtil.addErrorMessage("No Payments to Handover");
-            return null;
-        }
-        if (selectedBill == null) {
-            JsfUtil.addErrorMessage("Please select a bill.");
-            return null;
-        }
-        if (selectedBill.getBillTypeAtomic() != BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE) {
-            JsfUtil.addErrorMessage("Wrong Bill Type.");
-            return null;
-        }
-        currentBill = new Bill();
-
-        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.FUND_SHIFT_HANDOVER_ACCEPT);
-
-        currentBill.setDeptId(deptId);
-        currentBill.setInsId(deptId);
-
-        currentBill.setBillType(BillType.CashHandoverAcceptBill);
-        currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_HANDOVER_ACCEPT);
-        currentBill.setBillClassType(BillClassType.PreBill);
-        currentBill.setReferenceBill(selectedBill);
-
-        currentBill.setDepartment(sessionController.getDepartment());
-        currentBill.setFromDepartment(selectedBill.getDepartment());
-        currentBill.setToDepartment(sessionController.getDepartment());
-
-        currentBill.setInstitution(sessionController.getInstitution());
-        currentBill.setFromInstitution(selectedBill.getInstitution());
-        currentBill.setToInstitution(sessionController.getInstitution());
-
-        currentBill.setFromDate(cashbookDate);
-
-        currentBill.setStaff(sessionController.getLoggedUser().getStaff());
-        currentBill.setFromStaff(selectedBill.getStaff());
-        currentBill.setToStaff(sessionController.getLoggedUser().getStaff());
-
-        currentBill.setToWebUser(sessionController.getLoggedUser());
-        currentBill.setFromWebUser(selectedBill.getCreater());
-        currentBill.setToWebUser(sessionController.getLoggedUser());
-
-        currentBill.setCreatedAt(new Date());
-        currentBill.setCreater(sessionController.getLoggedUser());
-        currentBill.setBillDate(new Date());
-        currentBill.setBillTime(new Date());
-        currentBill.setTotal(bundle.getTotal());
-        currentBill.setNetTotal(bundle.getTotal());
-        billController.save(currentBill);
-
-        List<Payment> payments = new ArrayList();
-        WebUser sender = selectedBill.getCreater();
-        WebUser reciver = sessionController.getLoggedUser();
-
-//        System.out.println("Sender = " + sender);
-//        System.out.println("Reciver = " + reciver);
-        for (ReportTemplateRowBundle shiftBundle : bundle.getBundles()) {
-            String id = billNumberGenerator.departmentBillNumberGeneratorYearly(department, BillTypeAtomic.FUND_SHIFT_COMPONANT_HANDOVER_CREATE);
-            Bill shiftHandoverComponantAcceptBill = new Bill();
-            shiftHandoverComponantAcceptBill.setDepartment(shiftBundle.getDepartment());
-            shiftHandoverComponantAcceptBill.setInstitution(shiftBundle.getDepartment().getInstitution());
-            shiftHandoverComponantAcceptBill.setCreater(sessionController.getLoggedUser());
-            shiftHandoverComponantAcceptBill.setBillDate(shiftBundle.getDate());
-            shiftHandoverComponantAcceptBill.setStaff(shiftBundle.getUser().getStaff());
-            shiftHandoverComponantAcceptBill.setBillType(BillType.FUND_SHIFT_COMPONANT_HANDOVER_ACCEPT);
-            shiftHandoverComponantAcceptBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_COMPONANT_HANDOVER_ACCEPT);
-            shiftHandoverComponantAcceptBill.setDeptId(id);
-            shiftHandoverComponantAcceptBill.setInsId(id);
-            shiftHandoverComponantAcceptBill.setFromWebUser(sessionController.getLoggedUser());
-            shiftHandoverComponantAcceptBill.setToWebUser(user);
-            shiftHandoverComponantAcceptBill.setReferenceBill(currentBill);
-            shiftHandoverComponantAcceptBill.setCreatedAt(new Date());
-            shiftHandoverComponantAcceptBill.setReferenceNumber(shiftBundle.getBundleType());
-            billFacade.create(shiftHandoverComponantAcceptBill);
-//            System.out.println("shiftBundle = " + shiftBundle);
-//            System.out.println("shiftBundle.getStartBill() = " + shiftBundle.getStartBill());
-
-            for (ReportTemplateRow row : shiftBundle.getReportTemplateRows()) {
-                //System.out.println("row = " + row);
-                if (row.getPayment() == null) {
-                    //System.out.println("row.getPayment() = " + row.getPayment());
-                    continue;
-                }
-
-                Payment p = row.getPayment();
-                p.setCashbookEntryCompleted(false);
-                p.setHandoverAcceptBill(currentBill);
-                p.setHandoverAcceptComponantBill(shiftHandoverComponantAcceptBill);
-                p.setCurrentHolder(sessionController.getLoggedUser());
-                p.setHandingOverCompleted(true);
-                p.setHandingOverStarted(false);
-                p.setCashbookEntryStated(false);
-                p.setCashbookEntryCompleted(false);
-
-                paymentController.save(p);
-                payments.add(p);
-            }
-        }
-
-        System.out.println("payments = " + payments.size());
-
-        updateDraverForHandover(payments, reciver, sender);
-
-        billController.save(currentBill);
-
-        selectedBill.setCompleted(true);
-        selectedBill.setCompletedAt(new Date());
-        selectedBill.setCompletedBy(sessionController.getLoggedUser());
-        billController.save(selectedBill);
-
-        return "/cashier/handover_creation_bill_print?faces-redirect=true";
-    }
+    
+//    @Deprecated
+//    public String acceptHandoverBill() {
+//        if (bundle == null) {
+//            JsfUtil.addErrorMessage("Error - Null Bundle");
+//            return null;
+//        }
+//        if (bundle.getBundles() == null) {
+//            JsfUtil.addErrorMessage("No Payments");
+//            return null;
+//        }
+//        if (bundle.getBundles().isEmpty()) {
+//            JsfUtil.addErrorMessage("No Payments to Handover");
+//            return null;
+//        }
+//        if (selectedBill == null) {
+//            JsfUtil.addErrorMessage("Please select a bill.");
+//            return null;
+//        }
+//        if (selectedBill.getBillTypeAtomic() != BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE) {
+//            JsfUtil.addErrorMessage("Wrong Bill Type.");
+//            return null;
+//        }
+//        currentBill = new Bill();
+//
+//        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.FUND_SHIFT_HANDOVER_ACCEPT);
+//
+//        currentBill.setDeptId(deptId);
+//        currentBill.setInsId(deptId);
+//
+//        currentBill.setBillType(BillType.CashHandoverAcceptBill);
+//        currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_HANDOVER_ACCEPT);
+//        currentBill.setBillClassType(BillClassType.PreBill);
+//        currentBill.setReferenceBill(selectedBill);
+//
+//        currentBill.setDepartment(sessionController.getDepartment());
+//        currentBill.setFromDepartment(selectedBill.getDepartment());
+//        currentBill.setToDepartment(sessionController.getDepartment());
+//
+//        currentBill.setInstitution(sessionController.getInstitution());
+//        currentBill.setFromInstitution(selectedBill.getInstitution());
+//        currentBill.setToInstitution(sessionController.getInstitution());
+//
+//        currentBill.setFromDate(cashbookDate);
+//
+//        currentBill.setStaff(sessionController.getLoggedUser().getStaff());
+//        currentBill.setFromStaff(selectedBill.getStaff());
+//        currentBill.setToStaff(sessionController.getLoggedUser().getStaff());
+//
+//        currentBill.setToWebUser(sessionController.getLoggedUser());
+//        currentBill.setFromWebUser(selectedBill.getCreater());
+//        currentBill.setToWebUser(sessionController.getLoggedUser());
+//
+//        currentBill.setCreatedAt(new Date());
+//        currentBill.setCreater(sessionController.getLoggedUser());
+//        currentBill.setBillDate(new Date());
+//        currentBill.setBillTime(new Date());
+//        currentBill.setTotal(bundle.getTotal());
+//        currentBill.setNetTotal(bundle.getTotal());
+//        billController.save(currentBill);
+//
+//        List<Payment> payments = new ArrayList();
+//        WebUser sender = selectedBill.getCreater();
+//        WebUser reciver = sessionController.getLoggedUser();
+//
+////        System.out.println("Sender = " + sender);
+////        System.out.println("Reciver = " + reciver);
+//        for (ReportTemplateRowBundle shiftBundle : bundle.getBundles()) {
+//            String id = billNumberGenerator.departmentBillNumberGeneratorYearly(department, BillTypeAtomic.FUND_SHIFT_COMPONANT_HANDOVER_CREATE);
+//            Bill shiftHandoverComponantAcceptBill = new Bill();
+//            shiftHandoverComponantAcceptBill.setDepartment(shiftBundle.getDepartment());
+//            shiftHandoverComponantAcceptBill.setInstitution(shiftBundle.getDepartment().getInstitution());
+//            shiftHandoverComponantAcceptBill.setCreater(sessionController.getLoggedUser());
+//            shiftHandoverComponantAcceptBill.setBillDate(shiftBundle.getDate());
+//            shiftHandoverComponantAcceptBill.setStaff(shiftBundle.getUser().getStaff());
+//            shiftHandoverComponantAcceptBill.setBillType(BillType.FUND_SHIFT_COMPONANT_HANDOVER_ACCEPT);
+//            shiftHandoverComponantAcceptBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_COMPONANT_HANDOVER_ACCEPT);
+//            shiftHandoverComponantAcceptBill.setDeptId(id);
+//            shiftHandoverComponantAcceptBill.setInsId(id);
+//            shiftHandoverComponantAcceptBill.setFromWebUser(sessionController.getLoggedUser());
+//            shiftHandoverComponantAcceptBill.setToWebUser(user);
+//            shiftHandoverComponantAcceptBill.setReferenceBill(currentBill);
+//            shiftHandoverComponantAcceptBill.setCreatedAt(new Date());
+//            shiftHandoverComponantAcceptBill.setReferenceNumber(shiftBundle.getBundleType());
+//            billFacade.create(shiftHandoverComponantAcceptBill);
+////            System.out.println("shiftBundle = " + shiftBundle);
+////            System.out.println("shiftBundle.getStartBill() = " + shiftBundle.getStartBill());
+//
+//            for (ReportTemplateRow row : shiftBundle.getReportTemplateRows()) {
+//                //System.out.println("row = " + row);
+//                if (row.getPayment() == null) {
+//                    //System.out.println("row.getPayment() = " + row.getPayment());
+//                    continue;
+//                }
+//
+//                Payment p = row.getPayment();
+//                p.setCashbookEntryCompleted(false);
+//                p.setHandoverAcceptBill(currentBill);
+//                p.setHandoverAcceptComponantBill(shiftHandoverComponantAcceptBill);
+//                p.setCurrentHolder(sessionController.getLoggedUser());
+//                p.setHandingOverCompleted(true);
+//                p.setHandingOverStarted(false);
+//                p.setCashbookEntryStated(false);
+//                p.setCashbookEntryCompleted(false);
+//
+//                paymentController.save(p);
+//                payments.add(p);
+//            }
+//        }
+//
+//        System.out.println("payments = " + payments.size());
+//
+//        updateDraverForHandover(payments, reciver, sender);
+//
+//        billController.save(currentBill);
+//
+//        selectedBill.setCompleted(true);
+//        selectedBill.setCompletedAt(new Date());
+//        selectedBill.setCompletedBy(sessionController.getLoggedUser());
+//        billController.save(selectedBill);
+//
+//        return "/cashier/handover_creation_bill_print?faces-redirect=true";
+//    }
 
     public void updateDraverForHandover(List<Payment> payments, WebUser reciver, WebUser sender) {
         //System.out.println("Update Resiver Drawer Start");//Accepted Cashier Dravr Update

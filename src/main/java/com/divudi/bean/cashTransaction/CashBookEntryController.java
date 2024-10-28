@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.cashTransaction;
 
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.CashBookEntryData;
@@ -65,6 +66,8 @@ public class CashBookEntryController implements Serializable {
     private CashBook cashBook;
     @Inject
     private SessionController sessionController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     private CashBookEntry current;
     private List<CashBookEntry> cashBookEntryList;
@@ -133,6 +136,8 @@ public class CashBookEntryController implements Serializable {
         return departmentFacade.findByJpql(jpql, params);
     }
 
+    
+    
     public Double fetchStartingBalanceForToSite(Date date, Institution site) {
         String jpql = "select cbe.toSiteBalanceAfter "
                 + " from CashBookEntry cbe, "
@@ -191,6 +196,64 @@ public class CashBookEntryController implements Serializable {
         return result;
     }
 
+    
+    public Double fetchStartingBalanceForFromSite(Date date, Institution site) {
+        String jpql = "select cbe.toSiteBalanceAfter "
+                + " from CashBookEntry cbe "
+                + " where cbe.retired=:ret "
+                + " and cbe.fromSite=:site"
+                + " and cbe.createdAt>:ed"
+                + " order by cbe.id";
+        Map params = new HashMap();
+        params.put("ret", false);
+        params.put("site", site);
+        params.put("ed", CommonFunctions.getStartOfDay(date));
+        System.out.println("params = " + params);
+        System.out.println("jpql = " + jpql);
+        Double result = departmentFacade.findDoubleByJpql(jpql, params, TemporalType.TIMESTAMP);
+        System.out.println("result = " + result);
+        return result;
+    }
+
+    public Double fetchEndingBalanceForFromSite(Date date, Institution site) {
+        String jpql = "select cbe.toSiteBalanceAfter "
+                + " from CashBookEntry cbe "
+                + " where cbe.retired=:ret "
+                + " and cbe.fromSite=:site"
+                + " and cbe.createdAt<:ed"
+                + " order by cbe.id desc";
+        Map params = new HashMap();
+        params.put("ret", false);
+        params.put("site", site);
+        params.put("ed", CommonFunctions.getEndOfDay(date));
+        System.out.println("params = " + params);
+        System.out.println("jpql = " + jpql);
+        Double result = departmentFacade.findDoubleByJpql(jpql, params, TemporalType.TIMESTAMP);
+        System.out.println("result = " + result);
+        return result;
+    }
+
+    public Double fetchSumOfEntryValuesForFromSite(Date date, Institution site) {
+        String jpql = "select sum(cbe.entryValue) "
+                + " from CashBookEntry cbe "
+                + " where cbe.retired=:ret "
+                + " and cbe.fromSite=:site"
+                + " and cbe.createdAt>:eds"
+                + " and cbe.createdAt<:ede";
+        Map params = new HashMap();
+        params.put("ret", false);
+        params.put("site", site);
+        params.put("eds", CommonFunctions.getStartOfDay(date));
+        params.put("ede", CommonFunctions.getEndOfDay(date));
+        System.out.println("params = " + params);
+        System.out.println("jpql = " + jpql);
+        Double result = departmentFacade.findDoubleByJpql(jpql, params, TemporalType.TIMESTAMP);
+        System.out.println("result = " + result);
+        return result;
+    }
+
+    
+    
     public void writeCashBookEntryAtPaymentCreation(Payment p) {
         if (p == null) {
             JsfUtil.addErrorMessage("Cashbook Entry Error !");
@@ -219,6 +282,42 @@ public class CashBookEntryController implements Serializable {
 
     }
 
+    private CashBookEntry fetchLastCashbookEntry(Department dept) {
+        String jpql = "select e "
+                + " from CashBookEntry e "
+                + " where e.retired=:ret "
+                + " and e.department=:dep "
+                + " order by e.id desc";
+        Map params = new HashMap();
+        params.put("ret", false);
+        params.put("dept", dept);
+        return cashbookEntryFacade.findFirstByJpql(jpql, params, true);
+    }
+
+    private CashBookEntry fetchLastCashbookEntry(Institution ins) {
+        String jpql = "select e "
+                + " from CashBookEntry e "
+                + " where e.retired=:ret "
+                + " and e.institution=:ins "
+                + " order by e.id desc";
+        Map params = new HashMap();
+        params.put("ret", false);
+        params.put("ins", ins);
+        return cashbookEntryFacade.findFirstByJpql(jpql, params, true);
+    }
+
+    private CashBookEntry fetchLastCashbookEntryForSite(Institution site) {
+        String jpql = "select e "
+                + " from CashBookEntry e "
+                + " where e.retired=:ret "
+                + " and e.site=:site "
+                + " order by e.id desc";
+        Map params = new HashMap();
+        params.put("ret", false);
+        params.put("site", site);
+        return cashbookEntryFacade.findFirstByJpql(jpql, params, true);
+    }
+
     public List<CashBookEntry> writeCashBookEntryAtHandover(ReportTemplateRowBundle bundle, Bill bill, CashBook bundleCb) {
         System.out.println("writeCashBookEntryAtHandover by Bundle");
 
@@ -236,7 +335,7 @@ public class CashBookEntryController implements Serializable {
         }
 
         Map<String, CashBookEntryData> cashbookEntryDataMap = new HashMap<>();
-          
+
         for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
             if (row.getPayment() == null || row.getPayment().getPaymentMethod() == null || row.getPayment().getBill() == null || row.getPayment().getBill().getBillTypeAtomic() == null) {
                 continue;
@@ -315,6 +414,23 @@ public class CashBookEntryController implements Serializable {
             bundleCb = cashbookFacade.findWithLock(bundleCb.getId());
             // Create a new CashBookEntry for each department combination
             CashBookEntry newCbEntry = new CashBookEntry();
+
+            newCbEntry.setCardValue(entryData.getCardValue());
+            newCbEntry.setAgentValue(entryData.getAgentValue());
+            newCbEntry.setChequeValue(entryData.getChequeValue());
+            newCbEntry.setCreditValue(entryData.getCreditValue());
+            newCbEntry.setIouValue(entryData.getIouValue());
+            newCbEntry.setMultiplePaymentMethodsValue(entryData.getMultiplePaymentMethodsValue());
+            newCbEntry.setOnCallValue(entryData.getOnCallValue());
+            newCbEntry.setOnlineSettlementValue(entryData.getOnlineSettlementValue());
+            newCbEntry.setPatientDepositValue(entryData.getPatientDepositValue());
+            newCbEntry.setPatientPointsValue(entryData.getPatientPointsValue());
+            newCbEntry.setSlipValue(entryData.getSlipValue());
+            newCbEntry.setStaffValue(entryData.getStaffValue());
+            newCbEntry.setStaffWelfareValue(entryData.getStaffWelfareValue());
+            newCbEntry.setVoucherValue(entryData.getVoucherValue());
+            newCbEntry.setEwalletValue(entryData.getEwalletValue());
+
             newCbEntry.setInstitution(bundle.getDepartment().getInstitution());
             newCbEntry.setDepartment(bundle.getDepartment());
             newCbEntry.setSite(bundle.getDepartment().getSite());
@@ -322,8 +438,10 @@ public class CashBookEntryController implements Serializable {
 
             newCbEntry.setFromDepartment(entryData.getFromDepartment());
             newCbEntry.setToDepartment(entryData.getToDepartment());
+
             newCbEntry.setFromInstitution(entryData.getFromDepartment().getInstitution());
             newCbEntry.setToInstitution(entryData.getToDepartment().getInstitution());
+
             newCbEntry.setFromSite(entryData.getFromDepartment().getSite());
             newCbEntry.setToSite(entryData.getFromDepartment().getSite());
 
@@ -370,9 +488,11 @@ public class CashBookEntryController implements Serializable {
 
             newCbEntry.setEntryValue(totalEntryValue);
             newCbEntry.setCashBook(bundleCb);
+            updateCashbookEntryBalances(entryData, newCbEntry);
+
             cashbookEntryFacade.create(newCbEntry);
             cashbookEntries.add(newCbEntry);
-            updateCashbookEntryBalances(entryData, newCbEntry);
+
             cashbookEntryFacade.edit(newCbEntry);
             cashbookFacade.editAndCommit(bundleCb); // Update CashBook after balance change
         }
@@ -386,6 +506,7 @@ public class CashBookEntryController implements Serializable {
         CashBookEntry lastFromInstitutionEntry = fetchLastCashbookEntryForFromInstitution(entryData.getFromDepartment().getInstitution());
         CashBookEntry lastToInstitutionEntry = fetchLastCashbookEntryForToInstitution(entryData.getToDepartment().getInstitution());
         CashBookEntry lastFromSiteEntry = fetchLastCashbookEntryForFromSite(entryData.getFromDepartment().getSite());
+        System.out.println("lastFromSiteEntry = " + lastFromSiteEntry);
         CashBookEntry lastToSiteEntry = fetchLastCashbookEntryForToSite(entryData.getToDepartment().getSite());
 
         cbe.setFromDepartmentBalanceBefore(lastFromDepartmentEntry != null ? lastFromDepartmentEntry.getFromDepartmentBalanceAfter() : 0.0);
@@ -414,6 +535,11 @@ public class CashBookEntryController implements Serializable {
         cbe.setFromInstitutionCashBalanceAfter(cbe.getFromInstitutionCashBalanceBefore() + entryData.getCashValue());
         cbe.setToInstitutionCashBalanceAfter(cbe.getToInstitutionCashBalanceBefore() + entryData.getCashValue());
         cbe.setFromSiteCashBalanceAfter(cbe.getFromSiteCashBalanceBefore() + entryData.getCashValue());
+        
+        System.out.println("cbe.getFromSiteCashBalanceBefore() = " + cbe.getFromSiteCashBalanceBefore());
+        System.out.println("entryData.getCashValue() = " + entryData.getCashValue());
+        System.out.println("cbe.getFromSiteCashBalanceAfter() = " + cbe.getFromSiteCashBalanceAfter());
+        
         cbe.setToSiteCashBalanceAfter(cbe.getToSiteCashBalanceBefore() + entryData.getCashValue());
 
         cbe.setFromDepartmentCardBalanceBefore(lastFromDepartmentEntry != null ? lastFromDepartmentEntry.getFromDepartmentCardBalanceAfter() : 0.0);
