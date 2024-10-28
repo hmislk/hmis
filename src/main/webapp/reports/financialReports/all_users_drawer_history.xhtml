@@ -1,0 +1,184 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form >
+                    <p:panel>
+                        <f:facet name="header">
+                            <h:outputLabel value="Drawer History" />
+                        </f:facet>
+
+                        <h:panelGrid columns="5" class="w-100">
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
+                                <p:outputLabel value="From Date"  class="mx-3"></p:outputLabel>
+                            </h:panelGroup>
+                            <p:datePicker  showTime="true"
+                                           class="w-100"
+                                           inputStyleClass="w-100"
+                                           value="#{drawerEntryController.fromDate}" 
+                                           pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+
+                            <p:spacer width="20"></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
+                                <p:outputLabel value="To Date" class="mx-3" ></p:outputLabel>
+                            </h:panelGroup>
+                            <p:datePicker showTime="true" 
+                                          class="w-100"
+                                          inputStyleClass="w-100"
+                                          value="#{drawerEntryController.toDate}" 
+                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+
+                        </h:panelGrid>
+
+                        <h:panelGrid columns="6" class="my-2">
+                            <p:commandButton ajax="false" 
+                                             value="Process" 
+                                             action="#{drawerEntryController.findAllUsersDrawerDetails()}"
+                                             icon="fas fa-cogs" 
+                                             class="ui-button-warning mx-1" >
+                            </p:commandButton>
+                            <p:commandButton ajax="false" 
+                                             value="Print All" 
+                                             icon="fas fa-print" 
+                                             class="ui-button-info mx-1" >
+                                <p:printer target="tbl"/>
+                            </p:commandButton>
+                            <p:commandButton ajax="false" 
+                                             value="Download" 
+                                             icon="fas fa-file-excel" 
+                                             class="ui-button-success mx-1" >
+                                <p:dataExporter fileName="Drawer History - #{drawerEntryController.webUser.name} - (#{drawerEntryController.fromDate} - #{drawerEntryController.fromDate})" type="xlsx" target="tbl" />
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-danger mx-1" 
+                                             icon= "fas fa-file-pdf" 
+                                             ajax="false" 
+                                             value="PDF">
+                            </p:commandButton>
+
+                        </h:panelGrid>
+
+                        <p:dataTable 
+                            class="mt-3"
+                            value="#{drawerEntryController.userDrawerEntry}" 
+                            var="drawerentry"
+                            rowIndexVar="n"
+                            id="tbl">
+
+                            <p:columnGroup type="header">
+                                <p:row>
+                                    <p:column rowspan="2" headerText="No" style="padding: 1px;" width="2em"/>
+                                    <p:column rowspan="2" headerText="Transaction Type" style="padding: 1px;" width="8em"/>
+                                    <p:column rowspan="2" headerText="Bill No" style="padding: 6px;" width="8em"/>
+                                    <p:column rowspan="2" headerText="Ref Bill No" style="padding: 1px;" width="6em"/>
+                                    <p:column rowspan="2" headerText="From" style="padding: 1px;" width="6em"/>
+                                    <p:column rowspan="2" headerText="To" style="padding: 1px;" width="6em"/>
+                                    <p:column rowspan="2" headerText="Created At" style="padding: 6px;" width="8em"/>
+                                    <p:column colspan="3" headerText="Cash" width="12em"/>
+                                    <p:column colspan="3" headerText="Credit Card" width="12em"/>
+                                    <p:column colspan="3" headerText="Cheque" width="12em"/>
+                                    <p:column colspan="3" headerText="Slip" width="12em"/>
+                                    <p:column colspan="3" headerText="IOU" width="12em"/>
+                                    <p:column colspan="3" headerText="Credit" width="12em"/>
+                                    <p:column colspan="3" headerText="Short" width="12em"/>
+                                    <p:column rowspan="2" headerText="Total Transaction Value" style="padding: 6px;" width="12em"/>
+                                </p:row>
+                                <p:row>
+                                    <!-- Sub-headers for each category -->
+                                    <p:column headerText="Bef." width="4em"/>
+                                    <p:column headerText="Tra." width="4em"/>
+                                    <p:column headerText="Aft." width="4em"/>
+
+                                    <p:column headerText="Bef." width="4em"/>
+                                    <p:column headerText="Tra." width="4em"/>
+                                    <p:column headerText="Aft." width="4em"/>
+
+                                    <p:column headerText="Bef." width="4em"/>
+                                    <p:column headerText="Tra." width="4em"/>
+                                    <p:column headerText="Aft." width="4em"/>
+
+                                    <p:column headerText="Bef." width="4em"/>
+                                    <p:column headerText="Tra." width="4em"/>
+                                    <p:column headerText="Aft." width="4em"/>
+
+                                    <p:column headerText="Bef." width="4em"/>
+                                    <p:column headerText="Tra." width="4em"/>
+                                    <p:column headerText="Aft." width="4em"/>
+
+                                    <p:column headerText="Bef." width="4em"/>
+                                    <p:column headerText="Tra." width="4em"/>
+                                    <p:column headerText="Aft." width="4em"/>
+
+                                    <p:column headerText="Bef." width="4em"/>
+                                    <p:column headerText="Tra." width="4em"/>
+                                    <p:column headerText="Aft." width="4em"/>
+                                </p:row>
+                            </p:columnGroup>
+
+                            <!-- Define the rows for data -->
+                            <p:column style="padding: 1px;" width="2em">
+                                <h:outputText value="#{n+1}" />
+                            </p:column>
+
+                            <p:column style="padding: 1px;" width="8em">
+                                <h:outputText value="#{drawerentry.payment.cashbookEntry}" />
+                            </p:column>
+
+                            <p:column style="padding: 6px;">
+                                <p:commandLink 
+                                    value="#{drawerentry.bill.deptId}" 
+                                    ajax="false"
+                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                                    <f:setPropertyActionListener value="#{drawerentry.bill}" target="#{billSearch.bill}"/>
+                                </p:commandLink>
+                            </p:column>
+
+                            <p:column style="padding: 1px;" width="5em">
+                                <h:outputText value="#{drawerentry.bill.referenceNumber}" />
+                            </p:column>
+
+                            <p:column style="padding: 1px;" width="5em">
+                                <h:outputText value="#{drawerentry.bill.creater.name}" />
+                            </p:column>
+
+                            <p:column style="padding: 1px;" width="5em">
+                                <h:outputText value="#{drawerentry.bill.toStaff.person.name}" />
+                            </p:column>
+
+                            <p:column style="padding: 6px;">
+                                <h:outputText value="#{drawerentry.bill.createdAt}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </h:outputText>
+                            </p:column>
+
+                            <!-- Replace the following columns with appropriate data access expressions -->
+                            <!-- Example for Cash -->
+
+                            <p:column >
+                                <h:outputText value="#{drawerentry.beforeBalance}" />
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="#{drawerentry.payment.paidValue}" />
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="#{drawerentry.afterBalance}" />
+                            </p:column>
+
+
+                        </p:dataTable>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
