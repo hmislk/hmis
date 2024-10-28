@@ -12,13 +12,17 @@
         <ui:composition template="/collecting_centre/index.xhtml">
             <ui:define name="subcontent">
                 <h:form>
-                    <p:panelGrid columns="3">
+                    <p:panelGrid layout="tabular" columns="3" class="w-100">
                         <f:facet name="header">
                             <h:outputText value="Edit History Record" />
-                            <p:commandButton value="Previous" 
+                            <p:commandButton 
+                                value="Previous" 
+                                class="m-1"
                                 action="#{collectingCentreController.navigateToEditPreviousCollectingCentreBalanceEntry(collectingCentreController.agentHistory)}" 
                                 ajax="false" />
-                            <p:commandButton value="Next" 
+                            <p:commandButton 
+                                value="Next"
+                                class="m-1"
                                 action="#{collectingCentreController.navigateToEditNextCollectingCentreBalanceEntry(collectingCentreController.agentHistory)}" 
                                 ajax="false" />
                         </f:facet>
@@ -34,8 +38,8 @@
                         <p:outputLabel value="Balance Before" />
                         <p:inputText id="balanceBeforeTransaction" value="#{collectingCentreController.agentHistory.balanceBeforeTransaction}" />
                         <p:commandButton value="Update Balance from Last Record"
-                            action="#{collectingCentreController.fixStartingBalanceFromLastEntry}" 
-                            ajax="false" />
+                                         action="#{collectingCentreController.fixStartingBalanceFromLastEntry}" 
+                                         ajax="false" />
 
                         <p:outputLabel value="Transaction Value" for="transactionValue" />
                         <p:inputText id="transactionValue" 
@@ -73,12 +77,27 @@
                         <p:spacer></p:spacer>
 
                         <f:facet name="footer">
-                            <p:commandButton value="Update History and Back to Statement" 
+                            <p:commandButton 
+                                value="Update History and Back to Statement" 
                                 ajax="false" 
+                                class="m-1"
                                 action="#{collectingCentreController.saveAgentHistoryAndNavigateBackToCcStatement()}" />
-                            <p:commandButton value="Save and Next" 
+                            <p:commandButton 
+                                value="Save and Next" 
                                 ajax="false" 
+                                class="m-1"
                                 action="#{collectingCentreController.saveAgentHistoryAndNavigateToNextRecord()}" />
+
+                            <p:commandButton   
+                                ajax="false" 
+                                value="Edit Collecting Centre"
+                                icon="pi pi-building"
+                                class="m-1"
+                                action="#{navigationController.navigateToCollectingCenter()}" >
+                                <f:setPropertyActionListener 
+                                    value="#{collectingCentreController.agentHistory.institution}" 
+                                    target="#{collectingCentreController.current}" ></f:setPropertyActionListener>
+                            </p:commandButton>
                         </f:facet>
                     </p:panelGrid>
                 </h:form>
