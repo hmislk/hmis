@@ -1229,6 +1229,8 @@ public class ReportController implements Serializable {
     }
 
     public BillItem findVoucherIsAvailable(Bill b) {
+        voucherItem = null;
+        
         String jpql = "SELECT bi "
                 + "FROM BillItem bi "
                 + "WHERE bi.retired = :ret "
