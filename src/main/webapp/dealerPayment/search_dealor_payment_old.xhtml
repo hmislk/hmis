@@ -15,57 +15,60 @@
                         <f:facet name="header" >
                             <h:outputText styleClass="fa-solid fa-file-invoice"/>
                             <h:outputLabel value="GRN Supplier Payment Bill Search " class="mx-4"/>    
+
                         </f:facet>
                         <div class="row">
                             <div class="col-2">
                                 <h:outputLabel value="From Date"/>
-                                <p:datePicker styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100" inputStyleClass="w-100">      
-                                </p:datePicker>
+                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100" inputStyleClass="w-100">      
+                                </p:calendar>
                                 <h:outputLabel value="To Date"/>
-                                <p:datePicker id="toDate" value="#{searchController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100" inputStyleClass="w-100">                                                                              
-                                </p:datePicker>
+                                <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100" inputStyleClass="w-100">                                                                              
+                                </p:calendar>
 
-                                <p:commandButton id="btnSearch" 
-                                                 ajax="false" value="Search Pharmacy Payment" 
+                                <p:commandButton id="btnSearch"
+                                                 ajax="false" 
+                                                 value="Search Pharmacy Payment" 
                                                  class="my-1 w-100 ui-button-warning" 
                                                  icon="fas fa-search"
-                                                 action="#{searchController.createPharmacyPaymentPre()}"/>
+                                                 action="#{searchController.createPharmacyPayment()}"/>
                                 <p:commandButton ajax="false" 
-                                                 class="my-1 w-100 ui-button-warning" 
-                                                 icon="fas fa-search"
                                                  value="Search Store Payment"
-                                                 action="#{searchController.createStorePaymentPre()}"/>
-                                <p:commandButton ajax="false" value="Search All Payment" 
                                                  class="my-1 w-100 ui-button-warning" 
                                                  icon="fas fa-search"
-                                                 action="#{searchController.createStorePaharmacyPaymentPre}"/>
+                                                 action="#{searchController.createStorePayment()}"/>
+                                <p:commandButton ajax="false" 
+                                                 value="Search All Payment" 
+                                                 class="my-1 w-100 ui-button-warning" 
+                                                 icon="fas fa-search"
+                                                 action="#{searchController.createStorePaharmacyPayment()}"/>
 
                                 <h:outputLabel value="Bill No"/>
-                                <p:inputText autocomplete="off" class="w-100" value="#{billSearch.searchKeyword.billNo}" />
-                                <h:outputLabel value="Distributor Name"/>              
-                                <p:inputText autocomplete="off" class="w-100" value="#{billSearch.searchKeyword.toInstitution}" />
+                                <p:inputText autocomplete="off"  value="#{billSearch.searchKeyword.billNo}" class="w-100"/>
+                                <h:outputLabel value="Distributor Name"/> 
+                                <p:inputText autocomplete="off" value="#{billSearch.searchKeyword.toInstitution}" class="w-100" />                
                                 <h:outputLabel value="Net Total"/>
-                                <p:inputText autocomplete="off" class="w-100" value="#{billSearch.searchKeyword.netTotal}"/>
+                                <p:inputText autocomplete="off" value="#{billSearch.searchKeyword.netTotal}" class="w-100"/>
                                 <h:outputLabel value="Bank"/>
-                                <p:inputText autocomplete="off" class="w-100" value="#{billSearch.searchKeyword.bank}"/>
+                                <p:inputText autocomplete="off" value="#{billSearch.searchKeyword.bank}" class="w-100"/>
                                 <h:outputLabel value="Check No"/>
 
-                                <p:inputText autocomplete="off" value="#{billSearch.searchKeyword.number}"/>
+                                <p:inputText autocomplete="off" value="#{billSearch.searchKeyword.number}" class="w-100"/>
                             </div>
                             <div class="col-10">
                                 <p:dataTable 
                                     id="tblBills" 
                                     value="#{searchController.bills}" 
                                     var="bill"  
+                                    paginator="true"
                                     paginatorPosition="bottom"
                                     rows="10"
-                                    paginator="true"
                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                     rowsPerPageTemplate="5,10,15"
                                     >
-                                                               
+                                    
                                     <p:column headerText="Bill No" >                                
-                                        <h:outputLabel value="#{bill.deptId}"  ></h:outputLabel>                                    
+                                        <h:outputLabel value="#{bill.id}"  ></h:outputLabel>                                    
                                     </p:column>
                                     <p:column headerText="Supplier Name">                             
                                         <h:outputLabel value="#{bill.toInstitution.name}" />
@@ -104,7 +107,7 @@
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Bank" >                                
-                                        <h:outputLabel value="#{bill.bank.name}" >                                        
+                                        <h:outputLabel value="#{bill.bank}" >                                        
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Cheque No" >                               
@@ -121,15 +124,21 @@
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column>
-                                        <p:commandButton ajax="false" value="Approve" action="reprint_bill_dealor">
-                                            <f:setPropertyActionListener value="#{bill}" 
-                                                                         target="#{dealorPaymentBillSearch.bill}"/>
+                                        <p:commandButton ajax="false" value="View" action="reprint_bill_dealor">
+                                            <f:setPropertyActionListener value="#{bill}" target="#{dealorPaymentBillSearch.bill}"/>
                                         </p:commandButton>
-                                    </p:column> 
+                                    </p:column>
+
+                                    <p:column>
+                                        <p:commandButton ajax="false" value="Print Cheque" action="cheque_print" >
+                                            <f:setPropertyActionListener value="#{bill}" target="#{dealorPaymentBillSearch.bill}"/>
+                                        </p:commandButton>
+                                    </p:column>
+
                                 </p:dataTable>
+
                             </div>
                         </div>
-
 
 
 

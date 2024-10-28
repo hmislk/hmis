@@ -174,6 +174,7 @@ public class Payment implements Serializable {
     @ManyToOne
     private Bill cancelledBill;
 
+    @Transient
     private PaymentHandover transientPaymentHandover;
 
     // New attributes for marking a cheque as paid

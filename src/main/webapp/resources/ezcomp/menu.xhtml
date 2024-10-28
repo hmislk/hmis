@@ -757,25 +757,20 @@
                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search_adjustment_bill_item?faces-redirect=true"  value="Search Adjustment Bills" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentSearchAdjustmentBills')}" ></p:menuitem>
                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_department_all?faces-redirect=true"  value="Transfer All Stock" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentTransferAllStock')}" ></p:menuitem>
                     </p:submenu>
-                    <p:menuitem  
-                        ajax="false" 
-                        icon="fas fa-hand-holding-usd"
-                        action="#{pharmacyDealerController.navigateToDealerPaymentIndex()}"  
-                        value="Dealer Payments"  
-                        rendered="#{webUserController.hasPrivilege('PharmacyDealerDueSearch')}" ></p:menuitem>
+
 
                     <p:submenu label="Dealer Payments" icon="fas fa-hand-holding-usd" rendered="#{webUserController.hasPrivilege('PharmacyDealerPaymentMenue')}">
-                        <p:menuitem  ajax="false" action="/dealorPayment/dealor_due?faces-redirect=true"  value="Dealer Due Search"  rendered="#{webUserController.hasPrivilege('PharmacyDealerDueSearch')}" ></p:menuitem>
-                        <p:menuitem ajax="false" action="/dealorPayment/dealor_due_age?faces-redirect=true" actionListener="#{dealorDueController.makeNull()}" value="Dealer Due By Age" rendered="#{webUserController.hasPrivilege('PharmacyDealerDueByAge')}"/>
+                        <p:menuitem  ajax="false" action="/dealerPayment/dealor_due?faces-redirect=true"  value="Dealer Due Search"  rendered="#{webUserController.hasPrivilege('PharmacyDealerDueSearch')}" ></p:menuitem>
+                        <p:menuitem ajax="false" action="/dealerPayment/dealor_due_age?faces-redirect=true" actionListener="#{dealorDueController.makeNull()}" value="Dealer Due By Age" rendered="#{webUserController.hasPrivilege('PharmacyDealerDueByAge')}"/>
                         <p:submenu label="Payment" rendered="#{webUserController.hasPrivilege('PharmacyPayment')}" >
-                            <p:menuitem ajax="false" action="/dealorPayment/bill_dealor_all?faces-redirect=true" value="By Dealer" rendered="#{webUserController.hasPrivilege('PharmacyPayment')}" 
-                                        actionListener="#{pharmacyDealerController.makeNull()}"/>  
-                            <p:menuitem ajax="false" action="/dealorPayment/bill_dealor?faces-redirect=true" value="By Bill" 
+                            <p:menuitem ajax="false" action="/dealerPayment/bill_dealor_all?faces-redirect=true" value="By Dealer" rendered="#{webUserController.hasPrivilege('PharmacyPayment')}" 
+                                        actionListener="#{supplierPaymentController.makeNull()}"/>  
+                            <p:menuitem ajax="false" action="/dealerPayment/bill_dealor?faces-redirect=true" value="By Bill" 
                                         rendered="#{webUserController.hasPrivilege('PharmacyPayment')}" 
-                                        actionListener="#{pharmacyDealerController.makeNull()}"/>  
+                                        actionListener="#{supplierPaymentController.makeNull()}"/>  
                         </p:submenu>
-                        <p:menuitem ajax="false" action="/dealorPayment/search_dealor_payment_pre?faces-redirect=true" value="GRN Payment Approve"  actionListener="#{searchController.makeListNull2()}" rendered="#{webUserController.hasPrivilege('PharmacyGRNPaymentApprove')}"/>   
-                        <p:menuitem ajax="false" action="/dealorPayment/search_dealor_payment?faces-redirect=true" value="GRN Payment Done Search"  actionListener="#{searchController.makeListNull2()}" rendered="#{webUserController.hasPrivilege('PharmacyGRNPaymentDoneSearch')}"/>   
+                        <p:menuitem ajax="false" action="/dealerPayment/search_dealor_payment_pre?faces-redirect=true" value="GRN Payment Approve"  actionListener="#{searchController.makeListNull2()}" rendered="#{webUserController.hasPrivilege('PharmacyGRNPaymentApprove')}"/>   
+                        <p:menuitem ajax="false" action="/dealerPayment/search_dealor_payment?faces-redirect=true" value="GRN Payment Done Search"  actionListener="#{searchController.makeListNull2()}" rendered="#{webUserController.hasPrivilege('PharmacyGRNPaymentDoneSearch')}"/>   
                         <p:menuitem  ajax="false"  action="/credit/index_pharmacy_due_access?faces-redirect=true" value="Credit Dues and Access" rendered="#{webUserController.hasPrivilege('PharmacyCreditDueAndAccess')}" ></p:menuitem>
                     </p:submenu>
 
@@ -930,11 +925,11 @@
                     </p:submenu>
 
                     <p:submenu label="Dealer Payment" rendered="#{webUserController.hasPrivilege('StoreDealorPayment')}">
-                        <p:menuitem  ajax="false" action="/dealorPayment/dealor_due?faces-redirect=true"  value="Dealer Due Search" rendered="#{webUserController.hasPrivilege('StoreDealorPaymentDueSearch')}" ></p:menuitem>
-                        <p:menuitem ajax="false" action="/dealorPayment/dealor_due_age?faces-redirect=true" actionListener="#{dealorDueController.makeNull}" value="Dealer Due By Age" rendered="#{webUserController.hasPrivilege('StoreDealorPaymentDueByAge')}"/>
-                        <p:menuitem ajax="false" action="/dealorPayment/bill_dealor_all?faces-redirect=true" value="Dealer Payment" rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}"/>   
-                        <p:menuitem ajax="false"  action="/dealorPayment/search_dealor_payment_pre?faces-redirect=true" value="GRN Payment Approve"  actionListener="#{billSearch.recreateModel2()}" rendered="#{webUserController.hasPrivilege('StoreDealorPaymentGRNDoneSearch')}"/>   
-                        <p:menuitem ajax="false"  action="/dealorPayment/search_dealor_payment?faces-redirect=true" value="GRN Payment Done Search"  actionListener="#{billSearch.recreateModel2()}" rendered="#{webUserController.hasPrivilege('StoreDealorPaymentGRNDoneSearch')}"/>   
+                        <p:menuitem  ajax="false" action="/dealerPayment/dealor_due?faces-redirect=true"  value="Dealer Due Search" rendered="#{webUserController.hasPrivilege('StoreDealorPaymentDueSearch')}" ></p:menuitem>
+                        <p:menuitem ajax="false" action="/dealerPayment/dealor_due_age?faces-redirect=true" actionListener="#{dealorDueController.makeNull}" value="Dealer Due By Age" rendered="#{webUserController.hasPrivilege('StoreDealorPaymentDueByAge')}"/>
+                        <p:menuitem ajax="false" action="/dealerPayment/bill_dealor_all?faces-redirect=true" value="Dealer Payment" rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}"/>   
+                        <p:menuitem ajax="false"  action="/dealerPayment/search_dealor_payment_pre?faces-redirect=true" value="GRN Payment Approve"  actionListener="#{billSearch.recreateModel2()}" rendered="#{webUserController.hasPrivilege('StoreDealorPaymentGRNDoneSearch')}"/>   
+                        <p:menuitem ajax="false"  action="/dealerPayment/search_dealor_payment?faces-redirect=true" value="GRN Payment Done Search"  actionListener="#{billSearch.recreateModel2()}" rendered="#{webUserController.hasPrivilege('StoreDealorPaymentGRNDoneSearch')}"/>   
                     </p:submenu>
                     <p:menuitem  ajax="false" action="/store/store_search?faces-redirect=true"  value="Search" actionListener="#{billSearch.recreateModel}" rendered="#{webUserController.hasPrivilege('StoreSearch')}" ></p:menuitem>                                  
                     <p:menuitem  ajax="false" action="/store/store_reports_index?faces-redirect=true"  value="Store Analytics" rendered="#{webUserController.hasPrivilege('StoreReports')}" ></p:menuitem>
@@ -1083,6 +1078,13 @@
                         icon="fas fa-money-bill-transfer"
                         rendered="#{webUserController.hasPrivilege('PaymentBilling')}" >
                     </p:menuitem>
+
+                    <p:menuitem  
+                        ajax="false" 
+                        icon="fas fa-hand-holding-usd"
+                        action="#{supplierPaymentController.navigateToDealerPaymentIndex()}"  
+                        value="Supplier Payment Management"  
+                        rendered="#{webUserController.hasPrivilege('PharmacyDealerDueSearch')}" ></p:menuitem>
 
                     <p:submenu label="Cash">
 
