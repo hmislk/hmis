@@ -50,10 +50,11 @@ import javax.inject.Named;
  */
 @Named
 @SessionScoped
-public class PharmacyDealerController implements Serializable {
+public class SupplierPaymentController implements Serializable {
     
-    //OLD Name - PharmacyDealerController
-
+//PharmacyDealerController
+    //pharmacyDealerController
+    
     //Atribtes
     private boolean printPreview;
     private Bill current;
@@ -82,6 +83,44 @@ public class PharmacyDealerController implements Serializable {
     @Inject
     CommonController commonController;
     
+    
+   public String navigateToDealerPaymentIndex(){
+       return "/dealerPayment/index?faces-redirect=true";
+   } 
+   
+   public String navigateToDealerDueSearch() {
+        return "/dealerPayment/dealor_due?faces-redirect=true";
+    }
+
+    public String navigateToDealerDueByAge() {
+        makeNull();
+        return "/dealerPayment/dealor_due_age?faces-redirect=true";
+    }
+
+    public String navigateToByDealer() {
+        makeNull();
+        return "/dealerPayment/bill_dealor_all?faces-redirect=true";
+    }
+
+    public String navigateToByBill() {
+        makeNull();
+        return "/dealerPayment/bill_dealor?faces-redirect=true";
+    }
+
+    public String navigateToGRNPaymentApprove() {
+        makeNull();
+        return "/dealerPayment/search_dealor_payment_pre?faces-redirect=true";
+    }
+
+    public String navigateToGRNPaymentDoneSearch() {
+        makeNull();
+        return "/dealerPayment/search_dealor_payment?faces-redirect=true";
+    }
+
+    public String navigateToCreditDuesAndAccess() {
+        return "/credit/index_pharmacy_due_access?faces-redirect=true";
+    }
+
 
     public void makeNull() {
         printPreview = false;
@@ -511,7 +550,7 @@ public class PharmacyDealerController implements Serializable {
     /**
      * Creates a new instance of pharmacyDealorBill
      */
-    public PharmacyDealerController() {
+    public SupplierPaymentController() {
     }
 
     public boolean isPrintPreview() {
