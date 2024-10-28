@@ -146,9 +146,9 @@
                                         value="Remove Selected"                                   
                                         class="ui-button-danger mx-2"/>
 
-                                        <h:outputLabel value="Paying Institution : "/>
-                                        <p:outputLabel value="#{cashRecieveBillController.institution.name}" id="ins"/>
-                                 
+                                    <h:outputLabel value="Paying Institution : "/>
+                                    <p:outputLabel value="#{cashRecieveBillController.institution.name}" id="ins"/>
+
 
                                 </f:facet>       
 
@@ -167,7 +167,7 @@
                                     <p:ajax  event="rowUnselectCheckbox" process="@this" 
                                              update=":#{p:resolveFirstComponentWithId('tot',view).clientId}" 
                                              listener="#{cashRecieveBillController.calTotal}"/>
-                                    <p:column  selectionBox="true" />                                       
+                                    <p:column width="1rem" selectionBox="true" />                                       
                                     <p:column>
                                         <f:facet name="header">
                                             <h:outputLabel value="No"/>.                                  
