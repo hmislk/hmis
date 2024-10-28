@@ -16,9 +16,8 @@
 
                     <p:panel   header="All Cashier Summary" class="m-1">
 
-
-
-                        <h:panelGrid columns="8" class="w-100">
+                        <h:panelGrid columns="10" class="w-100">
+                            <p:spacer></p:spacer>
                             <h:outputLabel value="From"/>
                             <p:calendar 
                                 class="w-100 " 
@@ -28,7 +27,7 @@
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                             </p:calendar>
 
-                            <p:spacer width="20" ></p:spacer>
+                            <p:spacer></p:spacer>
 
                             <h:outputLabel value="To"/>                                
                             <p:calendar 
@@ -46,6 +45,7 @@
                                 completeMethod="#{webUserController.completeUser}"
                                 class="w-100"
                                 id="acStaff" 
+                                style="width: 400px!important"
                                 inputStyleClass="w-100"
                                 value="#{searchController.webUser}" 
                                 var="user"
@@ -59,6 +59,8 @@
                                     <h:outputText value="#{user.webUserPerson.name}" ></h:outputText>
                                 </p:column>
                             </p:autoComplete>
+                            <p:spacer></p:spacer>
+                            <p:spacer></p:spacer>
 
                             <h:outputLabel value="Institution"/>                                
                             <p:selectOneMenu class="w-100 " value="#{searchController.institution}" filter="true" >
@@ -78,12 +80,12 @@
                             <p:spacer width="20" ></p:spacer>
 
                             <h:outputLabel value="Department"/>                                
-                            <p:selectOneMenu class="w-100 "  value="#{searchController.department}" filter="true" id="dept">
+                            <p:selectOneMenu class="w-100" style="width: 400px!important;" value="#{searchController.department}" filter="true" id="dept">
                                 <f:selectItem itemLabel="All Departments" ></f:selectItem>
                                 <f:selectItems value="#{departmentController.getInstitutionDepartments(searchController.site)}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
                             </p:selectOneMenu>
 
-
+                            <p:spacer></p:spacer>
 
 
                         </h:panelGrid>
@@ -372,6 +374,7 @@
 
                         </p:dataTable>
                     </p:panel>
+
 
                 </h:form>
 
