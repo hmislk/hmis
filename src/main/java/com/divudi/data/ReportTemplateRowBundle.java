@@ -593,20 +593,20 @@ public class ReportTemplateRowBundle implements Serializable {
 
                     System.out.println("selected childBundle = " + childBundle.getName());
                     addValueAndUpdateFlag("cash", safeDouble(childBundle.getCashValue()), safeDouble(childBundle.getCashHandoverValue()));
-                    addValueAndUpdateFlag("card", safeDouble(childBundle.getCardValue()));
-                    addValueAndUpdateFlag("multiplePaymentMethods", safeDouble(childBundle.getMultiplePaymentMethodsValue()));
-                    addValueAndUpdateFlag("staff", safeDouble(childBundle.getStaffValue()));
-                    addValueAndUpdateFlag("credit", safeDouble(childBundle.getCreditValue()));
-                    addValueAndUpdateFlag("staffWelfare", safeDouble(childBundle.getStaffWelfareValue()));
-                    addValueAndUpdateFlag("voucher", safeDouble(childBundle.getVoucherValue()));
-                    addValueAndUpdateFlag("iou", safeDouble(childBundle.getIouValue()));
-                    addValueAndUpdateFlag("agent", safeDouble(childBundle.getAgentValue()));
-                    addValueAndUpdateFlag("cheque", safeDouble(childBundle.getChequeValue()));
-                    addValueAndUpdateFlag("slip", safeDouble(childBundle.getSlipValue()));
-                    addValueAndUpdateFlag("eWallet", safeDouble(childBundle.getEwalletValue()));
-                    addValueAndUpdateFlag("patientDeposit", safeDouble(childBundle.getPatientDepositValue()));
-                    addValueAndUpdateFlag("patientPoints", safeDouble(childBundle.getPatientPointsValue()));
-                    addValueAndUpdateFlag("onlineSettlement", safeDouble(childBundle.getOnlineSettlementValue()));
+                    addValueAndUpdateFlag("card", safeDouble(childBundle.getCardValue()), safeDouble(childBundle.getCardHandoverValue()));
+                    addValueAndUpdateFlag("multiplePaymentMethods", safeDouble(childBundle.getMultiplePaymentMethodsValue()), safeDouble(childBundle.getMultiplePaymentMethodsHandoverValue()));
+                    addValueAndUpdateFlag("staff", safeDouble(childBundle.getStaffValue()), safeDouble(childBundle.getStaffHandoverValue()));
+                    addValueAndUpdateFlag("credit", safeDouble(childBundle.getCreditValue()), safeDouble(childBundle.getCreditHandoverValue()));
+                    addValueAndUpdateFlag("staffWelfare", safeDouble(childBundle.getStaffWelfareValue()), safeDouble(childBundle.getStaffWelfareHandoverValue()));
+                    addValueAndUpdateFlag("voucher", safeDouble(childBundle.getVoucherValue()), safeDouble(childBundle.getVoucherHandoverValue()));
+                    addValueAndUpdateFlag("iou", safeDouble(childBundle.getIouValue()), safeDouble(childBundle.getIouHandoverValue()));
+                    addValueAndUpdateFlag("agent", safeDouble(childBundle.getAgentValue()), safeDouble(childBundle.getAgentHandoverValue()));
+                    addValueAndUpdateFlag("cheque", safeDouble(childBundle.getChequeValue()), safeDouble(childBundle.getChequeHandoverValue()));
+                    addValueAndUpdateFlag("slip", safeDouble(childBundle.getSlipValue()), safeDouble(childBundle.getSlipHandoverValue()));
+                    addValueAndUpdateFlag("eWallet", safeDouble(childBundle.getEwalletValue()), safeDouble(childBundle.geteWalletHandoverValue()));
+                    addValueAndUpdateFlag("patientDeposit", safeDouble(childBundle.getPatientDepositValue()), safeDouble(childBundle.getPatientDepositHandoverValue()));
+                    addValueAndUpdateFlag("patientPoints", safeDouble(childBundle.getPatientPointsValue()), safeDouble(childBundle.getPatientPointsHandoverValue()));
+                    addValueAndUpdateFlag("onlineSettlement", safeDouble(childBundle.getOnlineSettlementValue()), safeDouble(childBundle.getOnlineSettlementHandoverValue()));
                     addValueAndUpdateFlag("grossTotal", safeDouble(childBundle.getGrossTotal()));
                     addValueAndUpdateFlag("discount", safeDouble(childBundle.getDiscount()));
 
@@ -1214,68 +1214,83 @@ public class ReportTemplateRowBundle implements Serializable {
             }
         }
     }
-    
+
     private void addValueAndUpdateFlag(String calculationAttribute, double amount, double handoverValue) {
         if (amount != 0) {
             switch (calculationAttribute) {
                 case "cash":
                     this.cashValue += amount;
+                    this.cashHandoverValue += handoverValue;
                     this.hasCashTransaction = true;
                     break;
                 case "card":
                     this.cardValue += amount;
+                    this.cardHandoverValue += handoverValue;
                     this.hasCardTransaction = true;
                     break;
                 case "multiplePaymentMethods":
                     this.multiplePaymentMethodsValue += amount;
+                    this.multiplePaymentMethodsHandoverValue += handoverValue;
                     this.hasMultiplePaymentMethodsTransaction = true;
                     break;
                 case "staff":
                     this.staffValue += amount;
+                    this.staffHandoverValue += handoverValue;
                     this.hasStaffTransaction = true;
                     break;
                 case "credit":
                     this.creditValue += amount;
+                    this.creditHandoverValue += handoverValue;
                     this.hasCreditTransaction = true;
                     break;
                 case "staffWelfare":
                     this.staffWelfareValue += amount;
+                    this.staffWelfareHandoverValue += handoverValue;
                     this.hasStaffWelfareTransaction = true;
                     break;
                 case "voucher":
                     this.voucherValue += amount;
+                    this.voucherHandoverValue += handoverValue;
                     this.hasVoucherTransaction = true;
                     break;
                 case "iou":
                     this.iouValue += amount;
+                    this.iouHandoverValue += handoverValue;
                     this.hasIouTransaction = true;
                     break;
                 case "agent":
                     this.agentValue += amount;
+                    this.agentHandoverValue += handoverValue;
                     this.hasAgentTransaction = true;
                     break;
                 case "cheque":
                     this.chequeValue += amount;
+                    this.chequeHandoverValue += handoverValue;
                     this.hasChequeTransaction = true;
                     break;
                 case "slip":
                     this.slipValue += amount;
+                    this.slipHandoverValue += handoverValue;
                     this.hasSlipTransaction = true;
                     break;
                 case "eWallet":
                     this.eWalletValue += amount;
+                    this.eWalletHandoverValue += handoverValue;
                     this.hasEWalletTransaction = true;
                     break;
                 case "patientDeposit":
                     this.patientDepositValue += amount;
+                    this.patientDepositHandoverValue += handoverValue;
                     this.hasPatientDepositTransaction = true;
                     break;
                 case "patientPoints":
                     this.patientPointsValue += amount;
+                    this.patientPointsHandoverValue += handoverValue;
                     this.hasPatientPointsTransaction = true;
                     break;
                 case "onlineSettlement":
                     this.onlineSettlementValue += amount;
+                    this.onlineSettlementHandoverValue += handoverValue;
                     this.hasOnlineSettlementTransaction = true;
                     break;
                 case "grossTotal":
@@ -1297,7 +1312,7 @@ public class ReportTemplateRowBundle implements Serializable {
                     this.ccTotal += amount;
                     break;
                 default:
-
+                    // No action for unknown attributes
                     break;
             }
         }
