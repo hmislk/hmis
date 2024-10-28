@@ -1249,7 +1249,7 @@ public class ReportController implements Serializable {
            if(voucherItem.getBill().getNetTotal() < b.getNetTotal()){
                voucherItem.getBill().setAdjustedTotal(Math.abs(b.getNetTotal()) - Math.abs(voucherItem.getBill().getNetTotal()));
            }
-        }else{
+        }else if(bis.size() > 1){
             Double NetTotal = 0.0;
            for(BillItem bi : bis){
              voucherItem = bi;
