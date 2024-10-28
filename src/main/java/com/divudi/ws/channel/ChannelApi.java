@@ -701,7 +701,7 @@ public class ChannelApi {
             JSONObject responseError = commonFunctionToErrorResponse("Invalid Session id. Please check!");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(responseError.toString()).build();
         }
-     
+
         SimpleDateFormat forDate = new SimpleDateFormat("yyyy-MM-dd");
         SimpleDateFormat forTime = new SimpleDateFormat("HH:mm:ss");
 
@@ -796,18 +796,18 @@ public class ChannelApi {
         String patientPhoneNo = patientDetails.get("teleNo");
         String patientName = patientDetails.get("patientName");
         String patientType = patientDetails.get("foreign");
-        boolean isForeigner = Integer.parseInt(patientType) == 1 ? true:false;
+        boolean isForeigner = Integer.parseInt(patientType) == 1 ? true : false;
         String patientTitle = patientDetails.get("title");
         String nic = patientDetails.get("nid");
         String clientsReferanceNo = patientDetails.get("clientRefNumber");
         Long patientPhoneNumberLong = CommonFunctions.removeSpecialCharsInPhonenumber(patientPhoneNo);
 
-        if (clientsReferanceNo == null  || clientsReferanceNo.isEmpty()) {
+        if (clientsReferanceNo == null || clientsReferanceNo.isEmpty()) {
             JSONObject response = commonFunctionToErrorResponse("Invalid Ref No");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
-        if (patientPhoneNo == null  || patientPhoneNo.isEmpty()) {
+        if (patientPhoneNo == null || patientPhoneNo.isEmpty()) {
             JSONObject response = commonFunctionToErrorResponse("Invalid Phone Number");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
@@ -913,17 +913,17 @@ public class ChannelApi {
         String bankCode = payment.get("bankCode");
         String paymentChannel = payment.get("paymentChannel");
         String channelForm = payment.get("channelFrom");
-        PaymentMethod paymentMethod = null;       
+        PaymentMethod paymentMethod = null;
 
         Institution creditCompany = channelService.findCreditCompany(paymentChannel, InstitutionType.Agency);
         List<Bill> billList = channelService.findBillFromRefNo(clientsReferanceNo, creditCompany);
-        
+
         if (billList != null && !billList.isEmpty()) {
             JSONObject response = commonFunctionToErrorResponse("Duplicate Ref No occured");
             System.out.println("line");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
-         
+
         //TODO : Handle Payment Method
         Bill bill = channelService.saveBilledBill(false, newPatient, session, clientsReferanceNo, null, creditCompany);
 
@@ -1243,19 +1243,47 @@ public class ChannelApi {
         }
 
         String fromDate = requestBody.get("fromDate");
-        String toDate = requestBody.get("toDate");      
+        String toDate = requestBody.get("toDate");
         String creditCompanyCode = requestBody.get("paymentChannel");
         Institution creditCompany = channelService.findCreditCompany(creditCompanyCode, InstitutionType.Agency);
-        
-        if(creditCompany == null){
+
+        if (creditCompany == null) {
             JSONObject response = commonFunctionToErrorResponse("NO credit company registered in the System");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
-        
+
         List<Bill> billList = channelService.viewBookingHistorybyDate(fromDate, toDate, creditCompany);
+
+        if (billList == null || billList.isEmpty()) {
+            JSONObject response = commonFunctionToErrorResponse("NO bills for that Date Range");
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+        }
+        
+        Map result = new HashMap();
+        int count = 1;
+
+        for (Bill b : billList) {
+            Map<String, Object> mapDetail = new HashMap<>();   
+            mapDetail.put("DoctorName", b.getSingleBillSession().getSessionInstance().getOriginatingSession().getStaff().getName());
+            mapDetail.put("PatientName", b.getPatient().getPerson().getName());
+            mapDetail.put("HosTelephone", b.getInstitution().getPhone());
+            mapDetail.put("NicNumber", b.getPatient().getPerson().getNic());
+            mapDetail.put("HosName", b.getInstitution().getName());
+            mapDetail.put("RefNo", b.getAgentRefNo());
+            mapDetail.put("HosLocation", b.getInstitution().getAddress());
+            mapDetail.put("AppointmentNumber", Integer.parseInt(b.getSingleBillSession().getSerialNoStr()));
+            result.put("additionalProp"+(count++), mapDetail);
+        }
+
+        Map response = new HashMap<>();
+        response.put("data", result);
+        response.put("message", "Accepted");
+        response.put("code", 202);
+        response.put("detailMessage", "All the appoinment details listed");
+        
         System.out.println(billList.size());
 
-        return Response.status(Response.Status.ACCEPTED).entity("view Appointment Api").build();
+        return Response.status(Response.Status.ACCEPTED).entity(response).build();
     }
 
     @POST
@@ -1272,16 +1300,16 @@ public class ChannelApi {
         }
 
         String refNo = (String) requestBody.get("refNo");
-        String creditCompanyCode = (String)requestBody.get("bookingChannel");
+        String creditCompanyCode = (String) requestBody.get("bookingChannel");
 
         if (refNo.isEmpty() || refNo == null) {
             JSONObject response = commonFunctionToErrorResponse("Invalid Ref No");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
-        
+
         Institution creditCompany = channelService.findCreditCompany(creditCompanyCode, InstitutionType.Agency);
-        
-        if(creditCompany == null){
+
+        if (creditCompany == null) {
             JSONObject response = commonFunctionToErrorResponse("NO credit company registered in the System");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
@@ -1383,23 +1411,22 @@ public class ChannelApi {
         }
 
         String refNo = (String) requestBody.get("refNo");
-        Map paymentDetails = (Map)requestBody.get("payment");
+        Map paymentDetails = (Map) requestBody.get("payment");
 
-        String creditCompanyCode = (String)paymentDetails.get("paymentChannel");
-        
+        String creditCompanyCode = (String) paymentDetails.get("paymentChannel");
+
         if (refNo.isEmpty() || refNo == null) {
             JSONObject response = commonFunctionToErrorResponse("Invalid Ref No");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
-        
+
         Institution creditCompany = channelService.findCreditCompany(creditCompanyCode, InstitutionType.Agency);
-        
-        if(creditCompany == null){
+
+        if (creditCompany == null) {
             JSONObject response = commonFunctionToErrorResponse("NO credit company registered in the System");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
-        
         List<Bill> billList = channelService.findBillFromRefNo(refNo, creditCompany);
 
         if (billList == null || billList.isEmpty()) {
