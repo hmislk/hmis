@@ -1170,7 +1170,7 @@ public class FinancialTransactionController implements Serializable {
     public String navigateBackToPaymentHandoverCreate() {
         selectedBundle.markSelectedAtHandover();
         selectedBundle.calculateTotalsByPaymentsAndDenominations();
-        bundle.aggregateTotalsFromAllChildBundles();
+        bundle.aggregateTotalsFromSelectedChildBundles();
         return "/cashier/handover_start_all?faces-redirect=true";
     }
 
@@ -4580,6 +4580,10 @@ public class FinancialTransactionController implements Serializable {
                     System.out.println("row = " + row);
                     if (row.getPayment() == null) {
                         System.out.println("row.getPayment() = " + row.getPayment());
+                        continue;
+                    }
+                    if (!row.getPayment().isSelectedForHandover()) {
+                        System.out.println("row.getPayment() not selected for handover " + row.getPayment());
                         continue;
                     }
                     Payment p = row.getPayment();
