@@ -261,7 +261,11 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         batchBill.setPaymentMethod(paymentMethod);
         batchBill.setPaymentScheme(getPaymentScheme());
 
-        batchBill.setDeptId(getBillNumberBean().departmentBillNumberGenerator(batchBill.getDepartment(), batchBill.getToDepartment(), batchBill.getBillType(), BillClassType.BilledBill));
+        String deptID = billNumberBean.departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
+        
+        batchBill.setDeptId(deptID);
+        
+        
         batchBill.setInsId(getBillNumberBean().institutionBillNumberGenerator(batchBill.getInstitution(), batchBill.getBillType(), BillClassType.BilledBill, BillNumberSuffix.PACK));
 
         getBillFacade().create(batchBill);
