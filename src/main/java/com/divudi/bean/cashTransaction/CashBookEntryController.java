@@ -82,7 +82,10 @@ public class CashBookEntryController implements Serializable {
     public void generateDailyCashbookSummary() {
         sitesGroupedIntoInstitutionses = new ArrayList<>();
 
-        List<Department> departmentsFromCashBookEntries = fetchToDepartmentsFromCashbookEntries(fromDate, toDate);
+        Date fd = CommonFunctions.getStartOfDay(fromDate);
+        Date td = CommonFunctions.getEndOfDay(toDate);
+        
+        List<Department> departmentsFromCashBookEntries = fetchToDepartmentsFromCashbookEntries(fd, td);
 
         Map<Institution, List<Institution>> institutionToSitesMap = new HashMap<>();
 
@@ -110,12 +113,42 @@ public class CashBookEntryController implements Serializable {
     }
 
     private List<Date> getDatesInRange(Date fromDate, Date toDate) {
+        if (fromDate == null || toDate == null) {
+            throw new IllegalArgumentException("fromDate and toDate cannot be null");
+        }
+
         List<Date> dates = new ArrayList<>();
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(fromDate);
 
-        while (!calendar.getTime().after(toDate)) {
+        // Normalize fromDate to start of the day
+        calendar.setTime(fromDate);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        Date startDate = calendar.getTime();
+
+        // Normalize toDate to start of the day
+        calendar.setTime(toDate);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        Date endDate = calendar.getTime();
+
+        // Validate date range
+        if (startDate.after(endDate)) {
+            // Return an empty list if fromDate is after toDate
+            return dates;
+        }
+
+        // Initialize calendar with startDate
+        calendar.setTime(startDate);
+
+        while (!calendar.getTime().after(endDate)) {
+            // Add the current date to the list
             dates.add(calendar.getTime());
+            // Move to the next day
             calendar.add(Calendar.DATE, 1);
         }
 
@@ -133,11 +166,9 @@ public class CashBookEntryController implements Serializable {
         params.put("ret", false);
         params.put("fd", fd);
         params.put("td", td);
-        return departmentFacade.findByJpql(jpql, params);
+        return departmentFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
-    
-    
     public Double fetchStartingBalanceForToSite(Date date, Institution site) {
         String jpql = "select cbe.toSiteBalanceAfter "
                 + " from CashBookEntry cbe, "
@@ -196,41 +227,50 @@ public class CashBookEntryController implements Serializable {
         return result;
     }
 
-    
     public Double fetchStartingBalanceForFromSite(Date date, Institution site) {
-        String jpql = "select cbe.fromSiteBalanceAfter "
+        String jpql = "select cbe "
                 + " from CashBookEntry cbe "
-                + " where cbe.retired=:ret "
-                + " and cbe.fromSite=:site"
-                + " and cbe.createdAt>:ed"
+                + " where cbe.retired = :ret "
+                + " and cbe.fromSite.id = :siteId"
+                + " and cbe.createdAt > :ed"
                 + " order by cbe.id";
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
         params.put("ret", false);
-        params.put("site", site);
+        params.put("siteId", site.getId());
         params.put("ed", CommonFunctions.getStartOfDay(date));
         System.out.println("params = " + params);
         System.out.println("jpql = " + jpql);
-        Double result = departmentFacade.findDoubleByJpql(jpql, params, TemporalType.TIMESTAMP);
-        System.out.println("result = " + result);
-        return result;
+        CashBookEntry cbe = cashbookEntryFacade.findFirstByJpql(jpql, params, TemporalType.TIMESTAMP);
+        if (cbe != null) {
+            Double result = cbe.getFromSiteBalanceAfter();
+            System.out.println("result = " + result);
+            return result;
+        }
+        return null;
     }
 
     public Double fetchEndingBalanceForFromSite(Date date, Institution site) {
-        String jpql = "select cbe.fromSiteBalanceAfter "
+        String jpql = "select cbe "
                 + " from CashBookEntry cbe "
-                + " where cbe.retired=:ret "
-                + " and cbe.fromSite=:site"
-                + " and cbe.createdAt<:ed"
+                + " where cbe.retired = :ret "
+                + " and cbe.fromSite.id = :siteId"
+                + " and cbe.createdAt > :sd"
+                + " and cbe.createdAt < :ed"
                 + " order by cbe.id desc";
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
         params.put("ret", false);
-        params.put("site", site);
+        params.put("siteId", site.getId());
         params.put("ed", CommonFunctions.getEndOfDay(date));
+        params.put("sd", CommonFunctions.getStartOfDay(date));
         System.out.println("params = " + params);
         System.out.println("jpql = " + jpql);
-        Double result = departmentFacade.findDoubleByJpql(jpql, params, TemporalType.TIMESTAMP);
-        System.out.println("result = " + result);
-        return result;
+        CashBookEntry cbe = cashbookEntryFacade.findFirstByJpql(jpql, params, TemporalType.TIMESTAMP);
+        if (cbe != null) {
+            Double result = cbe.getFromSiteBalanceAfter();
+            System.out.println("result = " + result);
+            return result;
+        }
+        return null;
     }
 
     public Double fetchSumOfEntryValuesForFromSite(Date date, Institution site) {
@@ -252,8 +292,6 @@ public class CashBookEntryController implements Serializable {
         return result;
     }
 
-    
-    
     public void writeCashBookEntryAtPaymentCreation(Payment p) {
         if (p == null) {
             JsfUtil.addErrorMessage("Cashbook Entry Error !");
@@ -535,11 +573,11 @@ public class CashBookEntryController implements Serializable {
         cbe.setFromInstitutionCashBalanceAfter(cbe.getFromInstitutionCashBalanceBefore() + entryData.getCashValue());
         cbe.setToInstitutionCashBalanceAfter(cbe.getToInstitutionCashBalanceBefore() + entryData.getCashValue());
         cbe.setFromSiteCashBalanceAfter(cbe.getFromSiteCashBalanceBefore() + entryData.getCashValue());
-        
+
         System.out.println("cbe.getFromSiteCashBalanceBefore() = " + cbe.getFromSiteCashBalanceBefore());
         System.out.println("entryData.getCashValue() = " + entryData.getCashValue());
         System.out.println("cbe.getFromSiteCashBalanceAfter() = " + cbe.getFromSiteCashBalanceAfter());
-        
+
         cbe.setToSiteCashBalanceAfter(cbe.getToSiteCashBalanceBefore() + entryData.getCashValue());
 
         cbe.setFromDepartmentCardBalanceBefore(lastFromDepartmentEntry != null ? lastFromDepartmentEntry.getFromDepartmentCardBalanceAfter() : 0.0);
