@@ -84,7 +84,7 @@
                                 value="Download as Excel" 
                                 styleClass="noPrintButton" 
                                 icon="fa-solid fa-file-excel"
-                                class="ui-button-success mx-2" >
+                                class="ui-button-success mx-2 my-2" >
                                 <p:dataExporter type="xlsx" target=":#{p:resolveFirstComponentWithId('tblFee',view).clientId}" fileName="Staff_Payment_Due_OPD"  />
                             </p:commandButton>
 
@@ -116,7 +116,7 @@
                                 <p:column selectionBox="true" width="20"></p:column>
 
 
-                                <p:column headerText="Bill Id">
+                                <p:column headerText="Bill Id" width="18em;">
                                     <f:facet name="header">
                                         <h:outputLabel value="Bill ID"/>
                                     </f:facet>    
@@ -126,9 +126,8 @@
                                 <p:column headerText="Bill Id">
                                     <f:facet name="header">
                                         <h:outputLabel value="Status"/>
-                                    </f:facet>    
-                                    <h:outputLabel value="#{bf.billItem.refunded}">
-                                    </h:outputLabel>
+                                    </f:facet>   
+                                    <p:badge value="Refunded" rendered="#{bf.billItem.refunded}" severity="warning"></p:badge>
                                 </p:column>
 
                                 <p:column headerText="Payment Methord">
@@ -163,31 +162,33 @@
                                     <h:outputLabel value="#{bf.billItem.item.name}" />
                                 </p:column>
 
-                                <p:column headerText="Charge" >
+                                <p:column headerText="Charge" width="7em;">
                                     <f:facet name="header">
                                         <h:outputLabel value="Charge Type"/>
                                     </f:facet>    
                                     <h:outputLabel value="#{bf.fee.feeType}" />
                                 </p:column>
 
-                                <p:column headerText="Charge" >
+                                <p:column headerText="Charge" width="7em;" class="text-end">
                                     <f:facet name="header">
                                         <h:outputLabel value="Charge"/>
                                     </f:facet>    
-                                    <h:outputLabel value="#{bf.feeValue}" />
+                                    <h:outputLabel value="#{bf.feeValue}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
                                 </p:column>
 
                             </p:dataTable>
 
                             <p:panel id="pTotals"  >
                                 <f:facet name="header" >
-                                    <h:outputLabel value="Payment Details" />
+                                    <h:outputLabel value="Payment Details" class="mt-2"/>
                                     <p:commandButton 
                                         id="btnPay"
                                         ajax="false"
                                         value= "&nbsp;&nbsp;&nbsp;&nbsp; Settle Professional Payment" 
                                         style="float: right;"
-                                        class="ui-button-success m-1 p-1"
+                                        class="ui-button-success"
                                         action="#{staffPaymentBillController.settleBill()}" >
                                     </p:commandButton>
 

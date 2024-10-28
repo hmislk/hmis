@@ -1030,8 +1030,8 @@ public class SearchController implements Serializable {
         return "/reports/cashier_reports/cashier_detailed?faces-redirect=true";
     }
 
-    public String navigateToAllCashierDrawersDetails() {
-        return "/reports/cashier_reports/all_cashiers_drawer_details?faces-redirect=true";
+    public String navigateToListAllDrawers() {
+        return "/reports/cashier_reports/all_drawers?faces-redirect=true";
     }
 
     public String navigateToAllCashierHandovers() {
@@ -13306,20 +13306,13 @@ public class SearchController implements Serializable {
 
     }
 
-    public void genarateDrawerDetailsForCashiers() {
+    public void listAllDrawers() {
         String jpql;
         Map<String, Object> params = new HashMap<>();
-
         jpql = "select d from Drawer d "
-                + " where d.createdAt BETWEEN :fd AND :td ";
-
-        params.put("fd", getFromDate());
-        params.put("td", getToDate());
-
-        if (webUser != null) {
-            jpql += " AND d.drawerUser = :du ";
-            params.put("du", webUser);
-        }
+                + " where d.retired=:ret"
+                + " order by d.drawerUser.name ";
+        params.put("ret", false);
         drawerList = drawerFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
