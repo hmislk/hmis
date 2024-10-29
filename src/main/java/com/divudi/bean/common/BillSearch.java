@@ -2384,7 +2384,7 @@ public class BillSearch implements Serializable {
 
         notificationController.createNotification(cancellationBill);
 
-        bill = billFacade.find(bill.getId());
+        bill = billFacade.find(cancellationBill.getId());
         printPreview = true;
         comment = null;
 //          TODO:         To Implement cancellation approval
