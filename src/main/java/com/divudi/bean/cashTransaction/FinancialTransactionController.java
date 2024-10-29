@@ -3254,16 +3254,18 @@ public class FinancialTransactionController implements Serializable {
         prepareToAddNewShiftShortageRecord();
         currentBillPayments = new ArrayList<>();
         boolean hasShortages = false;
-        double valueCollected = bundle.getCardValue();
-        double valueAvailable = bundle.getCashHandoverValue();
-        double difference = valueCollected - valueAvailable;
+        double cashCollected = bundle.getCashValue();
+        System.out.println("cashCollected = " + cashCollected);
+        double cashHandover = bundle.getDenominatorValue();
+        System.out.println("cashHandover = " + cashHandover);
+        double cashDifference = cashCollected - cashHandover;
 
         // Handle cash shortage/surplus initially if there's a difference.
-        if (Math.abs(difference) > 0) {
+        if (Math.abs(cashDifference) > 0) {
             Payment pc = new Payment();
             pc.setPaymentMethod(PaymentMethod.Cash);
             pc.setBill(currentBill);
-            pc.setPaidValue(0 - Math.abs(difference));
+            pc.setPaidValue(0 - Math.abs(cashDifference));
             pc.setCreatedAt(new Date());
             currentBillPayments.add(pc);
         }
