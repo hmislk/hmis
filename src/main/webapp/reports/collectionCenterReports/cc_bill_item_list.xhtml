@@ -196,6 +196,18 @@
                                 styleClass="fa"/>
                             <f:setPropertyActionListener value="#{billItem.bill}" target="#{billSearch.bill}"/>
                         </p:commandLink>
+                        <p:commandButton 
+                            value="Admin" 
+                            icon="fa fa-shield-alt" 
+                            class="m-1 ui-button-danger" 
+                            style="width: 100px;"
+                            action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
+                            ajax="false" 
+                            rendered="#{webUserController.hasPrivilege('Developers')}">
+                            <f:setPropertyActionListener 
+                                value="#{billItem.bill}" 
+                                target="#{billSearch.bill}" />
+                        </p:commandButton>
                     </p:column>
 
                     <!-- Bill Date Column -->
@@ -227,8 +239,8 @@
                     <p:column headerText="Collecting Centre" filterBy="#{billItem.bill.collectingCentre.name}" sortBy="#{billItem.bill.collectingCentre.name}">
                         <h:outputLabel value="#{billItem.bill.collectingCentre.name}" />
                     </p:column>
-                    
-                     <p:column headerText="CC Code" filterBy="#{billItem.bill.collectingCentre.code}" sortBy="#{billItem.bill.collectingCentre.code}">
+
+                    <p:column headerText="CC Code" filterBy="#{billItem.bill.collectingCentre.code}" sortBy="#{billItem.bill.collectingCentre.code}">
                         <h:outputLabel value="#{billItem.bill.collectingCentre.code}" />
                     </p:column>
 
@@ -356,7 +368,7 @@
                     </p:column>
 
                 </p:dataTable>
-          </h:form>
+            </h:form>
 
         </ui:define>
     </ui:composition>

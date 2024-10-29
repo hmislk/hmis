@@ -9048,6 +9048,11 @@ public class SearchController implements Serializable {
             sql += " and  ((bf.bill.total) like :total )";
             temMap.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
         }
+        
+        if (mrnNo != null && !mrnNo.isEmpty()) {
+            sql += " and UPPER(bf.patient.phn) LIKE :phn ";
+            temMap.put("phn", "%" + mrnNo.toUpperCase() + "%");
+        }
 
         sql += " order by bf.bill.createdAt desc  ";
 
@@ -13360,7 +13365,7 @@ public class SearchController implements Serializable {
         netCashForTheDayBundle.setTotal(netCashCollection);
 
         bundle.getBundles().add(netCashForTheDayBundle);
-        bundle.calculateTotalsByChildBundles();
+        bundle.calculateTotalsBySelectedChildBundles();
 
     }
 
@@ -13697,7 +13702,7 @@ public class SearchController implements Serializable {
         netCashForTheDayBundle.setTotal(netCashCollection);
 
         bundle.getBundles().add(netCashForTheDayBundle);
-        bundle.calculateTotalsByChildBundles();
+        bundle.calculateTotalsBySelectedChildBundles();
 
     }
 
