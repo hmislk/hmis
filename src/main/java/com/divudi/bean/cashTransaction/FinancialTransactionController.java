@@ -1170,27 +1170,26 @@ public class FinancialTransactionController implements Serializable {
     public String navigateBackToPaymentHandoverCreate() {
         selectedBundle.markSelectedAtHandover();
         selectedBundle.calculateTotalsByPaymentsAndDenominations();
-        bundle.aggregateTotalsFromChildBundles();
+        bundle.aggregateTotalsFromSelectedChildBundles();
         return "/cashier/handover_start_all?faces-redirect=true";
     }
 
     public void updateForPaymentHandoverSelectionAtCreate() {
         if (selectedBundle != null) {
-            selectedBundle.markSelectedAtHandover();
-            selectedBundle.calculateTotalsByPaymentsAndDenominations();
+            selectedBundle.calculateTotalsByPaymentsAndDenominationsForHandover();
         }
-        bundle.aggregateTotalsFromChildBundles();
+        bundle.calculateTotalsBySelectedChildBundles();
     }
 
     public void selectAllForPaymentHandoverSelectionAtCreate() {
         selectedBundle.markAllAtHandover(selectedPaymentMethod);
         selectedBundle.calculateTotalsByPaymentsAndDenominations();
-        bundle.aggregateTotalsFromChildBundles();
+        bundle.calculateTotalsBySelectedChildBundles();
     }
 
     public String navigateBackToPaymentHandoverAccept() {
         selectedBundle.calculateTotalsByPaymentsAndDenominations();
-        bundle.aggregateTotalsFromChildBundles();
+        bundle.calculateTotalsBySelectedChildBundles();
         return "/cashier/handover_accept?faces-redirect=true";
     }
 
@@ -1689,7 +1688,7 @@ public class FinancialTransactionController implements Serializable {
             bundle.getBundles().add(childBundle);
         }
 
-        bundle.aggregateTotalsFromChildBundles();
+        bundle.aggregateTotalsFromAllChildBundles();
         bundle.collectDepartments();
 
         // Create and configure the current bill
@@ -1768,7 +1767,7 @@ public class FinancialTransactionController implements Serializable {
         }
         return navigateToReceiveHandoverBillsForMe();
     }
-    
+
     public String recallMyHandoverBill() {
         if (selectedBill == null) {
             JsfUtil.addErrorMessage("Please select a bill.");
@@ -1838,7 +1837,7 @@ public class FinancialTransactionController implements Serializable {
                 selectedBill.getReferenceBill().getReferenceBill(),
                 paymentsToAcceptForHandover,
                 PaymentSelectionMode.SELECT_FOR_HANDOVER_RECEIPT);
-        bundle.aggregateTotalsFromChildBundles();
+        bundle.aggregateTotalsFromAllChildBundles();
         bundle.collectDepartments();
 
 //        
@@ -2425,7 +2424,7 @@ public class FinancialTransactionController implements Serializable {
         }
 
         bundle.setUser(sessionController.getLoggedUser());
-        bundle.aggregateTotalsFromChildBundles();
+        bundle.aggregateTotalsFromAllChildBundles();
         bundle.setDenominationTransactions(denominationTransactionController.createDefaultDenominationTransaction());
         bundle.collectDepartments();
 
@@ -2470,7 +2469,7 @@ public class FinancialTransactionController implements Serializable {
 //            bundle = generatePaymentBundleForHandovers(startBill, null, allPayments, PaymentSelectionMode.SELECT_NONE_FOR_HANDOVER_CREATION);
 //        }
 //        bundle.setUser(sessionController.getLoggedUser());
-//        bundle.aggregateTotalsFromChildBundles();
+//        bundle.aggregateTotalsFromAllChildBundles();
 //        bundle.collectDepartments();
 //        return "/cashier/handover_start_all?faces-redirect=true";
 //    }
@@ -2549,7 +2548,7 @@ public class FinancialTransactionController implements Serializable {
         bundle.setUser(sessionController.getLoggedUser());
         bundle.setStartBill(startBill);
         bundle.selectAllChildBundles();
-        bundle.aggregateTotalsFromChildBundles();
+        bundle.aggregateTotalsFromAllChildBundles();
         bundle.setDenominationTransactions(denominationTransactionController.createDefaultDenominationTransaction());
         return "/cashier/handover_start_all?faces-redirect=true";
     }
@@ -2598,7 +2597,7 @@ public class FinancialTransactionController implements Serializable {
             );
         }
         bundle.setUser(sessionController.getLoggedUser());
-        bundle.aggregateTotalsFromChildBundles();
+        bundle.aggregateTotalsFromAllChildBundles();
         bundle.setDenominationTransactions(denominationTransactionController.createDefaultDenominationTransaction());
         bundle.setCashHandoverValue(0.0);
     }
@@ -2662,7 +2661,7 @@ public class FinancialTransactionController implements Serializable {
         bundle.setDenominations(sessionController.findDefaultDenominations());
         bundle.prepareDenominations();
         bundle.selectAllChildBundles();
-        bundle.aggregateTotalsFromChildBundles();
+        bundle.aggregateTotalsFromAllChildBundles();
 //        currentBill = new Bill();
 //        currentBill.setBillType(BillType.CashHandoverCreateBill);
 //        currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE);
@@ -4583,9 +4582,16 @@ public class FinancialTransactionController implements Serializable {
                         System.out.println("row.getPayment() = " + row.getPayment());
                         continue;
                     }
-                    Payment p = row.getPayment();
-                    System.out.println("p = " + p);
+                    if (row.getPayment().getPaymentMethod() == PaymentMethod.Cash) {
 
+                    }
+                    Payment p = row.getPayment();
+                    if (p.getPaymentMethod() == null) {
+                        continue;
+                    }
+                    if (p.getPaymentMethod() != PaymentMethod.Cash && p.isSelectedForHandover() == false) {
+                        continue;
+                    }
                     p.setHandoverCreatedBill(currentBill);
                     p.setHandoverShiftComponantBill(shiftHandoverComponantBill);
                     p.setHandoverShiftBill(shiftBundle.getStartBill());
@@ -4763,7 +4769,6 @@ public class FinancialTransactionController implements Serializable {
         return "/cashier/fund_transfer_receive_bill_print?faces-redirect=true";
     }
 
-    
 //    @Deprecated
 //    public String acceptHandoverBill() {
 //        if (bundle == null) {
@@ -4886,7 +4891,6 @@ public class FinancialTransactionController implements Serializable {
 //
 //        return "/cashier/handover_creation_bill_print?faces-redirect=true";
 //    }
-
     public void updateDraverForHandover(List<Payment> payments, WebUser reciver, WebUser sender) {
         //System.out.println("Update Resiver Drawer Start");//Accepted Cashier Dravr Update
         drawerController.updateDrawerForIns(payments, reciver);
