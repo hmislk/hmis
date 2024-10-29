@@ -8626,11 +8626,6 @@ public class SearchController implements Serializable {
             sql += " and b.toInstitution=:toins ";
             temMap.put("toins", toIns);
         }
-        
-        if (mrnNo != null && !mrnNo.isEmpty()) {
-            sql += " and UPPER(b.patient.phn) LIKE :phn ";
-            temMap.put("phn", "%" + mrnNo.toUpperCase() + "%");
-        }
 
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
             sql += " and  ((b.patient.person.name) like :patientName )";
