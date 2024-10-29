@@ -2372,12 +2372,6 @@ public class BillSearch implements Serializable {
         }
 
         if (cancellationBill.getPaymentMethod() == PaymentMethod.PatientDeposit) {
-//            if (cancellationBatchBill.getPatient().getRunningBalance() == null) {
-//                cancellationBatchBill.getPatient().setRunningBalance(Math.abs(cancellationBatchBill.getNetTotal()));
-//            } else {
-//                cancellationBatchBill.getPatient().setRunningBalance(cancellationBatchBill.getPatient().getRunningBalance() + Math.abs(cancellationBatchBill.getNetTotal()));
-//            }
-//            patientFacade.edit(cancellationBatchBill.getPatient());
             PatientDeposit pd = patientDepositController.getDepositOfThePatient(cancellationBill.getPatient(), sessionController.getDepartment());
             patientDepositController.updateBalance(cancellationBill, pd);
         }
