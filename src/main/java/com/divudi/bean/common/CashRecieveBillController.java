@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.common;
 import com.divudi.bean.cashTransaction.CashBookEntryController;
+import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.inward.AdmissionController;
 import com.divudi.bean.membership.PaymentSchemeController;
@@ -88,6 +89,8 @@ public class CashRecieveBillController implements Serializable {
     private Institution institution;
     @Inject
     CommonController commonController;
+    @Inject
+    private DrawerController drawerController;
     String comment;
 
     public void makeNull() {
@@ -235,6 +238,7 @@ public class CashRecieveBillController implements Serializable {
 
     public void selectBillListener() {
         double dbl = getReferenceBallance(getCurrentBillItem());
+        System.out.println(getCurrentBillItem().getReferenceBill());
 
         if (dbl > 0.1) {
             getCurrentBillItem().setNetValue(dbl);
@@ -597,13 +601,15 @@ public class CashRecieveBillController implements Serializable {
         calTotal();
 
         getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
+        System.out.println(getSelectedBillItems());
 
         getCurrent().setTotal(getCurrent().getNetTotal());
 
         saveBill(BillType.CashRecieveBill, BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED );
         saveBillItem();
         
-        createPayment(current, current.getPaymentMethod());
+        List payments = createPayment(current, current.getPaymentMethod());      
+        drawerController.updateDrawerForIns(payments);
 
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getCurrent(), getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);

@@ -19,11 +19,13 @@
             <div >
                 <div >
 
-
                     <h:outputStylesheet name="printing.css" library="css" />
-                    <p:commandButton value="Print" ajax="false" action="#" class="ui-button-info my-3 mx-4" icon="fas fa-print" >
+                    <div class="d-flex justify-content-end">
+                        <p:commandButton style="width: 100px" value="Print" ajax="false" action="#"  >
                         <p:printer target="gpBillPreview" ></p:printer>
                     </p:commandButton>
+                    </div>
+                    
 
 
                     <div class="fiveinchbillBreakRuhunu" >
@@ -32,25 +34,25 @@
 
 
                             <div style="position: absolute!important;left: 45%!important; font-weight: bold!important;
-                                 top: 2%!important;font-size: 15px!important; text-decoration: underline!important;">
+                                 top: 0%!important;font-size: 15px!important; text-decoration: underline!important;">
                                 <h:outputLabel value="Receipt"   />                           
                             </div>
 
                             <div style="position: absolute;
-                                 left: 1%!important;
-                                 top: 8%!important;
+                                 left: 0%!important;
+                                 top: 7%!important;
                                  font-size: 12px!important;">
                                 <h:outputLabel value="Receipt No"/>
                             </div>
                             <div style="position: absolute;
                                  left: 23%;
-                                 top: 8%;
+                                 top: 7%;
                                  font-size:12px!important;">
                                 <h:outputLabel value=":"/>
                             </div>
                             <div style="position: absolute;
                                  left: 25%!important;
-                                 top: 8%!important;
+                                 top: 7%!important;
                                  font-size: 12px!important;">                                                 
                                 <h:outputLabel value="#{cc.attrs.bill.cancelledBill.deptId} **Cancelled"  
                                                rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}"/> 
@@ -62,19 +64,19 @@
 
                             <div style="position: absolute;
                                  left: 73%!important;
-                                 top: 8%!important;
+                                 top: 7%!important;
                                  font-size: 12px!important;">
                                 <h:outputLabel value="Date"/>
                             </div>
                             <div style="position: absolute;
                                  left: 82%;
-                                 top: 8%;
+                                 top: 7%;
                                  font-size:12px!important;">
                                 <h:outputLabel value=":"/>
                             </div>
                             <div style="position: absolute;
                                  left: 84%!important;
-                                 top: 8%!important;
+                                 top: 7%!important;
                                  font-size: 12px!important;" >                  
                                 <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billDate}"
                                                rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}"  >
@@ -87,20 +89,20 @@
                             </div>
 
                             <div style="position: absolute;
-                                 left: 1%!important;
-                                 top: 12%!important;
+                                 left: 0%!important;
+                                 top: 11%!important;
                                  font-size: 12px!important;">
                                 <h:outputLabel value="Payment Type"/>
                             </div>
                             <div style="position: absolute;
                                  left: 23%;
-                                 top: 12%;
+                                 top: 11%;
                                  font-size:12px!important;">
                                 <h:outputLabel value=":"/>
                             </div>
                             <div style="position: absolute;
                                  left: 25%;
-                                 top: 12%;
+                                 top: 11%;
                                  font-size:12px!important;" >                    
                                 <h:outputLabel value="#{cc.attrs.bill.cancelledBill.paymentMethod}" 
                                                rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}" />                        
@@ -110,19 +112,19 @@
 
                             <div style="position: absolute;
                                  left: 73%!important;
-                                 top: 12%!important;
+                                 top: 11%!important;
                                  font-size: 12px!important;">
                                 <h:outputLabel value="Time"/>
                             </div>
                             <div style="position: absolute;
                                  left: 82%;
-                                 top: 12%;
+                                 top: 11%;
                                  font-size:12px!important;">
                                 <h:outputLabel value=":"/>
                             </div>
                             <div style="position: absolute;
                                  left: 84%;
-                                 top: 12%;
+                                 top: 11%;
                                  font-size:12px!important;" >                                                 
                                 <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billTime}"  
                                                rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}">
@@ -135,37 +137,39 @@
                             </div>
 
                             <div style="position: absolute;
-                                 left: 1%!important;
-                                 top: 16%!important;
+                                 left: 0%!important;
+                                 top: 15%!important;
                                  font-size: 12px!important;">
                                 <h:outputLabel value="Company"/>
                             </div>
                             <div style="position: absolute;
                                  left: 23%;
-                                 top: 16%;
+                                 top: 15%;
                                  font-size:12px!important;">
                                 <h:outputLabel value=":"/>
                             </div>
                             <div style="position: absolute;
                                  left: 25%;
-                                 top: 16%;
-                                 font-size:12px!important;" >                    
+                                 top: 15%;
+                                 font-size:15px!important;" >                    
                                 <p:outputLabel value="#{cc.attrs.bill.fromInstitution.name}" />
                             </div>
 
                             <div style="position: absolute;
-                                 left: 1%!important;
-                                 top: 21%!important;
+                                 left: 0%!important;
+                                 top: 19%!important;
                                  font-size: 12px!important;">
                                 <h:outputLabel value="OPD Credit Settlement" rendered="#{cc.attrs.billController.billItems.get(0).patientEncounter eq null}"/>
                                 <h:outputLabel value="BHT Credit Settlement" rendered="#{cc.attrs.billController.billItems.get(0).patientEncounter ne null}"/>
                             </div>
 
                             <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}"
+                                           rendered="#{cc.attrs.bill.patient ne null}"
                                            style=" position: absolute;left: 25%;top: 35%;font-weight: bold;">
                             </h:outputLabel>
 
                             <h:outputLabel value="#{cc.attrs.bill.patient.person.phone}"
+                                           rendered="#{cc.attrs.bill.patient ne null}"
                                            styleClass="phonePrinting" >
                             </h:outputLabel>
 
@@ -204,7 +208,7 @@
                                 <table style="min-width:100%;">
                                     <tr>
                                         <td style="min-width: 3cm; text-decoration: overline;">
-                                            <p:outputLabel value="Cashier : #{cc.attrs.bill.creater.code}" style="font-size: 11px!important;"/>
+                                            <p:outputLabel value="Cashier ID : #{cc.attrs.bill.creater.id}" style="font-size: 11px!important;"/>
                                         </td>
                                         <td style="min-width: 5cm;text-decoration: overline;width: 75%!important;" >
                                             <p:outputLabel value=""  style="font-size: 11px!important;"/>
