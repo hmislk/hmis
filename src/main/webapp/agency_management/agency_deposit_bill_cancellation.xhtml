@@ -30,7 +30,7 @@
                                     <p:outputLabel value="Cancellation" ></p:outputLabel>
                                 </f:facet>
                                 <p:panelGrid columns="2" >
-                                    <p:outputLabel value="Cancellation" ></p:outputLabel>
+                                    <p:outputLabel value="Cancel Payment Method" ></p:outputLabel>
                                     <p:selectOneMenu   id="cmbPs" value="#{agentPaymentReceiveSearchController.paymentMethod}" 
                                                        required="true"  >
                                         <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
@@ -38,6 +38,7 @@
                                     <p:outputLabel value="Comments" ></p:outputLabel>
                                     <p:inputTextarea value="#{agentPaymentReceiveSearchController.comment}"/>  
                                     <p:spacer ></p:spacer>
+                                    
                                     <p:commandButton
                                         styleClass="w-100 ui-button-warning"
                                         ajax="false" value="Cancel" action="#{agentPaymentReceiveSearchController.cancelAgencyDepositBill}"
