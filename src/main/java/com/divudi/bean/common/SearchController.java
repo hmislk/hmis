@@ -15103,26 +15103,6 @@ public class SearchController implements Serializable {
         }
         List<BillItem> bis = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         billService.createBillItemFeeBreakdownAsHospitalFeeItemDiscount(bis);
-//        for (BillItem bi : bis) {
-//            billService.createBillItemFeeBreakdownAsHospitalFeeItemDiscount(bi);
-////            double staffFeesCalculatedByBillFees = 0.0;
-////            double collectingCentreFeesCalculateByBillFees = 0.0;
-////            double hospitalFeeCalculatedByBillFess = 0.0;
-////            List<BillFee> bfs = billBean.findSavedBillFeefromBillItem(bi);
-////            for (BillFee bf : bfs) {
-////                if (bf.getInstitution() != null && bf.getInstitution().getInstitutionType() == InstitutionType.CollectingCentre) {
-////                    collectingCentreFeesCalculateByBillFees += bf.getFeeGrossValue();
-////                } else if (bf.getStaff() != null || bf.getSpeciality() != null) {
-////                    staffFeesCalculatedByBillFees += bf.getFeeGrossValue();
-////                } else {
-////                    hospitalFeeCalculatedByBillFess = bf.getFeeGrossValue();
-////                }
-////            }
-////            bi.setCollectingCentreFee(collectingCentreFeesCalculateByBillFees);
-////            bi.setStaffFee(staffFeesCalculatedByBillFees);
-////            bi.setHospitalFee(hospitalFeeCalculatedByBillFess);
-////            billItemFacade.edit(bi);
-//        }
     }
 
     public void billItemsToBundleForOpdUnderCategory(ReportTemplateRowBundle rtrb, List<BillItem> billItems) {
