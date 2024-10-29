@@ -130,8 +130,12 @@
 
                             <p:spacer width="50" ></p:spacer>
 
-                            <p:spacer width="50" ></p:spacer>
-                            <p:spacer width="50" ></p:spacer>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf0f0;" styleClass="fa mr-2" /> 
+                                        <h:outputLabel value="MRN" for="scMRN" class="mx-3" />
+                                    </h:panelGroup>
+                                    
+                                    <p:inputText value="#{searchController.mrnNo}" class="w-100"/>
 
                             <!-- New Speciality Field with Icon -->
                             <h:panelGroup layout="block" styleClass="form-group">
