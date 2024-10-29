@@ -16,7 +16,12 @@
                         <f:facet name="header" >
                             <h:outputLabel value="Reprint" ></h:outputLabel>
                             <hr/>                           
-                            <p:commandButton ajax="false" value="Cancel" action="credit_company_bill_cancel" disabled="#{creditCompanyBillSearch.bill.cancelled}" >                           
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Cancel" 
+                                action="credit_company_bill_cancel" 
+                                disabled="#{creditCompanyBillSearch.bill.cancelled}" 
+                                class="ui-button-danger" icon="fa fa-times" >                           
                             </p:commandButton>
 
                         </f:facet>
