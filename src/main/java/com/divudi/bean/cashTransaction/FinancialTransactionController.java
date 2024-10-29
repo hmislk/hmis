@@ -4455,10 +4455,10 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("No Payments to Handover");
             return null;
         }
-//        if (Math.abs(bundle.getDenominatorValue() - bundle.getCashHandoverValue()) > 1) {
-//            JsfUtil.addErrorMessage("Cash Value Collected and the cash value Handing over are different. Cannot handover.");
-//            return null;
-//        }
+        if (Math.abs(bundle.getDenominatorValue() - bundle.getCashHandoverValue()) > 1) {
+            JsfUtil.addErrorMessage("Cash Value Collected and the cash value Handing over are different. Cannot handover.");
+            return null;
+        }
         boolean hasSelectedBundles = false;
         for (ReportTemplateRowBundle b : bundle.getBundles()) {
             if (b.isSelected()) {
