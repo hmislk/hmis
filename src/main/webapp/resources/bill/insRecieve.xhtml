@@ -21,11 +21,17 @@
 
                     <h:outputStylesheet name="printing.css" library="css" />
                     <div class="d-flex justify-content-end">
-                        <p:commandButton style="width: 100px" value="Print" ajax="false" action="#"  >
-                        <p:printer target="gpBillPreview" ></p:printer>
-                    </p:commandButton>
+                        <p:commandButton 
+                            style="width: 100px" 
+                            value="Print" 
+                            ajax="false" 
+                            action="#"  
+                            class="ui-button-info mb-2"
+                            icon="fa fa-print">
+                            <p:printer target="gpBillPreview" ></p:printer>
+                        </p:commandButton>
                     </div>
-                    
+
 
 
                     <div class="fiveinchbillBreakRuhunu" >
