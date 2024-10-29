@@ -77,6 +77,7 @@ import com.divudi.entity.Token;
 import com.divudi.facade.TokenFacade;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
+import com.divudi.service.BillService;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -142,6 +143,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     private SmsManagerEjb smsManagerEjb;
     @EJB
     private TokenFacade tokenFacade;
+    @EJB
+    BillService billService;
 
     /**
      * Controllers
@@ -1903,6 +1906,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         JsfUtil.addSuccessMessage("Bill Saved");
         setPrintigBill();
         checkBillValues();
+        billService.createBillItemFeeBreakdownFromBills(getBills());
 
         boolean generateBarcodesForSampleTubesAtBilling = configOptionApplicationController.getBooleanValueByKey("Need to Generate Barcodes for Sample Tubes at OPD Billing Automatically", false);
         if (generateBarcodesForSampleTubesAtBilling) {
@@ -2226,7 +2230,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             String creditRefNo = paymentMethodData.getCredit().getReferenceNo();
             newBill.setReferenceNumber(creditRefNo);
         }
-        if (paymentMethod == PaymentMethod.Card ) {
+        if (paymentMethod == PaymentMethod.Card) {
             if (comment == null) {
                 String cardComment = paymentMethodData.getCreditCard().getComment();
                 newBill.setComments(cardComment);
