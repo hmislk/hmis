@@ -204,7 +204,9 @@
                             action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
                             ajax="false" 
                             rendered="#{webUserController.hasPrivilege('Developers')}">
-                            <f:setPropertyActionListener value="#{billItem.bill}" target="#{billSearch.bill}" />
+                            <f:setPropertyActionListener 
+                                value="#{billItem.bill}" 
+                                target="#{billSearch.bill}" />
                         </p:commandButton>
                     </p:column>
 
