@@ -321,6 +321,7 @@ public class SearchController implements Serializable {
 
     private String searchType;
     private String reportType;
+    private boolean withProfessionalFee;
 
     public String navigateToPettyCashBillApprove() {
         createPettyCashToApproveTable();
@@ -2098,6 +2099,14 @@ public class SearchController implements Serializable {
 
     public void setMrnNo(String mrnNo) {
         this.mrnNo = mrnNo;
+    }
+
+    public boolean isWithProfessionalFee() {
+        return withProfessionalFee;
+    }
+
+    public void setWithProfessionalFee(boolean withProfessionalFee) {
+        this.withProfessionalFee = withProfessionalFee;
     }
 
     public class billsWithbill {
@@ -9048,7 +9057,7 @@ public class SearchController implements Serializable {
             sql += " and  ((bf.bill.total) like :total )";
             temMap.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
         }
-        
+
         if (mrnNo != null && !mrnNo.isEmpty()) {
             sql += " and UPPER(bf.patient.phn) LIKE :phn ";
             temMap.put("phn", "%" + mrnNo.toUpperCase() + "%");
@@ -12874,7 +12883,12 @@ public class SearchController implements Serializable {
         double netCashCollection = 0.0;
 
         // Generate OPD service collection and add to the main bundle
-        ReportTemplateRowBundle opdServiceCollection = generateOpdServiceCollection();
+        ReportTemplateRowBundle opdServiceCollection;
+        if (isWithProfessionalFee()) {
+            opdServiceCollection = generateOpdServiceCollection();
+        } else {
+            opdServiceCollection = generateOpdServiceCollectionWithoutProfessionalFee();
+        }
         bundle.getBundles().add(opdServiceCollection);
         collectionForTheDay += getSafeTotal(opdServiceCollection);
 
@@ -12926,11 +12940,13 @@ public class SearchController implements Serializable {
         bundle.getBundles().add(pettyCashPayments);
         netCashCollection -= Math.abs(getSafeTotal(pettyCashPayments));
 
-        // Generate OPD professional payments and add to the main bundle
-        ReportTemplateRowBundle opdProfessionalPayments = generateOpdProfessionalPayments();
-        bundle.getBundles().add(opdProfessionalPayments);
-        netCashCollection -= Math.abs(getSafeTotal(opdProfessionalPayments));
-
+        if (isWithProfessionalFee()) {
+            // Generate OPD professional payments and add to the main bundle
+            ReportTemplateRowBundle opdProfessionalPayments = generateOpdProfessionalPayments();
+            bundle.getBundles().add(opdProfessionalPayments);
+            netCashCollection -= Math.abs(getSafeTotal(opdProfessionalPayments));
+        }
+        
         // Generate channelling professional payments and add to the main bundle
         ReportTemplateRowBundle channellingProfessionalPayments = generateChannellingProfessionalPayments();
         bundle.getBundles().add(channellingProfessionalPayments);
@@ -12940,7 +12956,6 @@ public class SearchController implements Serializable {
         ReportTemplateRowBundle inwardProfessionalPayments = generateInwardProfessionalPayments();
         bundle.getBundles().add(inwardProfessionalPayments);
         netCashCollection -= Math.abs(getSafeTotal(inwardProfessionalPayments));
-
         ReportTemplateRowBundle cardPayments = generateCreditCardPayments();
         cardPayments.calculateTotalByPayments();
         bundle.getBundles().add(cardPayments);
@@ -14611,6 +14626,58 @@ public class SearchController implements Serializable {
         return opdServiceCollection;
     }
 
+    public ReportTemplateRowBundle generateOpdServiceCollectionWithoutProfessionalFee() {
+        ReportTemplateRowBundle opdServiceCollection = new ReportTemplateRowBundle();
+        String jpql = "select bi "
+                + " from BillItem bi "
+                + " where bi.bill.retired=:br "
+                + " and bi.bill.createdAt between :fd and :td ";
+        Map m = new HashMap();
+        m.put("br", false);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        List<BillTypeAtomic> btas = BillTypeAtomic.findByServiceType(ServiceType.OPD);
+        opdServiceCollection.setDescription("Bill Types Listed: " + btas);
+        if (!btas.isEmpty()) {
+            jpql += " and bi.bill.billTypeAtomic in :bts ";
+            m.put("bts", btas);
+        }
+
+        if (department != null) {
+            jpql += " and bi.bill.department=:dep ";
+            m.put("dep", department);
+        }
+        if (institution != null) {
+            jpql += " and bi.bill.department.institution=:ins ";
+            m.put("ins", institution);
+        }
+        if (site != null) {
+            jpql += " and bi.bill.department.site=:site ";
+            m.put("site", site);
+        }
+//        System.out.println("btas = " + btas);
+//        System.out.println("m = " + m);
+//        System.out.println("jpql = " + jpql);
+        List<BillItem> bis = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+//        System.out.println("bis = " + bis);
+        billItemsToBundleForOpdUnderCategoryWithoutProfessionalFee(opdServiceCollection, bis);
+//        bundle.getBundles().add(opdServiceCollection);
+
+        opdServiceCollection.setName("OPD Service Collection");
+        opdServiceCollection.setBundleType("opdServiceCollection");
+
+        opdServiceCollection.getReportTemplateRows().stream()
+                .forEach(rtr -> {
+                    rtr.setInstitution(institution);
+                    rtr.setDepartment(department);
+                    rtr.setSite(site);
+                    rtr.setFromDate(fromDate);
+                    rtr.setToDate(toDate);
+                });
+
+        return opdServiceCollection;
+    }
+
     public ReportTemplateRowBundle generatePatientDepositCollection() {
         ReportTemplateRowBundle depositCollection = new ReportTemplateRowBundle();
         String jpql = "select b "
@@ -15120,6 +15187,99 @@ public class SearchController implements Serializable {
 
             // Accumulate the total collection
             totalOpdServiceCollection += netValue;
+
+            System.out.println("hospitalFee = " + hospitalFee);
+
+            // Update the rows with the adjusted values
+            updateRow(categoryRow, quantity, grossValue, hospitalFee, discount, staffFee, netValue);
+            updateRow(itemRow, quantity, grossValue, hospitalFee, discount, staffFee, netValue);
+        }
+
+        // Add the rows to the report template bundle
+        categoryMap.forEach((categoryName, catRow) -> {
+            System.out.println("Adding category row to bundle: " + categoryName);
+            rowsToAdd.add(catRow);
+
+            itemMap.entrySet().stream()
+                    .filter(entry -> entry.getKey().startsWith(categoryName + "->"))
+                    .forEach(entry -> {
+                        System.out.println("Adding item row to bundle under category " + categoryName + ": " + entry.getValue().getItem().getName());
+                        rowsToAdd.add(entry.getValue());
+                    });
+        });
+
+        System.out.println("Total collected: " + totalOpdServiceCollection);
+        rtrb.getReportTemplateRows().addAll(rowsToAdd);
+        rtrb.setTotal(totalOpdServiceCollection);
+    }
+    
+    public void billItemsToBundleForOpdUnderCategoryWithoutProfessionalFee(ReportTemplateRowBundle rtrb, List<BillItem> billItems) {
+        System.out.println("billItemsToBundleForOpdUnderCategory");
+        Map<String, ReportTemplateRow> categoryMap = new HashMap<>();
+        Map<String, ReportTemplateRow> itemMap = new HashMap<>();
+        List<ReportTemplateRow> rowsToAdd = new ArrayList<>();
+        double totalOpdServiceCollection = 0.0;
+
+        for (BillItem bi : billItems) {
+            System.out.println("Processing BillItem: " + bi);
+
+            // Skip invalid or unwanted bills
+            if (bi.getBill() == null || bi.getBill().getPaymentMethod() == null
+                    || bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.NONE
+                    || bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.CREDIT) {
+                System.out.println("continue 1");
+                continue;
+            }
+
+            // Identify category and item
+            String categoryName = bi.getItem() != null && bi.getItem().getCategory() != null
+                    ? bi.getItem().getCategory().getName() : "No Category";
+            System.out.println("categoryName = " + categoryName);
+            String itemName = bi.getItem() != null ? bi.getItem().getName() : "No Item";
+            System.out.println("itemName = " + itemName);
+            String itemKey = categoryName + "->" + itemName;
+
+            System.out.println("Item Key: " + itemKey);
+            System.out.println("Category: " + categoryName + ", Item: " + itemName);
+
+            // Initialize the maps if keys are not present
+            categoryMap.putIfAbsent(categoryName, new ReportTemplateRow());
+            itemMap.putIfAbsent(itemKey, new ReportTemplateRow());
+
+            ReportTemplateRow categoryRow = categoryMap.get(categoryName);
+            ReportTemplateRow itemRow = itemMap.get(itemKey);
+
+            // Set category and item details
+            if (bi.getItem() != null) {
+                categoryRow.setCategory(bi.getItem().getCategory());
+                itemRow.setItem(bi.getItem());
+            }
+
+            // Initialize financial values
+            double grossValue = bi.getGrossValue();
+            double hospitalFee = bi.getHospitalFee();
+            double discount = bi.getDiscount();
+            double staffFee = bi.getStaffFee();
+            double netValue = bi.getNetValue();
+
+            // Determine quantity modifier based on bill class type
+            long qtyModifier = (bi.getBill().getBillClassType() == BillClassType.CancelledBill
+                    || bi.getBill().getBillClassType() == BillClassType.RefundBill) ? -1 : 1;
+
+            // Adjust financial values for cancelled/refunded items
+            if (qtyModifier == -1) {
+                grossValue = -Math.abs(grossValue);
+                hospitalFee = -Math.abs(hospitalFee);
+                discount = -Math.abs(discount);
+                staffFee = -Math.abs(staffFee);
+                netValue = -Math.abs(netValue);
+            }
+
+            // Calculate the adjusted quantity
+            long quantity = (long) (bi.getQtyAbsolute() * qtyModifier);
+
+            // Accumulate the total collection
+            totalOpdServiceCollection += hospitalFee;
 
             System.out.println("hospitalFee = " + hospitalFee);
 

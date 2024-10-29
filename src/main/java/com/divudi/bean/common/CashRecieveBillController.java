@@ -3,6 +3,7 @@
  * (94) 71 5812399 open the currentlate in the editor.
  */
 package com.divudi.bean.common;
+
 import com.divudi.bean.cashTransaction.CashBookEntryController;
 import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.common.util.JsfUtil;
@@ -80,7 +81,7 @@ public class CashRecieveBillController implements Serializable {
     private BillController billController;
     @Inject
     CashBookEntryController cashBookEntryController;
-    
+
     private BillItem currentBillItem;
     private BillItem removingItem;
     private List<BillItem> billItems;
@@ -190,7 +191,6 @@ public class CashRecieveBillController implements Serializable {
         double refBallance = getReferenceBallance(tmp);
         double netValue = Math.abs(tmp.getNetValue());
 
-
         if (refBallance >= netValue) {
             return true;
         }
@@ -205,7 +205,6 @@ public class CashRecieveBillController implements Serializable {
 
         double refBallance = getReferenceBhtBallance(tmp);
         double netValue = Math.abs(tmp.getNetValue());
-
 
         if (refBallance >= netValue) {
             return true;
@@ -264,6 +263,18 @@ public class CashRecieveBillController implements Serializable {
     private boolean errorCheckForAdding() {
         if (getCurrentBillItem().getReferenceBill().getCreditCompany() == null) {
             JsfUtil.addErrorMessage("U cant add without credit company name");
+            return true;
+        }
+
+        for (BillItem b : getBillItems()) {
+            if (b.getId() == getCurrentBillItem().getId()) {
+                JsfUtil.addErrorMessage("This bill you already added.");
+                return true;
+            }
+        }
+
+        if (getCurrentBillItem().getNetValue() > getCurrentBillItem().getReferenceBill().getNetTotal()) {
+            JsfUtil.addErrorMessage("Amount is more than the required bill value.");
             return true;
         }
 
@@ -605,10 +616,10 @@ public class CashRecieveBillController implements Serializable {
 
         getCurrent().setTotal(getCurrent().getNetTotal());
 
-        saveBill(BillType.CashRecieveBill, BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED );
+        saveBill(BillType.CashRecieveBill, BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
         saveBillItem();
-        
-        List payments = createPayment(current, current.getPaymentMethod());      
+
+        List payments = createPayment(current, current.getPaymentMethod());
         drawerController.updateDrawerForIns(payments);
 
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getCurrent(), getSessionController().getLoggedUser());
@@ -617,7 +628,6 @@ public class CashRecieveBillController implements Serializable {
         JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
 
-        
     }
 
     public void settleBillPharmacy() {
@@ -641,7 +651,6 @@ public class CashRecieveBillController implements Serializable {
         JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
 
-        
     }
 
     public void settleBillBht() {
@@ -666,10 +675,8 @@ public class CashRecieveBillController implements Serializable {
         JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
 
-        
-
     }
-    
+
     public List<Payment> createPayment(Bill bill, PaymentMethod pm) {
         List<Payment> ps = new ArrayList<>();
         if (bill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
@@ -818,7 +825,7 @@ public class CashRecieveBillController implements Serializable {
         billItems.removeAll(tmp);
         for (BillItem b : billItems) {
 //            getBillItems().remove(b.getSearialNo());
-            
+
         }
         calTotalWithResetingIndex();
 
