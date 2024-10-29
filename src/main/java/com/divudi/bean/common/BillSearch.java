@@ -2317,12 +2317,12 @@ public class BillSearch implements Serializable {
             return;
         }
 
-        if (paymentMethod != PaymentMethod.PatientDeposit) {
-            if (financialTransactionController.getLoggedUserDrawer().getCashInHandValue() < getBill().getBillTotal()) {
-                JsfUtil.addErrorMessage("Not enough cash in the Drawer");
-                return;
-            }
-        }
+//        if (paymentMethod != PaymentMethod.PatientDeposit) {
+//            if (financialTransactionController.getLoggedUserDrawer().getCashInHandValue() < getBill().getBillTotal()) {
+//                JsfUtil.addErrorMessage("Not enough cash in the Drawer");
+//                return;
+//            }
+//        }
 
         if (paymentMethod == PaymentMethod.PatientDeposit) {
 //            if (getBill().getPatient().getHasAnAccount() == null) {
@@ -2384,7 +2384,7 @@ public class BillSearch implements Serializable {
 
         notificationController.createNotification(cancellationBill);
 
-        bill = billFacade.find(bill.getId());
+        bill = billFacade.find(cancellationBill.getId());
         printPreview = true;
         comment = null;
 //          TODO:         To Implement cancellation approval
