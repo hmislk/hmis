@@ -160,14 +160,14 @@
                                         </h:panelGroup>
 
                                         <!-- Agent -->
-                                        <p:outputLabel value="Agent"
-                                                       style="text-align: left;"
-                                                       rendered="#{financialTransactionController.bundle.hasAgentTransaction}" />
-                                        <h:panelGroup layout="block" class="text-end" rendered="#{financialTransactionController.bundle.hasAgentTransaction}">
-                                            <p:outputLabel value="#{financialTransactionController.bundle.agentValue}">
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </p:outputLabel>
-                                        </h:panelGroup>
+                                        <!--                                        <p:outputLabel value="Agent"
+                                                                                               style="text-align: left;"
+                                                                                               rendered="#{financialTransactionController.bundle.hasAgentTransaction}" />
+                                                                                <h:panelGroup layout="block" class="text-end" rendered="#{financialTransactionController.bundle.hasAgentTransaction}">
+                                                                                    <p:outputLabel value="#{financialTransactionController.bundle.agentValue}">
+                                                                                        <f:convertNumber pattern="#,##0.00" />
+                                                                                    </p:outputLabel>
+                                                                                </h:panelGroup>-->
 
                                         <!-- Cheque -->
                                         <p:outputLabel value="Cheque"
@@ -237,7 +237,7 @@
                                                                     financialTransactionController.bundle.multiplePaymentMethodsValue + financialTransactionController.bundle.creditValue + 
                                                                     financialTransactionController.bundle.staffWelfareValue + financialTransactionController.bundle.staffValue + 
                                                                     financialTransactionController.bundle.voucherValue + financialTransactionController.bundle.iouValue + 
-                                                                    financialTransactionController.bundle.agentValue + financialTransactionController.bundle.chequeValue + 
+                                                                    financialTransactionController.bundle.chequeValue + 
                                                                     financialTransactionController.bundle.slipValue + financialTransactionController.bundle.ewalletValue + 
                                                                     financialTransactionController.bundle.patientDepositValue + financialTransactionController.bundle.patientPointsValue + 
                                                                     financialTransactionController.bundle.onlineSettlementValue+financialTransactionController.bundle.startBill.total}"
