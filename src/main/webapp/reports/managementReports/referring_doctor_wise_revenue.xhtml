@@ -356,6 +356,17 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
+                            
+                            <p:column headerText="Professional Amount " width="5rem">
+                                <h:outputText value="#{item.proFee}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{reportController.totalProFee}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
 
                             <p:column headerText="Net Amount" width="5rem">
                                 <h:outputText value="#{item.total}" >
@@ -509,6 +520,17 @@
                                 </h:outputText>
                                 <f:facet name="footer">
                                     <h:outputText value="#{reportController.staffFeeTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+                            
+                            <p:column headerText="Dis Amt" width="5rem">
+                                <h:outputText value="#{bi.discount}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{reportController.discountTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
