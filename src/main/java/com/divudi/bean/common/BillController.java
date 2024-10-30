@@ -1743,6 +1743,7 @@ public class BillController implements Serializable {
         cancellationBatchBill.setDiscount(0 - Math.abs(batchBill.getDiscount()));
         cancellationBatchBill.setNetTotal(0 - Math.abs(batchBill.getNetTotal()));
         cancellationBatchBill.setPaymentMethod(paymentMethod);
+        System.out.println("cancellationBatchBill.get = " + cancellationBatchBill.getPaymentMethod());
 
         cancellationBatchBill.setForwardReferenceBill(batchBill);
         batchBill.setCancelled(true);
