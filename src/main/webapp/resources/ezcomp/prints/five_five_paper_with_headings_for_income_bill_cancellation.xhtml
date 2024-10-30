@@ -17,21 +17,21 @@
 
         <h:outputStylesheet library="css" name="fund_bill_five_five.css" ></h:outputStylesheet>
         <div class="fiveinchbill">
-
+            
             <div class="institutionName">
-                <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
+                <h:outputLabel value="#{cc.attrs.bill.billedBill.department.printingName}" />
             </div>
             <div class="institutionContact">
                 <div>
-                    <h:outputLabel value="#{cc.attrs.bill.department.address}"/>
+                    <h:outputLabel value="#{cc.attrs.bill.billedBill.department.address}"/>
                 </div>
                 <div>
-                    <h:outputLabel value="#{cc.attrs.bill.department.telephone1} "/>
-                    <h:outputLabel value=" /" style="width: 20px; text-align: center;" rendered="#{cc.attrs.bill.department.telephone2 ne null}" />
-                    <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>
+                    <h:outputLabel value="#{cc.attrs.bill.billedBill.department.telephone1} "/>
+                    <h:outputLabel value=" /" style="width: 20px; text-align: center;" rendered="#{cc.attrs.bill.billedBill.department.telephone2 ne null}" />
+                    <h:outputLabel value="#{cc.attrs.bill.department.billedBill.telephone2}"/>
                 </div>
                 <div>
-                    <h:outputLabel value="#{cc.attrs.bill.department.fax}"/>
+                    <h:outputLabel value="#{cc.attrs.bill.billedBill.department.fax}"/>
                 </div>
             </div>
 
@@ -49,11 +49,12 @@
                 <hr/>
             </div>
 
+            
             <div class="billDetailsFiveFive">
                 <table style="width: 99%!important;">
                     <tr>
-                        <td colspan="7">
-                            <h1>Billing Details</h1> 
+                        <td class="headingBillFiveFive" style="text-align: left;font-weight: bold;">
+                            <h:outputLabel value="Billing Details"/>
                         </td>
                     </tr>
                     <tr>
@@ -92,11 +93,13 @@
                 </table>
             </div>
 
+
+
             <div class="billDetailsFiveFive">
                 <table style="width: 99%!important;">
                     <tr>
-                        <td colspan="7">
-                            <h1>Cancellation Details</h1> 
+                        <td class="headingBillFiveFive" style="text-align: left;font-weight: bold;">
+                            <h:outputLabel value="Cancellation Details"/>
                         </td>
                     </tr>
                     <tr>
@@ -135,6 +138,7 @@
                 </table>
             </div>
 
+
             <h:panelGroup rendered="#{sessionController.loggedPreference.printBarcodeInOpdBill or true}">
                 <div class="billline">
                     <div style="width: 100%;text-align: center;font-size: 10px; margin-top: 10px">
@@ -143,8 +147,8 @@
                 </div>
             </h:panelGroup>
 
-            
-           
+
+
             <div class="itemHeadingsFiveFive">
                 <table width="100%">
                     <ui:repeat value="#{cc.attrs.payments}" var="bip">
