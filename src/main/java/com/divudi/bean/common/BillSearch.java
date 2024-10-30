@@ -3263,14 +3263,85 @@ public class BillSearch implements Serializable {
         financialTransactionController.setCurrentBillPayments(viewingBillPayments);
         return "/cashier/expense_bill_reprint?faces-redirect=true;";
     }
-    
+   
     public String navigateToCancelExpenseBill() {
         if (bill == null) {
             JsfUtil.addErrorMessage("Nothing to cancel");
             return "";
         }
+        billItems = billBean.fetchBillItems(bill);
+        billFees = billBean.fetchBillFees(bill);
+        billPayments = billBean.fetchBillPayments(bill);
         printPreview = false;
         return "/cashier/expense_bill_cancel?faces-redirect=true;";
+    }
+    
+    public void cancelExpenseBill() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill Selected to Canel");
+            return;
+        }
+        if (bill.getBillTypeAtomic() != BillTypeAtomic.OPERATIONAL_EXPENSES) {
+            JsfUtil.addErrorMessage("Wrong Bill Type.");
+            return;
+        }
+        if (billPayments == null) {
+            JsfUtil.addErrorMessage("Payments Null.");
+            return;
+        }
+        if (billPayments.isEmpty()) {
+            JsfUtil.addErrorMessage("No Payments.");
+            return;
+        }
+        bill = billFacade.findWithoutCache(bill.getId());
+        if (bill.isCancelled()) {
+            JsfUtil.addErrorMessage("Bill Is already cancelled.");
+            return;
+        }
+        if (bill.isRefunded()) {
+            JsfUtil.addErrorMessage("Bill Is refunded at least once.");
+            return;
+        }
+
+        //TODO: Check Drawer Balance for each payment
+        CancelledBill cancellationBill = new CancelledBill();
+        cancellationBill.copy(bill);
+        cancellationBill.copyValue(bill);
+        cancellationBill.invertValue();
+        
+        cancellationBill.setCreatedAt(new Date());
+        cancellationBill.setCreater(sessionController.getLoggedUser());
+        cancellationBill.setComments(comment);
+        cancellationBill.setBillType(BillType.OPERATIONAL_EXPENSES);
+        cancellationBill.setBillTypeAtomic(BillTypeAtomic.OPERATIONAL_EXPENSES_CANCELLED);
+        
+        getBill().setCancelled(true);
+        getBill().setCancelledBill(cancellationBill);
+        
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.OPERATIONAL_EXPENSES_CANCELLED);
+        cancellationBill.setDeptId(deptId);
+        
+        cancellationBill.setBilledBill(bill);
+        
+        billFacade.create(cancellationBill);
+        
+        bill.setCancelledBill(cancellationBill);
+        billFacade.edit(bill);
+        List<Payment> cancellationPayments = new ArrayList<>();
+        for (Payment originalBp : billPayments) {
+            Payment cancellationPayment = originalBp.createNewPaymentByCopyingAttributes();
+            cancellationPayment.setPaidValue(0 - originalBp.getPaidValue());
+            cancellationPayment.setCreatedAt(new Date());
+            cancellationPayment.setCreater(sessionController.getLoggedUser());
+            cancellationPayment.setReferancePayment(originalBp);
+            cancellationPayment.setBill(cancellationBill);
+            paymentFacade.create(cancellationPayment);
+            cancellationPayments.add(cancellationPayment);
+        }
+        drawerController.updateDrawerForIns(cancellationPayments);
+        bill = cancellationBill;
+        billPayments = cancellationPayments;
+        printPreview = true;
     }
     
     public String navigateToAdminOpdBill() {
