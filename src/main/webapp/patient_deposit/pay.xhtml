@@ -413,9 +413,9 @@
                                                     styleClass="mr-2">
                                                 </p:badge>
 
-                                                <h:outputLabel value="Account Balance " class="mx-3" rendered="#{opdBillController.patient.hasAnAccount}"/>
-                                                    <h:outputLabel value=" : " class="mx-3" rendered="#{opdBillController.patient.hasAnAccount}"/>
-                                                    <h:outputText value="#{patientDepositController.checkDepositOfThePatient(opdBillController.patient, sessionController.department).balance}" rendered="#{opdBillController.patient.hasAnAccount}">
+                                                <h:outputLabel value="Account Balance " class="mx-3" rendered="#{patientDepositController.patient.hasAnAccount}"/>
+                                                    <h:outputLabel value=" : " class="mx-3" rendered="#{patientDepositController.patient.hasAnAccount}"/>
+                                                    <h:outputText value="#{patientDepositController.checkDepositOfThePatient(patientDepositController.patient, sessionController.department).balance}" rendered="#{patientDepositController.patient.hasAnAccount}">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
 
@@ -450,7 +450,9 @@
                                             <h:outputLabel value="#{patientDepositController.current.id}" />
                                             <h:outputLabel value="Patient Deposit Balance" />
                                             <h:outputLabel value=":" />
-                                            <h:outputLabel value="#{patientDepositController.current.balance}" />
+                                            <h:outputLabel value="#{patientDepositController.current.balance}" >
+                                                 <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
                                         </h:panelGrid>
                                     </h:panelGroup>
                                 </div>
