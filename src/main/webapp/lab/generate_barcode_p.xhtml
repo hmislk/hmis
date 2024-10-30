@@ -87,13 +87,13 @@
                                             itemLabel="#{apt.name}" 
                                             inputStyleClass="w-100" 
                                             itemValue="#{apt}" 
+                                            maxResults="30"
                                             class="w-100" 
-                                            size="10" 
                                             minQueryLength="3">
-                                            <p:column headerText="Name">
+                                            <p:column headerText="Name" style="padding: 6px;">
                                                 #{apt.name}
                                             </p:column>
-                                            <p:column headerText="Code">
+                                            <p:column headerText="Code" style="padding: 6px;">
                                                 #{apt.code}
                                             </p:column>
                                         </p:autoComplete> 
@@ -184,8 +184,15 @@
                                     </h:panelGrid>
                                     <h:panelGrid columns="1" class="w-100">
                                         <h:outputLabel class="w-100" value="Performing Institution"/>
-                                        <p:autoComplete class="w-100" id="acPIns" value="#{patientInvestigationController.performingInstitution}" inputStyleClass="w-100"
-                                                        completeMethod="#{institutionController.completeIns}" var="pi" itemLabel="#{pi.name}" itemValue="#{pi}">
+                                        <p:autoComplete 
+                                            class="w-100" 
+                                            id="acPIns" 
+                                            value="#{patientInvestigationController.performingInstitution}" 
+                                            inputStyleClass="w-100"
+                                            completeMethod="#{institutionController.completeIns}" 
+                                            var="pi" 
+                                            itemLabel="#{pi.name}" 
+                                            itemValue="#{pi}">
                                             <p:ajax process="acPIns" update="gpPDept"></p:ajax>
                                         </p:autoComplete>
                                     </h:panelGrid>
@@ -194,7 +201,12 @@
                                         <h:panelGroup id="gpPDept">
                                             <p:selectOneMenu value="#{patientInvestigationController.performingDepartment}" class="w-100" style="max-width: 100%">
                                                 <f:selectItem itemLabel="Any"></f:selectItem>
-                                                <f:selectItems value="#{departmentController.getInstitutionDepartments(patientInvestigationController.performingInstitution)}" var="pdpt" itemLabel="#{pdpt.name}" itemValue="#{pdpt}"></f:selectItems>
+                                                <f:selectItems 
+                                                    value="#{departmentController.getInstitutionDepartments(patientInvestigationController.performingInstitution)}" 
+                                                    var="pdpt"
+                                                    itemLabel="#{pdpt.name}" 
+                                                    itemValue="#{pdpt}">
+                                                </f:selectItems>
                                             </p:selectOneMenu>
                                         </h:panelGroup>
                                     </h:panelGrid>
@@ -203,8 +215,8 @@
                             </div>
                             <div class="col-2">
                                 <h:panelGrid columns="1" class="w-100 mx-2">
-                                    <p:commandButton ajax="false" action="#{patientInvestigationController.searchBills}" value="Bills" icon="fas fa-file-invoice-dollar" styleClass="m-1 ui-button-success w-100"/>
-                                    <p:commandButton ajax="false" action="#{patientInvestigationController.searchPatientInvestigations}" value="Investigations" icon="fas fa-search" styleClass="m-1 ui-button-primary w-100"/>
+                                    <p:commandButton ajax="false" action="#{patientInvestigationController.searchBills}"  value="Bills" icon="fas fa-file-invoice-dollar" styleClass="m-1 ui-button-success w-100"/>
+                                    <p:commandButton ajax="false" action="#{patientInvestigationController.searchPatientInvestigations}" actionListener="#{patientInvestigationController.clearAlternativeReportData()}" value="Investigations" icon="fas fa-search" styleClass="m-1 ui-button-primary w-100"/>
                                     <p:commandButton ajax="false" action="#{patientInvestigationController.searchPatientSamples}" value="Samples" icon="fas fa-vial" styleClass="m-1 ui-button-warning w-100"/>
                                     <p:commandButton ajax="false" action="#{patientInvestigationController.searchPatientReports}" value="Reports" icon="fas fa-file-medical" styleClass="m-1 ui-button-danger w-100"/>
                                     <p:commandButton ajax="false" action="#{patientInvestigationController.clearFilters}" value="Clear" icon="fas fa-eraser" styleClass="m-1 ui-button-secondary w-100"/>
@@ -357,7 +369,7 @@
                                                         value="Create a New Report" 
                                                         id="btnNewReport"
                                                         disabled="#{!patientInvestigation.sampleAccepted}" 
-                                                        action="#{patientReportController.navigateToNewlyCreatedPatientReport(patientInvestigation)}"
+                                                        action="#{patientReportController.navigateToCreatedPatientReport(patientInvestigation)}"
                                                         class="ui-button-danger"
                                                         onclick="if (!confirm('Are you sure you want to New Patient Report?'))
                                                                     return false;"
@@ -373,50 +385,20 @@
                                                         action="#{patientInvestigationController.navigateToPatientReportsFromSelectedInvestigation(patientInvestigation)}" >
                                                     </p:commandButton>
                                                 </div>
-                                                <div class="row" >
+<!--                                                <div class="row" >
                                                     <p:commandButton 
                                                         value="Add Alternative Report" 
-                                                        onclick="PF('dialogAlternativeReport').show()"
-                                                        >
+                                                        ajax="false" 
+                                                        class="ui-button-group"
+                                                        icon="fa fa-plus"
+                                                        disabled="#{!patientInvestigation.sampleAccepted}" 
+                                                        action="#{patientInvestigationController.navigateToAlternativeReportSelector(patientInvestigation)}">
                                                     </p:commandButton>
-
-                                                    <p:dialog id="dialogAlternativeReport" widgetVar="dialogAlternativeReport" header="Add Alternative Report">
-                                                        <p:panelGrid columns="2" >
-                                                            <p:outputLabel value="Select Alternative Report" ></p:outputLabel>
-                                                            <p:selectOneMenu value="#{patientReportController.currentReportInvestigation}" >
-                                                                <f:selectItem itemLabel="Select alternative report" ></f:selectItem>
-                                                                <f:selectItems 
-                                                                    value="#{itemForItemController.getItemsForParentItem(patientInvestigation.investigation)}" 
-                                                                    var="alternativeReport"
-                                                                    itemLabel="#{alternativeReport.name}"
-                                                                    itemValue="#{alternativeReport}">
-                                                                </f:selectItems>
-                                                            </p:selectOneMenu>
-
-                                                            <p:outputLabel value="Select Sample" ></p:outputLabel>
-                                                            <p:selectOneMenu value="#{patientReportController.currentPatientSampleComponant}" >
-                                                                <f:selectItem itemLabel="Select Sample" ></f:selectItem>
-                                                                <f:selectItems 
-                                                                    value="#{patientInvestigationController.getPatientSampleComponentsByInvestigation(patientInvestigation)}" 
-                                                                    var="psc"
-                                                                    itemValue="#{psc}"
-                                                                    itemLabel="#{psc.patientSample.idStr}">
-                                                                </f:selectItems>
-                                                            </p:selectOneMenu>
-
-                                                            <p:commandButton 
-                                                                ajax="false" 
-                                                                value="Add New Alternative Report" 
-                                                                action="#{patientReportController.enterNewAlternativeReportFormat(patientInvestigation)}" ></p:commandButton>
-
-                                                        </p:panelGrid>
-                                                    </p:dialog>
-                                                </div>
+                                                </div>-->
 
                                             </h:panelGroup>
                                         </p:column>
                                     </p:dataTable>
-
 
                                 </h:panelGroup>
 
