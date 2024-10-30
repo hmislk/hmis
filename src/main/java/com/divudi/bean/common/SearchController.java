@@ -12885,7 +12885,6 @@ public class SearchController implements Serializable {
         double collectionForTheDay = 0.0;
         double netCashCollection = 0.0;
 
-        // Generate OPD service collection and add to the main bundle
         ReportTemplateRowBundle opdServiceCollection;
         if (isWithProfessionalFee()) {
             opdServiceCollection = generateOpdServiceCollection();
