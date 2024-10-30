@@ -732,7 +732,7 @@ public class PatientInvestigationController implements Serializable {
                 + " order by pi.id";
         m.put("bi", bi);
         PatientInvestigation pi = getFacade().findFirstByJpql(j, m);
-        pi.isRetired();
+//        pi.isRetired();
         return pi;
     }
 

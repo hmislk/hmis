@@ -1854,7 +1854,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
 
         if (searchMrn != null && !searchMrn.trim().equals("")) {
-            j += " and p.code =:mrn";
+            j += " and p.phn =:mrn";
             m.put("mrn", searchMrn);
             atLeastOneCriteriaIsGiven = true;
         }
