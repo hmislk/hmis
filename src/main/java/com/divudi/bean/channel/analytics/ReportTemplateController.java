@@ -258,13 +258,13 @@ public class ReportTemplateController implements Serializable {
         if (excludeCredit != null && excludeCredit) {
             List<PaymentMethod> pms;
             pms = PaymentMethod.getMethodsByType(PaymentType.NON_CREDIT);
-            jpql += " and b.paymentMethod in :pms";
+            jpql += " and bill.paymentMethod in :pms";
             parameters.put("pms", pms);
         }
         if (creditOnly != null && creditOnly) {
             List<PaymentMethod> pms;
             pms = PaymentMethod.getMethodsByType(PaymentType.CREDIT);
-            jpql += " and b.paymentMethod in :pms";
+            jpql += " and bill.paymentMethod in :pms";
             parameters.put("pms", pms);
         }
 
