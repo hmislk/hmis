@@ -1953,7 +1953,7 @@ public class FinancialTransactionController implements Serializable {
         }
 
         for (Payment p : selectedBill.getPayments()) {
-            Payment np = p.copyAttributes();
+            Payment np = p.createNewPaymentByCopyingAttributes();
             currentBillPayments.add(np);
 
         }

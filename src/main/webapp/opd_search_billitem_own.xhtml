@@ -4,7 +4,6 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
@@ -30,7 +29,13 @@
                                             >                                                                              
                                 </p:calendar>
 
-                                <p:commandButton id="btnSearch" class="my-1 w-100 ui-button-warning" icon="fas fa-search" ajax="false" value="Search" action="#{searchController.createBillItemTableByKeyword()}"/>
+                                <p:commandButton 
+                                    id="btnSearch"
+                                    class="my-1 w-100 ui-button-warning"
+                                    icon="fas fa-search" 
+                                    ajax="false" 
+                                    value="Search" 
+                                    action="#{searchController.createBillItemTableByKeyword()}"/>
                                 <p:commandButton id="btnSearchAll" class="my-1 w-100 ui-button-warning" icon="fas fa-search" ajax="false" value="Search All" action="#{searchController.createBillItemTableByKeywordAll()}" rendered="#{webUserController.hasPrivilege('SearchAll')}"/>
                                 <p:commandButton value="Excel" class="my-1 w-100 ui-button-success" icon="fas fa-file-excel" ajax="false">
                                     <p:dataExporter type="xlsx" target="tblBills" fileName="Bill Item Report" />
@@ -82,7 +87,7 @@
                                         </h:commandLink>
                                     </p:column>
 
-                                    <p:column headerText="Credit Company" styleClass="alignTop" rendered="#{pi.bill.creditCompany ne null}" sortBy="#{pi.bill.creditCompany.name}" filterBy="#{pi.bill.creditCompany.name}" filterMatchMode="contains">
+                                    <p:column headerText="Credit Company" styleClass="alignTop" sortBy="#{pi.bill.creditCompany.name}" filterBy="#{pi.bill.creditCompany.name}" filterMatchMode="contains">
                                         <h:commandLink action="/opd/bill_reprint?faces-redirect=true" value="#{pi.bill.creditCompany.name}">
                                             <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.billSearch}"/>
                                         </h:commandLink>
