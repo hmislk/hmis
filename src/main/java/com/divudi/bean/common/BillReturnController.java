@@ -20,6 +20,7 @@ import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
+import com.divudi.entity.PatientDeposit;
 import com.divudi.entity.Payment;
 import com.divudi.entity.RefundBill;
 
@@ -67,6 +68,8 @@ public class BillReturnController implements Serializable {
     DrawerController drawerController;
     @Inject
     AgentAndCcApplicationController agentAndCcApplicationController;
+    @Inject
+    PatientDepositController patientDepositController;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Class Variable">
@@ -353,7 +356,22 @@ public class BillReturnController implements Serializable {
         returningPayment.setPaidValue(newlyReturnedBill.getNetTotal());
         paymentController.save(returningPayment);
         returningBillPayments.add(returningPayment);
-
+        
+        if (paymentMethod == PaymentMethod.PatientDeposit) {
+//            //System.out.println("Before Balance = " + bill.getPatient().getRunningBalance());
+//            if (bill.getPatient().getRunningBalance() == null) {
+//                //System.out.println("Null");
+//                bill.getPatient().setRunningBalance(Math.abs(bill.getNetTotal()));
+//            } else {
+//                //System.out.println("Not Null - Add BillValue");
+//                bill.getPatient().setRunningBalance(bill.getPatient().getRunningBalance() + Math.abs(bill.getNetTotal()));
+//            }
+//            patientFacade.edit(bill.getPatient());
+//            //System.out.println("After Balance = " + bill.getPatient().getRunningBalance());
+            PatientDeposit pd = patientDepositController.getDepositOfThePatient(newlyReturnedBill.getPatient(), sessionController.getDepartment());
+            patientDepositController.updateBalance(newlyReturnedBill, pd);
+        }
+        
         // drawer Update
         drawerController.updateDrawerForOuts(returningPayment);
 
