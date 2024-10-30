@@ -14,10 +14,22 @@
                         <f:facet name="header" >
                             <h:outputLabel value="Reprint" ></h:outputLabel>
                             <hr/>
-                            
-                            <p:commandButton ajax="false" value="Cancel" action="collecting_center_debit_note_bill_cancel" disabled="#{agentPaymentReceiveSearchController.bill.cancelled}" >                           
+
+                            <p:commandButton ajax="false"
+                                             value="Back"
+                                             class="ui-button-warning mx-3"
+                                             style="float: right; width: 150px;"
+                                             action="collecting_center_note_bill_search_own.xhtml">                           
                             </p:commandButton>
-                            
+
+                            <p:commandButton ajax="false" 
+                                             value="To Cancel"
+                                             class="ui-button-danger mx-3"
+                                             style="float: right; width: 150px;"
+                                             action="collecting_center_debit_note_bill_cancel" 
+                                             disabled="#{agentPaymentReceiveSearchController.bill.cancelled}" >                           
+                            </p:commandButton>
+
                         </f:facet>
 
                         <p:panel>
@@ -39,13 +51,36 @@
                                     </p:panelGrid>
                                 </p:panel>
                             </p:panelGrid>
-                            
+
                         </p:panel>
                     </p:panel>
 
 
-                   <bi:agent billController ="#{agentPaymentReceiveSearchController}"  bill="#{agentPaymentReceiveSearchController.bill}" dup="true"/>  
 
+                </h:form>
+
+                <h:form>
+                    <p:panel id="pnlprintBill" rendered="#{staffPaymentBillController.printPreview}">
+
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between">
+                                <p:commandButton 
+                                    value="Print" 
+                                    class="ui-button-info" 
+                                    icon="fas fa-print" 
+                                    ajax="false" 
+                                    action="#" >
+                                    <p:printer target="billPreview" ></p:printer>
+                                </p:commandButton>
+                            </div>
+
+                        </f:facet>
+
+                        <h:panelGroup id="billPreview" class="d-flex justify-content-center">
+                            <bi:agent billController ="#{agentPaymentReceiveSearchController}"  bill="#{agentPaymentReceiveSearchController.bill}" dup="true"/>  
+                        </h:panelGroup>
+
+                    </p:panel>
                 </h:form>
             </ui:define>
 
