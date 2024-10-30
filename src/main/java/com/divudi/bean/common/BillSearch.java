@@ -3211,6 +3211,7 @@ public class BillSearch implements Serializable {
 
         cancellationBill.setCreatedAt(new Date());
         cancellationBill.setCreater(sessionController.getLoggedUser());
+        cancellationBill.setComments(comment);
         cancellationBill.setBillType(BillType.SUPPLEMENTARY_INCOME);
         cancellationBill.setBillTypeAtomic(BillTypeAtomic.SUPPLEMENTARY_INCOME_CANCELLED);
 
