@@ -2466,9 +2466,22 @@ public class PatientReportController implements Serializable {
         return pr;
     }
 
+    public String navigateToCreatedPatientReport(PatientInvestigation pi) {
+        String link;
+        if (pi == null) {
+            JsfUtil.addErrorMessage("No Patient Investigation");
+            return null;
+        }
+
+        if (pi.getInvestigation().isAlternativeReportAllowed()) {
+            link =  patientInvestigationController.navigateToAlternativeReportSelector(pi);
+        } else {
+            link = navigateToNewlyCreatedPatientReport(pi);
+        }
+        return link;
+    }
+
     public String navigateToNewlyCreatedPatientReport(PatientInvestigation pi) {
-        System.out.println("navigateToNewlyCreatedPatientReport");
-        System.out.println("pi = " + pi);
         if (pi == null) {
             JsfUtil.addErrorMessage("No Patient Report");
             return null;
@@ -2480,29 +2493,23 @@ public class PatientReportController implements Serializable {
         }
 
         Investigation ix = null;
-        System.out.println("pi.getInvestigation() = " + pi.getInvestigation());
         if (pi.getInvestigation() == null) {
             JsfUtil.addErrorMessage("No Investigation for Patient Report");
             return null;
         } else {
             ix = (Investigation) pi.getInvestigation();
-            System.out.println("ix = " + ix);
         }
-        System.out.println("ix.getReportedAs() = " + ix.getReportedAs());
         if (ix.getReportedAs() != null) {
             ix = (Investigation) pi.getInvestigation().getReportedAs();
-            System.out.println("ix = " + ix);
         }
 
         currentReportInvestigation = ix;
         currentPtIx = pi;
         PatientReport newlyCreatedReport = null;
-        System.out.println("InvestigationReportType.Microbiology = " + InvestigationReportType.Microbiology);
         if (ix.getReportType() == InvestigationReportType.Microbiology) {
             createNewMicrobiologyReport(pi, ix);
         } else {
             newlyCreatedReport = createNewPatientReport(pi, ix);
-            System.out.println("newlyCreatedReport = " + newlyCreatedReport);
         }
         if (newlyCreatedReport == null) {
             JsfUtil.addErrorMessage("Error");
@@ -2550,7 +2557,6 @@ public class PatientReportController implements Serializable {
     }
 
     public String enterNewReportFormat(PatientInvestigation pi, Investigation ix) {
-        //System.out.println("enterNewReportFormat");
         currentReportInvestigation = ix;
         currentPtIx = pi;
 
@@ -2726,6 +2732,7 @@ public class PatientReportController implements Serializable {
 
     public void setCurrentPatientSampleComponant(PatientSampleComponant currentPatientSampleComponant) {
         this.currentPatientSampleComponant = currentPatientSampleComponant;
+
     }
 
     @FacesConverter(forClass = PatientReport.class)
