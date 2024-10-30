@@ -265,6 +265,7 @@ public class BillSearch implements Serializable {
     private List<Bill> filteredBill;
     private List<BillEntry> billEntrys;
     private List<BillItem> billItems;
+    private List<Payment> billPayments;
     private List<BillComponent> billComponents;
     private List<BillFee> billFees;
     private List<BillItem> tempbillItems;
@@ -2323,7 +2324,6 @@ public class BillSearch implements Serializable {
 //                return;
 //            }
 //        }
-
         if (paymentMethod == PaymentMethod.PatientDeposit) {
 //            if (getBill().getPatient().getHasAnAccount() == null) {
 //                JsfUtil.addErrorMessage("Create Patient Account First");
@@ -2372,12 +2372,6 @@ public class BillSearch implements Serializable {
         }
 
         if (cancellationBill.getPaymentMethod() == PaymentMethod.PatientDeposit) {
-//            if (cancellationBatchBill.getPatient().getRunningBalance() == null) {
-//                cancellationBatchBill.getPatient().setRunningBalance(Math.abs(cancellationBatchBill.getNetTotal()));
-//            } else {
-//                cancellationBatchBill.getPatient().setRunningBalance(cancellationBatchBill.getPatient().getRunningBalance() + Math.abs(cancellationBatchBill.getNetTotal()));
-//            }
-//            patientFacade.edit(cancellationBatchBill.getPatient());
             PatientDeposit pd = patientDepositController.getDepositOfThePatient(cancellationBill.getPatient(), sessionController.getDepartment());
             patientDepositController.updateBalance(cancellationBill, pd);
         }
@@ -3169,18 +3163,81 @@ public class BillSearch implements Serializable {
         financialTransactionController.setCurrentBillPayments(viewingBillPayments);
         return "/cashier/income_bill_reprint?faces-redirect=true;";
     }
-    
+
     public String navigateToCancelIncomeBill() {
         if (bill == null) {
             JsfUtil.addErrorMessage("Nothing to cancel");
             return "";
         }
+        billItems = billBean.fetchBillItems(bill);
+        billFees = billBean.fetchBillFees(bill);
+        billPayments = billBean.fetchBillPayments(bill);
         printPreview = false;
         return "/cashier/income_bill_cancel?faces-redirect=true;";
     }
 
-    
-     public String navigateToViewExpenseBill() {
+    public void cancelIncomeBill() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill Selected to Canel");
+            return;
+        }
+        if (bill.getBillTypeAtomic() != BillTypeAtomic.SUPPLEMENTARY_INCOME) {
+            JsfUtil.addErrorMessage("Wrong Bill Type.");
+            return;
+        }
+        if (billPayments == null) {
+            JsfUtil.addErrorMessage("Payments Null.");
+            return;
+        }
+        if (billPayments.isEmpty()) {
+            JsfUtil.addErrorMessage("No Payments.");
+            return;
+        }
+        bill = billFacade.findWithoutCache(bill.getId());
+        if (bill.isCancelled()) {
+            JsfUtil.addErrorMessage("Bill Is already cancelled.");
+            return;
+        }
+        if (bill.isRefunded()) {
+            JsfUtil.addErrorMessage("Bill Is refunded at least once.");
+            return;
+        }
+        
+        //TODO: Check Drawer Balance for each payment
+        CancelledBill cancellationBill = new CancelledBill();
+        cancellationBill.copy(bill);
+        cancellationBill.copyValue(bill);
+        cancellationBill.invertValue();
+
+        cancellationBill.setCreatedAt(new Date());
+        cancellationBill.setCreater(sessionController.getLoggedUser());
+        cancellationBill.setBillType(BillType.SUPPLEMENTARY_INCOME);
+        cancellationBill.setBillTypeAtomic(BillTypeAtomic.SUPPLEMENTARY_INCOME_CANCELLED);
+
+        cancellationBill.setBilledBill(bill);
+
+        billFacade.create(cancellationBill);
+
+        bill.setCancelledBill(cancellationBill);
+        billFacade.edit(bill);
+        List<Payment> cancellationPayments = new ArrayList<>();
+        for (Payment originalBp : billPayments) {
+            Payment cancellationPayment = originalBp.createNewPaymentByCopyingAttributes();
+            cancellationPayment.setPaidValue(0 - originalBp.getPaidValue());
+            cancellationPayment.setCreatedAt(new Date());
+            cancellationPayment.setCreater(sessionController.getLoggedUser());
+            cancellationPayment.setReferancePayment(originalBp);
+            cancellationPayment.setBill(cancellationBill);
+            paymentFacade.create(cancellationPayment);
+            cancellationPayments.add(cancellationPayment);
+        }
+        drawerController.updateDrawerForIns(cancellationPayments);
+        bill = cancellationBill;
+        billPayments = cancellationPayments;
+        printPreview=true;
+    }
+
+    public String navigateToViewExpenseBill() {
         if (viewingBill == null) {
             JsfUtil.addErrorMessage("No Bill to Dsiplay");
             return "";
@@ -3189,7 +3246,6 @@ public class BillSearch implements Serializable {
         financialTransactionController.setCurrentBillPayments(viewingBillPayments);
         return "/cashier/expense_bill_print?faces-redirect=true;";
     }
-
 
     public String navigateToManageExpenseBill() {
         if (viewingBill == null) {
@@ -3200,7 +3256,7 @@ public class BillSearch implements Serializable {
         financialTransactionController.setCurrentBillPayments(viewingBillPayments);
         return "/cashier/expense_bill_reprint?faces-redirect=true;";
     }
-    
+
     public String navigateToCancelExpenseBill() {
         if (bill == null) {
             JsfUtil.addErrorMessage("Nothing to cancel");
@@ -5021,6 +5077,14 @@ public class BillSearch implements Serializable {
         this.payment = payment;
     }
 
+    public List<Payment> getBillPayments() {
+        return billPayments;
+    }
+
+    public void setBillPayments(List<Payment> billPayments) {
+        this.billPayments = billPayments;
+    }
+
     public class PaymentSummary {
 
         private long idCounter = 0;
@@ -5174,6 +5238,14 @@ public class BillSearch implements Serializable {
 
         public void setBillTypeTotal(double billTypeTotal) {
             this.billTypeTotal = billTypeTotal;
+        }
+
+        public long getIdCounter() {
+            return idCounter;
+        }
+
+        public void setIdCounter(long idCounter) {
+            this.idCounter = idCounter;
         }
 
     }
