@@ -109,7 +109,7 @@
                                         id="CancelBillNo"
                                         ajax="false"
                                         value="#{bill.cancelledBill.deptId}"
-                                        action="#{billSearch.navigateToViewSingleOpdBill()}"
+                                        action="#{billSearch.navigateToViewBillByAtomicBillType()}"
                                         rendered="#{bill.cancelled}" style="color: red">
                                         <f:setPropertyActionListener value="#{bill.cancelledBill}" target="#{billSearch.bill}"/>
                                     </p:commandLink>
@@ -121,6 +121,14 @@
                                     <p:outputLabel id="billTime1" value="#{bill.createdAt}" >
                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
                                     </p:outputLabel>
+                                    <h:panelGroup rendered="#{bill.cancelled or bill.refunded}" style="display: grid">
+                                        <h:outputLabel value="#{bill.cancelledBill.createdAt}" style="color: red" rendered="#{bill.cancelled}">
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
+                                        </h:outputLabel>
+                                        <h:outputLabel value="#{bill.refundedBill.createdAt}" style="color: orange" rendered="#{bill.refunded}">
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
+                                        </h:outputLabel>
+                                </h:panelGroup>
 
                                 </h:panelGroup>
                             </p:column>
@@ -137,13 +145,15 @@
                             </p:column>   
 
                             <p:column headerText="Remarks" >  
-                                <h:outputLabel value="#{bill.comments}" ></h:outputLabel>
+                                <p:badge rendered="#{bill.cancelledBill.billTypeAtomic eq 'SUPPLEMENTARY_INCOME_CANCELLED'}" value="Cancelled" severity="danger" styleClass="mr-2"></p:badge>
+                                <p:badge rendered="#{bill.cancelledBill.billTypeAtomic eq 'OPERATIONAL_EXPENSES_CANCELLED'}" value="Cancelled" severity="danger" styleClass="mr-2"></p:badge>
+
                             </p:column>
 
                             <p:column headerText="Bill Type">
                                 <p:badge rendered="#{bill.billTypeAtomic eq 'SUPPLEMENTARY_INCOME'}" value="Income Bill" severity="success" styleClass="mr-2"></p:badge>
                                 <p:badge rendered="#{bill.billTypeAtomic eq 'OPERATIONAL_EXPENSES'}" value="Expense Bill" severity="warning" styleClass="mr-2"></p:badge>
-
+                                
                             </p:column>
 
                             <p:column headerText="Value" sortBy="#{bill.total}" 
