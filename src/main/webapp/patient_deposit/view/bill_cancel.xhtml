@@ -43,6 +43,7 @@
                                         style="float: right"
                                         class="ui-button-danger" 
                                         action="#{patientDepositController.settlePatientDepositCancel()}">
+                                        <f:setPropertyActionListener value="#{patientController.bill.patient}" target="#{patientDepositController.patient}" />
                                     </p:commandButton>
                                     <p:commandButton  
                                         class="ui-button-secondary d-flex justify-content-end mx-2"
@@ -68,7 +69,7 @@
                                             value="#{patientController.cancelBill.paymentMethod}" >
                                             <f:selectItem itemLabel="Select payment Method"/>
                                             <f:selectItems value="#{enumController.paymentMethodsForPatientDepositCancel}"/>
-                                            <p:ajax process="cmbPs" update="paymentDetails" ></p:ajax>
+                                            <p:ajax process="cmbPs" update="paymentDetails creditCard credit multiplePaymentMethods patientDeposit slip cheque eWallet"  event="itemSelect"></p:ajax>
                                         </p:selectOneMenu>
                                     </div>
                                 </div>
@@ -77,7 +78,7 @@
                                 <div class="row">
                                     <h:panelGroup id="paymentDetails" layout="block" class="col-md-12" >
 
-                                        <h:panelGroup rendered="#{patientController.cancelBill.paymentMethod eq 'Cash'}">
+<!--                                        <h:panelGroup id="cashC" rendered="#{patientController.cancelBill.paymentMethod eq 'Cash'}">
                                             <div class="row">
                                                 <div class="col-6">
                                                     <p:inputText 
@@ -91,55 +92,55 @@
                                                     </p:inputText>
                                                 </div>   
                                             </div>
-                                        </h:panelGroup>
+                                        </h:panelGroup>-->
 
                                         <h:panelGroup
                                             class="row my-1"
                                             layout="block"  
                                             id="creditCard" rendered="#{patientController.cancelBill.paymentMethod eq 'Card'}" >
-                                            <pa:creditCard paymentMethodData="#{opdBillController.paymentMethodData}"/>
+                                            <pa:creditCard paymentMethodData="#{patientController.paymentMethodData}"/>
                                         </h:panelGroup>
 
                                         <h:panelGroup
                                             class="row my-1"
                                             layout="block"  
                                             id="credit" rendered="#{patientController.cancelBill.paymentMethod eq 'Credit'}" >
-                                            <pa:credit paymentMethodData="#{opdBillController.paymentMethodData}"/>
+                                            <pa:credit paymentMethodData="#{patientController.paymentMethodData}"/>
                                         </h:panelGroup>
 
                                         <h:panelGroup 
                                             class="row my-1"
                                             layout="block" 
                                             id="eWallet"  rendered="#{patientController.cancelBill.paymentMethod eq 'ewallet'}" >
-                                            <pa:ewallet paymentMethodData="#{opdBillController.paymentMethodData}" />
+                                            <pa:ewallet paymentMethodData="#{patientController.paymentMethodData}" />
                                         </h:panelGroup>
 
                                         <h:panelGroup
                                             class="row my-1"
                                             layout="block" 
                                             id="cheque"  rendered="#{patientController.cancelBill.paymentMethod eq 'Cheque'}" >
-                                            <pa:cheque paymentMethodData="#{opdBillController.paymentMethodData}"/>
+                                            <pa:cheque paymentMethodData="#{patientController.paymentMethodData}"/>
                                         </h:panelGroup>
 
                                         <h:panelGroup 
                                             class="row my-1"
                                             layout="block" 
                                             id="slip"  rendered="#{patientController.cancelBill.paymentMethod eq 'Slip'}" >
-                                            <pa:slip paymentMethodData="#{opdBillController.paymentMethodData}"/>
+                                            <pa:slip paymentMethodData="#{patientController.paymentMethodData}"/>
                                         </h:panelGroup>
 
                                         <h:panelGroup 
                                             class="row my-1"
                                             layout="block" 
                                             id="patientDeposit"  rendered="#{patientController.cancelBill.paymentMethod eq 'PatientDeposit'}" >
-                                            <pa:patient_deposit paymentMethodData="#{opdBillController.paymentMethodData}"/>
+                                            <pa:patient_deposit paymentMethodData="#{patientController.paymentMethodData}"/>
                                         </h:panelGroup>
 
                                         <h:panelGroup
                                             class="row my-1 w-100"
                                             layout="block" 
                                             id="multiplePaymentMethods"  rendered="#{patientController.cancelBill.paymentMethod eq 'MultiplePaymentMethods'}" >
-                                            <pa:multiple_payment_methods controller="#{opdBillController}" paymentMethods="#{enumController.paymentMethodsForOpdBilling}" class="w-100"/>
+                                            <pa:multiple_payment_methods controller="#{patientController}" paymentMethods="#{enumController.paymentMethodsForPatientDepositCancel}" class="w-100"/>
                                         </h:panelGroup>
 
 
