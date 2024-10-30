@@ -624,7 +624,7 @@
                             rendered="#{webUserController.hasPrivilege('AutoOrderQModal')}" ></p:menuitem>
                         <p:menuitem  
                             ajax="false" 
-                            action="/pharmacy/pharmacy_purchase"  
+                            action="/pharmacy/pharmacy_purchase?faces-redirect=true"  
                             value="Direct Purchase" 
                             icon="fas fa-hand-holding-usd"
                             rendered="#{webUserController.hasPrivilege('DirectPurchase')}" 
