@@ -124,7 +124,7 @@
                                         <h:outputLabel value="#{bill.chequeRefNo}" >                                       
                                         </h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Cheque Date"  >                                
+                                    <p:column headerText="Cheque Date" sortBy="#{bill.chequeDate}" filterBy="#{bill.chequeDate}"  filterMatchMode="contains">                                
                                         <h:outputLabel value="#{bill.chequeDate}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                         </h:outputLabel>
