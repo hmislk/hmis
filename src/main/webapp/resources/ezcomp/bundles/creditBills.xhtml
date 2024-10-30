@@ -44,6 +44,7 @@
                     <tr>
                         <th>Bil No</th>
                         <th>Bill Type</th>
+                         <th>Payment Method</th>
                         <th>Fee</th>
                         <th colspan="3">Reference Bills</th>
                     </tr>
@@ -56,6 +57,9 @@
                             </td>
                             <td>
                                 <h:outputText value="#{row.bill.billTypeAtomic.label}" />
+                            </td>
+                            <td>
+                                <h:outputText value="#{row.bill.paymentMethod}" />
                             </td>
                             <td class="text-end">
                                 <h:outputText value="#{row.bill.netTotal}">

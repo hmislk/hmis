@@ -15104,7 +15104,7 @@ public class SearchController implements Serializable {
                 toDate,
                 institution,
                 department,
-                site);
+                site, true);
         ap.setName("Credit Bills");
         ap.setBundleType("creditBills");
         return ap;
