@@ -13360,7 +13360,7 @@ public class SearchController implements Serializable {
         netCashForTheDayBundle.setTotal(netCashCollection);
 
         bundle.getBundles().add(netCashForTheDayBundle);
-        bundle.calculateTotalsByChildBundles();
+        bundle.calculateTotalsBySelectedChildBundles();
 
     }
 
@@ -13697,7 +13697,7 @@ public class SearchController implements Serializable {
         netCashForTheDayBundle.setTotal(netCashCollection);
 
         bundle.getBundles().add(netCashForTheDayBundle);
-        bundle.calculateTotalsByChildBundles();
+        bundle.calculateTotalsBySelectedChildBundles();
 
     }
 
