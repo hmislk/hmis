@@ -175,6 +175,10 @@ public class Bill implements Serializable {
     private double expenseTotal;
     //with minus tax and discount
     private double grnNetTotal;
+    
+    private double hospitalFee;
+    private double collctingCentreFee;
+    private double professionalFee;
 
     //Institution
     @ManyToOne(fetch = FetchType.LAZY)
@@ -290,9 +294,7 @@ public class Bill implements Serializable {
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Bill backwardReferenceBill;
-    private double hospitalFee;
-    private double collctingCentreFee;
-    private double professionalFee;
+    
     @Transient
     private double tmpReturnTotal;
     @Transient
