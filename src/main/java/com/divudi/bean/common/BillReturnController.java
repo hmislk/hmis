@@ -214,6 +214,9 @@ public class BillReturnController implements Serializable {
             case OnlineSettlement:
                 canReturn = true;
                 break;
+            case PatientDeposit:
+                canReturn = true;
+                break;
             default:
                 break;
         }
