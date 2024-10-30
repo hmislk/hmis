@@ -19,6 +19,17 @@
     <cc:implementation>
         <h:outputStylesheet library="css" name="inwardpayments.css" ></h:outputStylesheet>
         <!--<div class="a4bill" style="align-items: center; margin: 0; padding: 0; max-width: 210mm" >-->
+        <div class="d-flex justify-content-start">
+            <p:commandButton 
+                style="width: 100px" 
+                value="Print" 
+                ajax="false" 
+                action="#"  
+                class="ui-button-info mt-3 mb-5 mx-3"
+                icon="fa fa-print">
+                <p:printer target="gpBillPreview" ></p:printer>
+            </p:commandButton>
+        </div>
         <h:panelGroup id="gpBillPreview" >
             <div class="a4bill1" style="align-items: center; margin: 0; padding: 0; max-width: 210mm" >
 
@@ -60,7 +71,7 @@
 
                 <div class="billline">
                     <hr></hr>   
-                  
+
                 </div>
 
                 <div class="billDetailsFiveFive" >
@@ -126,7 +137,7 @@
                     <br/>
                 </div>
                 <div class="billDetailsFiveFive" >
-                    <h:dataTable value="#{cc.attrs.bill.billItems}"
+                    <h:dataTable value="#{billBeanController.fetchBillItems(cc.attrs.bill)}"
                                  var="b" style="margin: auto; padding: 1%; width: 100%; margin-right: 10%; " >
 
                         <p:column style="text-align: center; margin-left: 10%" >
@@ -154,7 +165,7 @@
                             <f:facet name="header" >
                                 <h:outputLabel value="Value" style="display: block; text-align: right!important;" ></h:outputLabel>
                             </f:facet>
-                            
+
                             <h:outputLabel value="#{b.netValue}" class="d-flex justify-content-end" 
                                            style="font-size:  10pt!important; text-align: right!important;" >
                                 <f:convertNumber pattern="#,##0.00" />
