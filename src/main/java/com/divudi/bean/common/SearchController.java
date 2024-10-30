@@ -12943,13 +12943,22 @@ public class SearchController implements Serializable {
         bundle.getBundles().add(pettyCashPayments);
         netCashCollection -= Math.abs(getSafeTotal(pettyCashPayments));
 
+        ReportTemplateRowBundle creditBills;
+        if (isWithProfessionalFee()) {
+            creditBills = generateCreditBills();
+        } else {
+            creditBills = generateCreditBills();
+        }
+        bundle.getBundles().add(creditBills);
+//        netCashCollection -= Math.abs(getSafeTotal(creditBills)); // NOT Deducted from Totals
+
         if (isWithProfessionalFee()) {
             // Generate OPD professional payments and add to the main bundle
             ReportTemplateRowBundle opdProfessionalPayments = generateOpdProfessionalPayments();
             bundle.getBundles().add(opdProfessionalPayments);
             netCashCollection -= Math.abs(getSafeTotal(opdProfessionalPayments));
         }
-        
+
         // Generate channelling professional payments and add to the main bundle
         ReportTemplateRowBundle channellingProfessionalPayments = generateChannellingProfessionalPayments();
         bundle.getBundles().add(channellingProfessionalPayments);
@@ -15057,6 +15066,49 @@ public class SearchController implements Serializable {
         return ap;
     }
 
+    public ReportTemplateRowBundle generateCreditBills() {
+        ReportTemplateRowBundle ap;
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+        btas.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        btas.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.OPD_BILL_REFUND);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
+
+        ap = reportTemplateController.generateBillReport(
+                btas,
+                fromDate,
+                toDate,
+                institution,
+                department,
+                site);
+        ap.setName("Credit Bills");
+        ap.setBundleType("creditBills");
+        return ap;
+    }
+
+    public ReportTemplateRowBundle generateCreditBillsWithoutProfessionalFees() {
+        ReportTemplateRowBundle ap;
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+        btas.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        btas.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.OPD_BILL_REFUND);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
+        ap = reportTemplateController.generateBillReportWithoutProfessionalFees(
+                btas,
+                fromDate,
+                toDate,
+                institution,
+                department,
+                site);
+        ap.setName("Credit Bills");
+        ap.setBundleType("creditBills");
+        return ap;
+    }
+
     public ReportTemplateRowBundle generateSlipPayments() {
         ReportTemplateRowBundle ap;
         ap = reportTemplateController.generatePaymentReport(
@@ -15116,9 +15168,14 @@ public class SearchController implements Serializable {
             System.out.println("Processing BillItem: " + bi);
 
             // Skip invalid or unwanted bills
+//            if (bi.getBill() == null || bi.getBill().getPaymentMethod() == null
+//                    || bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.NONE
+//                    || bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.CREDIT) {
+//                System.out.println("continue 1");
+//                continue;
+//            }
             if (bi.getBill() == null || bi.getBill().getPaymentMethod() == null
-                    || bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.NONE
-                    || bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.CREDIT) {
+                    || bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.NONE) {
                 System.out.println("continue 1");
                 continue;
             }
@@ -15197,7 +15254,7 @@ public class SearchController implements Serializable {
         rtrb.getReportTemplateRows().addAll(rowsToAdd);
         rtrb.setTotal(totalOpdServiceCollection);
     }
-    
+
     public void billItemsToBundleForOpdUnderCategoryWithoutProfessionalFee(ReportTemplateRowBundle rtrb, List<BillItem> billItems) {
         System.out.println("billItemsToBundleForOpdUnderCategory");
         Map<String, ReportTemplateRow> categoryMap = new HashMap<>();

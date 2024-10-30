@@ -1906,7 +1906,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         JsfUtil.addSuccessMessage("Bill Saved");
         setPrintigBill();
         checkBillValues();
-        billService.createBillItemFeeBreakdownFromBills(getBills());
+        billService.calculateBillBreakdownAsHospitalCcAndStaffTotalsByBillFees(getBills());
 
         boolean generateBarcodesForSampleTubesAtBilling = configOptionApplicationController.getBooleanValueByKey("Need to Generate Barcodes for Sample Tubes at OPD Billing Automatically", false);
         if (generateBarcodesForSampleTubesAtBilling) {
