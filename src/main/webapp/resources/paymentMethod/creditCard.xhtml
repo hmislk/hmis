@@ -16,7 +16,7 @@
     <cc:implementation>
         <div class="d-flex gap-2 mt-2" >
             <h:panelGroup rendered="#{cc.attrs.valueRequired}" class="" layout="block"  >
-                <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.creditCard.totalValue}" style="width: 7em;" class="w-100" id="txtVal" >
+                <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.creditCard.totalValue}" style="width: 7em!important;" class="w-100" id="txtVal" >
                     <p:ajax process="@this" ></p:ajax>
                 </p:inputText>
             </h:panelGroup>
