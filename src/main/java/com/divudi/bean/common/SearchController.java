@@ -12946,7 +12946,7 @@ public class SearchController implements Serializable {
         if (isWithProfessionalFee()) {
             creditBills = generateCreditBills();
         } else {
-            creditBills = generateCreditBills();
+            creditBills = generateCreditBillsWithoutProfessionalFees();
         }
         bundle.getBundles().add(creditBills);
 //        netCashCollection -= Math.abs(getSafeTotal(creditBills)); // NOT Deducted from Totals
@@ -14762,7 +14762,7 @@ public class SearchController implements Serializable {
                 toDate,
                 institution,
                 department,
-                site);
+                site, false, false);
         pb.setName("Collecting Centre Collection");
         pb.setBundleType("ccCollection");
         double ccCollectionTotal = 0.0;
@@ -14784,7 +14784,7 @@ public class SearchController implements Serializable {
                 toDate,
                 institution,
                 department,
-                site);
+                site, false, false);
         ap.setName("Agency Payment Collection");
         ap.setBundleType("PayentBillReport");
         return ap;
@@ -14801,7 +14801,7 @@ public class SearchController implements Serializable {
                 toDate,
                 institution,
                 department,
-                site);
+                site, false, false);
         ap.setName("Agency Payment Collection");
         ap.setBundleType("PayentBillReport");
         return ap;
@@ -14821,7 +14821,7 @@ public class SearchController implements Serializable {
                 toDate,
                 institution,
                 department,
-                site);
+                site, false, false);
         ap.setName("OPD Credit Company Payment Collection");
         ap.setBundleType("companyPaymentBillOpd");
         return ap;
@@ -14840,7 +14840,7 @@ public class SearchController implements Serializable {
                 toDate,
                 institution,
                 department,
-                site);
+                site, false, false);
         ap.setName("Inpatient Credit Company Payment Collection");
         ap.setBundleType("companyPaymentBillInward");
         return ap;
@@ -14859,7 +14859,7 @@ public class SearchController implements Serializable {
                 toDate,
                 institution,
                 department,
-                site);
+                site, false, false);
         ap.setName("Pharmacy Credit Company Payment Collection");
         ap.setBundleType("companyPaymentBillPharmacy");
         return ap;
@@ -14878,7 +14878,7 @@ public class SearchController implements Serializable {
                 toDate,
                 institution,
                 department,
-                site);
+                site, false, false);
         ap.setName("Channelling Credit Company Payment Collection");
         ap.setBundleType("companyPaymentBillChannelling");
         return ap;
@@ -14895,7 +14895,7 @@ public class SearchController implements Serializable {
                 toDate,
                 institution,
                 department,
-                site);
+                site, false, false);
         ap.setName("Inward Professional Payments");
         ap.setBundleType("ProfessionalPaymentBillReportInward");
         return ap;
@@ -14916,7 +14916,7 @@ public class SearchController implements Serializable {
                 toDate,
                 institution,
                 department,
-                site);
+                site, false, false);
         ap.setName("Channelling Professional Payments");
         ap.setBundleType("ProfessionalPaymentBillReportChannelling");
         return ap;
@@ -14934,7 +14934,7 @@ public class SearchController implements Serializable {
                 toDate,
                 institution,
                 department,
-                site);
+                site,false, false);
         ap.setName("OPD Professional Payments");
         ap.setBundleType("ProfessionalPaymentBillReportOpd");
         return ap;
@@ -15059,7 +15059,7 @@ public class SearchController implements Serializable {
                 toDate,
                 institution,
                 department,
-                site);
+                site, false, false);
         ap.setName("Petty Cash Payments");
         ap.setBundleType("pettyCashPayments");
         return ap;
@@ -15081,7 +15081,9 @@ public class SearchController implements Serializable {
                 toDate,
                 institution,
                 department,
-                site);
+                site,
+                false,
+                true);
         ap.setName("Credit Bills");
         ap.setBundleType("creditBills");
         return ap;
