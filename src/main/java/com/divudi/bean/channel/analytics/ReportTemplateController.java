@@ -325,7 +325,8 @@ public class ReportTemplateController implements Serializable {
             Date paramToDate,
             Institution paramInstitution,
             Department paramDepartment,
-            Institution paramSite) {
+            Institution paramSite,
+            Boolean creditBillsOnly) {
 
         ReportTemplateRowBundle pb = new ReportTemplateRowBundle();
 
@@ -339,6 +340,11 @@ public class ReportTemplateController implements Serializable {
         if (btas != null && !btas.isEmpty()) {
             jpql += " and bill.billTypeAtomic in :btas ";
             parameters.put("btas", btas);
+        }
+        
+        if(creditBillsOnly!=null && creditBillsOnly){
+             jpql += " and bill.paymentMethod in :pms ";
+            parameters.put("pms", PaymentMethod.getMethodsByType(PaymentType.NON_CREDIT));
         }
 
         if (paramFromDate != null) {

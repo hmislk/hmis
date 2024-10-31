@@ -12,11 +12,38 @@
                 <h:form>
                     <h:panelGroup rendered="#{!creditCompanyBillSearch.printPreview}" styleClass="alignTop" >
                         <p:panel  header="Cancellation">
-                            <p:selectOneMenu   id="cmbPs" value="#{creditCompanyBillSearch.paymentMethod}" required="true"  >
-                                <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
-                            </p:selectOneMenu>
-                            <h:commandButton value="Cancel" action="#{creditCompanyBillSearch.cancelBill()}" >
-                            </h:commandButton>                            
+                            <f:facet name="header">
+                                <h:outputText value="Cancellation" class="mt-5"/>
+                                <h:panelGrid columns="3" style="float: right" class="w-50">
+                                    <p:inputText value="#{creditCompanyBillSearch.comment}" placeholder="Enter a comment"/>
+                                    <p:commandButton 
+                                        ajax="false"
+                                        value="Cancel"
+                                        icon="fa fa-cancel"
+                                        class="ui-button-danger"
+                                        action="#{creditCompanyBillSearch.cancelBill()}" >
+                                    </p:commandButton>
+<!--                                    <p:commandButton  
+                                        class="ui-button-secondary d-flex justify-content-end mx-2"
+                                        style="float: right"
+                                        value="Back To Search"
+                                        icon="fa-solid fa-arrow-left"
+                                        action="/credit/credit_company_bill_search?faces-redirect=true"
+                                        ajax="false">
+                                    </p:commandButton>-->
+                                </h:panelGrid>
+                            </f:facet>
+
+                            <p:panel>
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fas fa-money-bill"></h:outputText>
+                                    <h:outputLabel value="Payment Mode" class="mx-2"></h:outputLabel>
+                                </f:facet>
+                                <p:selectOneMenu   id="cmbPs" value="#{creditCompanyBillSearch.paymentMethod}" required="true"  >
+                                    <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
+                                </p:selectOneMenu>
+                            </p:panel>
+
                         </p:panel>
                         <p:panelGrid columns="2" style="width: 100%;">
                             <p:panel header="Credit Company Detail">
@@ -57,14 +84,11 @@
                                 <p:column headerText="Net Total">#{b.netValue}</p:column>
                             </p:dataTable>
                         </p:panel>
-                        <p:panel header="Comments">
-                            <h:inputTextarea value="#{creditCompanyBillSearch.comment}"/>                            
-                        </p:panel>
                     </h:panelGroup>
 
 
                     <h:panelGroup rendered="#{creditCompanyBillSearch.printPreview}" >
-                        <bi:insRecieve billController ="#{creditCompanyBillSearch}"  bill="#{creditCompanyBillSearch.bill}" dup="false"/>  
+                        <bi:CreditReceiveBill controller="#{creditCompanyBillSearch}"  bill="#{creditCompanyBillSearch.bill}" dup="false"/> 
                     </h:panelGroup>
 
 
