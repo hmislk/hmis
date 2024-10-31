@@ -577,10 +577,14 @@ public class ChannelApi {
         }
         // Search logic and build the JSON response
         JSONObject results = searchDoctor(hosID, docNo, docName, specID, offset, page, sessionDate);
-        if(results.get("code") != null){
-            if((Integer)results.get("code") == 406){
-                Response.status(Response.Status.NOT_ACCEPTABLE).entity(results.toString()).build();
+        //System.out.println(results.get("code"));
+        try {
+            if (results.get("code") != null) {
+                if ((Integer) results.get("code") == 406) {
+                    Response.status(Response.Status.NOT_ACCEPTABLE).entity(results.toString()).build();
+                }
             }
+        } catch (Exception e) {
         }
 
         // Constructing the detailed response
@@ -594,7 +598,7 @@ public class ChannelApi {
         JSONObject paginationDetails = new JSONObject();
         paginationDetails.put("currentPage", page);
         paginationDetails.put("itemsPerPage", 10);  // Assuming a fixed number of items per page
-        paginationDetails.put("totalPages", (int) Math.ceil((double) results.getInt("totalCount") / 10));
+        paginationDetails.put("totalPages", ""); //(int) Math.ceil((double) results.getInt("totalCount") / 10
         response.put("pagination", paginationDetails);
 
         return Response.status(Response.Status.OK)
@@ -1431,9 +1435,9 @@ public class ChannelApi {
         String billStatus = null;
         if (bill.isCancelled()) {
             billStatus = "Cancelled Bill";
-        }else if (bill.getBillType() == BillType.ChannelOnCall) {
+        } else if (bill.getBillType() == BillType.ChannelOnCall) {
             billStatus = "Temporarty Booking added. Still Not completed with payment.";
-        }else if (bill.getBillType() == BillType.ChannelPaid) {
+        } else if (bill.getBillType() == BillType.ChannelPaid) {
             billStatus = "Booking is done with the payment";
         }
 
@@ -1546,7 +1550,7 @@ public class ChannelApi {
             if (cancelBillList != null && !cancelBillList.isEmpty()) {
                 JSONObject response = commonFunctionToErrorResponse("Apointment already cancelled.");
                 return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
-            }else if((billList == null || billList.isEmpty()) && (cancelBillList != null && !cancelBillList.isEmpty())){
+            } else if ((billList == null || billList.isEmpty()) && (cancelBillList != null && !cancelBillList.isEmpty())) {
                 JSONObject response = commonFunctionToErrorResponse("No apoinment for this ref NO.");
                 return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
             }
@@ -1673,34 +1677,34 @@ public class ChannelApi {
             } catch (ParseException e) {
                 System.err.println("Invalid date format: " + sessionDate);
                 return commonFunctionToErrorResponse("Invalid Date format.");
-                
+
             }
         }
-        if(hosID == null){
+        if (hosID == null) {
             return commonFunctionToErrorResponse("Hospital id is mandatory.");
         }
-       
-        Institution hospital = institutionFacade.find(hosID);
-        if(hospital == null){
-            return commonFunctionToErrorResponse("No hospital registered with that id.");        
+
+        Institution hospital = institutionFacade.find(hosID.longValue());
+        if (hospital == null) {
+            return commonFunctionToErrorResponse("No hospital registered with that id.");
         }
         List<Institution> hospialList = Arrays.asList(hospital);
-        
-        Speciality speciality = specialityFacade.find(specID);
-        
-        if(speciality == null){
+
+        Speciality speciality = specialityFacade.find(specID.longValue());
+
+        if (speciality == null) {
             return commonFunctionToErrorResponse("No specialization for given id.");
         }
-        if(docName == null && docNo ==null){
+        if (docName == null && docNo == null) {
             return commonFunctionToErrorResponse("At least one parameter needed from doctorNo and doctorName");
         }
-        
-        if(date == null){
+
+        if (date == null) {
             return commonFunctionToErrorResponse("Please add the date of the appoinments.");
         }
-        
+
         List<Consultant> doctorList = channelService.findConsultantFromName(docName, Long.valueOf(docNo));
-        if(doctorList == null || doctorList.isEmpty()){
+        if (doctorList == null || doctorList.isEmpty()) {
             return commonFunctionToErrorResponse("No doctor with given parameters.");
         }
         // Fetch necessary entities based on IDs
@@ -1712,7 +1716,7 @@ public class ChannelApi {
         List<Speciality> specialities = (speciality != null) ? Arrays.asList(speciality) : null;
 
         // Call the method to find session instances
-        List<SessionInstance> sessions =channelService.findSessionInstance(hospialList , specialities, doctorList, date);
+        List<SessionInstance> sessions = channelService.findSessionInstance(hospialList, specialities, doctorList, date);
         //List<SessionInstance> sessions = sessionInstanceController.findSessionInstance(hospital, specialities, consultant, null, null, date);
 
         // Process the results
