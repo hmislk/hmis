@@ -3211,7 +3211,7 @@ public class BillSearch implements Serializable {
         cancellationBill.setCreatedAt(new Date());
         cancellationBill.setCreater(sessionController.getLoggedUser());
         cancellationBill.setComments(comment);
-        cancellationBill.setBillType(BillType.SUPPLEMENTARY_INCOME);
+        cancellationBill.setBillType(BillType.SUPPLEMENTARY_INCOME_CANCELLED);
         cancellationBill.setBillTypeAtomic(BillTypeAtomic.SUPPLEMENTARY_INCOME_CANCELLED);
         
         getBill().setCancelled(true);
@@ -3272,7 +3272,7 @@ public class BillSearch implements Serializable {
         billFees = billBean.fetchBillFees(bill);
         billPayments = billBean.fetchBillPayments(bill);
         printPreview = false;
-        return "/cashier/expense_bill_cancel?faces-redirect=true;";
+        return "/cashier/expense_bill_cancellation_print?faces-redirect=true;";
     }
     
     public void cancelExpenseBill() {
@@ -3311,7 +3311,7 @@ public class BillSearch implements Serializable {
         cancellationBill.setCreatedAt(new Date());
         cancellationBill.setCreater(sessionController.getLoggedUser());
         cancellationBill.setComments(comment);
-        cancellationBill.setBillType(BillType.OPERATIONAL_EXPENSES);
+        cancellationBill.setBillType(BillType.OPERATIONAL_EXPENSES_CANCELLED);
         cancellationBill.setBillTypeAtomic(BillTypeAtomic.OPERATIONAL_EXPENSES_CANCELLED);
         
         getBill().setCancelled(true);
