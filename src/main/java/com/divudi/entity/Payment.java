@@ -446,7 +446,7 @@ public class Payment implements Serializable {
         this.department = department;
     }
 
-    public Payment copyAttributes() {
+    public Payment createNewPaymentByCopyingAttributes() {
         Payment newPayment = new Payment();
         newPayment.setBill(this.bill);
         newPayment.setWrittenAt(this.writtenAt);
