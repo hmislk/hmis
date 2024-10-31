@@ -14,7 +14,6 @@
                 <h:form >
                     <p:panel   header="Daily Return" class="m-1">
 
-
                         <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
@@ -44,9 +43,16 @@
                                 />
 
                             <p:spacer width="50" ></p:spacer>
-
                             <p:spacer width="50" ></p:spacer>
-                            <p:spacer width="50" ></p:spacer>
+                            <p:selectBooleanButton
+                                onLabel="With Professional Fee" 
+                                offLabel="without Professional Fee" 
+                                value="#{searchController.withProfessionalFee}"
+                                onIcon="pi pi-check" 
+                                class="w-100"
+                                offIcon="pi pi-times" 
+                                >
+                            </p:selectBooleanButton>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
@@ -64,8 +70,6 @@
 
                             <p:spacer ></p:spacer>
 
-
-
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
                                 <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
@@ -79,7 +83,6 @@
                                 <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
                                 <p:ajax process="siteMenu" update="cmbDept" />
                             </p:selectOneMenu>
-
 
                             <p:spacer ></p:spacer>
 
@@ -95,9 +98,6 @@
                                 <f:selectItem itemLabel="All Departments" />
                                 <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
                             </p:selectOneMenu>
-
-
-
                         </h:panelGrid>
 
                         <p:commandButton 
@@ -119,14 +119,14 @@
                             onclick="return confirm('Are you sure you want to update the bill item values?');">
                         </p:commandButton>
 
-                        <p:commandButton value="Download Excel" 
-                                         ajax="false" 
-                                         icon="fas fa-download"
-                                         class="ui-button-warning mx-2"
-                                         onclick="PrimeFaces.monitorDownload(start, stop);" >
+                        <p:commandButton 
+                            value="Download Excel" 
+                            ajax="false" 
+                            icon="fas fa-download"
+                            class="ui-button-warning mx-2"
+                            onclick="PrimeFaces.monitorDownload(start, stop);" >
                             <p:fileDownload value="#{searchController.bundleAsExcel}" />
                         </p:commandButton>
-
 
                         <p:commandButton 
                             value="Download PDF" 
@@ -146,11 +146,6 @@
                             <p:printer target="printPanel" />
                         </p:commandButton>
 
-
-
-
-
-
                         <!--Do not remove this part-->
                         <h:panelGroup style="display: none;" >
                             <ui:repeat value="#{searchController.bundle.bundles}" var="myBundle1" >
@@ -159,9 +154,8 @@
                         </h:panelGroup>
                         <!--Do not remove the above part-->
 
-
                         <h:panelGroup id="printPanel">        
-
+                            
                             <ui:repeat value="#{searchController.bundle.bundles}" var="myBundle">
                                 <ez:opdServiceCollection bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'opdServiceCollection'}"/>
                                 <ez:pharmacyCollection bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'pharmacyCollection'}"/>
@@ -176,29 +170,19 @@
                                 <ez:professionalPaymentBillOpd bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'ProfessionalPaymentBillReportOpd'}"/>
                                 <ez:professionalPaymentBillChannelling bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'ProfessionalPaymentBillReportChannelling'}"/>
                                 <ez:professionalPaymentBillInward bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'ProfessionalPaymentBillReportInward'}"/>
-
                                 <ez:paymentReportCards bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportCards'}"/>
                                 <ez:staffPayments bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportStaffWelfare'}"/>
                                 <ez:voucherPayments bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportVoucher'}"/>
                                 <ez:chequePayments bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportCheque'}"/>
                                 <ez:ewalletPayments bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportEwallet'}"/>
                                 <ez:slipPayments bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportSlip'}"/>
-
-
                                 <ez:netCashForTheDay bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'netCash'}"/>
-
-
                             </ui:repeat>
-
+                            
                         </h:panelGroup>
-
-
                     </p:panel>
-
                 </h:form>
-
             </ui:define>
         </ui:composition>
-
     </h:body>
 </html>
