@@ -99,6 +99,8 @@ public class ReportTemplateRowBundle implements Serializable {
     private double patientPointsValue;
     private double onlineSettlementValue;
 
+    private Boolean selectAllCashToHandover;
+
     private double onCallHandoverValue;
     private double cashHandoverValue;
     private double denominatorValue;
@@ -665,6 +667,8 @@ public class ReportTemplateRowBundle implements Serializable {
             for (ReportTemplateRowBundle childBundle : this.bundles) {
 
                 if (childBundle.isSelected()) {
+                    
+                    childBundle.calculateTotalsByPaymentsAndDenominationsForHandover();
 
                     System.out.println("selected childBundle = " + childBundle.getName());
                     addValueAndUpdateFlag("cash", safeDouble(childBundle.getCashValue()), safeDouble(childBundle.getCashHandoverValue()));
@@ -931,7 +935,7 @@ public class ReportTemplateRowBundle implements Serializable {
                 if (row.isSelected()) {
                     amountHandingOver = amount;
                 } else {
-                    if (method == Cash) {
+                    if (method == Cash && getSelectAllCashToHandover()) {
                         amountHandingOver = amount;
                     }
                 }
@@ -1042,7 +1046,9 @@ public class ReportTemplateRowBundle implements Serializable {
 
                 PaymentMethod method = row.getPayment().getPaymentMethod();
                 if (method == Cash) {
-                    amountHandingOver = amount;
+                    if (selectAllCashToHandover) {
+                        amountHandingOver = amount;
+                    }
                 } else {
                     if (row.getPayment().isSelectedForHandover()) {
                         amountHandingOver = amount;
@@ -1856,14 +1862,14 @@ public class ReportTemplateRowBundle implements Serializable {
 
     public List<ReportTemplateRowBundle> getSelectedBundles() {
         List<ReportTemplateRowBundle> selectedBundles = new ArrayList<>();
-        for(ReportTemplateRowBundle b: getBundles()){
-            if(b.isSelected()){
+        for (ReportTemplateRowBundle b : getBundles()) {
+            if (b.isSelected()) {
                 selectedBundles.add(b);
             }
         }
         return selectedBundles;
     }
-    
+
     public Double getGrossTotal() {
         return grossTotal;
     }
@@ -2192,6 +2198,17 @@ public class ReportTemplateRowBundle implements Serializable {
 
     public void setTax(Double tax) {
         this.tax = tax;
+    }
+
+    public Boolean getSelectAllCashToHandover() {
+        if (selectAllCashToHandover == null) {
+            selectAllCashToHandover = true;
+        }
+        return selectAllCashToHandover;
+    }
+
+    public void setSelectAllCashToHandover(Boolean selectAllCashToHandover) {
+        this.selectAllCashToHandover = selectAllCashToHandover;
     }
 
 }
