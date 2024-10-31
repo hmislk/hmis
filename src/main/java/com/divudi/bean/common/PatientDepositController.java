@@ -226,6 +226,18 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         if (patientController.validatePaymentMethodData()) {
             return;
         }
+
+        if (current == null) {
+            JsfUtil.addErrorMessage("No current. please start from beginning");
+            return;
+        }
+        if (current.getBalance() == null) {
+            current.setBalance(0.0);
+        }
+        if (patientController.getBill() == null) {
+            JsfUtil.addErrorMessage("No Bill in patient controller. please start from beginning");
+            return;
+        }
         patientController.setBillNetTotal();
         if (current.getBalance() < patientController.getBill().getNetTotal()) {
             JsfUtil.addErrorMessage("Can't Refund a Total More that Deposit");
