@@ -4,6 +4,8 @@ import com.divudi.data.InstitutionType;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
+import com.divudi.entity.RefundBill;
+import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
 import java.util.ArrayList;
@@ -21,6 +23,8 @@ import javax.ejb.Stateless;
 @Stateless
 public class BillService {
 
+    @EJB
+    BillFacade billFacade;
     @EJB
     private BillItemFacade billItemFacade;
     @EJB
@@ -90,6 +94,91 @@ public class BillService {
             allBillItems.addAll(fetchBillItems(b));
         }
         return allBillItems;
+    }
+
+    public void calculateBillBreakdownAsHospitalCcAndStaffTotalsByBillFees(Bill bill) {
+        System.out.println("calculateBillBreakdownAsHospitalCcAndStaffTotalsByBillFees");
+        double billStaffFee = 0.0;
+        double billCollectingCentreFee = 0.0;
+        double billHospitalFee = 0.0;
+
+        List<BillItem> billItems = fetchBillItems(bill);
+        System.out.println("Processing Bill: " + bill.getId());
+
+        for (BillItem bi : billItems) {
+            // Initialize fee accumulators for the current BillItem
+            double staffFeesCalculatedByBillFees = 0.0;
+            double collectingCentreFeesCalculatedByBillFees = 0.0;
+            double hospitalFeeCalculatedByBillFees = 0.0;
+
+            System.out.println("Processing BillItem: " + bi.getId());
+
+            // Fetch BillFees for the current BillItem
+            List<BillFee> billFees = fetchBillFees(bi);
+            for (BillFee bf : billFees) {
+                System.out.println("Processing BillFee: " + bf.getId()
+                        + ", FeeGrossValue: " + bf.getFeeGrossValue());
+
+                // Calculate fees based on InstitutionType, Staff, or Speciality
+                if (bf.getInstitution() != null
+                        && bf.getInstitution().getInstitutionType() == InstitutionType.CollectingCentre) {
+                    collectingCentreFeesCalculatedByBillFees += bf.getFeeGrossValue();
+                    System.out.println("CollectingCentre Fee Updated: "
+                            + collectingCentreFeesCalculatedByBillFees);
+                } else if (bf.getStaff() != null || bf.getSpeciality() != null) {
+                    staffFeesCalculatedByBillFees += bf.getFeeGrossValue();
+                    System.out.println("Staff Fee Updated: " + staffFeesCalculatedByBillFees);
+                } else {
+                    hospitalFeeCalculatedByBillFees += bf.getFeeGrossValue();
+                    System.out.println("Hospital Fee Updated: " + hospitalFeeCalculatedByBillFees);
+                }
+            }
+
+            // Set calculated fees to the BillItem
+            bi.setCollectingCentreFee(collectingCentreFeesCalculatedByBillFees);
+            bi.setStaffFee(staffFeesCalculatedByBillFees);
+            bi.setHospitalFee(hospitalFeeCalculatedByBillFees);
+            billItemFacade.editAndCommit(bi);
+
+            // Log the values set to the BillItem
+            System.out.println("BillItem " + bi.getId()
+                    + " - Hospital Fee: " + hospitalFeeCalculatedByBillFees
+                    + ", Staff Fee: " + staffFeesCalculatedByBillFees
+                    + ", Collecting Centre Fee: " + collectingCentreFeesCalculatedByBillFees);
+
+            // Accumulate the fees to the Bill totals
+            billCollectingCentreFee += collectingCentreFeesCalculatedByBillFees;
+            billStaffFee += staffFeesCalculatedByBillFees;
+            billHospitalFee += hospitalFeeCalculatedByBillFees;
+
+            System.out.println("bi.getHospitalFee() = " + bi.getHospitalFee());
+        }
+
+        // Set the accumulated totals to the Bill
+        bill.setPerformInstitutionFee(billHospitalFee);
+        bill.setTotalCenterFee(billCollectingCentreFee);
+        bill.setTotalHospitalFee(billHospitalFee);
+        bill.setTotalStaffFee(billStaffFee);
+
+        // Additional fee assignments as per existing structure
+        bill.setStaffFee(billStaffFee);
+        bill.setCollctingCentreFee(billCollectingCentreFee);
+        bill.setHospitalFee(billHospitalFee);
+        bill.setProfessionalFee(billStaffFee);
+
+        // Log the final bill totals
+        System.out.println("Final Bill Totals - Hospital Fee: " + billHospitalFee
+                + ", Staff Fee: " + billStaffFee
+                + ", Collecting Centre Fee: " + billCollectingCentreFee);
+
+        // Persist the updated Bill
+        billFacade.editAndCommit(bill);
+    }
+
+    public void calculateBillBreakdownAsHospitalCcAndStaffTotalsByBillFees(List<Bill> bills) {
+        for (Bill bill : bills) {
+            calculateBillBreakdownAsHospitalCcAndStaffTotalsByBillFees(bill);
+        }
     }
 
 }

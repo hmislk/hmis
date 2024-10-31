@@ -171,6 +171,13 @@
                                         value="#{investigationController.current.multipleReportsAllowed}" >
                                     </p:selectBooleanCheckbox>
                                     
+                                    <h:outputText value="Alternative Report Allowed" ></h:outputText>
+                                    <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
+                                    <p:selectBooleanCheckbox 
+                                        itemLabel="Reports Allowed" 
+                                        value="#{investigationController.current.alternativeReportAllowed}" >
+                                    </p:selectBooleanCheckbox>
+                                    
                                     <h:outputText value="Master Item Reference" ></h:outputText>
                                     <h:outputLabel value=" : " style="width: 20px; text-align: center"/>
                                     <p:autoComplete 
