@@ -3272,7 +3272,27 @@ public class BillSearch implements Serializable {
         billFees = billBean.fetchBillFees(bill);
         billPayments = billBean.fetchBillPayments(bill);
         printPreview = false;
+        return "/cashier/expense_bill_cancel?faces-redirect=true;";
+    }
+    
+    public String navigateToViewCancelExpenseBill() {
+        if (viewingBill == null) {
+            JsfUtil.addErrorMessage("No Bill to Dsiplay");
+            return "";
+        }
+        financialTransactionController.setCurrentBill(viewingBill);
+        financialTransactionController.setCurrentBillPayments(viewingBillPayments);
         return "/cashier/expense_bill_cancellation_print?faces-redirect=true;";
+    }
+    
+    public String navigateToManageCancelExpenseBill() {
+        if (viewingBill == null) {
+            JsfUtil.addErrorMessage("No Bill to Dsiplay");
+            return "";
+        }
+        financialTransactionController.setCurrentBill(viewingBill);
+        financialTransactionController.setCurrentBillPayments(viewingBillPayments);
+        return "/cashier/expense_bill_reprint?faces-redirect=true;";
     }
     
     public void cancelExpenseBill() {
@@ -3694,7 +3714,7 @@ public class BillSearch implements Serializable {
             case SUPPLEMENTARY_INCOME_CANCELLED:
                 return navigateToCancelIncomeBill();
             case OPERATIONAL_EXPENSES_CANCELLED:
-                return navigateToCancelExpenseBill();
+                return navigateToViewCancelExpenseBill();
             
         }
         
