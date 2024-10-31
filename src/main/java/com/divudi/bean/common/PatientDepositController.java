@@ -193,7 +193,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         }
         if (patient.getId() == null) {
             JsfUtil.addErrorMessage("Entered Patient is Not Registered");
-             return;
+            return;
         }
         current = getDepositOfThePatient(patientController.getBill().getPatient(), sessionController.getDepartment());
         if (patientController.getBill().getNetTotal() > current.getBalance()) {
@@ -255,9 +255,10 @@ public class PatientDepositController implements Serializable, ControllerWithPat
 
         System.out.println("patientController.getBill() = " + patientController.getBill());
         updateBalance(patientController.getBill(), current);
-        billBeanController.createPayment(patientController.getBill(),
+        List<Payment> ps = billBeanController.createPayment(patientController.getBill(),
                 patientController.getBill().getPaymentMethod(),
                 patientController.getPaymentMethodData());
+        drawerController.updateDrawerForOuts(ps);
     }
 
     public void updateBalance(Bill b, PatientDeposit pd) {
