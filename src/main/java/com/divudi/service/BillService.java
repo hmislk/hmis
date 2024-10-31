@@ -152,8 +152,8 @@ public class BillService {
             billHospitalFee += hospitalFeeCalculatedByBillFees;
 
             System.out.println("bi.getHospitalFee() = " + bi.getHospitalFee());
-//TODO : remove the next line
             billItemFacade.create(bi);
+
         }
 
         // Set the accumulated totals to the Bill

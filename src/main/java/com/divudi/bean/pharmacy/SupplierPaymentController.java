@@ -153,7 +153,7 @@ public class SupplierPaymentController implements Serializable {
         makeNull();
         return "/dealerPayment/search_dealor_payment?faces-redirect=true";
     }
-    
+
     public String navigateToSupplierPaymentDoneSearch() {
         bills = null;
         return "/dealerPayment/search_dealor_payment?faces-redirect=true";
@@ -163,28 +163,27 @@ public class SupplierPaymentController implements Serializable {
         return "/credit/index_pharmacy_due_access?faces-redirect=true";
     }
 
-    public void fillPharmacySupplierPayments(){
+    public void fillPharmacySupplierPayments() {
         List<BillTypeAtomic> btas = new ArrayList<>();
         btas.add(BillTypeAtomic.SUPPLIER_PAYMENT);
-        List<InstitutionType> institutionTypes =  new ArrayList<>();
+        List<InstitutionType> institutionTypes = new ArrayList<>();
         institutionTypes.add(InstitutionType.Dealer);
         createGrnPaymentTable(institutionTypes, btas);
     }
-    
-    public void fillStoreSupplierPayments(){
+
+    public void fillStoreSupplierPayments() {
         List<BillTypeAtomic> btas = new ArrayList<>();
         btas.add(BillTypeAtomic.SUPPLIER_PAYMENT);
-        List<InstitutionType> institutionTypes =  new ArrayList<>();
+        List<InstitutionType> institutionTypes = new ArrayList<>();
         institutionTypes.add(InstitutionType.StoreDealor);
         createGrnPaymentTable(institutionTypes, btas);
     }
-    
-    public void fillSupplierPayments(){
+
+    public void fillSupplierPayments() {
         List<BillTypeAtomic> btas = new ArrayList<>();
         btas.add(BillTypeAtomic.SUPPLIER_PAYMENT);
         createGrnPaymentTable(null, btas);
     }
-    
 
     private void createGrnPaymentTable(List<InstitutionType> institutionTypes, List<BillTypeAtomic> billTypes) {
         bills = null;
@@ -511,7 +510,7 @@ public class SupplierPaymentController implements Serializable {
             refundAmount += b.getRefundAmount();
         }
     }
-    
+
     public void fillUnsettledCreditStoreBills() {
         BillTypeAtomic[] billTypesArrayBilled = {BillTypeAtomic.STORE_GRN, BillTypeAtomic.STORE_DIRECT_PURCHASE};
         List<BillTypeAtomic> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
@@ -527,7 +526,7 @@ public class SupplierPaymentController implements Serializable {
             refundAmount += b.getRefundAmount();
         }
     }
-    
+
     public void fillUnsettledCreditBills() {
         BillTypeAtomic[] billTypesArrayBilled = {BillTypeAtomic.PHARMACY_GRN, BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL, BillTypeAtomic.PHARMACY_DIRECT_PURCHASE, BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL, BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL, BillTypeAtomic.STORE_GRN, BillTypeAtomic.STORE_DIRECT_PURCHASE};
         List<BillTypeAtomic> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
@@ -542,6 +541,51 @@ public class SupplierPaymentController implements Serializable {
             balance += b.getBalance();
             refundAmount += b.getRefundAmount();
         }
+    }
+
+    public void fillAllCreditBills() {
+        bills = null;
+        String jpql;
+        Map params = new HashMap();
+        List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
+        billTypesAtomics.add(BillTypeAtomic.PHARMACY_GRN);
+        billTypesAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL);
+        billTypesAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+        billTypesAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL);
+        billTypesAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL);
+
+        jpql = "select b from Bill b "
+                + " where b.billTypeAtomic in :billTypes "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false ";
+
+        params.put("billTypes", billTypesAtomics);
+        params.put("toDate", getToDate());
+        params.put("fromDate", getFromDate());
+
+        bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+    
+    public void fillAllCreditBillssettled(){
+        bills = null;
+        String jpql;
+        Map params = new HashMap();
+        List<BillType> billTypes = new ArrayList<>();
+        billTypes.add(BillType.GrnPaymentPre);
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.SUPPLIER_PAYMENT);
+
+        jpql = "select b from Bill b "
+                + " where b.retired=false "
+                + " and (b.billType = :billTypes or b.billTypeAtomic = :btas)  "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        params.put("billTypes", BillType.GrnPaymentPre);
+        params.put("toDate", getToDate());
+        params.put("fromDate", getFromDate());
+        params.put("btas", BillTypeAtomic.SUPPLIER_PAYMENT);
+
+        bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     @Deprecated

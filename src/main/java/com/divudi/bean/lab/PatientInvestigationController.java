@@ -266,12 +266,25 @@ public class PatientInvestigationController implements Serializable {
     private ListingEntity listingEntity;
     private Institution site;
 
+    private List<Item> itemsForParentItem;
+    private List<PatientSampleComponant> patientSampleComponentsByInvestigation;
+    private PatientInvestigation currentPI;
+
     public String navigateToPrintBarcodeFromMenu() {
         return "/lab/sample_barcode_printing?faces-redirect=true";
     }
 
     public String navigateToPatientSampelIndex() {
         return "/lab/sample_index?faces-redirect=true";
+    }
+
+    public String navigateToAlternativeReportSelector(PatientInvestigation patientInvestigation) {
+        currentPI = patientInvestigation;
+        itemsForParentItem = new ArrayList();
+        patientSampleComponentsByInvestigation = new ArrayList();
+        itemsForParentItem = itemForItemController.getItemsForParentItem(patientInvestigation.getInvestigation());
+        patientSampleComponentsByInvestigation = getPatientSampleComponentsByInvestigation(patientInvestigation);
+        return "/lab/alternative_report_selector?faces-redirect=true";
     }
 
     public String navigateToSampleManagementFromOPDBatchBillView(Bill bill) {
@@ -732,7 +745,7 @@ public class PatientInvestigationController implements Serializable {
                 + " order by pi.id";
         m.put("bi", bi);
         PatientInvestigation pi = getFacade().findFirstByJpql(j, m);
-        pi.isRetired();
+//        pi.isRetired();
         return pi;
     }
 
@@ -1734,6 +1747,7 @@ public class PatientInvestigationController implements Serializable {
         this.performingInstitution = null;
         this.performingDepartment = null;
         clearReportData();
+        clearAlternativeReportData();
     }
 
     public void clearReportData() {
@@ -1742,6 +1756,12 @@ public class PatientInvestigationController implements Serializable {
         this.selectedBillBarcodes = null;
         this.patientReports = null;
         this.patientSamples = null;
+    }
+
+    public void clearAlternativeReportData() {
+        this.itemsForParentItem = null;
+        this.patientSampleComponentsByInvestigation = null;
+        this.currentPI = null;
     }
 
     public void searchBills() {
@@ -4741,6 +4761,30 @@ public class PatientInvestigationController implements Serializable {
 
     public void setCurrentPatientSample(PatientSample currentPatientSample) {
         this.currentPatientSample = currentPatientSample;
+    }
+
+    public List<Item> getItemsForParentItem() {
+        return itemsForParentItem;
+    }
+
+    public void setItemsForParentItem(List<Item> itemsForParentItem) {
+        this.itemsForParentItem = itemsForParentItem;
+    }
+
+    public List<PatientSampleComponant> getPatientSampleComponentsByInvestigation() {
+        return patientSampleComponentsByInvestigation;
+    }
+
+    public void setPatientSampleComponentsByInvestigation(List<PatientSampleComponant> patientSampleComponentsByInvestigation) {
+        this.patientSampleComponentsByInvestigation = patientSampleComponentsByInvestigation;
+    }
+
+    public PatientInvestigation getCurrentPI() {
+        return currentPI;
+    }
+
+    public void setCurrentPI(PatientInvestigation currentPI) {
+        this.currentPI = currentPI;
     }
 
     /**
