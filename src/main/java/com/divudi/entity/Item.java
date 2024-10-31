@@ -259,6 +259,8 @@ public class Item implements Serializable, Comparable<Item> {
     
     private boolean multipleReportsAllowed;
     
+    private boolean alternativeReportAllowed;
+    
     @Lob
     private String forGender;
 
@@ -1438,6 +1440,14 @@ public class Item implements Serializable, Comparable<Item> {
 
     public void setMultipleReportsAllowed(boolean multipleReportsAllowed) {
         this.multipleReportsAllowed = multipleReportsAllowed;
+    }
+
+    public boolean isAlternativeReportAllowed() {
+        return alternativeReportAllowed;
+    }
+
+    public void setAlternativeReportAllowed(boolean alternativeReportAllowed) {
+        this.alternativeReportAllowed = alternativeReportAllowed;
     }
 
     static class ReportItemComparator implements Comparator<ReportItem> {

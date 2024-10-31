@@ -1,4 +1,3 @@
-
 /*
  * Dr M H B Ariyaratne
  * buddhika.ari@gmail.com
@@ -83,6 +82,7 @@ import com.divudi.facade.PackageFeeFacade;
 import com.divudi.facade.PackegeFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PaymentFacade;
+import com.divudi.service.BillService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -152,6 +152,8 @@ public class BillBeanController implements Serializable {
     SessionController sessionController;
     @EJB
     StaffBean staffBean;
+    @EJB
+    BillService billService;
 
     public boolean checkAllowedPaymentMethod(PaymentScheme paymentScheme, PaymentMethod paymentMethod) {
         String sql = "Select s From AllowedPaymentMethod s"
@@ -1238,17 +1240,19 @@ public class BillBeanController implements Serializable {
         return getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
 
+    @Deprecated //Use BillService > fetchBillItems
     public List<BillItem> fetchBillItems(Bill b) {
-        String jpql;
-        HashMap params = new HashMap();
-
-        jpql = "SELECT bi "
-                + " FROM BillItem bi "
-                + " WHERE bi.bill=:bl "
-                + " order by bi.id";
-
-        params.put("bl", b);
-        return getBillItemFacade().findByJpql(jpql, params);
+         return billService.fetchBillItems(b);
+//        String jpql;
+//        HashMap params = new HashMap();
+//
+//        jpql = "SELECT bi "
+//                + " FROM BillItem bi "
+//                + " WHERE bi.bill=:bl "
+//                + " order by bi.id";
+//
+//        params.put("bl", b);
+//        return getBillItemFacade().findByJpql(jpql, params);
     }
 
     public List<Category> fetchBilledOpdCategory(Date fromDate, Date toDate, Institution institution) {
@@ -4254,6 +4258,8 @@ public class BillBeanController implements Serializable {
         return baseBillFeefromBillItem(billItem);
     }
 
+    
+    @Deprecated // Use BillService > fetchBillFees(BillItem bi)
     public List<BillFee> findSavedBillFeefromBillItem(BillItem billItem) {
         String jpql = "select bf "
                 + "from BillFee bf "
