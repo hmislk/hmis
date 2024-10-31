@@ -13,12 +13,14 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.PaymentMethod;
+import com.divudi.data.PaymentType;
 import com.divudi.data.ReportTemplateRow;
 import com.divudi.data.ReportTemplateRowBundle;
 import com.divudi.data.analytics.ReportTemplateColumn;
 import com.divudi.data.analytics.ReportTemplateFilter;
 import com.divudi.data.analytics.ReportTemplateType;
 import static com.divudi.data.analytics.ReportTemplateType.ITEM_SUMMARY_BY_BILL;
+import com.divudi.entity.Bill;
 import com.divudi.entity.Department;
 import com.divudi.entity.ReportTemplate;
 import com.divudi.entity.Institution;
@@ -240,7 +242,9 @@ public class ReportTemplateController implements Serializable {
             Date paramToDate,
             Institution paramInstitution,
             Department paramDepartment,
-            Institution paramSite) {
+            Institution paramSite,
+            Boolean excludeCredit,
+            Boolean creditOnly) {
 
         ReportTemplateRowBundle pb = new ReportTemplateRowBundle();
 
@@ -250,6 +254,19 @@ public class ReportTemplateController implements Serializable {
                 + " bill) "
                 + " from Bill bill "
                 + " where bill.retired=false ";
+
+        if (excludeCredit != null && excludeCredit) {
+            List<PaymentMethod> pms;
+            pms = PaymentMethod.getMethodsByType(PaymentType.NON_CREDIT);
+            jpql += " and bill.paymentMethod in :pms";
+            parameters.put("pms", pms);
+        }
+        if (creditOnly != null && creditOnly) {
+            List<PaymentMethod> pms;
+            pms = PaymentMethod.getMethodsByType(PaymentType.CREDIT);
+            jpql += " and bill.paymentMethod in :pms";
+            parameters.put("pms", pms);
+        }
 
         if (btas != null && !btas.isEmpty()) {
             jpql += " and bill.billTypeAtomic in :btas ";
@@ -301,7 +318,7 @@ public class ReportTemplateController implements Serializable {
 
         return pb;
     }
-    
+
     public ReportTemplateRowBundle generateBillReportWithoutProfessionalFees(
             List<BillTypeAtomic> btas,
             Date paramFromDate,
@@ -361,9 +378,8 @@ public class ReportTemplateController implements Serializable {
             return pb; // Consider returning an empty ReportTemplateRowBundle instead
         }
         pb.setReportTemplateRows(results);
-
         double bundleTotal = pb.getReportTemplateRows().stream()
-                .mapToDouble(r -> r.getBill().getNetTotal())
+                .mapToDouble(r -> r.getBill().getNetTotal() - r.getBill().getProfessionalFee())
                 .sum();
         pb.setTotal(bundleTotal);
 
@@ -453,8 +469,6 @@ public class ReportTemplateController implements Serializable {
             }
             // If Payment, Bill, or PaidValue is null, skip the row (this else is optional)
         }
-
-      
 
         System.out.println("bundleTotal = " + bundleTotal);
         pb.setTotal(bundleTotal);
@@ -1511,7 +1525,7 @@ public class ReportTemplateController implements Serializable {
             jpql += " and bill.creater=:wu ";
             parameters.put("wu", paramUser);
         }
-        
+
         System.out.println("jpql = " + jpql);
         System.out.println("parameters = " + parameters);
 

@@ -97,6 +97,7 @@ public class BillService {
     }
 
     public void calculateBillBreakdownAsHospitalCcAndStaffTotalsByBillFees(Bill bill) {
+        System.out.println("calculateBillBreakdownAsHospitalCcAndStaffTotalsByBillFees");
         double billStaffFee = 0.0;
         double billCollectingCentreFee = 0.0;
         double billHospitalFee = 0.0;
@@ -137,7 +138,7 @@ public class BillService {
             bi.setCollectingCentreFee(collectingCentreFeesCalculatedByBillFees);
             bi.setStaffFee(staffFeesCalculatedByBillFees);
             bi.setHospitalFee(hospitalFeeCalculatedByBillFees);
-            billItemFacade.edit(bi);
+            billItemFacade.editAndCommit(bi);
 
             // Log the values set to the BillItem
             System.out.println("BillItem " + bi.getId()
@@ -149,6 +150,8 @@ public class BillService {
             billCollectingCentreFee += collectingCentreFeesCalculatedByBillFees;
             billStaffFee += staffFeesCalculatedByBillFees;
             billHospitalFee += hospitalFeeCalculatedByBillFees;
+
+            System.out.println("bi.getHospitalFee() = " + bi.getHospitalFee());
         }
 
         // Set the accumulated totals to the Bill
@@ -169,7 +172,7 @@ public class BillService {
                 + ", Collecting Centre Fee: " + billCollectingCentreFee);
 
         // Persist the updated Bill
-        billFacade.edit(bill);
+        billFacade.editAndCommit(bill);
     }
 
     public void calculateBillBreakdownAsHospitalCcAndStaffTotalsByBillFees(List<Bill> bills) {
