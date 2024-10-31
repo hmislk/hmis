@@ -16,23 +16,41 @@
                         <div class="row">
                             <div class="col-md-2">
                                 <h:outputLabel value="From Date"/>
-                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}"
-                                            navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
+                                <p:calendar 
+                                    styleClass="dateTimePicker" 
+                                    id="fromDate" 
+                                    value="#{searchController.fromDate}"
+                                    navigator="false" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                    class="w-100"
+                                    inputStyleClass="form-control">      
                                 </p:calendar>
                                 <h:outputLabel value="To Date"/>
-                                <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
+                                <p:calendar 
+                                    id="toDate" 
+                                    value="#{searchController.toDate}" 
+                                    navigator="false" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                    class="w-100"
+                                    inputStyleClass="form-control">                                                                              
                                 </p:calendar>
-                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createCollectingCenterCreditNoteTable}" />
+                                <p:commandButton 
+                                    id="btnSearch" 
+                                    ajax="false" 
+                                    value="Search" 
+                                    icon="fas fa-search"
+                                    class="ui-button-success w-100 my-2"
+                                    action="#{searchController.createCollectingCenterCreditNoteTable}" />
                                 <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
 
                                 <h:outputLabel value="Bill No"/>
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="w-100"/>
                                 <h:outputLabel value="Agent"/>
-                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.fromInstitution}" />
+                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.fromInstitution}" class="form-control my-1"/>
                                 <h:outputLabel value="Agent Code"/>
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.number}" />
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.number}" class="form-control my-1"/>
                                 <h:outputLabel value="Value"/> 
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.netTotal}" />
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.netTotal}" class="form-control my-1"/>
                                 <h:outputLabel/>
 
 
