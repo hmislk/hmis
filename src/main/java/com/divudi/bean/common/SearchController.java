@@ -79,6 +79,7 @@ import com.divudi.facade.TokenFacade;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import com.divudi.light.common.BillSummaryRow;
+import com.divudi.service.BillService;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
@@ -149,6 +150,8 @@ public class SearchController implements Serializable {
     TokenFacade tokenFacade;
     @EJB
     private DrawerFacade drawerFacade;
+    @EJB
+    BillService billService;
 
     /**
      * Inject
@@ -15099,25 +15102,7 @@ public class SearchController implements Serializable {
             m.put("site", site);
         }
         List<BillItem> bis = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
-        for (BillItem bi : bis) {
-            double staffFeesCalculatedByBillFees = 0.0;
-            double collectingCentreFeesCalculateByBillFees = 0.0;
-            double hospitalFeeCalculatedByBillFess = 0.0;
-            List<BillFee> bfs = billBean.findSavedBillFeefromBillItem(bi);
-            for (BillFee bf : bfs) {
-                if (bf.getInstitution() != null && bf.getInstitution().getInstitutionType() == InstitutionType.CollectingCentre) {
-                    collectingCentreFeesCalculateByBillFees += bf.getFeeGrossValue();
-                } else if (bf.getStaff() != null || bf.getSpeciality() != null) {
-                    staffFeesCalculatedByBillFees += bf.getFeeGrossValue();
-                } else {
-                    hospitalFeeCalculatedByBillFess = bf.getFeeGrossValue();
-                }
-            }
-            bi.setCollectingCentreFee(collectingCentreFeesCalculateByBillFees);
-            bi.setStaffFee(staffFeesCalculatedByBillFees);
-            bi.setHospitalFee(hospitalFeeCalculatedByBillFess);
-            billItemFacade.edit(bi);
-        }
+        billService.createBillItemFeeBreakdownAsHospitalFeeItemDiscount(bis);
     }
 
     public void billItemsToBundleForOpdUnderCategory(ReportTemplateRowBundle rtrb, List<BillItem> billItems) {
