@@ -3175,6 +3175,26 @@ public class BillSearch implements Serializable {
         return "/cashier/income_bill_cancel?faces-redirect=true;";
     }
     
+    public String navigateToViewCancelIncomeBill() {
+        if (viewingBill == null) {
+            JsfUtil.addErrorMessage("No Bill to Dsiplay");
+            return "";
+        }
+        financialTransactionController.setCurrentBill(viewingBill);
+        financialTransactionController.setCurrentBillPayments(viewingBillPayments);
+        return "/cashier/income_bill_cancellation_print?faces-redirect=true;";
+    }
+    
+    public String navigateToManageCancelIncomeBill() {
+        if (viewingBill == null) {
+            JsfUtil.addErrorMessage("No Bill to Dsiplay");
+            return "";
+        }
+        financialTransactionController.setCurrentBill(viewingBill);
+        financialTransactionController.setCurrentBillPayments(viewingBillPayments);
+        return "/cashier/income_bill_reprint?faces-redirect=true;";
+    }
+    
     public void cancelIncomeBill() {
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill Selected to Canel");
@@ -3712,7 +3732,7 @@ public class BillSearch implements Serializable {
             case OPERATIONAL_EXPENSES:
                 return navigateToViewExpenseBill();
             case SUPPLEMENTARY_INCOME_CANCELLED:
-                return navigateToCancelIncomeBill();
+                return navigateToViewCancelIncomeBill();
             case OPERATIONAL_EXPENSES_CANCELLED:
                 return navigateToViewCancelExpenseBill();
             
@@ -3825,9 +3845,9 @@ public class BillSearch implements Serializable {
             case OPERATIONAL_EXPENSES:
                 return navigateToManageExpenseBill();
                 case SUPPLEMENTARY_INCOME_CANCELLED:
-                return navigateToCancelIncomeBill();
+                return navigateToManageCancelIncomeBill();
             case OPERATIONAL_EXPENSES_CANCELLED:
-                return navigateToCancelExpenseBill();
+                return navigateToManageCancelExpenseBill();
             case FUND_SHIFT_SHORTAGE_BILL:
                 return navigateToViewCashierShiftShortageBill(bill);
             
