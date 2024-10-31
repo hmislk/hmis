@@ -12,10 +12,13 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.inject.Named;
 import javax.enterprise.context.RequestScoped;
+import javax.inject.Inject;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CreationHelper;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -25,18 +28,23 @@ import org.primefaces.model.StreamedContent;
 /**
  *
  * @author Dr M H B Ariyaratne
- * 
+ *
  */
 @Named
 @RequestScoped
 public class ExcelController {
+
+    @Inject
+    SearchController searchController;
+    @Inject
+    CommonController commonController;
 
     /**
      * Creates a new instance of ExcelController
      */
     public ExcelController() {
     }
-    
+
     public StreamedContent createExcelForBundle(ReportTemplateRowBundle rootBundle) throws IOException {
         if (rootBundle == null) {
             return null;
@@ -46,7 +54,32 @@ public class ExcelController {
         XSSFWorkbook workbook = new XSSFWorkbook();
         XSSFSheet dataSheet = workbook.createSheet(rootBundle.getName());
 
-        Row headerRow = dataSheet.createRow(0);
+        CellStyle style = workbook.createCellStyle();
+        style.setAlignment(HorizontalAlignment.CENTER);
+        style.setVerticalAlignment(VerticalAlignment.CENTER);
+
+        Row titleRow = dataSheet.createRow(0);
+        Cell headerCell = titleRow.createCell(0);
+        headerCell.setCellValue("Daily Return  -  " + commonController.getDateTimeFormat24(searchController.getFromDate()) + " to " + commonController.getDateTimeFormat24(searchController.getToDate()));
+        headerCell.setCellStyle(style);
+        dataSheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 6));
+
+        String indDataSet = "";
+        if (searchController.getInstitution() != null) {
+            indDataSet += searchController.getInstitution().getName();
+        }
+        if (searchController.getDepartment() != null) {
+            indDataSet += "  ";
+            indDataSet += searchController.getDepartment().getName();
+            indDataSet += "(" + searchController.getSite().getName() + ")";
+        }
+        if ( !indDataSet.trim().isEmpty() || indDataSet.trim() != null) {
+            Row insData = dataSheet.createRow(1);
+            Cell insCell = insData.createCell(0);
+            insCell.setCellValue(indDataSet);
+            insCell.setCellStyle(style);
+            dataSheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 6));
+        }
 
         int currentRow = 3;
 
@@ -68,7 +101,7 @@ public class ExcelController {
 
         // Set the downloading file
         excelSc = DefaultStreamedContent.builder()
-                .name( rootBundle.getName() +  ".xlsx")
+                .name(rootBundle.getName() + ".xlsx")
                 .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
                 .stream(() -> inputStream)
                 .build();
@@ -145,8 +178,6 @@ public class ExcelController {
 
         return startRow;
     }
-    
-    
 
     private int addDataToExcelForCreditCards(XSSFSheet dataSheet, int startRow, ReportTemplateRowBundle addingBundle) {
         if (addingBundle.getReportTemplateRows() == null || addingBundle.getReportTemplateRows().isEmpty()) {
@@ -667,5 +698,4 @@ public class ExcelController {
         return startRow;
     }
 
-    
 }

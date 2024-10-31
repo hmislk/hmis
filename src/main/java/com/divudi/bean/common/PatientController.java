@@ -1379,11 +1379,11 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return 3;
         }
 
-        if (getPatient().getRunningBalance() < getBill().getNetTotal()) {
-            JsfUtil.addErrorMessage("The Refunded Value is more than the Current Deposit Value of the Patient");
-            System.out.println("error 4 = ");
-            return 4;
-        }
+//        if (getPatient().getRunningBalance() < getBill().getNetTotal()) {
+//            JsfUtil.addErrorMessage("The Refunded Value is more than the Current Deposit Value of the Patient");
+//            System.out.println("error 4 = ");
+//            return 4;
+//        }
 
         if (getBill().getPaymentMethod() == PaymentMethod.Cash) {
             if (getBill().getComments().trim().equalsIgnoreCase("")) {
@@ -1854,7 +1854,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
 
         if (searchMrn != null && !searchMrn.trim().equals("")) {
-            j += " and p.code =:mrn";
+            j += " and p.phn =:mrn";
             m.put("mrn", searchMrn);
             atLeastOneCriteriaIsGiven = true;
         }
@@ -2015,6 +2015,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
             if (controller.getPatient().getHasAnAccount() != null) {
                 if (patientSearched.getHasAnAccount() && configOptionApplicationController.getBooleanValueByKey("Automatically set the PatientDeposit payment Method if a Deposit is Available", false)) {
+                    opdBillController.setPatient(controller.getPatient());
                     opdBillController.setPaymentMethod(PaymentMethod.PatientDeposit);
                     opdBillController.listnerForPaymentMethodChange();
                 }

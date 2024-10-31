@@ -117,7 +117,7 @@
                                             <thead class="ui-datatable-thead ui-widget-header">
                                                 <tr>
                                                     <th class="ui-state-default ui-sortable-column text-center">Payment Method</th>
-                                                    <th class="ui-state-default ui-sortable-column text-center">Collected</th>
+                                                    <th class="ui-state-default ui-sortable-column text-center">To Handover</th>
                                                     <th class="ui-state-default ui-sortable-column text-center">Handing Over</th>
                                                     <th class="ui-state-default ui-sortable-column text-center">Difference</th>
                                                 </tr>
@@ -286,7 +286,7 @@
                                     <p:column  width="5em" headerText="Selected">
                                         <p:selectBooleanCheckbox value="#{summary.selected}" >
                                             <p:ajax 
-                                                listener="#{financialTransactionController.bundle.calculateTotalsByChildBundles()}" 
+                                                listener="#{financialTransactionController.bundle.calculateTotalsBySelectedChildBundles()}" 
                                                 update=":#{p:resolveFirstComponentWithId('txtCashHandover',view).clientId} :#{p:resolveFirstComponentWithId('tblCashier',view).clientId} " 
                                                 ></p:ajax>
                                         </p:selectBooleanCheckbox>
@@ -345,10 +345,24 @@
                                         class="text-end"
                                         rendered="#{financialTransactionController.bundle.hasCashTransaction}">
                                         <h:outputText 
+                                            rendered="false"
+                                            id="txtSummaryCashHandover"
                                             value="#{summary.cashHandoverValue}" 
                                             style="width: 100%;">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
+                                        <p:selectBooleanButton 
+                                            onIcon="fa fa-check" 
+                                            offIcon="fa fa-times" 
+                                            onLabel="Handover All Cash" 
+                                            offLabel="No Cash Handover" 
+                                            value="#{summary.selectAllCashToHandover}">
+                                            <p:ajax 
+                                                listener="#{financialTransactionController.updateForPaymentHandoverSelectionAtCreate()}" 
+                                                update=":#{p:resolveFirstComponentWithId('txtCashHandover',view).clientId} 
+                                                :#{p:resolveFirstComponentWithId('tblCashier',view).clientId}"/>
+                                        </p:selectBooleanButton>
+
                                         <f:facet name="footer">
                                             <h:outputText value="#{financialTransactionController.bundle.cashHandoverValue}">
                                                 <f:convertNumber pattern="#,##0.00" />

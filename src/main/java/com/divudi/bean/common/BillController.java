@@ -1,5 +1,6 @@
 package com.divudi.bean.common;
 
+import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.bean.membership.MembershipSchemeController;
 import com.divudi.bean.membership.PaymentSchemeController;
@@ -145,6 +146,8 @@ public class BillController implements Serializable {
     private OpdBillController opdBillController;
     @Inject
     PatientDepositController patientDepositController;
+    @Inject
+    DrawerController drawerController;
 
     /**
      * Class Vairables
@@ -1743,6 +1746,7 @@ public class BillController implements Serializable {
         cancellationBatchBill.setDiscount(0 - Math.abs(batchBill.getDiscount()));
         cancellationBatchBill.setNetTotal(0 - Math.abs(batchBill.getNetTotal()));
         cancellationBatchBill.setPaymentMethod(paymentMethod);
+        System.out.println("cancellationBatchBill.get = " + cancellationBatchBill.getPaymentMethod());
 
         cancellationBatchBill.setForwardReferenceBill(batchBill);
         batchBill.setCancelled(true);
@@ -1768,8 +1772,10 @@ public class BillController implements Serializable {
             patientDepositController.updateBalance(cancellationBatchBill, pd);
         }
 
-        createPaymentForOpdBatchBillCancellation(cancellationBatchBill, paymentMethod);
+        List<Payment> cancelPayments = createPaymentForOpdBatchBillCancellation(cancellationBatchBill, paymentMethod);
 
+        drawerController.updateDrawerForOuts(cancelPayments);
+        
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cancellationBatchBill, getSessionController().getLoggedUser());
         opdBillController.setBills(bills);
         opdBillController.setBatchBill(batchBill);

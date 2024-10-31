@@ -16,15 +16,22 @@
     <cc:implementation>
 
         <div >
-            Bill
             <div >
                 <div >
 
-
                     <h:outputStylesheet name="printing.css" library="css" />
-                    <p:commandButton value="Print" ajax="false" action="#"  >
-                        <p:printer target="gpBillPreview" ></p:printer>
-                    </p:commandButton>
+                    <div class="d-flex justify-content-end">
+                        <p:commandButton 
+                            style="width: 100px" 
+                            value="Print" 
+                            ajax="false" 
+                            action="#"  
+                            class="ui-button-info mb-2"
+                            icon="fa fa-print">
+                            <p:printer target="gpBillPreview" ></p:printer>
+                        </p:commandButton>
+                    </div>
+
 
 
                     <div class="fiveinchbillBreakRuhunu" >
@@ -32,7 +39,7 @@
                         <p:panel   id="gpBillPreview" style="border: none;"  >
 
 
-                            <div style="position: absolute!important;left: 60%!important; font-weight: bold!important;
+                            <div style="position: absolute!important;left: 45%!important; font-weight: bold!important;
                                  top: 0%!important;font-size: 15px!important; text-decoration: underline!important;">
                                 <h:outputLabel value="Receipt"   />                           
                             </div>
@@ -150,7 +157,7 @@
                             <div style="position: absolute;
                                  left: 25%;
                                  top: 15%;
-                                 font-size:12px!important;" >                    
+                                 font-size:15px!important;" >                    
                                 <p:outputLabel value="#{cc.attrs.bill.fromInstitution.name}" />
                             </div>
 
@@ -163,16 +170,14 @@
                             </div>
 
                             <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}"
+                                           rendered="#{cc.attrs.bill.patient ne null}"
                                            style=" position: absolute;left: 25%;top: 35%;font-weight: bold;">
                             </h:outputLabel>
 
                             <h:outputLabel value="#{cc.attrs.bill.patient.person.phone}"
+                                           rendered="#{cc.attrs.bill.patient ne null}"
                                            styleClass="phonePrinting" >
                             </h:outputLabel>
-
-
-
-
 
                             <h:outputLabel value="#{cc.attrs.bill.collectingCentre.name} #{cc.attrs.bill.creditCompany.name}"
                                            styleClass="billNamePrinting"  >
@@ -209,7 +214,7 @@
                                 <table style="min-width:100%;">
                                     <tr>
                                         <td style="min-width: 3cm; text-decoration: overline;">
-                                            <p:outputLabel value="Cashier : #{cc.attrs.bill.creater.code}" style="font-size: 11px!important;"/>
+                                            <p:outputLabel value="Cashier ID : #{cc.attrs.bill.creater.id}" style="font-size: 11px!important;"/>
                                         </td>
                                         <td style="min-width: 5cm;text-decoration: overline;width: 75%!important;" >
                                             <p:outputLabel value=""  style="font-size: 11px!important;"/>
