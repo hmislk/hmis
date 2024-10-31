@@ -47,7 +47,23 @@
                     </p:panel>
 
                     <p:panel rendered="#{agentPaymentReceiveSearchController.printPreview}" >
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between">
+                                    <p:commandButton 
+                                        value="Print" 
+                                        class="ui-button-info" 
+                                        icon="fas fa-print" 
+                                        ajax="false" 
+                                        action="#" >
+                                        <p:printer target="billPreview" ></p:printer>
+                                    </p:commandButton>
+                                </div>
+
+                        </f:facet>
+
+                        <h:panelGroup id="billPreview" class="d-flex justify-content-center">
                         <bi:agent billController ="#{agentPaymentReceiveSearchController}"  bill="#{agentPaymentReceiveSearchController.bill}" dup="false"/>  
+                        </h:panelGroup>
                     </p:panel>
 
 
