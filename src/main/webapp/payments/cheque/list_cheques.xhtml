@@ -92,12 +92,12 @@
                             <h:outputText value="#{cheque.chequeRefNo}" />
                         </p:column>
 
-                        <p:column headerText="From" sortBy="#{cheque.fromInstitution.name}" filterBy="#{cheque.fromInstitution.name}">
-                            <h:outputText value="#{cheque.fromInstitution.name}" />
+                        <p:column headerText="From" sortBy="#{cheque.bill.fromInstitution.name}" filterBy="#{cheque.bill.fromInstitution.name}">
+                            <h:outputText value="#{cheque.bill.fromInstitution.name}" />
                         </p:column>
 
-                        <p:column headerText="To" sortBy="#{cheque.toInstitution.name}" filterBy="#{cheque.toInstitution.name}">
-                            <h:outputText value="#{cheque.toInstitution.name}" />
+                        <p:column headerText="To" sortBy="#{cheque.bill.toInstitution.name}" filterBy="#{cheque.bill.toInstitution.name}">
+                            <h:outputText value="#{cheque.bill.toInstitution.name}" />
                         </p:column>
 
                         <p:column headerText="Value" sortBy="#{cheque.paidValue}" filterBy="#{cheque.paidValue}">
