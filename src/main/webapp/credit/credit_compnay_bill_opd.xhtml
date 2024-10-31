@@ -242,8 +242,7 @@
                         class="ui-button-warning d-flex">
                     </p:commandButton>
 
-                    <bi:insRecieve billController="#{cashRecieveBillController}"  bill="#{cashRecieveBillController.current}" dup="false"/>   
-
+                    <bi:CreditReceiveBill controller="#{cashRecieveBillController}"  bill="#{cashRecieveBillController.current}" dup="false"/>
                 </p:panel>
 
             </h:form>
