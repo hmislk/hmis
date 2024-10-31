@@ -78,12 +78,39 @@
                                             <p:ajax event="change" process="cmbPs" update="paymentMethodDetails" ></p:ajax>
                                         </p:selectOneMenu>
                                     </h:panelGrid>
-                                    <h:panelGrid id="paymentMethodDetails" class="w-100 b-1" >
+                                    <h:panelGrid id="paymentMethodDetails" class="w-100 b-1" style="margin-left: 150px;" >
+                                        <h:panelGroup
+                                            class="row my-1"
+                                            layout="block" 
+                                            id="cash"  rendered="#{pharmacyPurchaseController.bill.paymentMethod eq 'Cash'}" >
+                                            <p:inputText class="mx-1" style="width: 200px;" value="#{pharmacyPurchaseController.bill.netTotal}" id="txtNetTotal"/>
+                                            <p:inputText value="#{pharmacyPurchaseController.bill.comments}" placeholder="Enter a Comment" style="width: 200px;"     id="comment"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup
+                                            class="row my-1"
+                                            layout="block" 
+                                            id="credit"  rendered="#{pharmacyPurchaseController.bill.paymentMethod eq 'Credit'}" >
+                                            <div class="d-flex" >
+                                                <div class="ui-inputgroup mx-1 my-1">
+                                                    <p:inputText  
+                                                        value="#{pharmacyPurchaseController.bill.creditDuration}"
+                                                        style="width: 10em;">
+                                                    </p:inputText>
+                                                    <div class="ui-inputgroup-addon">Days</div>
+                                                </div>
+                                            </div>
+                                        </h:panelGroup>
                                         <h:panelGroup
                                             class="row my-1"
                                             layout="block" 
                                             id="cheque"  rendered="#{pharmacyPurchaseController.bill.paymentMethod eq 'Cheque'}" >
                                             <pa:cheque paymentMethodData="#{pharmacyPurchaseController.paymentMethodData}"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup
+                                            class="row my-1"
+                                            layout="block" 
+                                            id="slip"  rendered="#{pharmacyPurchaseController.bill.paymentMethod eq 'Slip'}" >
+                                             <pa:slip paymentMethodData="#{pharmacyPurchaseController.paymentMethodData}"/>
                                         </h:panelGroup>
                                     </h:panelGrid>
                                 </div>
