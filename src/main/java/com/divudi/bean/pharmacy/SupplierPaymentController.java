@@ -568,6 +568,7 @@ public class SupplierPaymentController implements Serializable {
     
     public void fillAllCreditBillssettled(){
         bills = null;
+        netTotal = 0.0;
         String jpql;
         Map params = new HashMap();
         List<BillType> billTypes = new ArrayList<>();
@@ -581,11 +582,15 @@ public class SupplierPaymentController implements Serializable {
                 + " and b.createdAt between :fromDate and :toDate ";
 
         params.put("billTypes", BillType.GrnPaymentPre);
-        params.put("toDate", getToDate());
-        params.put("fromDate", getFromDate());
+        params.put("toDate", toDate);
+        params.put("fromDate", fromDate);
         params.put("btas", BillTypeAtomic.SUPPLIER_PAYMENT);
 
         bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        
+        for (Bill b : bills) {
+            netTotal += b.getNetTotal();
+        }
     }
 
     @Deprecated
