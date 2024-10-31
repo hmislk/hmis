@@ -135,7 +135,7 @@
                                                    var="pvv"  
                                                    >
                                             <h:panelGroup rendered="#{pvv.investigationItem.ixItemType eq 'Value'}"  >
-                                                <tr>
+                                                <tr style="#{pvv.investigationItem.customCss}">
                                                     <td style="min-width: 200px!important;">
                                                         <h:outputLabel value="#{pvv.investigationItem.name}"></h:outputLabel>
                                                     </td>
@@ -168,7 +168,8 @@
                                     rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType ne 'Microbiology'  and patientReportController.currentPatientReport.containCalculations eq true }">
                                     <p:panel header="Calculations " id="tblCals">
                                         <table >               
-                                            <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" 
+                                            <ui:repeat  
+                                                value="#{patientReportController.currentPatientReport.patientReportItemValues}" 
                                                         var="pvcal"  
 
                                                         >
