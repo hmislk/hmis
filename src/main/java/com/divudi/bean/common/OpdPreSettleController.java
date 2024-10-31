@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.membership.MembershipSchemeController;
 import com.divudi.bean.membership.PaymentSchemeController;
@@ -92,6 +93,8 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
     MembershipSchemeController membershipSchemeController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    DrawerController drawerController;
 
     @EJB
     private BillFacade billFacade;
@@ -653,6 +656,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
                 paymentFacade.create(p);
                 ps.add(p);
             }
+            
         } else {
             Payment p = new Payment();
             p.setBill(bill);
@@ -702,6 +706,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
 
             ps.add(p);
         }
+        drawerController.updateDrawerForIns(ps);
         return ps;
     }
 

@@ -558,10 +558,14 @@ public class StaffPaymentBillController implements Serializable {
     public String navigateToStaffPaymentFromDuePayment(Staff s) {
         currentStaff = s;
         speciality = s.getSpeciality();
+        System.out.println("Staff = " + currentStaff);
+        System.out.println("Speciality = " + speciality);
         calculateDueFeesOpdForSelectedPeriod();
-//        calculateDueFees();
-        return "/payment_staff_bill?faces-redirect=true";
+        System.out.println("Due Bill Fees = " + dueBillFees);
+        return "/opd/professional_payments/payment_staff_bill?faces-redirect=true";
     }
+    
+    
 
     public String navigateToViewOpdPayProfessionalPayments() {
         recreateModel();

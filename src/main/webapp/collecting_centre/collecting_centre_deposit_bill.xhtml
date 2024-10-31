@@ -79,7 +79,7 @@
                                         id="cmbPs" 
                                         class="w-100"
                                         value="#{agentAndCcPaymentController.current.paymentMethod}"> 
-                                        <f:selectItem itemLabel="Select Payment Method"></f:selectItem>
+                                        <f:selectItem itemLabel="Payment Method"></f:selectItem>
                                         <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
                                         <p:ajax process="@this" update="paymentDetails" event="change" />
                                     </p:selectOneMenu>

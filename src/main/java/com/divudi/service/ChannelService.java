@@ -245,12 +245,13 @@ public class ChannelService {
         }
     }
 
-    public Bill saveBilledBill(boolean forReservedNumbers, Patient patient, SessionInstance session, String refNo, WebUser user) {
+    public Bill saveBilledBill(boolean forReservedNumbers, Patient patient, SessionInstance session, String refNo, WebUser user, Institution creditCompany) {
         saveSelected(patient);
         Bill savingBill = createBill(patient, session);
         BillItem savingBillItemForSession = createSessionItem(savingBill, refNo, session);
-        savingBill.setAgentRefNo(refNo);
-
+        savingBill.setAgentRefNo(refNo);   
+        savingBill.setCreditCompany(creditCompany);
+       
 //        PriceMatrix priceMatrix;
 //        if (itemsAddedToBooking != null || itemsAddedToBooking.isEmpty()) {
 //            for (Item ai : itemsAddedToBooking) {
@@ -423,10 +424,23 @@ public class ChannelService {
 
         return deptId;
     }
+    
+    public Institution findCreditCompany(String code, InstitutionType type){
+    
+        String jpql = "Select i from Institution i where i.retired = false "
+                + " and i.code = :code "
+                + " and i.institutionType = :type";
+        
+        Map params = new HashMap();
+        params.put("code", code);
+        params.put("type", type);
+        
+        return institutionFacade.findFirstByJpql(jpql, params);      
+    }
 
     private Bill createBill(Patient patient, SessionInstance session) {
         Bill bill = new BilledBill();
-        bill.setStaff(session.getOriginatingSession().getStaff());
+        bill.setStaff(session.getOriginatingSession().getStaff());      
         //bill.setToStaff(toStaff);
         bill.setAppointmentAt(session.getSessionDate());
         bill.setTotal(session.getOriginatingSession().getTotal());
@@ -560,14 +574,17 @@ public class ChannelService {
         return itemFeeFacade.findByJpql(sql, m);
     }
 
-    public List<Bill> findBillFromRefNo(String refNo) {
-        String jpql = "Select b from Bill b"
-                + " where b.agentRefNo = :ref"
+    public List<Bill> findBillFromRefNo(String refNo, Institution creditCompany) {
+        String jpql = "Select b from Bill b "
+                + " where b.creditcompany = :cc"
+                + " and b.agentRefNo = :ref"
                 + " and b.cancelled = false"
                 + " and b.retired = false";
 
+        
         Map params = new HashMap();
         params.put("ref", refNo);
+        params.put("cc", creditCompany);
         return billFacade.findByJpql(jpql, params);
 
     }
@@ -600,7 +617,7 @@ public class ChannelService {
         return bs;
     }
 
-    public List<Bill> viewBookingHistorybyDate(String fromDate, String toDate) {
+    public List<Bill> viewBookingHistorybyDate(String fromDate, String toDate, Institution cc) {
         try {
             SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
             Date startDate = formatter.parse(fromDate);
@@ -611,11 +628,13 @@ public class ChannelService {
             BillTypeAtomic billType = BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT;
             String jpql = "Select b from Bill b "
                     + " where b.billDate between :fd And :td "
+                    + " b.creditCompany = :cc " 
                     + " and b.billTypeAtomic = :bt";
 
             Map params = new HashMap();
             params.put("fd", startDate);
             params.put("td", endDate);
+            params.put("cc", cc);
             params.put("bt", billType);
 
             return billFacade.findByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);

@@ -1379,11 +1379,11 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return 3;
         }
 
-        if (getPatient().getRunningBalance() < getBill().getNetTotal()) {
-            JsfUtil.addErrorMessage("The Refunded Value is more than the Current Deposit Value of the Patient");
-            System.out.println("error 4 = ");
-            return 4;
-        }
+//        if (getPatient().getRunningBalance() < getBill().getNetTotal()) {
+//            JsfUtil.addErrorMessage("The Refunded Value is more than the Current Deposit Value of the Patient");
+//            System.out.println("error 4 = ");
+//            return 4;
+//        }
 
         if (getBill().getPaymentMethod() == PaymentMethod.Cash) {
             if (getBill().getComments().trim().equalsIgnoreCase("")) {

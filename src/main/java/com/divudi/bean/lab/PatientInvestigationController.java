@@ -1924,22 +1924,25 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public void searchPatientReportsFormSelectedBillForCourier(Bill bill) {
-        listingEntity = ListingEntity.PATIENT_REPORTS;
+        listingEntity = ListingEntity.PATIENT_INVESTIGATIONS;
         String jpql;
         Map<String, Object> params = new HashMap<>();
 
-        jpql = "SELECT r "
-                + " FROM PatientReport r "
-                + " WHERE r.retired = :ret "
-                + " AND r.patientInvestigation.billItem.bill.cancelled=:cancel ";
+        // Query PatientSampleComponent to get PatientInvestigations
+        jpql = "SELECT i "
+                + "FROM PatientInvestigation i "
+                + " WHERE i.retired = :ret ";
 
-        jpql += " AND r.patientInvestigation.billItem.bill.patient =:patient ";
-        params.put("patient", bill.getPatient());
+        jpql += " AND i.billItem.bill =:bill ";
+        params.put("bill", bill);
 
-        jpql += " ORDER BY r.patientInvestigation.billItem.bill.patient asc";
-        params.put("ret", false);
+        jpql += " AND i.billItem.bill.cancelled=:cancel ";
         params.put("cancel", false);
-        patientReports = patientReportFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        jpql += " ORDER BY i.billItem.bill.patient asc, i.billItem.bill.createdAt desc";
+
+        params.put("ret", false);
+        items = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     public void searchBillsWithSampleId() {
@@ -2103,7 +2106,7 @@ public class PatientInvestigationController implements Serializable {
             params.put("collectionCenter", getCollectionCenter());
         } else {
             if (!sessionController.getLoggableCollectingCentres().isEmpty()) {
-                jpql += " AND (pi.billItem.bill.collectingCentre IN :collectionCenters OR pi.billItem.bill.fromInstitution IN :collectionCenters) ";
+                jpql += " AND (r.patientInvestigation.billItem.bill.collectingCentre IN :collectionCenters OR r.patientInvestigation.billItem.bill.fromInstitution IN :collectionCenters) ";
                 params.put("collectionCenters", sessionController.getLoggableCollectingCentres());
             }
         }
@@ -2493,7 +2496,7 @@ public class PatientInvestigationController implements Serializable {
             params.put("collectionCenter", getCollectionCenter());
         } else {
             if (!sessionController.getLoggableCollectingCentres().isEmpty()) {
-                jpql += " AND (pi.billItem.bill.collectingCentre IN :collectionCenters OR pi.billItem.bill.fromInstitution IN :collectionCenters) ";
+                jpql += " AND (i.billItem.bill.collectingCentre IN :collectionCenters OR i.billItem.bill.fromInstitution IN :collectionCenters) ";
                 params.put("collectionCenters", sessionController.getLoggableCollectingCentres());
             }
         }

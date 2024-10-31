@@ -18,24 +18,25 @@
 
                         <h:panelGrid columns="2" class="w-100">
                             <h:outputLabel value="From"/>
-                            <p:calendar 
+                            <p:datePicker
+
                                 class="w-100 " 
                                 inputStyleClass="w-100" 
                                 id="fromDate" 
                                 value="#{searchController.fromDate}" 
-                                navigator="false" 
-                                pattern="#{sessionController.applicationPreference.longDateFormat}" >
-                            </p:calendar>
+                                showTime="true"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            </p:datePicker>
 
                             <h:outputLabel value="To"/>                                
-                            <p:calendar 
+                            <p:datePicker 
                                 class="w-100 " 
                                 inputStyleClass="w-100" 
                                 id="toDate" 
                                 value="#{searchController.toDate}" 
-                                navigator="false" 
+                                showTime="true"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
-                            </p:calendar>
+                            </p:datePicker>
 
                             <h:outputLabel value="Institution"/>                                
                             <p:selectOneMenu class="w-100 " value="#{searchController.institution}" filter="true" >
@@ -119,6 +120,31 @@
 
                                 <p:column headerText="Balance After" style="text-align: left;" >
                                     <p:outputLabel value="#{cb.fromDepartmentBalanceAfter}" ></p:outputLabel>
+                                </p:column>
+
+                                
+                                 <p:column  headerText="Cash Balance Before" style="text-align: left;">
+                                    <p:outputLabel value="#{cb.fromDepartmentCashBalanceBefore}" ></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Cash Value" style="text-align: left;" >
+                                    <p:outputLabel value="#{cb.cashValue}" ></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Cash Balance After" style="text-align: left;" >
+                                    <p:outputLabel value="#{cb.fromDepartmentCashBalanceAfter}" ></p:outputLabel>
+                                </p:column>
+                                
+                                 <p:column  headerText="Card Balance Before" style="text-align: left;">
+                                    <p:outputLabel value="#{cb.fromDepartmentCardBalanceBefore}" ></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Card Value" style="text-align: left;" >
+                                    <p:outputLabel value="#{cb.cardValue}" ></p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Card Balance After" style="text-align: left;" >
+                                    <p:outputLabel value="#{cb.fromDepartmentCardBalanceAfter}" ></p:outputLabel>
                                 </p:column>
 
 

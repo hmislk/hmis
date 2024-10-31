@@ -209,6 +209,7 @@ public class DrawerController implements Serializable {
         for (Payment payment : payments) {
             updateDrawerForIns(payment);
         }
+        System.out.println("Draver & Draver Entry Updated...");
     }
 
     public void drawerEntryUpdate(Payment payment, Drawer currentDrawer) {

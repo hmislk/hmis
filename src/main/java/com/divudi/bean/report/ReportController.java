@@ -1229,6 +1229,8 @@ public class ReportController implements Serializable {
     }
 
     public BillItem findVoucherIsAvailable(Bill b) {
+        voucherItem = null;
+        
         String jpql = "SELECT bi "
                 + "FROM BillItem bi "
                 + "WHERE bi.retired = :ret "
@@ -1241,8 +1243,25 @@ public class ReportController implements Serializable {
         List<BillType> bts = new ArrayList<>();
         bts.add(BillType.CashRecieveBill);
         m.put("bts", bts);
-
-        voucherItem = billItemFacade.findFirstByJpql(jpql, m);
+        
+        List<BillItem> bis = billItemFacade.findByJpql(jpql, m);
+        
+        if(bis.size() == 1){
+           voucherItem = billItemFacade.findFirstByJpql(jpql, m);
+           if(voucherItem.getBill().getNetTotal() < b.getNetTotal()){
+               voucherItem.getBill().setAdjustedTotal(Math.abs(b.getNetTotal()) - Math.abs(voucherItem.getBill().getNetTotal()));
+           }
+        }else if(bis.size() > 1){
+            Double NetTotal = 0.0;
+           for(BillItem bi : bis){
+             voucherItem = bi;
+             NetTotal += voucherItem.getBill().getNetTotal();
+            } 
+           voucherItem.getBill().setNetTotal(NetTotal);
+        }
+        
+        
+        
         return voucherItem;
     }
 

@@ -56,7 +56,7 @@
                                         id="cmdPayment" 
                                         value="#{financialTransactionController.currentPayment.paymentMethod}" >
                                         <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
-                                        <f:selectItems value="#{enumController.paymentMethods}" ></f:selectItems>
+                                        <f:selectItems value="#{enumController.paymentMethodsForIncome}" ></f:selectItems>
                                         <p:ajax process="cmdPayment" update="paymentDetails" ></p:ajax>
                                     </p:selectOneMenu>
 
@@ -177,7 +177,7 @@
                                 <p:column headerText="Details"  >
                                     <h:panelGroup rendered="#{bp.paymentMethod eq 'Card'}">
                                         <h:outputLabel value="Bank Name : #{bp.bank.name}" ></h:outputLabel>
-                                        <h:outputLabel value="Cheque No : #{bp.creditCardRefNo}" ></h:outputLabel>
+                                        <h:outputLabel value="Card Last 4 Digits : #{bp.creditCardRefNo}" ></h:outputLabel>
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{bp.paymentMethod eq 'Cheque'}">
                                         <h:outputLabel value="Bank Name : #{bp.bank.name}" ></h:outputLabel>

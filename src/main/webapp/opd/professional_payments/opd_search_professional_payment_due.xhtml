@@ -42,7 +42,7 @@
 
                                 <h:outputLabel value="OPD Bill No"/>
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="my-1 w-100"/>
-                                <h:outputLabel value="Bht No"/>
+                                <h:outputLabel value="BHT No"/>
                                 <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.bhtNo}" />
                                 <h:outputLabel value="Patient Name"/>
                                 <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" class="my-1 w-100"/>
@@ -83,10 +83,10 @@
                                     </p:column>
 
                                     <p:column headerText="Doctor" >
-                                        <h:commandLink action="#{staffPaymentBillController.navigateToStaffPaymentFromDuePayment(bf.staff)}" >
-                                            <h:outputLabel value="#{bf.staff.person.name}">
-                                            </h:outputLabel>
-                                        </h:commandLink>
+                                        <p:commandLink
+                                            action="#{staffPaymentBillController.navigateToStaffPaymentFromDuePayment(bf.staff)}"
+                                            value="#{bf.staff.person.name}">
+                                        </p:commandLink>
                                     </p:column>
 
                                     <p:column headerText="Patient" >
@@ -124,20 +124,9 @@
                                 </p:dataTable>
                             </div>
                         </div>
-
-
-
-
-
-
-
                     </p:panel>
-
                 </h:form>
             </ui:define>
-
-
         </ui:composition>
-
     </h:body>
 </html>

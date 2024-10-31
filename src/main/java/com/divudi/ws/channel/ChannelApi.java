@@ -19,6 +19,7 @@ import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.HistoryType;
+import com.divudi.data.InstitutionType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.PersonInstitutionType;
 import com.divudi.data.Title;
@@ -700,7 +701,7 @@ public class ChannelApi {
             JSONObject responseError = commonFunctionToErrorResponse("Invalid Session id. Please check!");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(responseError.toString()).build();
         }
-     
+
         SimpleDateFormat forDate = new SimpleDateFormat("yyyy-MM-dd");
         SimpleDateFormat forTime = new SimpleDateFormat("HH:mm:ss");
 
@@ -795,23 +796,23 @@ public class ChannelApi {
         String patientPhoneNo = patientDetails.get("teleNo");
         String patientName = patientDetails.get("patientName");
         String patientType = patientDetails.get("foreign");
-        boolean isForeigner = false;
+        boolean isForeigner = Integer.parseInt(patientType) == 1 ? true : false;
         String patientTitle = patientDetails.get("title");
         String nic = patientDetails.get("nid");
         String clientsReferanceNo = patientDetails.get("clientRefNumber");
         Long patientPhoneNumberLong = CommonFunctions.removeSpecialCharsInPhonenumber(patientPhoneNo);
 
-        if (clientsReferanceNo.isEmpty() || clientsReferanceNo == null) {
+        if (clientsReferanceNo == null || clientsReferanceNo.isEmpty()) {
             JSONObject response = commonFunctionToErrorResponse("Invalid Ref No");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
-        if (patientPhoneNo.isEmpty() || patientPhoneNo == null) {
+        if (patientPhoneNo == null || patientPhoneNo.isEmpty()) {
             JSONObject response = commonFunctionToErrorResponse("Invalid Phone Number");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
-        if (String.valueOf(patientPhoneNumberLong).length() < 9 && String.valueOf(patientPhoneNumberLong).length() > 10) {
+        if (String.valueOf(patientPhoneNumberLong).length() != 10) {
             JSONObject response = commonFunctionToErrorResponse("Invalid Phone Number");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
@@ -914,15 +915,17 @@ public class ChannelApi {
         String channelForm = payment.get("channelFrom");
         PaymentMethod paymentMethod = null;
 
-        List<Bill> billList = channelService.findBillFromRefNo(clientsReferanceNo);
+        Institution creditCompany = channelService.findCreditCompany(paymentChannel, InstitutionType.Agency);
+        List<Bill> billList = channelService.findBillFromRefNo(clientsReferanceNo, creditCompany);
 
         if (billList != null && !billList.isEmpty()) {
             JSONObject response = commonFunctionToErrorResponse("Duplicate Ref No occured");
             System.out.println("line");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
+
         //TODO : Handle Payment Method
-        Bill bill = channelService.saveBilledBill(false, newPatient, session, clientsReferanceNo, null);
+        Bill bill = channelService.saveBilledBill(false, newPatient, session, clientsReferanceNo, null, creditCompany);
 
         SimpleDateFormat forDate = new SimpleDateFormat("yyyy-MM-dd");
         SimpleDateFormat forTime = new SimpleDateFormat("HH:mm:ss");
@@ -981,7 +984,7 @@ public class ChannelApi {
 
         Map<String, Object> apoinmentDetailsResponse = new HashMap<>();
         apoinmentDetailsResponse.put("refNo", clientsReferanceNo);
-        apoinmentDetailsResponse.put("patientNo", bill.getInvoiceNumber());
+        apoinmentDetailsResponse.put("patientNo", bill.getSingleBillSession().getSerialNoStr());
         apoinmentDetailsResponse.put("allPatientNo", session.getPaidPatientCount());
         apoinmentDetailsResponse.put("showPno", null);
         apoinmentDetailsResponse.put("showTime", null);
@@ -1019,6 +1022,8 @@ public class ChannelApi {
         String patientPhoneNo = patientDetailsFromRequest.get("teleNo");
         String patientName = patientDetailsFromRequest.get("patientName");
         String patientNic = patientDetailsFromRequest.get("nid");
+        Map<String, String> paymentDetails = (Map<String, String>) requestBody.get("payment");
+        String paymentChannel = paymentDetails.get("paymentChannel");
 
         Long patientPhoneNumberLong = CommonFunctions.removeSpecialCharsInPhonenumber(patientPhoneNo);
 
@@ -1037,7 +1042,8 @@ public class ChannelApi {
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
-        List<Bill> billList = channelService.findBillFromRefNo(clientsReferanceNo);
+        Institution creditCompany = channelService.findCreditCompany(paymentChannel, InstitutionType.Agency);
+        List<Bill> billList = channelService.findBillFromRefNo(clientsReferanceNo, creditCompany);
 
         Bill bill = billList.get(0);
 
@@ -1117,7 +1123,7 @@ public class ChannelApi {
 
         Map<String, Object> apoinmentDetailsResponse = new HashMap<>();
         apoinmentDetailsResponse.put("refNo", clientsReferanceNo);
-        apoinmentDetailsResponse.put("patientNo", bill.getInvoiceNumber());
+        apoinmentDetailsResponse.put("patientNo", bill.getSingleBillSession().getSerialNoStr());
         apoinmentDetailsResponse.put("allPatientNo", session.getPaidPatientCount());
         apoinmentDetailsResponse.put("showPno", null);
         apoinmentDetailsResponse.put("showTime", null);
@@ -1158,7 +1164,8 @@ public class ChannelApi {
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
-        List<Bill> billList = channelService.findBillFromRefNo(clientsReferanceNo);
+        Institution creditCompany = channelService.findCreditCompany("WEB_DOC990", InstitutionType.Agency);
+        List<Bill> billList = channelService.findBillFromRefNo(clientsReferanceNo, creditCompany);
 
         if (billList == null || billList.isEmpty()) {
             JSONObject response = commonFunctionToErrorResponse("No bill reference with RefNo");
@@ -1170,7 +1177,7 @@ public class ChannelApi {
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
-        if (bill.getPaymentMethod() == PaymentMethod.OnlineSettlement) {
+        if (bill.getBilledBill().getPaymentMethod() == PaymentMethod.OnlineSettlement) {
             JSONObject response = commonFunctionToErrorResponse("Booking for the ref no already completed.");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
@@ -1237,10 +1244,46 @@ public class ChannelApi {
 
         String fromDate = requestBody.get("fromDate");
         String toDate = requestBody.get("toDate");
-        List<Bill> billList = channelService.viewBookingHistorybyDate(fromDate, toDate);
+        String creditCompanyCode = requestBody.get("paymentChannel");
+        Institution creditCompany = channelService.findCreditCompany(creditCompanyCode, InstitutionType.Agency);
+
+        if (creditCompany == null) {
+            JSONObject response = commonFunctionToErrorResponse("NO credit company registered in the System");
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+        }
+
+        List<Bill> billList = channelService.viewBookingHistorybyDate(fromDate, toDate, creditCompany);
+
+        if (billList == null || billList.isEmpty()) {
+            JSONObject response = commonFunctionToErrorResponse("NO bills for that Date Range");
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+        }
+        
+        Map result = new HashMap();
+        int count = 1;
+
+        for (Bill b : billList) {
+            Map<String, Object> mapDetail = new HashMap<>();   
+            mapDetail.put("DoctorName", b.getSingleBillSession().getSessionInstance().getOriginatingSession().getStaff().getName());
+            mapDetail.put("PatientName", b.getPatient().getPerson().getName());
+            mapDetail.put("HosTelephone", b.getInstitution().getPhone());
+            mapDetail.put("NicNumber", b.getPatient().getPerson().getNic());
+            mapDetail.put("HosName", b.getInstitution().getName());
+            mapDetail.put("RefNo", b.getAgentRefNo());
+            mapDetail.put("HosLocation", b.getInstitution().getAddress());
+            mapDetail.put("AppointmentNumber", Integer.parseInt(b.getSingleBillSession().getSerialNoStr()));
+            result.put("additionalProp"+(count++), mapDetail);
+        }
+
+        Map response = new HashMap<>();
+        response.put("data", result);
+        response.put("message", "Accepted");
+        response.put("code", 202);
+        response.put("detailMessage", "All the appoinment details listed");
+        
         System.out.println(billList.size());
 
-        return Response.status(Response.Status.ACCEPTED).entity("view Appointment Api").build();
+        return Response.status(Response.Status.ACCEPTED).entity(response).build();
     }
 
     @POST
@@ -1257,13 +1300,21 @@ public class ChannelApi {
         }
 
         String refNo = (String) requestBody.get("refNo");
+        String creditCompanyCode = (String) requestBody.get("bookingChannel");
 
         if (refNo.isEmpty() || refNo == null) {
             JSONObject response = commonFunctionToErrorResponse("Invalid Ref No");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
-        List<Bill> billList = channelService.findBillFromRefNo(refNo);
+        Institution creditCompany = channelService.findCreditCompany(creditCompanyCode, InstitutionType.Agency);
+
+        if (creditCompany == null) {
+            JSONObject response = commonFunctionToErrorResponse("NO credit company registered in the System");
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+        }
+
+        List<Bill> billList = channelService.findBillFromRefNo(refNo, creditCompany);
         if (billList == null || billList.isEmpty()) {
             JSONObject response = commonFunctionToErrorResponse("No bill reference with RefNo");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
@@ -1360,13 +1411,23 @@ public class ChannelApi {
         }
 
         String refNo = (String) requestBody.get("refNo");
+        Map paymentDetails = (Map) requestBody.get("payment");
+
+        String creditCompanyCode = (String) paymentDetails.get("paymentChannel");
 
         if (refNo.isEmpty() || refNo == null) {
             JSONObject response = commonFunctionToErrorResponse("Invalid Ref No");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
-        List<Bill> billList = channelService.findBillFromRefNo(refNo);
+        Institution creditCompany = channelService.findCreditCompany(creditCompanyCode, InstitutionType.Agency);
+
+        if (creditCompany == null) {
+            JSONObject response = commonFunctionToErrorResponse("NO credit company registered in the System");
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+        }
+
+        List<Bill> billList = channelService.findBillFromRefNo(refNo, creditCompany);
 
         if (billList == null || billList.isEmpty()) {
             JSONObject response = commonFunctionToErrorResponse("No bill reference with RefNo");
@@ -1439,9 +1500,9 @@ public class ChannelApi {
         priceDetails.put("hosVatPercentage", 0);
         priceDetails.put("vatPercentage", 0);
 
-        Map<String, Object> paymentDetails = new HashMap<>();
-        paymentDetails.put("paymentMode", "");
-        paymentDetails.put("paymentChannel", "");
+        Map<String, Object> paymentDetailsResponse = new HashMap<>();
+        paymentDetailsResponse.put("paymentMode", "");
+        paymentDetailsResponse.put("paymentChannel", "");
 
         appoinment.put("sessionDetails", sessionDetails);
         appoinment.put("patient", patientDetails);

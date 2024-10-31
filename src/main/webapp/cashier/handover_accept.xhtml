@@ -106,19 +106,10 @@
                                                 </div>
                                                 <div class="col-md-8 text-right">
 
-                                                    <p:commandButton 
-                                                        rendered="#{webUserController.hasPrivilege('ShiftHandoverAcceptAsMainCashier')}" 
-                                                        value="Accept Handover - Main Cashier" 
-                                                        styleClass="ui-button-warning mx-1" 
-                                                        icon="pi pi-check-circle" 
-                                                        ajax="false" 
-                                                        onclick="return confirm('Are you sure you want to proceed with the handover?');" 
-                                                        action="#{financialTransactionController.acceptHandoverBill()}">
-                                                    </p:commandButton>
 
                                                     <p:commandButton 
                                                         rendered="#{webUserController.hasPrivilege('ShiftHandoverAcceptAsMainCashier')}" 
-                                                        value="Accept Handover and write to Cashbook - Main Cashier" 
+                                                        value="Accept Handover &amp; Write to Cashbook" 
                                                         styleClass="ui-button-success mx-1" 
                                                         icon="pi pi-check-circle" 
                                                         ajax="false" 
@@ -136,25 +127,6 @@
                                                         icon="pi pi-times-circle">
                                                     </p:commandButton>
 
-                                                    <p:commandButton 
-                                                        rendered="#{webUserController.hasPrivilege('ShiftHandoverAcceptAsCashier')}" 
-                                                        value="Accept Handover" 
-                                                        styleClass="ui-button-warning mx-1" 
-                                                        icon="pi pi-check-circle" 
-                                                        ajax="false" 
-                                                        onclick="return confirm('Are you sure you want to proceed with the handover?');" 
-                                                        action="#{financialTransactionController.acceptHandoverBill()}">
-                                                    </p:commandButton>
-
-                                                    <p:commandButton 
-                                                        value="Accept Handover and write to Cashbook" 
-                                                        rendered="#{webUserController.hasPrivilege('ShiftHandoverAcceptAsCashier')}" 
-                                                        styleClass="ui-button-success mx-1" 
-                                                        icon="pi pi-check-circle" 
-                                                        ajax="false" 
-                                                        onclick="return confirm('Are you sure you want to proceed with the handover?');" 
-                                                        action="#{financialTransactionController.acceptHandoverBillAndWriteToCashbook()}">
-                                                    </p:commandButton>
 
                                                 </div>
 

@@ -19,12 +19,12 @@
                                     action="#{reportController.processCurrentCollectionCenterBalance}" >
                                 </p:commandButton>
                             </div>
-                             <p:commandButton id="btnExcel" class="mx-2 ui-button-success"
-                                                     style="width: 150px"
-                                                     icon="fas fa-file-excel"
-                                                     ajax="false" value="Excel">
-                                        <p:dataExporter type="xlsx" fileName="Collecting Center Current Balance Report" target="agentHistoriesTable"  />
-                                    </p:commandButton>
+                            <p:commandButton id="btnExcel" class="mx-2 ui-button-success"
+                                             style="width: 150px"
+                                             icon="fas fa-file-excel"
+                                             ajax="false" value="Excel">
+                                <p:dataExporter type="xlsx" fileName="Collecting Center Current Balance Report" target="agentHistoriesTable"  />
+                            </p:commandButton>
                         </div>
 
                         <p:dataTable 
@@ -74,6 +74,33 @@
                                 <h:outputText value="#{ah.institution.ballance}">
                                     <f:convertNumber groupingUsed="true" maxFractionDigits="2" minFractionDigits="2" />
                                 </h:outputText>
+                            </p:column>
+
+                            <p:column
+                                rendered="#{webUserController.hasPrivilege('Developers')}"
+                                headerText="Last Hx Balance" >
+                                <h:outputText value="#{collectingCentreController.lastAgentBalance(ah.institution)}">
+                                    <f:convertNumber groupingUsed="true" maxFractionDigits="2" minFractionDigits="2" />
+                                </h:outputText>
+
+                                <p:commandButton   
+                                    ajax="false" 
+                                    title="Edit Collecting Centre"
+                                    icon="pi pi-building"
+                                    class="m-1"
+                                    action="#{navigationController.navigateToCollectingCenter()}" >
+                                    <f:setPropertyActionListener value="#{ah.institution}" target="#{collectingCentreController.current}" ></f:setPropertyActionListener>
+                                </p:commandButton>
+
+                                <p:commandButton 
+                                    ajax="false"
+                                    class="m-1"
+                                    title="Edit Entry"
+                                    icon="pi pi-pencil"
+                                    action="#{collectingCentreController.navigateToEditCollectingCentreBalanceEntry(collectingCentreController.lastAgentHistory(ah.institution))}" >
+                                </p:commandButton>
+
+
                             </p:column>
 
                         </p:dataTable>
