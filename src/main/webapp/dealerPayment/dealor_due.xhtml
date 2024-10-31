@@ -113,6 +113,12 @@
                                     <p:column headerText="Bill Type" sortBy="#{b.billTypeAtomic.label}" filterBy="#{b.billTypeAtomic.label}">
                                         <h:outputText value="#{b.billTypeAtomic.label}" />
                                     </p:column>
+                                    
+                                    <p:column headerText="Invoice No"
+                                              filterMatchMode="contains"
+                                              sortBy="#{b.invoiceNumber}" filterBy="#{b.invoiceNumber}">
+                                        <h:outputText value="#{b.invoiceNumber}" />
+                                    </p:column>
 
                                     <p:column  class="text-end" headerText="Total" sortBy="#{b.netTotal}" filterBy="#{b.netTotal}">
                                         <h:outputText value="#{b.netTotal}">
