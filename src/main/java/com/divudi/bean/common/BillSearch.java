@@ -3211,7 +3211,7 @@ public class BillSearch implements Serializable {
         cancellationBill.setCreatedAt(new Date());
         cancellationBill.setCreater(sessionController.getLoggedUser());
         cancellationBill.setComments(comment);
-        cancellationBill.setBillType(BillType.SUPPLEMENTARY_INCOME);
+        cancellationBill.setBillType(BillType.SUPPLEMENTARY_INCOME_CANCELLED);
         cancellationBill.setBillTypeAtomic(BillTypeAtomic.SUPPLEMENTARY_INCOME_CANCELLED);
         
         getBill().setCancelled(true);
@@ -3275,6 +3275,26 @@ public class BillSearch implements Serializable {
         return "/cashier/expense_bill_cancel?faces-redirect=true;";
     }
     
+    public String navigateToViewCancelExpenseBill() {
+        if (viewingBill == null) {
+            JsfUtil.addErrorMessage("No Bill to Dsiplay");
+            return "";
+        }
+        financialTransactionController.setCurrentBill(viewingBill);
+        financialTransactionController.setCurrentBillPayments(viewingBillPayments);
+        return "/cashier/expense_bill_cancellation_print?faces-redirect=true;";
+    }
+    
+    public String navigateToManageCancelExpenseBill() {
+        if (viewingBill == null) {
+            JsfUtil.addErrorMessage("No Bill to Dsiplay");
+            return "";
+        }
+        financialTransactionController.setCurrentBill(viewingBill);
+        financialTransactionController.setCurrentBillPayments(viewingBillPayments);
+        return "/cashier/expense_bill_reprint?faces-redirect=true;";
+    }
+    
     public void cancelExpenseBill() {
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill Selected to Canel");
@@ -3311,7 +3331,7 @@ public class BillSearch implements Serializable {
         cancellationBill.setCreatedAt(new Date());
         cancellationBill.setCreater(sessionController.getLoggedUser());
         cancellationBill.setComments(comment);
-        cancellationBill.setBillType(BillType.OPERATIONAL_EXPENSES);
+        cancellationBill.setBillType(BillType.OPERATIONAL_EXPENSES_CANCELLED);
         cancellationBill.setBillTypeAtomic(BillTypeAtomic.OPERATIONAL_EXPENSES_CANCELLED);
         
         getBill().setCancelled(true);
@@ -3694,7 +3714,7 @@ public class BillSearch implements Serializable {
             case SUPPLEMENTARY_INCOME_CANCELLED:
                 return navigateToCancelIncomeBill();
             case OPERATIONAL_EXPENSES_CANCELLED:
-                return navigateToCancelExpenseBill();
+                return navigateToViewCancelExpenseBill();
             
         }
         
