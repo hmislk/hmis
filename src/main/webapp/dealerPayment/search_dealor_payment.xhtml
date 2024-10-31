@@ -84,6 +84,10 @@
                                         <h:outputLabel value="#{bill.toInstitution.name}" />
                                     </p:column>                          
 
+                                     <p:column headerText="Department">                             
+                                        <h:outputLabel value="#{bill.department.name}" />
+                                    </p:column>
+                                    
                                     <p:column headerText="Billed at"  >                                
                                         <h:outputLabel value="#{bill.createdAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
@@ -115,6 +119,11 @@
                                         <h:outputLabel value="#{bill.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{supplierPaymentController.netTotal}">
+                                                <f:convertNumber pattern="#,##0.00;(#,##0.00)" />
+                                            </h:outputText>
+                                        </f:facet>
                                     </p:column>
                                     <p:column headerText="Bank" >                                
                                         <h:outputLabel value="#{bill.bank.name}" >                                        
