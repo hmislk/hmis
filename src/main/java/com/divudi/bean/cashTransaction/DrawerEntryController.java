@@ -123,6 +123,10 @@ public class DrawerEntryController implements Serializable {
             m.put("fd", fromDate);
             m.put("td", toDate);
         }
+        if (webUser != null){
+            jpql += " and de.webUser=:wu ";  
+            m.put("wu", webUser);
+        }
 
         jpql += " order by de.id desc";
 
