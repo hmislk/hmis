@@ -12,99 +12,54 @@
     </h:head>
     <h:body>
 
-        <ui:composition template="/analytics/index.xhtml">
-
-            <ui:define name="report">
-                <h:form>
-
-
-                    <p:panelGrid columns="1" rendered="#{financialTransactionController.nonClosedShiftStartFundBill ne null}" class="w-100">
-                        <f:facet name="header">
-                            <div class="d-flex align-items-center justify-content-between">
-                                <div>
-                                    <i class="fa-solid fa-cash-register">&nbsp;&nbsp;</i>
-                                    <p:outputLabel value="Shift Report" />
-                                </div>
-                                <div>
-                                    <p:commandButton class="ui-button-info mx-2" 
-                                                     ajax="false" 
-                                                     value="Back" 
-                                                     action="shift_end_summery_bill_of_selected_user.xhtml?faces-redirect=true;" ></p:commandButton>
-                                    <p:commandButton class="ui-button-info mx-2" 
-                                                     ajax="false" 
-                                                     value="Process" 
-                                                     action="#{financialTransactionController.processShiftEndReport()}" ></p:commandButton>
-                                </div>
-                            </div>
-
+        <ui:composition template="./index.xhtml">
+            <ui:define name="subcontent">
+                <h:form >
+                    <p:panel class="m-1 W-100" >
+                        <f:facet name="header" >
+                            <h:outputText value="Service Department Revenue Report - by Period" ></h:outputText>
                         </f:facet>
 
-                        <p:panelGrid columns="3">
-                            <h:panelGroup>
-                                <div class="card">
-                                    <div class="card-header">
-                                        <i class="fas fa-user-md"></i> Staff Details
-                                    </div>
-                                    <div class="card-body">
-                                        <p><strong>Staff:</strong> #{financialTransactionController.nonClosedShiftStartFundBill.staff.person.nameWithTitle}</p>
-                                        <p><strong>Total Value:</strong> 
-                                            <h:outputText value="#{financialTransactionController.nonClosedShiftStartFundBill.referenceBill.total}">
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputText>
-                                        </p>
-                                        <p><strong>Duration:</strong> 
-                                            #{financialTransactionController.calculateDuration(
-                                              financialTransactionController.nonClosedShiftStartFundBill.createdAt, 
-                                              financialTransactionController.nonClosedShiftStartFundBill.referenceBill.createdAt)}
-                                        </p>
-                                    </div>
-                                </div>
+
+
+                        <p:panelGrid columns="7" layout="tabular">
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="From" for="fromDate" class="mx-3"/>
                             </h:panelGroup>
+                            <p:calendar 
+                                styleClass="w-100" 
+                                inputStyleClass="w-100 form-control" 
+                                id="fromDate" 
+                                value="#{searchController.fromDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                />
 
+                            <p:spacer width="50" ></p:spacer>
 
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="To" for="toDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar 
+                                styleClass="w-100" 
+                                inputStyleClass="w-100 form-control" 
+                                id="toDate" 
+                                value="#{searchController.toDate}" 
+                                navigator="false" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                />
 
                             <h:panelGroup >
-                                <div class="card">
-                                    <div class="card-header">
-                                        <i class="fas fa-sign-in-alt"></i> Shift Start
-                                    </div>
-                                    <div class="card-body">
-                                        <p><strong>Start Bill ID:</strong> #{financialTransactionController.nonClosedShiftStartFundBill.id}</p>
-                                        <p><strong>Start:</strong> 
-                                            <h:outputText value="#{financialTransactionController.nonClosedShiftStartFundBill.createdAt}">
-                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                            </h:outputText>
-                                        </p>
-                                    </div>
-                                </div>
+                                <p:commandButton 
+                                    class="ui-button-info mx-2" 
+                                    ajax="false" 
+                                    value="Process" 
+                                    action="#{financialTransactionController.processMyServiceDepartmentRevenueReportByPeriod()}" ></p:commandButton>
+
+
                             </h:panelGroup>
 
-                            <h:panelGroup rendered="#{not empty financialTransactionController.nonClosedShiftStartFundBill.referenceBill}">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <i class="fas fa-sign-out-alt"></i> Shift End
-                                    </div>
-                                    <div class="card-body">
-                                        <p><strong>End Bill ID:</strong> #{financialTransactionController.nonClosedShiftStartFundBill.referenceBill.id}</p>
-                                        <p><strong>End:</strong> 
-                                            <h:outputText value="#{financialTransactionController.nonClosedShiftStartFundBill.referenceBill.createdAt}">
-                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                            </h:outputText>
-                                        </p>
-                                    </div>
-                                </div>
-                            </h:panelGroup>
-
-                            <h:panelGroup rendered="#{empty financialTransactionController.nonClosedShiftStartFundBill.referenceBill}">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <i class="fas fa-exclamation-circle"></i> Shift Status
-                                    </div>
-                                    <div class="card-body">
-                                        <p>Shift is not yet ended.</p>
-                                    </div>
-                                </div>
-                            </h:panelGroup>
                         </p:panelGrid>
 
 
@@ -112,7 +67,7 @@
 
 
 
-                    </p:panelGrid>
+                    </p:panel>
 
 
 
