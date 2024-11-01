@@ -81,16 +81,20 @@
                                 </p:column>
                             </p:autoComplete>
 
+                            <p:spacer ></p:spacer>
+
+                            <p:commandButton  
+                                value="Process" 
+                                ajax="false"
+                                action="#{searchController.generateCashierSummary}" 
+                                class="ui-button-warning" icon="fas fa-cogs">
+                            </p:commandButton>
+
                         </h:panelGrid>
 
-                        <p:commandButton  
-                            value="Process" 
-                            ajax="false"
-                            action="#{searchController.generateCashierSummary}" 
-                            class="ui-button-warning" icon="fas fa-cogs">
-                        </p:commandButton>
 
-                        
+
+
 
 
                         <ui:repeat value="#{searchController.bundle.bundles}" var="myBundle">
@@ -100,6 +104,11 @@
                                 <ez:cashierSummaryOpd bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'cashierSummaryOpd'}"/>
                                 <ez:opdServiceCancellations bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'opdServiceCancellations'}"/>
                                 <ez:opdServiceRefunds bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'opdServiceRefunds'}"/>
+
+                                <!-- New Credit Sections -->
+                                <ez:cashierSummaryOpd bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'cashierSummaryOpdCredit'}"/>
+                                <ez:opdServiceCancellations bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'opdServiceCancellationsCredit'}"/>
+                                <ez:opdServiceRefunds bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'opdServiceRefundsCredit'}"/>
 
                                 <!-- Pharmacy Collections -->
                                 <ez:pharmacyCollection bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'pharmacyCollection'}"/>
@@ -154,7 +163,15 @@
                             </h:panelGroup>
 
                             <h:panelGroup rendered="#{empty myBundle.reportTemplateRows}">
-                                <p:panel header="No #{myBundle.name}" ></p:panel>
+                                <table class="table w-100">
+                                    <thead>
+                                        <tr class="text-light bg-dark">
+                                            <th class="text-light bg-dark">
+                                                <h:outputText value="No Data for #{myBundle.name}" ></h:outputText>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                </table>
                             </h:panelGroup>
 
                         </ui:repeat>
