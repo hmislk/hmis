@@ -37,6 +37,20 @@
                                           inputStyleClass="w-100"
                                           value="#{drawerEntryController.toDate}" 
                                           pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                            
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf007;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="User" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:autoComplete
+                                value="#{drawerEntryController.webUser}"
+                                completeMethod="#{webUserController.completeUser}"
+                                var="w"
+                                class="w-100 mt-1"
+                                inputStyleClass="form-control"
+                                itemLabel="#{w.webUserPerson.name}"
+                                itemValue="#{w}">
+                            </p:autoComplete>
 
                         </h:panelGrid>
 

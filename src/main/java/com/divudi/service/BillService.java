@@ -1,19 +1,28 @@
 package com.divudi.service;
 
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.InstitutionType;
+import com.divudi.data.ReportTemplateRow;
+import com.divudi.data.ReportTemplateRowBundle;
+import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
+import com.divudi.entity.Department;
+import com.divudi.entity.Institution;
 import com.divudi.entity.RefundBill;
+import com.divudi.entity.WebUser;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -183,4 +192,98 @@ public class BillService {
         }
     }
 
+    public ReportTemplateRowBundle createBundleByKeywordForBills(List<BillTypeAtomic> billTypesAtomics,
+            Institution ins, Department dep,
+            Institution fromIns,
+            Department fromDep,
+            Institution toIns,
+            Department toDep,
+            WebUser user,
+            Date paramFromDate,
+            Date paramToDate,
+            SearchKeyword filter) {
+        ReportTemplateRowBundle outputBundle = new ReportTemplateRowBundle();
+        List<ReportTemplateRow> outputRows;
+        String jpql;
+        Map params = new HashMap();
+
+        jpql = "select new com.divudi.data.ReportTemplateRow(b) "
+                + " from Bill b "
+                + " where b.retired=:ret "
+                + " and b.billTypeAtomic in :billTypesAtomics "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        params.put("ret", false);
+        params.put("billTypesAtomics", billTypesAtomics);
+        params.put("fromDate", paramFromDate);
+        params.put("toDate", paramToDate);
+
+        if (ins != null) {
+            jpql += " and b.institution=:ins ";
+            params.put("ins", ins);
+        }
+
+        if (user != null) {
+            jpql += " and b.creater=:user ";
+            params.put("user", user);
+        }
+
+        if (dep != null) {
+            jpql += " and b.department=:dep ";
+            params.put("dep", dep);
+        }
+
+        if (toDep != null) {
+            jpql += " and b.toDepartment=:todep ";
+            params.put("todep", toDep);
+        }
+
+        if (fromDep != null) {
+            jpql += " and b.fromDepartment=:fromdep ";
+            params.put("fromdep", fromDep);
+        }
+
+        if (fromIns != null) {
+            jpql += " and b.fromInstitution=:fromins ";
+            params.put("fromins", fromIns);
+        }
+
+        if (toIns != null) {
+            jpql += " and b.toInstitution=:toins ";
+            params.put("toins", toIns);
+        }
+
+        if (filter != null) {
+            if (filter.getPatientName() != null && !filter.getPatientName().trim().equals("")) {
+                jpql += " and  ((b.patient.person.name) like :patientName )";
+                params.put("patientName", "%" + filter.getPatientName().trim().toUpperCase() + "%");
+            }
+
+            if (filter.getPatientPhone() != null && !filter.getPatientPhone().trim().equals("")) {
+                jpql += " and  ((b.patient.person.phone) like :patientPhone )";
+                params.put("patientPhone", "%" + filter.getPatientPhone().trim().toUpperCase() + "%");
+            }
+
+            if (filter.getBillNo() != null && !filter.getBillNo().trim().equals("")) {
+                jpql += " and  b.deptId like :billNo";
+                params.put("billNo", "%" + filter.getBillNo().trim().toUpperCase() + "%");
+            }
+
+            if (filter.getNetTotal() != null && !filter.getNetTotal().trim().equals("")) {
+                jpql += " and  ((b.netTotal) like :netTotal )";
+                params.put("netTotal", "%" + filter.getNetTotal().trim().toUpperCase() + "%");
+            }
+
+            if (filter.getTotal() != null && !filter.getTotal().trim().equals("")) {
+                jpql += " and  ((b.total) like :total )";
+                params.put("total", "%" + filter.getTotal().trim().toUpperCase() + "%");
+            }
+        }
+
+        jpql += " order by b.createdAt desc  ";
+
+        outputRows = (List<ReportTemplateRow>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        outputBundle.setReportTemplateRows(outputRows);
+        return outputBundle;
+    }
 }

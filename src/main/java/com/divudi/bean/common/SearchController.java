@@ -715,8 +715,15 @@ public class SearchController implements Serializable {
     }
 
     public String navigateToProfessionalPayments() {
+        resetAllFilters();
         bundle = new ReportTemplateRowBundle();
         return "/reports/professional_payment_reports/professional_payments_opd?faces-redirect=true";
+    }
+
+    public String navigateToMyProfessionalPayments() {
+        bundle = new ReportTemplateRowBundle();
+        webUser = sessionController.getLoggedUser();
+        return "/cashier/my_professional_payments?faces-redirect=true";
     }
 
     public String navigateToOpdBillList() {
@@ -998,6 +1005,14 @@ public class SearchController implements Serializable {
         toDate = null;
         paymentMethod = null;
         searchKeyword = null;
+        institution = null;
+        department = null;
+        site = null;
+        category = null;
+        item = null;
+        speciality = null;
+        staff = null;
+        webUser = null;
     }
 
     public String navigatToAllCashierSummary() {
@@ -7861,6 +7876,30 @@ public class SearchController implements Serializable {
         bundle = createBundleByKeywordForBills(billTypesAtomics, institution, department, null, null, null, null);
         bundle.calculateTotalByBills();
     }
+    
+    public void searchMyProfessionalPaymentBills() {
+        List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
+        billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES);
+        billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN);
+        billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL);
+        billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL_RETURN);
+         billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES);
+        billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN);
+        billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL);
+        billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL_RETURN);
+        bundle = billService.createBundleByKeywordForBills(billTypesAtomics, 
+                institution,
+                department, 
+                null, 
+                null, 
+                null, 
+                null,
+                sessionController.getLoggedUser(),
+                fromDate, 
+                toDate, 
+                searchKeyword);
+        bundle.calculateTotalByBills();
+    }
 
     public void processWhtReport() {
         switch (reportType) {
@@ -8595,82 +8634,7 @@ public class SearchController implements Serializable {
             Department fromDep,
             Institution toIns,
             Department toDep) {
-        ReportTemplateRowBundle outputBundle = new ReportTemplateRowBundle();
-        List<ReportTemplateRow> outputRows;
-        bills = null;
-        String sql;
-        Map temMap = new HashMap();
-
-        sql = "select new com.divudi.data.ReportTemplateRow(b) "
-                + " from Bill b "
-                + " where b.billTypeAtomic in :billTypesAtomics "
-                + " and b.createdAt between :fromDate and :toDate "
-                + " and b.retired=false ";
-
-        if (ins != null) {
-            sql += " and b.institution=:ins ";
-            temMap.put("ins", ins);
-        }
-
-        if (dep != null) {
-            sql += " and b.department=:dep ";
-            temMap.put("dep", dep);
-        }
-
-        if (toDep != null) {
-            sql += " and b.toDepartment=:todep ";
-            temMap.put("todep", toDep);
-        }
-
-        if (fromDep != null) {
-            sql += " and b.fromDepartment=:fromdep ";
-            temMap.put("fromdep", fromDep);
-        }
-
-        if (fromIns != null) {
-            sql += " and b.fromInstitution=:fromins ";
-            temMap.put("fromins", fromIns);
-        }
-
-        if (toIns != null) {
-            sql += " and b.toInstitution=:toins ";
-            temMap.put("toins", toIns);
-        }
-
-        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
-            sql += " and  ((b.patient.person.name) like :patientName )";
-            temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
-        }
-
-        if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
-            sql += " and  ((b.patient.person.phone) like :patientPhone )";
-            temMap.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
-        }
-
-        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
-            sql += " and  b.deptId like :billNo";
-            temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
-        }
-
-        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
-        }
-
-        if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
-            sql += " and  ((b.total) like :total )";
-            temMap.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
-        }
-
-        sql += " order by b.createdAt desc  ";
-//    
-        temMap.put("billTypesAtomics", billTypesAtomics);
-        temMap.put("toDate", getToDate());
-        temMap.put("fromDate", getFromDate());
-
-        outputRows = (List<ReportTemplateRow>) getBillFacade().findLightsByJpql(sql, temMap, TemporalType.TIMESTAMP);
-        outputBundle.setReportTemplateRows(outputRows);
-        return outputBundle;
+        return billService.createBundleByKeywordForBills(billTypesAtomics, ins, dep, fromIns, fromDep, toIns, toDep, null, fromDate, toDate, searchKeyword);
     }
 
     public ReportTemplateRowBundle createBundleForBills(List<BillTypeAtomic> billTypesAtomics,
@@ -12940,15 +12904,6 @@ public class SearchController implements Serializable {
         bundle.getBundles().add(pettyCashPayments);
         netCashCollection -= Math.abs(getSafeTotal(pettyCashPayments));
 
-        ReportTemplateRowBundle creditBills;
-        if (isWithProfessionalFee()) {
-            creditBills = generateCreditBills();
-        } else {
-            creditBills = generateCreditBills();
-        }
-        bundle.getBundles().add(creditBills);
-//        netCashCollection -= Math.abs(getSafeTotal(creditBills)); // NOT Deducted from Totals
-
         if (isWithProfessionalFee()) {
             // Generate OPD professional payments and add to the main bundle
             ReportTemplateRowBundle opdProfessionalPayments = generateOpdProfessionalPayments();
@@ -15084,49 +15039,6 @@ public class SearchController implements Serializable {
         return ap;
     }
 
-    public ReportTemplateRowBundle generateCreditBills() {
-        ReportTemplateRowBundle ap;
-        List<BillTypeAtomic> btas = new ArrayList<>();
-        btas.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
-        btas.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-        btas.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
-        btas.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
-        btas.add(BillTypeAtomic.OPD_BILL_REFUND);
-        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
-
-        ap = reportTemplateController.generateBillReport(
-                btas,
-                fromDate,
-                toDate,
-                institution,
-                department,
-                site);
-        ap.setName("Credit Bills");
-        ap.setBundleType("creditBills");
-        return ap;
-    }
-
-    public ReportTemplateRowBundle generateCreditBillsWithoutProfessionalFees() {
-        ReportTemplateRowBundle ap;
-        List<BillTypeAtomic> btas = new ArrayList<>();
-        btas.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
-        btas.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-        btas.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
-        btas.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
-        btas.add(BillTypeAtomic.OPD_BILL_REFUND);
-        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
-        ap = reportTemplateController.generateBillReportWithoutProfessionalFees(
-                btas,
-                fromDate,
-                toDate,
-                institution,
-                department,
-                site);
-        ap.setName("Credit Bills");
-        ap.setBundleType("creditBills");
-        return ap;
-    }
-
     public ReportTemplateRowBundle generateSlipPayments() {
         ReportTemplateRowBundle ap;
         ap = reportTemplateController.generatePaymentReport(
@@ -15186,15 +15098,9 @@ public class SearchController implements Serializable {
             System.out.println("Processing BillItem: " + bi);
 
             // Skip invalid or unwanted bills
-//            if (bi.getBill() == null || bi.getBill().getPaymentMethod() == null
-//                    || bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.NONE
-//                    || bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.CREDIT) {
-//                System.out.println("continue 1");
-//                continue;
-//            }
             if (bi.getBill() == null || bi.getBill().getPaymentMethod() == null
                     || bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.NONE) {
-                System.out.println("continue 1");
+                System.out.println("skipping as it is not credit or non credit");
                 continue;
             }
 
