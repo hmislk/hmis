@@ -506,12 +506,34 @@ public class FinancialTransactionController implements Serializable {
         return bundle;
     }
 
-    public void processShiftEndReport() {
-        shiftEndBundles = new ArrayList<>();
-        ReportTemplateType channelingType = ReportTemplateType.ITEM_CATEGORY_SUMMARY_BY_BILL;
-        ReportTemplateType opdType = ReportTemplateType.ITEM_DEPARTMENT_SUMMARY_BY_BILL_ITEM;
-        ReportTemplateType paymentsType = ReportTemplateType.BILL_TYPE_ATOMIC_SUMMARY_USING_BILLS;
+    public String navigateToMyServiceDepartmentRevenueReportByPeriod() {
+        return "/cashier/my_service_department_revenue_report_by_period";
+    }
+    
+    public void processMyServiceDepartmentRevenueReportByPeriod(){
+        List<BillTypeAtomic> btas = null;
+        Date paramDate = null;
+        Date paramFromDate = fromDate;
+        Date paramToDate = toDate;
+        Institution paramInstitution = null;
+        Department paramDepartment = null;
+        Institution paramFromInstitution = null;
+        Department paramFromDepartment = null;
+        Institution paramToInstitution = null;
+        Department paramToDepartment = null;
+        WebUser paramUser = sessionController.getLoggedUser();
+        Institution paramCreditCompany = null;
+        Long paramStartId = null;
+        Long paramEndId = null;
 
+        // Calls the new overloaded method with all parameters for backward compatibility
+        processShiftEndReport(btas, paramDate, paramFromDate, paramToDate, paramInstitution, paramDepartment,
+                paramFromInstitution, paramFromDepartment, paramToInstitution, paramToDepartment,
+                paramUser, paramCreditCompany, paramStartId, paramEndId);
+    }
+
+    // Original method for backwards compatibility
+    public void processShiftEndReport() {
         List<BillTypeAtomic> btas = null;
         Date paramDate = null;
         Date paramFromDate = null;
@@ -525,74 +547,61 @@ public class FinancialTransactionController implements Serializable {
         WebUser paramUser = nonClosedShiftStartFundBill.getCreater();
         Institution paramCreditCompany = null;
         Long paramStartId = nonClosedShiftStartFundBill.getId();
-        Long paramEndId = null;
-        if (nonClosedShiftStartFundBill.getReferenceBill() != null) {
-            paramEndId = nonClosedShiftStartFundBill.getReferenceBill().getId();
-        }
+        Long paramEndId = (nonClosedShiftStartFundBill.getReferenceBill() != null) ? nonClosedShiftStartFundBill.getReferenceBill().getId() : null;
 
+        // Calls the new overloaded method with all parameters for backward compatibility
+        processShiftEndReport(btas, paramDate, paramFromDate, paramToDate, paramInstitution, paramDepartment,
+                paramFromInstitution, paramFromDepartment, paramToInstitution, paramToDepartment,
+                paramUser, paramCreditCompany, paramStartId, paramEndId);
+    }
+
+// Overloaded method with all parameters
+    public void processShiftEndReport(
+            List<BillTypeAtomic> btas,
+            Date paramDate,
+            Date paramFromDate,
+            Date paramToDate,
+            Institution paramInstitution,
+            Department paramDepartment,
+            Institution paramFromInstitution,
+            Department paramFromDepartment,
+            Institution paramToInstitution,
+            Department paramToDepartment,
+            WebUser paramUser,
+            Institution paramCreditCompany,
+            Long paramStartId,
+            Long paramEndId) {
+
+        shiftEndBundles = new ArrayList<>();
+        ReportTemplateType channelingType = ReportTemplateType.ITEM_CATEGORY_SUMMARY_BY_BILL;
+        ReportTemplateType opdType = ReportTemplateType.ITEM_DEPARTMENT_SUMMARY_BY_BILL_ITEM;
+        ReportTemplateType paymentsType = ReportTemplateType.BILL_TYPE_ATOMIC_SUMMARY_USING_BILLS;
+
+        // Create report bundles by calling helper methods
         ReportTemplateRowBundle tmpChannellingBundle = addChannellingByCategories(
-                channelingType,
-                btas,
-                paramDate,
-                paramFromDate,
-                paramToDate,
-                paramInstitution,
-                paramDepartment,
-                paramFromInstitution,
-                paramFromDepartment,
-                paramToInstitution,
-                paramToDepartment,
-                paramUser,
-                paramCreditCompany,
-                paramStartId,
-                paramEndId
-        );
+                channelingType, btas, paramDate, paramFromDate, paramToDate, paramInstitution,
+                paramDepartment, paramFromInstitution, paramFromDepartment, paramToInstitution,
+                paramToDepartment, paramUser, paramCreditCompany, paramStartId, paramEndId);
 
-        ReportTemplateRowBundle tmpOpdBundle
-                = addOpdByDepartments(
-                        opdType,
-                        btas,
-                        paramDate,
-                        paramFromDate,
-                        paramToDate,
-                        paramInstitution,
-                        paramDepartment,
-                        paramFromInstitution,
-                        paramFromDepartment,
-                        paramToInstitution,
-                        paramToDepartment,
-                        paramUser,
-                        paramCreditCompany,
-                        paramStartId,
-                        paramEndId
-                );
+        ReportTemplateRowBundle tmpOpdBundle = addOpdByDepartments(
+                opdType, btas, paramDate, paramFromDate, paramToDate, paramInstitution,
+                paramDepartment, paramFromInstitution, paramFromDepartment, paramToInstitution,
+                paramToDepartment, paramUser, paramCreditCompany, paramStartId, paramEndId);
 
-        ReportTemplateRowBundle tmpPaymentBundle
-                = addProfessionalPayments(
-                        paymentsType,
-                        btas,
-                        paramDate,
-                        paramFromDate,
-                        paramToDate,
-                        paramInstitution,
-                        paramDepartment,
-                        paramFromInstitution,
-                        paramFromDepartment,
-                        paramToInstitution,
-                        paramToDepartment,
-                        paramUser,
-                        paramCreditCompany,
-                        paramStartId,
-                        paramEndId
-                );
+        ReportTemplateRowBundle tmpPaymentBundle = addProfessionalPayments(
+                paymentsType, btas, paramDate, paramFromDate, paramToDate, paramInstitution,
+                paramDepartment, paramFromInstitution, paramFromDepartment, paramToInstitution,
+                paramToDepartment, paramUser, paramCreditCompany, paramStartId, paramEndId);
 
+        // Set names for each bundle
         tmpChannellingBundle.setName("Channelling");
         tmpOpdBundle.setName("OPD");
         tmpPaymentBundle.setName("Payments");
+
+        // Add to shiftEndBundles list
         shiftEndBundles.add(tmpChannellingBundle);
         shiftEndBundles.add(tmpOpdBundle);
         shiftEndBundles.add(tmpPaymentBundle);
-
     }
 
     public String navigateToDayEndReport() {

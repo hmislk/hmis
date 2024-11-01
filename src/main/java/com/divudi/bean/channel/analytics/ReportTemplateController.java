@@ -1042,12 +1042,12 @@ public class ReportTemplateController implements Serializable {
         }
 
         if (paramToDate != null) {
-            jpql += " and bill.billDate < :td ";
+            jpql += " and bill.createdAt < :td ";
             parameters.put("td", paramToDate);
         }
 
         if (paramFromDate != null) {
-            jpql += " and bill.billDate > :fd ";
+            jpql += " and bill.createdAt > :fd ";
             parameters.put("fd", paramFromDate);
         }
 
@@ -1210,12 +1210,12 @@ public class ReportTemplateController implements Serializable {
         }
 
         if (paramToDate != null) {
-            jpql += " and bill.billDate < :td ";
+            jpql += " and bill.createdAt < :td ";
             parameters.put("td", paramToDate);
         }
 
         if (paramFromDate != null) {
-            jpql += " and bill.billDate > :fd ";
+            jpql += " and bill.createdAt > :fd ";
             parameters.put("fd", paramFromDate);
         }
 
@@ -1368,12 +1368,12 @@ public class ReportTemplateController implements Serializable {
         }
 
         if (paramToDate != null) {
-            jpql += " and bill.billDate < :td ";
+            jpql += " and bill.createdAt < :td ";
             parameters.put("td", paramToDate);
         }
 
         if (paramFromDate != null) {
-            jpql += " and bill.billDate > :fd ";
+            jpql += " and bill.createdAt > :fd ";
             parameters.put("fd", paramFromDate);
         }
 
@@ -1887,12 +1887,12 @@ public class ReportTemplateController implements Serializable {
         }
 
         if (paramToDate != null) {
-            jpql += " and bill.billDate < :td ";
+            jpql += " and bill.createdAt < :td ";
             parameters.put("td", paramToDate);
         }
 
         if (paramFromDate != null) {
-            jpql += " and bill.billDate > :fd ";
+            jpql += " and bill.createdAt > :fd ";
             parameters.put("fd", paramFromDate);
         }
 
@@ -2042,12 +2042,12 @@ public class ReportTemplateController implements Serializable {
         }
 
         if (paramToDate != null) {
-            jpql += " and bill.billDate < :td ";
+            jpql += " and bill.createdAt < :td ";
             parameters.put("td", paramToDate);
         }
 
         if (paramFromDate != null) {
-            jpql += " and bill.billDate > :fd ";
+            jpql += " and bill.createdAt > :fd ";
             parameters.put("fd", paramFromDate);
         }
 
@@ -2205,12 +2205,12 @@ public class ReportTemplateController implements Serializable {
         }
 
         if (paramToDate != null) {
-            jpql += " and bill.billDate < :td ";
+            jpql += " and bill.createdAt < :td ";
             parameters.put("td", paramToDate);
         }
 
         if (paramFromDate != null) {
-            jpql += " and bill.billDate > :fd ";
+            jpql += " and bill.createdAt > :fd ";
             parameters.put("fd", paramFromDate);
         }
 
@@ -2269,7 +2269,8 @@ public class ReportTemplateController implements Serializable {
         jpql += " group by bi.item.department ";
 
         System.out.println("jpql = " + jpql);
-
+        System.out.println("parameters = " + parameters);
+        
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
         if (rs == null || rs.isEmpty()) {
@@ -2368,12 +2369,12 @@ public class ReportTemplateController implements Serializable {
         }
 
         if (paramToDate != null) {
-            jpql += " and bill.billDate < :td ";
+            jpql += " and bill.createdAt < :td ";
             parameters.put("td", paramToDate);
         }
 
         if (paramFromDate != null) {
-            jpql += " and bill.billDate > :fd ";
+            jpql += " and bill.createdAt > :fd ";
             parameters.put("fd", paramFromDate);
         }
 
