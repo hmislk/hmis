@@ -13104,14 +13104,14 @@ public class SearchController implements Serializable {
         bundle.getBundles().add(opdServiceCollectionCredit);
         collectionForTheDay += getSafeTotal(opdServiceCollectionCredit);
 
-// Generate OPD service cancellations for credit and add to the main bundle
+        // Generate OPD service cancellations for credit and add to the main bundle
         ReportTemplateRowBundle opdServiceCancellationsCredit = generatePaymentMethodColumnsByBills(opdCancellations, creditPaymentMethods);
         opdServiceCancellationsCredit.setBundleType("opdServiceCancellationsCredit");
         opdServiceCancellationsCredit.setName("OPD Service Cancellations - Credit");
         bundle.getBundles().add(opdServiceCancellationsCredit);
         collectionForTheDay += getSafeTotal(opdServiceCancellationsCredit);
 
-// Generate OPD service refunds for credit and add to the main bundle
+        // Generate OPD service refunds for credit and add to the main bundle
         ReportTemplateRowBundle opdServiceRefundsCredit = generatePaymentMethodColumnsByBills(opdRefunds, creditPaymentMethods);
         opdServiceRefundsCredit.setBundleType("opdServiceRefundsCredit");
         opdServiceRefundsCredit.setName("OPD Service Refunds - Credit");
