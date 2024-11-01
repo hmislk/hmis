@@ -298,11 +298,17 @@
                                             <i class="fas fa-mobile-alt text-warning"></i> <!-- Mobile Icon -->
                                             <h:outputLabel value="#{patientInvestigation.billItem.bill.patient.person.mobile}" />
                                         </p:column>
-
+ 
                                         <!-- Investigation Name Column -->
-                                        <p:column headerText="Investigations" style="width: 7em; vertical-align: top;">
+                                        <p:column headerText="Investigation" style="width: 7em; vertical-align: top;">
                                             <i class="fas fa-vial text-danger"></i> <!-- Investigation Icon -->
-                                            <h:outputLabel value="#{patientInvestigation.investigation.name}"/>
+                                            <h:outputLabel rendered="#{not webUserController.hasPrivilege('Developers')}" value="#{patientInvestigation.investigation.name}"/>
+                                            <p:commandLink 
+                                                value="#{patientInvestigation.investigation.name}" 
+                                                rendered="#{webUserController.hasPrivilege('Developers')}" 
+                                                action="#{investigationController.navigateToManageInvestigation()}">
+                                                <f:setPropertyActionListener value="#{patientInvestigation.investigation}" target="#{investigationController.current}"/>
+                                            </p:commandLink>
                                         </p:column>
 
                                         <!-- Status Column -->
@@ -870,7 +876,13 @@
                                         <!-- Investigation Name Column -->
                                         <p:column headerText="Investigations" width="10em" style="vertical-align: top;">
                                             <i class="fas fa-vial text-danger"></i> <!-- Investigation Icon -->
-                                            <h:outputLabel value="#{dpr.patientInvestigation.investigation.name}"/>
+                                            <h:outputLabel rendered="#{not webUserController.hasPrivilege('Developers')}" value="#{dpr.patientInvestigation.investigation.name}"/>
+                                            <p:commandLink 
+                                                value="#{dpr.patientInvestigation.investigation.name}" 
+                                                rendered="#{webUserController.hasPrivilege('Developers')}" 
+                                                action="#{investigationController.navigateToManageInvestigation()}">
+                                                <f:setPropertyActionListener value="#{dpr.patientInvestigation.investigation}" target="#{investigationController.current}"/>
+                                            </p:commandLink>
                                         </p:column>
 
                                         <!-- Status Column -->
