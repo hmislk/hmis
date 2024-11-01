@@ -98,6 +98,7 @@
 
 
                         <ui:repeat value="#{searchController.bundle.bundles}" var="myBundle">
+                            #{myBundle.name}
                             <h:panelGroup rendered="#{not empty myBundle.reportTemplateRows}">
 
 
