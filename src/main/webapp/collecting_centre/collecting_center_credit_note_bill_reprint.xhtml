@@ -17,7 +17,8 @@
 
                             <p:commandButton ajax="false"
                                              value="Back"
-                                             class="ui-button-warning mx-3"
+                                             class="ui-button-secondary mx-3"
+                                             icon="fa-solid fa-arrow-left"
                                              style="float: right; width: 150px;"
                                              action="collecting_center_credit_note_bill_search_own.xhtml">                           
                             </p:commandButton>
@@ -26,6 +27,7 @@
                                              value="To Cancel"
                                              class="ui-button-danger mx-3"
                                              style="float: right; width: 150px;"
+                                             icon="fa fa-cancel"
                                              action="collecting_center_credit_note_bill_cancel"
                                              disabled="#{agentPaymentReceiveSearchController.bill.cancelled}">                           
                             </p:commandButton>
@@ -62,15 +64,15 @@
 
                         <f:facet name="header">
                             <div class="d-flex justify-content-between">
-                                    <p:commandButton 
-                                        value="Print" 
-                                        class="ui-button-info" 
-                                        icon="fas fa-print" 
-                                        ajax="false" 
-                                        action="#" >
-                                        <p:printer target="billPreview" ></p:printer>
-                                    </p:commandButton>
-                                </div>
+                                <p:commandButton 
+                                    value="Print" 
+                                    class="ui-button-info" 
+                                    icon="fas fa-print" 
+                                    ajax="false" 
+                                    action="#" >
+                                    <p:printer target="billPreview" ></p:printer>
+                                </p:commandButton>
+                            </div>
 
                         </f:facet>
 
