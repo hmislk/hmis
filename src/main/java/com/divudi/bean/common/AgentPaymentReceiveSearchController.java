@@ -296,6 +296,11 @@ public class AgentPaymentReceiveSearchController implements Serializable {
 
         return false;
     }
+    
+    public String navigateToCancelAgentBillView(){
+        agencyDepositCanellationStarted = false;
+        return "agency_deposit_bill_cancellation?faces-redirect=true";
+    }
 
     private boolean errorCheck(Bill origianlBill) {
         if (origianlBill.isCancelled()) {

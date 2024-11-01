@@ -54,7 +54,7 @@
                                     class="w-70">  
                                     <f:selectItem itemLabel="Select" ></f:selectItem>
                                     <f:selectItems 
-                                        value="#{enumController.getPaymentMethodsNonCreditExceptMultiple(cc.attrs.paymentMethods)}"  
+                                        value="#{cc.attrs.paymentMethods}"  
                                         var="pm1"
                                         itemLabel="#{pm1.label}"
                                         itemValue="#{pm1}"/>
