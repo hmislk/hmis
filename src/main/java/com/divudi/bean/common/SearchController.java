@@ -4295,8 +4295,8 @@ public class SearchController implements Serializable {
         bta.add(BillTypeAtomic.SUPPLEMENTARY_INCOME);
         bta.add(BillTypeAtomic.SUPPLEMENTARY_INCOME_CANCELLED);
         bta.add(BillTypeAtomic.OPERATIONAL_EXPENSES);
+        bta.add(BillTypeAtomic.SUPPLEMENTARY_INCOME_CANCELLED);
         bta.add(BillTypeAtomic.OPERATIONAL_EXPENSES_CANCELLED);
-
         String sql = "select bi "
                 + " from Bill bi "
                 + " where bi.retired=:ret "
@@ -7878,27 +7878,27 @@ public class SearchController implements Serializable {
         bundle = createBundleByKeywordForBills(billTypesAtomics, institution, department, null, null, null, null);
         bundle.calculateTotalByBills();
     }
-    
+
     public void searchMyProfessionalPaymentBills() {
         List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
         billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES);
         billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN);
         billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL);
         billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL_RETURN);
-         billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES);
+        billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES);
         billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN);
         billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL);
         billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL_RETURN);
-        bundle = billService.createBundleByKeywordForBills(billTypesAtomics, 
+        bundle = billService.createBundleByKeywordForBills(billTypesAtomics,
                 institution,
-                department, 
-                null, 
-                null, 
-                null, 
+                department,
+                null,
+                null,
+                null,
                 null,
                 sessionController.getLoggedUser(),
-                fromDate, 
-                toDate, 
+                fromDate,
+                toDate,
                 searchKeyword);
         bundle.calculateTotalByBills();
     }
@@ -12906,15 +12906,6 @@ public class SearchController implements Serializable {
         bundle.getBundles().add(pettyCashPayments);
         netCashCollection -= Math.abs(getSafeTotal(pettyCashPayments));
 
-        ReportTemplateRowBundle creditBills;
-        if (isWithProfessionalFee()) {
-            creditBills = generateCreditBills();
-        } else {
-            creditBills = generateCreditBills();
-        }
-        bundle.getBundles().add(creditBills);
-//        netCashCollection -= Math.abs(getSafeTotal(creditBills)); // NOT Deducted from Totals
-
         if (isWithProfessionalFee()) {
             // Generate OPD professional payments and add to the main bundle
             ReportTemplateRowBundle opdProfessionalPayments = generateOpdProfessionalPayments();
@@ -13074,20 +13065,20 @@ public class SearchController implements Serializable {
         List<PaymentMethod> creditPaymentMethods = PaymentMethod.getMethodsByType(PaymentType.CREDIT);
         List<PaymentMethod> nonCreditPaymentMethods = PaymentMethod.getMethodsByType(PaymentType.NON_CREDIT);
 
-        // Generate OPD service collection and add to the main bundle
         List<BillTypeAtomic> opdBts = new ArrayList<>();
         opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
         opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-//        opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
-
-//        opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
-//        opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
         opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
         opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-//        opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
-//        opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
-//        opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
 
+        List<BillTypeAtomic> opdCancellations = new ArrayList<>();
+        opdCancellations.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
+        opdCancellations.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+
+        List<BillTypeAtomic> opdRefunds = new ArrayList<>();
+        opdRefunds.add(BillTypeAtomic.OPD_BILL_REFUND);
+
+        // Generate OPD service collection and add to the main bundle
         ReportTemplateRowBundle opdServiceCollection = generatePaymentColumnForCollections(opdBts, nonCreditPaymentMethods);
         opdServiceCollection.setBundleType("cashierSummaryOpd");
         opdServiceCollection.setName("OPD Collection");
@@ -13095,23 +13086,39 @@ public class SearchController implements Serializable {
         collectionForTheDay += getSafeTotal(opdServiceCollection);
 
         // Generate OPD service collection and add to the main bundle
-        List<BillTypeAtomic> opdCancellations = new ArrayList<>();
-        opdCancellations.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
-        opdCancellations.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
-        ReportTemplateRowBundle opdServiceCancellations = generatePaymentMethodColumnsByBills(opdCancellations);
+        ReportTemplateRowBundle opdServiceCancellations = generatePaymentMethodColumnsByBills(opdCancellations, nonCreditPaymentMethods);
         opdServiceCancellations.setBundleType("opdServiceCancellations");
         opdServiceCancellations.setName("OPD Service Cancellations");
         bundle.getBundles().add(opdServiceCancellations);
         collectionForTheDay += getSafeTotal(opdServiceCancellations);
 
         // Generate OPD service Refunds and add to the main bundle
-        List<BillTypeAtomic> opdRefunds = new ArrayList<>();
-        opdRefunds.add(BillTypeAtomic.OPD_BILL_REFUND);
-        ReportTemplateRowBundle opdServiceRefunds = generatePaymentMethodColumnsByBills(opdRefunds);
+        ReportTemplateRowBundle opdServiceRefunds = generatePaymentMethodColumnsByBills(opdBts, nonCreditPaymentMethods);
         opdServiceRefunds.setBundleType("opdServiceRefunds");
         opdServiceRefunds.setName("OPD Service Refunds");
         bundle.getBundles().add(opdServiceRefunds);
         collectionForTheDay += getSafeTotal(opdServiceRefunds);
+
+        // Generate OPD service collection for credit and add to the main bundle
+        ReportTemplateRowBundle opdServiceCollectionCredit = generatePaymentColumnForCollections(opdBts, creditPaymentMethods);
+        opdServiceCollectionCredit.setBundleType("cashierSummaryOpdCredit");
+        opdServiceCollectionCredit.setName("OPD Collection - Credit");
+        bundle.getBundles().add(opdServiceCollectionCredit);
+        collectionForTheDay += getSafeTotal(opdServiceCollectionCredit);
+
+// Generate OPD service cancellations for credit and add to the main bundle
+        ReportTemplateRowBundle opdServiceCancellationsCredit = generatePaymentMethodColumnsByBills(opdCancellations, creditPaymentMethods);
+        opdServiceCancellationsCredit.setBundleType("opdServiceCancellationsCredit");
+        opdServiceCancellationsCredit.setName("OPD Service Cancellations - Credit");
+        bundle.getBundles().add(opdServiceCancellationsCredit);
+        collectionForTheDay += getSafeTotal(opdServiceCancellationsCredit);
+
+// Generate OPD service refunds for credit and add to the main bundle
+        ReportTemplateRowBundle opdServiceRefundsCredit = generatePaymentMethodColumnsByBills(opdRefunds, creditPaymentMethods);
+        opdServiceRefundsCredit.setBundleType("opdServiceRefundsCredit");
+        opdServiceRefundsCredit.setName("OPD Service Refunds - Credit");
+        bundle.getBundles().add(opdServiceRefundsCredit);
+        collectionForTheDay += getSafeTotal(opdServiceRefundsCredit);
 
         // Generate Pharmacy Collection and add to the main bundle
         List<BillTypeAtomic> pharmacyCollectionBillTypes = BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.PHARMACY, BillFinanceType.CASH_IN);
@@ -15050,49 +15057,6 @@ public class SearchController implements Serializable {
         return ap;
     }
 
-    public ReportTemplateRowBundle generateCreditBills() {
-        ReportTemplateRowBundle ap;
-        List<BillTypeAtomic> btas = new ArrayList<>();
-        btas.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
-        btas.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-        btas.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
-        btas.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
-        btas.add(BillTypeAtomic.OPD_BILL_REFUND);
-        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
-
-        ap = reportTemplateController.generateBillReport(
-                btas,
-                fromDate,
-                toDate,
-                institution,
-                department,
-                site);
-        ap.setName("Credit Bills");
-        ap.setBundleType("creditBills");
-        return ap;
-    }
-
-    public ReportTemplateRowBundle generateCreditBillsWithoutProfessionalFees() {
-        ReportTemplateRowBundle ap;
-        List<BillTypeAtomic> btas = new ArrayList<>();
-        btas.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
-        btas.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-        btas.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
-        btas.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
-        btas.add(BillTypeAtomic.OPD_BILL_REFUND);
-        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
-        ap = reportTemplateController.generateBillReportWithoutProfessionalFees(
-                btas,
-                fromDate,
-                toDate,
-                institution,
-                department,
-                site);
-        ap.setName("Credit Bills");
-        ap.setBundleType("creditBills");
-        return ap;
-    }
-
     public ReportTemplateRowBundle generateSlipPayments() {
         ReportTemplateRowBundle ap;
         ap = reportTemplateController.generatePaymentReport(
@@ -15152,15 +15116,9 @@ public class SearchController implements Serializable {
             System.out.println("Processing BillItem: " + bi);
 
             // Skip invalid or unwanted bills
-//            if (bi.getBill() == null || bi.getBill().getPaymentMethod() == null
-//                    || bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.NONE
-//                    || bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.CREDIT) {
-//                System.out.println("continue 1");
-//                continue;
-//            }
             if (bi.getBill() == null || bi.getBill().getPaymentMethod() == null
                     || bi.getBill().getPaymentMethod().getPaymentType() == PaymentType.NONE) {
-                System.out.println("continue 1");
+                System.out.println("skipping as it is not credit or non credit");
                 continue;
             }
 
