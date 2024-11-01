@@ -110,6 +110,7 @@ public class DealorPaymentBillSearch implements Serializable {
         newBill.setInstitution(sessionController.getInstitution());
         newBill.setDepartment(sessionController.getDepartment());
         newBill.setBillType(BillType.GrnPayment);
+        newBill.setBillTypeAtomic(BillTypeAtomic.SUPPLIER_PAYMENT);
         String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.SUPPLIER_PAYMENT);
         newBill.setDeptId(deptId);
         newBill.setApproveAt(new Date());
@@ -143,9 +144,11 @@ public class DealorPaymentBillSearch implements Serializable {
         jpql = "select b from Bill b "
                 + " where b.retired=false "
                 + " and b.billType = :billTypes "
+                + " and b.billTypeAtomic = :bTA "
                 + " and b.createdAt between :fromDate and :toDate";
 
         params.put("billTypes", BillType.GrnPayment);
+        params.put("bTA", BillTypeAtomic.SUPPLIER_PAYMENT);
         params.put("toDate", toDate);
         params.put("fromDate", fromDate);
 
@@ -264,7 +267,7 @@ public class DealorPaymentBillSearch implements Serializable {
         cb.setBilledBill(getBill());
         cb.copy(getBill());
         cb.invertValue(getBill());
-
+        cb.setNetTotal(0-Math.abs(cb.getNetTotal()));
         cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.CashRecieveBill, BillClassType.CancelledBill, BillNumberSuffix.CRDCAN));
         cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.CashRecieveBill, BillClassType.CancelledBill, BillNumberSuffix.CRDCAN));
 
@@ -272,7 +275,7 @@ public class DealorPaymentBillSearch implements Serializable {
         cb.setBillTime(new Date());
         cb.setCreatedAt(new Date());
         cb.setCreater(getSessionController().getLoggedUser());
-
+        cb.setBillTypeAtomic(BillTypeAtomic.SUPPLIER_PAYMENT_CANCELLED);
         cb.setPaymentMethod(getBill().getPaymentMethod());
         cb.setDepartment(getSessionController().getLoggedUser().getDepartment());
         cb.setInstitution(getSessionController().getInstitution());
