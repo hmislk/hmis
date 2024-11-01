@@ -3257,7 +3257,7 @@ public class BillSearch implements Serializable {
             paymentFacade.create(cancellationPayment);
             cancellationPayments.add(cancellationPayment);
         }
-        drawerController.updateDrawerForIns(cancellationPayments);
+        drawerController.updateDrawerForOuts(cancellationPayments);
         bill = cancellationBill;
         billPayments = cancellationPayments;
         printPreview = true;
