@@ -18,7 +18,9 @@
                 <p:printer target="tbl" ></p:printer>
             </p:commandButton>
             <h:panelGroup id="tbl" >
-                <table id="exportableTable" class="w-100 table table-primary">
+                <table 
+                    id="exportableTable"
+                    class="w-100 ui-datatable ui-widget ui-datatable-table ui-datatable-gridlines " >
                     <thead>
                         <tr>
                             <th>Name</th>
@@ -32,7 +34,7 @@
                                 <td>
                                     <h:outputText value="#{sebs.name}" />
                                 </td>
-                                <td class="text-right pr-3">
+                                <td  style="width: 10em;" class="text-end p-2"  >
                                     <h:outputText value="#{sebs.total}">
                                         <f:convertNumber type="currency" currencySymbol="" groupingUsed="true" minFractionDigits="2" />
                                     </h:outputText>
@@ -41,18 +43,18 @@
                                     <table class="w-100 table table-striped">
                                         <thead>
                                             <tr>
-                                                <th rowspan="2">Category / Department / Type</th>
-                                                <th colspan="2">In</th>
-                                                <th colspan="2">Out</th>
-                                                <th colspan="2">Net</th>
+                                                <th   style="width: 10em;" class="text-end p-2"  rowspan="2">Category / Department / Type</th>
+                                                <th   style="width: 10em;" class="text-end p-2"  colspan="2">In</th>
+                                                <th   style="width: 10em;" class="text-end p-2"  colspan="2">Out</th>
+                                                <th   style="width: 10em;" class="text-end p-2"  colspan="2">Net</th>
                                             </tr>
                                             <tr>
-                                                <th >Count</th>
-                                                <th >Value</th>
-                                                <th >Count</th>
-                                                <th >Value</th>
-                                                <th >Count</th>
-                                                <th >Value</th>
+                                                <th   style="width: 10em;" class="text-end p-2"  >Count</th>
+                                                <th   style="width: 10em;" class="text-end p-2"    >Value</th>
+                                                <th   style="width: 10em;" class="text-end p-2"    >Count</th>
+                                                <th   style="width: 10em;" class="text-end p-2"    >Value</th>
+                                                <th   style="width: 10em;" class="text-end p-2"   >Count</th>
+                                                <th  style="width: 10em;" class="text-end p-2"  >Value</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -61,31 +63,31 @@
                                                     <td>
                                                         <h:outputText value="#{r.category.name} #{r.department.name} #{r.billTypeAtomic.label}" />
                                                     </td>
-                                                    <td class="text-right pr-3">
+                                                    <td  style="width: 10em;" class="text-end p-2"  >
                                                         <h:outputText value="#{r.rowCountIn}">
                                                         </h:outputText>
                                                     </td>
-                                                    <td class="text-right pr-3">
+                                                    <td  style="width: 10em;" class="text-end p-2"  >
                                                         <h:outputText value="#{r.rowValueIn}">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
 
                                                     </td>
-                                                    <td class="text-right pr-3">
+                                                    <td  style="width: 10em;" class="text-end p-2"  >
                                                         <h:outputText value="#{r.rowCountOut}">
                                                         </h:outputText>
                                                     </td>
-                                                    <td class="text-right pr-3">
+                                                    <td  style="width: 10em;" class="text-end p-2"  >
                                                         <h:outputText value="#{r.rowValueOut}">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
 
                                                     </td>
-                                                    <td class="text-right pr-3">
+                                                    <td  style="width: 10em;" class="text-end p-2"  >
 <!--                                                        <h:outputText value="#{r.rowCount}">
                                                         </h:outputText>-->
                                                     </td>
-                                                    <td class="text-right pr-3">
+                                                    <td  style="width: 10em;" class="text-end p-2"  >
                                                         <h:outputText value="#{r.rowValue}">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
@@ -102,6 +104,9 @@
                     </tbody>
                 </table>
             </h:panelGroup>
+
+  
+
         </h:panelGroup>
     </cc:implementation>
 </html>
