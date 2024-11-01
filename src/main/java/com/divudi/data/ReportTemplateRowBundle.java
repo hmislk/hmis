@@ -873,6 +873,17 @@ public class ReportTemplateRowBundle implements Serializable {
             }
         }
     }
+    
+    public void unmarkAllAtHandover() {
+    if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+        for (ReportTemplateRow row : this.reportTemplateRows) {
+            if (row.getPayment() != null && row.getPayment().isSelectedForHandover()) {
+                row.getPayment().setSelectedForHandover(false);
+                row.setSelected(false);
+            }
+        }
+    }
+}
 
     public void markSelectedAtHandover() {
         if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
