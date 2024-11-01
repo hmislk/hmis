@@ -1213,7 +1213,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
 //            JsfUtil.addErrorMessage("Please Create Patient Account");
 //            return;
 //        }
-        if (paymentSchemeController.checkPaymentMethodError(getBill().getPaymentMethod(), paymentMethodData)) {
+        if (paymentSchemeController.checkPaymentMethodError(getCancelBill().getPaymentMethod(), paymentMethodData)) {
             JsfUtil.addErrorMessage("Please enter all relavent Payment Method Details");
             return 2;
         }
