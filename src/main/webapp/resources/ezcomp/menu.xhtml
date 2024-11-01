@@ -770,7 +770,7 @@
                                         actionListener="#{supplierPaymentController.makeNull()}"/>  
                         </p:submenu>
                         <p:menuitem ajax="false" action="/dealerPayment/search_dealor_payment_pharmacy?faces-redirect=true" value="GRN Payment Approve"  actionListener="#{searchController.makeListNull2()}" rendered="#{webUserController.hasPrivilege('PharmacyGRNPaymentApprove')}"/>   
-                        <p:menuitem ajax="false" action="/dealerPayment/search_dealor_payment_pre?faces-redirect=true" value="GRN Payment Done Search"  actionListener="#{searchController.makeListNull2()}" rendered="#{webUserController.hasPrivilege('PharmacyGRNPaymentDoneSearch')}"/>   
+                        <p:menuitem ajax="false" action="/dealerPayment/dealor_payment_done_search?faces-redirect=true" value="GRN Payment Done Search"  actionListener="#{searchController.makeListNull2()}" rendered="#{webUserController.hasPrivilege('PharmacyGRNPaymentDoneSearch')}"/>   
                         <p:menuitem  ajax="false"  action="/credit/index_pharmacy_due_access?faces-redirect=true" value="Credit Dues and Access" rendered="#{webUserController.hasPrivilege('PharmacyCreditDueAndAccess')}" ></p:menuitem>
                     </p:submenu>
 
