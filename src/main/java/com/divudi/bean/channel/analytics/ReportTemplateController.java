@@ -318,7 +318,7 @@ public class ReportTemplateController implements Serializable {
 
         return pb;
     }
-
+    
     public ReportTemplateRowBundle generateBillReportWithoutProfessionalFees(
             List<BillTypeAtomic> btas,
             Date paramFromDate,
@@ -339,6 +339,80 @@ public class ReportTemplateController implements Serializable {
         if (btas != null && !btas.isEmpty()) {
             jpql += " and bill.billTypeAtomic in :btas ";
             parameters.put("btas", btas);
+        }
+
+        if (paramFromDate != null) {
+            jpql += " and bill.billDate >= :fd ";
+            parameters.put("fd", paramFromDate);
+        }
+
+        if (paramToDate != null) {
+            jpql += " and bill.billDate <= :td ";
+            parameters.put("td", paramToDate);
+        }
+
+        if (paramInstitution != null) {
+            jpql += " and bill.department.institution = :ins ";
+            parameters.put("ins", paramInstitution);
+        }
+
+        if (paramDepartment != null) {
+            jpql += " and bill.department = :dep ";
+            parameters.put("dep", paramDepartment);
+        }
+
+        if (paramSite != null) {
+            jpql += " and bill.department.site = :site ";
+            parameters.put("site", paramSite);
+        }
+
+        jpql += " group by bill";
+
+        System.out.println("Final JPQL Query: " + jpql);
+
+        // Assuming you have an EJB or similar service to run the query
+        List<ReportTemplateRow> results = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+        // Properly handle empty or null results
+        if (results == null || results.isEmpty()) {
+            return pb; // Consider returning an empty ReportTemplateRowBundle instead
+        }
+        pb.setReportTemplateRows(results);
+
+        double bundleTotal = pb.getReportTemplateRows().stream()
+                .mapToDouble(r -> r.getBill().getNetTotal())
+                .sum();
+        pb.setTotal(bundleTotal);
+
+        return pb;
+    }
+
+    public ReportTemplateRowBundle generateBillReportWithoutProfessionalFees(
+            List<BillTypeAtomic> btas,
+            Date paramFromDate,
+            Date paramToDate,
+            Institution paramInstitution,
+            Department paramDepartment,
+            Institution paramSite,
+            Boolean creditBillsOnly) {
+
+        ReportTemplateRowBundle pb = new ReportTemplateRowBundle();
+
+        Map<String, Object> parameters = new HashMap<>();
+
+        String jpql = "select new com.divudi.data.ReportTemplateRow("
+                + " bill) "
+                + " from Bill bill "
+                + " where bill.retired=false ";
+
+        if (btas != null && !btas.isEmpty()) {
+            jpql += " and bill.billTypeAtomic in :btas ";
+            parameters.put("btas", btas);
+        }
+        
+        if(creditBillsOnly!=null && creditBillsOnly){
+             jpql += " and bill.paymentMethod in :pms ";
+            parameters.put("pms", PaymentMethod.getMethodsByType(PaymentType.NON_CREDIT));
         }
 
         if (paramFromDate != null) {
