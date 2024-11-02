@@ -111,7 +111,18 @@
                                         itemLabel="#{category.name}"
                                         itemValue="#{category}">
                                     </p:autoComplete>
+                                    
+                                    <p:spacer width="50" ></p:spacer>
 
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <i class="fas fa-stethoscope"></i>
+                                        <h:outputLabel value="Visit Type" for="visitType" class="mx-3"/>
+                                    </h:panelGroup>
+                                    <p:selectOneMenu class="w-100" value="#{searchController.visitType}">
+                                            <f:selectItem itemValue="Any" itemLabel="Any"/>
+                                            <f:selectItem itemValue="OP" itemLabel="Out Patients (OP)"/>
+                                            <f:selectItem itemValue="IP" itemLabel="In Patients (IP)"/>
+                                        </p:selectOneMenu>
 
                                 </h:panelGrid>
 
@@ -152,7 +163,7 @@
                             </div>
 
                         </div>
-                        
+
                         <p:dataTable 
                             id="tbl"
                             value="#{searchController.bundle.reportTemplateRows}"
