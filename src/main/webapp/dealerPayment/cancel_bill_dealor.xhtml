@@ -15,8 +15,10 @@
                             <p:selectOneMenu   id="cmbPs" value="#{dealorPaymentBillSearch.bill.paymentMethod}">
                                 <f:selectItems value="#{enumController.paymentMethods}" />
                             </p:selectOneMenu>
-                            <h:commandButton value="Cancel" action="#{dealorPaymentBillSearch.cancelBill()}" >
-                            </h:commandButton>                            
+                            <h:panelGroup style="float: right;">    
+                                <p:commandButton value="Cancel" class="ui-button-danger" action="#{dealorPaymentBillSearch.cancelBill()}" >
+                                </p:commandButton>                            
+                            </h:panelGroup>
                         </p:panel>
                         <p:panelGrid columns="2" style="width: 100%;">
                             <p:panel header="Credit Company Detail">
