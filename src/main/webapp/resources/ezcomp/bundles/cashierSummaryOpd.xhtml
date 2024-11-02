@@ -15,6 +15,22 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
 
+        <h:panelGroup rendered="#{empty cc.attrs.bundle.reportTemplateRows}">
+            <table class="table w-100">
+                <thead>
+                    <tr class="text-light bg-dark">
+                        <th class="text-light bg-dark">
+                            <h:outputText value="No Data for #{cc.attrs.bundle.name}" ></h:outputText>
+                        </th>
+                    </tr>
+                </thead>
+            </table>
+        </h:panelGroup>
+        
+        <h:panelGroup rendered="#{not empty cc.attrs.bundle.reportTemplateRows}">
+        
+        </h:panelGroup>
+
         <p:dataTable 
             class="w-100 m-2"
             value="#{cc.attrs.bundle.reportTemplateRows}" 

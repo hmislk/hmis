@@ -509,8 +509,8 @@ public class FinancialTransactionController implements Serializable {
     public String navigateToMyServiceDepartmentRevenueReportByPeriod() {
         return "/cashier/my_service_department_revenue_report_by_period";
     }
-    
-    public void processMyServiceDepartmentRevenueReportByPeriod(){
+
+    public void processMyServiceDepartmentRevenueReportByPeriod() {
         List<BillTypeAtomic> btas = null;
         Date paramDate = null;
         Date paramFromDate = fromDate;
@@ -1192,6 +1192,12 @@ public class FinancialTransactionController implements Serializable {
 
     public void selectAllForPaymentHandoverSelectionAtCreate() {
         selectedBundle.markAllAtHandover(selectedPaymentMethod);
+        selectedBundle.calculateTotalsByPaymentsAndDenominations();
+        bundle.calculateTotalsBySelectedChildBundles();
+    }
+
+    public void unselectAllForPaymentHandoverSelection() {
+        selectedBundle.unmarkAllAtHandover();
         selectedBundle.calculateTotalsByPaymentsAndDenominations();
         bundle.calculateTotalsBySelectedChildBundles();
     }
@@ -2266,7 +2272,7 @@ public class FinancialTransactionController implements Serializable {
             p.serializeDenominations();
             paymentController.save(p);
         }
-        drawerController.updateDrawerForIns(getCurrentBillPayments());
+        drawerController.updateDrawerForOuts(getCurrentBillPayments());
         return "/cashier/expense_bill_print?faces-redirect=true";
     }
 

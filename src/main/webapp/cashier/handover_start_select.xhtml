@@ -400,6 +400,12 @@
                                     ajax="false"
                                     action="#{financialTransactionController.selectAllForPaymentHandoverSelectionAtCreate()}" />
                                 <p:commandButton 
+                                    value="Unselect All" 
+                                    class="m-1 ui-button-warning" 
+                                    icon="pi pi-check" 
+                                    ajax="false"
+                                    action="#{financialTransactionController.unselectAllForPaymentHandoverSelection()}" />
+                                <p:commandButton 
                                     value="Update" 
                                     class="m-1 ui-button-info" 
                                     icon="pi pi-refresh" 
