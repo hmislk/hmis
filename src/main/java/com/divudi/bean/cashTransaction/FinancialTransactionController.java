@@ -2692,7 +2692,7 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public void fillMyShifts() {
-        fillShifts(null, null, null, null, sessionController.getLoggedUser());
+        fillShifts(null, null, fromDate, toDate, sessionController.getLoggedUser());
     }
 
     public void fillShifts(Integer count, Boolean completed, Date fromDate, Date toDate, WebUser paramUser) {
