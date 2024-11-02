@@ -2127,6 +2127,14 @@ public class SearchController implements Serializable {
         this.withProfessionalFee = withProfessionalFee;
     }
 
+    public String getVisitType() {
+        return visitType;
+    }
+
+    public void setVisitType(String visitType) {
+        this.visitType = visitType;
+    }
+
     public class billsWithbill {
 
         Bill b;
@@ -7681,7 +7689,6 @@ public class SearchController implements Serializable {
         temMap.put("fromDate", getFromDate());
         //  temMap.put("ins", getSessionController().getInstitution());
 
-        
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
 
     }
@@ -9836,7 +9843,6 @@ public class SearchController implements Serializable {
         params.put("ret", false);
         params.put("abts", billTypesToFilter);
         billSummaryRows = getBillFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
-        
 
         for (BillSummaryRow bss : billSummaryRows) {
             grossTotal += bss.getGrossTotal();
@@ -9951,10 +9957,7 @@ public class SearchController implements Serializable {
         params.put("wu", webUser);
         params.put("ret", false);
 
-        
-
         bills = getBillFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
-
 
         for (Bill bss : bills) {
             grossTotal += bss.getTotal();
@@ -10022,10 +10025,7 @@ public class SearchController implements Serializable {
         params.put("ret", false);
         params.put("abts", billTypesToFilter);
 
-
-
         billSummaryRows = getBillFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
-
 
         for (BillSummaryRow bss : billSummaryRows) {
             grossTotal += bss.getGrossTotal();
@@ -10093,10 +10093,7 @@ public class SearchController implements Serializable {
         params.put("ret", false);
         params.put("abts", billTypesToFilter);
 
-
         billSummaryRows = getBillFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
-
-
 
         for (BillSummaryRow bss : billSummaryRows) {
             grossTotal += bss.getGrossTotal();
@@ -10222,8 +10219,6 @@ public class SearchController implements Serializable {
 
         // Order by bill ID
         jpql.append(" order by b.id ");
-
-
 
         // Execute the query
         bills = getBillFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
@@ -12806,14 +12801,16 @@ public class SearchController implements Serializable {
     }
 
     public void createIncomeBreakdownByCategoryOpd() {
-        if(isWithProfessionalFee()){
+        if (isWithProfessionalFee()) {
+            System.out.println("With Professional Fee");
             bundle = generateIncomeBreakdownByCategoryOpd();
-        }else{
+        } else {
+            System.out.println("Without Professional Fee");
             bundle = generateIncomeBreakdownByCategoryOpdWithoutProfessionalFee();
         }
-        
+
     }
-    
+
 //    public void createProfessionalFees() {
 //        bundle = generateOpdProfessionalFees();
 //    }
@@ -13984,7 +13981,9 @@ public class SearchController implements Serializable {
         rtrb.getReportTemplateRows().addAll(rowsToAdd);
         rtrb.setTotal(totalOpdServiceCollection);
     }
-    
+
+    private String visitType;
+
     public ReportTemplateRowBundle generateIncomeBreakdownByCategoryOpd() {
         ReportTemplateRowBundle oiBundle = new ReportTemplateRowBundle();
         String jpql = "select bi "
@@ -13995,8 +13994,33 @@ public class SearchController implements Serializable {
         m.put("br", false);
         m.put("fd", fromDate);
         m.put("td", toDate);
-        List<BillTypeAtomic> btas = BillTypeAtomic.findByServiceType(ServiceType.OPD);
-        oiBundle.setDescription("Bill Types Listed: " + btas);
+
+        List<BillTypeAtomic> btas = new ArrayList();
+
+        List<BillTypeAtomic> obtas = BillTypeAtomic.findByServiceType(ServiceType.OPD);
+        List<BillTypeAtomic> ibtas = BillTypeAtomic.findByServiceType(ServiceType.INWARD);
+
+        if (null != visitType) {
+            switch (visitType) {
+                case "Any":
+                    System.out.println("Any");
+                    btas.addAll(obtas);
+                    btas.addAll(ibtas);
+                    break;
+                case "OP":
+                    System.out.println("OPD");
+                    btas.addAll(obtas);
+                    break;
+                case "IP":
+                    System.out.println("IP");
+                    btas.addAll(ibtas);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        oiBundle.setDescription("Bill Types Listed: " + btas.size());
         if (!btas.isEmpty()) {
             jpql += " and bi.bill.billTypeAtomic in :bts ";
             m.put("bts", btas);
@@ -14018,8 +14042,7 @@ public class SearchController implements Serializable {
             jpql += " and bi.item.category=:cat ";
             m.put("cat", category);
         }
-        System.out.println("jpql = " + jpql);
-        System.out.println("m = " + m);
+
         List<BillItem> bis = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         summarizeBillItemsToIncomeByCategory(oiBundle, bis);
 
@@ -14038,7 +14061,6 @@ public class SearchController implements Serializable {
         return oiBundle;
     }
 
-
     public ReportTemplateRowBundle generateIncomeBreakdownByCategoryOpdWithoutProfessionalFee() {
         ReportTemplateRowBundle oiBundle = new ReportTemplateRowBundle();
         String jpql = "select bi "
@@ -14049,8 +14071,33 @@ public class SearchController implements Serializable {
         m.put("br", false);
         m.put("fd", fromDate);
         m.put("td", toDate);
-        List<BillTypeAtomic> btas = BillTypeAtomic.findByServiceType(ServiceType.OPD);
-        oiBundle.setDescription("Bill Types Listed: " + btas);
+
+        List<BillTypeAtomic> btas = new ArrayList();
+
+        List<BillTypeAtomic> obtas = BillTypeAtomic.findByServiceType(ServiceType.OPD);
+        List<BillTypeAtomic> ibtas = BillTypeAtomic.findByServiceType(ServiceType.INWARD);
+
+        if (null != visitType) {
+            switch (visitType) {
+                case "Any":
+                    System.out.println("Any");
+                    btas.addAll(obtas);
+                    btas.addAll(ibtas);
+                    break;
+                case "OP":
+                    System.out.println("OP");
+                    btas.addAll(obtas);
+                    break;
+                case "IP":
+                    System.out.println("IP");
+                    btas.addAll(ibtas);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        oiBundle.setDescription("Bill Types Listed: " + btas.size());
         if (!btas.isEmpty()) {
             jpql += " and bi.bill.billTypeAtomic in :bts ";
             m.put("bts", btas);
@@ -14072,8 +14119,7 @@ public class SearchController implements Serializable {
             jpql += " and bi.item.category=:cat ";
             m.put("cat", category);
         }
-        System.out.println("jpql = " + jpql);
-        System.out.println("m = " + m);
+
         List<BillItem> bis = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         summarizeBillItemsToIncomeByCategoryWithoutProfessionalFee(oiBundle, bis);
 
@@ -15291,8 +15337,6 @@ public class SearchController implements Serializable {
             // Accumulate the total collection
             totalOpdServiceCollection += netValue;
 
-            System.out.println("hospitalFee = " + hospitalFee);
-
             // Update the rows with the adjusted values
             updateRow(categoryRow, quantity, grossValue, hospitalFee, discount, staffFee, netValue);
             updateRow(itemRow, quantity, grossValue, hospitalFee, discount, staffFee, netValue);
@@ -15311,7 +15355,6 @@ public class SearchController implements Serializable {
                     });
         });
 
-        System.out.println("Total collected: " + totalOpdServiceCollection);
         rtrb.getReportTemplateRows().addAll(rowsToAdd);
         rtrb.setTotal(totalOpdServiceCollection);
     }
@@ -15396,8 +15439,7 @@ public class SearchController implements Serializable {
             // Accumulate the total collection
             totalOpdServiceCollection += hospitalFee - discount;
 
-            System.out.println("hospitalFee = " + hospitalFee);
-
+            //System.out.println("hospitalFee = " + hospitalFee);
             // Update the rows with the adjusted values
             updateRow(categoryRow, quantity, grossValue, hospitalFee, discount, staffFee, netValue);
             updateRow(itemRow, quantity, grossValue, hospitalFee, discount, staffFee, netValue);
@@ -15483,7 +15525,6 @@ public class SearchController implements Serializable {
         reportBundle.setStaffTotal(totalStaffFees);
     }
 
-    
     public void summarizeBillItemsToIncomeByCategoryWithoutProfessionalFee(ReportTemplateRowBundle reportBundle, List<BillItem> billItems) {
         Map<String, ReportTemplateRow> categoryMap = new HashMap<>();
         List<ReportTemplateRow> rowsToAdd = new ArrayList<>();
@@ -15579,7 +15620,7 @@ public class SearchController implements Serializable {
         if (row.getItemDiscountAmount() == null) {
             row.setItemDiscountAmount(0.0);
         }
-        
+
         if (row.getItemNetTotal() == null) {
             row.setItemNetTotal(0.0);
         }
@@ -15600,7 +15641,6 @@ public class SearchController implements Serializable {
         }
     }
 
-    
     public void generateOpdSaleByBill() {
         Map<String, Object> parameters = new HashMap<>();
         String jpql = "SELECT new com.divudi.data.ReportTemplateRow("
