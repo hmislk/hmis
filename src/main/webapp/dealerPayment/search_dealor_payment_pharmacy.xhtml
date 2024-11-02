@@ -7,13 +7,19 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
-        <ui:composition template="/dealerPayment/index.xhtml">
-            <ui:define name="subcontent">
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
                 <h:form>
                     <p:panel >
                         <f:facet name="header" >
                             <h:outputText styleClass="fa-solid fa-file-invoice"/>
-                            <h:outputLabel value="Supplier Payment Search" class="mx-4"/>    
+                            <h:outputLabel value="Supplier Payment Approve" class="mx-4"/> 
+                            <h:panelGroup>
+                                <p:commandButton action="/dealerPayment/dealor_due_pharmacy?faces-redirect=true"
+                                                 value="Back Due Search"
+                                                 class="ui-button-"
+                                                 style="float: right;"></p:commandButton>
+                            </h:panelGroup>
                         </f:facet>
                         <div class="row">
                             <div class="col-2">
@@ -82,12 +88,12 @@
                                     </p:column>
                                     <p:column headerText="Supplier Name">                             
                                         <h:outputLabel value="#{bill.toInstitution.name}" />
-                                    </p:column>                          
-
-                                     <p:column headerText="Department">                             
+                                    </p:column>   
+                                    
+                                    <p:column headerText="Department">                             
                                         <h:outputLabel value="#{bill.department.name}" />
                                     </p:column>
-                                    
+
                                     <p:column headerText="Billed at"  >                                
                                         <h:outputLabel value="#{bill.createdAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
