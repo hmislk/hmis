@@ -84,7 +84,12 @@
                                     >
 
                                     <p:column headerText="Bill No" >                                
-                                        <h:outputLabel value="#{bill.deptId}"  ></h:outputLabel>                                    
+                                        <h:outputLabel value="#{bill.deptId}"  ></h:outputLabel>  
+                                        <br/>
+                                        <h:panelGroup rendered="#{bill.cancelled}" >
+                                            <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.deptId}" >                                       
+                                            </h:outputLabel>
+                                        </h:panelGroup> 
                                     </p:column>
                                     <p:column headerText="Supplier Name">                             
                                         <h:outputLabel value="#{bill.toInstitution.name}" />
@@ -154,7 +159,7 @@
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Action">
-                                        <p:commandButton ajax="false" value="Return" action="reprint_bill_dealor?faces-redirect=true" class="ui-button-danger" >
+                                        <p:commandButton ajax="false" value="To Cancel" action="reprint_bill_dealor?faces-redirect=true" class="ui-button-danger" style="width: 100px;">
                                             <f:setPropertyActionListener value="#{bill}" 
                                                                          target="#{dealorPaymentBillSearch.bill}"/>
                                         </p:commandButton>

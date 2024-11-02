@@ -89,7 +89,7 @@
                                     <p:column headerText="Supplier Name">                             
                                         <h:outputLabel value="#{bill.toInstitution.name}" />
                                     </p:column>   
-                                    
+
                                     <p:column headerText="Department">                             
                                         <h:outputLabel value="#{bill.department.name}" />
                                     </p:column>
@@ -144,9 +144,11 @@
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                         </h:outputLabel>
                                     </p:column>                           
-                                    <p:column headerText="Comments" >                                
-                                        <h:outputLabel  value="#{bill.comments}" >
-                                        </h:outputLabel>
+                                    <p:column headerText="Comments" >
+                                        <h:panelGroup class="col-1">
+                                            <h:outputLabel  value="#{bill.comments}" >
+                                            </h:outputLabel>
+                                        </h:panelGroup>
                                     </p:column>
                                     <p:column>
                                         <p:commandButton ajax="false" value="Approve" action="reprint_bill_dealor">
