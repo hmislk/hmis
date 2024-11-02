@@ -73,7 +73,7 @@
                             </f:facet>
                             <div class="row w-75" >
                                 <div class="col-6">
-                                    <p:commandButton icon="pi pi-cog" action="#{investigationController.navigateToManageInvestigation()}" styleClass="ui-button-icon-only ui-p-primeng">
+                                    <p:commandButton icon="pi pi-cog" ajax="false" action="#{investigationController.navigateToManageInvestigation()}" styleClass="ui-button-icon-only ui-p-primeng">
                                         <f:setPropertyActionListener value="#{item}" target="#{investigationController.current}"  />
                                     </p:commandButton>
                                 </div>
