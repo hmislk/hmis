@@ -14148,6 +14148,9 @@ public class SearchController implements Serializable {
         System.out.println("Credit PaymentMethods = " + creditPaymentMethods.size());
         System.out.println("Non Credit PaymentMethods = " + nonCreditPaymentMethods.size());
         
+        System.out.println("methodType = " + methodType);
+        System.out.println("visitType = " + visitType);
+        
         if (null != methodType) switch (methodType) {
             case "Any":
                 System.out.println("Any");
@@ -14225,6 +14228,8 @@ public class SearchController implements Serializable {
         System.out.println("m = " + m);
         
         List<BillItem> bis = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        System.out.println("bis = " + bis);
+        
         summarizeBillItemsToIncomeByCategoryWithoutProfessionalFee(oiBundle, bis);
 
         oiBundle.setName("Income Breakdown By Category Without Professional Fee");
