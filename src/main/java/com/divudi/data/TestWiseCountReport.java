@@ -4,6 +4,7 @@
  */
 package com.divudi.data;
 
+import com.divudi.entity.BillItem;
 import com.divudi.entity.Person;
 
 /**
@@ -26,6 +27,7 @@ public class TestWiseCountReport {
     private Double discount;
     private boolean refunded;
     private boolean cancelled;
+    private BillItem billItem;
 
 
     public TestWiseCountReport(String testName, Long count, Double hosFee, Double ccFee, Double proFee, Double total) {
@@ -47,7 +49,7 @@ public class TestWiseCountReport {
         this.total = total;
     }
     
-    public TestWiseCountReport(Person person, Long count, Double hosFee, Double ccFee, Double proFee, Double discount, Double total, boolean cancelled, boolean refunded) {
+    public TestWiseCountReport(Person person, Long count, Double hosFee, Double ccFee, Double proFee, Double discount, Double total, BillItem bi) {
         this.doctor = person;
         this.count = count;
         this.hosFee = hosFee;
@@ -55,8 +57,7 @@ public class TestWiseCountReport {
         this.proFee = proFee;
         this.discount = discount;
         this.total = total;
-        this.cancelled = cancelled;
-        this.refunded = refunded;
+        this.billItem = bi;
     }
     
     public Integer getSerial() {
@@ -145,5 +146,13 @@ public class TestWiseCountReport {
 
     public void setCancelled(boolean cancelled) {
         this.cancelled = cancelled;
+    }
+
+    public BillItem getBillItem() {
+        return billItem;
+    }
+
+    public void setBillItem(BillItem billItem) {
+        this.billItem = billItem;
     }
 }
