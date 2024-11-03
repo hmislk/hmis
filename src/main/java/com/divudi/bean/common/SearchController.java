@@ -112,6 +112,7 @@ import org.primefaces.model.StreamedContent;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import kotlin.collections.ArrayDeque;
 
 /**
  *
@@ -2133,6 +2134,14 @@ public class SearchController implements Serializable {
 
     public void setVisitType(String visitType) {
         this.visitType = visitType;
+    }
+
+    public String getMethodType() {
+        return methodType;
+    }
+
+    public void setMethodType(String methodType) {
+        this.methodType = methodType;
     }
 
     public class billsWithbill {
@@ -13983,6 +13992,10 @@ public class SearchController implements Serializable {
     }
 
     private String visitType;
+    private String methodType;
+
+    @Inject
+    EnumController enumController;
 
     public ReportTemplateRowBundle generateIncomeBreakdownByCategoryOpd() {
         ReportTemplateRowBundle oiBundle = new ReportTemplateRowBundle();
@@ -14024,6 +14037,70 @@ public class SearchController implements Serializable {
         if (!btas.isEmpty()) {
             jpql += " and bi.bill.billTypeAtomic in :bts ";
             m.put("bts", btas);
+        }
+        
+        List<PaymentMethod> creditPaymentMethods = enumController.getPaymentTypeOfPaymentMethods(PaymentType.CREDIT);
+        List<PaymentMethod> nonCreditPaymentMethods = enumController.getPaymentTypeOfPaymentMethods(PaymentType.NON_CREDIT);
+        
+        List<PaymentMethod> allMethods = new ArrayDeque();
+        allMethods.addAll(creditPaymentMethods);
+        allMethods.addAll(nonCreditPaymentMethods);
+
+        if ("Any".equals(methodType)) {
+            System.out.println("Any");
+        } else if ("Credit".equals(methodType)) {
+            System.out.println("Credit");
+            
+
+            if (null != visitType) {
+                switch (visitType) {
+                    case "Any":
+                        System.out.println("Credit Any");
+                        jpql += " AND (bi.bill.paymentMethod in :apm OR bi.bill.patientEncounter.paymentMethod in :apm)";
+                        m.put("apm", allMethods);
+                        break;
+                    case "OP":
+                        System.out.println("Credit OP");
+                        jpql += " AND bi.bill.paymentMethod in :cpm ";
+                        m.put("cpm", creditPaymentMethods);
+                        break;
+                    case "IP":
+                        System.out.println("Credit IP");
+                        jpql += " AND bi.bill.patientEncounter.paymentMethod in :cpm ";
+                        m.put("cpm", creditPaymentMethods);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            
+
+        } else if ("NonCredit".equals(methodType)) {
+            System.out.println("Non Credit");
+            
+            if (null != visitType) {
+                switch (visitType) {
+                    case "Any":
+                        System.out.println("Credit Any");
+                        System.out.println("Credit Any");
+                        jpql += " AND (bi.bill.paymentMethod in :apm OR bi.bill.patientEncounter.paymentMethod in :apm)";
+                        m.put("apm", allMethods);
+                        break;
+                    case "OP":
+                        System.out.println("Credit OP");
+                        jpql += " AND bi.bill.paymentMethod in :ncpm ";
+                        m.put("ncpm", nonCreditPaymentMethods);
+                        break;
+                    case "IP":
+                        System.out.println("Credit IP");
+                        jpql += " AND bi.bill.patientEncounter.paymentMethod in :ncpm ";
+                        m.put("ncpm", nonCreditPaymentMethods);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            
         }
 
         if (department != null) {
@@ -14103,6 +14180,73 @@ public class SearchController implements Serializable {
             m.put("bts", btas);
         }
 
+        List<PaymentMethod> creditPaymentMethods = enumController.getPaymentTypeOfPaymentMethods(PaymentType.CREDIT);
+        List<PaymentMethod> nonCreditPaymentMethods = enumController.getPaymentTypeOfPaymentMethods(PaymentType.NON_CREDIT);
+        
+        List<PaymentMethod> allMethods = new ArrayDeque();
+        allMethods.addAll(creditPaymentMethods);
+        allMethods.addAll(nonCreditPaymentMethods);
+        
+        System.out.println("All Methods = " + allMethods.size());
+        System.out.println("Credit PaymentMethods = " + creditPaymentMethods.size());
+        System.out.println("Non Credit PaymentMethods = " + nonCreditPaymentMethods.size());
+        
+        if (null != methodType) switch (methodType) {
+            case "Any":
+                System.out.println("Any");
+                break;
+            case "Credit":
+                System.out.println("Credit");
+                if (null != visitType) {
+                    switch (visitType) {
+                        case "Any":
+                            System.out.println("Credit Any");
+                            jpql += " AND (bi.bill.paymentMethod in :apm OR bi.bill.patientEncounter.paymentMethod in :apm )";
+                            m.put("apm", allMethods);
+                            System.out.println("apm = " + allMethods);
+                            break;
+                        case "OP":
+                            System.out.println("Credit OP");
+                            jpql += " AND bi.bill.paymentMethod in :cpm ";
+                            m.put("cpm", creditPaymentMethods);
+                            break;
+                        case "IP":
+                            System.out.println("Credit IP");
+                            jpql += " AND bi.bill.patientEncounter.paymentMethod in :cpm ";
+                            m.put("cpm", creditPaymentMethods);
+                            break;
+                        default:
+                            break;
+                    }
+                }   break;
+            case "NonCredit":
+                System.out.println("Non Credit");
+                if (null != visitType) {
+                    switch (visitType) {
+                        case "Any":
+                            System.out.println("Credit Any");
+                            System.out.println("Credit Any");
+                            jpql += " AND (bi.bill.paymentMethod in :apm OR bi.bill.patientEncounter.paymentMethod in :apm)";
+                            m.put("apm", allMethods);
+                            break;
+                        case "OP":
+                            System.out.println("Credit OP");
+                            jpql += " AND bi.bill.paymentMethod in :ncpm ";
+                            m.put("ncpm", nonCreditPaymentMethods);
+                            break;
+                        case "IP":
+                            System.out.println("Credit IP");
+                            jpql += " AND bi.bill.patientEncounter.paymentMethod in :ncpm ";
+                            m.put("ncpm", nonCreditPaymentMethods);
+                            break;
+                        default:
+                            break;
+                    }
+                }   break;
+            default:
+                break;
+        }
+
         if (department != null) {
             jpql += " and bi.bill.department=:dep ";
             m.put("dep", department);
@@ -14119,7 +14263,10 @@ public class SearchController implements Serializable {
             jpql += " and bi.item.category=:cat ";
             m.put("cat", category);
         }
-
+        
+        System.out.println("jpql = " + jpql);
+        System.out.println("m = " + m);
+        
         List<BillItem> bis = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         summarizeBillItemsToIncomeByCategoryWithoutProfessionalFee(oiBundle, bis);
 
