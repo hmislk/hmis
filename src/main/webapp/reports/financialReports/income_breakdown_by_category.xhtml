@@ -111,7 +111,7 @@
                                         itemLabel="#{category.name}"
                                         itemValue="#{category}">
                                     </p:autoComplete>
-                                    
+
                                     <p:spacer width="50" ></p:spacer>
 
                                     <h:panelGroup layout="block" styleClass="form-group">
@@ -119,10 +119,22 @@
                                         <h:outputLabel value="Visit Type" for="visitType" class="mx-3"/>
                                     </h:panelGroup>
                                     <p:selectOneMenu class="w-100" value="#{searchController.visitType}">
-                                            <f:selectItem itemValue="Any" itemLabel="Any"/>
-                                            <f:selectItem itemValue="OP" itemLabel="Out Patients (OP)"/>
-                                            <f:selectItem itemValue="IP" itemLabel="In Patients (IP)"/>
-                                        </p:selectOneMenu>
+                                        <f:selectItem itemValue="Any" itemLabel="Any"/>
+                                        <f:selectItem itemValue="OP" itemLabel="Out Patients (OP)"/>
+                                        <f:selectItem itemValue="IP" itemLabel="In Patients (IP)"/>
+                                    </p:selectOneMenu>
+
+                                    <p:spacer width="50" ></p:spacer>
+
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <i class="fas fa-credit-card" style="color: green; font-size: 18px;"></i>                                       
+                                        <h:outputLabel value="Payment Type" class="mx-3"/>
+                                    </h:panelGroup>
+                                    <p:selectOneMenu class="w-100" value="#{searchController.methodType}">
+                                        <f:selectItem itemValue="Any" itemLabel="Any"/>
+                                        <f:selectItem itemValue="Credit" itemLabel="Credit"/>
+                                        <f:selectItem itemValue="NonCredit" itemLabel="Non Credit"/>
+                                    </p:selectOneMenu>
 
                                 </h:panelGrid>
 
@@ -180,7 +192,7 @@
                                 <h:outputText value="#{searchController.bundle.name}" />
                             </f:facet>
 
-                            <p:column>
+                            <p:column  style="padding: 7px;">
                                 <f:facet name="header">
                                     <h:outputText value="Category" />
                                 </f:facet>
