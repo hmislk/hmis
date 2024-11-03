@@ -84,7 +84,14 @@
                                     >
 
                                     <p:column headerText="Bill No" >                                
-                                        <h:outputLabel value="#{bill.deptId}"  ></h:outputLabel>                                    
+                                        <h:outputLabel value="#{bill.deptId}"  ></h:outputLabel>     
+                                        <br/>
+                                        <h:panelGroup rendered="#{bill.refunded}">
+                                            <h:outputLabel style="color: orange;" value="#{bill.refundedBill.deptId}"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{bill.cancelled}">
+                                            <h:outputLabel style="color: red;" value="#{bill.cancelledBill.deptId}"/>
+                                        </h:panelGroup>
                                     </p:column>
                                     <p:column headerText="Supplier Name">                             
                                         <h:outputLabel value="#{bill.toInstitution.name}" />

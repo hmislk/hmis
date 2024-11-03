@@ -565,29 +565,28 @@ public class SupplierPaymentController implements Serializable {
 
         bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
-    
-    public void fillAllCreditBillssettled(){
+
+    public void fillAllCreditBillssettled() {
         bills = null;
         netTotal = 0.0;
         String jpql;
         Map params = new HashMap();
-        List<BillType> billTypes = new ArrayList<>();
-        billTypes.add(BillType.GrnPaymentPre);
-        List<BillTypeAtomic> btas = new ArrayList<>();
-        btas.add(BillTypeAtomic.SUPPLIER_PAYMENT);
-
+        
         jpql = "select b from Bill b "
                 + " where b.retired=false "
                 + " and (b.billType = :billTypes or b.billTypeAtomic = :btas)  "
+                + " and b.cancelled = false "
+                + " and b.refunded = false  "
                 + " and b.createdAt between :fromDate and :toDate ";
 
-        params.put("billTypes", BillType.GrnPaymentPre);
-        params.put("toDate", toDate);
         params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+        params.put("billTypes", BillType.GrnPaymentPre);
         params.put("btas", BillTypeAtomic.SUPPLIER_PAYMENT);
 
+
         bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
-        
+
         for (Bill b : bills) {
             netTotal += b.getNetTotal();
         }
