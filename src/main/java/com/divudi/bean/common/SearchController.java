@@ -13067,7 +13067,7 @@ public class SearchController implements Serializable {
         collectionForTheDay += getSafeTotal(opdServiceCancellations);
 
         // Generate OPD service Refunds and add to the main bundle
-        ReportTemplateRowBundle opdServiceRefunds = generatePaymentMethodColumnsByBills(opdBts, nonCreditPaymentMethods);
+        ReportTemplateRowBundle opdServiceRefunds = generatePaymentMethodColumnsByBills(opdRefunds, nonCreditPaymentMethods);
         opdServiceRefunds.setBundleType("opdServiceRefunds");
         opdServiceRefunds.setName("OPD Service Refunds");
         bundle.getBundles().add(opdServiceRefunds);
@@ -13686,7 +13686,7 @@ public class SearchController implements Serializable {
         netCashForTheDayBundle.setTotal(netCashCollection);
 
         bundle.getBundles().add(netCashForTheDayBundle);
-        bundle.calculateTotalsBySelectedChildBundles();
+        bundle.calculateTotalsByAllChildBundles();
 
     }
 
