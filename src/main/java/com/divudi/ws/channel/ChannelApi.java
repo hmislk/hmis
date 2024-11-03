@@ -499,7 +499,7 @@ public class ChannelApi {
         Map<String, Map<String, String>> resultMap = new HashMap<>();
         List<SessionInstance> sessionInstances = channelService.findSessionInstance(hospitals, specialities, doctorList, date);
         // List<SessionInstance> sessionInstances = sessionInstanceController.findSessionInstance(hospital, speciality, doctorList, date, date);
-
+        System.out.println(sessionInstances.size());
         if (sessionInstances == null || sessionInstances.isEmpty()) {
             JSONObject response = commonFunctionToErrorResponse("No Data for this criterias.");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
@@ -871,13 +871,16 @@ public class ChannelApi {
         if (patientPhoneNo == null || patientPhoneNo.isEmpty()) {
             JSONObject response = commonFunctionToErrorResponse("Patient Phone number is mandotary.");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+        } else if (patientPhoneNo.length() != 10) {
+            JSONObject response = commonFunctionToErrorResponse("Phone number must be 10 digits");
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
         String patientTitle = patientDetails.get("title");
         String nic = patientDetails.get("nid");
         String clientsReferanceNo = patientDetails.get("clientRefNumber");
         Long patientPhoneNumberLong = CommonFunctions.removeSpecialCharsInPhonenumber(patientPhoneNo);
-
+        System.out.println(patientPhoneNumberLong + " size - " + (String.valueOf(patientPhoneNumberLong)).length());
         if (clientsReferanceNo == null || clientsReferanceNo.isEmpty()) {
             JSONObject response = commonFunctionToErrorResponse("Invalid Ref No");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
@@ -888,11 +891,10 @@ public class ChannelApi {
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
-        if (String.valueOf(patientPhoneNumberLong).length() != 10) {
-            JSONObject response = commonFunctionToErrorResponse("Phone number must be 10 digits");
-            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
-        }
-
+//        if ((String.valueOf(patientPhoneNumberLong)).length() != 10) {
+//            JSONObject response = commonFunctionToErrorResponse("Phone number must be 10 digits");
+//            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+//        }
         List<Patient> patients = null;
         Patient newPatient = null;
         boolean toSelectOneFromALot = false;
@@ -965,9 +967,9 @@ public class ChannelApi {
             JSONObject response = commonFunctionToErrorResponse("Invalid title for the patient");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
-        if (patientType.toUpperCase().equals("YES")) {
-            isForeigner = true;
-        }
+//        if (patientType.toUpperCase().equals("YES")) {
+//            isForeigner = true;
+//        }
 
         if (newPatient == null) {
             newPatient = new Patient();
@@ -977,8 +979,8 @@ public class ChannelApi {
             p.setNic(nic);
             p.setPhone(patientPhoneNo);
             p.setMobile(patientPhoneNo);
-            p.setDob(new Date());
-            p.setAddress("Galle");
+            // p.setDob(new Date());
+            // p.setAddress();
             p.setForeigner(isForeigner);
             newPatient.setPerson(p);
             newPatient.setPatientMobileNumber(patientPhoneNumberLong);
@@ -1120,12 +1122,15 @@ public class ChannelApi {
         if (patientPhoneNo == null || patientPhoneNo.isEmpty()) {
             JSONObject response = commonFunctionToErrorResponse("Phone Number is missing.");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
-        }
-
-        if (String.valueOf(patientPhoneNumberLong).length() != 10) {
+        } else if (patientPhoneNo.length() != 10) {
             JSONObject response = commonFunctionToErrorResponse("Phone Number digits should be 10.(07xxxxxxxx)");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
+//
+//        if (String.valueOf(patientPhoneNumberLong).length() != 10) {
+//            JSONObject response = commonFunctionToErrorResponse("Phone Number digits should be 10.(07xxxxxxxx)");
+//            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+//        }
 
         Institution creditCompany = channelService.findCreditCompany(paymentChannel, InstitutionType.Agency);
         List<Bill> billList = channelService.findBillFromRefNo(clientsReferanceNo, creditCompany, BillClassType.BilledBill);
@@ -1372,7 +1377,7 @@ public class ChannelApi {
 //                continue;
 //            }
             Map<String, Object> mapDetail = new HashMap<>();
-            mapDetail.put("DoctorName", b.getSingleBillSession().getSessionInstance().getOriginatingSession().getStaff().getName());
+            mapDetail.put("DoctorName", b.getSingleBillSession().getSessionInstance().getOriginatingSession().getStaff().getPerson().getNameWithInitials());
             mapDetail.put("PatientName", b.getPatient().getPerson().getName());
             mapDetail.put("HosTelephone", b.getToInstitution().getPhone());
             mapDetail.put("NicNumber", b.getPatient().getPerson().getNic());
@@ -1441,31 +1446,44 @@ public class ChannelApi {
             billStatus = "Booking is done with the payment";
         }
 
+        SimpleDateFormat forDate = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat forTime = new SimpleDateFormat("HH:mm:ss");
+        SimpleDateFormat forDay = new SimpleDateFormat("E");
+
         Map<String, Object> appoinment = new HashMap<>();
         appoinment.put("refNo", bill.getAgentRefNo());
         appoinment.put("patientNo", bill.getSingleBillSession().getSerialNo());
-        appoinment.put("allPatientNo", "");
+        appoinment.put("allPatientNo", session.getNextAvailableAppointmentNumber()-1);
         appoinment.put("showPno", "");
         appoinment.put("showTime", "");
         appoinment.put("chRoom", bill.getSingleBillSession().getSessionInstance().getRoomNo());
         appoinment.put("timeInterval", "");
         appoinment.put("status", billStatus);
 
+        String sessionStatus = "";
+        if (session.isCompleted()) {
+            sessionStatus = "Session is alredy finished now.";
+        } else if (session.isCancelled()) {
+            sessionStatus = "Session is cancelled.";
+        } else if (session.isStarted()) {
+            sessionStatus = "Session is already started now.";
+        }
+
         Map<String, Object> sessionDetails = new HashMap<>();
         Item i = bill.getSingleBillSession().getItem();
         sessionDetails.put("hosId", i.getInstitution().getId());
-        sessionDetails.put("docname", i.getStaff().getPerson().getNameWithInitials());
-        sessionDetails.put("amount", i.getTotalFee());
+        sessionDetails.put("docname", session.getOriginatingSession().getStaff().getPerson().getNameWithInitials());
+        sessionDetails.put("amount", bill.getNetTotal());
         sessionDetails.put("hosAmount", i.getChannelHosFee());
         sessionDetails.put("docAmount", i.getChannelStaffFee());
         sessionDetails.put("specialization", i.getStaff().getSpeciality().getName());
-        sessionDetails.put("theDate", session.getSessionDate());
-        sessionDetails.put("theDay", session.getDayString());
-        sessionDetails.put("startTime", session.getSessionTime());
+        sessionDetails.put("theDate", forDate.format(session.getSessionDate()));
+        sessionDetails.put("theDay", forDay.format(session.getSessionDate()));
+        sessionDetails.put("startTime", forTime.format(session.getSessionTime()));
         sessionDetails.put("hosLocation", session.getInstitution().getAddress());
         sessionDetails.put("hosName", session.getInstitution().getName());
         sessionDetails.put("sessionStarted", session.isStarted());
-        sessionDetails.put("status", "");
+        sessionDetails.put("status", sessionStatus);
 
         Patient p = bill.getPatient();
         Map<String, Object> patientDetails = new HashMap<>();
