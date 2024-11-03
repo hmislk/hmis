@@ -495,7 +495,7 @@ public class InvestigationController implements Serializable {
             current.setReportedAs(current);
         }
         investigationItemController.setCurrentInvestigation((Investigation) current.getReportedAs());
-        return investigationItemController.toEditInvestigationFormat();
+        return investigationItemController.toEditInvestigationFormatPastData();
     }
 
     public String navigateToManageReportComponents() {

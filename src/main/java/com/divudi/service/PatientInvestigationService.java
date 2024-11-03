@@ -69,6 +69,11 @@ public class PatientInvestigationService {
                 jpql += " and ((i.name) like :itm)";
                 params.put("itm", "%" + searchKeyword.getItemName().trim().toUpperCase() + "%");
             }
+            
+            if (searchKeyword.getInvestigation()!= null) {
+                jpql += " and i=:ix ";
+                params.put("ix", searchKeyword.getInvestigation());
+            }
 
             if (searchKeyword.getPatientEncounter() != null) {
                 jpql += " and pi.encounter=:en";

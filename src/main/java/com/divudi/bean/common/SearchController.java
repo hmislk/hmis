@@ -71,6 +71,7 @@ import com.divudi.entity.Payment;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.cashTransaction.CashBookEntry;
 import com.divudi.entity.cashTransaction.Drawer;
+import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.facade.DrawerFacade;
 import com.divudi.facade.PaymentFacade;
@@ -1238,8 +1239,17 @@ public class SearchController implements Serializable {
     }
 
     public void fillToSelectedDepartmentPatientInvestigations() {
-        patientInvestigations = patientInvestigationService.fetchPatientInvestigations(fromDate, toDate, searchKeyword);
+        getSearchKeyword().setItemDepartment(getReportKeyWord().getDepartment());
+        getSearchKeyword().setPatientEncounter(patientEncounter);
+        patientInvestigations = patientInvestigationService.fetchPatientInvestigations(fromDate, toDate, getSearchKeyword());
     }
+
+    public void fillPatientInvestigationsForIxAdminPastData(Investigation ix) {
+        getSearchKeyword().setPatientEncounter(patientEncounter);
+        getSearchKeyword().setInvestigation(ix);
+        patientInvestigations = patientInvestigationService.fetchPatientInvestigations(fromDate, toDate, getSearchKeyword());
+    }
+
 
     public void fillCollectingCentreCourierPatientInvestigations() {
         String jpql = "select pi "

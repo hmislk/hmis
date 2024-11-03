@@ -81,7 +81,6 @@
                                             filter="true">
                                             <f:selectItem itemLabel="Select" />
                                             <f:selectItems value="#{investigationItemController.userChangableItems}" var="ii" itemLabel="#{ii.name} - #{ii.ixItemType }" itemValue="#{ii}" />
-                                            <p:ajax  event="change" process="dtbItem" update=":#{p:resolveFirstComponentWithId('pDetails',view).clientId} "/>
                                         </p:selectOneMenu>
                                     </diV>
 
@@ -108,23 +107,11 @@
                                         value="#{searchController.toDate}" 
                                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                                                                              
                                     </p:datePicker>
-                                    <h:outputLabel 
-                                        class="form-label"
-                                        value="Department"/>
-                                    <p:autoComplete 
-                                        completeMethod="#{departmentController.completeDept}" 
-                                        class="w-100"
-                                        inputStyleClass="form-control"
-                                        var="dept" 
-                                        itemLabel="#{dept.name}" 
-                                        itemValue="#{dept}" 
-                                        forceSelection="true" 
-                                        value="#{searchController.reportKeyWord.department}" 
-                                        />
+                                    
 
                                     <h:commandLink 
                                         id="btnSearch0" 
-                                        action="#{searchController.fillToSelectedDepartmentPatientInvestigations()}" 
+                                        action="#{searchController.fillPatientInvestigationsForIxAdminPastData(investigationItemController.currentInvestigation)}" 
                                         styleClass="mt-2 btn btn-success">
                                         <h:outputText value="Selected Department Only" />
                                         <i class="fa fa-search" style="margin-left: 5px;"></i>
@@ -141,42 +128,338 @@
 
 
 
-                    <p:panel class="w-100">
-                        <f:facet name="header">
+                    <p:dataTable  
+                        id="tblBills" 
+                        value="#{searchController.patientInvestigations}" 
+                        var="pi" 
+                        rowIndexVar="i" 
+                        class="tbl table-condensed"
 
-                        </f:facet>
-                        <h:panelGrid columns="2" class="w-100">
-                            <h:panelGrid rendered="#{investigationItemController.editMode ne 'Move_Mode'}">
+                        >
+                        <p:column  headerText="Order No" style="width:8em;" >
+                            <!--                                        <h:outputLabel
+                                                                        rendered="false"
+                                                                                                                                                                                            value="#{pi.billItem.bill.deptId}" 
+                                                                                   ></h:outputLabel>-->
+
+                            <h:outputLabel id="lblBillNo" 
+                                           value="#{pi.billItem.bill.deptId}" 
+                                           styleClass="#{pi.billItem.bill.cancelled or pi.billItem.transRefund ? 'redtext':''}"></h:outputLabel>
+                            <p:tooltip for="lblBillNo"  >
+                                <h:outputLabel value="Bill No : #{pi.billItem.bill.deptId}" ></h:outputLabel>
+                                <br/>
+                                <h:outputLabel value="Billed From : #{pi.billItem.bill.institution.name}" ></h:outputLabel>
+                                <br/>
+                                <h:outputLabel value="Sampled : " />
+                                <h:outputLabel rendered="#{pi.collected}" value="#{pi.sampledAt}" >
+                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                </h:outputLabel>
+                                <br/>
+                                <h:outputLabel value="Received : " />
+                                <h:outputLabel rendered="#{pi.received}" value="#{pi.receivedAt}" >
+                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                </h:outputLabel>
+                                <br/>
+                                <h:panelGroup rendered="#{pi.billItem.bill.cancelled}" >
+                                    <h:outputLabel style="color: red;" value="Cancelled : " />
+                                    <h:outputLabel style="color: red;" rendered="#{pi.billItem.bill.cancelled}" value="#{pi.billItem.bill.cancelledBill.createdAt}" >
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{pi.billItem.refunded}" >
+                                    <h:outputLabel style="color: red;" value="Refunded : " />
+                                    <h:outputLabel style="color: red;" rendered="#{pi.billItem.refunded}" value="#{pi.billItem.referanceBillItem.bill.createdAt}" >
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                    </h:outputLabel>
+                                </h:panelGroup>
 
 
-                            </h:panelGrid>
+                            </p:tooltip>
+                        </p:column>
+
+                        <p:column  headerText="Dep ID" styleClass="alignTop" rendered="false" >
+                            <h:outputLabel id="lblInvNo" 
+                                           value="#{pi.billItem.bill.deptId}" 
+                                           styleClass="#{pi.billItem.bill.cancelled or pi.billItem.transRefund ? 'redtext':''}"></h:outputLabel>
+                            <p:tooltip for="lblBillNo"  >
+                                <h:outputLabel value="Bill No : #{pi.billItem.bill.deptId}" ></h:outputLabel>
+                                <br/>
+                                <h:outputLabel value="Billed From : #{pi.billItem.bill.institution.name}" ></h:outputLabel>
+                                <br/>
+                                <h:outputLabel value="Sampled : " />
+                                <h:outputLabel rendered="#{pi.collected}" value="#{pi.sampledAt}" >
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </h:outputLabel>
+                                <br/>
+                                <h:outputLabel value="Received : " />
+                                <h:outputLabel rendered="#{pi.received}" value="#{pi.receivedAt}" >
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </h:outputLabel>
+                                <br/>
+                                <h:panelGroup rendered="#{pi.billItem.bill.cancelled}" >
+                                    <h:outputLabel style="color: red;" value="Cancelled : " />
+                                    <h:outputLabel style="color: red;" rendered="#{pi.billItem.bill.cancelled}" value="#{pi.billItem.bill.cancelledBill.createdAt}" >
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{pi.billItem.refunded eq true}" >
+                                    <h:outputLabel style="color: red;" value="Refunded : " />
+                                    <h:outputLabel style="color: red;" rendered="#{pi.billItem.refunded eq true}" value="#{pi.billItem.referanceBillItem.bill.createdAt}" >
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                            </p:tooltip>
+                        </p:column>
 
 
-                        </h:panelGrid> 
+                        <p:column  headerText="Patient" styleClass="alignTop" style="width:14em;">
+<!--                                        <h:panelGroup rendered="#{pi.encounter ne null}" >
+                                <p:outputLabel value="#{pi.encounter.patient.person.nameWithTitle}" ></p:outputLabel>
+                            </h:panelGroup>
+                             <h:panelGroup rendered="#{pi.encounter eq null}" >
+                                <p:outputLabel value="#{pi.encounter.patient.person.nameWithTitle}" ></p:outputLabel>
+                            </h:panelGroup>-->
 
-                    </p:panel>
+
+                            <h:commandLink id="colPtDetail" rendered="#{webUserController.hasPrivilege('LabEditPatient') and pi.billItem.bill.approvedAnyTest}" 
+                                           value="#{pi.billItem.bill.patient.person.name}, #{pi.billItem.bill.patient.age}" 
+                                           action="#{patientController.navigateToOpdPatientEdit()}" 
+                                           style="text-decoration:underline; max-width: 14em; overflow: hidden; text-overflow: ellipsis; display: inline-block; white-space: nowrap;"
+                                           styleClass="#{pi.billItem.bill.cancelled or pi.billItem.transRefund ? 'text-danger':''}"
+                                           >
+                                <f:setPropertyActionListener value="#{pi.billItem.bill.patient}" target="#{patientController.current}"/>
+                                <f:setPropertyActionListener value="#{pi.billItem.bill}" target="#{billController.bill}"/>
+                            </h:commandLink>
+
+                            <h:commandLink id="colPtDetail1" rendered="#{!pi.billItem.bill.approvedAnyTest}"
+                                           value="#{pi.billItem.bill.patient.person.name}, #{pi.billItem.bill.patient.age}" 
+                                           action="#{patientController.navigateToOpdPatientEdit()}" 
+                                           style="text-decoration:underline; max-width: 14em; overflow: hidden; text-overflow: ellipsis; display: inline-block; white-space: nowrap;"
+                                           styleClass="#{pi.billItem.bill.cancelled or pi.billItem.transRefund ? 'text-danger':''}"
+                                           >
+                                <f:setPropertyActionListener value="#{pi.billItem.bill.patient}" target="#{patientController.current}"/>
+                                <f:setPropertyActionListener value="#{pi.billItem.bill}" target="#{billController.bill}"/>
+                            </h:commandLink>
+
+                            <p:outputLabel rendered="#{pi.billItem.bill.approvedAnyTest and !webUserController.hasPrivilege('LabEditPatient')}"
+                                           value="#{pi.billItem.bill.patient.person.name}, #{pi.billItem.bill.patient.age}"
+                                           style="max-width: 13em; overflow: hidden; text-overflow: ellipsis; display: inline-block; white-space: nowrap;" 
+                                           />
+
+                            <p:tooltip for="colPtDetail"  >
+                                <h:outputLabel value="Name : #{pi.billItem.bill.patient.person.name}" >
+                                </h:outputLabel>
+                                <br/>
+                                <h:outputLabel value="Age : #{pi.billItem.bill.patient.age},&nbsp;#{pi.billItem.bill.patient.person.sex}," >
+                                </h:outputLabel>
+                                <br/>
+                                <h:outputLabel value="Phone : #{pi.billItem.bill.patient.person.phone}" >
+                                </h:outputLabel>
+                            </p:tooltip>
+                        </p:column>
+
+                        <p:column headerText="Investigation"  styleClass="alignTop" style="width: 32em;">
+                            <h:outputLabel value="#{pi.billItem.item.name}" >
+                                <p:commandButton icon="pi pi-cog" action="#{investigationController.navigateToManageInvestigation()}" styleClass="ui-button-icon-only ui-p-primeng ms-5">
+                                    <f:setPropertyActionListener value="#{pi.investigation}" target="#{investigationController.current}"  />
+                                </p:commandButton>
+                            </h:outputLabel>
+                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Need to Generate Barcodes for Sample Tubes at OPD Billing Automatically')}" >
+                                <ui:repeat value="#{patientInvestigationController.getPatientSampleComponentsByInvestigation(pi)}" var="psc">
+                                    <div class="ui-g d-grid" style="margin-bottom: 10px;">
+                                        <div class="ui-g-6">
+                                            <i class="fa fa-vial"></i>
+                                            <h:outputText value="#{psc.patientSample.id}" class="text-primary" />
+                                        </div>
+                                    </div>
+                                </ui:repeat>
+                            </h:panelGroup>
+                        </p:column>
+
+                        <p:column rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow Local Number For Opd Billing')}" headerText="Local Number"  styleClass="alignTop" style="width: 32em;">
+                            <h:outputLabel value="#{pi.billItem.bill.localNumber}" >
+                            </h:outputLabel>
+                        </p:column>
+
+                        <p:column  headerText="Actions" style="width: 11em;">
+                            <p:commandLink process="btnSample" update="tblBills"
+                                           disabled="#{pi.collected or pi.billItem.bill.cancelled}"   
+                                           id="btnSample" 
+                                           action="#{patientInvestigationController.markAsSampled}" >
+                                <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
+                                <p:graphicImage library="image" styleClass="standedicon" name="bleed.png" rendered="#{pi.collected ne true}"></p:graphicImage>
+                                <p:graphicImage library="image" styleClass="standedicon" name="bleedok.jpg" rendered="#{pi.collected eq true}"></p:graphicImage>
+                            </p:commandLink>
+                            <h:panelGroup rendered="#{webUserController.hasPrivilege('LabSampleReceiving')}">
+                                <p:commandLink process="btnReceive" update="tblBills"  disabled="#{pi.collected ne true}"   id="btnReceive"  action="#{patientInvestigationController.markAsReceived()}" >
+                                    <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
+                                    <p:graphicImage library="image" styleClass="standedicon" name="receive.jpeg" rendered="#{pi.received ne true }" ></p:graphicImage>
+                                    <p:graphicImage library="image" styleClass="standedicon" name="receiveok.jpg" rendered="#{pi.received eq true}"></p:graphicImage>
+                                </p:commandLink>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{pi.billItem.bill.cancelled ne true}">
+                                <p:commandLink ajax="false" id="btnPrintWorksheets" disabled="#{pi.received ne true}" action="/lab/single_worksheet?faces-redirect=true" >
+                                    <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}" ></f:setPropertyActionListener>
+                                    <p:graphicImage library="image" styleClass="standedicon" name="worksheet.gif" ></p:graphicImage>
+                                </p:commandLink>
+                            </h:panelGroup>
+
+
+                            <p:commandLink id="btnNewReport" ajax="false" 
+                                           disabled="#{!pi.received}" 
+                                           action="/lab/patient_report?faces-redirect=true"  
+                                           actionListener="#{patientReportController.createNewReport(pi)}" >
+                                <f:setPropertyActionListener value="#{pi}" target="#{patientReportController.currentPtIx}"></f:setPropertyActionListener>
+                                <p:graphicImage library="image" styleClass="standedicon" name="data_entry.png" ></p:graphicImage>
+                            </p:commandLink>
+                            <h:panelGroup >
+                                <p:commandLink process="btnSms" update="tblBills"  
+                                               id="btnSms" 
+                                               rendered="#{!pi.billItem.bill.smsed}"
+                                               disabled="#{pi.billItem.bill.cancelled or pi.billItem.transRefund or pi.patientReports.size() eq 0}"
+                                               action="#{patientInvestigationController.sendSms()}" >
+                                    <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
+                                    <p:graphicImage library="image" styleClass="standedicon" name="sms.jpg" ></p:graphicImage>
+                                </p:commandLink>
+                                <p:commandLink process="btnSmsSent" update="tblBills"  
+                                               id="btnSmsSent"
+                                               rendered="#{pi.billItem.bill.smsed}"
+                                               disabled="#{pi.billItem.bill.cancelled or pi.billItem.transRefund or pi.patientReports.size() eq 0}"
+                                               action="#{patientInvestigationController.sendSms()}" >
+                                    <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
+                                    <p:graphicImage library="image" styleClass="standedicon" name="smssent.png" ></p:graphicImage>
+                                </p:commandLink>
+
+                            </h:panelGroup>
+
+                            <p:tooltip for="btnReceive"  >
+                                <h:outputLabel value="Receive Sample" rendered="#{!pi.received}" ></h:outputLabel>
+                                <h:outputLabel value="Sample received at " rendered="#{pi.received}" ></h:outputLabel>
+                                <h:outputLabel value="#{pi.receivedAt}" rendered="#{pi.received}" >
+                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                </h:outputLabel>
+                            </p:tooltip>
+
+                            <p:tooltip for="btnSample" value="Collect Sample" >
+                                <h:outputLabel value="Collect Sample" rendered="#{!pi.collected }" ></h:outputLabel>
+                                <h:outputLabel value="Sampled at " rendered="#{pi.collected}" ></h:outputLabel>
+                                <h:outputLabel value="#{pi.sampledAt}" rendered="#{pi.collected}" >
+                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                </h:outputLabel>
+                            </p:tooltip>
+
+                            <p:tooltip for="btnNewReport" value="New Report" ></p:tooltip>
+
+                            <p:tooltip for="btnPrintWorksheets" value="Print worksheet" ></p:tooltip>
+
+
+                            <table >
+                                <ui:repeat value="#{itemForItemController.getItemsForParentItem(pi.investigation)}" var="ifi"  >
+                                    <tr>
+                                        <td>
+                                            <p:commandLink disabled="#{!pi.received}" value="New #{ifi.name}" actionListener="#{patientReportController.enterNewReportFormat(pi, ifi)}" action="/lab/patient_report?faces-redirect=true" 
+                                                           ajax="false">
+                                            </p:commandLink>
+                                        </td>
+                                    </tr>
+                                </ui:repeat>
+                            </table>
+
+
+                        </p:column>
+
+                        <p:column headerText="Data-Entered Reports" 
+                                  style="width:11em;" >
+
+
+
+                            <ui:repeat value="#{patientReportController.patientReports(pi)}" var="dpr">
+                                <div class="#{dpr.retired eq true ? 'noDisplayRow':''}">
+
+                                    <p:commandLink id="cmdOldReport" 
+                                                   value="#{dpr.item.name}" 
+                                                   rendered="#{dpr.item ne pi.billItem.item}"
+                                                   ajax="false" action="/lab/patient_report?faces-redirect=true">
+                                        <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
+                                    </p:commandLink>
+
+                                    <p:commandLink id="cmdOldReportEdit" ajax="false" action="/lab/patient_report?faces-redirect=true">
+                                        <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
+                                        <p:graphicImage library="image" styleClass="standedicon" name="data_entry.png" ></p:graphicImage>
+                                    </p:commandLink>
+
+                                    <p:commandLink id="cmdOldReportPrint1" ajax="false" action="/lab/patient_report_print?faces-redirect=true" disabled="#{!dpr.approved}" rendered="#{!sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed}">
+                                        <p:graphicImage library="image" name="print.jpg" styleClass="standedicon" ></p:graphicImage>
+                                        <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
+                                    </p:commandLink>
+                                    <p:commandLink id="cmdOldReportPrint2" ajax="false" action="/lab/patient_report_print?faces-redirect=true" disabled="#{!dpr.approved or dpr.patientInvestigation.billItem.bill.backwardReferenceBill.balance ne 0}" rendered="#{sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed}">
+                                        <p:graphicImage library="image" name="print.jpg" styleClass="standedicon" ></p:graphicImage>
+                                        <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
+                                    </p:commandLink>
+
+                                    <p:graphicImage id="imgApproved" library="image" name="approved_icon.png" 
+                                                    style="height: 30px; width: 30px; #{dpr.approved ? '':'opacity: 0.1;'}" ></p:graphicImage>
+                                    <p:graphicImage id="imgPrinted" library="image" name="print_ok.png" 
+                                                    style="height: 30px; width: 30px;#{dpr.printed ? '':'opacity: 0.1;'}" ></p:graphicImage>
+                                    <p:commandLink ajax="false"  
+                                                   id="btnEmail" 
+                                                   disabled="#{pi.billItem.bill.cancelled or pi.billItem.transRefund}"
+                                                   action="#{patientReportController.sendEmail()}" >
+                                        <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
+                                        <p:graphicImage library="image" styleClass="standedicon" name="email.jpg" ></p:graphicImage>
+                                    </p:commandLink>
+
+
+                                    <!-- all tooltips -->
+                                    <p:tooltip for="imgApproved" >
+                                        <h:outputLabel value="Approved" styleClass="#{dpr.approved ? 'greentext':'yellowtext'}" >
+                                        </h:outputLabel>
+                                    </p:tooltip>
+                                    <p:tooltip for="imgPrinted" >
+                                        <h:outputLabel value="Printed" styleClass="#{dpr.approved ? 'greentext':'yellowtext'}" >
+                                        </h:outputLabel>
+                                    </p:tooltip>
+                                    <p:tooltip for="cmdOldReportPrint1 cmdOldReportPrint2" >
+                                        <h:outputLabel value="To Print" styleClass="#{dpr.approved ? 'greentext':'yellowtext'}" >
+                                        </h:outputLabel>
+                                    </p:tooltip>
+                                    <p:tooltip for="cmdOldReport cmdOldReportEdit" >
+                                        <h:outputLabel value="To Edit, Approve or Print" styleClass="#{dpr.approved ? 'greentext':'yellowtext'}" >
+                                        </h:outputLabel>
+                                        <br/>
+                                        <h:outputLabel value="#{dpr.item.name}" styleClass="#{dpr.approved ? 'greentext':'yellowtext'}" >
+                                        </h:outputLabel>
+                                        <br/>
+                                        <h:outputLabel value="Data entered at " ></h:outputLabel>
+                                        <h:outputLabel value="#{dpr.dataEntryAt}" >
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                        </h:outputLabel>
+                                        <br/>
+                                        <h:outputLabel value="Approved at " rendered="#{dpr.approved}" ></h:outputLabel>
+                                        <h:outputLabel value="#{dpr.approveAt}"  rendered="#{dpr.approved}" >
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                        </h:outputLabel>
+                                        <br/>
+                                        <h:outputLabel value="Printed at "  rendered="#{dpr.printed}" ></h:outputLabel>
+                                        <h:outputLabel value="#{dpr.printingAt}"  rendered="#{dpr.printed}" >
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                        </h:outputLabel>
+                                    </p:tooltip>
+
+                                </div>
+                                <p:badge value="Printed" severity="info" rendered="#{pi.printed}" ></p:badge>
+                            </ui:repeat>
+
+
+
+                        </p:column>
+
+                    </p:dataTable>
                 </h:form>
 
 
-<!--                <h1>#{investigationItemController.currentInvestigation.reportFormat}</h1>-->
 
-                <div class="row mb-3">
-                    <div class="col-6">
-                        <h:form enctype="multipart/form-data">
-                            <p:panel header="Upload Format" >
-                                <p:fileUpload value="#{investigationItemController.file}" mode="simple"  />
-                                <p:commandButton value="Submit" ajax="false" action="#{investigationItemController.upload}"  />
-                            </p:panel>
-                        </h:form>
-                    </div>
-                    <div class="col-6">
-                        <h:form >
-                            <p:panel header="Correct Format from Old Databases" >
-                                <p:commandButton ajax="false" action="#{reportItemController.intFromCss()}" value="Error Correction of Ctt to Int" ></p:commandButton>
-                            </p:panel>
-                        </h:form>
-                    </div>
-                </div>
 
 
 

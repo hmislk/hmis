@@ -12,6 +12,7 @@ import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.inward.AdmissionType;
+import com.divudi.entity.lab.Investigation;
 import java.util.List;
 
 /**
@@ -56,6 +57,7 @@ public class SearchKeyword {
     private Department frmDepartment;
     private Department itemDepartment;
     private Item item;
+    private Investigation investigation;
     private List<BillType> billTypes;
     
     
@@ -430,6 +432,14 @@ public class SearchKeyword {
 
     public void setItemDepartment(Department itemDepartment) {
         this.itemDepartment = itemDepartment;
+    }
+
+    public Investigation getInvestigation() {
+        return investigation;
+    }
+
+    public void setInvestigation(Investigation investigation) {
+        this.investigation = investigation;
     }
 
 
