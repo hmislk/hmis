@@ -3257,7 +3257,7 @@ public class BillSearch implements Serializable {
             paymentFacade.create(cancellationPayment);
             cancellationPayments.add(cancellationPayment);
         }
-        drawerController.updateDrawerForIns(cancellationPayments);
+        drawerController.updateDrawerForOuts(cancellationPayments);
         bill = cancellationBill;
         billPayments = cancellationPayments;
         printPreview = true;
@@ -3292,7 +3292,7 @@ public class BillSearch implements Serializable {
         billFees = billBean.fetchBillFees(bill);
         billPayments = billBean.fetchBillPayments(bill);
         printPreview = false;
-        return "/cashier/expense_bill_cancel?faces-redirect=true;";
+        return "/cashier/expense_bill_cancellation_print?faces-redirect=true;";
     }
     
     public String navigateToViewCancelExpenseBill() {

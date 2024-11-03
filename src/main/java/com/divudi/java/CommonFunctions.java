@@ -59,6 +59,15 @@ public class CommonFunctions {
             return null;
         }
     }
+    
+    public static boolean checkOnlyNumeric(String text) {
+        String cleandtext = text.replaceAll("[\\s+\\-()]", "");
+        String regex = "^[0-9]+$";
+        // Check if the text matches the pattern
+        boolean onlyNumeric = cleandtext.matches(regex);
+        
+        return onlyNumeric;
+    }
 
     public static String generateUuid() {
         return UUID.randomUUID().toString();
@@ -994,7 +1003,7 @@ public class CommonFunctions {
         // Convert Double to String
         return String.valueOf(value);
     }
-
+    
     public SessionController getSessionController() {
         return sessionController;
     }

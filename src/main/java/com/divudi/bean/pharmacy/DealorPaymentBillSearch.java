@@ -11,6 +11,7 @@ import com.divudi.bean.common.WebUserController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.BillTypeAtomic;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 
@@ -58,6 +59,8 @@ public class DealorPaymentBillSearch implements Serializable {
     private boolean printPreview = false;
     @EJB
     BillFeeFacade billFeeFacade;
+    @EJB
+    BillNumberGenerator billNumberGenerator;
     String txtSearch;
     BilledBill bill;
     List<BillEntry> billEntrys;
@@ -107,11 +110,16 @@ public class DealorPaymentBillSearch implements Serializable {
         newBill.setInstitution(sessionController.getInstitution());
         newBill.setDepartment(sessionController.getDepartment());
         newBill.setBillType(BillType.GrnPayment);
+        newBill.setBillTypeAtomic(BillTypeAtomic.SUPPLIER_PAYMENT);
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.SUPPLIER_PAYMENT);
+        newBill.setDeptId(deptId);
+        newBill.setApproveAt(new Date());
+        newBill.setApproveUser(sessionController.getLoggedUser());
+        newBill.setApprovedAnyTest(true);
         billFacade.create(newBill);
 
         bill.setReferenceBill(newBill);
         billFacade.edit(bill);
-
 
         for (BillItem bi : getBillItems()) {
             BillItem newBi = new BillItem();
@@ -126,6 +134,25 @@ public class DealorPaymentBillSearch implements Serializable {
         }
 
         JsfUtil.addSuccessMessage("Succesfully Approved");
+    }
+
+    public void fillDealorPaymentDone() {
+        bills = null;
+        String jpql;
+        Map params = new HashMap();
+
+        jpql = "select b from Bill b "
+                + " where b.retired=false "
+                + " and b.billType = :billTypes "
+                + " and b.billTypeAtomic = :bTA "
+                + " and b.createdAt between :fromDate and :toDate";
+
+        params.put("billTypes", BillType.GrnPayment);
+        params.put("bTA", BillTypeAtomic.SUPPLIER_PAYMENT);
+        params.put("toDate", toDate);
+        params.put("fromDate", fromDate);
+
+        bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     public WebUser getUser() {
@@ -160,7 +187,6 @@ public class DealorPaymentBillSearch implements Serializable {
 //        }
 //        return userBills;
 //    }
-
 //    public List<Bill> getBillsOwn() {
 //        if (bills == null) {
 //            if (txtSearch == null || txtSearch.trim().equals("")) {
@@ -174,7 +200,6 @@ public class DealorPaymentBillSearch implements Serializable {
 //        }
 //        return bills;
 //    }
-
     public BillFeeFacade getBillFeeFacade() {
         return billFeeFacade;
     }
@@ -242,7 +267,7 @@ public class DealorPaymentBillSearch implements Serializable {
         cb.setBilledBill(getBill());
         cb.copy(getBill());
         cb.invertValue(getBill());
-
+        cb.setNetTotal(0-Math.abs(cb.getNetTotal()));
         cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.CashRecieveBill, BillClassType.CancelledBill, BillNumberSuffix.CRDCAN));
         cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.CashRecieveBill, BillClassType.CancelledBill, BillNumberSuffix.CRDCAN));
 
@@ -250,14 +275,14 @@ public class DealorPaymentBillSearch implements Serializable {
         cb.setBillTime(new Date());
         cb.setCreatedAt(new Date());
         cb.setCreater(getSessionController().getLoggedUser());
-
+        cb.setBillTypeAtomic(BillTypeAtomic.SUPPLIER_PAYMENT_CANCELLED);
         cb.setPaymentMethod(getBill().getPaymentMethod());
         cb.setDepartment(getSessionController().getLoggedUser().getDepartment());
         cb.setInstitution(getSessionController().getInstitution());
         cb.setInstitution(getSessionController().getLoggedUser().getInstitution());
         cb.setComments(comment);
-        
-        if (cb.getId()==null) {
+
+        if (cb.getId() == null) {
             getBillFacade().create(cb);
         }
 

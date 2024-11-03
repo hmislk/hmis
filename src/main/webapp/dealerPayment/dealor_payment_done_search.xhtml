@@ -43,12 +43,12 @@
                                 </p:datePicker>
 
                                 <p:commandButton id="btnSearch" 
-                                                 ajax="false" value="List Pharmacy Payment to Settle" 
+                                                 ajax="false" value="List Pharmacy Dealor Payment Done" 
                                                  class="my-1 w-100 ui-button-success" 
                                                  icon="fas fa-pills"
-                                                 action="#{supplierPaymentController.fillAllCreditBillssettled()}"/>
+                                                 action="#{dealorPaymentBillSearch.fillDealorPaymentDone()}"/>
 
-                                <p:commandButton ajax="false" 
+<!--                                <p:commandButton ajax="false" 
                                                  class="my-1 w-100 ui-button-info" 
                                                  icon="fas fa-store"
                                                  value="List Store Payments to Settle"
@@ -57,7 +57,7 @@
                                 <p:commandButton ajax="false" value="List All Payments to Settle" 
                                                  class="my-1 w-100 ui-button-warning" 
                                                  icon="fas fa-search-dollar"
-                                                 action="#{supplierPaymentController.fillSupplierPayments()}"/>
+                                                 action="#{supplierPaymentController.fillSupplierPayments()}"/>-->
 
 
                                 <h:outputLabel value="Bill No"/>
@@ -74,7 +74,7 @@
                             <div class="col-10">
                                 <p:dataTable 
                                     id="tblBills" 
-                                    value="#{supplierPaymentController.bills}" 
+                                    value="#{dealorPaymentBillSearch.bills}" 
                                     var="bill"  
                                     paginatorPosition="bottom"
                                     rows="10"
@@ -84,18 +84,32 @@
                                     >
 
                                     <p:column headerText="Bill No" >                                
-                                        <h:outputLabel value="#{bill.deptId}"  ></h:outputLabel>                                    
+                                        <h:outputLabel value="#{bill.deptId}"  ></h:outputLabel>  
+                                        <br/>
+                                        <h:panelGroup rendered="#{bill.cancelled}" >
+                                            <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.deptId}" >                                       
+                                            </h:outputLabel>
+                                        </h:panelGroup> 
                                     </p:column>
                                     <p:column headerText="Supplier Name">                             
                                         <h:outputLabel value="#{bill.toInstitution.name}" />
                                     </p:column>   
-
+                                    
                                     <p:column headerText="Department">                             
                                         <h:outputLabel value="#{bill.department.name}" />
                                     </p:column>
 
                                     <p:column headerText="Billed at"  >                                
                                         <h:outputLabel value="#{bill.createdAt}" >
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputLabel>                               
+                                    </p:column>  
+                                    <p:column headerText="Billed by" >                               
+                                        <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
+                                        </h:outputLabel>                             
+                                    </p:column> 
+                                    <p:column headerText="Approved at"  >                                
+                                        <h:outputLabel value="#{bill.approveAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>                                    
                                         <br/>
@@ -106,8 +120,8 @@
                                             </h:outputLabel>
                                         </h:panelGroup>                                
                                     </p:column>  
-                                    <p:column headerText="Billed by" >                               
-                                        <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
+                                    <p:column headerText="Approved by" >                               
+                                        <h:outputLabel value="#{bill.approveUser.webUserPerson.name}" >                                      
                                         </h:outputLabel>                                    
                                         <br/>
                                         <h:panelGroup rendered="#{bill.cancelled}" >
@@ -135,23 +149,17 @@
                                         <h:outputLabel value="#{bill.bank.name}" >                                        
                                         </h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Cheque No" >                               
-                                        <h:outputLabel value="#{bill.chequeRefNo}" >                                       
-                                        </h:outputLabel>
-                                    </p:column>
                                     <p:column headerText="Cheque Date" sortBy="#{bill.chequeDate}" filterBy="#{bill.chequeDate}"  filterMatchMode="contains">                                
                                         <h:outputLabel value="#{bill.chequeDate}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                         </h:outputLabel>
                                     </p:column>                           
-                                    <p:column headerText="Comments" >
-                                        <h:panelGroup class="col-1">
-                                            <h:outputLabel  value="#{bill.comments}" >
-                                            </h:outputLabel>
-                                        </h:panelGroup>
+                                    <p:column headerText="Comments" >                                
+                                        <h:outputLabel  value="#{bill.comments}" >
+                                        </h:outputLabel>
                                     </p:column>
-                                    <p:column>
-                                        <p:commandButton ajax="false" value="Approve" action="reprint_bill_dealor">
+                                    <p:column headerText="Action">
+                                        <p:commandButton ajax="false" value="To Cancel" action="reprint_bill_dealor?faces-redirect=true" class="ui-button-danger" style="width: 100px;">
                                             <f:setPropertyActionListener value="#{bill}" 
                                                                          target="#{dealorPaymentBillSearch.bill}"/>
                                         </p:commandButton>
