@@ -13252,7 +13252,9 @@ public class SearchController implements Serializable {
         patientDepositBundle.setBundleType("PatientDeposit");
         patientDepositBundle.setName("Patient Deposits");
         bundle.getBundles().add(patientDepositBundle);
+        System.out.println("collectionForTheDay = " + collectionForTheDay);
         collectionForTheDay += getSafeTotal(patientDepositBundle);
+        System.out.println("collectionForTheDay = " + collectionForTheDay);
 
 // Generate Patient Deposit Cancellation and add to the main bundle
         List<BillTypeAtomic> patientDepositCancel = new ArrayList<>();
@@ -13347,7 +13349,7 @@ public class SearchController implements Serializable {
         netCashForTheDayBundle.setTotal(netCashCollection);
 
         bundle.getBundles().add(netCashForTheDayBundle);
-        bundle.calculateTotalsBySelectedChildBundles();
+        bundle.calculateTotalsByAllChildBundles();
 
     }
 
