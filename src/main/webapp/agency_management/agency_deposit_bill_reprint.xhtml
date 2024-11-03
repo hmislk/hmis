@@ -30,7 +30,7 @@
                                         ajax="false" 
                                         styleClass="ui-button-danger"
                                         value="To Cancel" 
-                                        action="agency_deposit_bill_cancellation?faces-redirect=true" 
+                                        action="#{agentPaymentReceiveSearchController.navigateToCancelAgentBillView()}"
                                         disabled="#{agentPaymentReceiveSearchController.bill.cancelled}" 
                                         icon="fa fa-times" >
                                     </p:commandButton>
