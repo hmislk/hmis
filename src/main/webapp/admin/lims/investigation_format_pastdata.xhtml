@@ -1,0 +1,187 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
+      xmlns:p="http://primefaces.org/ui" 
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head><!-- comment -->
+    </h:head>
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form id="form" >
+                    <div class="container-fluid" >
+                        <div class="row" >
+                            <div class="col-4" >
+                                <p:commandButton 
+                                    value="Back" 
+                                    style="float: right;"
+                                    action="#{investigationController.navigateToManageInvestigation}" 
+                                    ajax="false" >
+                                </p:commandButton>
+                                <p:panel header="Investigation" styleClass="w-100 p-0 m-1" >
+                                    <p:autoComplete 
+                                        widgetVar="aPt" 
+                                        id="acPt" 
+                                        forceSelection="true" 
+                                        converter="ixcon"
+                                        value="#{investigationItemController.currentInvestigation}" 
+                                        completeMethod="#{investigationController.completeInvestigationsOfCurrentInstitution}" 
+                                        var="apt" 
+                                        itemLabel="#{apt.name}" 
+                                        itemValue="#{apt}" 
+
+                                        maxResults="10" 
+                                        inputStyleClass="form-control"
+                                        class="w-100 mb-2">
+                                        <p:column headerText="Name" >
+                                            <h:outputLabel value="#{apt.name}" ></h:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Code" >
+                                            <h:outputLabel value="#{apt.code}" ></h:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Printing Name" >
+                                            <h:outputLabel value="#{apt.printName}" ></h:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Fill Name" >
+                                            <h:outputLabel value="#{apt.fullName}" ></h:outputLabel>
+                                        </p:column>
+                                        <p:ajax event="itemSelect" process="acPt" 
+                                                update=":#{p:resolveFirstComponentWithId('pPreview',view).clientId} :#{p:resolveFirstComponentWithId('pDetails',view).clientId} :#{p:resolveFirstComponentWithId('pIx',view).clientId} "/>
+                                    </p:autoComplete> 
+
+
+
+
+                                </p:panel>
+
+                                <p:panel id="pIx" class=" w-100">
+
+                                    <f:facet name="header">
+                                        <h:outputText value="Investigation Items List" class="mt-2"/>
+                                        <p:commandButton 
+                                            value="Save" 
+                                            style="float: right"
+                                            class="ui-button-success"
+                                            icon="fa fa-save"
+                                            action="#{investigationItemController.saveSelected()}" 
+                                            ajax="false" >
+                                        </p:commandButton>
+                                    </f:facet>
+
+
+
+                                    <diV class="d-flex gap-2">
+                                        <p:selectOneMenu 
+                                            id="dtbItem" 
+                                            value="#{investigationItemController.current}" 
+                                            class="w-100"
+                                            filter="true">
+                                            <f:selectItem itemLabel="Select" />
+                                            <f:selectItems value="#{investigationItemController.userChangableItems}" var="ii" itemLabel="#{ii.name} - #{ii.ixItemType }" itemValue="#{ii}" />
+                                            <p:ajax  event="change" process="dtbItem" update=":#{p:resolveFirstComponentWithId('pDetails',view).clientId} "/>
+                                        </p:selectOneMenu>
+                                    </diV>
+
+
+                                </p:panel>
+                            </div>
+                            <div class="col-8" >
+                                <p:panelGrid columns="2" >
+                                    <h:outputLabel value="From Date" class="form-label"/>
+                                    <p:datePicker 
+                                        class="w-100"
+                                        inputStyleClass="form-control"
+                                        id="fromDate" 
+                                        value="#{searchController.fromDate}" 
+                                        showTime="true"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >      
+                                    </p:datePicker>
+                                    <h:outputLabel value="To Date" />
+                                    <p:datePicker 
+                                        class="w-100"
+                                        inputStyleClass="form-control"
+                                        id="toDate" 
+                                        showTime="true"
+                                        value="#{searchController.toDate}" 
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                                                                              
+                                    </p:datePicker>
+                                    <h:outputLabel 
+                                        class="form-label"
+                                        value="Department"/>
+                                    <p:autoComplete 
+                                        completeMethod="#{departmentController.completeDept}" 
+                                        class="w-100"
+                                        inputStyleClass="form-control"
+                                        var="dept" 
+                                        itemLabel="#{dept.name}" 
+                                        itemValue="#{dept}" 
+                                        forceSelection="true" 
+                                        value="#{searchController.reportKeyWord.department}" 
+                                        />
+
+                                    <h:commandLink 
+                                        id="btnSearch0" 
+                                        action="#{searchController.fillToSelectedDepartmentPatientInvestigations()}" 
+                                        styleClass="mt-2 btn btn-success">
+                                        <h:outputText value="Selected Department Only" />
+                                        <i class="fa fa-search" style="margin-left: 5px;"></i>
+                                    </h:commandLink>
+
+                                </p:panelGrid>
+                            </div>
+
+
+                        </div>
+
+                    </div>
+
+
+
+
+                    <p:panel class="w-100">
+                        <f:facet name="header">
+
+                        </f:facet>
+                        <h:panelGrid columns="2" class="w-100">
+                            <h:panelGrid rendered="#{investigationItemController.editMode ne 'Move_Mode'}">
+
+
+                            </h:panelGrid>
+
+
+                        </h:panelGrid> 
+
+                    </p:panel>
+                </h:form>
+
+
+<!--                <h1>#{investigationItemController.currentInvestigation.reportFormat}</h1>-->
+
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <h:form enctype="multipart/form-data">
+                            <p:panel header="Upload Format" >
+                                <p:fileUpload value="#{investigationItemController.file}" mode="simple"  />
+                                <p:commandButton value="Submit" ajax="false" action="#{investigationItemController.upload}"  />
+                            </p:panel>
+                        </h:form>
+                    </div>
+                    <div class="col-6">
+                        <h:form >
+                            <p:panel header="Correct Format from Old Databases" >
+                                <p:commandButton ajax="false" action="#{reportItemController.intFromCss()}" value="Error Correction of Ctt to Int" ></p:commandButton>
+                            </p:panel>
+                        </h:form>
+                    </div>
+                </div>
+
+
+
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

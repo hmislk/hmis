@@ -80,6 +80,7 @@ import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
 import com.divudi.light.common.BillSummaryRow;
 import com.divudi.service.BillService;
+import com.divudi.service.PatientInvestigationService;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
@@ -152,6 +153,8 @@ public class SearchController implements Serializable {
     private DrawerFacade drawerFacade;
     @EJB
     BillService billService;
+    @EJB
+    PatientInvestigationService patientInvestigationService;
 
     /**
      * Inject
@@ -1234,53 +1237,7 @@ public class SearchController implements Serializable {
     }
 
     public void fillToSelectedDepartmentPatientInvestigations() {
-        Date startTime = new Date();
-
-        String jpql = "select pi "
-                + " from PatientInvestigation pi "
-                + " join pi.investigation i "
-                + " join pi.billItem.bill b "
-                + " join b.patient.person p "
-                + " where "
-                + " b.createdAt between :fromDate and :toDate  "
-                + " and pi.investigation.department=:dep ";
-
-        Map temMap = new HashMap();
-        temMap.put("toDate", getToDate());
-        temMap.put("fromDate", getFromDate());
-        temMap.put("dep", getReportKeyWord().getDepartment());
-
-        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
-            jpql += " and  ((p.name) like :patientName )";
-            temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
-        }
-
-        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
-            jpql += " and  ((b.insId) like :billNo )";
-            temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
-        }
-
-        if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
-            jpql += " and  ((p.phone) like :patientPhone )";
-            temMap.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
-        }
-
-        if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
-            jpql += " and  ((i.name) like :itm )";
-            temMap.put("itm", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
-        }
-
-        if (patientEncounter != null) {
-            jpql += "and pi.encounter=:en";
-            temMap.put("en", patientEncounter);
-        }
-
-        jpql += " order by pi.id desc  ";
-//    
-
-        patientInvestigations = getPatientInvestigationFacade().findByJpql(jpql, temMap, TemporalType.TIMESTAMP, 50);
-        checkRefundBillItems(patientInvestigations);
-
+        patientInvestigations = patientInvestigationService.fetchPatientInvestigations(fromDate, toDate, searchKeyword);
     }
 
     public void fillCollectingCentreCourierPatientInvestigations() {
@@ -3107,9 +3064,9 @@ public class SearchController implements Serializable {
             tmp.put("frmdep", getSearchKeyword().getFrmDepartment());
         }
 
-        if (getSearchKeyword().getTooDepartment() != null) {
+        if (getSearchKeyword().getToDepartment() != null) {
             sql += " and b.toDepartment=:tdep";
-            tmp.put("tdep", getSearchKeyword().getTooDepartment());
+            tmp.put("tdep", getSearchKeyword().getToDepartment());
         }
 
         sql += " order by b.createdAt desc  ";
@@ -3175,9 +3132,9 @@ public class SearchController implements Serializable {
             tmp.put("frmdep", getSearchKeyword().getFrmDepartment());
         }
 
-        if (getSearchKeyword().getTooDepartment() != null) {
+        if (getSearchKeyword().getToDepartment() != null) {
             sql += " and b.toDepartment=:tdep";
-            tmp.put("tdep", getSearchKeyword().getTooDepartment());
+            tmp.put("tdep", getSearchKeyword().getToDepartment());
         }
 
         sql += " order by b.createdAt desc  ";
@@ -3221,9 +3178,9 @@ public class SearchController implements Serializable {
             tmp.put("frmdep", getSearchKeyword().getFrmDepartment());
         }
 
-        if (getSearchKeyword().getTooDepartment() != null) {
+        if (getSearchKeyword().getToDepartment() != null) {
             sql += " and b.toDepartment=:tdep";
-            tmp.put("tdep", getSearchKeyword().getTooDepartment());
+            tmp.put("tdep", getSearchKeyword().getToDepartment());
         }
 
         sql += " order by b.createdAt desc  ";
@@ -7878,27 +7835,27 @@ public class SearchController implements Serializable {
         bundle = createBundleByKeywordForBills(billTypesAtomics, institution, department, null, null, null, null);
         bundle.calculateTotalByBills();
     }
-    
+
     public void searchMyProfessionalPaymentBills() {
         List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
         billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES);
         billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN);
         billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL);
         billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL_RETURN);
-         billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES);
+        billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES);
         billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN);
         billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL);
         billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL_RETURN);
-        bundle = billService.createBundleByKeywordForBills(billTypesAtomics, 
+        bundle = billService.createBundleByKeywordForBills(billTypesAtomics,
                 institution,
-                department, 
-                null, 
-                null, 
-                null, 
+                department,
+                null,
+                null,
+                null,
                 null,
                 sessionController.getLoggedUser(),
-                fromDate, 
-                toDate, 
+                fromDate,
+                toDate,
                 searchKeyword);
         bundle.calculateTotalByBills();
     }
