@@ -653,22 +653,33 @@ public class ReportTemplateRowBundle implements Serializable {
             }
         }
         total
-                = this.cashValue + this.cardValue + this.voucherValue + this.iouValue
+                = this.cashValue + this.cardValue + this.voucherValue + this.iouValue + this.patientDepositValue
                 + this.chequeValue + this.slipValue + this.eWalletValue;
 
     }
 
     public void calculateTotalsBySelectedChildBundles() {
+        calculateTotalsByChildBundles(true);
+    }
+
+    public void calculateTotalsByAllChildBundles() {
+        calculateTotalsByChildBundles(false);
+    }
+
+    public void calculateTotalsByChildBundles(boolean forHandover) {
         System.out.println("calculateTotalsByChildBundles");
         resetTotalsAndFlags();
         System.out.println("total = " + total);
+        boolean selectAll = !forHandover;
 
         if (this.bundles != null && !this.bundles.isEmpty()) {
             for (ReportTemplateRowBundle childBundle : this.bundles) {
 
-                if (childBundle.isSelected()) {
-                    
-                    childBundle.calculateTotalsByPaymentsAndDenominationsForHandover();
+                if (childBundle.isSelected() || selectAll) {
+
+                    if (forHandover) {
+                        childBundle.calculateTotalsByPaymentsAndDenominationsForHandover();
+                    }
 
                     System.out.println("selected childBundle = " + childBundle.getName());
                     addValueAndUpdateFlag("cash", safeDouble(childBundle.getCashValue()), safeDouble(childBundle.getCashHandoverValue()));
@@ -869,6 +880,17 @@ public class ReportTemplateRowBundle implements Serializable {
                 if (row.getPayment().getPaymentMethod() == inputPaymentMethod) {
                     row.getPayment().setSelectedForHandover(true);
                     row.setSelected(row.getPayment().isSelectedForHandover());
+                }
+            }
+        }
+    }
+
+    public void unmarkAllAtHandover() {
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getPayment() != null && row.getPayment().isSelectedForHandover()) {
+                    row.getPayment().setSelectedForHandover(false);
+                    row.setSelected(false);
                 }
             }
         }

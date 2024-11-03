@@ -58,6 +58,7 @@ import com.divudi.data.BillTypeAtomic;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Department;
 import com.divudi.java.CommonFunctions;
+import com.google.protobuf.Descriptors;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -1213,7 +1214,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
 //            JsfUtil.addErrorMessage("Please Create Patient Account");
 //            return;
 //        }
-        if (paymentSchemeController.checkPaymentMethodError(getBill().getPaymentMethod(), paymentMethodData)) {
+        if (paymentSchemeController.checkPaymentMethodError(getCancelBill().getPaymentMethod(), paymentMethodData)) {
             JsfUtil.addErrorMessage("Please enter all relavent Payment Method Details");
             return 2;
         }
@@ -1384,7 +1385,6 @@ public class PatientController implements Serializable, ControllerWithPatient {
 //            System.out.println("error 4 = ");
 //            return 4;
 //        }
-
         if (getBill().getPaymentMethod() == PaymentMethod.Cash) {
             if (getBill().getComments().trim().equalsIgnoreCase("")) {
                 JsfUtil.addErrorMessage("Please Add Comment");
@@ -2867,24 +2867,53 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
     }
 
-    public String searchByPatientPhoneNumberForPatientLookup() {
-        Long patientPhoneNumber = CommonFunctions.removeSpecialCharsInPhonenumber(searchPatientPhoneNumber);
-        if (patientPhoneNumber == null) {
-            searchedPatients = new ArrayList<>();
-            return "No Search Number Given";
-        }
-        String j;
+    public List<Patient> findPatientUsingPhnNumber(String phn) {
         Map m = new HashMap();
-        j = "select p from Patient p where p.retired=false and (p.patientPhoneNumber=:pp or p.patientMobileNumber=:pp ) ";
-        m.put("pp", patientPhoneNumber);
-        searchedPatients = getFacade().findByJpql(j, m);
+        String j = "select p from Patient p where p.retired=false and p.phn=:phn ";
+        m.put("phn", phn.trim());
+        List<Patient> searchedPatients = getFacade().findByJpql(j, m);
+        //System.out.println("searched Patients From PHN = " + searchedPatients.size());
+        return searchedPatients;
+    }
+
+    public String searchByPatientPhoneNumberForPatientLookup() {
+        boolean checkOnlyNumeric = CommonFunctions.checkOnlyNumeric(searchPatientPhoneNumber);
+        boolean usePHN = false;
+        if (checkOnlyNumeric) {
+            Long patientPhoneNumber = CommonFunctions.removeSpecialCharsInPhonenumber(searchPatientPhoneNumber);
+            if (patientPhoneNumber == null) {
+                searchedPatients = new ArrayList<>();
+                return "No Search Number Given";
+            }
+            String j;
+            Map m = new HashMap();
+            j = "select p from Patient p where p.retired=false and (p.patientPhoneNumber=:pp or p.patientMobileNumber=:pp ) ";
+            m.put("pp", patientPhoneNumber);
+            searchedPatients = getFacade().findByJpql(j, m);
+            //System.out.println("searched Patients From Phone Number = " + searchedPatients.size());
+            usePHN = false;
+        } else {
+            searchedPatients = findPatientUsingPhnNumber(searchPatientPhoneNumber);
+            usePHN = true;
+        }
+
+        //System.out.println("Use PHN = " + usePHN);
+
         if (searchedPatients == null || searchedPatients.isEmpty()) {
-            JsfUtil.addErrorMessage("No Matches. Please use different criteria");
-            return navigateToAddNewPatientForOpd(searchPatientPhoneNumber);
+            if (usePHN) {
+                //System.out.println("Use PHN");
+                JsfUtil.addErrorMessage("No Matches. Please use Correct PHN");
+                return "";
+            } else {
+                //System.out.println("No Use PHN");
+                JsfUtil.addErrorMessage("No Matches. Please use different criteria");
+                return navigateToAddNewPatientForOpd(searchPatientPhoneNumber);
+            }
         } else if (searchedPatients.size() == 1) {
             setCurrent(searchedPatients.get(0));
             return navigateToOpdPatientProfile();
         }
+
         clearSearchDetails();
         return "";
 
@@ -4141,6 +4170,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     public void setBillNumberGenerator(BillNumberGenerator billNumberGenerator) {
         this.billNumberGenerator = billNumberGenerator;
+
     }
 
     /**

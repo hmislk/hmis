@@ -12,6 +12,7 @@ import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.inward.AdmissionType;
+import com.divudi.entity.lab.Investigation;
 import java.util.List;
 
 /**
@@ -23,7 +24,7 @@ public class SearchKeyword {
     private String billNo;
     private String refBillNo;
     private String patientName;
-    String requestNo;
+    private String requestNo;
     private String patientPhone;
     private String total;
     private String netTotal;
@@ -48,23 +49,24 @@ public class SearchKeyword {
     private String insId;
     private String deptId;
     private String serialNumber;
-    String serviceName;
-    PatientEncounter patientEncounter;
-    PaymentMethod paymentMethod;
-    AdmissionType admissionType;
-    Institution ins;
-    Department frmDepartment;
-    Department tooDepartment;
-    Item item;
+    private String serviceName;
+    private PatientEncounter patientEncounter;
+    private PaymentMethod paymentMethod;
+    private AdmissionType admissionType;
+    private Institution ins;
+    private Department frmDepartment;
+    private Department itemDepartment;
+    private Item item;
+    private Investigation investigation;
     private List<BillType> billTypes;
     
     
     
     boolean activeAdvanceOption;
     boolean withRetiered;
-    String val1;
-    String val2;
-    String val3;
+    private String val1;
+    private String val2;
+    private String val3;
     
 
     public String getServiceName() {
@@ -359,13 +361,6 @@ public class SearchKeyword {
         this.frmDepartment = frmDepartment;
     }
 
-    public Department getTooDepartment() {
-        return tooDepartment;
-    }
-
-    public void setTooDepartment(Department tooDepartment) {
-        this.tooDepartment = tooDepartment;
-    }
 
     public boolean isActiveAdvanceOption() {
         return activeAdvanceOption;
@@ -429,6 +424,22 @@ public class SearchKeyword {
 
     public void setSerialNumber(String serialNumber) {
         this.serialNumber = serialNumber;
+    }
+
+    public Department getItemDepartment() {
+        return itemDepartment;
+    }
+
+    public void setItemDepartment(Department itemDepartment) {
+        this.itemDepartment = itemDepartment;
+    }
+
+    public Investigation getInvestigation() {
+        return investigation;
+    }
+
+    public void setInvestigation(Investigation investigation) {
+        this.investigation = investigation;
     }
 
 
