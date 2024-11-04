@@ -98,7 +98,6 @@
 
 
                         <ui:repeat value="#{searchController.bundle.bundles}" var="myBundle">
-                            #{myBundle.name}
                             <h:panelGroup rendered="#{not empty myBundle.reportTemplateRows}">
 
 
@@ -106,8 +105,8 @@
                                 <ez:opdServiceCancellations bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'opdServiceCancellations'}"/>
                                 <ez:opdServiceRefunds bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'opdServiceRefunds'}"/>
 
-                                <!-- New Credit Sections -->
-                                <ez:cashierSummaryOpd bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'cashierSummaryOpdCredit'}"/>
+                                <!-- Credit Sections -->
+                                <ez:opdServiceBilled bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'cashierSummaryOpdCredit'}"/>
                                 <ez:opdServiceCancellations bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'opdServiceCancellationsCredit'}"/>
                                 <ez:opdServiceRefunds bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'opdServiceRefundsCredit'}"/>
 
