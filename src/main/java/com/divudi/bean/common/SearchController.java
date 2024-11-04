@@ -1,6 +1,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.CashBookEntryController;
+import com.divudi.bean.cashTransaction.DrawerEntryController;
 import com.divudi.bean.channel.ChannelSearchController;
 import com.divudi.bean.channel.analytics.ReportTemplateController;
 import com.divudi.bean.pharmacy.PharmacyPreSettleController;
@@ -203,6 +204,8 @@ public class SearchController implements Serializable {
     ExcelController excelController;
     @Inject
     PdfController pdfController;
+    @Inject
+    DrawerEntryController drawerEntryController;
     /**
      * Properties
      */
@@ -330,6 +333,11 @@ public class SearchController implements Serializable {
     private String searchType;
     private String reportType;
     private boolean withProfessionalFee;
+
+    public String navigateToDrawerHistory() {
+        drawerEntryController.findAllUsersDrawerDetails();
+        return "/reports/financialReports/all_users_drawer_history?faces-redirect=true";
+    }
 
     public String navigateToPettyCashBillApprove() {
         createPettyCashToApproveTable();
@@ -13443,7 +13451,7 @@ public class SearchController implements Serializable {
         opdServiceRefunds.setName("OPD Service Refunds");
         bundle.getBundles().add(opdServiceRefunds);
         collectionForTheDay += getSafeTotal(opdServiceRefunds);
-        
+
         // Generate OPD service collection for credit and add to the main bundle
         ReportTemplateRowBundle opdServiceCollectionCredit = generatePaymentColumnForCollections(opdBts, creditPaymentMethods);
         opdServiceCollectionCredit.setBundleType("cashierSummaryOpdCredit");
