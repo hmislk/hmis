@@ -13011,7 +13011,7 @@ public class SearchController implements Serializable {
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
         b.setReportTemplateRows(rs);
-        b.calculateTotals();
+        b.calculateTotalsWithCredit();
         return b;
     }
 
@@ -13786,7 +13786,7 @@ public class SearchController implements Serializable {
         ReportTemplateRowBundle b = new ReportTemplateRowBundle();
         b.setReportTemplateRows(rs);
         b.createRowValuesFromBill();
-        b.calculateTotals();
+        b.calculateTotalsWithCredit();
         return b;
     }
 
@@ -15839,7 +15839,7 @@ public class SearchController implements Serializable {
         bundle = new ReportTemplateRowBundle();
         bundle.setReportTemplateRows(rs);
         bundle.createRowValuesFromBill();
-        bundle.calculateTotals();
+        bundle.calculateTotalsWithCredit();
     }
 
     public void listAgentChannelBookings() {
@@ -16221,7 +16221,7 @@ public class SearchController implements Serializable {
 
         bundle = new ReportTemplateRowBundle();
         bundle.setReportTemplateRows(rs);
-        bundle.calculateTotals();
+        bundle.calculateTotalsWithCredit();
     }
 
     public void generateDepartmentRevenueReport() {
@@ -16289,7 +16289,7 @@ public class SearchController implements Serializable {
 
         bundle = new ReportTemplateRowBundle();
         bundle.setReportTemplateRows(rs);
-        bundle.calculateTotals();
+        bundle.calculateTotalsWithCredit();
     }
 
     public void generateTotalCashierSummary() {
@@ -16349,7 +16349,7 @@ public class SearchController implements Serializable {
 
         bundle = new ReportTemplateRowBundle();
         bundle.setReportTemplateRows(rs);
-        bundle.calculateTotals();
+        bundle.calculateTotalsWithCredit();
     }
 
     public void generateShiftStartEndSummary() {
