@@ -7,24 +7,47 @@
       xmlns:p="http://primefaces.org/ui">
 
     <h:body>
-        <h:form id="form">
-            <p:selectOneMenu 
-                id="cmbDepartment"
-                placeholder="Department"
-                value="#{userPrivilageController.department}" 
-                class="w-100"
-                required="true"
-                requiredMessage="Please select a department"
-                filter="true">
-                <f:selectItem itemLabel="Select Department" />
-                <f:selectItems 
-                    value="#{userPrivilageController.departments}"
-                    var="d"
-                    itemLabel="#{d.name}"
-                    itemValue="#{d}" />
-                <p:ajax event="change" process="@this" update="tmp" />
-            </p:selectOneMenu>
-            <h:outputText id="tmp" value="#{userPrivilageController.department.name}" style="font-weight: bold;" />
-        </h:form>
+        <div>   
+            <p>Antibiotic Sensitivity</p> 
+            <table border="1" class="table table-striped" style="table-layout: fixed; width: 100%; border-collapse: collapse;">   
+                <thead>            
+                    <tr>               
+                        <th style="padding: 4px; border-right: 1px solid black;">Drug</th>
+                        <th style="padding: 4px;">Sensitivity</th>     
+                    </tr>       
+                </thead>       
+                <tbody>          
+                    <tr>          
+                        <td style="padding: 4px; border-right: 1px solid black;">Cloxacillin</td>  
+                        <td style="padding: 4px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>   
+                    </tr>       
+                    <tr>           
+                        <td style="padding: 4px; border-right: 1px solid black;">Flucloxacillin</td>     
+                        <td style="padding: 4px;">&nbsp;</td>       
+                    </tr>     
+                    <tr>           
+                        <td style="padding: 4px; border-right: 1px solid black;">Gentamycin</td>  
+                        <td style="padding: 4px;">&nbsp;</td>        
+                    </tr>        
+                    <tr>          
+                        <td style="padding: 4px; border-right: 1px solid black;">Clindamycin</td>    
+                        <td style="padding: 4px;">&nbsp;</td>      
+                    </tr>       
+                    <tr>          
+                        <td style="padding: 4px; border-right: 1px solid black;">Amikacin</td>   
+                        <td style="padding: 4px;">&nbsp;</td>      
+                    </tr>       
+                    <tr>          
+                        <td style="padding: 4px; border-right: 1px solid black;">Ciprofloxacin</td>    
+                        <td style="padding: 4px;">&nbsp;</td>  
+                    </tr>         
+                    <tr>           
+                        <td style="padding: 4px; border-right: 1px solid black;">Cefuroxime</td>   
+                        <td style="padding: 4px;">&nbsp;</td>   
+                    </tr>         
+                </tbody> 
+            </table>
+        </div>
+
     </h:body>
 </html>

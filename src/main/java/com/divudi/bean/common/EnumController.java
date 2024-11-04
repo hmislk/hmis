@@ -33,6 +33,7 @@ import com.divudi.data.SessionNumberType;
 import com.divudi.data.Sex;
 import com.divudi.data.MessageType;
 import com.divudi.data.PaymentContext;
+import com.divudi.data.PaymentType;
 import com.divudi.data.RestAuthenticationType;
 import com.divudi.data.SymanticType;
 import com.divudi.data.Title;
@@ -77,13 +78,15 @@ public class EnumController implements Serializable {
     List<PaymentMethod> paymentMethodsForChanneling;
     List<PaymentMethod> paymentMethodsForChannelSettling;
     List<PaymentMethod> paymentMethodsForPharmacyBilling;
+    private List<PaymentMethod> paymentMethodsForMultiplePaymentMethod;
     private List<PaymentMethod> paymentMethodsForPatientDepositRefund;
-     private List<PaymentMethod> paymentMethodsForPatientDepositCancel;
+    private List<PaymentMethod> paymentMethodsForPatientDepositCancel;
     private List<PaymentMethod> paymentMethodsForStaffCreditSettle;
     private List<PaymentMethod> paymentMethodsForPatientDeposit;
     private List<PaymentMethod> paymentMethodsForOpdBillCanceling;
     SessionNumberType[] sessionNumberTypes;
     private List<PatientInvestigationStatus> patientInvestigationStatuses;
+    private List<PaymentMethod> paymentTypeOfPaymentMethods;
 
     @PostConstruct
     public void init() {
@@ -199,6 +202,20 @@ public class EnumController implements Serializable {
             }
         }
     }
+   
+    public List<PaymentMethod> getPaymentTypeOfPaymentMethods(PaymentType paymentType) {
+        paymentTypeOfPaymentMethods = new ArrayList<>();
+        for (PaymentMethod pm : PaymentMethod.asList()) {
+            if (pm.getPaymentType() == paymentType) {
+                paymentTypeOfPaymentMethods.add(pm);
+            }
+        }
+        return paymentTypeOfPaymentMethods;
+    }
+
+    public void setPaymentTypeOfPaymentMethods(List<PaymentMethod> paymentTypeOfPaymentMethods) {
+        this.paymentTypeOfPaymentMethods = paymentTypeOfPaymentMethods;
+    }
 
     public List<SearchDateType> getSearchDateTypes() {
         return Arrays.asList(SearchDateType.values());
@@ -231,7 +248,7 @@ public class EnumController implements Serializable {
     public List<Priority> getPriorities() {
         return Arrays.asList(Priority.values());
     }
-    
+
     public List<HistoryType> getHistoryTypes() {
         return Arrays.asList(HistoryType.values());
     }
@@ -650,7 +667,7 @@ public class EnumController implements Serializable {
 
         return p;
     }
-    
+
     public PaymentMethod[] getPaymentMethodsForIncome() {
         PaymentMethod[] p = {
             PaymentMethod.Cash,
@@ -710,15 +727,15 @@ public class EnumController implements Serializable {
         }
         return paymentMethod;
     }
-    
-    public PaymentMethod[] getPaymentMethodsforAgencyManagement(){
+
+    public PaymentMethod[] getPaymentMethodsforAgencyManagement() {
         PaymentMethod[] pm = {
             PaymentMethod.Card,
             PaymentMethod.Cash,
             PaymentMethod.Cheque,
             PaymentMethod.Slip
         };
-        
+
         return pm;
     }
 
@@ -736,14 +753,16 @@ public class EnumController implements Serializable {
             PaymentMethod.ewallet};
         return p;
     }
+
     
+
     public PaymentMethod[] getPaymentMethodsForIou() {
         PaymentMethod[] p = {PaymentMethod.Cash,
             PaymentMethod.Cheque,
             PaymentMethod.Slip};
         return p;
     }
-    
+
     public PaymentMethod[] getPaymentMethodsForIouSettle() {
         PaymentMethod[] p = {PaymentMethod.Cash,
             PaymentMethod.Cheque,
@@ -957,6 +976,22 @@ public class EnumController implements Serializable {
 
     public void setPaymentMethodsForPatientDepositCancel(List<PaymentMethod> paymentMethodsForPatientDepositCancel) {
         this.paymentMethodsForPatientDepositCancel = paymentMethodsForPatientDepositCancel;
+    }
+
+    public List<PaymentMethod> getPaymentMethodsForMultiplePaymentMethod() {
+        List <PaymentMethod> p = new ArrayList<>();
+        p.add(PaymentMethod.Cash);
+        p.add(PaymentMethod.Card);
+        p.add(PaymentMethod.Cheque);
+        p.add(PaymentMethod.Slip);
+        p.add(PaymentMethod.OnlineSettlement);
+        p.add(PaymentMethod.Staff_Welfare);
+        paymentMethodsForMultiplePaymentMethod = p;
+        return paymentMethodsForMultiplePaymentMethod;
+    }
+
+    public void setPaymentMethodsForMultiplePaymentMethod(List<PaymentMethod> paymentMethodsForMultiplePaymentMethod) {
+        this.paymentMethodsForMultiplePaymentMethod = paymentMethodsForMultiplePaymentMethod;
     }
 
 }
