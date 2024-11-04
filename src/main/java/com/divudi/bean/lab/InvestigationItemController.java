@@ -1840,6 +1840,15 @@ public class InvestigationItemController implements Serializable {
         listInvestigationItem();
         return "/admin/lims/investigation_format?faces-redirect=true;";
     }
+    
+    public String toEditInvestigationFormatPastData() {
+        if (currentInvestigation == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return "";
+        }
+        listInvestigationItem();
+        return "/admin/lims/investigation_format_pastdata?faces-redirect=true;";
+    }
 
     public String toEditInvestigationFormatMultiple() {
         if (currentInvestigation == null) {
