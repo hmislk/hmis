@@ -96,7 +96,11 @@
                                 value="#{searchController.department}" 
                                 filter="true">
                                 <f:selectItem itemLabel="All Departments" />
-                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                <f:selectItems 
+                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}" 
+                                    var="d" 
+                                    itemLabel="#{d.name}" 
+                                    itemValue="#{d}" />
                             </p:selectOneMenu>
                         </h:panelGrid>
 
@@ -182,6 +186,8 @@
                                 
                                 <ez:opdServiceCollectionCredit bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'opdServiceCollectionCredit'}" />
                                 
+                                 <ez:netCashForTheDay bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'netCashPlusCredit'}"/>
+                              
                             </ui:repeat>
                             
                         </h:panelGroup>
