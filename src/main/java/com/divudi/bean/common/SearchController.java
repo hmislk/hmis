@@ -12813,6 +12813,7 @@ public class SearchController implements Serializable {
 
         double collectionForTheDay = 0.0;
         double netCashCollection = 0.0;
+        double netCollectionPlusCredits=0.0;
 
         ReportTemplateRowBundle opdServiceCollection;
         if (isWithProfessionalFee()) {
@@ -12936,8 +12937,15 @@ public class SearchController implements Serializable {
             opdServiceCollectionCredit = generateOpdServiceCollectionWithoutProfessionalFee(PaymentType.CREDIT);
         }
         bundle.getBundles().add(opdServiceCollectionCredit);
-//        netCashCollection -= Math.abs(getSafeTotal(creditBills)); // NOT Deducted from Totals
+        netCollectionPlusCredits =  netCashCollection + Math.abs(getSafeTotal(creditBills)); // NOT Deducted from Totals
 
+        
+        // Final net cash for the day
+        ReportTemplateRowBundle netCashForTheDayBundlePlusCredits = new ReportTemplateRowBundle();
+        netCashForTheDayBundlePlusCredits.setName("Net Cash Plus Credits");
+        netCashForTheDayBundlePlusCredits.setBundleType("netCashPlusCredit");
+        netCashForTheDayBundlePlusCredits.setTotal(netCollectionPlusCredits);
+        bundle.getBundles().add(netCashForTheDayBundlePlusCredits);
     }
 
     public ReportTemplateRowBundle generatePaymentColumnForCollections(List<BillTypeAtomic> bts, List<PaymentMethod> pms) {
