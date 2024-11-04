@@ -33,6 +33,7 @@ import com.divudi.data.SessionNumberType;
 import com.divudi.data.Sex;
 import com.divudi.data.MessageType;
 import com.divudi.data.PaymentContext;
+import com.divudi.data.PaymentType;
 import com.divudi.data.RestAuthenticationType;
 import com.divudi.data.SymanticType;
 import com.divudi.data.Title;
@@ -85,6 +86,7 @@ public class EnumController implements Serializable {
     private List<PaymentMethod> paymentMethodsForOpdBillCanceling;
     SessionNumberType[] sessionNumberTypes;
     private List<PatientInvestigationStatus> patientInvestigationStatuses;
+    private List<PaymentMethod> paymentTypeOfPaymentMethods;
 
     @PostConstruct
     public void init() {
@@ -199,6 +201,20 @@ public class EnumController implements Serializable {
                 paymentMethodsForPharmacyBilling.add(pm);
             }
         }
+    }
+   
+    public List<PaymentMethod> getPaymentTypeOfPaymentMethods(PaymentType paymentType) {
+        paymentTypeOfPaymentMethods = new ArrayList<>();
+        for (PaymentMethod pm : PaymentMethod.asList()) {
+            if (pm.getPaymentType() == paymentType) {
+                paymentTypeOfPaymentMethods.add(pm);
+            }
+        }
+        return paymentTypeOfPaymentMethods;
+    }
+
+    public void setPaymentTypeOfPaymentMethods(List<PaymentMethod> paymentTypeOfPaymentMethods) {
+        this.paymentTypeOfPaymentMethods = paymentTypeOfPaymentMethods;
     }
 
     public List<SearchDateType> getSearchDateTypes() {

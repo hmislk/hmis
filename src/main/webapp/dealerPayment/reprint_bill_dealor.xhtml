@@ -16,24 +16,32 @@
                         <f:facet name="header" >
                             <h:outputLabel value="Reprint"  ></h:outputLabel>
                             <hr/>                           
-                            <p:commandButton ajax="false" value="Cancel" action="cancel_bill_dealor" disabled="#{dealorPaymentBillSearch.bill.cancelled}" rendered="#{dealorPaymentBillSearch.bill.billType eq 'GrnPayment'}" >                           
-                            </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Approve"
+                            <p:commandButton ajax="false" value="Approve" style="width: 150px;"
                                              action="#{dealorPaymentBillSearch.approve()}"
                                              disabled="#{dealorPaymentBillSearch.bill.billType eq 'GrnPayment' 
                                                          or dealorPaymentBillSearch.bill.cancelled
                                                          or dealorPaymentBillSearch.bill.referenceBill ne null }">                           
                             </p:commandButton>
-                            <p:inputText id="com" value="#{dealorPaymentBillSearch.comment}"/>
-                                                    </f:facet>
+
+                            <p:commandButton ajax="false" value="Return" class="ui-button-warning mx-1"
+                                             action="return_bill_dealor?faces-redirect=true" style="width: 150px;"
+                                             disabled="#{dealorPaymentBillSearch.bill.refunded 
+                                                         or dealorPaymentBillSearch.bill.cancelled}"
+                                             rendered="#{dealorPaymentBillSearch.bill.billType eq 'GrnPayment'}">                           
+                            </p:commandButton>
+
+                            <p:commandButton ajax="false" class="ui-button-danger" style="width: 150px;"
+                                             value="Cancel" 
+                                             action="cancel_bill_dealor?faces-redirect=true" 
+                                             disabled="#{dealorPaymentBillSearch.bill.cancelled 
+                                                         or dealorPaymentBillSearch.bill.refunded}" 
+                                             rendered="#{dealorPaymentBillSearch.bill.billType eq 'GrnPayment'}" >                           
+                            </p:commandButton>
+                            <p:inputText id="com" value="#{dealorPaymentBillSearch.comment}" placeholder="Comment" style="float: left; margin-right: 5px;"/>
+                        </f:facet>
 
                     </p:panel>
-
-
-
-
-                    
 
                     <p:panel>                                
                         <p:commandButton value="Print" ajax="false" action="#" disabled="#{dealorPaymentBillSearch.bill.billType eq 'GrnPaymentPre'}" >

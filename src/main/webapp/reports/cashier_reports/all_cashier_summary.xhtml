@@ -352,8 +352,14 @@
                             </p:column>
 
                             <p:column headerText="Grand Total" class="text-end">
-                                <h:outputText value="#{summary.cashValue + summary.cardValue + summary.voucherValue + 
-                                                       summary.iouValue + summary.chequeValue + summary.slipValue + 
+                                <h:outputText value="#{summary.cashValue + 
+                                                       summary.cardValue + 
+                                                       summary.voucherValue + 
+                                                       summary.iouValue + 
+                                                       summary.chequeValue + 
+                                                       summary.patientDepositValue + 
+                                                       summary.creditValue + 
+                                                       summary.slipValue + 
                                                        summary.ewalletValue }" 
                                               style="text-align: right;">
                                     <f:convertNumber pattern="#,##0.00" />
@@ -361,9 +367,12 @@
                                 <f:facet name="footer">
                                     <h:outputText value="#{searchController.bundle.cashValue + 
                                                            searchController.bundle.cardValue + 
+                                                           searchController.bundle.creditValue + 
                                                            searchController.bundle.voucherValue + 
                                                            searchController.bundle.iouValue + 
-                                                           searchController.bundle.chequeValue + searchController.bundle.slipValue + 
+                                                           searchController.bundle.patientDepositValue + 
+                                                           searchController.bundle.chequeValue + 
+                                                           searchController.bundle.slipValue + 
                                                            searchController.bundle.ewalletValue }" 
                                                   style="text-align: right;">
                                         <f:convertNumber pattern="#,##0.00" />
