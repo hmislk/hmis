@@ -65,7 +65,7 @@
                             <h:outputLabel value="Institution"/>                                
                             <p:selectOneMenu class="w-100 " value="#{searchController.institution}" filter="true" >
                                 <f:selectItem itemLabel="All Institution" ></f:selectItem>
-                                <f:selectItems value="#{sessionController.loggableInstitutions}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
+                                <f:selectItems value="#{sessionController.loggableInstitutions}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" ></f:selectItems>
                             </p:selectOneMenu>
 
                             <p:spacer width="20" ></p:spacer>
@@ -82,7 +82,7 @@
                             <h:outputLabel value="Department"/>                                
                             <p:selectOneMenu class="w-100" style="width: 400px!important;" value="#{searchController.department}" filter="true" id="dept">
                                 <f:selectItem itemLabel="All Departments" ></f:selectItem>
-                                <f:selectItems value="#{departmentController.getInstitutionDepartments(searchController.site)}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
+                                <f:selectItems value="#{departmentController.getInstitutionDepartments(searchController.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" ></f:selectItems>
                             </p:selectOneMenu>
 
                             <p:spacer></p:spacer>
