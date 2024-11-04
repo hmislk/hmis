@@ -14,7 +14,7 @@
         </properties>
     </persistence-unit>
     <persistence-unit name="hmisAuditPU" transaction-type="JTA">
-        <jta-data-source>jdbc/himsAduit</jta-data-source>
+        <jta-data-source>jdbc/hmisaudit</jta-data-source>
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
         <properties>
             <property name="eclipselink.logging.level.sql" value="INFO"/>
