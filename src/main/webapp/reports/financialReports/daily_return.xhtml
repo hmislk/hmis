@@ -186,6 +186,8 @@
                                 
                                 <ez:opdServiceCollectionCredit bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'opdServiceCollectionCredit'}" />
                                 
+                                 <ez:netCashForTheDay bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'netCashPlusCredit'}"/>
+                              
                             </ui:repeat>
                             
                         </h:panelGroup>

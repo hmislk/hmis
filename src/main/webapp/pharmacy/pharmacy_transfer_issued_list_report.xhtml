@@ -28,7 +28,7 @@
                         </p:autoComplete>
                         
                         <h:outputLabel  value="Request To Department"  ></h:outputLabel>
-                        <p:autoComplete  value="#{searchController.searchKeyword.tooDepartment}"  
+                        <p:autoComplete  value="#{searchController.searchKeyword.toDepartment}"  
                                          completeMethod="#{departmentController.completeDept}" var="dept"
                                          itemValue="#{dept}" itemLabel="#{dept.name}" 
                                          forceSelection="true" rendered="true">
