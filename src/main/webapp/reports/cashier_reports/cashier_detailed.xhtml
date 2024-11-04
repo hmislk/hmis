@@ -91,10 +91,7 @@
                         </p:commandButton>
 
 
-
                         <ui:repeat value="#{searchController.bundle.bundles}" var="myBundle">
-
-
 
                             <ez:opdServiceBilled bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'opdServiceBilled'}"/>
                             <ez:opdServiceCancellations bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'opdServiceCancellations'}"/>
