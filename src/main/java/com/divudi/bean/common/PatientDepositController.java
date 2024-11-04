@@ -392,6 +392,8 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         PatientDeposit pd = patientDepositFacade.findFirstByJpql(jpql, m);
         System.out.println("pd = " + pd);
 
+        patientController.save(p);
+        
         if (pd == null) {
             pd = new PatientDeposit();
             pd.setBalance(0.0);

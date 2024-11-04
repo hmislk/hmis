@@ -3192,7 +3192,7 @@ public class BillSearch implements Serializable {
         }
         financialTransactionController.setCurrentBill(viewingBill);
         financialTransactionController.setCurrentBillPayments(viewingBillPayments);
-        return "/cashier/income_bill_reprint?faces-redirect=true;";
+        return "/cashier/income_bill_cancelled_reprint?faces-redirect=true;";
     }
     
     public void cancelIncomeBill() {
@@ -3292,7 +3292,7 @@ public class BillSearch implements Serializable {
         billFees = billBean.fetchBillFees(bill);
         billPayments = billBean.fetchBillPayments(bill);
         printPreview = false;
-        return "/cashier/expense_bill_cancellation_print?faces-redirect=true;";
+        return "/cashier/expense_bill_cancel?faces-redirect=true;";
     }
     
     public String navigateToViewCancelExpenseBill() {
@@ -3312,7 +3312,7 @@ public class BillSearch implements Serializable {
         }
         financialTransactionController.setCurrentBill(viewingBill);
         financialTransactionController.setCurrentBillPayments(viewingBillPayments);
-        return "/cashier/expense_bill_reprint?faces-redirect=true;";
+        return "/cashier/expense_bill_cancelled_reprint?faces-redirect=true;";
     }
     
     public void cancelExpenseBill() {

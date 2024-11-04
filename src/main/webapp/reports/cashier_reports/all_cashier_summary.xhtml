@@ -65,7 +65,8 @@
                             <h:outputLabel value="Institution"/>                                
                             <p:selectOneMenu class="w-100 " value="#{searchController.institution}" filter="true" >
                                 <f:selectItem itemLabel="All Institution" ></f:selectItem>
-                                <f:selectItems value="#{sessionController.loggableInstitutions}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
+                                <f:selectItems value="#{sessionController.loggableInstitutions}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" ></f:selectItems>
+                                <p:ajax event="itemSelect" process="@this" update="cmbDept"/>
                             </p:selectOneMenu>
 
                             <p:spacer width="20" ></p:spacer>
@@ -74,17 +75,25 @@
                             <p:selectOneMenu class="w-100 "  value="#{searchController.site}" filter="true">
                                 <f:selectItem itemLabel="All Sites" ></f:selectItem>
                                 <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" ></f:selectItems>
-                                <p:ajax event="itemSelect" process="@this" update="dept"/>
+                                <p:ajax event="itemSelect" process="@this" update="cmbDept"/>
                             </p:selectOneMenu>
 
                             <p:spacer width="20" ></p:spacer>
 
                             <h:outputLabel value="Department"/>                                
-                            <p:selectOneMenu class="w-100" style="width: 400px!important;" value="#{searchController.department}" filter="true" id="dept">
-                                <f:selectItem itemLabel="All Departments" ></f:selectItem>
-                                <f:selectItems value="#{departmentController.getInstitutionDepartments(searchController.site)}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
-                            </p:selectOneMenu>
-
+                            <h:panelGroup id="cmbDept">
+                                <p:selectOneMenu
+                                    styleClass="w-100 form-control"  
+                                    value="#{searchController.department}" 
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}" 
+                                        var="d" 
+                                        itemLabel="#{d.name}" 
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+                            </h:panelGroup>
                             <p:spacer></p:spacer>
 
 
@@ -352,8 +361,14 @@
                             </p:column>
 
                             <p:column headerText="Grand Total" class="text-end">
-                                <h:outputText value="#{summary.cashValue + summary.cardValue + summary.voucherValue + 
-                                                       summary.iouValue + summary.chequeValue + summary.slipValue + 
+                                <h:outputText value="#{summary.cashValue + 
+                                                       summary.cardValue + 
+                                                       summary.voucherValue + 
+                                                       summary.iouValue + 
+                                                       summary.chequeValue + 
+                                                       summary.patientDepositValue + 
+                                                       summary.creditValue + 
+                                                       summary.slipValue + 
                                                        summary.ewalletValue }" 
                                               style="text-align: right;">
                                     <f:convertNumber pattern="#,##0.00" />
@@ -361,9 +376,12 @@
                                 <f:facet name="footer">
                                     <h:outputText value="#{searchController.bundle.cashValue + 
                                                            searchController.bundle.cardValue + 
+                                                           searchController.bundle.creditValue + 
                                                            searchController.bundle.voucherValue + 
                                                            searchController.bundle.iouValue + 
-                                                           searchController.bundle.chequeValue + searchController.bundle.slipValue + 
+                                                           searchController.bundle.patientDepositValue + 
+                                                           searchController.bundle.chequeValue + 
+                                                           searchController.bundle.slipValue + 
                                                            searchController.bundle.ewalletValue }" 
                                                   style="text-align: right;">
                                         <f:convertNumber pattern="#,##0.00" />

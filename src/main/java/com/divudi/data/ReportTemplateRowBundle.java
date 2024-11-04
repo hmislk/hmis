@@ -653,22 +653,77 @@ public class ReportTemplateRowBundle implements Serializable {
             }
         }
         total
-                = this.cashValue + this.cardValue + this.voucherValue + this.iouValue
+                = this.cashValue + this.cardValue + this.voucherValue + this.iouValue + this.patientDepositValue
                 + this.chequeValue + this.slipValue + this.eWalletValue;
 
     }
 
+    public void calculateTotalsWithCredit() {
+        System.out.println("calculateTotals = ");
+        resetTotalsAndFlags();
+
+        // Check if the list of rows is not null and not empty
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            // Aggregate values from each row and update transaction flags
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                addValueAndUpdateFlag("cash", safeDouble(row.getCashValue()));
+                addValueAndUpdateFlag("card", safeDouble(row.getCardValue()));
+                addValueAndUpdateFlag("multiplePaymentMethods", safeDouble(row.getMultiplePaymentMethodsValue()));
+                addValueAndUpdateFlag("staff", safeDouble(row.getStaffValue()));
+                addValueAndUpdateFlag("credit", safeDouble(row.getCreditValue()));
+                addValueAndUpdateFlag("staffWelfare", safeDouble(row.getStaffWelfareValue()));
+                addValueAndUpdateFlag("voucher", safeDouble(row.getVoucherValue()));
+                addValueAndUpdateFlag("iou", safeDouble(row.getIouValue()));
+                addValueAndUpdateFlag("agent", safeDouble(row.getAgentValue()));
+                addValueAndUpdateFlag("cheque", safeDouble(row.getChequeValue()));
+                addValueAndUpdateFlag("slip", safeDouble(row.getSlipValue()));
+                addValueAndUpdateFlag("eWallet", safeDouble(row.getEwalletValue()));
+                addValueAndUpdateFlag("patientDeposit", safeDouble(row.getPatientDepositValue()));
+                addValueAndUpdateFlag("patientPoints", safeDouble(row.getPatientPointsValue()));
+                addValueAndUpdateFlag("onlineSettlement", safeDouble(row.getOnlineSettlementValue()));
+                addValueAndUpdateFlag("grossTotal", safeDouble(row.getGrossTotal()));
+                addValueAndUpdateFlag("discount", safeDouble(row.getDiscount()));
+                addValueAndUpdateFlag("total", safeDouble(row.getTotal()));
+                addValueAndUpdateFlag("hospitalTotal", safeDouble(row.getHospitalTotal()));
+                addValueAndUpdateFlag("staffTotal", safeDouble(row.getStaffTotal()));
+                addValueAndUpdateFlag("ccTotal", safeDouble(row.getCcTotal()));
+            }
+        }
+        total
+                = this.cashValue
+                + this.cardValue
+                + this.voucherValue
+                + this.iouValue
+                + this.patientDepositValue
+                + this.chequeValue
+                + this.slipValue
+                + this.creditValue
+                + this.eWalletValue;
+
+    }
+
     public void calculateTotalsBySelectedChildBundles() {
+        calculateTotalsByChildBundles(true);
+    }
+
+    public void calculateTotalsByAllChildBundles() {
+        calculateTotalsByChildBundles(false);
+    }
+
+    public void calculateTotalsByChildBundles(boolean forHandover) {
         System.out.println("calculateTotalsByChildBundles");
         resetTotalsAndFlags();
         System.out.println("total = " + total);
+        boolean selectAll = !forHandover;
 
         if (this.bundles != null && !this.bundles.isEmpty()) {
             for (ReportTemplateRowBundle childBundle : this.bundles) {
 
-                if (childBundle.isSelected()) {
-                    
-                    childBundle.calculateTotalsByPaymentsAndDenominationsForHandover();
+                if (childBundle.isSelected() || selectAll) {
+
+                    if (forHandover) {
+                        childBundle.calculateTotalsByPaymentsAndDenominationsForHandover();
+                    }
 
                     System.out.println("selected childBundle = " + childBundle.getName());
                     addValueAndUpdateFlag("cash", safeDouble(childBundle.getCashValue()), safeDouble(childBundle.getCashHandoverValue()));
@@ -873,17 +928,17 @@ public class ReportTemplateRowBundle implements Serializable {
             }
         }
     }
-    
+
     public void unmarkAllAtHandover() {
-    if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
-        for (ReportTemplateRow row : this.reportTemplateRows) {
-            if (row.getPayment() != null && row.getPayment().isSelectedForHandover()) {
-                row.getPayment().setSelectedForHandover(false);
-                row.setSelected(false);
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                if (row.getPayment() != null && row.getPayment().isSelectedForHandover()) {
+                    row.getPayment().setSelectedForHandover(false);
+                    row.setSelected(false);
+                }
             }
         }
     }
-}
 
     public void markSelectedAtHandover() {
         if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {

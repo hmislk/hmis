@@ -481,6 +481,22 @@ public class InvestigationController implements Serializable {
         investigationItemController.setCurrentInvestigation((Investigation) current.getReportedAs());
         return investigationItemController.toEditInvestigationFormat();
     }
+    
+    public String navigateToEditFormatSinglePastData() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Please select investigation");
+            return "";
+        }
+        if (current.getId() == null) {
+            JsfUtil.addErrorMessage("Please save investigation first.");
+            return "";
+        }
+        if (current.getReportedAs() == null) {
+            current.setReportedAs(current);
+        }
+        investigationItemController.setCurrentInvestigation((Investigation) current.getReportedAs());
+        return investigationItemController.toEditInvestigationFormatPastData();
+    }
 
     public String navigateToManageReportComponents() {
         if (current == null) {

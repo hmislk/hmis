@@ -90,18 +90,19 @@
                                 <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
                                 <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu
-                                id="cmbDept"
-                                styleClass="w-100 form-control"  
-                                value="#{searchController.department}" 
-                                filter="true">
-                                <f:selectItem itemLabel="All Departments" />
-                                <f:selectItems 
-                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}" 
-                                    var="d" 
-                                    itemLabel="#{d.name}" 
-                                    itemValue="#{d}" />
-                            </p:selectOneMenu>
+                            <h:panelGroup id="cmbDept">
+                                <p:selectOneMenu
+                                    styleClass="w-100 form-control"  
+                                    value="#{searchController.department}" 
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}" 
+                                        var="d" 
+                                        itemLabel="#{d.name}" 
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+                            </h:panelGroup>
                         </h:panelGrid>
 
                         <p:commandButton 
@@ -159,7 +160,7 @@
                         <!--Do not remove the above part-->
 
                         <h:panelGroup id="printPanel">        
-                            
+
                             <ui:repeat value="#{searchController.bundle.bundles}" var="myBundle">
                                 <ez:opdServiceCollection bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'opdServiceCollection'}"/>
                                 <ez:pharmacyCollection bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'pharmacyCollection'}"/>
@@ -175,7 +176,7 @@
                                 <ez:professionalPaymentBillOpd bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'ProfessionalPaymentBillReportOpd'}"/>
                                 <ez:professionalPaymentBillChannelling bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'ProfessionalPaymentBillReportChannelling'}"/>
                                 <ez:professionalPaymentBillInward bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'ProfessionalPaymentBillReportInward'}"/>
-                                
+
                                 <ez:paymentReportCards bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportCards'}"/>
                                 <ez:staffPayments bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportStaffWelfare'}"/>
                                 <ez:voucherPayments bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportVoucher'}"/>
@@ -183,11 +184,13 @@
                                 <ez:ewalletPayments bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportEwallet'}"/>
                                 <ez:slipPayments bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportSlip'}"/>
                                 <ez:netCashForTheDay bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'netCash'}"/>
-                                
+
                                 <ez:opdServiceCollectionCredit bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'opdServiceCollectionCredit'}" />
-                                
+
+                                <ez:netCashForTheDay bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'netCashPlusCredit'}"/>
+
                             </ui:repeat>
-                            
+
                         </h:panelGroup>
                     </p:panel>
                 </h:form>
