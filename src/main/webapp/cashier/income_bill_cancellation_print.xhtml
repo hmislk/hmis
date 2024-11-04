@@ -26,12 +26,12 @@
                                 </f:facet>
 
                                 <p:panelGrid columns="2" class="w-100">
-                                    <h:outputText value="Bille Date" ></h:outputText>
+                                    <h:outputText value="Billed Date" ></h:outputText>
                                     <h:outputText value="#{billSearch.bill.createdAt}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                     </h:outputText>
 
-                                    <h:outputText value="Bille Time" ></h:outputText>
+                                    <h:outputText value="Billed Time" ></h:outputText>
                                     <h:outputText value="#{billSearch.bill.createdAt}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
                                     </h:outputText>
