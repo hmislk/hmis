@@ -91,14 +91,16 @@
                         </p:commandButton>
 
 
-
                         <ui:repeat value="#{searchController.bundle.bundles}" var="myBundle">
-
-
 
                             <ez:opdServiceBilled bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'opdServiceBilled'}"/>
                             <ez:opdServiceCancellations bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'opdServiceCancellations'}"/>
                             <ez:opdServiceRefunds bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'opdServiceRefunds'}"/>
+
+                            <!-- Credit Sections -->
+                            <ez:opdServiceBilled bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'cashierSummaryOpdCredit'}"/>
+                            <ez:opdServiceCancellations bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'opdServiceCancellationsCredit'}"/>
+                            <ez:opdServiceRefunds bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'opdServiceRefundsCredit'}"/>
 
                             <!-- Pharmacy Collections -->
                             <ez:pharmacyNonCreditBills bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'pharmacyNonCreditBills'}"/>
