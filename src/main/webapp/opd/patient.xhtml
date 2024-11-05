@@ -74,7 +74,7 @@
                                         <p:outputLabel value="Email:" rendered="#{not empty patientController.current.person.email}" />
                                         <p:outputLabel value="#{patientController.current.person.email}" rendered="#{not empty patientController.current.person.email}" />
 
-                                        <p:outputLabel value="ID:" rendered="#{not empty patientController.current.person.nic}" />
+                                        <p:outputLabel value="NIC:" rendered="#{not empty patientController.current.person.nic}" />
                                         <p:outputLabel value="#{patientController.current.person.nic}" rendered="#{not empty patientController.current.person.nic}" />
 
                                         <p:outputLabel value="Code:" rendered="#{not empty patientController.current.code}" />
@@ -104,18 +104,18 @@
 <!--                                        <p:outputLabel value="Credit Limit:" rendered="#{patientController.current.hasAnAccount}" />
                                         <p:outputLabel value="#{patientController.current.creditLimit}" rendered="#{patientDepositController.checkDepositOfThePatient(patientController.current, sessionController.getDepartment()) ne null}" />-->
 
-                                    </p:panelGrid>
+                                    </p:panelGrid> 
 
-                                    <h:panelGroup id="groupPatientCard" style="text-align: center; width: 5cm; border: 1px solid red;" layout="block">
+                                    <h:panelGroup id="groupPatientCard" style="text-align: center; width: 4.8cm; border: 1px solid red;" layout="block">
                                         <div style="line-height: 0.7; padding: 0; margin: 0;">
-                                            <div class="mt-1" style="height: 0.8cm; overflow-y: hidden;">
-                                            <p:barcode format="svg" hrp="none" width="185" value="#{patientController.current.phn}" type="code128" cache="false" rendered="true" />
+                                            <div class="mt-1" style="height: 0.9cm;  overflow-x: hidden; overflow-y: hidden">
+                                                <p:barcode format="svg" hrp="none" width="185" value="#{patientController.current.phn}" type="code128" cache="false" rendered="true" />
+                                            </div>
+                                            <div>
+                                                <p:outputLabel value="#{patientController.current.phn}" style="font-size: 10px;font-weight: 600;" />
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p:outputLabel value="#{patientController.current.phn}" style="font-size: 10px;font-weight: 600;" />
-                                        </div>
-                                        </div>
-                                        
+
                                         <div class="mt-1 mb-1" style="line-height: 0.7; padding: 0; margin: 0;">
                                             <div class="w-100">
                                                 <h:outputText value="#{patientController.current.person.nameWithTitle}" style="font-size: 10px; font-family: 'Libre Barcode 128 Text', sans-serif;" />
@@ -124,10 +124,10 @@
                                             </div>
                                             <div class="w-100">
                                                 <h:outputText value="#{patientController.current.person.dob}" class="mx-2" style="font-size: 10px; font-family: 'Libre Barcode 128 Text', sans-serif;">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                                    <f:convertDateTime pattern="dd/MM/yyyy" />
                                                 </h:outputText>
-                                                <p:outputLabel value="&#160;&#124;&#160;" style="font-size: 10px;" />
-                                                <h:outputText value="#{patientController.current.person.phone}" style="font-size: 10px; font-family: 'Libre Barcode 128 Text', sans-serif;" />
+                                                <p:outputLabel value="&#160;&#124;&#160;&#160;" style="font-size: 10px;" rendered="#{patientController.current.person.nic ne null}"/>
+                                                <h:outputText value="#{patientController.current.person.nic}" style="font-size: 10px; font-family: 'Libre Barcode 128 Text', sans-serif;" />
                                             </div>
                                         </div>
                                     </h:panelGroup>

@@ -302,10 +302,9 @@
                                         <!-- Investigation Name Column -->
                                         <p:column headerText="Investigation" style="width: 7em; vertical-align: top;">
                                             <i class="fas fa-vial text-danger"></i> <!-- Investigation Icon -->
-                                            <h:outputLabel value="#{patientInvestigation.investigation.name}"/>
+                                            <h:outputLabel rendered="#{not webUserController.hasPrivilege('Developers')}" value="#{patientInvestigation.investigation.name}"/>
                                             <p:commandLink 
-                                                class="ms-5"
-                                                value="Admin" 
+                                                value="#{patientInvestigation.investigation.name}" 
                                                 rendered="#{webUserController.hasPrivilege('Developers')}" 
                                                 action="#{investigationController.navigateToManageInvestigation()}">
                                                 <f:setPropertyActionListener value="#{patientInvestigation.investigation}" target="#{investigationController.current}"/>

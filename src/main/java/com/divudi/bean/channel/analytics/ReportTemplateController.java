@@ -197,12 +197,12 @@ public class ReportTemplateController implements Serializable {
         }
 
         if (paramFromDate != null) {
-            jpql += " and bill.billDate >= :fd ";
+            jpql += " and bill.createdAt >= :fd ";
             parameters.put("fd", paramFromDate);
         }
 
         if (paramToDate != null) {
-            jpql += " and bill.billDate <= :td ";
+            jpql += " and bill.createdAt <= :td ";
             parameters.put("td", paramToDate);
         }
 
@@ -274,12 +274,12 @@ public class ReportTemplateController implements Serializable {
         }
 
         if (paramFromDate != null) {
-            jpql += " and bill.billDate >= :fd ";
+            jpql += " and bill.createdAt >= :fd ";
             parameters.put("fd", paramFromDate);
         }
 
         if (paramToDate != null) {
-            jpql += " and bill.billDate <= :td ";
+            jpql += " and bill.createdAt <= :td ";
             parameters.put("td", paramToDate);
         }
 
@@ -342,12 +342,12 @@ public class ReportTemplateController implements Serializable {
         }
 
         if (paramFromDate != null) {
-            jpql += " and bill.billDate >= :fd ";
+            jpql += " and bill.createdAt >= :fd ";
             parameters.put("fd", paramFromDate);
         }
 
         if (paramToDate != null) {
-            jpql += " and bill.billDate <= :td ";
+            jpql += " and bill.createdAt <= :td ";
             parameters.put("td", paramToDate);
         }
 
@@ -416,12 +416,12 @@ public class ReportTemplateController implements Serializable {
         }
 
         if (paramFromDate != null) {
-            jpql += " and bill.billDate >= :fd ";
+            jpql += " and bill.createdAt >= :fd ";
             parameters.put("fd", paramFromDate);
         }
 
         if (paramToDate != null) {
-            jpql += " and bill.billDate <= :td ";
+            jpql += " and bill.createdAt <= :td ";
             parameters.put("td", paramToDate);
         }
 
@@ -485,12 +485,12 @@ public class ReportTemplateController implements Serializable {
         }
 
         if (paramFromDate != null) {
-            jpql += " and bill.billDate >= :fd ";
+            jpql += " and bill.createdAt >= :fd ";
             parameters.put("fd", paramFromDate);
         }
 
         if (paramToDate != null) {
-            jpql += " and bill.billDate <= :td ";
+            jpql += " and bill.createdAt <= :td ";
             parameters.put("td", paramToDate);
         }
 
@@ -1037,7 +1037,7 @@ public class ReportTemplateController implements Serializable {
         }
 
         if (paramDate != null) {
-            jpql += " and bill.billDate=:bd ";
+            jpql += " and bill.createdAt=:bd ";
             parameters.put("bd", paramDate);
         }
 
@@ -1200,7 +1200,7 @@ public class ReportTemplateController implements Serializable {
         }
 
         if (paramDate != null) {
-            jpql += " and bill.billDate=:bd ";
+            jpql += " and bill.createdAt=:bd ";
             parameters.put("bd", paramDate);
         }
 
@@ -1363,7 +1363,7 @@ public class ReportTemplateController implements Serializable {
         }
 
         if (paramDate != null) {
-            jpql += " and bill.billDate=:bd ";
+            jpql += " and bill.createdAt=:bd ";
             parameters.put("bd", paramDate);
         }
 
@@ -1528,17 +1528,17 @@ public class ReportTemplateController implements Serializable {
         }
 
         if (paramDate != null) {
-            jpql += " and bill.billDate=:bd ";
+            jpql += " and bill.createdAt=:bd ";
             parameters.put("bd", paramDate);
         }
 
         if (paramToDate != null) {
-            jpql += " and bill.billDate<:td ";
+            jpql += " and bill.createdAt<:td ";
             parameters.put("td", paramToDate);
         }
 
         if (paramFromDate != null) {
-            jpql += " and bill.billDate>:fd ";
+            jpql += " and bill.createdAt>:fd ";
             parameters.put("fd", paramFromDate);
         }
 
@@ -1882,7 +1882,7 @@ public class ReportTemplateController implements Serializable {
         }
 
         if (paramDate != null) {
-            jpql += " and bill.billDate=:bd ";
+            jpql += " and bill.createdAt=:bd ";
             parameters.put("bd", paramDate);
         }
 
@@ -2037,7 +2037,7 @@ public class ReportTemplateController implements Serializable {
         }
 
         if (paramDate != null) {
-            jpql += " and bill.billDate=:bd ";
+            jpql += " and bill.createdAt=:bd ";
             parameters.put("bd", paramDate);
         }
 
@@ -2200,7 +2200,7 @@ public class ReportTemplateController implements Serializable {
         }
 
         if (paramDate != null) {
-            jpql += " and bill.billDate=:bd ";
+            jpql += " and bill.createdAt=:bd ";
             parameters.put("bd", paramDate);
         }
 
@@ -2364,7 +2364,7 @@ public class ReportTemplateController implements Serializable {
         }
 
         if (paramDate != null) {
-            jpql += " and bill.billDate=:bd ";
+            jpql += " and bill.createdAt=:bd ";
             parameters.put("bd", paramDate);
         }
 
