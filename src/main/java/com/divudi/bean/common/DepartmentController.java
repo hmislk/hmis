@@ -13,6 +13,7 @@ import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.InstitutionType;
 import com.divudi.entity.Route;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -236,29 +237,77 @@ public class DepartmentController implements Serializable {
         return currentInsDepartments;
     }
 
+    public List<Department> getDepartmentsOfInstitutionAndSite() {
+        return getDepartmentsOfInstitutionAndSiteHelper(null, null);
+    }
+
+    public List<Department> getDepartmentsOfInstitutionAndSite(Institution site) {
+        return getDepartmentsOfInstitutionAndSiteHelper(null, site);
+    }
+
+    public List<Department> getDepartmentsOfInstitutionAndSiteForInstitution(Institution ins) {
+        return getDepartmentsOfInstitutionAndSiteHelper(ins, null);
+    }
+
     public List<Department> getDepartmentsOfInstitutionAndSite(Institution ins, Institution site) {
-        if(ins==null && site==null){
-            return new ArrayList<>();
-        }
+        return getDepartmentsOfInstitutionAndSiteHelper(ins, site);
+    }
+
+    private List<Department> getDepartmentsOfInstitutionAndSiteHelper(Institution ins, Institution site) {
         Map<String, Object> parameters = new HashMap<>();
-        StringBuilder jpql = new StringBuilder("SELECT d FROM Department d WHERE d.retired = :ret ");
+        StringBuilder jpql = new StringBuilder("SELECT d FROM Department d WHERE d.retired = :ret AND TYPE(d) NOT IN :excludedTypes");
         parameters.put("ret", false);
+
+        // Create a list of classes to exclude (e.g., Route)
+        List<Class<?>> excludedTypes = new ArrayList<>();
+        excludedTypes.add(Route.class); // Add any other subclasses to exclude if needed
+        parameters.put("excludedTypes", excludedTypes);
+
+        // Exclude departments without names or with blank names
+        jpql.append(" AND d.name IS NOT NULL AND TRIM(d.name) <> ''");
+
+        // Exclude departments with institution type of CollectingCentre
+        jpql.append(" AND d.institution.institutionType <> :cc ");
+        parameters.put("cc", InstitutionType.CollectingCentre);
+
         if (ins != null) {
             jpql.append(" AND d.institution = :ins");
             parameters.put("ins", ins);
         }
+
         if (site != null) {
             jpql.append(" AND d.site = :site");
             parameters.put("site", site);
         }
-        if(ins==null && site==null){
-            return new ArrayList<>();
-        }
+
         jpql.append(" ORDER BY d.name");
-        List<Department> currentInsDepartments = getFacade().findByJpql(jpql.toString(), parameters);
-        return currentInsDepartments != null ? currentInsDepartments : new ArrayList<>();
+
+        List<Department> departments = getFacade().findByJpql(jpql.toString(), parameters);
+        return departments != null ? departments : new ArrayList<>();
     }
 
+//    public List<Department> getDepartmentsOfInstitutionAndSite(Institution ins, Institution site) {
+//        if (ins == null && site == null) {
+//            return new ArrayList<>();
+//        }
+//        Map<String, Object> parameters = new HashMap<>();
+//        StringBuilder jpql = new StringBuilder("SELECT d FROM Department d WHERE d.retired = :ret ");
+//        parameters.put("ret", false);
+//        if (ins != null) {
+//            jpql.append(" AND d.institution = :ins");
+//            parameters.put("ins", ins);
+//        }
+//        if (site != null) {
+//            jpql.append(" AND d.site = :site");
+//            parameters.put("site", site);
+//        }
+//        if (ins == null && site == null) {
+//            return new ArrayList<>();
+//        }
+//        jpql.append(" ORDER BY d.name");
+//        List<Department> currentInsDepartments = getFacade().findByJpql(jpql.toString(), parameters);
+//        return currentInsDepartments != null ? currentInsDepartments : new ArrayList<>();
+//    }
     public String toListDepartments() {
         fillItems();
         return "/admin/institutions/departments?faces-redirect=true";
