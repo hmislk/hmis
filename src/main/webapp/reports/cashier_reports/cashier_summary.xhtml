@@ -83,6 +83,7 @@
                                     rendered="#{searchController.institution eq null and searchController.site eq null}"
                                     styleClass="w-100 form-control"
                                     value="#{searchController.department}"
+                                    filterMatchMode="contains"
                                     filter="true">
                                     <f:selectItem itemLabel="All Departments" />
                                     <f:selectItems 
@@ -97,6 +98,7 @@
                                     rendered="#{searchController.institution eq null and searchController.site ne null}"
                                     styleClass="w-100 form-control"
                                     value="#{searchController.department}"
+                                    filterMatchMode="contains"
                                     filter="true">
                                     <f:selectItem itemLabel="All Departments" />
                                     <f:selectItems 
@@ -111,6 +113,7 @@
                                     rendered="#{searchController.institution ne null and searchController.site eq null}"
                                     styleClass="w-100 form-control"
                                     value="#{searchController.department}"
+                                    filterMatchMode="contains"
                                     filter="true">
                                     <f:selectItem itemLabel="All Departments" />
                                     <f:selectItems 
@@ -125,6 +128,7 @@
                                     rendered="#{searchController.institution ne null and searchController.site ne null}"
                                     styleClass="w-100 form-control"
                                     value="#{searchController.department}"
+                                    filterMatchMode="contains"
                                     filter="true">
                                     <f:selectItem itemLabel="All Departments" />
                                     <f:selectItems 
