@@ -70,46 +70,49 @@
                                             <f:selectItem itemLabel="Staff Fee" itemValue="Staff" />
                                             <f:selectItem itemLabel="Hospital Fee" itemValue="OwnInstitution" />
                                             <f:selectItem itemLabel="Outside Fee" itemValue="OtherInstitution" />
+                                            <p:ajax  process="cmbFeeType" update="gpVeda"/>
                                         </p:selectOneMenu>
                                     </div>
                                 </div>
 
-                                <div class="row mt-1">
-                                    <div class="col-2"><h:outputText value="Speciality"/></div>
-                                    <div class="col-5">
-                                        <p:autoComplete  
-                                            forceSelection="true" 
-                                            id="cmbSpe" 
-                                            inputStyleClass="form-control"
-                                            value="#{packageItemFeeController.currentFee.speciality}" 
-                                            completeMethod="#{specialityController.completeSpeciality}" 
-                                            var="sp" itemLabel="#{sp.name}" 
-                                            itemValue="#{sp}" 
-                                            size="30"  
-                                            class="w-100">
-                                            <f:ajax execute="cmbSpe" render="cmbDoc" event="select"/>
-                                        </p:autoComplete>
+                                <h:panelGroup id="staff" rendered="#{packageItemFeeController.currentFee.feeType eq 'Staff'}">
+                                    <div class="row mt-1">
+                                        <div class="col-2"><h:outputText value="Speciality"/></div>
+                                        <div class="col-5">
+                                            <p:autoComplete  
+                                                forceSelection="true" 
+                                                id="cmbSpe" 
+                                                inputStyleClass="form-control"
+                                                value="#{packageItemFeeController.currentFee.speciality}" 
+                                                completeMethod="#{specialityController.completeSpeciality}" 
+                                                var="sp" itemLabel="#{sp.name}" 
+                                                itemValue="#{sp}" 
+                                                size="30"  
+                                                class="w-100">
+                                                <f:ajax execute="cmbSpe" render="cmbDoc" event="select"/>
+                                            </p:autoComplete>
+                                        </div>
                                     </div>
-                                </div>
 
-                                <div class="row mt-1">
-                                    <div class="col-2"><h:outputText value="Staff"/></div>
-                                    <div class="col-5">
-                                        <p:autoComplete  
-                                            forceSelection="true" 
-                                            id="cmbDoc" 
-                                            value="#{packageItemFeeController.currentFee.staff}" 
-                                            completeMethod="#{packageItemFeeController.completeStaff}" 
-                                            var="st" 
-                                            inputStyleClass="form-control"
-                                            itemLabel="#{st.person.nameWithTitle}" 
-                                            itemValue="#{st}" 
-                                            size="30"  
-                                            class="w-100">
-                                            <f:ajax execute="cmbSpe" event="keypress"/>
-                                        </p:autoComplete>
+                                    <div class="row mt-1">
+                                        <div class="col-2"><h:outputText value="Staff"/></div>
+                                        <div class="col-5">
+                                            <p:autoComplete  
+                                                forceSelection="true" 
+                                                id="cmbDoc" 
+                                                value="#{packageItemFeeController.currentFee.staff}" 
+                                                completeMethod="#{packageItemFeeController.completeStaff}" 
+                                                var="st" 
+                                                inputStyleClass="form-control"
+                                                itemLabel="#{st.person.nameWithTitle}" 
+                                                itemValue="#{st}" 
+                                                size="30"  
+                                                class="w-100">
+                                                <f:ajax execute="cmbSpe" event="keypress"/>
+                                            </p:autoComplete>
+                                        </div>
                                     </div>
-                                </div>
+                                </h:panelGroup>
 
                                 <div class="row mt-1">
                                     <div class="col-2"><h:outputText value="Institution" class="mt-2"/></div>

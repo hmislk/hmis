@@ -37,7 +37,9 @@
                                       filterBy="#{dr.drawerUser.staff.person.nameWithTitle}"
                                       filterMatchMode="contains"
                                       sortBy="#{dr.drawerUser.staff.person.nameWithTitle}">
-                                <h:outputText value="#{dr.drawerUser.staff.person.nameWithTitle}" />
+                                <h:commandLink action="#{searchController.navigateToDrawerHistory()}" value="#{dr.drawerUser.staff.person.nameWithTitle}">
+                                    <f:setPropertyActionListener value="#{dr.drawerUser}" target="#{drawerEntryController.webUser}"/>
+                                </h:commandLink> 
                             </p:column>
 
                             <!-- Cash Balance Column with Sorting -->
