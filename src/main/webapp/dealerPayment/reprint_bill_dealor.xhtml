@@ -39,6 +39,9 @@
                                              rendered="#{dealorPaymentBillSearch.bill.billType eq 'GrnPayment'}" >                           
                             </p:commandButton>
                             <p:inputText id="com" value="#{dealorPaymentBillSearch.comment}" placeholder="Comment" style="float: left; margin-right: 5px;"/>
+                            <p:commandButton ajax="false" value="Back To Approval List" style="width: 150px; float: right;"
+                                             action="search_dealor_payment_pharmacy">                           
+                            </p:commandButton>
                         </f:facet>
 
                     </p:panel>

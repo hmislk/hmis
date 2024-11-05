@@ -142,7 +142,7 @@
                                         <h:outputLabel value="#{bill.bank.name}" >                                        
                                         </h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Cheque No" >                               
+                                    <p:column headerText="Cheque No" sortBy="#{bill.chequeRefNo}" filterBy="#{bill.chequeRefNo}" filterMatchMode="contains">                               
                                         <h:outputLabel value="#{bill.chequeRefNo}" >                                       
                                         </h:outputLabel>
                                     </p:column>
@@ -151,14 +151,18 @@
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                         </h:outputLabel>
                                     </p:column>                           
-                                    <p:column headerText="Comments" >
+                                    <p:column headerText="Comments">
                                         <h:panelGroup class="col-1">
                                             <h:outputLabel  value="#{bill.comments}" >
                                             </h:outputLabel>
                                         </h:panelGroup>
                                     </p:column>
-                                    <p:column>
-                                        <p:commandButton ajax="false" value="Approve" action="reprint_bill_dealor">
+                                    <p:column headerText="Status">                                
+                                        <p:badge value="Pending..." rendered="#{bill.referenceBill.billType == null}"/>
+                                        <p:badge value="Approved" rendered="#{bill.referenceBill.billType eq 'GrnPayment'}" severity="success"/>
+                                    </p:column> 
+                                    <p:column headerText="Acion">
+                                        <p:commandButton ajax="false" value="Approve" action="reprint_bill_dealor" disabled="#{bill.referenceBill.billType eq 'GrnPayment'}">
                                             <f:setPropertyActionListener value="#{bill}" 
                                                                          target="#{dealorPaymentBillSearch.bill}"/>
                                         </p:commandButton>
