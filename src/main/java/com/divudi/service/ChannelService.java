@@ -664,6 +664,9 @@ public class ChannelService {
         BillItem cItem = cancelBillItems(bs.getBillItem(), cb);
         BillSession cbs = cancelBillSession(bs, cb, cItem);
         bill.getSingleBillSession().getBill().setCancelled(true);
+        if(bill.getReferenceBill() != null){
+            bill.getReferenceBill().setCancelled(true);
+        }
         bs.getBill().setCancelledBill(cb);
         getBillFacade().edit(bs.getBill());
         bs.setReferenceBillSession(cbs);
@@ -716,6 +719,7 @@ public class ChannelService {
         cb.setBillDate(new Date());
         cb.setBillTime(new Date());
         cb.setCreatedAt(new Date());
+        
         // cb.setCreater(getSessionController().getLoggedUser());
         // cb.setDepartment(getSessionController().getLoggedUser().getDepartment());
         //  cb.setInstitution(getSessionController().getInstitution());
@@ -862,7 +866,16 @@ public class ChannelService {
         if (sessionDate != null) {
             jpql.append(" and i.sessionDate = :sd ");
             m.put("sd", sessionDate);
+            System.out.println(sessionDate);
+        }else if(sessionDate == null){
+            jpql.append(" and i.sessionDate >= :sd ");
+            m.put("sd", new Date());
         }
+//         
+//        if(fromDate != null){
+//            jpql.append(" and i.sessionDate >= :fd");
+//            m.put("fd", fromDate);
+//        }
 
         // Additional conditions for consultant, institution, and specialities
         if (doctorList != null && !doctorList.isEmpty()) {
