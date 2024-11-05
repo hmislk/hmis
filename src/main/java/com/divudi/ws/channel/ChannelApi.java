@@ -710,7 +710,7 @@ public class ChannelApi {
             session.put("hosFee", s.getOriginatingSession().getChannelHosFee());
             session.put("docName", s.getStaff().getPerson().getNameWithTitle());
             session.put("docNo", s.getStaff().getId());
-            session.put("docForeignFee", s.getOriginatingSession().getChannelStaffFee());
+            session.put("docForeignFee", "");
             session.put("nextNo", s.getNextAvailableAppointmentNumber() != null ? s.getNextAvailableAppointmentNumber().intValue() : 1);
             session.put("hosId", s.getInstitution().getId().toString());
             session.put("remarks", "");
@@ -724,7 +724,7 @@ public class ChannelApi {
             session.put("vatDocForeignCharge", null);
             session.put("specID", s.getStaff().getSpeciality().getId().toString());
             session.put("maxPatient", s.getMaxNo());
-            session.put("activePatient", null);
+            session.put("activePatient", s.getNextAvailableAppointmentNumber() != null ? s.getNextAvailableAppointmentNumber().intValue()-1 : 0);
             session.put("foreignAmount", s.getOriginatingSession().getTotalForForeigner());
             session.put("appDate", forDate.format(s.getSessionDate()));
             session.put("vatHosForeignCharge", null);
@@ -784,6 +784,15 @@ public class ChannelApi {
             JSONObject responseError = commonFunctionToErrorResponse("Invalid Session id. Please check!");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(responseError.toString()).build();
         }
+        
+        String remark = "";
+        if(session.isCancelled()){
+            remark = "session is cancelled.";
+        }else if(session.isCompleted()){
+            remark = "session is completed now.";
+        }else if(session.isStarted()){
+            remark = "session is ongoing now.";
+        }
 
         SimpleDateFormat forDate = new SimpleDateFormat("yyyy-MM-dd");
         SimpleDateFormat forTime = new SimpleDateFormat("HH:mm:ss");
@@ -795,17 +804,17 @@ public class ChannelApi {
         sessionData.put("hosFee", session.getOriginatingSession().getChannelHosFee());
         sessionData.put("docName", session.getStaff().getPerson().getNameWithTitle());
         sessionData.put("docNo", session.getStaff().getId().toString());
-        sessionData.put("docForeignFee", session.getOriginatingSession().getChannelStaffFee());
+        sessionData.put("docForeignFee", "");
         sessionData.put("nextNo", session.getNextAvailableAppointmentNumber() != null ? session.getNextAvailableAppointmentNumber().intValue() : 1);
         sessionData.put("hosId", session.getInstitution().getId().toString());
-        sessionData.put("remarks", "");
+        sessionData.put("remarks", remark);
         sessionData.put("vatDocCharge", null);
         sessionData.put("docFee", session.getOriginatingSession().getChannelStaffFee());
         sessionData.put("hosName", session.getInstitution().getName());
         sessionData.put("startTime", forTime.format(session.getSessionTime()));
         sessionData.put("vatHosCharge", null);
         sessionData.put("amount", session.getOriginatingSession().getTotal());
-        sessionData.put("hosForeignFee", session.getOriginatingSession().getChannelHosFee());
+        sessionData.put("hosForeignFee", "");
         sessionData.put("vatDocForeignCharge", null);
         sessionData.put("specID", session.getOriginatingSession().getStaff().getSpeciality().getId().toString());
         sessionData.put("maxPatient", session.getMaxNo());
@@ -1550,7 +1559,6 @@ public class ChannelApi {
 //        if (bill.isCancelled()) {
 //            bill = bill.getCancelledBill();
 //        } 
-
         System.out.println(bill.getBillType());
         // List<SessionInstance> ss = bill.getSingleBillSession().getSessionInstance();
         SessionInstance session = bill.getSingleBillSession().getSessionInstance();
@@ -1880,10 +1888,11 @@ public class ChannelApi {
 
         // Process the results
         JSONArray hospitalArray = new JSONArray();
-
         JSONArray doctorArray = new JSONArray();
+        JSONObject hospitalObject = new JSONObject();
+
         for (SessionInstance session : sessions) {
-            JSONObject hospitalObject = new JSONObject();
+
             if (hosID != null) {
                 hospitalObject.put("hosId", session.getOriginatingSession().getInstitution().getId() != null ? session.getOriginatingSession().getInstitution().getId().toString() : "N/A");
             }
@@ -1897,10 +1906,10 @@ public class ChannelApi {
             doctor.put("title", session.getOriginatingSession().getStaff().getPerson().getTitle() != null ? session.getOriginatingSession().getStaff().getPerson().getTitle().toString() : "N/A");
             doctor.put("nextAvailableDate", session.getSessionDate());
             doctorArray.put(doctor);
-            hospitalObject.put("doctor", doctorArray);
-            hospitalArray.put(hospitalObject);
 
         }
+        hospitalObject.put("doctor", doctorArray);
+        hospitalArray.put(hospitalObject);
 
         JSONObject results = new JSONObject();
         results.put("totalCount", sessions.size()); // Total count of sessions
