@@ -152,6 +152,17 @@
                                         itemValue="#{d}" />
                                 </p:selectOneMenu>
 
+                                <p:selectOneMenu
+                                    styleClass="w-100 form-control"  
+                                    value="#{searchController.department}" 
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}" 
+                                        var="d" 
+                                        itemLabel="#{d.name}" 
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
                             </h:panelGroup>
                         </h:panelGrid>
 
