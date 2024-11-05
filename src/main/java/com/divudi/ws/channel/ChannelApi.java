@@ -710,7 +710,7 @@ public class ChannelApi {
             session.put("hosFee", s.getOriginatingSession().getChannelHosFee());
             session.put("docName", s.getStaff().getPerson().getNameWithTitle());
             session.put("docNo", s.getStaff().getId());
-            session.put("docForeignFee", s.getOriginatingSession().getChannelStaffFee());
+            session.put("docForeignFee", "");
             session.put("nextNo", s.getNextAvailableAppointmentNumber() != null ? s.getNextAvailableAppointmentNumber().intValue() : 1);
             session.put("hosId", s.getInstitution().getId().toString());
             session.put("remarks", "");
@@ -784,6 +784,15 @@ public class ChannelApi {
             JSONObject responseError = commonFunctionToErrorResponse("Invalid Session id. Please check!");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(responseError.toString()).build();
         }
+        
+        String remark = "";
+        if(session.isCancelled()){
+            remark = "session is cancelled.";
+        }else if(session.isCompleted()){
+            remark = "session is completed now.";
+        }else if(session.isStarted()){
+            remark = "session is ongoing now.";
+        }
 
         SimpleDateFormat forDate = new SimpleDateFormat("yyyy-MM-dd");
         SimpleDateFormat forTime = new SimpleDateFormat("HH:mm:ss");
@@ -798,7 +807,7 @@ public class ChannelApi {
         sessionData.put("docForeignFee", session.getOriginatingSession().getChannelStaffFee());
         sessionData.put("nextNo", session.getNextAvailableAppointmentNumber() != null ? session.getNextAvailableAppointmentNumber().intValue() : 1);
         sessionData.put("hosId", session.getInstitution().getId().toString());
-        sessionData.put("remarks", "");
+        sessionData.put("remarks", remark);
         sessionData.put("vatDocCharge", null);
         sessionData.put("docFee", session.getOriginatingSession().getChannelStaffFee());
         sessionData.put("hosName", session.getInstitution().getName());

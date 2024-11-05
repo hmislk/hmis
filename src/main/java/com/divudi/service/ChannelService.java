@@ -858,7 +858,7 @@ public class ChannelService {
     public List<SessionInstance> findSessionInstance(List<Institution> institution, List<Speciality> specialities, List<Consultant> doctorList, Date sessionDate) {
         List<SessionInstance> sessionInstances;
         Map<String, Object> m = new HashMap<>();
-        StringBuilder jpql = new StringBuilder("select i from SessionInstance i where i.retired=:ret "
+        StringBuilder jpql = new StringBuilder("select i from SessionInstance i where i.retired=:ret and i.originatingSession.retired=:ret"
                 + " and i.cancelled = false"
                 + " and i.completed = false");
 
