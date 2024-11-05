@@ -1,0 +1,77 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/patient_deposit/index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
+                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
+                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+                xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints">
+
+    <ui:define name="subcontent">
+
+        <h:panelGroup>
+            <h:form >
+                <p:panel>
+
+                    <f:facet name="header">
+                        <h:panelGrid columns="6" style="size: 0.5rem; float: right" >
+                            <p:commandButton 
+                                value="Cancel" 
+                                icon="pi pi-ban"
+                                action="#{patientDepositController.navigateToNewPatientDepositCancel()}"
+                                class="ui-button-danger mx-1" 
+                                ajax="false">
+                            </p:commandButton>
+                            <p:commandButton value="Print Bill" icon="pi pi-print" class="ui-button-info mx-1" ajax="false">
+                                <p:printer target="billPanel"></p:printer>
+                            </p:commandButton>
+                            <p:commandButton icon="fas fa-plus" class="mx-1" value="New Bill"
+                                             ajax="false" action="/patient_deposit/receive?faces-redirect=true"
+                                             actionListener="#{patientDepositController.clearDataForPatientDeposit()}" >
+                            </p:commandButton>
+                            <p:commandButton ajax="false" icon="fas fa-search" value="Patient Lookup" class="mx-1 ui-button-warning"
+                                             action="#{patientController.navigateToSearchPatients}"></p:commandButton>
+                            <p:commandButton
+                                value="Profile"
+                                ajax="false"
+                                icon="fa fa-user"
+                                class="ui-button-warning  w-100"
+                                action="#{patientController.navigateToOpdPatientProfile()}"
+                                >
+                                <f:setPropertyActionListener
+                                    value="#{patientController.bill.patient}"
+                                    target="#{patientController.current}" ></f:setPropertyActionListener>
+                            </p:commandButton>
+                        </h:panelGrid>
+                    </f:facet>
+
+
+
+
+
+
+                    <div class="container-fluid my-2">
+                        <div class="row justify-content-center align-items-center">
+                            <div class="col-md-6">
+                                <div class="align-items-center my-2" style="max-width: 80%" >
+                                    <div>
+                                        <h:panelGroup id="billPanel" class="bill" layout="block">
+                                            <prints:five_five_paper_patient_deposit bill="#{patientController.bill}" duplicate="true" />
+                                        </h:panelGroup>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </p:panel>
+            </h:form>
+
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>
