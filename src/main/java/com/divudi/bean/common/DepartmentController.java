@@ -236,28 +236,65 @@ public class DepartmentController implements Serializable {
         return currentInsDepartments;
     }
 
+    public List<Department> getDepartmentsOfInstitutionAndSite() {
+        return getDepartmentsOfInstitutionAndSiteHelper(null, null);
+    }
+
+    public List<Department> getDepartmentsOfInstitutionAndSite(Institution site) {
+        return getDepartmentsOfInstitutionAndSiteHelper(null, site);
+    }
+
+    public List<Department> getDepartmentsOfInstitutionAndSiteForInstitution(Institution ins) {
+        return getDepartmentsOfInstitutionAndSiteHelper(ins, null);
+    }
+
     public List<Department> getDepartmentsOfInstitutionAndSite(Institution ins, Institution site) {
-        if(ins==null && site==null){
-            return new ArrayList<>();
-        }
+        return getDepartmentsOfInstitutionAndSiteHelper(ins, site);
+    }
+
+// Private helper method to maximize code reuse
+    private List<Department> getDepartmentsOfInstitutionAndSiteHelper(Institution ins, Institution site) {
         Map<String, Object> parameters = new HashMap<>();
         StringBuilder jpql = new StringBuilder("SELECT d FROM Department d WHERE d.retired = :ret ");
         parameters.put("ret", false);
+
         if (ins != null) {
             jpql.append(" AND d.institution = :ins");
             parameters.put("ins", ins);
         }
+
         if (site != null) {
             jpql.append(" AND d.site = :site");
             parameters.put("site", site);
         }
-        if(ins==null && site==null){
-            return new ArrayList<>();
-        }
+
         jpql.append(" ORDER BY d.name");
-        List<Department> currentInsDepartments = getFacade().findByJpql(jpql.toString(), parameters);
-        return currentInsDepartments != null ? currentInsDepartments : new ArrayList<>();
+        List<Department> departments = getFacade().findByJpql(jpql.toString(), parameters);
+        return departments != null ? departments : new ArrayList<>();
     }
+
+//    public List<Department> getDepartmentsOfInstitutionAndSite(Institution ins, Institution site) {
+//        if (ins == null && site == null) {
+//            return new ArrayList<>();
+//        }
+//        Map<String, Object> parameters = new HashMap<>();
+//        StringBuilder jpql = new StringBuilder("SELECT d FROM Department d WHERE d.retired = :ret ");
+//        parameters.put("ret", false);
+//        if (ins != null) {
+//            jpql.append(" AND d.institution = :ins");
+//            parameters.put("ins", ins);
+//        }
+//        if (site != null) {
+//            jpql.append(" AND d.site = :site");
+//            parameters.put("site", site);
+//        }
+//        if (ins == null && site == null) {
+//            return new ArrayList<>();
+//        }
+//        jpql.append(" ORDER BY d.name");
+//        List<Department> currentInsDepartments = getFacade().findByJpql(jpql.toString(), parameters);
+//        return currentInsDepartments != null ? currentInsDepartments : new ArrayList<>();
+//    }
 
     public String toListDepartments() {
         fillItems();
