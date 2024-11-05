@@ -1,6 +1,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.CashBookEntryController;
+import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.cashTransaction.DrawerEntryController;
 import com.divudi.bean.channel.ChannelSearchController;
 import com.divudi.bean.channel.analytics.ReportTemplateController;
@@ -206,6 +207,8 @@ public class SearchController implements Serializable {
     PdfController pdfController;
     @Inject
     DrawerEntryController drawerEntryController;
+    @Inject
+    DrawerController drawerController;
     /**
      * Properties
      */
@@ -333,6 +336,14 @@ public class SearchController implements Serializable {
     private String searchType;
     private String reportType;
     private boolean withProfessionalFee;
+
+    private Drawer drawer;
+    
+    public String navigateToUserDrawerDashboard() {
+        Drawer d = drawerController.getUsersDrawer(drawer.getDrawerUser());
+        drawerController.setCurrent(d);
+        return "/admin/users/drawer?faces-redirect=true";
+    }
 
     public String navigateToDrawerHistory() {
         drawerEntryController.findAllUsersDrawerDetails();
@@ -1821,8 +1832,7 @@ public class SearchController implements Serializable {
         this.billTypeAtomic = billTypeAtomic;
     }
 
-    public Date getMaxDate() {
-        maxDate = commonFunctions.getEndOfDay(new Date());
+    public Date getMaxDate() {        maxDate = commonFunctions.getEndOfDay(new Date());
         return maxDate;
     }
 
@@ -2116,6 +2126,14 @@ public class SearchController implements Serializable {
 
     public void setMethodType(String methodType) {
         this.methodType = methodType;
+    }
+
+    public Drawer getDrawer() {
+        return drawer;
+    }
+
+    public void setDrawer(Drawer drawer) {
+        this.drawer = drawer;
     }
 
     public class billsWithbill {
@@ -6893,21 +6911,21 @@ public class SearchController implements Serializable {
     public String navigateToIncomeBreakdownByCategoryOpd() {
         return "/opd/analytics/income_breakdown_by_category?faces-redirect=true";
     }
-    
+
     public List<Payment> getPaymentDetals(Bill bill) {
         List<Payment> billPayments = new ArrayList<>();
-       System.out.println("bill = " + bill);
+        System.out.println("bill = " + bill);
         String jpql;
         Map temMap = new HashMap();
 
         jpql = "select p from Payment p "
                 + " where p.bill =:bill "
                 + " and p.retired =:ret ";
-        
+
         temMap.put("bill", bill);
         temMap.put("ret", false);
         billPayments = paymentFacade.findByJpql(jpql, temMap);
-      
+
         System.out.println("billPayments = " + billPayments);
         return billPayments;
     }
