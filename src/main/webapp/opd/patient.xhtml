@@ -6,10 +6,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
-      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
-      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
-      xmlns:pat="http://xmlns.jcp.org/jsf/composite/patient">
+      xmlns:na="http://xmlns.jcp.org/jsf/composite/template">
 
     <h:head>
         <!-- Include the font link in the <head> section of your JSF page -->
@@ -20,7 +17,7 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:panelGroup rendered="#{!(webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier'))}" >
-                    You are NOT authorized
+                    <na:not_authorize />
                 </h:panelGroup>
                 <h:panelGroup rendered="#{webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier')}" styleClass="opdPanel" >
                     <h:form >
@@ -29,9 +26,7 @@
                                 <p:outputLabel value="Patient Profile" class="my-2"/>
                                 <p:commandButton icon="fas fa-pencil" value="Edit" action="#{patientController.navigateToOpdPatientEdit()}" class="mx-2 ui-button-success" style="float: right;"></p:commandButton>
                                 <p:commandButton icon="fas fa-search" value="Search" action="#{opdBillController.navigateToSearchPatients()}"  class="mx-2 ui-button-warning" style="float: right;"></p:commandButton>
-                                <p:commandButton icon="pi pi-print" value="Print"
-                                                 class="p-0 m-1 ui-button-info" 
-                                                 >
+                                <p:commandButton icon="pi pi-print" value="Print" class="p-0 m-1 ui-button-info" >
                                     <p:printer target="groupPatientCard"/>
                                 </p:commandButton>
                                 <p:commandButton icon="fas fa-plus" value="New Patient" action="#{patientController.navigateToAddNewPatientForOpd()}"  class="mx-2 ui-button-info" style="float: right;"></p:commandButton>
@@ -40,8 +35,6 @@
 
                                 <div class="col-md-8" >
                                     <p:panelGrid columns="2" class="w-100 table table-striped" >
-
-
 
                                         <p:outputLabel value="Name:" rendered="#{not empty patientController.current.person.nameWithTitle}" />
                                         <p:outputLabel value="#{patientController.current.person.nameWithTitle}" rendered="#{not empty patientController.current.person.nameWithTitle}" />
@@ -52,7 +45,7 @@
                                         <p:outputLabel value="Sex:" rendered="#{not empty patientController.current.person.sex}" />
                                         <p:outputLabel value="#{patientController.current.person.sex}" rendered="#{not empty patientController.current.person.sex}" />
 
-                                        <p:outputLabel value="Number:" rendered="#{not empty patientController.current.phn}" />
+                                        <p:outputLabel value="PHN Number:" rendered="#{not empty patientController.current.phn}" />
                                         <p:outputLabel value="#{patientController.current.phn}" rendered="#{not empty patientController.current.phn}" />
 
                                         <p:outputLabel value="Date of Birth:" rendered="#{not empty patientController.current.person.dob}" />
@@ -81,7 +74,7 @@
                                         <p:outputLabel value="Email:" rendered="#{not empty patientController.current.person.email}" />
                                         <p:outputLabel value="#{patientController.current.person.email}" rendered="#{not empty patientController.current.person.email}" />
 
-                                        <p:outputLabel value="ID:" rendered="#{not empty patientController.current.person.nic}" />
+                                        <p:outputLabel value="NIC:" rendered="#{not empty patientController.current.person.nic}" />
                                         <p:outputLabel value="#{patientController.current.person.nic}" rendered="#{not empty patientController.current.person.nic}" />
 
                                         <p:outputLabel value="Code:" rendered="#{not empty patientController.current.code}" />
@@ -103,7 +96,6 @@
                                         <p:outputLabel value="Has an Account:"  />
                                         <p:outputLabel value="#{patientDepositController.checkDepositOfThePatient(patientController.current, sessionController.getDepartment()) ne null ?'Has an account':'No Account'}" />
 
-
                                         <p:outputLabel value="Account Balance:" rendered="#{patientDepositController.checkDepositOfThePatient(patientController.current, sessionController.getDepartment()) ne null}" />
                                         <p:outputLabel value="#{patientDepositController.checkDepositOfThePatient(patientController.current, sessionController.getDepartment()).balance}" rendered="#{patientDepositController.checkDepositOfThePatient(patientController.current, sessionController.getDepartment()) ne null}" >
                                             <f:convertNumber pattern="#,##0.00" />
@@ -112,134 +104,131 @@
 <!--                                        <p:outputLabel value="Credit Limit:" rendered="#{patientController.current.hasAnAccount}" />
                                         <p:outputLabel value="#{patientController.current.creditLimit}" rendered="#{patientDepositController.checkDepositOfThePatient(patientController.current, sessionController.getDepartment()) ne null}" />-->
 
+                                    </p:panelGrid> 
 
-                                    </p:panelGrid>
+                                    <h:panelGroup id="groupPatientCard" style="text-align: center; width: 4.8cm; border: 1px solid red;" layout="block">
+                                        <div style="line-height: 0.7; padding: 0; margin: 0;">
+                                            <div class="mt-1" style="height: 0.9cm;  overflow-x: hidden; overflow-y: hidden">
+                                                <p:barcode format="svg" hrp="none" width="185" value="#{patientController.current.phn}" type="code128" cache="false" rendered="true" />
+                                            </div>
+                                            <div>
+                                                <p:outputLabel value="#{patientController.current.phn}" style="font-size: 10px;font-weight: 600;" />
+                                            </div>
+                                        </div>
 
-                                    <h:panelGroup id="groupPatientCard" style="text-align: center; width: 5cm; border: 1px solid red;" layout="block">
-                                        <div class="mt-1" style="height: 1.5cm; overflow-y: hidden;">
-                                            <p:barcode format="svg" hrp="none" width="185" value="#{patientController.current.idStr}" type="code128" cache="false" rendered="true" />
-                                        </div>
-                                        <div class="w-100">
-                                            <h:outputText value="#{patientController.current.phn}" style="font-size: 12px; font-family: 'Libre Barcode 128 Text', sans-serif;" />
-                                            <p:outputLabel value="&#160;&#124;&#160;" style="font-size: 12px;" />
-                                        </div>
-                                        <div class="w-100">
-                                            <h:outputText value="#{patientController.current.person.nameWithTitle}" style="font-size: 12px; font-family: 'Libre Barcode 128 Text', sans-serif;" />
-                                            <p:outputLabel value="&#160;&#124;&#160;" style="font-size: 12px;" />
-                                            <h:outputText value="#{patientController.current.person.sex eq 'Male' ? 'M' : 'F'}" style="font-size: 12px; font-family: 'Libre Barcode 128 Text', sans-serif;" class="w-100"/>
-                                        </div>
-                                        <div class="w-100">
-                                            <h:outputText value="#{patientController.current.person.nic}" class="mx-2" style="font-size: 12px; font-family: 'Libre Barcode 128 Text', sans-serif;">
-                                            </h:outputText>
-                                            <p:outputLabel value="&#160;&#124;&#160;" style="font-size: 12px;" />
-                                            <h:outputText value="#{patientController.current.person.phone}" style="font-size: 12px; font-family: 'Libre Barcode 128 Text', sans-serif;" />
+                                        <div class="mt-1 mb-1" style="line-height: 0.7; padding: 0; margin: 0;">
+                                            <div class="w-100">
+                                                <h:outputText value="#{patientController.current.person.nameWithTitle}" style="font-size: 10px; font-family: 'Libre Barcode 128 Text', sans-serif;" />
+                                                <p:outputLabel value="&#160;&#124;&#160;" style="font-size: 10px;" />
+                                                <h:outputText value="#{patientController.current.person.sex eq 'Male' ? 'M' : 'F'}" style="font-size: 10px; font-family: 'Libre Barcode 128 Text', sans-serif;" class="w-100"/>
+                                            </div>
+                                            <div class="w-100">
+                                                <h:outputText value="#{patientController.current.person.dob}" class="mx-2" style="font-size: 10px; font-family: 'Libre Barcode 128 Text', sans-serif;">
+                                                    <f:convertDateTime pattern="dd/MM/yyyy" />
+                                                </h:outputText>
+                                                <p:outputLabel value="&#160;&#124;&#160;&#160;" style="font-size: 10px;" rendered="#{patientController.current.person.nic ne null}"/>
+                                                <h:outputText value="#{patientController.current.person.nic}" style="font-size: 10px; font-family: 'Libre Barcode 128 Text', sans-serif;" />
+                                            </div>
                                         </div>
                                     </h:panelGroup>
 
-
-
-
-
-
-
-
                                 </div>
                                 <div class="col-md-4 d-flex flex-column gap-2">
-                                    <p:commandButton value="Clinical Dashboard" 
-                                                     action="#{patientController.toEmrPatientProfile}" 
-                                                     ajax="false" 
-                                                     styleClass="mx-2 btn btn-primary"
-                                                     icon="fa fa-tachometer">
+                                    <p:commandButton 
+                                        value="Clinical Dashboard" 
+                                        action="#{patientController.toEmrPatientProfile}" 
+                                        ajax="false" 
+                                        styleClass="mx-2 btn btn-primary"
+                                        icon="fa fa-tachometer">
                                     </p:commandButton>
-                                    <p:commandButton value="Lab Reports"
-                                                     action="#{searchController.navigateToPatientLabReports}"
-                                                     ajax="false"
-                                                     styleClass="mx-2 btn btn-success"
-                                                     icon="fa fa-flask">
+                                    <p:commandButton 
+                                        value="Lab Reports"
+                                        action="#{searchController.navigateToPatientLabReports}"
+                                        ajax="false"
+                                        styleClass="mx-2 btn btn-success"
+                                        icon="fa fa-flask">
                                         <f:setPropertyActionListener value="#{patientController.current}" target="#{searchController.patient}"></f:setPropertyActionListener>
                                     </p:commandButton>
-                                    <p:commandButton value="OPD Bill" 
-                                                     action="#{patientController.navigateToOpdBillFromOpdPatient()}" 
-                                                     ajax="false"
-                                                     styleClass="mx-2 btn btn-info"
-                                                     icon="fa fa-file-invoice">
+                                    <p:commandButton 
+                                        value="OPD Bill" 
+                                        action="#{patientController.navigateToOpdBillFromOpdPatient()}" 
+                                        ajax="false"
+                                        styleClass="mx-2 btn btn-info"
+                                        icon="fa fa-file-invoice">
                                     </p:commandButton>
-                                    <p:commandButton value="Admit" 
-                                                     action="#{patientController.navigateToAdmitFromPatientProfile()}" 
-                                                     ajax="false" 
-                                                     styleClass="mx-2 btn btn-secondary"
-                                                     icon="fa fa-hospital">
+                                    <p:commandButton 
+                                        value="Admit" 
+                                        action="#{patientController.navigateToAdmitFromPatientProfile()}" 
+                                        ajax="false" 
+                                        styleClass="mx-2 btn btn-secondary"
+                                        icon="fa fa-hospital">
                                     </p:commandButton>
-                                    <p:commandButton value="Collecting Centre Billing" 
-                                                     action="#{patientController.navigateToCollectingCenterBillingFromPatientProfile()}" 
-                                                     ajax="false"
-                                                     styleClass="mx-2 btn btn-secondary"
-                                                     icon="fa fa-dollar-sign">
+                                    <p:commandButton 
+                                        value="Collecting Centre Billing" 
+                                        action="#{patientController.navigateToCollectingCenterBillingFromPatientProfile()}" 
+                                        ajax="false"
+                                        styleClass="mx-2 btn btn-secondary"
+                                        icon="fa fa-dollar-sign">
                                     </p:commandButton>
-                                    <p:commandButton value="OPD Bill for Cashier"
-                                                     action="#{patientController.navigateToBillingForCashierFromPatientProfile()}" 
-                                                     ajax="false" 
-                                                     styleClass="mx-2 btn btn-secondary"
-                                                     icon="fa fa-money-check-alt">
+                                    <p:commandButton 
+                                        value="OPD Bill for Cashier"
+                                        action="#{patientController.navigateToBillingForCashierFromPatientProfile()}" 
+                                        ajax="false" 
+                                        styleClass="mx-2 btn btn-secondary"
+                                        icon="fa fa-money-check-alt">
                                     </p:commandButton>
-                                    <p:commandButton value="OPD Packages" 
-                                                     action="#{patientController.navigateToOpdPackageBillFromOpdPatient()}" 
-                                                     ajax="false"
-                                                     styleClass="mx-2 btn btn-secondary"
-                                                     icon="fa fa-box">
+                                    <p:commandButton 
+                                        value="OPD Packages" 
+                                        action="#{patientController.navigateToOpdPackageBillFromOpdPatient()}" 
+                                        ajax="false"
+                                        styleClass="mx-2 btn btn-secondary"
+                                        icon="fa fa-box">
                                     </p:commandButton>
-                                    <p:commandButton value="Accept Payments" 
-                                                     action="#{searchController.navigateToPatientAcceptPayment()}" 
-                                                     ajax="false" 
-                                                     styleClass="mx-2 btn btn-secondary"
-                                                     icon="fa fa-credit-card">
+                                    <p:commandButton 
+                                        value="Accept Payments" 
+                                        action="#{searchController.navigateToPatientAcceptPayment()}" 
+                                        ajax="false" 
+                                        styleClass="mx-2 btn btn-secondary"
+                                        icon="fa fa-credit-card">
                                         <f:setPropertyActionListener value="#{patientController.current}" target="#{searchController.patient}"></f:setPropertyActionListener>
                                     </p:commandButton>
-                                    <p:commandButton value="Refunds"
-                                                     action="#{patientController.navigateToPatientRefundPayment}" 
-                                                     ajax="false" 
-                                                     styleClass="mx-2 btn btn-secondary"
-                                                     icon="fa fa-undo">
+                                    <p:commandButton 
+                                        value="Refunds"
+                                        action="#{patientController.navigateToPatientRefundPayment}" 
+                                        ajax="false" 
+                                        styleClass="mx-2 btn btn-secondary"
+                                        icon="fa fa-undo">
                                     </p:commandButton>
-                                    <p:commandButton value="Inward Appointments"
-                                                     action="#{patientController.navigateToInwardAppointmentFromPatientProfile()}"
-                                                     ajax="false"
-                                                     styleClass="mx-2 btn btn-secondary"
-                                                     icon="fa fa-calendar-alt">
+                                    <p:commandButton 
+                                        value="Inward Appointments"
+                                        action="#{patientController.navigateToInwardAppointmentFromPatientProfile()}"
+                                        ajax="false"
+                                        styleClass="mx-2 btn btn-secondary"
+                                        icon="fa fa-calendar-alt">
                                     </p:commandButton>
-                                    <p:commandButton value="Receive Deposits"
-                                                     action="#{patientDepositController.navigateToReciveDepositWithPatient(patientController.current)}"
-                                                     ajax="false"
-                                                     styleClass="mx-2 btn btn-secondary"
-                                                     icon="fa fa-coins">
+                                    <p:commandButton 
+                                        value="Receive Deposits"
+                                        action="#{patientDepositController.navigateToReciveDepositWithPatient(patientController.current)}"
+                                        ajax="false"
+                                        styleClass="mx-2 btn btn-secondary"
+                                        icon="fa fa-coins">
                                     </p:commandButton>
-                                     <p:commandButton value="Patient Deposit History"
-                                                     action="/patient_deposit/patient_deposit_history?faces-redirect=true"
-                                                     actionListener="#{patientDepositController.clearDataForPatientDepositHistory()}"
-                                                     ajax="false"
-                                                     styleClass="mx-2 btn btn-secondary"
-                                                     icon="fa fa-coins">
-                                         <f:setPropertyActionListener target="#{patientController.current}" value="#{patientController.current}" />
+                                    <p:commandButton 
+                                        value="Patient Deposit History"
+                                        action="/patient_deposit/patient_deposit_history?faces-redirect=true"
+                                        actionListener="#{patientDepositController.clearDataForPatientDepositHistory()}"
+                                        ajax="false"
+                                        styleClass="mx-2 btn btn-secondary"
+                                        icon="fa fa-coins">
+                                        <f:setPropertyActionListener target="#{patientController.current}" value="#{patientController.current}" />
                                     </p:commandButton>
                                     <p:messages></p:messages>
                                 </div>
-
-
                             </div>  
-
-
-
-
-
 
                         </p:panel>
 
-
-
                     </h:form>
-
-
-
 
                 </h:panelGroup>
             </ui:define>
