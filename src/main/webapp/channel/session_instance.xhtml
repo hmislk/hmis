@@ -120,12 +120,14 @@
                                                       filterMatchMode="contains"
                                                       filterBy="#{bs.bill.patient.person.name}"
                                                       width="25em">
+                                               
                                                 <p:panel header="(#{bs.bill.patient.person.smsNumber})" collapsed="true" 
                                                          toggleOrientation="vertical" toggleable="true"  >
                                                     <f:facet name="header" >
                                                         <h:outputText class="mr-5" value="#{bs.bill.patient.person.nameWithTitle}" />
                                                         <p:spacer width="12" ></p:spacer>
                                                         <h:outputText class="ml-5" style="font-size: 0.9em" value="(#{bs.bill.patient.person.smsNumber})" />
+                                                        <p:tag class="mr-2 mx-2" style="font-size: 0.8rem" severity="warning" value="OB" rendered="#{bs.bill.creditCompany ne null and bs.bill.creditCompany.institutionCode.equalsIgnoreCase('WEB_DOC990')}"/>
                                                     </f:facet>
 
                                                     <h:panelGrid columns="2" >
