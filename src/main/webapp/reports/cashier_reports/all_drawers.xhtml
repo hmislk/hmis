@@ -32,6 +32,7 @@
                             rowsPerPageTemplate="5,10,15"
                             styleClass="ui-datatable-striped">
 
+
                             <!-- Staff Name Column with Filter -->
                             <p:column headerText="Staff Name"
                                       filterBy="#{dr.drawerUser.staff.person.nameWithTitle}"
@@ -42,6 +43,16 @@
                                 </h:commandLink> 
                             </p:column>
 
+                            <p:column headerText="Navigate" exportable="false">
+                                <p:commandButton 
+                                    icon="fa fa-tachometer" 
+                                    title="Drawer Dashboard"
+                                    styleClass="m-1"
+                                    ajax="false"
+                                    action="#{searchController.navigateToUserDrawerDashboard()}" >
+                                    <f:setPropertyActionListener value="#{dr}" target="#{searchController.drawer}"/>
+                                </p:commandButton>
+                            </p:column>
                             <!-- Cash Balance Column with Sorting -->
                             <p:column headerText="Cash"
                                       sortBy="#{dr.cashInHandValue}">

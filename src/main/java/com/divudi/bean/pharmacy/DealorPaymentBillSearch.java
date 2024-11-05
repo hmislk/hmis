@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
@@ -99,6 +100,7 @@ public class DealorPaymentBillSearch implements Serializable {
     @Temporal(TemporalType.TIME)
     private Date toDate;
     private String comment;
+    private double netTotal;
     WebUser user;
 
     public void approve() {
@@ -143,6 +145,7 @@ public class DealorPaymentBillSearch implements Serializable {
 
     public void fillDealorPaymentDone() {
         bills = null;
+        netTotal  = 0.0;
         String jpql;
         Map params = new HashMap();
 
@@ -154,10 +157,16 @@ public class DealorPaymentBillSearch implements Serializable {
 
         params.put("billTypes", BillType.GrnPayment);
         params.put("bTA", BillTypeAtomic.SUPPLIER_PAYMENT);
-        params.put("toDate", toDate);
         params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
 
         bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        
+        Iterator<Bill> iterator = bills.iterator();
+        while (iterator.hasNext()) {
+            Bill b = iterator.next();
+            netTotal += b.getNetTotal();
+        }
     }
 
     public WebUser getUser() {
@@ -351,7 +360,7 @@ public class DealorPaymentBillSearch implements Serializable {
 
         rb.setBillType(BillType.GrnPayment);
         rb.setBillTypeAtomic(BillTypeAtomic.SUPPLIER_PAYMENT_RETURNED);
-        System.out.println("BillTypeAtomic set to: " + rb.getBillTypeAtomic()); 
+        System.out.println("BillTypeAtomic set to: " + rb.getBillTypeAtomic());
 
         rb.setBillDate(new Date());
         rb.setBillTime(new Date());
@@ -916,5 +925,13 @@ public class DealorPaymentBillSearch implements Serializable {
 
     public void setCreditBean(CreditBean creditBean) {
         this.creditBean = creditBean;
+    }
+
+    public double getNetTotal() {
+        return netTotal;
+    }
+
+    public void setNetTotal(double netTotal) {
+        this.netTotal = netTotal;
     }
 }
