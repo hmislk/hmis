@@ -598,6 +598,31 @@ public class SupplierPaymentController implements Serializable {
         }
 
     }
+    public void fillDealorPaymentDone() {
+        bills = null;
+        netTotal  = 0.0;
+        String jpql;
+        Map params = new HashMap();
+
+        jpql = "select b from Bill b "
+                + " where b.retired=false "
+                + " and b.createdAt between :fromDate and :toDate"
+                + " and b.billType = :billTypes "
+                + " and b.billTypeAtomic = :bTA ";
+
+        params.put("billTypes", BillType.GrnPayment);
+        params.put("bTA", BillTypeAtomic.SUPPLIER_PAYMENT);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        
+        Iterator<Bill> iterator = bills.iterator();
+        while (iterator.hasNext()) {
+            Bill b = iterator.next();
+            netTotal += b.getNetTotal();
+        }
+    }
 
     @Deprecated
     public void fillPharmacyDue() {
