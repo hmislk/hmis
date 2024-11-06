@@ -1234,6 +1234,13 @@ public class FinancialTransactionController implements Serializable {
         return "/cashier/record_shift_excess?faces-redirect=true";
     }
 
+    public String navigateToViewDetailsOfSelectedBundleDuringHandoverInNewWindow() {
+        if (selectedBundle == null) {
+            return null;
+        }
+        return "handover_start_all_bill_type_details";
+    }
+
     public String navigateToCashierShiftBillSearch() {
         resetClassVariables();
         return "/cashier/cashier_shift_bill_search?faces-redirect=true";
@@ -2565,6 +2572,7 @@ public class FinancialTransactionController implements Serializable {
         bundle.selectAllChildBundles();
         bundle.aggregateTotalsFromAllChildBundles();
         bundle.setDenominationTransactions(denominationTransactionController.createDefaultDenominationTransaction());
+        bundle.sortByDateInstitutionSiteDepartmentType();
         return "/cashier/handover_start_all?faces-redirect=true";
     }
 

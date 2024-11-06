@@ -8708,6 +8708,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public double getCashBalance() {
+        calculateCashBalance();
         return cashBalance;
     }
 
