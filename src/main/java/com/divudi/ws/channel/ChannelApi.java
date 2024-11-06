@@ -38,6 +38,7 @@ import com.divudi.entity.BillSession;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Consultant;
+import com.divudi.entity.Doctor;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.ItemFee;
@@ -474,7 +475,7 @@ public class ChannelApi {
 //            JSONObject response = commonFunctionToErrorResponse("Invalid speciality id");
 //            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
 //        }
-        List<Consultant> doctorList = channelService.findDoctorsFromName(name, null);
+        List<Doctor> doctorList = channelService.findDoctorsFromName(name, null);
 
         if (doctorList == null || doctorList.isEmpty()) {
             if (name != null && !name.isEmpty()) {
@@ -678,7 +679,7 @@ public class ChannelApi {
 
         }
 
-        List<Consultant> doctorList = channelService.findConsultantFromName(null, doctorIdLong);
+        List<Doctor> doctorList = channelService.findDoctorsFromName(null, doctorIdLong);
         if (doctorIdLong != null && !doctorIdLong.toString().isEmpty()) {
             if (doctorList == null || doctorList.isEmpty()) {
                 JSONObject json = commonFunctionToErrorResponse("No doctor available with that doctor No.");
@@ -724,7 +725,7 @@ public class ChannelApi {
             session.put("vatDocForeignCharge", null);
             session.put("specID", s.getStaff().getSpeciality().getId().toString());
             session.put("maxPatient", s.getMaxNo());
-            session.put("activePatient", s.getNextAvailableAppointmentNumber() != null ? s.getNextAvailableAppointmentNumber().intValue()-1 : 0);
+            session.put("activePatient", s.getNextAvailableAppointmentNumber() != null ? s.getNextAvailableAppointmentNumber().intValue() - 1 : 0);
             session.put("foreignAmount", s.getOriginatingSession().getTotalForForeigner());
             session.put("appDate", forDate.format(s.getSessionDate()));
             session.put("vatHosForeignCharge", null);
@@ -784,13 +785,13 @@ public class ChannelApi {
             JSONObject responseError = commonFunctionToErrorResponse("Invalid Session id. Please check!");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(responseError.toString()).build();
         }
-        
+
         String remark = "";
-        if(session.isCancelled()){
+        if (session.isCancelled()) {
             remark = "session is cancelled.";
-        }else if(session.isCompleted()){
+        } else if (session.isCompleted()) {
             remark = "session is completed now.";
-        }else if(session.isStarted()){
+        } else if (session.isStarted()) {
             remark = "session is ongoing now.";
         }
 
@@ -1604,7 +1605,7 @@ public class ChannelApi {
         sessionDetails.put("specialization", i.getStaff().getSpeciality().getName());
         sessionDetails.put("theDate", forDate.format(session.getSessionDate()));
         sessionDetails.put("theDay", forDay.format(session.getSessionDate()));
-        sessionDetails.put("startTime", forTime.format(session.getSessionTime()));
+        sessionDetails.put("startTime", forTime.format(session.getStartingTime()));
         sessionDetails.put("hosLocation", session.getInstitution().getAddress());
         sessionDetails.put("hosName", session.getInstitution().getName());
         sessionDetails.put("sessionStarted", session.isStarted());
@@ -1736,6 +1737,10 @@ public class ChannelApi {
             sessionStatus = "Session is already started now.";
         }
 
+        SimpleDateFormat forDate = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat forTime = new SimpleDateFormat("HH:mm:ss");
+        SimpleDateFormat forDay = new SimpleDateFormat("E");
+
         Map<String, Object> appoinment = new HashMap<>();
         appoinment.put("refNo", bill.getAgentRefNo());
         appoinment.put("patientNo", bill.getSingleBillSession().getSerialNo());
@@ -1754,9 +1759,9 @@ public class ChannelApi {
         sessionDetails.put("hosAmount", i.getChannelHosFee());
         sessionDetails.put("docAmount", i.getChannelStaffFee());
         sessionDetails.put("specialization", i.getStaff().getSpeciality().getName());
-        sessionDetails.put("theDate", session.getSessionDate());
-        sessionDetails.put("theDay", session.getDayString());
-        sessionDetails.put("startTime", session.getSessionTime());
+        sessionDetails.put("theDate", forDate.format(session.getSessionDate()));
+        sessionDetails.put("theDay", forDay.format(session.getSessionDate()));
+        sessionDetails.put("startTime", forTime.format(session.getStartingTime()));
         sessionDetails.put("hosLocation", session.getInstitution().getAddress());
         sessionDetails.put("hosName", session.getInstitution().getName());
         sessionDetails.put("sessionStarted", session.isStarted());
@@ -1870,7 +1875,7 @@ public class ChannelApi {
             return commonFunctionToErrorResponse("Please add the date of the appoinments.");
         }
 
-        List<Consultant> doctorList = channelService.findConsultantFromName(docName, Long.valueOf(docNo));
+        List<Doctor> doctorList = channelService.findDoctorsFromName(docName, Long.valueOf(docNo));
         if (doctorList == null || doctorList.isEmpty()) {
             return commonFunctionToErrorResponse("No doctor with given parameters.");
         }
@@ -1884,12 +1889,18 @@ public class ChannelApi {
 
         // Call the method to find session instances
         List<SessionInstance> sessions = channelService.findSessionInstance(hospialList, specialities, doctorList, date);
-        //List<SessionInstance> sessions = sessionInstanceController.findSessionInstance(hospital, specialities, consultant, null, null, date);
 
+        //List<SessionInstance> sessions = sessionInstanceController.findSessionInstance(hospital, specialities, consultant, null, null, date);
         // Process the results
         JSONArray hospitalArray = new JSONArray();
         JSONArray doctorArray = new JSONArray();
         JSONObject hospitalObject = new JSONObject();
+        
+        SimpleDateFormat forDate = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat forTime = new SimpleDateFormat("HH:mm:ss");
+        SimpleDateFormat forDay = new SimpleDateFormat("E");
+        
+        
 
         for (SessionInstance session : sessions) {
 
@@ -1899,12 +1910,13 @@ public class ChannelApi {
             if (hospital != null) {
                 hospitalObject.put("displayName", session.getOriginatingSession().getInstitution() != null ? session.getOriginatingSession().getInstitution().getName() : "N/A");
             }
+            SessionInstance nextSession = channelService.findNextSessionInstance(hospialList, specialities, doctorList, session.getSessionDate());
 
             JSONObject doctor = new JSONObject();
             doctor.put("docNo", session.getOriginatingSession().getStaff().getPerson().getNameWithTitle() != null ? session.getOriginatingSession().getStaff().getId().toString() : "N/A");
             doctor.put("displayName", session.getOriginatingSession().getStaff().getPerson().getNameWithTitle() != null ? session.getOriginatingSession().getStaff().getPerson().getNameWithTitle() : "N/A");
             doctor.put("title", session.getOriginatingSession().getStaff().getPerson().getTitle() != null ? session.getOriginatingSession().getStaff().getPerson().getTitle().toString() : "N/A");
-            doctor.put("nextAvailableDate", session.getSessionDate());
+            doctor.put("nextAvailableDate", nextSession == null ? "Not yet shedule next session by the Hospital." : forDate.format(nextSession.getSessionDate())+" at "+forTime.format(nextSession.getStartingTime())+" on "+forDay.format(nextSession.getSessionDate()));
             doctorArray.put(doctor);
 
         }
