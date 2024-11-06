@@ -94,6 +94,9 @@ public class VmppController implements Serializable {
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(getCurrent());
             JsfUtil.addSuccessMessage("Updated Successfully.");
+        }else{
+            getFacade().create(getCurrent());
+            JsfUtil.addSuccessMessage("Saved Successfully.");
         }
         recreateModel();
         getItems();
