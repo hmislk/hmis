@@ -325,7 +325,7 @@
                             </p:column>
 
                             <p:column headerText="Gross Amount" width="5rem">
-                                <h:outputText value="#{item.hosFee + item.proFee + item.discount}" >
+                                <h:outputText value="#{item.hosFee}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                  <f:facet name="footer">
@@ -504,7 +504,7 @@
                             </p:column>
 
                             <p:column headerText="Hos Amt" width="5rem">
-                                <h:outputText value="#{bi.hospitalFee + bi.discount}" >
+                                <h:outputText value="#{bi.hospitalFee}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer">
