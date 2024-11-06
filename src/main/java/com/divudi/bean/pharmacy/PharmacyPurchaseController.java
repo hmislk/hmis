@@ -377,15 +377,27 @@ public class PharmacyPurchaseController implements Serializable {
 
     public void calSaleRte() {
         saleRate = 0.0;
-        if (getCurrentBillItem().getItem() == null) {
-            JsfUtil.addErrorMessage("Bill Item is Null");
-        }
         double categoryMarginPercentage = 0;
-        if (getCurrentBillItem() != null
-                && getCurrentBillItem().getItem() != null
-                && getCurrentBillItem().getItem().getCategory() != null
-                && getCurrentBillItem().getItem().getCategory().getSaleMargin() != null) {
-            categoryMarginPercentage = getCurrentBillItem().getItem().getCategory().getSaleMargin() + 100;
+        if (getCurrentBillItem() == null || getCurrentBillItem().getItem() == null) {
+            JsfUtil.addErrorMessage("Bill Item is Null");
+        } else {
+
+            Object item = getCurrentBillItem().getItem();
+
+            if (item instanceof Ampp) {
+                Ampp tmpAmpp = (Ampp) item;
+                if (tmpAmpp.getAmp() != null
+                        && tmpAmpp.getCategory() != null
+                        && tmpAmpp.getCategory().getSaleMargin() != null) {
+                    categoryMarginPercentage = tmpAmpp.getCategory().getSaleMargin() + 100;
+                }
+            } else if (item instanceof Amp) {
+                Amp tmpAmp = (Amp) item;
+                if (tmpAmp.getCategory() != null
+                        && tmpAmp.getCategory().getSaleMargin() != null) {
+                    categoryMarginPercentage = tmpAmp.getCategory().getSaleMargin() + 100;
+                }
+            }
         }
 
         double tmpPurchaseRate = 0.0;
