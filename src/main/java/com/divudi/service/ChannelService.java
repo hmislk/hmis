@@ -854,6 +854,23 @@ public class ChannelService {
 
         return consultantFacade.findByJpql(jpql.toString(), m);
     }
+    
+    public List<Consultant> findDoctorsFromName(String name, Long id) {
+        StringBuffer jpql = new StringBuffer("select c from Doctor c where c.retired=:ret");
+        Map m = new HashMap();
+        m.put("ret", false);
+
+        if (name != null && !name.isEmpty()) {
+            jpql.append(" and c.person.name like :name");
+            m.put("name", "%" + name + "%");
+        }
+        if (id != null && !id.toString().isEmpty()) {
+            jpql.append(" and c.id =:id");
+            m.put("id", id);
+        }
+
+        return consultantFacade.findByJpql(jpql.toString(), m);
+    }
 
     public List<SessionInstance> findSessionInstance(List<Institution> institution, List<Speciality> specialities, List<Consultant> doctorList, Date sessionDate) {
         List<SessionInstance> sessionInstances;
@@ -894,6 +911,7 @@ public class ChannelService {
         m.put("ret", false);
 
         sessionInstances = sessionInstanceFacade.findByJpql(jpql.toString(), m, TemporalType.DATE);
+       // System.out.println(jpql.toString()+"\n"+sessionInstances.size()+"\n"+m.values());
         return sessionInstances;
     }
 
