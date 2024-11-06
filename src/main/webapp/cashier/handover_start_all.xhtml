@@ -557,6 +557,12 @@
                                         </p:selectBooleanCheckbox>
                                     </p:column>
 
+                                    <p:column headerText="Date" >
+                                        <h:outputText value="#{summary.date}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                        </h:outputText>
+                                    </p:column>
+
                                     <p:column headerText="Type" >
                                         <h:outputText value="#{summary.paymentHandover.description}" />
                                     </p:column>
@@ -577,11 +583,7 @@
                                         <h:outputText value="#{summary.user.webUserPerson.nameWithTitle}" />
                                     </p:column>
 
-                                    <p:column headerText="Date" >
-                                        <h:outputText value="#{summary.date}">
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                                        </h:outputText>
-                                    </p:column>
+
 
 
 
