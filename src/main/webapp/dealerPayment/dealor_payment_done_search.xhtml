@@ -46,7 +46,7 @@
                                                  ajax="false" value="List Pharmacy Dealor Payment Done" 
                                                  class="my-1 w-100 ui-button-success" 
                                                  icon="fas fa-pills"
-                                                 action="#{dealorPaymentBillSearch.fillDealorPaymentDone()}"/>
+                                                 action="#{supplierPaymentController.fillDealorPaymentDone()}"/>
 
                                 <!--                                <p:commandButton ajax="false" 
                                                                                  class="my-1 w-100 ui-button-info" 
@@ -74,7 +74,7 @@
                             <div class="col-10">
                                 <p:dataTable 
                                     id="tblBills" 
-                                    value="#{dealorPaymentBillSearch.bills}" 
+                                    value="#{supplierPaymentController.bills}" 
                                     var="bill"  
                                     paginatorPosition="bottom"
                                     rows="10"
@@ -159,13 +159,16 @@
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                         <f:facet name="footer">
-                                            <h:outputText value="#{dealorPaymentBillSearch.netTotal}">
+                                            <h:outputText value="#{supplierPaymentController.netTotal}">
                                                 <f:convertNumber pattern="#,##0.00;(#,##0.00)" />
                                             </h:outputText>
                                         </f:facet>
                                     </p:column>
                                     <p:column headerText="Bank" >                                
                                         <h:outputLabel value="#{bill.bank.name}" >                                        
+                                        </h:outputLabel>
+                                        <br/>
+                                        <h:outputLabel  value="#{bill.billType}" >
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Cheque Date" sortBy="#{bill.chequeDate}" filterBy="#{bill.chequeDate}"  filterMatchMode="contains">                                
@@ -194,9 +197,8 @@
                                         
                                     </p:column>
                                     <p:column headerText="Action">
-                                        <p:commandButton ajax="false" value="Manage" action="reprint_bill_dealor?faces-redirect=true" class="ui-button-info" style="width: 100px;">
-                                            <f:setPropertyActionListener value="#{bill}" 
-                                                                         target="#{dealorPaymentBillSearch.bill}"/>
+                                        <p:commandButton ajax="false" value="Manage" action="reprint_bill_dealor" class="ui-button-info" style="width: 100px;">
+                                            <f:setPropertyActionListener value="#{bill}" target="#{dealorPaymentBillSearch.bill}"/>
                                         </p:commandButton>
                                         
                                     </p:column> 
