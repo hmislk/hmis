@@ -75,8 +75,8 @@
                                         <!-- OPD -->
                                         <p:commandButton class="w-100" ajax="false" value="OPD Due Search" action="/credit/credit_company_opd_due?faces-redirect=true" />
                                         <p:commandButton class="w-100" ajax="false" value="OPD Due Age" action="/credit/credit_company_opd_due_age?faces-redirect=true" />
-                                        <p:commandButton class="w-100" ajax="false" value="OPD Payment by Bill" action="/credit/credit_compnay_bill_opd?faces-redirect=true" />
-                                        <p:commandButton class="w-100" ajax="false" value="OPD Payment by Company" action="/credit/credit_compnay_bill_opd_all?faces-redirect=true" />
+                                        <p:commandButton class="w-100" ajax="false" value="OPD Payment by Bill" action="/credit/credit_compnay_bill_opd?faces-redirect=true" actionListener="#{cashRecieveBillController.makeNull()}"/>
+                                        <p:commandButton class="w-100" ajax="false" value="OPD Payment by Company" action="/credit/credit_compnay_bill_opd_all?faces-redirect=true" actionListener="#{cashRecieveBillController.makeNull()}"/>
                                         <!-- Inward -->
                                         <p:commandButton class="w-100" ajax="false" value="Inward Due Search" action="/credit/inward_due_search_credit_company?faces-redirect=true" />
                                         <p:commandButton class="w-100" ajax="false" value="Inward Due Age" action="/credit/inward_due_age_credit_company?faces-redirect=true" />
