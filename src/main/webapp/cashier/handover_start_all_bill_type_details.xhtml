@@ -214,41 +214,80 @@
                                  rows="10"
                                  paginatorPosition="bottom"
                                  paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                 rowsPerPageTemplate="5,10,15">
+                                 rowsPerPageTemplate="5,10,15,20,50"
+                                 sortBy="#{cashRow.payment.bill.createdAt}"
+                                 filterEvent="keyup"
+                                 globalFilterOnly="false"
+                                 currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
+                                 widgetVar="cashDetailsTable">
 
-
-                        <p:column headerText="Bill No">
+                        <p:column headerText="Bill No" 
+                                  sortBy="#{cashRow.payment.bill.deptId}" 
+                                  filterBy="#{cashRow.payment.bill.deptId}" 
+                                  filterMatchMode="contains">
                             <h:outputText value="#{cashRow.payment.bill.deptId}" />
                         </p:column>
 
-                        <p:column headerText="Date Time">
-                            <h:outputText value="#{cashRow.payment.bill.createdAt}" >
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                        <p:column headerText="Date Time" 
+                                  sortBy="#{cashRow.payment.bill.createdAt}" 
+                                  filterBy="#{cashRow.payment.bill.createdAt}"
+                                  filterMatchMode="equals">
+                            <h:outputText value="#{cashRow.payment.bill.createdAt}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                             </h:outputText>
                         </p:column>
 
-                        <p:column headerText="Bill Type">
+                        <p:column headerText="User" 
+                                  sortBy="#{cashRow.payment.bill.creater.webUserPerson.name}" 
+                                  filterBy="#{cashRow.payment.bill.creater.webUserPerson.name}" 
+                                  filterMatchMode="contains">
+                            <h:outputText value="#{cashRow.payment.bill.creater.webUserPerson.name}" />
+                        </p:column>
+
+                        <p:column headerText="Bill Type" 
+                                  sortBy="#{cashRow.payment.bill.billTypeAtomic.label}" 
+                                  filterBy="#{cashRow.payment.bill.billTypeAtomic.label}" 
+                                  filterMatchMode="contains">
                             <h:outputText value="#{cashRow.payment.bill.billTypeAtomic.label}" />
                         </p:column>
 
-                        <p:column headerText="Payment Method">
+                        <p:column headerText="Payment Method" 
+                                  sortBy="#{cashRow.payment.paymentMethod.label}" 
+                                  filterBy="#{cashRow.payment.paymentMethod.label}" 
+                                  filterMatchMode="contains">
                             <h:outputText value="#{cashRow.payment.paymentMethod.label}" />
                         </p:column>
 
-                        <p:column headerText="Value" class="text-end">
+                        <p:column headerText="Value" 
+                                  sortBy="#{cashRow.payment.paidValue}" 
+                                  filterBy="#{cashRow.payment.paidValue}" 
+                                  filterMatchMode="gte"
+                                  class="text-end">
                             <h:outputText value="#{cashRow.payment.paidValue}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                         </p:column>
 
-
                         <p:column headerText="Actions">
-                            <p:commandButton ajax="false"  action="#{billSearch.navigateToViewBillByAtomicBillType()}" value="View Bill">
-                                <f:setPropertyActionListener value="#{cashRow.payment.bill}" target="#{billSearch.bill}"/>
-                            </p:commandButton>  
+                            <p:commandButton value="View" icon="fa fa-eye" class="m-1 ui-button-info"  
+                                             action="#{billSearch.navigateToViewBillByAtomicBillType()}" ajax="false">
+                                <f:setPropertyActionListener value="#{cashRow.payment.bill}" target="#{billSearch.bill}" />
+                            </p:commandButton>
+
+                            <p:commandButton value="Manage" icon="fa fa-tools" class="m-1 ui-button-warning"  
+                                             action="#{billSearch.navigateToManageBillByAtomicBillType()}" ajax="false">
+                                <f:setPropertyActionListener value="#{cashRow.payment.bill}" target="#{billSearch.bill}" />
+                            </p:commandButton>
+
+                            <p:commandButton value="Admin" icon="fa fa-shield-alt" class="m-1 ui-button-danger"  
+                                             action="#{billSearch.navigateToAdminBillByAtomicBillType()}" ajax="false" 
+                                             rendered="#{webUserController.hasPrivilege('Developers')}">
+                                <f:setPropertyActionListener value="#{cashRow.payment.bill}" target="#{billSearch.bill}" />
+                            </p:commandButton>
                         </p:column>
 
                     </p:dataTable>
+
 
                     <script type="text/javascript">
                         function closeCurrentTab() {

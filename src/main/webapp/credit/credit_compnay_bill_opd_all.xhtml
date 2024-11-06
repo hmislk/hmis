@@ -87,7 +87,7 @@
 
                                 <div class="row my-2 d-flex align-items-center">
                                     <div class="col-md-4">
-                                        <p:outputLabel value="Select Payment" />      
+                                        <p:outputLabel value="Select credit company" />      
                                     </div>
                                     <div class="col-md-8">
                                         <p:autoComplete widgetVar="aIx" id="acIx"  
@@ -158,6 +158,7 @@
                                              selectionMode="multiple"
                                              >
 
+
                                     <p:ajax  event="rowSelect" process="@this" 
                                              update=":#{p:resolveFirstComponentWithId('tot',view).clientId}" 
                                              listener="#{cashRecieveBillController.calTotal}"/>
@@ -177,7 +178,8 @@
 
                                     <p:column >  
                                         <f:facet name="header">
-                                            <h:outputLabel value="Bill No"/>                                    
+                                            <h:outputLabel value="Bill No"/> 
+                                            <p:outputLabel value="#{cashRecieveBillController.billItems.size()}"></p:outputLabel>
                                         </f:facet>                               
                                         <p:outputLabel value="#{b.referenceBill.deptId}"/>
                                     </p:column>
@@ -215,14 +217,20 @@
 
 
                 <p:panel rendered="#{cashRecieveBillController.printPreview}" >
-                    <p:commandButton 
-                        value="New Bill" 
-                        ajax="false" 
-                        action="#{cashRecieveBillController.prepareNewBill()}"  
-                        icon="fa fa-plus"
-                        class="ui-button-warning">
-                    </p:commandButton>
-                    <bi:insRecieve billController="#{cashRecieveBillController}"  bill="#{cashRecieveBillController.current}" dup="false"/>                       
+                    <div class="d-flex justify-content-end">
+                        <p:commandButton 
+                            value="New Bill" 
+                            ajax="false" 
+                            action="#{cashRecieveBillController.prepareNewBill()}"  
+                            icon="fa fa-plus"
+                            class="ui-button-warning mx-3 my-3">
+                        </p:commandButton>
+                    </div>
+                    <div class="mx-4">
+                        <bi:CreditReceiveBill controller="#{cashRecieveBillController}"  bill="#{cashRecieveBillController.current}" dup="false"/>
+                    </div>
+
+<!--                    <bi:insRecieve billController="#{cashRecieveBillController}"  bill="#{cashRecieveBillController.current}" dup="false"/>                       -->
                 </p:panel>
 
             </h:form>
