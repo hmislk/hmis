@@ -1238,7 +1238,7 @@ public class FinancialTransactionController implements Serializable {
         if (selectedBundle == null) {
             return null;
         }
-        return "handover_start_all_bill_type_details";
+        return "/cashier/handover_start_all_bill_type_details?faces-redirect=true";
     }
 
     public String navigateToCashierShiftBillSearch() {
