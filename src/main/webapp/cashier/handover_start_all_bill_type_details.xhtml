@@ -251,6 +251,14 @@
                             <h:outputText value="#{cashRow.payment.bill.billTypeAtomic.label}" />
                         </p:column>
 
+                        <p:column headerText="Bill Type" 
+                                  rendered="#{webUserController.hasPrivilege('Developers')}"
+                                  sortBy="#{cashRow.payment.bill.billTypeAtomic}" 
+                                  filterBy="#{cashRow.payment.bill.billTypeAtomic}" 
+                                  filterMatchMode="contains">
+                            <h:outputText value="#{cashRow.payment.bill.billTypeAtomic}" />
+                        </p:column>
+
                         <p:column headerText="Payment Method" 
                                   sortBy="#{cashRow.payment.paymentMethod.label}" 
                                   filterBy="#{cashRow.payment.paymentMethod.label}" 

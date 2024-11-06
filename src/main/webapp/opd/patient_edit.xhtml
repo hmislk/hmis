@@ -207,13 +207,16 @@
                                             <div class="input-group">
                                                 <p:inputText
                                                     id="txtPhn"
-                                                    value="#{patientController.current.phn}" class="form-control" />
+                                                    disabled="#{not webUserController.hasPrivilege('EditData')}"
+                                                    value="#{patientController.current.phn}" 
+                                                    class="form-control" />
 
                                                 <span class="input-group-btn">
                                                     <p:commandButton
                                                         id="btnPhn"
                                                         value="Generate" 
                                                         process="btnPhn" 
+                                                        disabled="#{not webUserController.hasPrivilege('EditData')}"
                                                         update="txtPhn" 
                                                         action="#{patientController.generateNewPhnAndAssignToCurrentPatient()}" 
                                                         class="mx-1" />

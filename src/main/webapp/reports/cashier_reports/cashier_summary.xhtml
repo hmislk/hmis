@@ -139,6 +139,7 @@
                                 </p:selectOneMenu>
 
                                 <p:selectOneMenu
+                                    rendered="false"
                                     styleClass="w-100 form-control"  
                                     value="#{searchController.department}" 
                                     filter="true">
@@ -173,16 +174,16 @@
 
                             <p:spacer ></p:spacer>
 
-                            <p:commandButton  
-                                value="Process" 
-                                ajax="false"
-                                action="#{searchController.generateCashierSummary}" 
-                                class="ui-button-warning" icon="fas fa-cogs">
-                            </p:commandButton>
+                            
 
                         </h:panelGrid>
 
-
+                        <p:commandButton  
+                            value="Process" 
+                            ajax="false"
+                            action="#{searchController.generateCashierSummary}" 
+                            class="ui-button-warning my-2" icon="fas fa-cogs">
+                        </p:commandButton>
 
 
 
