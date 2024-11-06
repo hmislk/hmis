@@ -513,7 +513,12 @@ public enum Privileges {
     CourierPrintReports("Courier Print Reports"),
     CourierViewStatistics("Courier View Statistics"),
     CourierViewBillReports("Courier View Bill Reports"),
-    CourierViewPaymentReports("Courier View Payment Reports");
+    CourierViewPaymentReports("Courier View Payment Reports"),
+    
+    SuperAdmin("Supper Admin"),
+    EditData("Edit Data"),
+    DeleteData("Delete Data")
+    ;
 
     private final String label;
 
