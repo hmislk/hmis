@@ -40,44 +40,59 @@ public class PharmaceuticalBillItem implements Serializable {
     private BillItem billItem;
 
     @Temporal(javax.persistence.TemporalType.DATE)
-    Date doe;
+    private Date doe;
     @ManyToOne
-    ItemBatch itemBatch;
+    private ItemBatch itemBatch;
     private String stringValue;
-    double qty;
-    double freeQty;
+
+    private double qty;
+    private double qtyPacks;
+
+    private double freeQty;
+    private double freeQtyPacks;
+
     private double remainingFreeQty;
-    double purchaseRate;
+    private double remainingFreeQtyPack;
+
+    private double purchaseRate;
+    private double purchaseRatePack;
+
+    private double retailRate;
+    private double retailRatePack;
+
+    private double wholesaleRate;
+    private double wholesaleRatePack;
+
     private double lastPurchaseRate;
-    double retailRate;
-    double wholesaleRate;
+    private double lastPurchaseRatePack;
+
     @ManyToOne
-    Stock stock;
+    private Stock stock;
     @ManyToOne
     private Stock staffStock;
 
     @ManyToOne
-    Category make;
-    String model;
-    String code;
-    String serialNo;
+    private Category make;
+    private String model;
+    private String code;
+    private String serialNo;
     @Lob
-    String description;
-    String barcode;
-    String registrationNo;
-    String chassisNo;
-    String engineNo;
-    String colour;
-    int numberOfAccessories;
-    String warrentyCertificateNumber;
-    long warrentyDuration;
-    double totalAcquicitionCost;
-    double deprecitionRate;
+    private String description;
+    private String barcode;
+    private String registrationNo;
+    private String chassisNo;
+    private String engineNo;
+    private String colour;
+    private int numberOfAccessories;
+    private String warrentyCertificateNumber;
+    private long warrentyDuration;
+    private double totalAcquicitionCost;
+    private double deprecitionRate;
     @Lob
-    String otherNotes;
+    private String otherNotes;
 
     @ManyToOne
-    Institution manufacturer;
+    private Institution manufacturer;
 
     @Transient
     private double transQtyPlusFreeQty;
@@ -225,12 +240,30 @@ public class PharmaceuticalBillItem implements Serializable {
             return;
         }
         qty = ph.qty;
+        qtyPacks = ph.qtyPacks;
+
         freeQty = ph.freeQty;
+        freeQtyPacks = ph.freeQtyPacks;
+
         purchaseRate = ph.purchaseRate;
+        purchaseRatePack = ph.purchaseRatePack;
+
+        retailRate = ph.retailRate;
+        retailRatePack = ph.retailRatePack;
+
+        lastPurchaseRate = ph.lastPurchaseRate;
+        lastPurchaseRatePack = ph.lastPurchaseRatePack;
+
+        remainingFreeQty = ph.remainingFreeQty;
+        remainingFreeQtyPack = ph.remainingFreeQtyPack;
+
+        wholesaleRate = ph.wholesaleRate;
+        wholesaleRatePack = ph.wholesaleRatePack;
+
         doe = ph.getDoe();
         stringValue = ph.getStringValue();
         itemBatch = ph.getItemBatch();
-        retailRate = ph.getRetailRate();
+
         stock = ph.getStock();
         staffStock = ph.getStaffStock();
         stringValue = ph.getStringValue();
@@ -259,12 +292,9 @@ public class PharmaceuticalBillItem implements Serializable {
             return;
         }
         qty = 0 - ph.qty;
-        // //System.err.println("QTY "+qty);
+        qtyPacks = 0 - ph.qtyPacks;
         freeQty = 0 - ph.freeQty;
-        //  purchaseRate=0-ph.purchaseRate;
-        //  lastPurchaseRate=0-ph.lastPurchaseRate;
-        // retailRate=0-ph.retailRate;
-        //  wholesaleRate=0-ph.wholesaleRate;
+        freeQtyPacks = 0 - ph.freeQtyPacks;
     }
 
     public Stock getStock() {
@@ -321,107 +351,123 @@ public class PharmaceuticalBillItem implements Serializable {
     }
 
     public double getQty() {
-        if (getBillItem() != null && getBillItem().getItem() instanceof Ampp || getBillItem() != null && getBillItem().getItem() instanceof Vmpp) {
-            return qty / getBillItem().getItem().getDblValue();
-        } else {
-            return qty;
-        }
-
+//        if (getBillItem() != null && getBillItem().getItem() instanceof Ampp || getBillItem() != null && getBillItem().getItem() instanceof Vmpp) {
+//            return qty / getBillItem().getItem().getDblValue();
+//        } else {
+//            return qty;
+//        }
+        return qty;
     }
 
+    
     public void setQty(double qty) {
-        if (getBillItem() != null && getBillItem().getItem() instanceof Ampp || getBillItem() != null && getBillItem().getItem() instanceof Vmpp) {
-            this.qty = qty * getBillItem().getItem().getDblValue();
-        } else {
-            this.qty = qty;
-        }
+//        if (getBillItem() != null && getBillItem().getItem() instanceof Ampp || getBillItem() != null && getBillItem().getItem() instanceof Vmpp) {
+//            this.qty = qty * getBillItem().getItem().getDblValue();
+//        } else {
+//            this.qty = qty;
+//        }
+        this.qty = qty;
     }
 
+    @Deprecated //use qty
     public double getQtyInUnit() {
         return qty;
     }
 
+    @Deprecated //use qty
     public void setQtyInUnit(double qty) {
         this.qty = qty;
     }
 
+    @Deprecated //use free qty
     public double getFreeQtyInUnit() {
         return freeQty;
     }
 
+    @Deprecated //use free qty
     public void setFreeQtyInUnit(double freeQty) {
         this.freeQty = freeQty;
     }
 
     public double getFreeQty() {
-        if (getBillItem() != null && getBillItem().getItem() instanceof Ampp
-                || getBillItem() != null && getBillItem().getItem() instanceof Vmpp) {
-            return freeQty / getBillItem().getItem().getDblValue();
-        } else {
-            return freeQty;
-        }
+//        if (getBillItem() != null && getBillItem().getItem() instanceof Ampp
+//                || getBillItem() != null && getBillItem().getItem() instanceof Vmpp) {
+//            return freeQty / getBillItem().getItem().getDblValue();
+//        } else {
+//            return freeQty;
+//        }
+        return freeQty;
     }
 
     public void setFreeQty(double freeQty) {
-        if (getBillItem() != null && getBillItem().getItem() instanceof Ampp
-                || getBillItem() != null && getBillItem().getItem() instanceof Vmpp) {
-            this.freeQty = freeQty * getBillItem().getItem().getDblValue();
-        } else {
-            this.freeQty = freeQty;
-        }
+//        if (getBillItem() != null && getBillItem().getItem() instanceof Ampp
+//                || getBillItem() != null && getBillItem().getItem() instanceof Vmpp) {
+//            this.freeQty = freeQty * getBillItem().getItem().getDblValue();
+//        } else {
+//            this.freeQty = freeQty;
+//        }
+        this.freeQty = freeQty;
     }
 
     public double getPurchaseRate() {
-        if (getBillItem() != null && getBillItem().getItem() instanceof Ampp
-                || getBillItem() != null && getBillItem().getItem() instanceof Vmpp) {
-            return purchaseRate * getBillItem().getItem().getDblValue();
-        } else {
-            return purchaseRate;
-        }
+//        if (getBillItem() != null && getBillItem().getItem() instanceof Ampp
+//                || getBillItem() != null && getBillItem().getItem() instanceof Vmpp) {
+//            return purchaseRate * getBillItem().getItem().getDblValue();
+//        } else {
+//            return purchaseRate;
+//        }
+        return purchaseRate;
 
     }
 
+    @Deprecated //use purchaseRate
     public double getPurchaseRateInUnit() {
         return purchaseRate;
     }
 
+    @Deprecated //use purchaseRate
     public void setPurchaseRateInUnit(double purchaseRate) {
         this.purchaseRate = purchaseRate;
     }
 
     public void setPurchaseRate(double purchaseRate) {
-        if (getBillItem() != null && getBillItem().getItem() instanceof Ampp
-                || getBillItem() != null && getBillItem().getItem() instanceof Vmpp) {
-            this.purchaseRate = purchaseRate / getBillItem().getItem().getDblValue();
-        } else {
-            this.purchaseRate = purchaseRate;
-        }
+//        if (getBillItem() != null && getBillItem().getItem() instanceof Ampp
+//                || getBillItem() != null && getBillItem().getItem() instanceof Vmpp) {
+//            this.purchaseRate = purchaseRate / getBillItem().getItem().getDblValue();
+//        } else {
+//            this.purchaseRate = purchaseRate;
+//        }
+        this.purchaseRate = purchaseRate;
     }
 
+    @Deprecated //use retailRate
     public double getRetailRateInUnit() {
         return retailRate;
     }
 
+    @Deprecated //use RetailRate
     public void setRetailRateInUnit(double retailRate) {
         this.retailRate = retailRate;
     }
 
     public double getRetailRate() {
-        if (getBillItem() != null && getBillItem().getItem() instanceof Ampp
-                || getBillItem() != null && getBillItem().getItem() instanceof Vmpp) {
-            return retailRate * getBillItem().getItem().getDblValue();
-        } else {
-            return retailRate;
-        }
+//        if (getBillItem() != null && getBillItem().getItem() instanceof Ampp
+//                || getBillItem() != null && getBillItem().getItem() instanceof Vmpp) {
+//            return retailRate * getBillItem().getItem().getDblValue();
+//        } else {
+//            return retailRate;
+//        }
+        return retailRate;
     }
 
     public void setRetailRate(double retailRate) {
-        if (getBillItem() != null && getBillItem().getItem() instanceof Ampp
-                || getBillItem() != null && getBillItem().getItem() instanceof Vmpp) {
-            this.retailRate = retailRate / getBillItem().getItem().getDblValue();
-        } else {
-            this.retailRate = retailRate;
-        }
+//        if (getBillItem() != null && getBillItem().getItem() instanceof Ampp
+//                || getBillItem() != null && getBillItem().getItem() instanceof Vmpp) {
+//            this.retailRate = retailRate / getBillItem().getItem().getDblValue();
+//        } else {
+//            this.retailRate = retailRate;
+//        }
+        this.retailRate = retailRate;
     }
 
     public double getWholesaleRate() {
@@ -478,22 +524,23 @@ public class PharmaceuticalBillItem implements Serializable {
     }
 
     public double getLastPurchaseRate() {
-        if (getBillItem() != null && getBillItem().getItem() instanceof Ampp
-                || getBillItem() != null && getBillItem().getItem() instanceof Vmpp) {
-            return lastPurchaseRate * getBillItem().getItem().getDblValue();
-        } else {
-            return lastPurchaseRate;
-        }
+//        if (getBillItem() != null && getBillItem().getItem() instanceof Ampp
+//                || getBillItem() != null && getBillItem().getItem() instanceof Vmpp) {
+//            return lastPurchaseRate * getBillItem().getItem().getDblValue();
+//        } else {
+//            return lastPurchaseRate;
+//        }
+        return lastPurchaseRate;
     }
 
     public void setLastPurchaseRate(double lastPurchaseRate) {
-        if (getBillItem() != null && getBillItem().getItem() instanceof Ampp
-                || getBillItem() != null && getBillItem().getItem() instanceof Vmpp) {
-            this.lastPurchaseRate = lastPurchaseRate / getBillItem().getItem().getDblValue();
-        } else {
-            this.lastPurchaseRate = lastPurchaseRate;
-        }
-
+//        if (getBillItem() != null && getBillItem().getItem() instanceof Ampp
+//                || getBillItem() != null && getBillItem().getItem() instanceof Vmpp) {
+//            this.lastPurchaseRate = lastPurchaseRate / getBillItem().getItem().getDblValue();
+//        } else {
+//            this.lastPurchaseRate = lastPurchaseRate;
+//        }
+        this.lastPurchaseRate = lastPurchaseRate;
     }
 
     public Stock getStaffStock() {
@@ -531,17 +578,73 @@ public class PharmaceuticalBillItem implements Serializable {
     }
 
     public boolean isTransThisIsStockOut() {
-        if(getTransQtyPlusFreeQty()<0){
-            transThisIsStockOut=true;
+        if (getTransQtyPlusFreeQty() < 0) {
+            transThisIsStockOut = true;
         }
         return transThisIsStockOut;
     }
 
     public boolean isTransThisIsStockIn() {
-        if(getTransQtyPlusFreeQty()>0){
-            transThisIsStockIn=true;
+        if (getTransQtyPlusFreeQty() > 0) {
+            transThisIsStockIn = true;
         }
         return transThisIsStockIn;
+    }
+
+    public double getQtyPacks() {
+        return qtyPacks;
+    }
+
+    public void setQtyPacks(double qtyPacks) {
+        this.qtyPacks = qtyPacks;
+    }
+
+    public double getFreeQtyPacks() {
+        return freeQtyPacks;
+    }
+
+    public void setFreeQtyPacks(double freeQtyPacks) {
+        this.freeQtyPacks = freeQtyPacks;
+    }
+
+    public double getPurchaseRatePack() {
+        return purchaseRatePack;
+    }
+
+    public void setPurchaseRatePack(double purchaseRatePack) {
+        this.purchaseRatePack = purchaseRatePack;
+    }
+
+    public double getRetailRatePack() {
+        return retailRatePack;
+    }
+
+    public void setRetailRatePack(double retailRatePack) {
+        this.retailRatePack = retailRatePack;
+    }
+
+    public double getRemainingFreeQtyPack() {
+        return remainingFreeQtyPack;
+    }
+
+    public void setRemainingFreeQtyPack(double remainingFreeQtyPack) {
+        this.remainingFreeQtyPack = remainingFreeQtyPack;
+    }
+
+    public double getWholesaleRatePack() {
+        return wholesaleRatePack;
+    }
+
+    public void setWholesaleRatePack(double wholesaleRatePack) {
+        this.wholesaleRatePack = wholesaleRatePack;
+    }
+
+    public double getLastPurchaseRatePack() {
+        return lastPurchaseRatePack;
+    }
+
+    public void setLastPurchaseRatePack(double lastPurchaseRatePack) {
+        this.lastPurchaseRatePack = lastPurchaseRatePack;
     }
     
     

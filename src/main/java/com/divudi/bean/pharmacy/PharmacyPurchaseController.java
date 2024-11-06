@@ -32,6 +32,8 @@ import com.divudi.entity.Item;
 import com.divudi.entity.Payment;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.WebUser;
+import com.divudi.entity.pharmacy.Amp;
+import com.divudi.entity.pharmacy.Ampp;
 import com.divudi.entity.pharmacy.ItemBatch;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.entity.pharmacy.Stock;
@@ -378,12 +380,27 @@ public class PharmacyPurchaseController implements Serializable {
         if (getCurrentBillItem().getItem() == null) {
             JsfUtil.addErrorMessage("Bill Item is Null");
         }
-        double temp = getCurrentBillItem().getItem().getProfitMargin() + 100;
-        saleRate = (temp * getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate()) / 100;
+        double categoryMarginPercentage = 0;
+        if (getCurrentBillItem() != null
+                && getCurrentBillItem().getItem() != null
+                && getCurrentBillItem().getItem().getCategory() != null
+                && getCurrentBillItem().getItem().getCategory().getSaleMargin() != null) {
+            categoryMarginPercentage = getCurrentBillItem().getItem().getCategory().getSaleMargin() + 100;
+        }
+
+        double tmpPurchaseRate = 0.0;
+        if (getCurrentBillItem().getItem() instanceof Ampp) {
+            saleRate = (categoryMarginPercentage * getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRatePack() / getCurrentBillItem().getItem().getDblValue()) / 100;
+            tmpPurchaseRate = getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRatePack() / getCurrentBillItem().getItem().getDblValue();
+            getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRate(tmpPurchaseRate);
+        } else if (getCurrentBillItem().getItem() instanceof Amp) {
+            saleRate = (categoryMarginPercentage * getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate()) / 100;
+        }
+
         getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(saleRate);
 
-        temp = 108;
-        wsRate = (temp * getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate()) / 100;
+        categoryMarginPercentage = 108;
+        wsRate = (categoryMarginPercentage * getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate()) / 100;
         if (getCurrentBillItem().getTmpQty() + getCurrentBillItem().getPharmaceuticalBillItem().getFreeQty() != 0) {
             wsRate = wsRate * getCurrentBillItem().getTmpQty() / (getCurrentBillItem().getTmpQty() + getCurrentBillItem().getPharmaceuticalBillItem().getFreeQty());
         }
@@ -599,17 +616,33 @@ public class PharmacyPurchaseController implements Serializable {
             JsfUtil.addErrorMessage("Please set the date of expiry");
             return;
         }
-        if (getCurrentBillItem().getPharmaceuticalBillItem().getQty() <= 0 && getCurrentBillItem().getPharmaceuticalBillItem().getFreeQty() <= 0) {
-            JsfUtil.addErrorMessage("Please enter the purchase quantity");
-            return;
+        if (getCurrentBillItem().getItem() instanceof Amp) {
+            if (getCurrentBillItem().getPharmaceuticalBillItem().getQty() <= 0 && getCurrentBillItem().getPharmaceuticalBillItem().getFreeQty() <= 0) {
+                JsfUtil.addErrorMessage("Please enter the purchase quantity");
+                return;
+            }
         }
+        if (getCurrentBillItem().getItem() instanceof Ampp) {
+            if (getCurrentBillItem().getPharmaceuticalBillItem().getQtyPacks() <= 0 && getCurrentBillItem().getPharmaceuticalBillItem().getFreeQtyPacks() <= 0) {
+                JsfUtil.addErrorMessage("Please enter the purchase quantity");
+                return;
+            }
+        }
+
         if (getCurrentBillItem().getPharmaceuticalBillItem().getRetailRate() <= 0) {
             JsfUtil.addErrorMessage("Please enter the sale rate");
             return;
         }
-        if (getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate() > getCurrentBillItem().getPharmaceuticalBillItem().getRetailRate()) {
-            JsfUtil.addErrorMessage("Please enter the sale rate that is grater than the purchase rate");
-            return;
+        //TODO: Calculate when packs
+//        if (getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate() > getCurrentBillItem().getPharmaceuticalBillItem().getRetailRate()) {
+//            JsfUtil.addErrorMessage("Please enter the sale rate that is grater than the purchase rate");
+//            return;
+//        }
+
+        if (getCurrentBillItem().getItem() instanceof Ampp) {
+            getCurrentBillItem().getPharmaceuticalBillItem().setQty(getCurrentBillItem().getPharmaceuticalBillItem().getQtyPacks() * getCurrentBillItem().getItem().getDblValue());
+            getCurrentBillItem().getPharmaceuticalBillItem().setFreeQty(getCurrentBillItem().getPharmaceuticalBillItem().getFreeQtyPacks() * getCurrentBillItem().getItem().getDblValue());
+            getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRate(getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRatePack() / getCurrentBillItem().getItem().getDblValue());
         }
 
         getCurrentBillItem().setSearialNo(getBillItems().size());
@@ -617,7 +650,7 @@ public class PharmacyPurchaseController implements Serializable {
 
         currentBillItem = null;
 
-        calTotal();
+        calulateTotalsWhenAddingItems();
     }
 
     public void saveBill() {
@@ -682,6 +715,29 @@ public class PharmacyPurchaseController implements Serializable {
             p.setNetValue(0 - netValue);
             tot += p.getNetValue();
             saleValue += (p.getPharmaceuticalBillItem().getQtyInUnit() + p.getPharmaceuticalBillItem().getFreeQtyInUnit()) * p.getPharmaceuticalBillItem().getRetailRate();
+        }
+        getBill().setTotal(tot);
+        getBill().setNetTotal(tot);
+        getBill().setSaleValue(saleValue);
+    }
+
+    public void calulateTotalsWhenAddingItems() {
+        double tot = 0.0;
+        double saleValue = 0.0;
+        int serialNo = 0;
+        for (BillItem p : getBillItems()) {
+            if (p.getItem() instanceof Ampp) {
+                p.setQty(p.getPharmaceuticalBillItem().getQtyPacks());
+                p.setRate(p.getPharmaceuticalBillItem().getPurchaseRatePack());
+            } else if (p.getItem() instanceof Amp) {
+                p.setQty((double) p.getPharmaceuticalBillItem().getQty());
+                p.setRate(p.getPharmaceuticalBillItem().getPurchaseRate());
+            }
+            p.setSearialNo(serialNo++);
+            double netValue = p.getQty() * p.getRate();
+            p.setNetValue(0 - netValue);
+            tot += p.getNetValue();
+            saleValue += (p.getPharmaceuticalBillItem().getQty() + p.getPharmaceuticalBillItem().getFreeQty()) * p.getPharmaceuticalBillItem().getRetailRate();
         }
         getBill().setTotal(tot);
         getBill().setNetTotal(tot);
