@@ -50,7 +50,8 @@
                                         <p:inputText autocomplete="off" id="txtName" value="#{amppController.current.name}"  class="w-100"></p:inputText>
                                         <h:outputText  value="Select AMP" ></h:outputText>
                                         <p:autoComplete  completeMethod="#{ampController.completeAmp}" 
-                                                         var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" forceSelection="true" value="#{amppController.current.amp}" scrollHeight="300" size="45"></p:autoComplete>
+                                                         var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" forceSelection="true" 
+                                                         value="#{amppController.current.amp}" scrollHeight="300" size="45"></p:autoComplete>
                                         <h:outputText  value="Size" ></h:outputText>
                                         <p:inputText autocomplete="off" value="#{amppController.current.dblValue}"  class="w-100"></p:inputText>
                                         <h:outputText  value="Pack Unit" ></h:outputText>
