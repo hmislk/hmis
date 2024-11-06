@@ -612,6 +612,10 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyGenarateReports, "Generate Reports"), pharmacyNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySummaryViews, "Summary Views"), pharmacyNode);
 
+        TreeNode superAdminNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.SuperAdmin, "Super Admin"), allNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.EditData, "Edit Data"), superAdminNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.DeleteData, "Delete Data"), superAdminNode);
+        
         return root;
     }
 

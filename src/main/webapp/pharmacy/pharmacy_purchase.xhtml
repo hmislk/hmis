@@ -110,7 +110,7 @@
                                             class="row my-1"
                                             layout="block" 
                                             id="slip"  rendered="#{pharmacyPurchaseController.bill.paymentMethod eq 'Slip'}" >
-                                             <pa:slip paymentMethodData="#{pharmacyPurchaseController.paymentMethodData}"/>
+                                            <pa:slip paymentMethodData="#{pharmacyPurchaseController.paymentMethodData}"/>
                                         </h:panelGroup>
                                     </h:panelGrid>
                                 </div>
@@ -135,7 +135,7 @@
                                                     id="acItem"  
                                                     value="#{pharmacyPurchaseController.currentBillItem.item}" 
                                                     forceSelection="true"
-                                                    completeMethod="#{itemController.completeAmpItem}" 
+                                                    completeMethod="#{itemController.completeAmpAndAmppItem}" 
                                                     var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
                                         <p:column headerText="Item">
                                             <h:outputLabel value="#{vt.name}"></h:outputLabel>
@@ -143,39 +143,77 @@
                                         <p:column headerText="Code" >
                                             <h:outputLabel value="#{vt.code}"></h:outputLabel>
                                         </p:column>
+                                        <p:ajax 
+                                            event="itemSelect" 
+                                            process="acItem" 
+                                            update="txtQty txtFreeQty txtPrate" ></p:ajax>
                                     </p:autoComplete>
                                 </div>
                                 <div class="col-1">
                                     <h:outputLabel value="Qty"/><br/>
-                                    <p:inputText  
-                                        autocomplete="off"
-                                        onfocus="this.select()"
-                                        id="txtQty" 
-                                        styleClass="numericTxt"
-                                        value="#{pharmacyPurchaseController.currentBillItem.tmpQty}"
-                                        style="width:100%" />  
+                                    <h:panelGroup id="txtQty">
+                                        <p:inputText  
+                                            autocomplete="off"
+                                            onfocus="this.select()"
+                                            rendered="#{pharmacyPurchaseController.currentBillItem.item.class eq 'class com.divudi.entity.pharmacy.Amp'}"
+                                            styleClass="numericTxt"
+                                            value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.qty}"
+                                            style="width:100%" />
+                                        <p:inputText  
+                                            autocomplete="off"
+                                            rendered="#{pharmacyPurchaseController.currentBillItem.item.class eq 'class com.divudi.entity.pharmacy.Ampp'}"
+                                            onfocus="this.select()"
+                                            styleClass="numericTxt"
+                                            value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.qtyPacks}"
+                                            style="width:100%" /> 
+
+                                    </h:panelGroup>
                                 </div>
                                 <div class="col-1">
                                     <h:outputLabel value="Free"/><br/>
-                                    <p:inputText autocomplete="off" 
-                                                 id="txtFreeQty" 
-                                                 onfocus="this.select()"
-                                                 styleClass="numericTxt" 
-                                                 value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.freeQty}" 
-                                                 style="width:100%" /> 
+                                    <h:panelGroup id="txtFreeQty" >
+                                        <p:inputText 
+                                            autocomplete="off" 
+                                            rendered="#{pharmacyPurchaseController.currentBillItem.item.class eq 'class com.divudi.entity.pharmacy.Amp'}"
+                                            onfocus="this.select()"
+                                            styleClass="numericTxt" 
+                                            value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.freeQty}" 
+                                            style="width:100%" /> 
+                                        <p:inputText 
+                                            autocomplete="off" 
+                                            rendered="#{pharmacyPurchaseController.currentBillItem.item.class eq 'class com.divudi.entity.pharmacy.Ampp'}"
+                                            onfocus="this.select()"
+                                            styleClass="numericTxt" 
+                                            value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.freeQtyPacks}" 
+                                            style="width:100%" /> 
+                                    </h:panelGroup>
+
                                 </div>
                                 <div class="col-1">
                                     <h:outputLabel value="Purchase Rate"></h:outputLabel><br/>
-                                    <p:inputText autocomplete="off" 
-                                                 id="txtPrate"  
-                                                 onfocus="this.select()"
-                                                 styleClass="numericTxt" 
-                                                 value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.purchaseRate}"  >
-                                        <f:ajax event="keyup" execute="@this acItem" render="tmpRetail" listener="#{pharmacyPurchaseController.calSaleRte()}"></f:ajax>
-                                    </p:inputText>
+                                    <h:panelGroup id="txtPrate">
+
+                                        <p:inputText 
+                                            autocomplete="off" 
+                                            rendered="#{pharmacyPurchaseController.currentBillItem.item.class eq 'class com.divudi.entity.pharmacy.Amp'}"
+                                            onfocus="this.select()"
+                                            styleClass="numericTxt" 
+                                            value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.purchaseRate}"  >
+                                            <f:ajax event="keyup" execute="@this acItem" render="tmpRetail" listener="#{pharmacyPurchaseController.calSaleRte()}"></f:ajax>
+                                        </p:inputText>
+                                        <p:inputText 
+                                            autocomplete="off" 
+                                            rendered="#{pharmacyPurchaseController.currentBillItem.item.class eq 'class com.divudi.entity.pharmacy.Ampp'}"
+                                            onfocus="this.select()"
+                                            styleClass="numericTxt" 
+                                            value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.purchaseRatePack}"  >
+                                            <f:ajax event="keyup" execute="@this acItem" render="tmpRetail" listener="#{pharmacyPurchaseController.calSaleRte()}"></f:ajax>
+                                        </p:inputText>
+                                    </h:panelGroup>
+
                                 </div>
                                 <div class="col-1">
-                                    <h:outputLabel value="Sale Price"></h:outputLabel>
+                                    <h:outputLabel value="Sale Price (Per Unit)"></h:outputLabel>
                                     <p:inputText autocomplete="off" 
                                                  id="tmpRetail" 
                                                  onfocus="this.select()"

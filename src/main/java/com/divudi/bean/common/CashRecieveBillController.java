@@ -120,8 +120,10 @@ public class CashRecieveBillController implements Serializable {
             selectBillListener();
             if (getCurrentBillItem().getNetValue() == 0.0) {
                 continue;
+
             }
             addToBill();
+
         }
 //        if (billItems != null) {
 //            selectedBillItems.addAll(billItems);
@@ -303,10 +305,11 @@ public class CashRecieveBillController implements Serializable {
         }
 
         for (BillItem b : getBillItems()) {
-            if (b.getId() == getCurrentBillItem().getId()) {
+            if (b.getReferenceBill().getId() == getCurrentBillItem().getReferenceBill().getId()) {
                 JsfUtil.addErrorMessage("This bill you already added.");
                 return true;
             }
+
         }
 
         if (getCurrentBillItem().getNetValue() > getCurrentBillItem().getReferenceBill().getNetTotal()) {
