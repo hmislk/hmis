@@ -1,0 +1,166 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/payments/pay_index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"                
+                xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
+                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
+
+    <ui:define name="admin">
+        <h:panelGroup >
+            <h:form>
+                <p:panel>
+                    <f:facet name="header">
+                        <h:outputLabel value="Credit Company Payment Bill Search To approved"/>
+                        <p:commandButton value="Back" icon="fas fa-arrow-left" class="ui-button-warning" style="float: right;" action="/payments/pay_index?faces-redirect=true" ajax="false"/>     
+                    </f:facet>
+
+                    <div class="row">
+                        <div class="col-md-2">
+                            <h:outputLabel value="From Date"/>
+                            <p:calendar 
+                                styleClass="dateTimePicker" 
+                                id="fromDate" 
+                                class="w-100"
+                                inputStyleClass="form-control"
+                                value="#{searchController.fromDate}" 
+                                navigator="false" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}">      
+                            </p:calendar>
+                            <h:outputLabel value="To Date"/>
+                            <p:calendar 
+                                id="toDate" 
+                                value="#{searchController.toDate}" 
+                                navigator="false" 
+                                class="w-100"
+                                inputStyleClass="form-control"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}">                                                                              
+                            </p:calendar>
+
+                            <p:commandButton 
+                                id="btnSearch" 
+                                ajax="false" 
+                                value="Search" 
+                                icon="fas fa-search"
+                                class="w-100 my-2 ui-button-warning"
+                                action="#{searchController.createCreditCompanyPaymentToApproveTable()}">
+                            </p:commandButton>
+
+                            <h:outputLabel value="Bill No" class="w-100"/>
+                            <p:inputText  value="#{searchController.searchKeyword.billNo}" class="w-100" />
+
+                            <h:outputLabel value="Credit Company" class="w-100"/>
+                            <p:autoComplete 
+                                id="creditCompany" 
+                                class="w-100 -mx-2"
+                                inputStyleClass="form-control"
+                                forceSelection="true"
+                                value="#{searchController.creditCompany}"  
+                                completeMethod="#{creditCompanyController.completeCredit}" 
+                                var="ix"
+                                minQueryLength="2"
+                                placeholder="Company (Type at least 2 letters to search)"
+                                itemLabel="#{ix.name}" 
+                                itemValue="#{ix}" 
+                                size="10"  />
+
+                        </div>
+                        <div class="col-md-10">
+                            <p:dataTable id="tblBills" value="#{searchController.bills}" var="bill"  >
+                                <p:column headerText="Bill No" >
+                                    <p:commandLink 
+                                        id="billNo" 
+                                        ajax="false" 
+                                        value="#{bill.deptId}" 
+                                        >
+                                        <f:setPropertyActionListener value="#{bill}" target="#{pettyCashBillSearch.bill}"/>
+                                        <f:setPropertyActionListener value="#{bill}" target="#{pettyCashBillController.current}"/>
+                                    </p:commandLink>
+
+
+                                </p:column>
+                                <p:column headerText="Credit Company" >
+                                    <h:outputLabel  value="#{bill.creditCompany.name}"  />
+                                </p:column>
+                                <p:column headerText="Billed At"  >
+                                    <h:outputLabel value="#{bill.createdAt}" >
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputLabel>
+                                    <br/>
+                                    <h:panelGroup rendered="#{bill.cancelled}" >
+                                        <h:outputLabel style="color: red;" value="Cancelled at " />
+                                        <h:outputLabel style="color: red;" rendered="#{bill.referenceBill.cancelled}" value="#{bill.referenceBill.cancelledBill.createdAt}" >
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputLabel>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{bill.refunded}" >
+                                        <h:outputLabel style="color: red;" value="Refunded at " />
+                                        <h:outputLabel style="color: red;" rendered="#{bill.referenceBill.refunded}" value="#{bill.refundedBill.createdAt}" >
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputLabel>
+                                    </h:panelGroup>
+                                </p:column>  
+                                <p:column headerText="Billed By" >
+                                    <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
+                                    </h:outputLabel>
+                                    <br/>
+                                    <h:panelGroup rendered="#{bill.cancelled}" >
+                                        <h:outputLabel style="color: red;" value="Cancelled At " />
+                                        <h:outputLabel style="color: red;" rendered="#{bill.referenceBill.cancelled}" value="#{bill.referenceBill.cancelledBill.creater.webUserPerson.name}" >                                       
+                                        </h:outputLabel>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{bill.refunded}" >
+                                        <h:outputLabel style="color: red;" value="Refunded At " />
+                                        <h:outputLabel style="color: red;" rendered="#{bill.referenceBill.refunded}" value="#{bill.referenceBill.refundedBill.creater.webUserPerson.name}" >
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputLabel>
+                                    </h:panelGroup>
+                                </p:column>   
+                                <p:column headerText="Net Value" >
+                                    <h:outputLabel value="#{bill.netTotal}" >
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </p:column>  
+                                 <p:column headerText="Balance" >
+                                     <h:outputLabel value="#{bill.balance}" >
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </p:column> 
+
+                                <p:column headerText="Status">
+                                    <h:panelGroup rendered="#{bill.approveAt ne null}">
+                                        <p:badge value="Approved" severity="success"/>
+                                    </h:panelGroup>
+                                    <p:badge value="Not Approved" severity="danger" rendered="#{bill.approveAt eq null}" />
+                                </p:column>
+                                <p:column headerText="Approved By" >
+                                    <h:outputLabel value=" #{bill.approveUser.name}" >
+                                    </h:outputLabel><br/>
+                                    <p:outputLabel value="#{bill.approveAt}">
+                                        <f:convertDateTime pattern="#{sessionController.departmentPreference.shortDateFormat}" />
+                                    </p:outputLabel>
+                                </p:column> 
+                                <p:column headerText="Action">
+                                    <p:commandButton class="ui-button-success" 
+                                                     icon="fas fa-check" 
+                                                     value="Approve"
+                                                     onclick="if (!confirm('Are you sure you want to approve this ?'))
+                                                                     return false;"
+                                                     action="#{cashRecieveBillController.approveBill(bill)}"
+                                                     ajax="false"
+                                                     disabled="#{bill.approveAt ne null or cashRecieveBillController.checkForExpireofApproval(bill)}" />
+                                </p:column>
+                            </p:dataTable>
+                        </div>
+                    </div>
+                </p:panel>
+
+            </h:form>
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>

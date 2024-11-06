@@ -20,7 +20,7 @@
                                 <p:commandButton 
                                     id="btnSettle" 
                                     value="Settle" 
-                                    action="#{cashRecieveBillController.settleBill}"
+                                    action="#{cashRecieveBillController.settleBillForApproval}"
                                     ajax="false"  
                                     style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" 
                                     class="ui-button-success"
@@ -39,12 +39,37 @@
                     </f:facet>
 
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-12">
                             <p:panel>
                                 <f:facet name="header" >
                                     <h:outputText styleClass="fa fa-money-bill-wave" />
                                     <h:outputText value="Payment" class="mx-4"></h:outputText>
                                 </f:facet>
+                                
+                                  <div class="row my-2 d-flex align-items-center">
+                                    <div class="col-md-4">
+                                        <p:outputLabel value="Select Institution" />      
+                                    </div>
+                                    <div class="col-md-8">
+                                        <p:autoComplete widgetVar="aIx" id="acIx"  
+                                                        forceSelection="true" 
+                                                        inputStyleClass="w-100"
+                                                        value="#{cashRecieveBillController.institution}" 
+                                                        completeMethod="#{institutionController.completeCreditCompany}" 
+                                                        var="ix" itemLabel="#{ix.name}"
+                                                        itemValue="#{ix}" class="w-100">
+                                            <p:column>
+                                                <h:outputLabel value="#{ix.name}"/>
+                                            </p:column>                                  
+                                            <p:column>
+                                                <h:outputLabel value="#{ix.institutionCode}"/>
+                                            </p:column>
+                                            <f:ajax execute="@this" event="itemSelect" render=":#{p:resolveFirstComponentWithId('items',view).clientId} :#{p:resolveFirstComponentWithId('ins',view).clientId} tot" 
+                                                    listener="#{cashRecieveBillController.selectInstitutionListener()}"/>
+                                        </p:autoComplete> 
+                                    </div>
+                                </div>
+                                
                                 <div class="row my-2 d-flex align-items-center">
                                     <div class="col-md-4">
                                         <p:outputLabel value="Payment Method" />      
@@ -85,29 +110,7 @@
                                     </div>
                                 </div>
 
-                                <div class="row my-2 d-flex align-items-center">
-                                    <div class="col-md-4">
-                                        <p:outputLabel value="Select Payment" />      
-                                    </div>
-                                    <div class="col-md-8">
-                                        <p:autoComplete widgetVar="aIx" id="acIx"  
-                                                        forceSelection="true" 
-                                                        inputStyleClass="w-100"
-                                                        value="#{cashRecieveBillController.institution}" 
-                                                        completeMethod="#{institutionController.completeCreditCompany}" 
-                                                        var="ix" itemLabel="#{ix.name}"
-                                                        itemValue="#{ix}" class="w-100">
-                                            <p:column>
-                                                <h:outputLabel value="#{ix.name}"/>
-                                            </p:column>                                  
-                                            <p:column>
-                                                <h:outputLabel value="#{ix.institutionCode}"/>
-                                            </p:column>
-                                            <f:ajax execute="@this" event="itemSelect" render=":#{p:resolveFirstComponentWithId('items',view).clientId} :#{p:resolveFirstComponentWithId('ins',view).clientId} tot" 
-                                                    listener="#{cashRecieveBillController.selectInstitutionListener()}"/>
-                                        </p:autoComplete> 
-                                    </div>
-                                </div>
+                              
 
                                 <div class="row my-2">
                                     <div class="col-md-4"></div>
@@ -118,9 +121,9 @@
                                         <p:outputLabel value="Net Total" />
                                     </div>
                                     <div class="col-md-8">
-                                        <p:outputLabel id="tot" value="#{cashRecieveBillController.current.netTotal}">
+                                        <p:inputText id="tot" value="#{cashRecieveBillController.current.netTotal}">
                                             <f:convertNumber pattern="#,##0.00" />
-                                        </p:outputLabel>
+                                        </p:inputText>
                                     </div>
                                 </div>
 
@@ -132,81 +135,6 @@
                                         <p:inputTextarea value="#{cashRecieveBillController.current.comments}" class="w-100"/>  
                                     </div>
                                 </div>
-                            </p:panel>
-                        </div>
-
-
-
-                        <div class="col-md-6">
-                            <p:panel>
-                                <f:facet name="header">
-                                    <p:commandButton 
-                                        ajax="false" 
-                                        action="#{cashRecieveBillController.removeAll()}" 
-                                        value="Remove Selected"                                   
-                                        class="ui-button-danger mx-2"/>
-
-                                    <h:outputLabel value="Paying Institution : "/>
-                                    <p:outputLabel value="#{cashRecieveBillController.institution.name}" id="ins"/>
-
-
-                                </f:facet>       
-
-                                <p:dataTable value="#{cashRecieveBillController.billItems}" 
-                                             rowIndexVar="rowIndex"   var="b" id="items"
-                                             rowKey="#{b.searialNo}" selection="#{cashRecieveBillController.selectedBillItems}"
-                                             selectionMode="multiple"
-                                             >
-
-                                    <p:ajax  event="rowSelect" process="@this" 
-                                             update=":#{p:resolveFirstComponentWithId('tot',view).clientId}" 
-                                             listener="#{cashRecieveBillController.calTotal}"/>
-                                    <p:ajax  event="rowSelectCheckbox" process="@this" 
-                                             update=":#{p:resolveFirstComponentWithId('tot',view).clientId}" 
-                                             listener="#{cashRecieveBillController.calTotal}"/>
-                                    <p:ajax  event="rowUnselectCheckbox" process="@this" 
-                                             update=":#{p:resolveFirstComponentWithId('tot',view).clientId}" 
-                                             listener="#{cashRecieveBillController.calTotal}"/>
-                                    <p:column width="1rem" selectionBox="true" />                                       
-                                    <p:column>
-                                        <f:facet name="header">
-                                            <h:outputLabel value="No"/>.                                  
-                                        </f:facet>
-                                        <h:outputLabel value="#{rowIndex+1}"/>
-                                    </p:column>                              
-
-                                    <p:column >  
-                                        <f:facet name="header">
-                                            <h:outputLabel value="Bill No"/>                                    
-                                        </f:facet>                               
-                                        <p:outputLabel value="#{b.referenceBill.deptId}"/>
-                                    </p:column>
-                                    <p:column headerText="Patient Name">
-                                        <p:outputLabel value="#{b.referenceBill.patient.person.name}"/>                               
-                                    </p:column>
-                                    <p:column headerText="Value">
-                                        <p:outputLabel value="#{b.referenceBill.netTotal+b.referenceBill.vat}">  
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </p:outputLabel>
-                                    </p:column>
-                                    <p:column headerText="Paid">
-                                        <p:outputLabel value="#{b.referenceBill.paidAmount}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </p:outputLabel>
-                                    </p:column>
-
-                                    <p:column headerText="Net Total">
-                                        <p:inputText autocomplete="off" value="#{b.netValue}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                            <f:ajax event="blur" execute="@this" render="@all" 
-                                                    listener="#{cashRecieveBillController.changeNetValueListener(b)}"/>
-                                        </p:inputText>
-                                    </p:column>
-                                    <p:column headerText="Remove">
-                                        <p:commandButton ajax="false" action="#{cashRecieveBillController.remove(b)}" value="X" class="ui-button-danger">
-                                        </p:commandButton>
-                                    </p:column>
-                                </p:dataTable>
                             </p:panel>
                         </div>
                     </div>
@@ -222,7 +150,7 @@
                         icon="fa fa-plus"
                         class="ui-button-warning">
                     </p:commandButton>
-                    <bi:insRecieve billController="#{cashRecieveBillController}"  bill="#{cashRecieveBillController.current}" dup="false"/>                       
+                    <bi:insRecieve_opd billController="#{cashRecieveBillController}"  bill="#{cashRecieveBillController.current}" dup="false"/>                       
                 </p:panel>
 
             </h:form>
