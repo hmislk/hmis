@@ -2572,6 +2572,7 @@ public class FinancialTransactionController implements Serializable {
         bundle.selectAllChildBundles();
         bundle.aggregateTotalsFromAllChildBundles();
         bundle.setDenominationTransactions(denominationTransactionController.createDefaultDenominationTransaction());
+        bundle.sortByDateInstitutionSiteDepartmentType();
         return "/cashier/handover_start_all?faces-redirect=true";
     }
 
