@@ -43,19 +43,53 @@
             <h:outputLabel value="Payment Type " ></h:outputLabel>
             <h:outputLabel value="#{billSearch.viewingBill.paymentMethod}" />
 
-           
+
             <p:outputLabel value="Institution" ></p:outputLabel>
-            <p:outputLabel value="#{cc.attrs.bill.institution.name}" ></p:outputLabel>
-            
-             <p:outputLabel value="Department" ></p:outputLabel>
-            <p:outputLabel value="#{cc.attrs.bill.department.name}" ></p:outputLabel>
+            <h:panelGroup >
+                <p:outputLabel 
+                    value="#{cc.attrs.bill.institution.name}" 
+                    rendered="#{not webUserController.hasPrivilege('Developers')}">
+                </p:outputLabel>
+                <p:selectOneMenu
+                    id="cmbIns"
+                    rendered="#{webUserController.hasPrivilege('Developers')}"
+                    styleClass="w-100 form-control" 
+                    value="#{cc.attrs.bill.institution}" 
+                    filter="true">
+                    <f:selectItem itemLabel="All Institutions" />
+                    <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                    <p:ajax process="cmbIns" update="cmbDept" />
+                </p:selectOneMenu>
+            </h:panelGroup>
 
-            
-             <p:outputLabel value="User" ></p:outputLabel>
-             <p:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}" ></p:outputLabel>
+
+            <p:outputLabel value="Department" ></p:outputLabel>
+            <h:panelGroup id="cmbDept">
+                <p:outputLabel 
+                    rendered="#{not webUserController.hasPrivilege('Developers')}"
+                    value="#{cc.attrs.bill.department.name}" >
+                </p:outputLabel>
+                <p:selectOneMenu
+                    rendered="#{cc.attrs.bill.institution ne null and webUserController.hasPrivilege('Developers')}"
+                    styleClass="w-100 form-control"
+                    value="#{cc.attrs.bill.department}"
+                    filterMatchMode="contains"
+                    filter="true">
+                    <f:selectItem itemLabel="All Departments" />
+                    <f:selectItems 
+                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(cc.attrs.bill.institution)}"
+                        var="d"
+                        itemLabel="#{d.name}"
+                        itemValue="#{d}" />
+                </p:selectOneMenu>
+            </h:panelGroup>
 
 
-            
+            <p:outputLabel value="User" ></p:outputLabel>
+            <p:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}" ></p:outputLabel>
+
+
+
             <p:separator/>
             <p:separator/>
 
