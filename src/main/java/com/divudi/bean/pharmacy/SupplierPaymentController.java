@@ -44,6 +44,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -571,7 +572,7 @@ public class SupplierPaymentController implements Serializable {
         netTotal = 0.0;
         String jpql;
         Map params = new HashMap();
-        
+
         jpql = "select b from Bill b "
                 + " where b.retired=false "
                 + " and (b.billType = :billTypes or b.billTypeAtomic = :btas)  "
@@ -584,12 +585,18 @@ public class SupplierPaymentController implements Serializable {
         params.put("billTypes", BillType.GrnPaymentPre);
         params.put("btas", BillTypeAtomic.SUPPLIER_PAYMENT);
 
-
         bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
-        for (Bill b : bills) {
-            netTotal += b.getNetTotal();
+        Iterator<Bill> iterator = bills.iterator();
+        while (iterator.hasNext()) {
+            Bill b = iterator.next();
+            if (b.getBillType() == BillType.GrnPayment) {
+                iterator.remove();
+            } else {
+                netTotal += b.getNetTotal();
+            }
         }
+
     }
 
     @Deprecated
