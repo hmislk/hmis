@@ -1922,6 +1922,53 @@ public class ReportTemplateRowBundle implements Serializable {
         return bundles;
     }
 
+    public void sortByDateInstitutionSiteDepartmentType() {
+        if (bundles == null || bundles.isEmpty()) {
+            return;
+        }
+
+        Collections.sort(bundles, new Comparator<ReportTemplateRowBundle>() {
+            @Override
+            public int compare(ReportTemplateRowBundle b1, ReportTemplateRowBundle b2) {
+                // Compare by Date
+                int dateCompare = b1.getDate().compareTo(b2.getDate());
+                if (dateCompare != 0) {
+                    return dateCompare;
+                }
+
+                // Compare by Institution Name
+                String institution1 = b1.getDepartment().getInstitution().getName();
+                String institution2 = b2.getDepartment().getInstitution().getName();
+                int institutionCompare = institution1.compareTo(institution2);
+                if (institutionCompare != 0) {
+                    return institutionCompare;
+                }
+
+                // Compare by Site Name
+                String site1 = b1.getDepartment().getSite().getName();
+                String site2 = b2.getDepartment().getSite().getName();
+                int siteCompare = site1.compareTo(site2);
+                if (siteCompare != 0) {
+                    return siteCompare;
+                }
+
+                // Compare by Department Name
+                String department1 = b1.getDepartment().getName();
+                String department2 = b2.getDepartment().getName();
+                int departmentCompare = department1.compareTo(department2);
+                if (departmentCompare != 0) {
+                    return departmentCompare;
+                }
+
+                // Compare by Type (If applicable)
+                // Assuming there is a 'type' field to be compared as a String or Enum
+                String type1 = b1.getBundleType(); // Adjust this depending on how type is defined
+                String type2 = b2.getBundleType(); // Adjust this depending on how type is defined
+                return type1.compareTo(type2);
+            }
+        });
+    }
+
     public void setBundles(List<ReportTemplateRowBundle> bundles) {
         this.bundles = bundles;
     }
