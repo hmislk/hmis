@@ -264,7 +264,7 @@
                                 <h4 style="color: #000000; text-align: center " >
                                     <h:outputLabel value="Payment Voucher" style="text-decoration: underline;"/>
                                 </h4>
-                                
+
                                 <div class="institutionName">                                                 
                                     <p:outputLabel value="#{cc.attrs.bill.cancelledBill.deptId} **Cancelled"  
                                                    rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}"/> 
@@ -326,34 +326,24 @@
                                 </div>
 
                                 <div>
-
-                                    <h3>Bill Details</h3>
-                                    <h:panelGroup class="col-10 ">
+                                    <h:panelGrid columns="5" styleClass="col-12 W-100" cellpadding="5">
                                         <p:outputLabel value="Payee:" style="font-weight: bold;" />
+                                        <p:outputLabel value="Bank:" style="font-weight: bold;" />
+                                        <p:outputLabel value="Cheque Date:" style="font-weight: bold;" />
+                                        <p:outputLabel value="Cheque No:" style="font-weight: bold;" />
+                                        <p:outputLabel value="Amount:" style="font-weight: bold;" />
+                                        
+                                        
                                         <p:outputLabel value="#{cc.attrs.bill.toInstitution.name}" />
-                                        <br/>
-
-                                        <p:outputLabel value="Bank:" style="font-weight: bold;"/>
-                                        <p:outputLabel value="#{cc.attrs.bill.bank.name}"/>
-                                        <br/>
-
-                                        <p:outputLabel value="Cheque Date:" style="font-weight: bold;"/>
-                                        <p:outputLabel  value="#{cc.attrs.bill.chequeDate}" >
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                        <p:outputLabel value="#{cc.attrs.bill.bank.name}" />
+                                        <p:outputLabel value="#{cc.attrs.bill.chequeDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </p:outputLabel>
-                                        <br/>
-
-                                        <p:outputLabel value="Cheque NO:" style="font-weight: bold;"/>
                                         <p:outputLabel value="#{cc.attrs.bill.chequeRefNo}" />
-                                        <br/>
-
-                                        <p:outputLabel value="Amount:" style="font-weight: bold;"/>
                                         <p:outputLabel value="#{0 - cc.attrs.bill.netTotal}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </p:outputLabel>
-                                        <br/>
-                                    </h:panelGroup>
-
+                                    </h:panelGrid>
                                 </div>
 
 
