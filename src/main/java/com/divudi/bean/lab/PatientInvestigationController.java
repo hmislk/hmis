@@ -3177,9 +3177,14 @@ public class PatientInvestigationController implements Serializable {
         jpql += " ORDER BY b.id DESC";
 
         params.put("ret", false);
+        
+        System.out.println("jpql = " + jpql);
+        System.out.println("params = " + params);
 
         billItems = billItemFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
+        System.out.println("billItems = " + billItems);
+        
         // Initialize totals
         hospitalFeeTotal = 0.0;
         ccFeeTotal = 0.0;

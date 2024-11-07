@@ -92,10 +92,10 @@
                         <p:selectOneMenu
                             id="siteMenu"
                             styleClass="w-100 form-control"  
-                            value="#{patientInvestigationController.site}" 
+                            value="#{patientInvestigationController.orderedSite}" 
                             filter="true">
                             <f:selectItem itemLabel="All Sites" />
-                            <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                            <f:selectItems value="#{institutionController.sites}" var="orderedSite" itemLabel="#{orderedSite.name}" itemValue="#{orderedSite}" />
                             <p:ajax process="siteMenu" update="cmbDept" />
                         </p:selectOneMenu>
 
@@ -108,7 +108,7 @@
 
                             <!-- Component 1: Without Institution and Site -->
                             <p:selectOneMenu
-                                rendered="#{patientInvestigationController.orderedInstitution eq null and patientInvestigationController.site eq null}"
+                                rendered="#{patientInvestigationController.orderedInstitution eq null and patientInvestigationController.orderedSite eq null}"
                                 styleClass="w-100 form-control"
                                 value="#{patientInvestigationController.department}"
                                 filterMatchMode="contains"
@@ -123,14 +123,14 @@
 
                             <!-- Component 2: With Site Only -->
                             <p:selectOneMenu
-                                rendered="#{patientInvestigationController.orderedInstitution eq null and patientInvestigationController.site ne null}"
+                                rendered="#{patientInvestigationController.orderedInstitution eq null and patientInvestigationController.orderedSite ne null}"
                                 styleClass="w-100 form-control"
                                 value="#{patientInvestigationController.department}"
                                 filterMatchMode="contains"
                                 filter="true">
                                 <f:selectItem itemLabel="All Departments" />
                                 <f:selectItems 
-                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(patientInvestigationController.site)}"
+                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(patientInvestigationController.orderedSite)}"
                                     var="d"
                                     itemLabel="#{d.name}"
                                     itemValue="#{d}" />
@@ -138,7 +138,7 @@
 
                             <!-- Component 3: With Institution Only -->
                             <p:selectOneMenu
-                                rendered="#{patientInvestigationController.orderedInstitution ne null and patientInvestigationController.site eq null}"
+                                rendered="#{patientInvestigationController.orderedInstitution ne null and patientInvestigationController.orderedSite eq null}"
                                 styleClass="w-100 form-control"
                                 value="#{patientInvestigationController.department}"
                                 filterMatchMode="contains"
@@ -153,14 +153,14 @@
 
                             <!-- Component 4: With Both Institution and Site -->
                             <p:selectOneMenu
-                                rendered="#{patientInvestigationController.orderedInstitution ne null and patientInvestigationController.site ne null}"
+                                rendered="#{patientInvestigationController.orderedInstitution ne null and patientInvestigationController.orderedSite ne null}"
                                 styleClass="w-100 form-control"
                                 value="#{patientInvestigationController.department}"
                                 filterMatchMode="contains"
                                 filter="true">
                                 <f:selectItem itemLabel="All Departments" />
                                 <f:selectItems 
-                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(patientInvestigationController.orderedInstitution, patientInvestigationController.site)}"
+                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(patientInvestigationController.orderedInstitution, patientInvestigationController.orderedSite)}"
                                     var="d"
                                     itemLabel="#{d.name}"
                                     itemValue="#{d}" />
