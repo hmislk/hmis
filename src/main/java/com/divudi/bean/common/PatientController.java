@@ -188,6 +188,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     PatientDepositController patientDepositController;
+    @Inject
+    WebUserController webUserController;
 
     /**
      *
@@ -261,8 +263,9 @@ public class PatientController implements Serializable, ControllerWithPatient {
     private Institution institution;
     private Department department;
 
+    private boolean reGenerateePhn;
+    
     /**
-     *
      *
      *
      *
@@ -978,6 +981,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No patient selected");
             return "";
         }
+        reGenerateePhn = webUserController.hasPrivilege("EditData");
+        
         return "/opd/patient_edit?faces-redirect=true;";
     }
 
@@ -2656,6 +2661,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     public String navigateToAddNewPatientForOpd() {
         current = null;
         getCurrent();
+        
+        reGenerateePhn = true;
         return "/opd/patient_edit?faces-redirect=true;";
     }
 
@@ -4172,6 +4179,16 @@ public class PatientController implements Serializable, ControllerWithPatient {
         this.billNumberGenerator = billNumberGenerator;
 
     }
+
+    public boolean isReGenerateePhn() {
+        return reGenerateePhn;
+    }
+
+    public void setReGenerateePhn(boolean reGenerateePhn) {
+        this.reGenerateePhn = reGenerateePhn;
+    }
+
+   
 
     /**
      *
