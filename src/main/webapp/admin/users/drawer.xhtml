@@ -19,8 +19,16 @@
                 <p:panel >
                     <f:facet name="header" >
                         <i class="fa fa-tachometer-alt"></i>
-                        <h:outputLabel class="mx-2" value="Manage Dashboards"/>
-                        <p:commandButton value="Save" ajax="false" action="#{drawerController.saveSelected()}" disabled="#{!drawerController.editDrawerAccess}"></p:commandButton>
+                        <h:outputLabel class="m-2" value="Manage Dashboards"/>
+                        <p:commandButton 
+                            value="Save" 
+                            ajax="false" 
+                            action="#{drawerController.saveSelected()}" 
+                            disabled="#{!drawerController.editDrawerAccess}"
+                            style="float: right;"
+                            icon="fas fa-save"
+                            class="ui-button-success">
+                        </p:commandButton>
                     </f:facet>
 
                     <table  class="ui-datatable ui-widget w-100 m-3">
