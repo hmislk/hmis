@@ -12438,6 +12438,24 @@ public class SearchController implements Serializable {
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
+    
+    public void createCreditCompanyPaymentToApproveTable() {
+        List<BillTypeAtomic> billTypes = new ArrayList<>();
+        billTypes.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
+
+        bills = null;
+        String sql;
+        Map temMap = new HashMap();
+        System.out.println("getFromDate() = " + getFromDate());
+        System.out.println("getToDate() = " + getToDate());
+        sql = "select b from Bill b where b.billTypeAtomic IN :billTypes and b.createdAt between :fromDate and :toDate and b.retired=false order by b.id desc";
+        System.out.println("sql = " + sql);
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("billTypes", billTypes);
+        bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
 
     public void createIncomeBillTable() {
         fetchBillTable(BillType.ChannelIncomeBill);

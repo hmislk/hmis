@@ -38,51 +38,88 @@
             <p:outputLabel value="#{cc.attrs.bill.billTypeAtomic}" ></p:outputLabel>
 
             <h:outputLabel value="Bill No" />
-            <h:outputLabel value="#{billSearch.viewingBill.deptId}" ></h:outputLabel>
+            <h:outputLabel value="#{cc.attrs.bill.deptId}" ></h:outputLabel>
 
             <h:outputLabel value="Payment Type " ></h:outputLabel>
-            <h:outputLabel value="#{billSearch.viewingBill.paymentMethod}" />
+            <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" />
 
-           
+
             <p:outputLabel value="Institution" ></p:outputLabel>
-            <p:outputLabel value="#{cc.attrs.bill.institution.name}" ></p:outputLabel>
-            
-             <p:outputLabel value="Department" ></p:outputLabel>
-            <p:outputLabel value="#{cc.attrs.bill.department.name}" ></p:outputLabel>
+            <h:panelGroup >
+                <p:outputLabel 
+                    value="#{cc.attrs.bill.institution.name}" 
+                    rendered="#{not webUserController.hasPrivilege('Developers')}">
+                </p:outputLabel>
+                <p:autoComplete  
+                    id="acIns"
+                    rendered="#{webUserController.hasPrivilege('Developers')}"
+                    class="w-100" 
+                    inputStyleClass="w-100" 
+                    completeMethod="#{institutionController.completeCompany}" 
+                    var="pta" 
+                    itemLabel="#{pta.name}" 
+                    itemValue="#{pta}" 
+                    forceSelection="true" 
+                    value="#{cc.attrs.bill.institution}" >
+                    <p:ajax process="acIns" update="cmbDept"/>
+                </p:autoComplete>
+            </h:panelGroup>
 
-            
-             <p:outputLabel value="User" ></p:outputLabel>
-             <p:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}" ></p:outputLabel>
+
+            <p:outputLabel value="Department" ></p:outputLabel>
+            <h:panelGroup id="cmbDept">
+                <p:outputLabel 
+                    rendered="#{not webUserController.hasPrivilege('Developers')}"
+                    value="#{cc.attrs.bill.department.name}" >
+                </p:outputLabel>
+                <p:selectOneMenu
+                    rendered="#{cc.attrs.bill.institution ne null and webUserController.hasPrivilege('Developers')}"
+                    styleClass="w-100 form-control"
+                    value="#{cc.attrs.bill.department}"
+                    filterMatchMode="contains"
+                    filter="true">
+                    <f:selectItem itemLabel="All Departments" />
+                    <f:selectItems 
+                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(cc.attrs.bill.institution)}"
+                        var="d"
+                        itemLabel="#{d.name}"
+                        itemValue="#{d}" />
+                </p:selectOneMenu>
+            </h:panelGroup>
 
 
-            
+            <p:outputLabel value="User" ></p:outputLabel>
+            <p:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}" ></p:outputLabel>
+
+
+
             <p:separator/>
             <p:separator/>
 
             <h:outputLabel value="Total" ></h:outputLabel>
-            <h:outputLabel value="#{billSearch.viewingBill.total}" ></h:outputLabel>
+            <h:outputLabel value="#{cc.attrs.bill.total}" ></h:outputLabel>
 
             <h:outputLabel value="Discount" ></h:outputLabel>
-            <h:outputLabel value="#{billSearch.viewingBill.discount}" ></h:outputLabel>
+            <h:outputLabel value="#{cc.attrs.bill.discount}" ></h:outputLabel>
 
             <h:outputLabel value="Net Total" ></h:outputLabel>
-            <h:outputLabel value="#{billSearch.viewingBill.netTotal}" ></h:outputLabel>
+            <h:outputLabel value="#{cc.attrs.bill.netTotal}" ></h:outputLabel>
 
             <p:separator/>
             <p:separator/>
 
             <h:outputLabel value="Credit Company" ></h:outputLabel>
-            <p:autoComplete value="#{billSearch.viewingBill.creditCompany}" completeMethod="#{institutionController.completeIns}" var="i" itemLabel="#{i.name}"
-                            itemValue="#{i}" rendered="false"></p:autoComplete><h:outputLabel value="#{billSearch.viewingBill.creditCompany.name}" rendered="true"></h:outputLabel>
+            <p:autoComplete value="#{cc.attrs.bill.creditCompany}" completeMethod="#{institutionController.completeIns}" var="i" itemLabel="#{i.name}"
+                            itemValue="#{i}" rendered="false"></p:autoComplete><h:outputLabel value="#{cc.attrs.bill.creditCompany.name}" rendered="true"></h:outputLabel>
 
             <h:outputLabel value="Referred By" ></h:outputLabel>
-            <h:outputLabel value="#{billSearch.viewingBill.referredBy.person.nameWithTitle}" ></h:outputLabel>
+            <h:outputLabel value="#{cc.attrs.bill.referredBy.person.nameWithTitle}" ></h:outputLabel>
 
             <h:outputLabel value="Referring Institution" ></h:outputLabel>
-            <h:outputLabel value="#{billSearch.viewingBill.referenceInstitution.name}" ></h:outputLabel>
+            <h:outputLabel value="#{cc.attrs.bill.referenceInstitution.name}" ></h:outputLabel>
 
             <h:outputLabel value="ID" ></h:outputLabel>
-            <h:outputLabel value="#{billSearch.viewingBill.id}" ></h:outputLabel>
+            <h:outputLabel value="#{cc.attrs.bill.id}" ></h:outputLabel>
 
         </p:panelGrid>
 

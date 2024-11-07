@@ -439,6 +439,11 @@ public class Payment implements Serializable {
     }
 
     public Department getDepartment() {
+        if (department == null) {
+            if (bill != null) {
+                department = bill.getDepartment();
+            }
+        }
         return department;
     }
 
@@ -847,8 +852,6 @@ public class Payment implements Serializable {
         this.chequePaid = chequePaid;
     }
 
-    
-    
     public WebUser getChequeRealizer() {
         return chequeRealizer;
     }

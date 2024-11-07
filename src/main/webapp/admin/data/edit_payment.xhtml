@@ -23,16 +23,16 @@
                                     icon="fas fa-floppy-disk"
                                     ajax="false" 
                                     action="#{paymentController.save(billSearch.payment)}" ></p:commandButton>
-                                <p:commandButton 
+<!--                                <p:commandButton 
                                     ajax="false" 
                                     value="Back" 
                                     class="ui-button-warning"
                                     icon="fas fa-arrow-left"
-                                    action="/opd/view/opd_batch_bill?faces-redirect=true"></p:commandButton>
+                                    action="/opd/view/opd_batch_bill?faces-redirect=true"></p:commandButton>-->
                             </div>
                         </f:facet>
 
-                        <p:panelGrid columns="2" class="w-100" layout="grid" >
+                        <p:panelGrid columns="2" class="w-100" layout="tabular" >
                             <h:outputText value="ID" ></h:outputText>
                             <h:outputText value="#{billSearch.payment.id}" ></h:outputText>
 
@@ -57,6 +57,49 @@
                                         update="paymentDetails"
                                         event="change"/>
                             </p:selectOneMenu>
+
+                            <p:outputLabel value="Institution" ></p:outputLabel>
+                            <h:panelGroup >
+                                <p:outputLabel 
+                                    value="#{billSearch.payment.institution.name}" 
+                                    rendered="#{not webUserController.hasPrivilege('Developers')}">
+                                </p:outputLabel>
+                                <p:autoComplete  
+                                    id="acIns"
+                                    rendered="#{webUserController.hasPrivilege('Developers')}"
+                                    class="w-100" 
+                                    inputStyleClass="w-100" 
+                                    completeMethod="#{institutionController.completeCompany}" 
+                                    var="pta" 
+                                    itemLabel="#{pta.name}" 
+                                    itemValue="#{pta}" 
+                                    forceSelection="true" 
+                                    value="#{billSearch.payment.institution}" >
+                                    <p:ajax process="acIns" update="cmbDept"/>
+                                </p:autoComplete>
+                            </h:panelGroup>
+
+
+                            <p:outputLabel value="Department" ></p:outputLabel>
+                            <h:panelGroup id="cmbDept">
+                                <p:outputLabel 
+                                    rendered="#{not webUserController.hasPrivilege('Developers')}"
+                                    value="#{billSearch.payment.department.name}" >
+                                </p:outputLabel>
+                                <p:selectOneMenu
+                                    rendered="#{billSearch.payment.institution ne null and webUserController.hasPrivilege('Developers')}"
+                                    styleClass="w-100 form-control"
+                                    value="#{billSearch.payment.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(billSearch.payment.institution)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+                            </h:panelGroup>
 
                             <h:outputLabel></h:outputLabel>
 

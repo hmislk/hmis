@@ -353,6 +353,8 @@ public class BillReturnController implements Serializable {
         Payment returningPayment = new Payment();
         returningPayment.setBill(newlyReturnedBill);
         returningPayment.setPaymentMethod(paymentMethod);
+        returningPayment.setInstitution(sessionController.getInstitution());
+        returningPayment.setDepartment(sessionController.getDepartment());
         returningPayment.setPaidValue(newlyReturnedBill.getNetTotal());
         paymentController.save(returningPayment);
         returningBillPayments.add(returningPayment);

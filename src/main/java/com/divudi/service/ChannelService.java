@@ -664,7 +664,7 @@ public class ChannelService {
         BillItem cItem = cancelBillItems(bs.getBillItem(), cb);
         BillSession cbs = cancelBillSession(bs, cb, cItem);
         bill.getSingleBillSession().getBill().setCancelled(true);
-        if(bill.getReferenceBill() != null){
+        if (bill.getReferenceBill() != null) {
             bill.getReferenceBill().setCancelled(true);
         }
         bs.getBill().setCancelledBill(cb);
@@ -719,12 +719,11 @@ public class ChannelService {
         cb.setBillDate(new Date());
         cb.setBillTime(new Date());
         cb.setCreatedAt(new Date());
-        
+
         // cb.setCreater(getSessionController().getLoggedUser());
         // cb.setDepartment(getSessionController().getLoggedUser().getDepartment());
         //  cb.setInstitution(getSessionController().getInstitution());
         // cb.setComments(comment);
-
         //     cb.setInsId(billNumberBean.institutionChannelBillNumberGenerator(bill.getInstitution(), cb));
         // String insId = bookingControllerViewScope.generateBillNumberInsId(cb);
         String insId = billNumberBean.institutionChannelBillNumberGenerator(bill.getSingleBillSession().getSessionInstance().getOriginatingSession().getInstitution(), cb);
@@ -855,7 +854,24 @@ public class ChannelService {
         return consultantFacade.findByJpql(jpql.toString(), m);
     }
 
-    public List<SessionInstance> findSessionInstance(List<Institution> institution, List<Speciality> specialities, List<Consultant> doctorList, Date sessionDate) {
+    public List<Doctor> findDoctorsFromName(String name, Long id) {
+        StringBuffer jpql = new StringBuffer("select c from Doctor c where c.retired=:ret");
+        Map m = new HashMap();
+        m.put("ret", false);
+
+        if (name != null && !name.isEmpty()) {
+            jpql.append(" and c.person.name like :name");
+            m.put("name", "%" + name + "%");
+        }
+        if (id != null && !id.toString().isEmpty()) {
+            jpql.append(" and c.id =:id");
+            m.put("id", id);
+        }
+
+        return consultantFacade.findByJpql(jpql.toString(), m);
+    }
+
+    public List<SessionInstance> findSessionInstance(List<Institution> institution, List<Speciality> specialities, List<Doctor> doctorList, Date sessionDate) {
         List<SessionInstance> sessionInstances;
         Map<String, Object> m = new HashMap<>();
         StringBuilder jpql = new StringBuilder("select i from SessionInstance i where i.retired=:ret and i.originatingSession.retired=:ret "
@@ -867,7 +883,7 @@ public class ChannelService {
             jpql.append(" and i.sessionDate = :sd ");
             m.put("sd", sessionDate);
             System.out.println(sessionDate);
-        }else if(sessionDate == null){
+        } else if (sessionDate == null) {
             jpql.append(" and i.sessionDate >= :sd ");
             m.put("sd", new Date());
         }
@@ -894,7 +910,48 @@ public class ChannelService {
         m.put("ret", false);
 
         sessionInstances = sessionInstanceFacade.findByJpql(jpql.toString(), m, TemporalType.DATE);
+        // System.out.println(jpql.toString()+"\n"+sessionInstances.size()+"\n"+m.values());
         return sessionInstances;
+    }
+
+    public SessionInstance findNextSessionInstance(List<Institution> institution, List<Speciality> specialities, List<Doctor> doctorList, Date sessionDate) {
+        Map<String, Object> m = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("select i from SessionInstance i where i.retired=:ret and i.originatingSession.retired=:ret "
+                + " and i.cancelled = false"
+                + " and i.completed = false");
+
+        // Handle sessionDate equality check
+        if (sessionDate != null) {
+            jpql.append(" and i.sessionDate > :sd ");
+            m.put("sd", sessionDate);
+            System.out.println(sessionDate);
+        }
+//         
+//        if(fromDate != null){
+//            jpql.append(" and i.sessionDate >= :fd");
+//            m.put("fd", fromDate);
+//        }
+
+        // Additional conditions for consultant, institution, and specialities
+        if (doctorList != null && !doctorList.isEmpty()) {
+            jpql.append(" and i.originatingSession.staff in :os");
+            m.put("os", doctorList);
+        }
+        if (institution != null && !institution.isEmpty()) {
+            jpql.append(" and i.originatingSession.institution in :ins");
+            m.put("ins", institution);
+        }
+        if (specialities != null && !specialities.isEmpty()) {
+            jpql.append(" and i.originatingSession.staff.speciality in :spe ");
+            m.put("spe", specialities);
+        }
+        jpql.append(" order by i.sessionDate asc");
+
+        m.put("ret", false);
+        System.out.println(jpql.toString() + "\n" + m);
+        return sessionInstanceFacade.findFirstByJpql(jpql.toString(), m, TemporalType.DATE);
+        // System.out.println(jpql.toString()+"\n"+sessionInstances.size()+"\n"+m.values());
+
     }
 
     public Bill settleCredit(BillSession preBillSession, String refNo) {
