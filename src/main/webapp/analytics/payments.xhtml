@@ -79,28 +79,82 @@
                             scrollWidth="100%">
 
                             <p:column 
-                                headerText="ID"
-                                sortBy="#{payment.id}">
-                                <p:outputLabel value="#{payment.id}" />
+                                headerText="Bill No"
+                                sortBy="#{payment.bill.deptId}" 
+                                filterBy="#{payment.bill.deptId}" 
+                                filterMatchMode="contains">
+                                <p:outputLabel value="#{payment.bill.deptId}" />
                             </p:column>
 
-                            <p:column headerText="Payment Method" >
+                            <p:column 
+                                headerText="Payment Method" 
+                                sortBy="#{payment.paymentMethod.label}" 
+                                filterBy="#{payment.paymentMethod.label}" 
+                                filterMatchMode="contains">
                                 <p:outputLabel value="#{payment.paymentMethod.label}" />
                             </p:column>
 
-                            <p:column headerText="Bill Type Atomic" >
+                            <p:column 
+                                headerText="Bill Type Atomic" 
+                                sortBy="#{payment.bill.billTypeAtomic.label}" 
+                                filterBy="#{payment.bill.billTypeAtomic.label}" 
+                                filterMatchMode="contains">
                                 <p:outputLabel value="#{payment.bill.billTypeAtomic.label}" />
                             </p:column>
-                            
-                             <p:column headerText="Status" >
-                                 <p:outputLabel value="#{payment.cancelled?'Cancelled':''}" />
+
+                            <p:column 
+                                headerText="Institution" 
+                                sortBy="#{payment.institution.name}" 
+                                filterBy="#{payment.institution.name}" 
+                                filterMatchMode="contains">
+                                <p:outputLabel value="#{payment.institution.name}" />
                             </p:column>
 
-                            <p:column headerText="Value" class="text-end">
-                                <p:outputLabel value="#{payment.paidValue}" >
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            <p:column 
+                                headerText="Department" 
+                                sortBy="#{payment.department.name}" 
+                                filterBy="#{payment.department.name}" 
+                                filterMatchMode="contains">
+                                <p:outputLabel value="#{payment.department.name}" />
+                            </p:column>
+
+                            <p:column 
+                                headerText="Value" 
+                                sortBy="#{payment.paidValue}" 
+                                filterBy="#{payment.paidValue}" 
+                                filterMatchMode="gte" 
+                                class="text-end">
+                                <p:outputLabel value="#{payment.paidValue}">
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </p:outputLabel>
                             </p:column>
+
+
+                            <p:column headerText="Actions" >
+                                <p:commandButton 
+                                    value="Bill" 
+                                    icon="fa fa-shield-alt" 
+                                    class="m-1 ui-button-danger" 
+                                    style="width: 10em;"
+                                    action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
+                                    ajax="false" 
+                                    rendered="#{webUserController.hasPrivilege('Developers')}">
+                                    <f:setPropertyActionListener value="#{payment.bill}" target="#{billSearch.bill}" />
+                                </p:commandButton>
+                                <p:commandButton 
+                                    value="Payment" 
+                                    ajax="false"
+                                    class="m-1 ui-button-warning"
+                                    style="width: 10em;"
+                                    icon="fa fa-pencil"
+                                    action="#{billSearch.navigateToEditPayment()}">
+                                    <f:setPropertyActionListener 
+                                        value="#{payment}" 
+                                        target="#{billSearch.payment}" ></f:setPropertyActionListener>
+                                </p:commandButton>
+                            </p:column>
+
+
 
 
                         </p:dataTable>
