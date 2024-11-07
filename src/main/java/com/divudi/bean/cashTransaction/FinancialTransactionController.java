@@ -1238,7 +1238,7 @@ public class FinancialTransactionController implements Serializable {
         if (selectedBundle == null) {
             return null;
         }
-        return "handover_start_all_bill_type_details";
+        return "/cashier/handover_start_all_bill_type_details?faces-redirect=true";
     }
 
     public String navigateToCashierShiftBillSearch() {
@@ -3682,6 +3682,7 @@ public class FinancialTransactionController implements Serializable {
                 String handoverKey = (ph != null) ? ph.name() : "No Handover"; // Use the enum name as part of the key
 
                 String key = String.join("-", dateKey, deptKey, userKey, webUserKey, handoverKey);
+                System.err.println("key = " + key);
 
                 ReportTemplateRowBundle b = groupedBundles.getOrDefault(key, new ReportTemplateRowBundle());
                 b.setDenominations(sessionController.findDefaultDenominations());
