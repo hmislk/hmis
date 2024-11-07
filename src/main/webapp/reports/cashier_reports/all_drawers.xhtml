@@ -50,6 +50,7 @@
                                     styleClass="m-1"
                                     ajax="false"
                                     action="#{searchController.navigateToUserDrawerDashboard()}" >
+                                    <f:setPropertyActionListener value="false" target="#{drawerController.editDrawerAccess}"/>
                                     <f:setPropertyActionListener value="#{dr}" target="#{searchController.drawer}"/>
                                 </p:commandButton>
                             </p:column>
