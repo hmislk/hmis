@@ -52,8 +52,8 @@
                         </p:commandButton>                    
                         <p:panel   id="gpBillPreview">
 
-                            <bi:grn_payment billItems="#{dealorPaymentBillSearch.billItems}" bill="#{dealorPaymentBillSearch.bill}"/>  
-
+                            <!--<bi:grn_payment billItems="#{dealorPaymentBillSearch.billItems}" bill="#{dealorPaymentBillSearch.bill}"/>--> 
+                            <bi:grnCheque billController ="#{dealorPaymentBillSearch}"  bill="#{dealorPaymentBillSearch.bill}" dup="false"/> 
 
                         </p:panel>
                     </p:panel>

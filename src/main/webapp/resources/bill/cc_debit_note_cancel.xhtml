@@ -4,9 +4,8 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
-    
-    
-    
+
+
     <!-- INTERFACE -->
     <cc:interface>
         <cc:attribute name="bill" />
@@ -74,7 +73,8 @@
                 <h:outputLabel value="#{sessionController.institution.phone}" style="font-size: 1.1em" /><br/>
                 <h:outputLabel value="#{sessionController.institution.email} | #{sessionController.institution.web}" style="font-size: 1.0em" /><br/>
                 <h:outputLabel value=" **Duplicate" rendered="#{cc.attrs.dup eq true }"/>
-                <h:outputLabel value="Collecting Centre Credit Note"/>
+                <h:outputLabel value=" **Cancelled" rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}"/><br/>
+                <h:outputLabel value="Collecting Centre Debitt Note Cancelled"/>
             </div>
 
             <!-- Receipt Details -->
@@ -88,10 +88,10 @@
                 <div>
                     <label>Date:</label>
                     <span>
-                        <h:outputLabel value="#{cc.attrs.bill.billDate}" rendered="#{cc.attrs.bill.deptId ne null}">
+                        <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billDate}" rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}">
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                         </h:outputLabel>                      
-                        <h:outputLabel value="#{cc.attrs.bill.billDate}" rendered="#{cc.attrs.bill.deptId eq null}">
+                        <h:outputLabel value="#{cc.attrs.bill.billDate}" rendered="#{cc.attrs.bill.cancelledBill.deptId eq null}">
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                         </h:outputLabel>
                     </span>
@@ -99,10 +99,10 @@
                 <div>
                     <label>Time:</label>
                     <span>
-                        <h:outputLabel value="#{cc.attrs.bill.billTime}" rendered="#{cc.attrs.bill.deptId ne null}">
+                        <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billTime}" rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}">
                             <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                         </h:outputLabel>                        
-                        <h:outputLabel value="#{cc.attrs.bill.billTime}" rendered="#{cc.attrs.bill.deptId eq null}">
+                        <h:outputLabel value="#{cc.attrs.bill.billTime}" rendered="#{cc.attrs.bill.cancelledBill.deptId eq null}">
                             <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                         </h:outputLabel>
                     </span>
@@ -123,8 +123,8 @@
                 <div>
                     <label>Payment Type:</label>
                     <span>
-                        <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" rendered="#{cc.attrs.bill.deptId ne null}" />
-                        <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" rendered="#{cc.attrs.bill.deptId eq null}" />
+                        <h:outputLabel value="#{cc.attrs.bill.cancelledBill.paymentMethod}" rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}" />
+                        <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" rendered="#{cc.attrs.bill.cancelledBill.deptId eq null}" />
                     </span>
                 </div>
 
@@ -158,6 +158,9 @@
                     </div>
                 </h:panelGroup>
             </div>
+
+
+
 
         </div>
 

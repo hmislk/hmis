@@ -143,6 +143,7 @@ public class DealorPaymentBillSearch implements Serializable {
         JsfUtil.addSuccessMessage("Succesfully Approved");
     }
 
+    @Deprecated
     public void fillDealorPaymentDone() {
         bills = null;
         netTotal  = 0.0;
@@ -151,9 +152,9 @@ public class DealorPaymentBillSearch implements Serializable {
 
         jpql = "select b from Bill b "
                 + " where b.retired=false "
+                + " and b.createdAt between :fromDate and :toDate"
                 + " and b.billType = :billTypes "
-                + " and b.billTypeAtomic = :bTA "
-                + " and b.createdAt between :fromDate and :toDate";
+                + " and b.billTypeAtomic = :bTA ";
 
         params.put("billTypes", BillType.GrnPayment);
         params.put("bTA", BillTypeAtomic.SUPPLIER_PAYMENT);
