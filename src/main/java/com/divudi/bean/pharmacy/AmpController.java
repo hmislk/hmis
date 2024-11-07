@@ -727,7 +727,7 @@ public class AmpController implements Serializable {
             return;
         }
         
-        if (checkItemCode(current.getCode())) {
+        if (checkItemCode(current.getCode(), current)) {
             JsfUtil.addErrorMessage("This Code has Already been Used.");
             return;
         }
@@ -765,11 +765,18 @@ public class AmpController implements Serializable {
         }
     }
 
-    public boolean checkItemCode(String code) {
+    public boolean checkItemCode(String code, Amp savingAmp) {
+        if(savingAmp==null){
+            return false;
+        }
         Map m = new HashMap();
         String jpql = "select c from Amp c "
                 + " where c.retired=false"
                 + " and (c.code is not null and c.code=:icode)";
+        if(savingAmp.getId()!=null){
+            jpql +=" and c.id <> :id ";
+            m.put("id", savingAmp.getId());
+        }
         m.put("icode", code);
         Amp amp = getFacade().findFirstByJpql(jpql, m);
         if (amp == null) {

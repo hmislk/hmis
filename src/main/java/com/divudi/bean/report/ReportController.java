@@ -936,7 +936,7 @@ public class ReportController implements Serializable {
 
         if (billItems != null) {
             for (BillItem billItem : billItems) {
-                hospitalFeeTotal += billItem.getHospitalFee() + billItem.getDiscount();
+                hospitalFeeTotal += billItem.getHospitalFee();
                 ccFeeTotal += billItem.getCollectingCentreFee();
                 staffFeeTotal += billItem.getStaffFee();
                 grossFeeTotal += billItem.getGrossValue();
@@ -1024,7 +1024,7 @@ public class ReportController implements Serializable {
         // Calculate total values based on `nonCancelledAndRefundedList`
         for (TestWiseCountReport twc : testWiseCounts) {
             totalCount += twc.getCount();
-            totalHosFee += (twc.getHosFee() + twc.getDiscount() + twc.getProFee());
+            totalHosFee += (twc.getHosFee());
             totalCCFee += twc.getCcFee();
             totalProFee += twc.getProFee();
             totalNetTotal += twc.getTotal();

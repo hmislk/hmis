@@ -2077,7 +2077,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public String navigateToManageBooking(BillSession bs) {
-//        System.out.println("bs = " + bs);
+        System.out.println("bs = " + bs);
         selectedBillSession = bs;
         if (selectedBillSession == null) {
             JsfUtil.addErrorMessage("Please select a Patient");
@@ -8708,6 +8708,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public double getCashBalance() {
+        calculateCashBalance();
         return cashBalance;
     }
 
