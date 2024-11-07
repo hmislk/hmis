@@ -76,7 +76,9 @@
                                         <p:commandButton immediate="true"  disabled="#{webUserController.selected == null}" icon="fas fa-rss" value="Manage User Subscriptions" class="m-1" action="#{webUserController.navigateToManageUserSubscriptions()}" ajax="false" />
                                         <p:commandButton immediate="true"  disabled="#{webUserController.selected == null}" icon="fa fa-signature" value="Manage Signature" class="m-1" action="#{webUserController.toManageSignature()}" ajax="false" />
                                         <p:commandButton immediate="true"  disabled="#{webUserController.selected == null}" icon="fa fa-tachometer-alt" value="Manage Dashboards" class="m-1" action="#{webUserController.toManageDashboards()}" ajax="false" />
-                                        <p:commandButton immediate="true"  disabled="#{webUserController.selected == null}" icon="pi pi-folder-open" value="Manage Drawer" class="m-1" action="#{webUserController.toManageDrawers()}" ajax="false" />
+                                        <p:commandButton immediate="true"  disabled="#{webUserController.selected == null}" icon="pi pi-folder-open" value="Manage Drawer" class="m-1" action="#{webUserController.toManageDrawers()}" ajax="false">
+                                            <f:setPropertyActionListener value="true" target="#{drawerController.editDrawerAccess}"/>
+                                        </p:commandButton>
                                         <p:commandButton immediate="true"  disabled="#{webUserController.selected == null}" icon="fa fa-tachometer-alt" value="Manage Preferences" class="m-1" action="#{webUserController.toManageUserPreferences()}" ajax="false" />
 
                                     </h:panelGroup>
