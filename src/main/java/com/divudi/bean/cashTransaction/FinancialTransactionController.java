@@ -5198,7 +5198,7 @@ public class FinancialTransactionController implements Serializable {
             return;
         }
         getCurrentBillPayments().add(currentPayment);
-        calculateIncometBillTotal();
+        calculateExpenseBillTotal();
         currentPayment = null;
     }
 
@@ -5345,6 +5345,18 @@ public class FinancialTransactionController implements Serializable {
     private void calculateIncometBillTotal() {
         double total = 0.0;
         for (Payment p : getCurrentBillPayments()) {
+            total += p.getPaidValue();
+        }
+        currentBill.setTotal(total);
+        currentBill.setNetTotal(total);
+    }
+    
+    private void calculateExpenseBillTotal() {
+        double total = 0.0;
+        for (Payment p : getCurrentBillPayments()) {
+            double absolutePaymentValue = Math.abs(p.getPaidValue());
+            double expenseValue = 0 - absolutePaymentValue;
+            p.setPaidValue(expenseValue);
             total += p.getPaidValue();
         }
         currentBill.setTotal(total);
