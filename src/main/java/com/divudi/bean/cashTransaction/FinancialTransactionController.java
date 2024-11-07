@@ -3682,6 +3682,7 @@ public class FinancialTransactionController implements Serializable {
                 String handoverKey = (ph != null) ? ph.name() : "No Handover"; // Use the enum name as part of the key
 
                 String key = String.join("-", dateKey, deptKey, userKey, webUserKey, handoverKey);
+                System.err.println("key = " + key);
 
                 ReportTemplateRowBundle b = groupedBundles.getOrDefault(key, new ReportTemplateRowBundle());
                 b.setDenominations(sessionController.findDefaultDenominations());

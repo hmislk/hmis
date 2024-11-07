@@ -739,7 +739,7 @@ public class ReportTemplateRowBundle implements Serializable {
                     addValueAndUpdateFlag("agent", safeDouble(childBundle.getAgentValue()), safeDouble(childBundle.getAgentHandoverValue()));
                     addValueAndUpdateFlag("cheque", safeDouble(childBundle.getChequeValue()), safeDouble(childBundle.getChequeHandoverValue()));
                     addValueAndUpdateFlag("slip", safeDouble(childBundle.getSlipValue()), safeDouble(childBundle.getSlipHandoverValue()));
-                    addValueAndUpdateFlag("eWallet", safeDouble(childBundle.getEwalletValue()), safeDouble(childBundle.geteWalletHandoverValue()));
+                    addValueAndUpdateFlag("eWallet", safeDouble(childBundle.getEwalletValue()), safeDouble(childBundle.getEwalletHandoverValue()));
                     addValueAndUpdateFlag("patientDeposit", safeDouble(childBundle.getPatientDepositValue()), safeDouble(childBundle.getPatientDepositHandoverValue()));
                     addValueAndUpdateFlag("patientPoints", safeDouble(childBundle.getPatientPointsValue()), safeDouble(childBundle.getPatientPointsHandoverValue()));
                     addValueAndUpdateFlag("onlineSettlement", safeDouble(childBundle.getOnlineSettlementValue()), safeDouble(childBundle.getOnlineSettlementHandoverValue()));
@@ -2169,11 +2169,11 @@ public class ReportTemplateRowBundle implements Serializable {
         this.slipHandoverValue = slipHandoverValue;
     }
 
-    public double geteWalletHandoverValue() {
+    public double getEwalletHandoverValue() {
         return eWalletHandoverValue;
     }
 
-    public void seteWalletHandoverValue(double eWalletHandoverValue) {
+    public void setEwalletHandoverValue(double eWalletHandoverValue) {
         this.eWalletHandoverValue = eWalletHandoverValue;
     }
 
