@@ -261,8 +261,9 @@ public class PatientController implements Serializable, ControllerWithPatient {
     private Institution institution;
     private Department department;
 
+    private boolean reGenerateePhn;
+    
     /**
-     *
      *
      *
      *
@@ -4172,6 +4173,16 @@ public class PatientController implements Serializable, ControllerWithPatient {
         this.billNumberGenerator = billNumberGenerator;
 
     }
+
+    public boolean isReGenerateePhn() {
+        return reGenerateePhn;
+    }
+
+    public void setReGenerateePhn(boolean reGenerateePhn) {
+        this.reGenerateePhn = reGenerateePhn;
+    }
+
+   
 
     /**
      *
