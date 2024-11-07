@@ -50,16 +50,19 @@
                     value="#{cc.attrs.bill.institution.name}" 
                     rendered="#{not webUserController.hasPrivilege('Developers')}">
                 </p:outputLabel>
-                <p:selectOneMenu
-                    id="cmbIns"
+                <p:autoComplete  
+                    id="acIns"
                     rendered="#{webUserController.hasPrivilege('Developers')}"
-                    styleClass="w-100 form-control" 
-                    value="#{cc.attrs.bill.institution}" 
-                    filter="true">
-                    <f:selectItem itemLabel="All Institutions" />
-                    <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
-                    <p:ajax process="cmbIns" update="cmbDept" />
-                </p:selectOneMenu>
+                    class="w-100" 
+                    inputStyleClass="w-100" 
+                    completeMethod="#{institutionController.completeCompany}" 
+                    var="pta" 
+                    itemLabel="#{pta.name}" 
+                    itemValue="#{pta}" 
+                    forceSelection="true" 
+                    value="#{cc.attrs.bill.institution}" >
+                    <p:ajax process="acIns" update="cmbDept"/>
+                </p:autoComplete>
             </h:panelGroup>
 
 
