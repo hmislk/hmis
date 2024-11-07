@@ -98,12 +98,12 @@
                             </h:panelGroup>
 
                             <p:autoComplete 
-                                completeMethod="#{investigationController.completeInvestigationsWIthoutReportFormats}" 
+                                completeMethod="#{itemController.completeService}" 
                                 var="i" 
                                 itemLabel="#{i.name}"
                                 itemValue="#{i}" 
                                 forceSelection="true" 
-                                value="#{reportController.investigation}"
+                                value="#{reportController.item}"
                                 inputStyleClass="w-100"
                                 class="w-100"
                                 maxResults="15"

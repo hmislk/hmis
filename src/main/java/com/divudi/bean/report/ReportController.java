@@ -225,7 +225,7 @@ public class ReportController implements Serializable {
     private String type;
     private String reportType;
     private Speciality speciality;
-
+    
     public void generateItemMovementByBillReport() {
         billAndItemDataRows = new ArrayList<>();
         Map<String, Object> params = new HashMap<>();
@@ -899,6 +899,11 @@ public class ReportController implements Serializable {
             jpql += " AND bi.patientInvestigation.investigation = :inv";
             m.put("inv", investigation);
         }
+        
+        if(item != null){
+             jpql += " AND bi.item = :item";
+            m.put("item", item);
+        }
 
         if (type != null) {
             jpql += " AND bi.bill.ipOpOrCc = :type";
@@ -980,6 +985,11 @@ public class ReportController implements Serializable {
         if (investigation != null) {
             jpql += " AND bi.patientInvestigation.investigation = :inv";
             params.put("inv", investigation);
+        }
+        
+        if(item != null){
+             jpql += " AND bi.item = :item";
+            params.put("item", item);
         }
 
         if (type != null) {
