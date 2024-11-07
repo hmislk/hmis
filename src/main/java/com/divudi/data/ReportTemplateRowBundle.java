@@ -696,7 +696,7 @@ public class ReportTemplateRowBundle implements Serializable {
                 + this.cardValue
                 + this.voucherValue
                 + this.iouValue
-                + this.patientDepositValue
+//                + this.patientDepositValue
                 + this.chequeValue
                 + this.slipValue
                 + this.creditValue
