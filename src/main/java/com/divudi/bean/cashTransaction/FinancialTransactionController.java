@@ -1238,7 +1238,7 @@ public class FinancialTransactionController implements Serializable {
         if (selectedBundle == null) {
             return null;
         }
-        return "handover_start_all_bill_type_details";
+        return "/cashier/handover_start_all_bill_type_details?faces-redirect=true";
     }
 
     public String navigateToCashierShiftBillSearch() {
@@ -3682,6 +3682,7 @@ public class FinancialTransactionController implements Serializable {
                 String handoverKey = (ph != null) ? ph.name() : "No Handover"; // Use the enum name as part of the key
 
                 String key = String.join("-", dateKey, deptKey, userKey, webUserKey, handoverKey);
+                System.err.println("key = " + key);
 
                 ReportTemplateRowBundle b = groupedBundles.getOrDefault(key, new ReportTemplateRowBundle());
                 b.setDenominations(sessionController.findDefaultDenominations());
@@ -5197,7 +5198,7 @@ public class FinancialTransactionController implements Serializable {
             return;
         }
         getCurrentBillPayments().add(currentPayment);
-        calculateIncometBillTotal();
+        calculateExpenseBillTotal();
         currentPayment = null;
     }
 
@@ -5344,6 +5345,18 @@ public class FinancialTransactionController implements Serializable {
     private void calculateIncometBillTotal() {
         double total = 0.0;
         for (Payment p : getCurrentBillPayments()) {
+            total += p.getPaidValue();
+        }
+        currentBill.setTotal(total);
+        currentBill.setNetTotal(total);
+    }
+    
+    private void calculateExpenseBillTotal() {
+        double total = 0.0;
+        for (Payment p : getCurrentBillPayments()) {
+            double absolutePaymentValue = Math.abs(p.getPaidValue());
+            double expenseValue = 0 - absolutePaymentValue;
+            p.setPaidValue(expenseValue);
             total += p.getPaidValue();
         }
         currentBill.setTotal(total);
