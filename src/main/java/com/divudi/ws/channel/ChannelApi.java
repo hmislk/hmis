@@ -1104,8 +1104,8 @@ public class ChannelApi {
         priceDetailsResponse.put("locationPrice", 0);
 
         Map<String, Object> paymentDetailsResponse = new HashMap<>();
-        paymentDetailsResponse.put("paymentMode", "");
-        paymentDetailsResponse.put("paymentChannel", "");
+        paymentDetailsResponse.put("paymentMode", paymentMethod);
+        paymentDetailsResponse.put("paymentChannel", paymentChannel);
         paymentDetailsResponse.put("branchCode", "");
         paymentDetailsResponse.put("seqNo", "");
 
