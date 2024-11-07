@@ -92,6 +92,12 @@
                                     <f:convertNumber pattern="#,##0.00"></f:convertNumber>
                                 </h:outputText>
                             </p:column>
+                            
+                            <p:column headerText="Grand Total">
+                                <h:outputText value="#{dr.cashInHandValue + dr.cardInHandValue + dr.chequeInHandValue + dr.voucherInHandValue + dr.iouInHandValue}">
+                                    <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                </h:outputText>
+                            </p:column>
 
                         </p:dataTable>
 
