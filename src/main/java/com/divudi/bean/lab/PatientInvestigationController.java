@@ -265,6 +265,8 @@ public class PatientInvestigationController implements Serializable {
 
     private ListingEntity listingEntity;
     private Institution site;
+    private Institution orderedSite;
+    private Institution peformedSite;
 
     private List<Item> itemsForParentItem;
     private List<PatientSampleComponant> patientSampleComponentsByInvestigation;
@@ -272,6 +274,11 @@ public class PatientInvestigationController implements Serializable {
 
     public String navigateToPrintBarcodeFromMenu() {
         return "/lab/sample_barcode_printing?faces-redirect=true";
+    }
+
+    public String navigateToLabBillItemList() {
+        clearFilters();
+        return "/reports/lab/lab_bill_item_list?faces-redirect=true";
     }
 
     public String navigateToPatientSampelIndex() {
@@ -1726,6 +1733,10 @@ public class PatientInvestigationController implements Serializable {
         this.searchDateType = null;
         this.fromDate = null;
         this.toDate = null;
+        peformedSite=null;
+        orderedDepartment=null;
+        orderedInstitution=null;
+        orderedSite=null;
         makeNull();
     }
 
@@ -3095,6 +3106,16 @@ public class PatientInvestigationController implements Serializable {
         if (site != null) {
             jpql += " AND i.performDepartment.site = :site ";
             params.put("site", getSite());
+        }
+
+        if (peformedSite != null) {
+            jpql += " AND i.performDepartment.site = :psite ";
+            params.put("psite", getPeformedSite());
+        }
+
+        if (orderedSite != null) {
+            jpql += " AND b.bill.department.site = :bsite ";
+            params.put("bsite", getOrderedSite());
         }
 
         if (priority != null) {
@@ -4785,6 +4806,22 @@ public class PatientInvestigationController implements Serializable {
 
     public void setCurrentPI(PatientInvestigation currentPI) {
         this.currentPI = currentPI;
+    }
+
+    public Institution getOrderedSite() {
+        return orderedSite;
+    }
+
+    public void setOrderedSite(Institution orderedSite) {
+        this.orderedSite = orderedSite;
+    }
+
+    public Institution getPeformedSite() {
+        return peformedSite;
+    }
+
+    public void setPeformedSite(Institution peformedSite) {
+        this.peformedSite = peformedSite;
     }
 
     /**
