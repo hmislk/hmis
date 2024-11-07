@@ -202,7 +202,7 @@
                                             <div class="input-group">
                                                 <p:inputText
                                                     id="txtPhn"
-                                                    disabled="#{not webUserController.hasPrivilege('EditData')}"
+                                                    disabled="#{not patientController.reGenerateePhn}"
                                                     value="#{patientController.current.phn}" 
                                                     class="form-control" />
 
@@ -211,7 +211,7 @@
                                                         id="btnPhn"
                                                         value="Generate" 
                                                         process="btnPhn" 
-                                                        disabled="#{not webUserController.hasPrivilege('EditData')}"
+                                                        disabled="#{not patientController.reGenerateePhn}"
                                                         update="txtPhn" 
                                                         action="#{patientController.generateNewPhnAndAssignToCurrentPatient()}" 
                                                         class="mx-1" />
