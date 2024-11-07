@@ -474,7 +474,7 @@ public class ChannelApi {
 //            JSONObject response = commonFunctionToErrorResponse("Invalid speciality id");
 //            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
 //        }
-        List<Consultant> doctorList = channelService.findConsultantFromName(name, null);
+        List<Consultant> doctorList = channelService.findDoctorsFromName(name, null);
 
         if (doctorList == null || doctorList.isEmpty()) {
             if (name != null && !name.isEmpty()) {
