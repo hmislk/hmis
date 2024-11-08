@@ -2261,7 +2261,7 @@ public class FinancialTransactionController implements Serializable {
         if (currentBill.getBillType() != BillType.OPERATIONAL_EXPENSES) {
             JsfUtil.addErrorMessage("Error");
             return "";
-        }
+        }          
         currentBill.setDepartment(sessionController.getDepartment());
         currentBill.setInstitution(sessionController.getInstitution());
         currentBill.setStaff(sessionController.getLoggedUser().getStaff());
@@ -5197,6 +5197,17 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Select a Payment Method");
             return;
         }
+        
+        if (currentPayment.getPaymentMethod() == PaymentMethod.Cash) {
+        double drawerBalance = getLoggedUserDrawer().getCashInHandValue();
+        double paymentAmount = currentPayment.getPaidValue();
+
+        if (drawerBalance < paymentAmount) {
+            JsfUtil.addErrorMessage("Not enough cash in your drawer to make this payment");
+            return;
+        }
+    }
+        
         getCurrentBillPayments().add(currentPayment);
         calculateExpenseBillTotal();
         currentPayment = null;
