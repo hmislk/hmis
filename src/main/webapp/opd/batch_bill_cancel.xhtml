@@ -5,6 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
       xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
       xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
       xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints">
@@ -45,25 +46,9 @@
                                 </h:panelGrid>
                             </f:facet>
 
-                            <!-- Payment Mode Panel -->
-                            <p:panel>
-                                <f:facet name="header">
-                                    <h:outputText styleClass="fas fa-money-bill"></h:outputText>
-                                    <h:outputLabel value="Payment Mode" class="mx-2"></h:outputLabel>
-                                </f:facet>
-                                <p:selectOneMenu id="cmbPs" value="#{billController.paymentMethod}"
-                                                 rendered="#{billController.batchBill.billType eq 'OpdBathcBill'}">
-                                    <f:selectItem itemLabel="Select paymentMethod"/>
-                                    <f:selectItems value="#{enumController.paymentMethodsForOpdBillCanceling}"/>
-                                </p:selectOneMenu>
 
-                                <p:selectOneMenu id="cmbPs2" value="#{billController.paymentMethod}"  
-                                                 disabled="#{billController.batchBill.paymentMethod eq 'Agent'}"
-                                                 rendered="#{billController.batchBill.billType eq 'CollectingCentreBill'}">
-                                    <f:selectItem itemLabel="Select paymentMethod"/>
-                                    <f:selectItems value="#{enumController.collectingCentrePaymentMethods}"/>
-                                </p:selectOneMenu>
-                            </p:panel>
+
+
 
                             <!-- Patient Details and Bill Details Panels -->
                             <div class="row">
@@ -75,8 +60,6 @@
                                         </f:facet>
                                         <common:patient patient="#{billController.batchBill.patient}" class="w-100"/>
                                     </p:panel>
-                                </div>
-                                <div class="col-6">
                                     <p:panel>
                                         <f:facet name="header">
                                             <h:outputText styleClass="fas fa-list-alt"></h:outputText>
@@ -94,33 +77,213 @@
                                         </p:panelGrid>
                                     </p:panel>
                                 </div>
+                                <div class="col-6">
+                                    <p:panel class="mb-2" id="payment">
+                                        <f:facet name="header" >
+                                            <h:outputText styleClass="fa fa-money-bill-wave" /> 
+                                            <h:outputText value="Payment Details" class="mx-4"></h:outputText>
+                                        </f:facet>
+                                        <div class="row my-1"  >
+                                            <div class="col-5" >
+                                                <p:selectOneMenu   
+                                                    id="pay"
+                                                    class="w-100"
+                                                    value="#{billController.paymentMethod}"
+                                                    >   
+                                                    <f:selectItem itemLabel="Same as Billed" ></f:selectItem>
+                                                    <f:selectItems 
+                                                        value="#{enumController.paymentMethodsForOpdBilling}"  
+                                                        var="pm"
+                                                        itemLabel="#{pm.label}"
+                                                        itemValue="#{pm}"/>
+                                                    <p:ajax 
+                                                        process="@this cmbPs" 
+                                                        update="paymentDetails"
+                                                        event="change"/>
+                                                </p:selectOneMenu>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <h:panelGroup id="paymentDetails"  >
+
+                                                <h:panelGroup
+                                                    class="row"
+                                                    layout="block"  
+                                                    rendered="#{billController.paymentMethod eq 'Staff'}" >
+                                                    <div class="my-1" id="staffCredit">
+                                                        <div class="row mt-1">
+                                                            <div class="col-12">
+                                                                <p:autoComplete  
+                                                                    minQueryLength="2"
+                                                                    forceSelection="true" 
+                                                                    value="#{billController.toStaff}" 
+                                                                    id="creditStaff"
+                                                                    completeMethod="#{staffController.completeStaff}" 
+                                                                    var="mys" 
+                                                                    class="w-100"
+                                                                    placeholder="Staff (Type at least 4 letters to search)"
+                                                                    inputStyleClass="form-control"
+                                                                    itemLabel="#{mys.person.name}" 
+                                                                    itemValue="#{mys}"
+                                                                    size="10">
+                                                                    <p:column headerText="Name" style="padding: 2px;">
+                                                                        <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
+                                                                    </p:column>
+                                                                    <p:column headerText="EPF" style="padding: 2px;">
+                                                                        <h:outputText value="#{mys.epfNo}" ></h:outputText>
+                                                                    </p:column>
+                                                                    <p:column headerText="Credit Entitlement" style="padding: 2px;">
+                                                                        <h:outputText value="#{mys.creditLimitQualified}" >
+                                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                                        </h:outputText>
+                                                                    </p:column>
+                                                                    <p:column  headerText="Credit Utilized" style="padding: 2px;">
+                                                                        <h:outputText value="#{mys.currentCreditValue}" >
+                                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                                        </h:outputText>
+                                                                    </p:column>
+                                                                    <p:ajax process="@this" 
+                                                                            update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}"
+                                                                            event="itemSelect"  
+                                                                            listener="#{billController.calTotals()}" />
+                                                                </p:autoComplete>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </h:panelGroup>
+                                                <h:panelGroup
+                                                    class="row"
+                                                    layout="block"  
+                                                    rendered="#{billController.paymentMethod eq 'Staff_Welfare'}" >
+                                                    <div class="my-1" id="credit">
+                                                        <div class="row mt-1">
+                                                            <div class="col-12">
+                                                                <p:autoComplete  
+                                                                    minQueryLength="3"
+                                                                    forceSelection="true" 
+                                                                    value="#{billController.toStaff}" 
+                                                                    id="welfareStaff"
+                                                                    completeMethod="#{staffController.completeStaff}" 
+                                                                    var="mys" 
+                                                                    class="w-100"
+                                                                    placeholder="Staff (Type at least 4 letters to search)"
+                                                                    inputStyleClass="form-control"
+                                                                    itemLabel="#{mys.person.name}" 
+                                                                    itemValue="#{mys}"
+                                                                    size="10">
+                                                                    <p:column headerText="Name" style="padding: 2px;">
+                                                                        <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
+                                                                    </p:column>
+                                                                    <p:column headerText="EPF" style="padding: 2px;">
+                                                                        <h:outputText value="#{mys.epfNo}" ></h:outputText>
+                                                                    </p:column>
+                                                                    <p:column headerText="Welfare Entitlement" style="padding: 2px;">
+                                                                        <h:outputText value="#{mys.annualWelfareQualified}" >
+                                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                                        </h:outputText>
+                                                                    </p:column>
+                                                                    <p:column  headerText="Welfare Utilized" style="padding: 2px;">
+                                                                        <h:outputText value="#{mys.annualWelfareUtilized}" >
+                                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                                        </h:outputText>
+                                                                    </p:column>
+                                                                    <p:ajax process="@this" 
+                                                                            update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}"
+                                                                            event="itemSelect"  
+                                                                            listener="#{billController.calTotals()}" />
+                                                                </p:autoComplete>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </h:panelGroup>
+                                                <h:panelGroup
+                                                    class="row my-1"
+                                                    layout="block"  
+                                                    id="creditCard" rendered="#{billController.paymentMethod eq 'Card'}" >
+                                                    <pa:creditCard paymentMethodData="#{billController.paymentMethodData}"/>
+                                                </h:panelGroup>
+                                                <h:panelGroup
+                                                    class="row my-1"
+                                                    layout="block"  
+                                                    id="credit" rendered="#{billController.paymentMethod eq 'Credit'}" >
+                                                    <pa:credit paymentMethodData="#{billController.paymentMethodData}"/>
+                                                </h:panelGroup>
+                                                <h:panelGroup 
+                                                    class="row my-1"
+                                                    layout="block" 
+                                                    id="eWallet"  rendered="#{billController.paymentMethod eq 'ewallet'}" >
+                                                    <pa:ewallet paymentMethodData="#{billController.paymentMethodData}" />
+                                                </h:panelGroup>
+                                                <h:panelGroup
+                                                    class="row my-1"
+                                                    layout="block" 
+                                                    id="cheque"  rendered="#{billController.paymentMethod eq 'Cheque'}" >
+                                                    <pa:cheque paymentMethodData="#{billController.paymentMethodData}"/>
+                                                </h:panelGroup>
+                                                <h:panelGroup 
+                                                    class="row my-1"
+                                                    layout="block" 
+                                                    id="slip"  rendered="#{billController.paymentMethod eq 'Slip'}" >
+                                                    <pa:slip paymentMethodData="#{billController.paymentMethodData}"/>
+                                                </h:panelGroup>
+                                                <h:panelGroup 
+                                                    class="row my-1"
+                                                    layout="block" 
+                                                    id="patientDeposit"  rendered="#{billController.paymentMethod eq 'PatientDeposit'}" >
+                                                    <pa:patient_deposit paymentMethodData="#{billController.paymentMethodData}"/>
+                                                </h:panelGroup>
+                                                <h:panelGroup
+                                                    class="row my-1 w-100"
+                                                    layout="block" 
+                                                    id="multiplePaymentMethods"  rendered="#{billController.paymentMethod eq 'MultiplePaymentMethods'}" 
+                                                    >
+                                                    <pa:multiple_payment_methods controller="#{billController}" paymentMethods="#{enumController.paymentMethodsForMultiplePaymentMethod}" class="w-100"/>
+
+                                                </h:panelGroup>
+
+                                            </h:panelGroup>
+                                        </div>
+
+
+                                        <div class="row my-1">
+                                            <div class="col-md-8" >
+                                                <p:inputText 
+                                                    value="#{billController.comment}" 
+                                                    placeholder="Comments"
+                                                    class="w-100"         
+                                                    id="comment"/>
+                                            </div>
+
+
+                                        </div>
+
+                                    </p:panel>
+                                    <!-- Bill Item Detail Panel -->
+                                    <p:panel>
+                                        <f:facet name="header">
+                                            <h:outputText styleClass="fas fa-list-alt"></h:outputText>
+                                            <h:outputLabel value="Cancelling Bills Details" class="mx-2"></h:outputLabel>
+                                        </f:facet>
+                                        <p:dataTable rowIndexVar="rowIndex" value="#{billController.bills}" var="bill">
+                                            <p:column>
+                                                <f:facet name="header">Bill No</f:facet>
+                                                <h:outputLabel value="#{bill.deptId}"/>
+                                            </p:column>
+                                            <p:column>
+                                                <f:facet name="header">Billed For</f:facet>
+                                                <h:outputLabel value="#{bill.toDepartment.name}"/>
+                                            </p:column>
+                                            <p:column>
+                                                <f:facet name="header">Net Total</f:facet>
+                                                <h:outputLabel value="#{bill.netTotal}"/>
+                                            </p:column>
+                                        </p:dataTable>
+                                    </p:panel>
+                                </div>
                             </div>
 
-                            <!-- Bill Item Detail Panel -->
-                            <p:panel>
-                                <f:facet name="header">
-                                    <h:outputText styleClass="fas fa-list-alt"></h:outputText>
-                                    <h:outputLabel value="Cancelling Bills Details" class="mx-2"></h:outputLabel>
-                                </f:facet>
-                                <p:dataTable rowIndexVar="rowIndex" value="#{billController.bills}" var="bill">
-                                    <p:column>
-                                        <f:facet name="header">Bill No</f:facet>
-                                        <h:outputLabel value="#{bill.deptId}"/>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="header">Billed At</f:facet>
-                                        <h:outputLabel value="#{bill.createdAt}"/>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="header">Billed For</f:facet>
-                                        <h:outputLabel value="#{bill.toDepartment.name}"/>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="header">Net Total</f:facet>
-                                        <h:outputLabel value="#{bill.netTotal}"/>
-                                    </p:column>
-                                </p:dataTable>
-                            </p:panel>
+
                         </p:panel>
                     </h:panelGroup>
 
@@ -144,7 +307,7 @@
                                     ajax="false" 
                                     icon="fa fa-plus"
                                     class="ui-button-success"
-                                    action="#{opdBillController.navigateToNewOpdBill()}" >
+                                    action="#{billController.navigateToNewOpdBill()}" >
                                 </p:commandButton>
                             </h:panelGroup> 
 
@@ -163,15 +326,15 @@
                             <prints:five_five_paper_with_headings bill="#{billSearch.bill.cancelledBill}"/>
                             <prints:five_five_paper_without_headings 
                                 bill="#{billSearch.bill.cancelledBill}" 
-                                duplicate="#{opdBillController.duplicatePrint}"
-                                payments="#{opdBillController.payments}"/>
-                            <prints:posOpdBillWithoutLogo bill="#{billSearch.bill.cancelledBill}" duplicate="#{opdBillController.duplicatePrint}"/>
-                            <prints:posOpdBill bill="#{billSearch.bill.cancelledBill}" duplicate="#{opdBillController.duplicatePrint}"/>
-                            <prints:A4_paper_with_headings bill="#{billSearch.bill.cancelledBill}" duplicate="#{opdBillController.duplicatePrint}"/>
-                            <prints:A4_paper_without_headings bill="#{billSearch.bill.cancelledBill}" duplicate="#{opdBillController.duplicatePrint}"/>
-                            
-                            
-                            
+                                duplicate="#{billController.duplicatePrint}"
+                                payments="#{billController.payments}"/>
+                            <prints:posOpdBillWithoutLogo bill="#{billSearch.bill.cancelledBill}" duplicate="#{billController.duplicatePrint}"/>
+                            <prints:posOpdBill bill="#{billSearch.bill.cancelledBill}" duplicate="#{billController.duplicatePrint}"/>
+                            <prints:A4_paper_with_headings bill="#{billSearch.bill.cancelledBill}" duplicate="#{billController.duplicatePrint}"/>
+                            <prints:A4_paper_without_headings bill="#{billSearch.bill.cancelledBill}" duplicate="#{billController.duplicatePrint}"/>
+
+
+
                         </h:panelGroup>
                     </h:panelGroup>
                 </h:form>                

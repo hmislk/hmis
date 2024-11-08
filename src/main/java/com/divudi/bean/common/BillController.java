@@ -58,6 +58,19 @@ import com.divudi.facade.PersonFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.data.BillTypeAtomic;
+import static com.divudi.data.PaymentMethod.Agent;
+import static com.divudi.data.PaymentMethod.Card;
+import static com.divudi.data.PaymentMethod.Cash;
+import static com.divudi.data.PaymentMethod.Cheque;
+import static com.divudi.data.PaymentMethod.Credit;
+import static com.divudi.data.PaymentMethod.MultiplePaymentMethods;
+import static com.divudi.data.PaymentMethod.OnCall;
+import static com.divudi.data.PaymentMethod.OnlineSettlement;
+import static com.divudi.data.PaymentMethod.PatientDeposit;
+import static com.divudi.data.PaymentMethod.Slip;
+import static com.divudi.data.PaymentMethod.Staff;
+import static com.divudi.data.PaymentMethod.YouOweMe;
+import static com.divudi.data.PaymentMethod.ewallet;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.entity.FamilyMember;
 import com.divudi.entity.PatientDeposit;
@@ -65,6 +78,7 @@ import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
+import com.divudi.service.BillService;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -98,7 +112,7 @@ import org.primefaces.event.TabChangeEvent;
  */
 @Named
 @SessionScoped
-public class BillController implements Serializable {
+public class BillController implements Serializable, ControllerWithMultiplePayments {
 
     private static final long serialVersionUID = 1L;
 
@@ -125,6 +139,8 @@ public class BillController implements Serializable {
     PaymentFacade paymentFacade;
     @EJB
     BillItemFacade billItemFacede;
+    @EJB
+    BillService billService;
     /**
      * Controllers
      */
@@ -157,6 +173,7 @@ public class BillController implements Serializable {
     //Interface Data
     private PaymentScheme paymentScheme;
     private PaymentMethod paymentMethod;
+    private List<PaymentMethod> paymentMethods;
     private Patient newPatient;
     private Patient searchedPatient;
     private Doctor referredBy;
@@ -1687,6 +1704,7 @@ public class BillController implements Serializable {
         }
         bills = billsOfBatchBill(batchBill);
         paymentMethod = batchBill.getPaymentMethod();
+        paymentMethods = billService.availablePaymentMethodsForCancellation(batchBill);
         comment = null;
         printPreview = false;
         return "/opd/batch_bill_cancel?faces-redirect=true;";
@@ -1709,17 +1727,6 @@ public class BillController implements Serializable {
         if (!getWebUserController().hasPrivilege("OpdCancel")) {
             JsfUtil.addErrorMessage("You have no privilege to cancel OPD bills. Please contact System Administrator.");
             return "";
-        }
-
-        if (paymentMethod == PaymentMethod.PatientDeposit) {
-//            if(getBatchBill().getPatient().getHasAnAccount() == null){
-//                JsfUtil.addErrorMessage("Create Patient Account First");
-//                return "";
-//            }
-//            if(!getBatchBill().getPatient().getHasAnAccount()){
-//                JsfUtil.addErrorMessage("Create Patient Account First");
-//                return "";
-//            }
         }
 
         Bill cancellationBatchBill = new CancelledBill();
@@ -1765,12 +1772,6 @@ public class BillController implements Serializable {
         cancellationBatchBill.setBilledBill(batchBill);
 
         if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.PatientDeposit) {
-//            if (cancellationBatchBill.getPatient().getRunningBalance() == null) {
-//                cancellationBatchBill.getPatient().setRunningBalance(Math.abs(cancellationBatchBill.getNetTotal()));
-//            } else {
-//                cancellationBatchBill.getPatient().setRunningBalance(cancellationBatchBill.getPatient().getRunningBalance() + Math.abs(cancellationBatchBill.getNetTotal()));
-//            }
-//            patientFacade.edit(cancellationBatchBill.getPatient());
             PatientDeposit pd = patientDepositController.getDepositOfThePatient(cancellationBatchBill.getPatient(), sessionController.getDepartment());
             patientDepositController.updateBalance(cancellationBatchBill, pd);
         }
@@ -1778,7 +1779,7 @@ public class BillController implements Serializable {
         List<Payment> cancelPayments = createPaymentForOpdBatchBillCancellation(cancellationBatchBill, paymentMethod);
 
         drawerController.updateDrawerForOuts(cancelPayments);
-        
+
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cancellationBatchBill, getSessionController().getLoggedUser());
         opdBillController.setBills(bills);
         opdBillController.setBatchBill(batchBill);
@@ -1943,44 +1944,22 @@ public class BillController implements Serializable {
     public List<Payment> createPaymentForOpdBatchBillCancellation(Bill cancellationBatchBill, PaymentMethod pm) {
         List<Payment> ps = new ArrayList<>();
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
-            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
-                Payment p = new Payment();
-                p.setBill(cancellationBatchBill);
-                p.setInstitution(getSessionController().getInstitution());
-                p.setDepartment(getSessionController().getDepartment());
-                p.setCreatedAt(new Date());
-                p.setCreater(getSessionController().getLoggedUser());
-                p.setPaymentMethod(cd.getPaymentMethod());
-
-                switch (cd.getPaymentMethod()) {
-                    case Card:
-                        p.setBank(cd.getPaymentMethodData().getCreditCard().getInstitution());
-                        p.setCreditCardRefNo(cd.getPaymentMethodData().getCreditCard().getNo());
-                        p.setPaidValue(cd.getPaymentMethodData().getCreditCard().getTotalValue());
-                        break;
-                    case Cheque:
-                        p.setChequeDate(cd.getPaymentMethodData().getCheque().getDate());
-                        p.setChequeRefNo(cd.getPaymentMethodData().getCheque().getNo());
-                        p.setPaidValue(cd.getPaymentMethodData().getCheque().getTotalValue());
-                        break;
-                    case Cash:
-                        p.setPaidValue(cd.getPaymentMethodData().getCash().getTotalValue());
-                        break;
-                    case ewallet:
-
-                    case Agent:
-                    case Credit:
-                    case PatientDeposit:
-                    case Slip:
-                    case OnCall:
-                    case OnlineSettlement:
-                    case Staff:
-                    case YouOweMe:
-                    case MultiplePaymentMethods:
+            List<Payment> originalBillPayments = billService.fetchBillPayments(cancellationBatchBill.getBilledBill());
+            if (originalBillPayments != null) {
+                for (Payment originalBillPayment : originalBillPayments) {
+                    Payment p = originalBillPayment.clonePaymentForNewBill();
+                    p.setBill(cancellationBatchBill);
+                    p.setInstitution(getSessionController().getInstitution());
+                    p.setDepartment(getSessionController().getDepartment());
+                    p.setCreatedAt(new Date());
+                    p.setCreater(getSessionController().getLoggedUser());
+                    paymentFacade.create(p);
+                    ps.add(p);
                 }
+            }
 
-                paymentFacade.create(p);
-                ps.add(p);
+            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+
             }
         } else {
             Payment p = new Payment();
@@ -2855,9 +2834,11 @@ public class BillController implements Serializable {
             System.out.println("4 originalBilItem.isRefunded() = " + originalBilItem.isRefunded());
         }
     }
+
     public String navigateTomissingBillsForCcCancellation() {
         return "/dataAdmin/missing_cc_cancellation_bills?faces-redirect=true";
     }
+
     public void addMissingValuesForCcCancellationBillItems() {
         String jpql = "select bi "
                 + " from BillItem bi "
@@ -2880,18 +2861,17 @@ public class BillController implements Serializable {
             System.out.println("ccFee = " + ccFee);
             Double hosFee = netTotal - ccFee;
             System.out.println("hosFee = " + hosFee);
-            if(bi.getHospitalFee()==0.0){
+            if (bi.getHospitalFee() == 0.0) {
                 bi.setHospitalFee(hosFee);
                 billItemFacade.edit(bi);
             }
-            if(bi.getCollectingCentreFee()==0.0){
+            if (bi.getCollectingCentreFee() == 0.0) {
                 bi.setCollectingCentreFee(ccFee);
                 billItemFacade.edit(bi);
             }
-            
-            
+
         }
-        
+
     }
 
     public void calTotals() {
@@ -3909,6 +3889,14 @@ public class BillController implements Serializable {
 
     public void setOpdBillController(OpdBillController opdBillController) {
         this.opdBillController = opdBillController;
+    }
+
+    public List<PaymentMethod> getPaymentMethods() {
+        return paymentMethods;
+    }
+
+    public void setPaymentMethods(List<PaymentMethod> paymentMethods) {
+        this.paymentMethods = paymentMethods;
     }
 
     /**
