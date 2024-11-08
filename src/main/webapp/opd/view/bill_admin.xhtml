@@ -18,7 +18,7 @@
                     <p:panel >
                         <f:facet name="header">
                             <div class="d-flex justify-content-between">
-                                <p:outputLabel value="Admin OPD Bill" class="mt-2"></p:outputLabel>
+                                <p:outputLabel value="Bill Administration" class="mt-2"></p:outputLabel>
                                 <p:commandButton value="Save" action="#{billSearch.saveViewingBillData()}" ajax="false" ></p:commandButton>
                             </div> 
                         </f:facet>
@@ -157,41 +157,7 @@
                         </div>
 
                     </p:panel>
-                    <p:dialog header="Edit Bill" widgetVar="editBill" resizable="false" showEffect="fade" hideEffect="fade" width="800">
-                        <h:panelGroup id="printPnl" class="m-2" >
-                            <h:panelGrid columns="2" class="w-100">
-                                <h:panelGroup>
-                                    <h:outputLabel style="font-size: 18pt" value="Reffering Doctor"/>
-                                    <p:commandLink id="btnAddNewDoc" 
-                                                   type="button"  
-                                                   value="&nbsp;(+)" 
-                                                   oncomplete="PF('dlg').show();" 
-                                                   actionListener="#{doctorController.prepareAdd}" 
-                                                   process="btnAddNewDoc" 
-                                                   update="#{p:resolveFirstComponentWithId('panDoc',view).clientId}" />  
-                                </h:panelGroup>
-                                <p:autoComplete forceSelection="true" 
-                                                id="cmbDoc" 
-                                                value="#{billSearch.referredBy}" 
-                                                completeMethod="#{doctorController.completeDoctor}" var="ix" 
-                                                itemLabel="#{ix.person.name}" 
-                                                itemValue="#{ix}" 
-                                                inputStyleClass="form-control w-100"
-                                                class="w-100" 
-                                                scrollHeight="500">
-                                    <p:column headerText="Name" style="padding: 2px;">
-                                        <h:outputText value="#{ix.person.nameWithTitle}" ></h:outputText>
-                                    </p:column>
-                                    <p:column headerText="Code" style="padding: 2px;">
-                                        <h:outputText value="#{ix.code}" ></h:outputText>
-                                    </p:column>
-                                </p:autoComplete>
-                            </h:panelGrid>
-                        </h:panelGroup>
-                        <f:facet name="footer">
-                            <p:commandButton class="my-2" ajax="false" value="Save" action="#{billSearch.editBillDetails()}" />
-                        </f:facet>
-                    </p:dialog>
+                 
 
 
 
