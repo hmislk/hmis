@@ -2391,6 +2391,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         return total;
     }
 
+    @Override
     public void recieveRemainAmountAutomatically() {
         //double remainAmount = calculatRemainForMultiplePaymentTotal();
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
