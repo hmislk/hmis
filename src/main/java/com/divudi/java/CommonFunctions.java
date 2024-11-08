@@ -59,13 +59,13 @@ public class CommonFunctions {
             return null;
         }
     }
-    
+
     public static boolean checkOnlyNumeric(String text) {
         String cleandtext = text.replaceAll("[\\s+\\-()]", "");
         String regex = "^[0-9]+$";
         // Check if the text matches the pattern
         boolean onlyNumeric = cleandtext.matches(regex);
-        
+
         return onlyNumeric;
     }
 
@@ -360,6 +360,36 @@ public class CommonFunctions {
 
     public static Date getStartOfDay() {
         return getStartOfDay(new Date());
+    }
+
+    public static List<Date> getDateList(Date fromDate, Date toDate) {
+        List<Date> dateList = new ArrayList<>();
+        Date currentDate = new Date();
+
+        // Handle null cases
+        if (fromDate == null) {
+            fromDate = currentDate;
+        }
+        if (toDate == null) {
+            toDate = currentDate;
+        }
+
+        // Swap dates if fromDate is after toDate
+        if (fromDate.after(toDate)) {
+            Date temp = fromDate;
+            fromDate = toDate;
+            toDate = temp;
+        }
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(fromDate);
+
+        while (!calendar.getTime().after(toDate)) {
+            dateList.add(calendar.getTime());
+            calendar.add(Calendar.DATE, 1);
+        }
+
+        return dateList;
     }
 
     public static Date getStartOfDay(Date date) {
@@ -1003,7 +1033,7 @@ public class CommonFunctions {
         // Convert Double to String
         return String.valueOf(value);
     }
-    
+
     public SessionController getSessionController() {
         return sessionController;
     }

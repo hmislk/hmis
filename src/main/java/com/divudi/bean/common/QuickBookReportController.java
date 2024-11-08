@@ -139,7 +139,9 @@ public class QuickBookReportController implements Serializable {
             case "7":
                 createQBFormatCafeRGRNAndPurchaseBills();
                 break;
-
+            case "8":
+                createQBFormatOpdDayIncomeByDate();
+                break;
             default:
                 throw new AssertionError();
         }
@@ -290,6 +292,50 @@ public class QuickBookReportController implements Serializable {
 
         quickBookFormats.add(qbf);
         quickBookFormats.addAll(qbfs);
+        qbf = new QuickBookFormat();
+        qbf.setRowType("ENDTRNS");
+        qbf.setEditQbClass(false);
+        qbf.setEditAccnt(false);
+        quickBookFormats.add(qbf);
+    }
+
+    public void createQBFormatOpdDayIncomeByDate() {
+
+        grantTot = 0.0;
+        quickBookFormats = new ArrayList<>();
+
+        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy");
+
+        List<Date> allDays = CommonFunctions.getDateList(fromDate, toDate);
+        QuickBookFormat qbf;
+
+        for (Date reportDate : allDays) {
+            grantTot = 0.0;
+            List<QuickBookFormat> qbfs = new ArrayList<>();
+            List<PaymentMethod> paymentMethods = Arrays.asList(PaymentMethod.Cash, PaymentMethod.Cheque, PaymentMethod.Slip, PaymentMethod.Card, PaymentMethod.OnlineSettlement, PaymentMethod.MultiplePaymentMethods);
+            qbfs.addAll(fetchOPdListWithProDayEndTable(paymentMethods, CommonFunctions.getStartOfDay(reportDate), CommonFunctions.getEndOfDay(reportDate), null));
+            qbfs.addAll(createPharmacySale(BillType.PharmacySale, CommonFunctions.getStartOfDay(reportDate), CommonFunctions.getEndOfDay(reportDate)));
+            qbfs.addAll(createInwardCollection(CommonFunctions.getStartOfDay(reportDate), CommonFunctions.getEndOfDay(reportDate)));
+            qbfs.addAll(createAgencyAndCollectionCenterTotal(CommonFunctions.getStartOfDay(reportDate), CommonFunctions.getEndOfDay(reportDate)));
+
+            qbf = new QuickBookFormat();
+            qbf.setRowType("TRNS");
+            qbf.setTrnsType("Cash Sale");
+            qbf.setDate(sdf.format(reportDate));
+            qbf.setAccnt("Cash AR");
+            qbf.setName("Cash AR");
+            qbf.setAmount(grantTot);
+            qbf.setMemo("Sales");
+            sdf = new SimpleDateFormat("yyyyMMdd");
+            qbf.setDocNum(sdf.format(reportDate));
+            qbf.setEditQbClass(false);
+            qbf.setEditAccnt(true);
+
+            quickBookFormats.add(qbf);
+
+            quickBookFormats.addAll(qbfs);
+        }
+
         qbf = new QuickBookFormat();
         qbf.setRowType("ENDTRNS");
         qbf.setEditQbClass(false);
