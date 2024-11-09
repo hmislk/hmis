@@ -443,18 +443,71 @@
                         <p:menuitem ajax="false" action="/lab/inward_search_service?faces-redirect=true" value="Search In-patient Bills" actionListener="#{searchController.makeListNull}"  rendered="#{webUserController.hasPrivilege('LabInwardSearchServiceBill')}" ></p:menuitem>  
                     </p:submenu>-->
 
+                    <p:submenu 
+                        id="smLabBilling"
+                        label="Billing"
+                        icon="fa fa-fw fa-file-invoice-dollar"
+                        rendered="#{webUserController.hasPrivilege('LabBilling')}">
+
+                        <p:submenu label="Lab" rendered="#{webUserController.hasPrivilege('LabBilling')}">
+                            <p:menuitem 
+                                ajax="false" 
+                                action="#{opdBillController.navigateToNewOpdBill()}" 
+                                value="Lab Billing"
+                                icon="fa fa-fw fa-notes-medical" 
+                                rendered="#{webUserController.hasPrivilege('OpdBilling')}" >
+                            </p:menuitem>
+
+                            <p:menuitem 
+                                ajax="false" 
+                                action="#{opdPreBillController.navigateToBillingForCashierFromMenu()}"  
+                                actionListener="#{opdPreBillController.prepareNewBill}" 
+                                value="Billing for Cashier"
+                                icon="fa fa-fw fa-cash-register"
+                                rendered="#{webUserController.hasPrivilege('OpdPreBilling')}" >
+                            </p:menuitem>
+
+                            <p:menuitem 
+                                ajax="false"
+                                action="/opd/opd_bill_package?faces-redirect=true" 
+                                actionListener="#{billPackageController.clearBillValues}" 
+                                value="Package Billing"
+                                icon="fa fa-fw fa-boxes"
+                                rendered="#{webUserController.hasPrivilege('OpdBilling')}" >
+                            </p:menuitem>
+
+                        </p:submenu>
+
+                        <p:menuitem 
+                            ajax="false" 
+                            action="#{billBhtController.navigateToAddServicesFromMenu}"
+                            value="Inpatient Billing" 
+                            rendered="#{webUserController.hasPrivilege('InwardServicesAndItemsAddServices')}" >
+                        </p:menuitem>
+
+                    </p:submenu>
+
+                    <p:menuitem 
+                        ajax="false" 
+                        action="#{billBhtController.navigateToAddServicesFromMenu}"
+                        value="Add Services &amp; Investigations" 
+                        rendered="#{webUserController.hasPrivilege('InwardServicesAndItemsAddServices')}" >
+                    </p:menuitem>
 
                     <p:menuitem 
                         ajax="false"
                         action="#{patientInvestigationController.navigateToGenerateBarcodes()}"
                         value="Sample Management" 
-                        rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}" ></p:menuitem>
+                        rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}" >
+
+                    </p:menuitem>
+
                     <p:menuitem
                         ajax="false"  
                         rendered="false"
                         action="/lab/sample_at_lab_index?faces-redirect=true" 
-                        value="Sample Management - Lab"></p:menuitem>
-
+                        value="Sample Management - Lab">
+                    </p:menuitem>
 
                     <p:menuitem ajax="false" action="/lab/receive?faces-redirect=true" actionListener="#{patientInvestigationController.toPrintWorksheets()}" value="Worksheets" rendered="#{webUserController.hasPrivilege('LabSampleReceiving')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="#{searchController.navigateToLabReportSearch}"  value="Reports/Search" rendered="#{webUserController.hasPrivilege('LabReportSearch')}" ></p:menuitem>
