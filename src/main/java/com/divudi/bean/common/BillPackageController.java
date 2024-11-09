@@ -1558,6 +1558,10 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
     private List<Item> listOfTheNonExpiredPackages;
 
+    public void reloadPackages(){
+        itemController.reloadItems();
+    }
+    
     private void fillPackages() {
         packaes = itemController.getPackaes();
         if (packaes == null) {

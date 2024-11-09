@@ -276,6 +276,13 @@
                                                     <div class="row m-1">
                                                         <div class="col-4">
                                                             <h:outputLabel value="Investigation or Service"/>
+                                                            <p:commandButton 
+                                                                ajax="false" 
+                                                                action="#{billBhtController.reloadItemLights()}" 
+                                                                title="Reload"
+                                                                styleClass="ui-button-warning d-block text-start p-1 m-1" 
+                                                                icon="fa fa-refresh"> 
+                                                            </p:commandButton>
                                                         </div>
                                                         <div class="col-8">
                                                             <p:selectOneListbox 
@@ -299,6 +306,7 @@
                                                                 </p:column>  
                                                                 <p:ajax process="itm" update="gpQtyLbl gpQtyTxt" />
                                                             </p:selectOneListbox>
+
                                                         </div>
                                                     </div>
 
