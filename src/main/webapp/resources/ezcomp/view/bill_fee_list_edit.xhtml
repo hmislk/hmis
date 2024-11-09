@@ -21,56 +21,66 @@
                 <f:facet name="header">Fee ID</f:facet>
                 <h:outputText value="#{bf.id}" />
             </p:column>
-            
+
             <p:column>
                 <f:facet name="header">Item Name</f:facet>
                 <h:outputText value="#{bf.billItem.item.name}"  />
             </p:column>
-            
+
             <p:column>
                 <f:facet name="header">Item Code</f:facet>
                 <h:outputText value="#{bf.billItem.item.code}"  />
             </p:column>
-            
+
+            <p:column>
+                <f:facet name="header">Institution</f:facet>
+                <h:outputText value="#{bf.institution.name}"  />
+            </p:column>
+
             <p:column>
                 <f:facet name="header">Department</f:facet>
-                <h:outputText value="#{bf.billItem.item.department.name}"  />
+                <h:outputText value="#{bf.department.name}"  />
             </p:column>
-            
+
             <p:column>
-                <f:facet name="header">Paid To</f:facet>
+                <f:facet name="header">Speciality</f:facet>
+                <h:outputText value="#{bf.speciality.name}"  />
+            </p:column>
+
+            <p:column>
+                <f:facet name="header">Staff</f:facet>
                 <h:outputText value="#{bf.staff.person.nameWithTitle}"  />
             </p:column>
-            
+
             <p:column >
                 <f:facet name="header">Gross Fee Value</f:facet>
                 <p:inputText value="#{bf.feeGrossValue}"  rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end"/>
                 <h:outputText value="#{bf.feeGrossValue}"  rendered="#{!cc.attrs.editable}"  />
             </p:column>
-            
+
             <p:column >
                 <f:facet name="header">Discount Fee Value</f:facet>
                 <p:inputText value="#{bf.feeDiscount}"  rendered="#{cc.attrs.editable}"  class="w-100 m-1 text-end"/>
                 <h:outputText value="#{bf.feeDiscount}"  rendered="#{!cc.attrs.editable}"  class="w-100 m-1"/>
             </p:column>
-            
+
             <p:column >
                 <f:facet name="header">Net Fee Value</f:facet>
                 <p:inputText value="#{bf.feeValue}"  rendered="#{cc.attrs.editable}"  class="w-100 m-1 text-end"/>
                 <h:outputText value="#{bf.feeValue}"  rendered="#{!cc.attrs.editable}"  class="w-100 m-1"/>
             </p:column>
-            
+
             <p:column >
                 <f:facet name="header">Paid Value</f:facet>
                 <p:inputText value="#{bf.paidValue}"  rendered="#{cc.attrs.editable}"  class="w-100 m-1 text-end"/>
                 <h:outputText value="#{bf.paidValue}"  rendered="#{!cc.attrs.editable}"  class="w-100 m-1"/>
             </p:column>
-            
+
             <p:column >
                 <f:facet name="header">Fee Name</f:facet>
                 <h:outputText value="#{bf.fee.name}"  rendered="#{!cc.attrs.editable}" />
             </p:column>
-            
+
             <p:column >
                 <f:facet name="header">Retired</f:facet>
                 <p:selectBooleanCheckbox value="#{bf.retired}" rendered="#{cc.attrs.editable}" />

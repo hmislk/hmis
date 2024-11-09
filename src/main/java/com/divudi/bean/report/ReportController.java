@@ -2289,9 +2289,7 @@ public class ReportController implements Serializable {
         return "/reports/lab/test_wise_count_report?faces-redirect=true";
     }
 
-    public String navigateToLabBillItemList() {
-        return "/reports/lab/lab_bill_item_list?faces-redirect=true";
-    }
+    
 
     public String navigateToAnnualTestStatistics() {
         if (institutionController.getItems() == null) {
@@ -3570,5 +3568,7 @@ public class ReportController implements Serializable {
     public void setNetTotal(Double netTotal) {
         this.netTotal = netTotal;
     }
+
+    
 
 }
