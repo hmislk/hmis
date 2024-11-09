@@ -153,7 +153,7 @@ public class BillBhtController implements Serializable {
 
     private List<ItemLight> inwardItems;
     private ItemLight itemLight;
-    
+
     public String navigateToAddServiceFromMenu() {
         resetBillData();
         return "/inward/inward_bill_service?faces-redirect=true";
@@ -164,7 +164,7 @@ public class BillBhtController implements Serializable {
         stickers = convertJsonToList(json);
         return "/inward/inward_bill_service_investigation_label_print?faces-redirect=true";
     }
-    
+
     public String navigateToNewBillFromPrintLabelsForInvestigations() {
         resetBillData();
         return "/inward/inward_bill_service?faces-redirect=true";
@@ -500,7 +500,6 @@ public class BillBhtController implements Serializable {
         paymentMethod = null;
         settleBill(getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), getPatientEncounter().getPaymentMethod());
 
-        
     }
 
     public void settleBillSurgery() {
@@ -530,7 +529,6 @@ public class BillBhtController implements Serializable {
         getBillBean().saveEncounterComponents(getBills(), batchBill, getSessionController().getLoggedUser());
         getBillBean().updateBatchBill(getBatchBill());
 
-        
     }
 
     @EJB
@@ -710,14 +708,14 @@ public class BillBhtController implements Serializable {
         if (errorCheckForPatientRoomDepartment()) {
             return;
         }
-                
+
         for (BillEntry bi : lstBillEntries) {
             if (bi.getBillItem() != null && getCurrentBillItem() != null && getCurrentBillItem().getItem() != null && bi.getBillItem().getItem().equals(getCurrentBillItem().getItem())) {
                 JsfUtil.addErrorMessage("Can't select same item " + getCurrentBillItem().getItem());
                 return;
             }
         }
-        
+
         if (getCurrentBillItem().getQty() == null) {
             getCurrentBillItem().setQty(1.0);
         }
@@ -1280,6 +1278,12 @@ public class BillBhtController implements Serializable {
             inwardItems = fillInwardItems();
         }
         return inwardItems;
+    }
+
+    public void reloadItemLights() {
+        itemApplicationController.reloadItems();
+        itemController.reloadItems();
+        fillInwardItems();
     }
 
     public void setInwardItems(List<ItemLight> inwardItems) {

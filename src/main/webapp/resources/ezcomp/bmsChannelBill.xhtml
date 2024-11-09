@@ -365,7 +365,7 @@
 
                 <tr>
                     <td>
-                        <h:outputLabel value="Bill At" ></h:outputLabel>
+                        <h:outputLabel value="Booking At" ></h:outputLabel>
                     </td>
                     <td>
                         <p:spacer width="10" ></p:spacer>
@@ -379,10 +379,9 @@
                         </h:outputLabel>
                     </td>
                 </tr>
-
                 <tr>
                     <td>
-                        <h:outputLabel value="Cashier Name" ></h:outputLabel>
+                        <h:outputLabel value="Booked by" ></h:outputLabel>
                     </td>
                     <td>
                         <p:spacer width="10" ></p:spacer>
@@ -391,10 +390,42 @@
                         <h:outputLabel value=":" ></h:outputLabel>
                     </td>
                     <td>
-                        <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}" rendered="#{cc.attrs.bill.paidBill eq null}" ></h:outputLabel>
-                        <h:outputLabel value="#{cc.attrs.bill.paidBill.creater.name}" rendered="#{cc.attrs.bill.paidBill ne null}" ></h:outputLabel>
+                        <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}"  ></h:outputLabel>
                     </td>
                 </tr>
+                
+                <tr>
+                    <td>
+                        <h:outputLabel value="Paid At" ></h:outputLabel>
+                    </td>
+                    <td>
+                        <p:spacer width="10" ></p:spacer>
+                    </td>
+                    <td>
+                        <h:outputLabel value=":" ></h:outputLabel>
+                    </td>
+                    <td>
+                        <h:outputLabel value="#{cc.attrs.bill.paidBill.createdAt}">
+                            <f:convertDateTime pattern="dd MM yy hh:mm a" ></f:convertDateTime>
+                        </h:outputLabel>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <h:outputLabel value="Cashier:" ></h:outputLabel>
+                    </td>
+                    <td>
+                        <p:spacer width="10" ></p:spacer>
+                    </td>
+                    <td>
+                        <h:outputLabel value=":" ></h:outputLabel>
+                    </td>
+                    <td>
+                        <h:outputLabel value="#{cc.attrs.bill.paidBill.creater.name}"  ></h:outputLabel>
+                    </td>
+                </tr>
+
+                
 
                 <tr>
                     <td>
