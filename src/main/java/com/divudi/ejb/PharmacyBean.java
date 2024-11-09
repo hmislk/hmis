@@ -143,7 +143,7 @@ public class PharmacyBean {
         newPre.setInsId(getBillNumberBean().institutionBillNumberGenerator(department.getInstitution(), bill.getBillType(), BillClassType.PreBill, billNumberSuffix));
         newPre.setDepartment(department);
         newPre.setInstitution(department.getInstitution());
-        newPre.invertValue(bill);
+        newPre.invertAndAssignValuesFromOtherBill(bill);
         newPre.setCreatedAt(new Date());
         newPre.setCreater(user);
         newPre.setComments("Re Add To Stock");
@@ -164,7 +164,7 @@ public class PharmacyBean {
         newPre.setInsId(getBillNumberBean().institutionBillNumberGenerator(department.getInstitution(), bill.getBillType(), BillClassType.PreBill, billNumberSuffix));
         newPre.setDepartment(department);
         newPre.setInstitution(department.getInstitution());
-        newPre.invertValue(bill);
+        newPre.invertAndAssignValuesFromOtherBill(bill);
         newPre.setCreatedAt(new Date());
         newPre.setCreater(user);
         newPre.setComments("Readded To Stock For Issue Bills");

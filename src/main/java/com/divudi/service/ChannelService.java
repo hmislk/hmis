@@ -712,7 +712,7 @@ public class ChannelService {
         CancelledBill cb = new CancelledBill();
 
         cb.copy(bill);
-        cb.invertValue(bill);
+        cb.invertAndAssignValuesFromOtherBill(bill);
         cb.setAgentRefNo(bill.getAgentRefNo());
         cb.setCreditCompany(bill.getCreditCompany());
         cb.setBilledBill(bill);

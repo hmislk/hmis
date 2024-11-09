@@ -26,7 +26,7 @@ import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 
 import com.divudi.ejb.SmsManagerEjb;
-import com.divudi.ejb.StaffBean;
+import com.divudi.service.StaffBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillEntry;

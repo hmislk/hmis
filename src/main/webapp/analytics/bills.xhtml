@@ -183,6 +183,9 @@
                                          rowsPerPageTemplate="5,10,15,50"
                                          >
 
+                                <p:column rendered="#{webUserController.hasPrivilege('Developers')}" headerText="Bill ID" sortBy="#{bill.id}" filterBy="#{bill.id}" filterMatchMode="contains" >                                
+                                    <h:outputLabel value="#{bill.id}"/>
+                                </p:column>
                                 <p:column headerText="Bill No" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}" filterMatchMode="contains" >                                
                                     <h:outputLabel value="#{bill.deptId}"/>
                                 </p:column>

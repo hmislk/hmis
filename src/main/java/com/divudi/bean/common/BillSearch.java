@@ -23,7 +23,7 @@ import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.EjbApplication;
 import com.divudi.ejb.PharmacyBean;
-import com.divudi.ejb.StaffBean;
+import com.divudi.service.StaffBean;
 import com.divudi.entity.AgentHistory;
 import com.divudi.entity.AuditEvent;
 import com.divudi.entity.Bill;
@@ -1839,7 +1839,7 @@ public class BillSearch implements Serializable {
     private Bill createRefundBill() {
         RefundBill rb = new RefundBill();
         rb.copy(getBill());
-        rb.invertValue(getBill());
+        rb.invertAndAssignValuesFromOtherBill(getBill());
         rb.setBillTypeAtomic(BillTypeAtomic.CC_BILL_REFUND);
         rb.setBilledBill(getBill());
         Date bd = Calendar.getInstance().getTime();
@@ -2018,8 +2018,7 @@ public class BillSearch implements Serializable {
 //            //set Bill Item as Refunded
 //
 //            BillItem rbi = new BillItem();
-//            rbi.copy(bi);
-//            rbi.invertValue(bi);
+//            rbi.copy(invertAndAssignValuesFromOtherBill        rbi.invertValueOfThisBill(bi);
 //            rbi.setBill(rb);
 //            rbi.setCreatedAt(Calendar.getInstance().getTime());
 //            rbi.setCreater(getSessionController().getLoggedUser());
@@ -2113,7 +2112,7 @@ public class BillSearch implements Serializable {
         }
         
         cb.copy(originalBill);
-        cb.copyValue(originalBill);
+ invertAndAssignValuesFromOtherBillopyValue(originalBill);
         cb.invertValue(originalBill);
         cb.setBillType(BillType.OpdBill);
         cb.setBillTypeAtomic(BillTypeAtomic.OPD_BILL_CANCELLATION);
@@ -2145,7 +2144,7 @@ public class BillSearch implements Serializable {
         
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getInstitution(), sessionController.getDepartment(), BillType.CollectingCentreBill, BillClassType.CancelledBill);
         
-        cb.copy(originalBill);
+        cinvertAndAssignValuesFromOtherBillinalBill);
         cb.copyValue(originalBill);
         cb.invertValue(originalBill);
         cb.setBillTypeAtomic(BillTypeAtomic.CC_BILL_CANCELLATION);
@@ -2167,8 +2166,7 @@ public class BillSearch implements Serializable {
     
     private CancelledBill createProfessionalPaymentCancelBill(Bill originalBill) {
         CancelledBill cb = new CancelledBill();
-        if (originalBill != null) {
-            cb.copy(originalBill);
+        if (originalBill != null) invertAndAssignValuesFromOtherBill   cb.copy(originalBill);
             cb.copyValue(originalBill);
             cb.invertValue(originalBill);
             cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), originalBill.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.PROCAN));
@@ -2193,7 +2191,7 @@ public class BillSearch implements Serializable {
     }
     
     private CancelledBill createCahsInOutCancelBill(Bill originalBill, BillNumberSuffix billNumberSuffix) {
-        CancelledBill cb = new CancelledBill();
+        CancelledBiinvertAndAssignValuesFromOtherBill CancelledBill();
         if (originalBill != null) {
             cb.copy(originalBill);
             cb.invertValue(originalBill);

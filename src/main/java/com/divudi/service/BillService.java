@@ -127,6 +127,50 @@ public class BillService {
         createBillItemFeeBreakdownAsHospitalFeeItemDiscount(allBillItems);
     }
 
+    public List<Bill> fetchIndividualBillsOfBatchBill(Bill batchBill) {
+        System.out.println("batchBill = " + batchBill);
+        String j = "Select b "
+                + " from Bill b "
+                + " where b.backwardReferenceBill=:bb ";
+        Map m = new HashMap();
+        m.put("bb", batchBill);
+        System.out.println("m = " + m);
+        System.out.println("j = " + j);
+        List<Bill> tbs = billFacade.findByJpql(j, m);
+        return tbs;
+    }
+
+    public void saveBill(Bill bill) {
+        saveBill(bill, null);
+    }
+
+    public void saveBill(Bill bill, WebUser creator) {
+        if (bill == null) {
+            return;
+        }
+        if (bill.getId() == null) {
+            if (bill.getCreatedAt() == null) {
+                bill.setCreatedAt(new Date());
+            }
+            if (bill.getCreater() == null && creator != null) {
+                bill.setCreater(creator);
+            }
+            billFacade.create(bill);
+        } else {
+            billFacade.edit(bill);
+        }
+    }
+
+    public Bill reloadBill(Bill bill) {
+        if (bill == null) {
+            return null;
+        }
+        if (bill.getId() == null) {
+            return bill;
+        }
+        return billFacade.findWithoutCache(bill.getId());
+    }
+
     public List<BillFee> fetchBillFees(BillItem billItem) {
         String jpql = "select bf "
                 + "from BillFee bf "

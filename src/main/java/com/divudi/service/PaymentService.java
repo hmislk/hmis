@@ -18,7 +18,6 @@ import static com.divudi.data.PaymentMethod.YouOweMe;
 import static com.divudi.data.PaymentMethod.ewallet;
 import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.data.dataStructure.PaymentMethodData;
-import com.divudi.ejb.StaffBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Department;
 import com.divudi.entity.Patient;

@@ -3,7 +3,7 @@
  * Dr M H B Ariyaratne
  * buddhika.ari@gmail.com
  */
-package com.divudi.ejb;
+package com.divudi.service;
 
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.Staff;

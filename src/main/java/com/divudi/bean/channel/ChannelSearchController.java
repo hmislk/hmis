@@ -283,7 +283,7 @@ public class ChannelSearchController implements Serializable {
         CancelledBill cb = new CancelledBill();
         if (getBill() != null) {
             cb.copy(getBill());
-            cb.invertValue(getBill());
+            cb.invertAndAssignValuesFromOtherBill(getBill());
 
             if (getBill().getBillType() == BillType.PaymentBill) {
                 cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), getBill().getBillType(), BillClassType.CancelledBill, BillNumberSuffix.PROCAN));

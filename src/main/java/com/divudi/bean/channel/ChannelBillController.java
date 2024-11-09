@@ -60,7 +60,7 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.dataStructure.ComponentDetail;
-import com.divudi.ejb.StaffBean;
+import com.divudi.service.StaffBean;
 import com.divudi.entity.Payment;
 import com.divudi.facade.PaymentFacade;
 import java.io.Serializable;
@@ -1422,7 +1422,7 @@ public class ChannelBillController implements Serializable {
         CancelledBill cb = new CancelledBill();
 
         cb.copy(bill);
-        cb.invertValue(bill);
+        cb.invertAndAssignValuesFromOtherBill(bill);
         cb.setBilledBill(bill);
         cb.setBillDate(new Date());
         cb.setBillTime(new Date());
@@ -1466,7 +1466,7 @@ public class ChannelBillController implements Serializable {
         CancelledBill cb = new CancelledBill();
 
         cb.copy(bill);
-        cb.invertValue(bill);
+        cb.invertAndAssignValuesFromOtherBill(bill);
         cb.setBilledBill(bill);
         cb.setBillDate(new Date());
         cb.setBillTime(new Date());
@@ -1510,7 +1510,7 @@ public class ChannelBillController implements Serializable {
         CancelledBill cb = new CancelledBill();
 
         cb.copy(bill);
-        cb.invertValue(bill);
+        cb.invertAndAssignValuesFromOtherBill(bill);
         cb.setBilledBill(bill);
         cb.setBillDate(new Date());
         cb.setBillTime(new Date());
@@ -1553,7 +1553,7 @@ public class ChannelBillController implements Serializable {
         CancelledBill cb = new CancelledBill();
 
         cb.copy(bill);
-        cb.invertValue(bill);
+        cb.invertAndAssignValuesFromOtherBill(bill);
         cb.setBilledBill(bill);
         cb.setBillDate(new Date());
         cb.setBillTime(new Date());

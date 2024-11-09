@@ -51,7 +51,7 @@ import com.divudi.facade.PersonFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.dataStructure.ComponentDetail;
-import com.divudi.ejb.StaffBean;
+import com.divudi.service.StaffBean;
 import com.divudi.entity.BillFeePayment;
 import com.divudi.entity.Payment;
 import com.divudi.facade.BillFeePaymentFacade;
