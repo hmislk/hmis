@@ -486,8 +486,7 @@
                         <p:submenu 
                             id="smLabBillingSearch"
                             label="Billing Search"
-                            rendered="#{(webUserController.hasPrivilege('Opd') or webUserController.hasPrivilege('InwardServicesAndItems'))  and configOptionApplicationController.getBooleanValueByKey('Show the Bill Search in Under the Lab Module', false)} ">
-
+                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Show the Bill Search in Under the Lab Module', false)}">
                             <p:menuitem 
                                 ajax="false" 
                                 action="#{opdBillController.navigateToSearchOpdBills()}" 
