@@ -3645,7 +3645,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         }
 
-        sendSmsAfterBooking();
+        boolean sendSmsAfterBooking = configOptionApplicationController.getBooleanValueByKey("Send SMS after Channel Booking", true);
+        if (sendSmsAfterBooking) {
+            sendSmsAfterBooking();
+        }
 
         if (selectedSessionInstance.isStarted()) {
             sendChannellingStatusUpdateNotificationSms(printingBill.getSingleBillSession());

@@ -3202,6 +3202,11 @@ public class ItemController implements Serializable {
 
         return insItems;
     }
+    
+    public void reloadItems(){
+        departmentItems=null;
+        institutionItems=null;
+    }
 
     public List<ItemLight> getDepartmentItems() {
         if (departmentItems == null) {
