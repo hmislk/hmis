@@ -338,7 +338,7 @@ public class SearchController implements Serializable {
     private boolean withProfessionalFee;
 
     private Drawer drawer;
-    
+
     public String navigateToUserDrawerDashboard() {
         Drawer d = drawerController.getUsersDrawer(drawer.getDrawerUser());
         drawerController.setCurrent(d);
@@ -1043,6 +1043,18 @@ public class SearchController implements Serializable {
         resetAllFiltersExceptDateRange();
         bundle = new ReportTemplateRowBundle();
         return "/reports/cashier_reports/all_cashier_summary?faces-redirect=true";
+    }
+
+    public String navigatToBillListByBillType(BillType billType) {
+        this.billType = billType;
+        listBills();
+        return "/analytics/bills?faces-redirect=true";
+    }
+
+    public String navigatToBillListByBillTypeAtomic(BillTypeAtomic billTypeAtomic) {
+        this.billTypeAtomic = billTypeAtomic;
+        listBills();
+        return "/analytics/bills?faces-redirect=true";
     }
 
     public String navigatToDepartmentRevenueReport() {
@@ -1832,7 +1844,8 @@ public class SearchController implements Serializable {
         this.billTypeAtomic = billTypeAtomic;
     }
 
-    public Date getMaxDate() {        maxDate = commonFunctions.getEndOfDay(new Date());
+    public Date getMaxDate() {
+        maxDate = commonFunctions.getEndOfDay(new Date());
         return maxDate;
     }
 
@@ -12438,7 +12451,7 @@ public class SearchController implements Serializable {
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
-    
+
     public void createCreditCompanyPaymentToApproveTable() {
         List<BillTypeAtomic> billTypes = new ArrayList<>();
         billTypes.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
