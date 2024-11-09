@@ -4408,6 +4408,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         departmentOpdItems = null;
         opdItems = null;
         itemApplicationController.reloadItems();
+        itemController.reloadItems();
         getDepartmentOpdItems();
     }
 
