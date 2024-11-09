@@ -48,7 +48,7 @@ public class PaymentService {
     @EJB
     PaymentFacade paymentFacade;
     @EJB
-    StaffBean staffBean;
+    StaffService staffBean;
     @EJB
     CashbookService cashbookService;
 

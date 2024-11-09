@@ -30,7 +30,7 @@ import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.CreditBean;
 import com.divudi.ejb.EjbApplication;
-import com.divudi.service.StaffBean;
+import com.divudi.service.StaffService;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillEntry;
@@ -99,7 +99,7 @@ public class CreditCompanyBillSearch implements Serializable {
     @EJB
     private BillComponentFacade billCommponentFacade;
     @EJB
-    StaffBean staffBean;
+    StaffService staffBean;
     @EJB
     PaymentFacade paymentFacade;
     @Inject

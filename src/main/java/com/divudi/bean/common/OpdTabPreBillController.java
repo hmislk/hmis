@@ -32,7 +32,7 @@ import com.divudi.ejb.BillEjb;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 
-import com.divudi.service.StaffBean;
+import com.divudi.service.StaffService;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillEntry;
@@ -514,7 +514,7 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
         return billNumberGenerator;
     }
 
-    public StaffBean getStaffBean() {
+    public StaffService getStaffBean() {
         return staffBean;
     }
 
@@ -928,7 +928,7 @@ public class OpdTabPreBillController implements Serializable, ControllerWithPati
     }
 
     @EJB
-    StaffBean staffBean;
+    StaffService staffBean;
 
     private void saveBillItemSessions() {
         for (BillEntry be : lstBillEntries) {

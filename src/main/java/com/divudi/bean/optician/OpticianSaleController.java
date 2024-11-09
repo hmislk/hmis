@@ -34,7 +34,7 @@ import com.divudi.data.inward.InwardChargeType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.PharmacyBean;
-import com.divudi.service.StaffBean;
+import com.divudi.service.StaffService;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillFeePayment;
@@ -145,7 +145,7 @@ public class OpticianSaleController implements Serializable, ControllerWithPatie
     @EJB
     BillNumberGenerator billNumberBean;
     @EJB
-    StaffBean staffBean;
+    StaffService staffBean;
     @EJB
     private UserStockContainerFacade userStockContainerFacade;
     @EJB
@@ -2793,11 +2793,11 @@ public class OpticianSaleController implements Serializable, ControllerWithPatie
         this.cashTransactionBean = cashTransactionBean;
     }
 
-    public StaffBean getStaffBean() {
+    public StaffService getStaffBean() {
         return staffBean;
     }
 
-    public void setStaffBean(StaffBean staffBean) {
+    public void setStaffBean(StaffService staffBean) {
         this.staffBean = staffBean;
     }
 

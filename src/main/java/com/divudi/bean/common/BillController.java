@@ -20,7 +20,7 @@ import com.divudi.ejb.BillEjb;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 
-import com.divudi.service.StaffBean;
+import com.divudi.service.StaffService;
 import com.divudi.entity.AuditEvent;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
@@ -141,6 +141,10 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
     BillItemFacade billItemFacede;
     @EJB
     BillService billService;
+    @EJB
+    StaffService staffService;
+    @Inject
+    private BillSearch billSearch;
     /**
      * Controllers
      */
@@ -541,8 +545,8 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         return billNumberGenerator;
     }
 
-    public StaffBean getStaffBean() {
-        return staffBean;
+    public StaffService getStaffService() {
+        return staffService;
     }
 
     public void searchPatientListener() {
@@ -1455,7 +1459,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         saveBillItemSessions();
 
         if (toStaff != null && getPaymentMethod() == PaymentMethod.Credit) {
-            staffBean.updateStaffCredit(toStaff, netPlusVat);
+            staffService.updateStaffCredit(toStaff, netPlusVat);
             JsfUtil.addSuccessMessage("User Credit Updated");
         }
 
@@ -1507,9 +1511,6 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         }
     }
 
-    @EJB
-    StaffBean staffBean;
-
     private void saveBillItemSessions() {
         for (BillEntry be : lstBillEntries) {
             be.getBillItem().setBillSession(getServiceSessionBean().createBillSession(be.getBillItem()));
@@ -1560,8 +1561,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         getSessionController().setLoggedUser(wb);
     }
 
-    @Inject
-    private BillSearch billSearch;
+    
 
     public void cancellAll() {
 
@@ -1781,7 +1781,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             patientDepositController.updateBalance(cancellationBatchBill, pd);
         } else if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.Credit) {
             if (cancellationBatchBill.getToStaff() != null) {
-                staffBean.updateStaffCredit(cancellationBatchBill.getToStaff(), 0 - Math.abs(cancellationBatchBill.getNetTotal() + getBill().getVat()));
+                staffService.updateStaffCredit(cancellationBatchBill.getToStaff(), 0 - Math.abs(cancellationBatchBill.getNetTotal() + getBill().getVat()));
                 JsfUtil.addSuccessMessage("Staff Credit Updated");
                 cancellationBatchBill.setFromStaff(cancellationBatchBill.getToStaff());
                 getBillFacade().edit(cancellationBatchBill);
@@ -1935,7 +1935,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 
 //        if (originalBill.getPaymentMethod() == PaymentMethod.Credit) {
 //            if (originalBill.getToStaff() != null) {
-//                staffBean.updateStaffCredit(originalBill.getToStaff(), 0 - (originalBill.getNetTotal() + getBill().getVat()));
+//                staffService.updateStaffCredit(originalBill.getToStaff(), 0 - (originalBill.getNetTotal() + getBill().getVat()));
 //                JsfUtil.addSuccessMessage("Staff Credit Updated");
 //                individualCancelltionBill.setFromStaff(originalBill.getToStaff());
 //                getBillFacade().edit(individualCancelltionBill);

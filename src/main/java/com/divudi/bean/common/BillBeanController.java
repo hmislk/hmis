@@ -34,7 +34,7 @@ import com.divudi.data.inward.InwardChargeType;
 import com.divudi.data.inward.SurgeryBillType;
 import com.divudi.data.lab.PatientInvestigationStatus;
 import com.divudi.ejb.ServiceSessionBean;
-import com.divudi.service.StaffBean;
+import com.divudi.service.StaffService;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillEntry;
@@ -151,7 +151,7 @@ public class BillBeanController implements Serializable {
     @Inject
     SessionController sessionController;
     @EJB
-    StaffBean staffBean;
+    StaffService staffBean;
     @EJB
     BillService billService;
 

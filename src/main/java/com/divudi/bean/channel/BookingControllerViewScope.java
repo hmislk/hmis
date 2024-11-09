@@ -84,7 +84,7 @@ import static com.divudi.data.PaymentMethod.Cheque;
 import static com.divudi.data.PaymentMethod.MultiplePaymentMethods;
 import static com.divudi.data.PaymentMethod.OnlineSettlement;
 import com.divudi.data.dataStructure.ComponentDetail;
-import com.divudi.service.StaffBean;
+import com.divudi.service.StaffService;
 import com.divudi.entity.Category;
 import com.divudi.entity.Doctor;
 import com.divudi.entity.Payment;
@@ -184,7 +184,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     @EJB
     private SmsFacade smsFacade;
     @EJB
-    StaffBean staffBean;
+    StaffService staffBean;
     @EJB
     AgentReferenceBookFacade agentReferenceBookFacade;
     /**

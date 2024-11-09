@@ -60,7 +60,7 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.dataStructure.ComponentDetail;
-import com.divudi.service.StaffBean;
+import com.divudi.service.StaffService;
 import com.divudi.entity.Payment;
 import com.divudi.facade.PaymentFacade;
 import java.io.Serializable;
@@ -153,7 +153,7 @@ public class ChannelBillController implements Serializable {
     @EJB
     SmsManagerEjb smsManagerEjb;
     @EJB
-    StaffBean staffBean;
+    StaffService staffBean;
     //////////////////////////////
     @Inject
     private SessionController sessionController;

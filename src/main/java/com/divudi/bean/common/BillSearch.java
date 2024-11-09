@@ -23,7 +23,7 @@ import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.EjbApplication;
 import com.divudi.ejb.PharmacyBean;
-import com.divudi.service.StaffBean;
+
 import com.divudi.entity.AgentHistory;
 import com.divudi.entity.AuditEvent;
 import com.divudi.entity.Bill;
@@ -53,8 +53,6 @@ import com.divudi.facade.WebUserFacade;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
-import com.divudi.data.BillCategory;
-import com.divudi.data.BillFinanceType;
 import com.divudi.data.BillTypeAtomic;
 import static com.divudi.data.BillTypeAtomic.CC_BILL;
 import static com.divudi.data.BillTypeAtomic.CC_BILL_CANCELLATION;
@@ -88,11 +86,8 @@ import static com.divudi.data.BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_
 import static com.divudi.data.BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES;
 import static com.divudi.data.BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN;
 import static com.divudi.data.BillTypeAtomic.SUPPLEMENTARY_INCOME;
-import com.divudi.data.CountedServiceType;
 import com.divudi.data.InstitutionType;
 import com.divudi.data.OptionScope;
-import com.divudi.data.PaymentCategory;
-import com.divudi.data.ServiceType;
 import com.divudi.entity.Doctor;
 import com.divudi.entity.PatientDeposit;
 import com.divudi.facade.FeeFacade;
@@ -100,7 +95,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
-import com.google.common.collect.HashBiMap;
+import com.divudi.service.StaffService;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
@@ -165,7 +160,7 @@ public class BillSearch implements Serializable {
     @EJB
     private ItemBatchFacade itemBatchFacade;
     @EJB
-    private StaffBean staffBean;
+    private StaffService staffBean;
     @EJB
     private WebUserFacade webUserFacade;
     @EJB
@@ -2018,7 +2013,8 @@ public class BillSearch implements Serializable {
 //            //set Bill Item as Refunded
 //
 //            BillItem rbi = new BillItem();
-//            rbi.copy(invertAndAssignValuesFromOtherBill        rbi.invertValueOfThisBill(bi);
+//            rbi.copy(bi);
+//            rbi.invertAndAssignValuesFromOtherBill(bi);
 //            rbi.setBill(rb);
 //            rbi.setCreatedAt(Calendar.getInstance().getTime());
 //            rbi.setCreater(getSessionController().getLoggedUser());
@@ -2112,8 +2108,8 @@ public class BillSearch implements Serializable {
         }
         
         cb.copy(originalBill);
- invertAndAssignValuesFromOtherBillopyValue(originalBill);
-        cb.invertValue(originalBill);
+        cb.copyValue(originalBill);
+        cb.invertAndAssignValuesFromOtherBill(originalBill);
         cb.setBillType(BillType.OpdBill);
         cb.setBillTypeAtomic(BillTypeAtomic.OPD_BILL_CANCELLATION);
         
@@ -2144,9 +2140,9 @@ public class BillSearch implements Serializable {
         
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getInstitution(), sessionController.getDepartment(), BillType.CollectingCentreBill, BillClassType.CancelledBill);
         
-        cinvertAndAssignValuesFromOtherBillinalBill);
+        cb.copy(originalBill);
         cb.copyValue(originalBill);
-        cb.invertValue(originalBill);
+        cb.invertAndAssignValuesFromOtherBill(originalBill);
         cb.setBillTypeAtomic(BillTypeAtomic.CC_BILL_CANCELLATION);
         cb.setBalance(0.0);
         cb.setPaymentMethod(paymentMethod);
@@ -2166,9 +2162,10 @@ public class BillSearch implements Serializable {
     
     private CancelledBill createProfessionalPaymentCancelBill(Bill originalBill) {
         CancelledBill cb = new CancelledBill();
-        if (originalBill != null) invertAndAssignValuesFromOtherBill   cb.copy(originalBill);
+        if (originalBill != null) {
+            cb.copy(originalBill);
             cb.copyValue(originalBill);
-            cb.invertValue(originalBill);
+            cb.invertAndAssignValuesFromOtherBill(originalBill);
             cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), originalBill.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.PROCAN));
             cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), originalBill.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.PROCAN));
         }
@@ -2191,10 +2188,10 @@ public class BillSearch implements Serializable {
     }
     
     private CancelledBill createCahsInOutCancelBill(Bill originalBill, BillNumberSuffix billNumberSuffix) {
-        CancelledBiinvertAndAssignValuesFromOtherBill CancelledBill();
+        CancelledBill cb = new CancelledBill();
         if (originalBill != null) {
             cb.copy(originalBill);
-            cb.invertValue(originalBill);
+            cb.invertAndAssignValuesFromOtherBill(originalBill);
             
             cb.setBilledBill(originalBill);
             
@@ -3224,7 +3221,7 @@ public class BillSearch implements Serializable {
         CancelledBill cancellationBill = new CancelledBill();
         cancellationBill.copy(bill);
         cancellationBill.copyValue(bill);
-        cancellationBill.invertValue();
+        cancellationBill.invertValueOfThisBill();
         
         cancellationBill.setCreatedAt(new Date());
         cancellationBill.setCreater(sessionController.getLoggedUser());
@@ -3344,7 +3341,7 @@ public class BillSearch implements Serializable {
         CancelledBill cancellationBill = new CancelledBill();
         cancellationBill.copy(bill);
         cancellationBill.copyValue(bill);
-        cancellationBill.invertValue();
+        cancellationBill.invertValueOfThisBill();
         
         cancellationBill.setCreatedAt(new Date());
         cancellationBill.setCreater(sessionController.getLoggedUser());
@@ -4723,11 +4720,11 @@ public class BillSearch implements Serializable {
         this.refundMargin = refundMargin;
     }
     
-    public StaffBean getStaffBean() {
+    public StaffService getStaffBean() {
         return staffBean;
     }
     
-    public void setStaffBean(StaffBean staffBean) {
+    public void setStaffBean(StaffService staffBean) {
         this.staffBean = staffBean;
     }
     

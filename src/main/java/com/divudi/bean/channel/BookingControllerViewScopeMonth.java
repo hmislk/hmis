@@ -74,7 +74,7 @@ import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.OptionScope;
 import static com.divudi.data.PaymentMethod.OnlineSettlement;
 import com.divudi.data.dataStructure.ComponentDetail;
-import com.divudi.service.StaffBean;
+import com.divudi.service.StaffService;
 import com.divudi.entity.Doctor;
 import com.divudi.entity.Payment;
 import com.divudi.entity.UserPreference;
@@ -162,7 +162,7 @@ public class BookingControllerViewScopeMonth implements Serializable {
     @EJB
     private SmsFacade smsFacade;
     @EJB
-    StaffBean staffBean;
+    StaffService staffBean;
     @EJB
     AgentReferenceBookFacade agentReferenceBookFacade;
     /**

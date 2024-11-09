@@ -21,7 +21,7 @@ import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.EjbApplication;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
-import com.divudi.service.StaffBean;
+import com.divudi.service.StaffService;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillEntry;
@@ -111,7 +111,7 @@ public class PharmacyBillSearch implements Serializable {
     List<Bill> searchRetaiBills;
     //////////////////
     @EJB
-    StaffBean staffBean;
+    StaffService staffBean;
 
     @EJB
     BillFeeFacade billFeeFacade;
@@ -3120,11 +3120,11 @@ public class PharmacyBillSearch implements Serializable {
         this.selectedBills = selectedBills;
     }
 
-    public StaffBean getStaffBean() {
+    public StaffService getStaffBean() {
         return staffBean;
     }
 
-    public void setStaffBean(StaffBean staffBean) {
+    public void setStaffBean(StaffService staffBean) {
         this.staffBean = staffBean;
     }
 
