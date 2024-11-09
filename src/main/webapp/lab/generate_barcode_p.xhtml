@@ -5,6 +5,7 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns="http://www.w3.org/1999/xhtml"
       xmlns:na="http://xmlns.jcp.org/jsf/composite/template"
+      xmlns:s="http://www.w3.org/1999/xhtml"
       xmlns:p="http://primefaces.org/ui">
     <ui:composition template="/resources/template/template.xhtml">
         <ui:define name="content">
@@ -19,11 +20,7 @@
             </h:panelGroup>
 
             <h:panelGroup rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}" >
-
-
                 <div class="container-fluid" >
-
-
                     <h:form >
 
                         <div class="row my-2" >
@@ -298,7 +295,7 @@
                                             <i class="fas fa-mobile-alt text-warning"></i> <!-- Mobile Icon -->
                                             <h:outputLabel value="#{patientInvestigation.billItem.bill.patient.person.mobile}" />
                                         </p:column>
- 
+
                                         <!-- Investigation Name Column -->
                                         <p:column headerText="Investigation" style="width: 7em; vertical-align: top;">
                                             <i class="fas fa-vial text-danger"></i> <!-- Investigation Icon -->
@@ -391,16 +388,16 @@
                                                         action="#{patientInvestigationController.navigateToPatientReportsFromSelectedInvestigation(patientInvestigation)}" >
                                                     </p:commandButton>
                                                 </div>
-<!--                                                <div class="row" >
-                                                    <p:commandButton 
-                                                        value="Add Alternative Report" 
-                                                        ajax="false" 
-                                                        class="ui-button-group"
-                                                        icon="fa fa-plus"
-                                                        disabled="#{!patientInvestigation.sampleAccepted}" 
-                                                        action="#{patientInvestigationController.navigateToAlternativeReportSelector(patientInvestigation)}">
-                                                    </p:commandButton>
-                                                </div>-->
+                                                <!--                                                <div class="row" >
+                                                                                                    <p:commandButton 
+                                                                                                        value="Add Alternative Report" 
+                                                                                                        ajax="false" 
+                                                                                                        class="ui-button-group"
+                                                                                                        icon="fa fa-plus"
+                                                                                                        disabled="#{!patientInvestigation.sampleAccepted}" 
+                                                                                                        action="#{patientInvestigationController.navigateToAlternativeReportSelector(patientInvestigation)}">
+                                                                                                    </p:commandButton>
+                                                                                                </div>-->
 
                                             </h:panelGroup>
                                         </p:column>
@@ -558,79 +555,201 @@
 
                                 <!--BILL_BARCODES-->
                                 <h:panelGroup rendered="#{patientInvestigationController.listingEntity eq 'BILL_BARCODES'}">
-                                    <p:commandButton ajax="false" value="Print">
-                                        <p:printer target="batchBarcode"></p:printer>
-                                    </p:commandButton>
-                                    <h:panelGroup id="batchBarcode">
-                                        <ui:repeat value="#{patientInvestigationController.selectedBillBarcodes}" var="smpIx">
-                                            <ui:repeat value="#{smpIx.patientSampleWrappers}" var="psc">
-                                                <div class="sticker">
-                                                    <div class="patient-info">
-                                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Sample ID PHN in Sample Stickers', true)}">
-                                                            <span class="sample-id">
-                                                                #{psc.patientSample.idStr}&nbsp;&nbsp;
-                                                            </span>
-                                                        </h:panelGroup>
-                                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient Age in Sample Stickers')}">
-                                                            <span class="patient-age">
-                                                                #{psc.patientSample.patient.person.ageAsShortString}&nbsp;&nbsp;
-                                                            </span>
-                                                        </h:panelGroup>
-                                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient Sex in Sample Stickers')}">
-                                                            <span class="patient-sex">
-                                                                #{psc.patientSample.patient.person.sex.shortLabel}&nbsp;&nbsp;
-                                                            </span>
-                                                        </h:panelGroup>
-                                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient ID in Sample Stickers')}">
-                                                            <span class="patient-id">
-                                                                #{psc.patientSample.patient.person.id}&nbsp;&nbsp;
-                                                            </span>
-                                                        </h:panelGroup>
-                                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Bill Type (IP/OP/CC) in Sample Stickers')}">
-                                                            <span class="patient-id">
-                                                                #{psc.patientSample.bill.ipOpOrCc}&nbsp;&nbsp;
-                                                            </span>
-                                                        </h:panelGroup>
-                                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Barcode Generated Time in Sample Stickers')}">
-                                                            <span class="patient-id">
-                                                                <h:outputLabel value="#{psc.patientSample.barcodeGeneratedAt}">
-                                                                    <f:convertDateTime pattern="#{configOptionApplicationController.getShortTextValueByKey('Date Time Format for Barcode Generated Time in Sample Stickers','d/M/yy-hh:mm')}"></f:convertDateTime>
-                                                                </h:outputLabel>
-                                                                &nbsp;&nbsp;
-                                                            </span>
-                                                        </h:panelGroup>
-                                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient PHN in Sample Stickers')}">
-                                                            <span class="patient-phn">
-                                                                #{psc.patientSample.patient.phn}
-                                                            </span>
-                                                        </h:panelGroup>
-                                                        <span class="patient-name">
-                                                            #{psc.patientSample.patient.person.name}&nbsp;&nbsp;
-                                                        </span>
-                                                    </div>
-                                                    <div class="patient-sample-info">
-                                                        <ui:repeat value="#{patientInvestigationController.getPatientSampleComponentsByPatientSample(psc.patientSample)}" var="psw">
-                                                            <span class="sample-component" style="font-weight: 800">
-                                                                #{psw.nameTranscient}&nbsp;&nbsp;
-                                                            </span>
-                                                        </ui:repeat>
-                                                    </div>
-                                                    <div class="barcode-info">
-                                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Barcode in Sample Stickers')}">
-                                                            <p:barcode 
-                                                                value="#{psc.patientSample.idStr}" 
-                                                                cache="false"
-                                                                hrp="none"
-                                                                type="#{configOptionApplicationController.getShortTextValueByKey('Sample Sticker - Barcode Type','code128')}" 
-                                                                height="#{configOptionApplicationController.getShortTextValueByKey('Sample Sticker - Barcode Height in Pixles','80')}"
-                                                                width="#{configOptionApplicationController.getShortTextValueByKey('Sample Sticker - Barcode Width in Pixles','280')}"
-                                                                orientation="0"></p:barcode>
-                                                        </h:panelGroup>
-                                                    </div>
+                                    <p:panel>
+                                        <f:facet name="header">
+                                            <div class="d-flex justify-content-between">
+                                                <div class="d-flex gap-2">
+                                                    <i class="fa fa-barcode mt-3" aria-hidden="true"></i>
+                                                    <h:outputLabel value="Barcode Sticker" class="mt-2"/>
                                                 </div>
-                                            </ui:repeat>
-                                        </ui:repeat>
-                                    </h:panelGroup> 
+                                                <div class="d-flex gap-2">
+                                                    <h:outputLabel value="Print Individual Barcodes" class="mt-2"/>
+                                                    <p:selectBooleanButton id="cheindbar" onIcon="pi pi-check" offIcon="pi pi-times" value="#{patientInvestigationController.printIndividualBarcodes}">
+                                                        <p:ajax process="cheindbar" update="test barcode" event="change"></p:ajax>
+                                                    </p:selectBooleanButton>
+                                                </div>
+                                            </div>
+                                        </f:facet>
+
+                                        <h:panelGroup id="barcode">
+                                            <h:panelGroup id="allBatchBarcode" rendered="#{patientInvestigationController.printIndividualBarcodes eq false}">
+                                                <p:commandButton
+                                                    ajax="false" 
+                                                    class="mb-4 mx-5 ui-button-info"
+                                                    icon="fa fa-print"
+                                                    value="Print All">
+                                                    <p:printer target="batchBarcode"></p:printer>
+                                                </p:commandButton>
+                                                <h:panelGroup id="batchBarcode">
+                                                    <ui:repeat value="#{patientInvestigationController.selectedBillBarcodes}" var="smpIx">
+                                                        <ui:repeat value="#{smpIx.patientSampleWrappers}" var="psc">
+                                                            <div class="sticker">
+                                                                <div class="patient-info">
+                                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Sample ID PHN in Sample Stickers', true)}">
+                                                                        <span class="sample-id">
+                                                                            #{psc.patientSample.idStr}&nbsp;&nbsp;
+                                                                        </span>
+                                                                    </h:panelGroup>
+                                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient Age in Sample Stickers')}">
+                                                                        <span class="patient-age">
+                                                                            #{psc.patientSample.patient.person.ageAsShortString}&nbsp;&nbsp;
+                                                                        </span>
+                                                                    </h:panelGroup>
+                                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient Sex in Sample Stickers')}">
+                                                                        <span class="patient-sex">
+                                                                            #{psc.patientSample.patient.person.sex.shortLabel}&nbsp;&nbsp;
+                                                                        </span>
+                                                                    </h:panelGroup>
+                                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient ID in Sample Stickers')}">
+                                                                        <span class="patient-id">
+                                                                            #{psc.patientSample.patient.person.id}&nbsp;&nbsp;
+                                                                        </span>
+                                                                    </h:panelGroup>
+                                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Bill Type (IP/OP/CC) in Sample Stickers')}">
+                                                                        <span class="patient-id">
+                                                                            #{psc.patientSample.bill.ipOpOrCc}&nbsp;&nbsp;
+                                                                        </span>
+                                                                    </h:panelGroup>
+                                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Barcode Generated Time in Sample Stickers')}">
+                                                                        <span class="patient-id">
+                                                                            <h:outputLabel value="#{psc.patientSample.barcodeGeneratedAt}">
+                                                                                <f:convertDateTime pattern="#{configOptionApplicationController.getShortTextValueByKey('Date Time Format for Barcode Generated Time in Sample Stickers','d/M/yy-hh:mm')}"></f:convertDateTime>
+                                                                            </h:outputLabel>
+                                                                            &nbsp;&nbsp;
+                                                                        </span>
+                                                                    </h:panelGroup>
+                                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient PHN in Sample Stickers')}">
+                                                                        <span class="patient-phn">
+                                                                            #{psc.patientSample.patient.phn}
+                                                                        </span>
+                                                                    </h:panelGroup>
+                                                                    <span class="patient-name">
+                                                                        #{psc.patientSample.patient.person.name}&nbsp;&nbsp;
+                                                                    </span>
+                                                                </div>
+                                                                <div class="patient-sample-info">
+                                                                    <ui:repeat value="#{patientInvestigationController.getPatientSampleComponentsByPatientSample(psc.patientSample)}" var="psw">
+                                                                        <span class="sample-component" style="font-weight: 800">
+                                                                            #{psw.nameTranscient}&nbsp;&nbsp;
+                                                                        </span>
+                                                                    </ui:repeat>
+                                                                </div>
+                                                                <div class="barcode-info">
+                                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Barcode in Sample Stickers')}">
+                                                                        <p:barcode 
+                                                                            value="#{psc.patientSample.idStr}" 
+                                                                            cache="false"
+                                                                            hrp="none"
+                                                                            type="#{configOptionApplicationController.getShortTextValueByKey('Sample Sticker - Barcode Type','code128')}" 
+                                                                            height="#{configOptionApplicationController.getShortTextValueByKey('Sample Sticker - Barcode Height in Pixles','80')}"
+                                                                            width="#{configOptionApplicationController.getShortTextValueByKey('Sample Sticker - Barcode Width in Pixles','280')}"
+                                                                            orientation="0"></p:barcode>
+                                                                    </h:panelGroup>
+                                                                </div>
+                                                            </div>
+                                                        </ui:repeat>
+
+
+                                                    </ui:repeat>
+                                                </h:panelGroup>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup id="individualBarcode" rendered="#{patientInvestigationController.printIndividualBarcodes eq true}">
+
+                                                <ui:repeat value="#{patientInvestigationController.selectedBillBarcodes}" var="smpIx">
+
+                                                    <ui:repeat value="#{smpIx.patientSampleWrappers}" var="psc">
+                                                        <p:panelGrid columns="6">
+                                                            <h:panelGroup id="tt" >
+                                                                <div class="sticker">
+                                                                    <div class="patient-info">
+                                                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Sample ID PHN in Sample Stickers', true)}">
+                                                                            <span class="sample-id">
+                                                                                #{psc.patientSample.idStr}&nbsp;&nbsp;
+                                                                            </span>
+                                                                        </h:panelGroup>
+                                                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient Age in Sample Stickers')}">
+                                                                            <span class="patient-age">
+                                                                                #{psc.patientSample.patient.person.ageAsShortString}&nbsp;&nbsp;
+                                                                            </span>
+                                                                        </h:panelGroup>
+                                                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient Sex in Sample Stickers')}">
+                                                                            <span class="patient-sex">
+                                                                                #{psc.patientSample.patient.person.sex.shortLabel}&nbsp;&nbsp;
+                                                                            </span>
+                                                                        </h:panelGroup>
+                                                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient ID in Sample Stickers')}">
+                                                                            <span class="patient-id">
+                                                                                #{psc.patientSample.patient.person.id}&nbsp;&nbsp;
+                                                                            </span>
+                                                                        </h:panelGroup>
+                                                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Bill Type (IP/OP/CC) in Sample Stickers')}">
+                                                                            <span class="patient-id">
+                                                                                #{psc.patientSample.bill.ipOpOrCc}&nbsp;&nbsp;
+                                                                            </span>
+                                                                        </h:panelGroup>
+                                                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Barcode Generated Time in Sample Stickers')}">
+                                                                            <span class="patient-id">
+                                                                                <h:outputLabel value="#{psc.patientSample.barcodeGeneratedAt}">
+                                                                                    <f:convertDateTime pattern="#{configOptionApplicationController.getShortTextValueByKey('Date Time Format for Barcode Generated Time in Sample Stickers','d/M/yy-hh:mm')}"></f:convertDateTime>
+                                                                                </h:outputLabel>
+                                                                                &nbsp;&nbsp;
+                                                                            </span>
+                                                                        </h:panelGroup>
+                                                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient PHN in Sample Stickers')}">
+                                                                            <span class="patient-phn">
+                                                                                #{psc.patientSample.patient.phn}
+                                                                            </span>
+                                                                        </h:panelGroup>
+                                                                        <span class="patient-name">
+                                                                            #{psc.patientSample.patient.person.name}&nbsp;&nbsp;
+                                                                        </span>
+                                                                    </div>
+                                                                    <div class="patient-sample-info">
+                                                                        <ui:repeat value="#{patientInvestigationController.getPatientSampleComponentsByPatientSample(psc.patientSample)}" var="psw">
+                                                                            <span class="sample-component" style="font-weight: 800">
+                                                                                #{psw.nameTranscient}&nbsp;&nbsp;
+                                                                            </span>
+                                                                        </ui:repeat>
+                                                                    </div>
+                                                                    <div class="barcode-info">
+                                                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Barcode in Sample Stickers')}">
+                                                                            <p:barcode 
+                                                                                value="#{psc.patientSample.idStr}" 
+                                                                                cache="false"
+                                                                                hrp="none"
+                                                                                type="#{configOptionApplicationController.getShortTextValueByKey('Sample Sticker - Barcode Type','code128')}" 
+                                                                                height="#{configOptionApplicationController.getShortTextValueByKey('Sample Sticker - Barcode Height in Pixles','80')}"
+                                                                                width="#{configOptionApplicationController.getShortTextValueByKey('Sample Sticker - Barcode Width in Pixles','280')}"
+                                                                                orientation="0"></p:barcode>
+                                                                        </h:panelGroup>
+                                                                    </div>
+                                                                </div>
+                                                            </h:panelGroup>
+
+                                                            <p:badge 
+                                                                class="mt-4 ui-badge-warning"
+                                                                size="large"
+                                                                value="#{patientInvestigationController.sampleComponentNames(psc.patientSample)}" >
+                                                            </p:badge>
+
+                                                            <p:commandButton
+                                                                ajax="false" 
+                                                                class="mt-4 ui-button-info"
+                                                                icon="fa fa-print"
+                                                                value="Print '#{patientInvestigationController.sampleComponentNames(psc.patientSample)}' Barcode">
+                                                                <p:printer target="tt"></p:printer>
+                                                            </p:commandButton>
+
+                                                        </p:panelGrid>
+
+                                                    </ui:repeat>
+                                                </ui:repeat>
+
+                                            </h:panelGroup>
+                                        </h:panelGroup>
+                                    </p:panel>
+
                                 </h:panelGroup>
 
                                 <!--PATIENT_SAMPLES-->
@@ -1009,8 +1128,6 @@
 
                             </div>
 
-
-
                             <div class="col-2" >
                                 <h:panelGrid columns="1" class="w-100">
                                     <p:commandButton rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_INVESTIGATIONS'}"
@@ -1133,10 +1250,7 @@
 
                         </div>
                     </h:form>
-
                 </div>
-
-
             </h:panelGroup>
         </ui:define>
     </ui:composition>
