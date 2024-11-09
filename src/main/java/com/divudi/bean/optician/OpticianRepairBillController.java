@@ -26,7 +26,7 @@ import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 
 import com.divudi.ejb.SmsManagerEjb;
-import com.divudi.ejb.StaffBean;
+import com.divudi.service.StaffService;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillEntry;
@@ -742,7 +742,7 @@ public class OpticianRepairBillController implements Serializable, ControllerWit
         return billNumberGenerator;
     }
 
-    public StaffBean getStaffBean() {
+    public StaffService getStaffBean() {
         return staffBean;
     }
 
@@ -1773,7 +1773,7 @@ public class OpticianRepairBillController implements Serializable, ControllerWit
     }
 
     @EJB
-    StaffBean staffBean;
+    StaffService staffBean;
 
     private void saveBillItemSessions() {
         for (BillEntry be : lstBillEntries) {

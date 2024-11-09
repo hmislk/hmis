@@ -75,6 +75,8 @@ public class DrawerController implements Serializable {
     private List<Drawer> items = null;
     List<Drawer> drawers;
 
+    private boolean editDrawerAccess;
+    
     // <editor-fold defaultstate="collapsed" desc="UP">
     public void updateDrawerForIns(List<Payment> payments, WebUser webUser) {
         if (payments == null) {
@@ -534,6 +536,14 @@ public class DrawerController implements Serializable {
     public List<Drawer> getItems() {
         items = getFacade().findAll("name", true);
         return items;
+    }
+
+    public boolean isEditDrawerAccess() {
+        return editDrawerAccess;
+    }
+
+    public void setEditDrawerAccess(boolean editDrawerAccess) {
+        this.editDrawerAccess = editDrawerAccess;
     }
 
     /**

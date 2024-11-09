@@ -664,8 +664,10 @@ public class ChannelService {
         BillItem cItem = cancelBillItems(bs.getBillItem(), cb);
         BillSession cbs = cancelBillSession(bs, cb, cItem);
         bill.getSingleBillSession().getBill().setCancelled(true);
-        if (bill.getReferenceBill() != null) {
-            bill.getReferenceBill().setCancelled(true);
+        
+        if (bill.getPaidBill() != null) {
+            System.out.println("inside");
+            bill.getPaidBill().setCancelled(true);
         }
         bs.getBill().setCancelledBill(cb);
         getBillFacade().edit(bs.getBill());
@@ -712,7 +714,7 @@ public class ChannelService {
         CancelledBill cb = new CancelledBill();
 
         cb.copy(bill);
-        cb.invertValue(bill);
+        cb.invertAndAssignValuesFromOtherBill(bill);
         cb.setAgentRefNo(bill.getAgentRefNo());
         cb.setCreditCompany(bill.getCreditCompany());
         cb.setBilledBill(bill);

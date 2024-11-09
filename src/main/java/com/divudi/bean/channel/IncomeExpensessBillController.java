@@ -238,7 +238,7 @@ public class IncomeExpensessBillController implements Serializable {
     private CancelledBill createCancelBill(BillType billType, BillNumberSuffix suffix) {
         CancelledBill cb = new CancelledBill();
         cb.copy(getBill());
-        cb.invertValue(getBill());
+        cb.invertAndAssignValuesFromOtherBill(getBill());
         cb.setBilledBill(getBill());
 
         cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), billType, BillClassType.CancelledBill, suffix));

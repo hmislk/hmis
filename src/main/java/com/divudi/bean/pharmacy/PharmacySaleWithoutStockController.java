@@ -28,7 +28,7 @@ import com.divudi.data.inward.InwardChargeType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.PharmacyBean;
-import com.divudi.ejb.StaffBean;
+import com.divudi.service.StaffService;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillFeePayment;
@@ -125,7 +125,7 @@ public class PharmacySaleWithoutStockController implements Serializable, Control
     @EJB
     BillNumberGenerator billNumberBean;
     @EJB
-    StaffBean staffBean;
+    StaffService staffBean;
     @EJB
     private UserStockContainerFacade userStockContainerFacade;
     @EJB
@@ -1934,11 +1934,11 @@ public class PharmacySaleWithoutStockController implements Serializable, Control
         this.cashTransactionBean = cashTransactionBean;
     }
 
-    public StaffBean getStaffBean() {
+    public StaffService getStaffBean() {
         return staffBean;
     }
 
-    public void setStaffBean(StaffBean staffBean) {
+    public void setStaffBean(StaffService staffBean) {
         this.staffBean = staffBean;
     }
 

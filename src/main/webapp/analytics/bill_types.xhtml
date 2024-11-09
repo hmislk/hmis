@@ -154,12 +154,22 @@
 
                                 <p:column headerText="Bill Type" >                                
                                     <h:outputLabel value="#{row.billType}"/>
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="View Bills" 
+                                        action="#{searchController.navigatToBillListByBillType(row.billType)}" >
+                                    </p:commandButton>
                                 </p:column>
                                 <p:column headerText="Bill Class" >                                
                                     <h:outputLabel value="#{row.billClassType}"/>
                                 </p:column>
                                 <p:column headerText="Bill Type (Atomic)" >                                
                                     <h:outputLabel value="#{row.billTypeAtomic}"/>
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="View Bills" 
+                                        action="#{searchController.navigatToBillListByBillTypeAtomic(row.billTypeAtomic)}" >
+                                    </p:commandButton>
                                 </p:column>
 
                                 <p:column headerText="Gross Value" styleClass="averageNumericColumn">

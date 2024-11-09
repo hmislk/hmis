@@ -74,7 +74,7 @@ import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.OptionScope;
 import static com.divudi.data.PaymentMethod.OnlineSettlement;
 import com.divudi.data.dataStructure.ComponentDetail;
-import com.divudi.ejb.StaffBean;
+import com.divudi.service.StaffService;
 import com.divudi.entity.Doctor;
 import com.divudi.entity.Payment;
 import com.divudi.entity.UserPreference;
@@ -162,7 +162,7 @@ public class BookingControllerViewScopeMonth implements Serializable {
     @EJB
     private SmsFacade smsFacade;
     @EJB
-    StaffBean staffBean;
+    StaffService staffBean;
     @EJB
     AgentReferenceBookFacade agentReferenceBookFacade;
     /**
@@ -2283,7 +2283,7 @@ public class BookingControllerViewScopeMonth implements Serializable {
         CancelledBill cb = new CancelledBill();
 
         cb.copy(bill);
-        cb.invertValue(bill);
+        cb.invertAndAssignValuesFromOtherBill(bill);
         cb.setBilledBill(bill);
         cb.setBillDate(new Date());
         cb.setBillTime(new Date());
@@ -2327,7 +2327,7 @@ public class BookingControllerViewScopeMonth implements Serializable {
         CancelledBill cb = new CancelledBill();
 
         cb.copy(bill);
-        cb.invertValue(bill);
+        cb.invertAndAssignValuesFromOtherBill(bill);
         cb.setBilledBill(bill);
         cb.setBillDate(new Date());
         cb.setBillTime(new Date());
@@ -2371,7 +2371,7 @@ public class BookingControllerViewScopeMonth implements Serializable {
         CancelledBill cb = new CancelledBill();
 
         cb.copy(bill);
-        cb.invertValue(bill);
+        cb.invertAndAssignValuesFromOtherBill(bill);
         cb.setBilledBill(bill);
         cb.setBillDate(new Date());
         cb.setBillTime(new Date());
@@ -2414,7 +2414,7 @@ public class BookingControllerViewScopeMonth implements Serializable {
         CancelledBill cb = new CancelledBill();
 
         cb.copy(bill);
-        cb.invertValue(bill);
+        cb.invertAndAssignValuesFromOtherBill(bill);
         cb.setBilledBill(bill);
         cb.setBillDate(new Date());
         cb.setBillTime(new Date());

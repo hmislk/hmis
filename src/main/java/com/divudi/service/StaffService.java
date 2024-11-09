@@ -3,7 +3,7 @@
  * Dr M H B Ariyaratne
  * buddhika.ari@gmail.com
  */
-package com.divudi.ejb;
+package com.divudi.service;
 
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.entity.Staff;
@@ -13,10 +13,11 @@ import javax.ejb.Stateless;
 
 /**
  *
- * @author pdhs
+ * @author Dr M H B Ariyaratne, buddhika.ari@gmail.com
+ * 
  */
 @Stateless
-public class StaffBean {
+public class StaffService {
 
     @EJB
     StaffFacade facade;
