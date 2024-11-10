@@ -2246,15 +2246,6 @@ public class BillSearch implements Serializable {
             }
 
         }
-        if (!getWebUserController().hasPrivilege("LabBillCancelSpecial")) {
-
-            ////// // System.out.println("patientInvestigationController.sampledForAnyItemInTheBill(bill) = " + patientInvestigationController.sampledForAnyItemInTheBill(bill));
-            if (patientInvestigationController.sampledForAnyItemInTheBill(bill)) {
-                JsfUtil.addErrorMessage("Sample Already collected can't cancel");
-                return true;
-            }
-        }
-
         if (getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Please select a payment scheme for Cancellation.");
             return true;
@@ -2344,19 +2335,26 @@ public class BillSearch implements Serializable {
             }
         }
 
-        if (!checkCancelBill(getBill())) {
-            JsfUtil.addErrorMessage("This bill is processed in the laboratory.");
-            if (getWebUserController().hasPrivilege("BillCancel")) {
-                JsfUtil.addErrorMessage("You have Speacial privilege to cancel This Bill");
-            }else{
-                JsfUtil.addErrorMessage("You have no privilege to cancel OPD bills. Please contact System Administrator.");
+        if (configOptionApplicationController.getBooleanValueByKey("Enable the Special Privilege of Canceling OPD Bills", true)) {
+            if (!checkCancelBill(getBill())) {
+                JsfUtil.addErrorMessage("This bill is processed in the laboratory.");
+                if (getWebUserController().hasPrivilege("BillCancel")) {
+                    JsfUtil.addErrorMessage("You have Speacial privilege to cancel This Bill");
+                } else {
+                    JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
+                    return;
+                }
+            } else {
+                if (!getWebUserController().hasPrivilege("OpdCancel")) {
+                    JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
+                    return;
+                }
+            }
+        } else {
+            if (!getWebUserController().hasPrivilege("OpdCancel")) {
+                JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
                 return;
             }
-        }
-
-        if (!(getWebUserController().hasPrivilege("OpdCancel") || getWebUserController().hasPrivilege("BillCancel"))) {
-            JsfUtil.addErrorMessage("You have no privilege to cancel OPD bills. Please contact System Administrator.");
-            return;
         }
 
         CancelledBill cancellationBill = createOpdCancelBill(bill);
