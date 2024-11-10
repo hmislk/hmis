@@ -2390,7 +2390,7 @@ public class BillSearch implements Serializable {
         bill = billFacade.find(cancellationBill.getId());
         printPreview = true;
         comment = null;
-//          TODO:         To Implement cancellation approval
+
 //            getEjbApplication().getBillsToCancel().add(cb);
 //            JsfUtil.addSuccessMessage("Awaiting Cancellation");
     }
