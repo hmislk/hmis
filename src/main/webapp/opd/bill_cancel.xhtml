@@ -6,7 +6,6 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
-      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
       xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints">
 
     <h:body>
@@ -68,9 +67,11 @@
                                     <f:selectItems value="#{enumController.paymentMethodsForOpdBillCanceling}"/>
                                 </p:selectOneMenu>
 
-                                <p:selectOneMenu id="cmbPs2" value="#{billSearch.paymentMethod}"  
-                                                 disabled="#{billSearch.bill.paymentMethod eq 'Agent'}"
-                                                 rendered="#{billSearch.bill.billType eq 'CollectingCentreBill'}">
+                                <p:selectOneMenu 
+                                    id="cmbPs2" 
+                                    value="#{billSearch.paymentMethod}"  
+                                    disabled="#{billSearch.bill.paymentMethod eq 'Agent'}"
+                                    rendered="#{billSearch.bill.billType eq 'CollectingCentreBill'}">
                                     <f:selectItem itemLabel="Select paymentMethod"/>
                                     <f:selectItems value="#{enumController.collectingCentrePaymentMethods}"/>
                                 </p:selectOneMenu>
@@ -168,10 +169,11 @@
                                 <f:selectItems value="#{enumController.paperTypes}" />
                             </p:selectOneMenu>
                             <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button m-1" title="Redraw Bill"></p:commandButton>
-                            <p:commandButton value="Print" 
-                                             class="ui-button-info m-1"
-                                             icon="fa fa-print"
-                                             ajax="false">
+                            <p:commandButton 
+                                value="Print" 
+                                class="ui-button-info m-1"
+                                icon="fa fa-print"
+                                ajax="false">
                                 <p:printer target="groupPrint" />
                             </p:commandButton> 
 

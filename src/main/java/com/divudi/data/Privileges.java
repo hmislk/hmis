@@ -517,7 +517,9 @@ public enum Privileges {
     
     SuperAdmin("Supper Admin"),
     EditData("Edit Data"),
-    DeleteData("Delete Data")
+    DeleteData("Delete Data"),
+    BillCancel("Bill Cancel"),
+    BillRefund("Bill Refund"),
     ;
 
     private final String label;
