@@ -268,57 +268,54 @@ public class PharmacyController implements Serializable {
 
     // </editor-fold> 
     // <editor-fold defaultstate="collapsed" desc="Methods - Navigation">
-    
-    
     public String navigateToBinCard() {
         return "/pharmacy/bin_card?faces-redirect=true";
     }
-    
+
     public String navigateToItemsList() {
         return "/pharmacy/list_amps?faces-redirect=true";
     }
-    
+
     public String navigateToMedicineList() {
         return "/pharmacy/list_medicines?faces-redirect=true";
     }
-    
+
     public String navigateToItemsWithoutDistributor() {
         return "/pharmacy/pharmacy_report_list_amps_with_out_distributor?faces-redirect=true";
     }
-    
+
     public String navigateToItemsWithSuppliersAndPrices() {
         return "/pharmacy/item_supplier_prices?faces-redirect=true";
     }
-    
+
     public String navigateToItemsWithDistributor() {
         return "/pharmacy/pharmacy_report_list_distributor_with_distributor_items?faces-redirect=true";
     }
-    
+
     public String navigateToItemsWithMultipleDistributorsItemsOnly() {
         return "/pharmacy/pharmacy_report_list_grater_than_one_distributor?faces-redirect=true";
     }
-    
+
     public String navigateToItemWithMultipleDistributors() {
         return "/pharmacy/pharmacy_report_list_item_with_multiple_dealor?faces-redirect=true";
     }
-    
+
     public String navigateToReorderAnalysis() {
         return "/pharmacy/ordering_data?faces-redirect=true";
     }
-    
-    
+
     public String navigateToReorderManagement() {
         return "/pharmacy/reorder_management?faces-redirect=true";
     }
-    
+
     public String navigateToAllItemsTransactionSummary() {
         return "/pharmacy/raport_all_item_transaction_summery?faces-redirect=true";
     }
-    
+
     public String navigateToItemTransactionDetails() {
         return "/pharmacy/pharmacy_item_transactions?faces-redirect=true";
     }
-    
+
     public String navigateToListPharmaceuticals() {
         fillPharmaceuticalLights();
         return "/pharmacy/admin/items?faces-redirect=true";
@@ -381,12 +378,12 @@ public class PharmacyController implements Serializable {
         importerController.getCurrent();
         return "/pharmacy/pharmacy_importer?faces-redirect=true";
     }
-    
-    public String navigateToSuppliers(){
+
+    public String navigateToSuppliers() {
         return "/pharmacy/pharmacy_dealer?faces-redirect=true";
     }
-    
-    public String navigateToItemSuppliers(){
+
+    public String navigateToItemSuppliers() {
         return "/pharmacy/pharmacy_items_distributors?faces-redirect=true";
     }
 
@@ -439,6 +436,82 @@ public class PharmacyController implements Serializable {
     public String navigateToVmppMultiple() {
         fillVmpps();
         return "/pharmacy/admin/vmpp_multiple?faces-redirect=true";
+    }
+
+    public String navigateToItemMismatchReport() {
+        return "/pharmacy/pharmacy_item_mismatch_report?faces-redirect=true";
+    }
+
+    public String navigateToItemImport() {
+        return "/pharmacy/pharmacy_item_import?faces-redirect=true";
+    }
+
+    public String navigateToItemImportWithStock() {
+        return "/pharmacy/pharmacy_item_import_with_stock?faces-redirect=true";
+    }
+
+    public String navigateToItemImportByBarcode() {
+        return "/pharmacy/pharmacy_item_import_by_barcode?faces-redirect=true";
+    }
+
+    public String navigateToItemImportStocksByName() {
+        return "/pharmacy/pharmacy_item_import_stocks_by_name?faces-redirect=true";
+    }
+
+    public String navigateToPurchaseOpeningStock() {
+        return "/pharmacy/pharmacy_purchase_openning_stock?faces-redirect=true";
+    }
+
+    public String navigateToImporterCategory() {
+        return "/pharmacy/pharmacy_importer_category?faces-redirect=true";
+    }
+
+    public String navigateToItemImportBarcode() {
+        return "/pharmacy/pharmacy_item_import_barcode?faces-redirect=true";
+    }
+
+    public String navigateToErrorCorrection() {
+        return "/pharmacy/pharmacy_error_correction?faces-redirect=true";
+    }
+
+    public String navigateToTransferRequestAll() {
+        return "/pharmacy/pharmacy_transfer_request_all?faces-redirect=true";
+    }
+
+    public String navigateToItemDistributorImport() {
+        return "/pharmacy/pharmacy_item_distributor_import?faces-redirect=true";
+    }
+
+    public String navigateToItemNameFromBarcode() {
+        return "/pharmacy/pharmacy_item_name_from_barcode?faces-redirect=true";
+    }
+
+    public String navigateToItemNamesMissing() {
+        return "/pharmacy/pharmacy_item_names_missing?faces-redirect=true";
+    }
+
+    public String navigateToItemNamesCorrectionBySnapshot() {
+        return "/pharmacy/pharmacy_item_names_correction_by_snapshot?faces-redirect=true";
+    }
+
+    public String navigateToItemByDistributor() {
+        return "/pharmacy/pharmacy_item_by_distributor?faces-redirect=true";
+    }
+
+    public String navigateToErrorChecking() {
+        return "/pharmacy/pharmacy_error_checking?faces-redirect=true";
+    }
+
+    public String navigateToErrorCheckingByDate() {
+        return "/pharmacy/pharmacy_error_checking_date?faces-redirect=true";
+    }
+
+    public String navigateToDepartmentErrorReport() {
+        return "/pharmacy/pharmacy_report_department_error?faces-redirect=true";
+    }
+
+    public String navigateToDepartmentStockByBatchMinus() {
+        return "/pharmacy/pharmacy_report_department_stock_by_batch_minus?faces-redirect=true";
     }
 
     // </editor-fold>
@@ -929,8 +1002,6 @@ public class PharmacyController implements Serializable {
         }
 
         Collections.sort(itemTransactionSummeryRows);
-
-        
 
     }
 
@@ -1678,8 +1749,6 @@ public class PharmacyController implements Serializable {
 
         createStockAverage(dayCount);
 
-        
-
     }
 
     public double getGrantWholeSaleQty() {
@@ -1713,8 +1782,6 @@ public class PharmacyController implements Serializable {
         }
 
         createStockAverage(Math.abs(monthCount));
-
-        
 
     }
 
@@ -2145,7 +2212,6 @@ public class PharmacyController implements Serializable {
         createDirectPurchaseTable();
         createInstitutionIssue();
 
-        
     }
 
     public void createTable() {
