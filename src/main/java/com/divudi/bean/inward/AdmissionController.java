@@ -923,9 +923,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 return true;
             }
         }
-        if (getPatientRoom().getRoomFacilityCharge() == null) {
-            JsfUtil.addErrorMessage("Select Room ");
-            return true;
+        if(getCurrent().getAdmissionType().isRoomChargesAllowed()){
+            if (getPatientRoom().getRoomFacilityCharge() == null) {
+                JsfUtil.addErrorMessage("Select Room ");
+                return true;
+            }
         }
         if (sessionController.getApplicationPreference().isInwardMoChargeCalculateInitialTime()) {
             if (getPatientRoom().getRoomFacilityCharge().getTimedItemFee().getDurationDaysForMoCharge() == 0.0) {
