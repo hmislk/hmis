@@ -973,7 +973,7 @@ public class InwardSearch implements Serializable {
     private CancelledBill createCancelBill() {
         CancelledBill cb = new CancelledBill();
         cb.copy(getBill());
-        cb.invertValue(getBill());
+        cb.invertAndAssignValuesFromOtherBill(getBill());
         cb.setBilledBill(getBill());
 
         ////////////
@@ -1013,7 +1013,7 @@ public class InwardSearch implements Serializable {
         cb.setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getBill().getBillType(), BillClassType.RefundBill, BillNumberSuffix.INWREFCAN));
         cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getBill().getBillType(), BillClassType.RefundBill, BillNumberSuffix.INWREFCAN));
 
-        cb.invertValue(getBill());
+        cb.invertAndAssignValuesFromOtherBill(getBill());
         return cb;
     }
 

@@ -36,57 +36,57 @@ public class Payment implements Serializable {
     Long id;
 
     @ManyToOne
-    Bill bill;
+    private Bill bill;
 
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date paymentDate;
 
     @Temporal(javax.persistence.TemporalType.DATE)
-    Date writtenAt;
+    private Date writtenAt;
 
     @Temporal(javax.persistence.TemporalType.DATE)
-    Date toRealizeAt;
+    private Date toRealizeAt;
 
     @Enumerated(EnumType.STRING)
-    PaymentMethod paymentMethod;
+    private PaymentMethod paymentMethod;
 
     boolean realized;
     @ManyToOne
     private Payment referancePayment;
 
     @Temporal(javax.persistence.TemporalType.DATE)
-    Date realizedAt;
+    private Date realizedAt;
 
     @ManyToOne
-    WebUser realizer;
+    private WebUser realizer;
 
     @Lob
-    String realizeComments;
+    private String realizeComments;
 
     @ManyToOne
-    Institution bank;
+    private Institution bank;
 
     @Lob
-    String comments;
+    private String comments;
 
     @ManyToOne
-    WebUser creater;
+    private WebUser creater;
 
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    Date createdAt;
+    private Date createdAt;
 
-    boolean retired;
+    private boolean retired;
 
     @ManyToOne
-    WebUser retirer;
+    private WebUser retirer;
 
     @ManyToOne
     private WebUser currentHolder;
 
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    Date retiredAt;
+    private Date retiredAt;
 
-    String retireComments;
+    private String retireComments;
 
     private String chequeRefNo;
 
@@ -95,7 +95,7 @@ public class Payment implements Serializable {
 
     private String creditCardRefNo;
 
-    double paidValue;
+    private double paidValue;
 
     private int creditDurationInDays;
 
@@ -104,10 +104,10 @@ public class Payment implements Serializable {
     private String currencyDenominationsJson;
 
     @ManyToOne
-    Institution institution;
+    private Institution institution;
 
     @ManyToOne
-    Department department;
+    private Department department;
 
     @Transient
     @Deprecated
@@ -499,8 +499,26 @@ public class Payment implements Serializable {
         newPayment.setInstitution(this.institution);
         newPayment.setDepartment(this.department);
         newPayment.setReferancePayment(this);
-        // Note: ID is not copied to ensure the uniqueness of each entity
-        // newPayment.setId(this.id); // This line is intentionally commented out
+        newPayment.setBank(this.getBank());
+        newPayment.setChequeDate(this.getChequeDate());
+
+        newPayment.setChequePayer(this.chequePayer);
+        newPayment.setChequePaidAt(this.chequePaidAt);
+        newPayment.setChequePaid(this.chequePaid);
+        newPayment.setChequePaidBill(this.chequePaidBill);
+
+        newPayment.setChequeRealizer(this.chequeRealizer);
+        newPayment.setChequeRealizedAt(this.chequeRealizedAt);
+        newPayment.setChequeRealized(this.chequeRealized);
+        newPayment.setChequeRealizedBill(this.chequeRealizedBill);
+
+        newPayment.setCreditDurationInDays(this.creditDurationInDays);
+
+        newPayment.setReferenceNo(this.referenceNo);
+
+        newPayment.setFromInstitution(this.fromInstitution);
+        newPayment.setToInstitution(this.toInstitution);
+
         return newPayment;
     }
 

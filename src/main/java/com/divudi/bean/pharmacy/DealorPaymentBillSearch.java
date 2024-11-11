@@ -281,7 +281,7 @@ public class DealorPaymentBillSearch implements Serializable {
 
         cb.setBilledBill(getBill());
         cb.copy(getBill());
-        cb.invertValue(getBill());
+        cb.invertAndAssignValuesFromOtherBill(getBill());
         cb.setNetTotal(0 - Math.abs(cb.getNetTotal()));
         cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.CashRecieveBill, BillClassType.CancelledBill, BillNumberSuffix.CRDCAN));
         cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.CashRecieveBill, BillClassType.CancelledBill, BillNumberSuffix.CRDCAN));
@@ -353,7 +353,7 @@ public class DealorPaymentBillSearch implements Serializable {
 
         rb.setBilledBill(getBill());
         rb.copy(getBill());
-        rb.invertValue(getBill());
+        rb.invertAndAssignValuesFromOtherBill(getBill());
         rb.setNetTotal(0 - Math.abs(rb.getNetTotal()));
         String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.SUPPLIER_PAYMENT_RETURNED);
         rb.setDeptId(deptId);

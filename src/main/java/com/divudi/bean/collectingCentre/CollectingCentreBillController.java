@@ -27,7 +27,7 @@ import com.divudi.ejb.BillEjb;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 
-import com.divudi.ejb.StaffBean;
+import com.divudi.service.StaffService;
 import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
@@ -151,7 +151,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     @Inject
     DepartmentController departmentController;
     @EJB
-    StaffBean staffBean;
+    StaffService staffBean;
     @Inject
     CategoryController categoryController;
     @Inject
@@ -458,7 +458,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         return billNumberGenerator;
     }
 
-    public StaffBean getStaffBean() {
+    public StaffService getStaffBean() {
         return staffBean;
     }
 

@@ -1104,7 +1104,7 @@ public class ChannelApi {
         priceDetailsResponse.put("locationPrice", 0);
 
         Map<String, Object> paymentDetailsResponse = new HashMap<>();
-        paymentDetailsResponse.put("paymentMode", paymentMethod);
+        paymentDetailsResponse.put("paymentMode", bill.getCreditCompany().getName());
         paymentDetailsResponse.put("paymentChannel", paymentChannel);
         paymentDetailsResponse.put("branchCode", "");
         paymentDetailsResponse.put("seqNo", "");
@@ -1187,10 +1187,18 @@ public class ChannelApi {
         List<Bill> billList = channelService.findBillFromRefNo(clientsReferanceNo, creditCompany, BillClassType.BilledBill);
 
         Bill bill = billList.get(0);
-
+        
         if (bill == null || billList.isEmpty()) {
             JSONObject response = commonFunctionToErrorResponse("No bills with refNo");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+        }
+        
+         if(billList.size() > 1){
+            for(Bill b: billList){
+                if(b.getBillType() == BillType.ChannelOnCall){
+                    bill = b;
+                }
+            }
         }
 
         if (bill.isCancelled()) {
@@ -1201,6 +1209,15 @@ public class ChannelApi {
         if (bill.getSingleBillSession().getSessionInstance().isCompleted() && bill.getSingleBillSession().getSessionInstance().isCancelled()) {
             JSONObject response = commonFunctionToErrorResponse("Session is not available now.");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+        }
+        
+       
+        String status = "Booking details editing is succeeded";
+        
+        if(bill.getPaidBill() == null){
+            status = "Booking details are edited for the temporary booking.";
+        }else if(bill.getPaidBill() != null && bill.getPaidBill().getBillType() == BillType.ChannelPaid){
+            status = "Booking details are edited for the complete booking";
         }
 
         Person p = bill.getPatient().getPerson();
@@ -1272,8 +1289,8 @@ public class ChannelApi {
         priceDetailsResponse.put("locationPrice", 0);
 
         Map<String, Object> paymentDetailsResponse = new HashMap<>();
-        paymentDetailsResponse.put("paymentMode", "");
-        paymentDetailsResponse.put("paymentChannel", "");
+        paymentDetailsResponse.put("paymentMode", bill.getCreditCompany().getName());
+        paymentDetailsResponse.put("paymentChannel", bill.getCreditCompany().getCode());
         paymentDetailsResponse.put("branchCode", "");
         paymentDetailsResponse.put("seqNo", "");
 
@@ -1289,7 +1306,7 @@ public class ChannelApi {
         apoinmentDetailsResponse.put("patient", patientDetailsResponse);
         apoinmentDetailsResponse.put("price", priceDetailsResponse);
         apoinmentDetailsResponse.put("payment", paymentDetailsResponse);
-        apoinmentDetailsResponse.put("status", "Temporary booking Detail Editing is succeded");
+        apoinmentDetailsResponse.put("status", status);
 
         Map<String, Object> response = new HashMap<>();
         response.put("code", "202");
@@ -1414,8 +1431,8 @@ public class ChannelApi {
         priceDetails.put("hosCharge", session.getChannelHosFee());
 
         Map<String, Object> paymentDetailsForResponse = new HashMap<>();
-        paymentDetailsForResponse.put("paymentMode", paymentDetails.get("paymentMode"));
-        paymentDetailsForResponse.put("paymentChannel", paymentDetails.get("paymentChannel"));
+        paymentDetailsForResponse.put("paymentMode", bill.getCreditCompany().getName());
+        paymentDetailsForResponse.put("paymentChannel", bill.getCreditCompany().getCode());
         paymentDetailsForResponse.put("seqNo", "");
 
         appoinment.put("sessionDetails", sessionDetails);
@@ -1550,7 +1567,7 @@ public class ChannelApi {
 
         if (billList.size() > 1) {
             for (Bill b : billList) {
-                if (b.getBillType() == BillType.ChannelPaid) {
+                if (b.getBillType() == BillType.ChannelOnCall) {
                     bill = b;
                 }
             }
@@ -1566,9 +1583,9 @@ public class ChannelApi {
         String billStatus = null;
         if (bill.isCancelled()) {
             billStatus = "Cancelled Bill";
-        } else if (bill.getBillType() == BillType.ChannelOnCall) {
+        } else if (bill.getPaidBill() == null) {
             billStatus = "Temporarty Booking added. Still Not completed with payment.";
-        } else if (bill.getBillType() == BillType.ChannelPaid) {
+        } else if (bill.getPaidBill() == null && bill.getPaidBill().getBillType() == BillType.ChannelPaid) {
             billStatus = "Booking is done with the payment";
         }
 
@@ -1705,7 +1722,7 @@ public class ChannelApi {
 
         if (billList.size() > 1) {
             for (Bill b : billList) {
-                if (b.getBillType() == BillType.ChannelPaid) {
+                if (b.getBillType() == BillType.ChannelOnCall) {
                     bill = b;
                 }
             }
@@ -1718,10 +1735,10 @@ public class ChannelApi {
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
-        if (bill.getBillType() == BillType.ChannelPaid) {
-            JSONObject response = commonFunctionToErrorResponse("Bill payment is done. For cancellation visit hospital to cancel and retrive your cash back.");
-            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
-        }
+//        if (bill.getBillType() == BillType.ChannelPaid) {
+//            JSONObject response = commonFunctionToErrorResponse("Bill payment is done. For cancellation visit hospital to cancel and retrive your cash back.");
+//            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+//        }
 
         BillSession bs = channelService.cancelBookingBill(bill);
         // Person p = bs.getBill().getPatient().getPerson();
@@ -1796,8 +1813,8 @@ public class ChannelApi {
         priceDetails.put("vatPercentage", 0);
 
         Map<String, Object> paymentDetailsResponse = new HashMap<>();
-        paymentDetailsResponse.put("paymentMode", "");
-        paymentDetailsResponse.put("paymentChannel", "");
+        paymentDetailsResponse.put("paymentMode", bs.getBill().getCreditCompany().getName());
+        paymentDetailsResponse.put("paymentChannel", bs.getBill().getCreditCompany().getCode());
 
         appoinment.put("sessionDetails", sessionDetails);
         appoinment.put("patient", patientDetails);

@@ -84,17 +84,23 @@
                                     >
 
                                     <p:column headerText="Bill No" >                                
-                                        <h:outputLabel value="#{bill.deptId}"  ></h:outputLabel>  
+                                        <h:commandLink action="reprint_bill_dealor" >
+                                            #{bill.deptId}"  
+                                            <f:setPropertyActionListener target="#{dealorPaymentBillSearch.bill}" value="#{bill}"/>
+                                        </h:commandLink>
                                         <br/>
-                                        <h:panelGroup rendered="#{bill.cancelled}" >
-                                            <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.deptId}" >                                       
-                                            </h:outputLabel>
-                                        </h:panelGroup> 
+
+                                        <h:commandLink action="reprint_bill_dealor" style="color: orange;">
+                                            #{bill.refundedBill.deptId} 
+                                            <f:setPropertyActionListener target="#{dealorPaymentBillSearch.bill.refundedBill}" value="#{bill}"/>
+                                        </h:commandLink>
                                         <br/>
-                                        <h:panelGroup rendered="#{bill.refunded}" >
-                                            <h:outputLabel style="color: orange;" rendered="#{bill.refunded}" value="#{bill.refundedBill.deptId}" >                                       
-                                            </h:outputLabel>
-                                        </h:panelGroup>
+                                        
+                                        <h:commandLink action="reprint_bill_dealor" style="color: red;">
+                                            #{bill.cancelledBill.deptId}  
+                                            <f:setPropertyActionListener target="#{dealorPaymentBillSearch.bill.cancelledBill}" value="#{bill}"/>
+                                        </h:commandLink>
+
                                     </p:column>
                                     <p:column headerText="Supplier Name">                             
                                         <h:outputLabel value="#{bill.toInstitution.name}" />
@@ -194,13 +200,13 @@
                                             </h:outputLabel>
                                         </h:panelGroup> 
                                         <br/>
-                                        
+
                                     </p:column>
                                     <p:column headerText="Action">
                                         <p:commandButton ajax="false" value="Manage" action="reprint_bill_dealor" class="ui-button-info" style="width: 100px;">
                                             <f:setPropertyActionListener value="#{bill}" target="#{dealorPaymentBillSearch.bill}"/>
                                         </p:commandButton>
-                                        
+
                                     </p:column> 
                                 </p:dataTable>
                             </div>
