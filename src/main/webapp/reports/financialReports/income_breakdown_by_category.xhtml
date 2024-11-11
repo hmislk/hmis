@@ -143,9 +143,9 @@
                                     class="m-1 ui-button-danger"
                                     icon="fas fa-list"
                                     ajax="false" value="View List"
-                                    action="#{searchController.createIncomeBreakdownByCategory()}" />
-
-                                
+                                    action="#{searchController.createIncomeBreakdownByCategory()}" >
+                                </p:commandButton>
+                               
                                 <p:commandButton 
                                     value="Download PDF" 
                                     ajax="false" 
@@ -177,8 +177,6 @@
 
                         </div>
                         
-                        #{searchController.bundle.bundleType}
-
                         <p:dataTable 
                             id="tbl"
                             value="#{searchController.bundle.reportTemplateRows}"

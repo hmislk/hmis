@@ -12853,19 +12853,9 @@ public class SearchController implements Serializable {
     }
 
     public void createIncomeBreakdownByCategory() {
-//        if (isWithProfessionalFee()) {
-//            System.out.println("With Professional Fee");
-            bundle = generateIncomeBreakdownByCategory();
-//        } else {
-//            System.out.println("Without Professional Fee");
-//            bundle = generateIncomeBreakdownByCategoryOpdWithoutProfessionalFee();
-//        }
-
+        bundle = generateIncomeBreakdownByCategory();
     }
 
-//    public void createProfessionalFees() {
-//        bundle = generateOpdProfessionalFees();
-//    }
     public void generateDailyReturn() {
 
         bundle = new ReportTemplateRowBundle();
@@ -14212,7 +14202,7 @@ public class SearchController implements Serializable {
                 System.out.println("No PatientEncounter");
             }
         }
-       
+
         summarizeBillItemsToIncomeByCategory(oiBundle, bis);
 
         oiBundle.setName("Income Breakdown By Category");
@@ -15816,7 +15806,7 @@ public class SearchController implements Serializable {
         System.out.println("row = " + row);
         System.out.println("countModifier = " + countModifier);
         System.out.println("grossValue = " + grossValue);
-        
+
         if (row.getItemCount() == null) {
             row.setItemCount(0L);
         }
