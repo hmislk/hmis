@@ -87,7 +87,9 @@ public class EnumController implements Serializable {
     SessionNumberType[] sessionNumberTypes;
     private List<PatientInvestigationStatus> patientInvestigationStatuses;
     private List<PaymentMethod> paymentTypeOfPaymentMethods;
-
+    
+    private List<PatientInvestigationStatus> availableStatusforCancel;
+        
     @PostConstruct
     public void init() {
         enumList = new ArrayList<>();
@@ -992,6 +994,20 @@ public class EnumController implements Serializable {
 
     public void setPaymentMethodsForMultiplePaymentMethod(List<PaymentMethod> paymentMethodsForMultiplePaymentMethod) {
         this.paymentMethodsForMultiplePaymentMethod = paymentMethodsForMultiplePaymentMethod;
+    }
+
+    public List<PatientInvestigationStatus> getAvailableStatusforCancel() {
+        availableStatusforCancel = new ArrayList<>();
+        availableStatusforCancel.add(PatientInvestigationStatus.ORDERED);
+        availableStatusforCancel.add(PatientInvestigationStatus.SAMPLE_GENERATED);
+        availableStatusforCancel.add(PatientInvestigationStatus.SAMPLE_COLLECTED);
+        availableStatusforCancel.add(PatientInvestigationStatus.SAMPLE_SENT);
+        availableStatusforCancel.add(PatientInvestigationStatus.SAMPLE_REJECTED);
+        return availableStatusforCancel;
+    }
+
+    public void setAvailableStatusforCancel(List<PatientInvestigationStatus> availableStatusforCancel) {
+        this.availableStatusforCancel = availableStatusforCancel;
     }
 
 }
