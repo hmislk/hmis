@@ -177,41 +177,19 @@
                                     </p:tab>
                                     <p:tab title="Check Entered Data">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100" ajax="false" value="Item Distributor" action="/pharmacy/pharmacy_item_by_distributor" ></p:commandButton>
-                                            <p:commandButton class="w-100" ajax="false" value="Error Detection" action="/pharmacy/pharmacy_error_checking" ></p:commandButton>
-                                            <p:commandButton class="w-100" ajax="false" value="Error Detection By Date" action="/pharmacy/pharmacy_error_checking_date" ></p:commandButton>                                   
-                                            <p:commandButton class="w-100" ajax="false" value="Error Detection Repport" action="/pharmacy/pharmacy_report_department_error" ></p:commandButton>                                   
-                                            <p:commandButton class="w-100" value="Department Stock By Batch minus" action="/pharmacy/pharmacy_report_department_stock_by_batch_minus" ajax="false" ></p:commandButton>
-
-                                            <h:panelGroup rendered="false">
-                                                <p:commandButton styleClass="linkButton" ajax="false" value="Reset GRN Value" action="#{pharmacyItemExcelManager.resetGrnValue()}" />
-                                                <p:commandButton styleClass="linkButton" ajax="false" value="Reset Qty Value" action="#{pharmacyItemExcelManager.resetQtyValue()}" />
-                                                <p:commandButton styleClass="linkButton" ajax="false" value="Reset Transfer Issue Value" action="#{pharmacyItemExcelManager.resetTransferIssueValue()}" />
-                                                <p:commandButton styleClass="linkButton" ajax="false"  value="Reset Transfer History Value" action="#{pharmacyItemExcelManager.resetTransferHistoryValue()}" />
-                                                <p:commandButton styleClass="linkButton" ajax="false" value="Reset GRN Reference" action="#{pharmacyItemExcelManager.resetGrnReference()}" />
-                                                <p:commandButton styleClass="linkButton" ajax="false" value="Reset Bill No" action="#{pharmacyItemExcelManager.resetBillNo()}" />
-                                                <p:commandButton styleClass="linkButton" ajax="false" value="Remove Duplicates" action="#{pharmacyItemExcelManager.removeDuplicateAmpps()}" />
-                                            </h:panelGroup>
-                                            <p:commandButton class="w-100" ajax="false" 
-                                                             value="Correction of Issue To Unit (Discount To Margin)" 
-                                                             action="#{pharmacyItemExcelManager.correctIssueToUnit1()}" />
-                                            <p:commandButton class="w-100" ajax="false" 
-                                                             value="Correction of Issue To Unit (Reset Gross Net Value )" 
-                                                             action="#{pharmacyItemExcelManager.correctIssueToUnit2()}" />
-                                            <p:commandButton class="w-100" ajax="false" 
-                                                             value="Correction of Issue To Unit (Reset Gross Net Value To Old only Cost Issue )" 
-                                                             action="#{pharmacyItemExcelManager.correctIssueToUnit3()}" />
-
+                                            <p:commandButton class="w-100" ajax="false" value="Item Distributor" icon="fa fa-users" action="#{pharmacyController.navigateToItemByDistributor()}" />
+                                            <p:commandButton class="w-100" ajax="false" value="Error Detection" icon="fa fa-exclamation-triangle" action="#{pharmacyController.navigateToErrorChecking()}" />
+                                            <p:commandButton class="w-100" ajax="false" value="Error Detection By Date" icon="fa fa-calendar-check" action="#{pharmacyController.navigateToErrorCheckingByDate()}" />
+                                            <p:commandButton class="w-100" ajax="false" value="Error Detection Report" icon="fa fa-file-alt" action="#{pharmacyController.navigateToDepartmentErrorReport()}" />
+                                            <p:commandButton class="w-100" ajax="false" value="Department Stock By Batch minus" icon="fa fa-minus-circle" action="#{pharmacyController.navigateToDepartmentStockByBatchMinus()}" />
+                                            <p:commandButton   class="w-100" ajax="false" value="Remove Duplicates" action="#{pharmacyItemExcelManager.removeDuplicateAmpps()}" />
                                         </div>
                                     </p:tab>
                                     <p:tab title="Major Stock Adjustment">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100" ajax="false"
-                                                             value="Stock Variant Report (Before)" 
-                                                             action="pharmacy_variant_category_stock_by_item" />
-                                            <p:commandButton class="w-100" ajax="false"
-                                                             value="Stock Variant Adjustment(After)" 
-                                                             action="pharmacy_variant_ajustment_pre_list" />
+                                            <p:commandButton class="w-100" ajax="false" value="Stock Variant Report (Before)" icon="fa fa-chart-bar" action="#{pharmacyController.navigateToVariantCategoryStockByItem()}" />
+                                            <p:commandButton class="w-100" ajax="false" value="Stock Variant Adjustment (After)" icon="fa fa-adjust" action="#{pharmacyController.navigateToVariantAdjustmentPreList()}" />
+
                                         </div>
                                     </p:tab>
                                     <p:tab title="Set up">
