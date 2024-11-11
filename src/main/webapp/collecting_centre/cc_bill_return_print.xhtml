@@ -1,0 +1,118 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
+                xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill/cc_bill"
+                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+                xmlns:pat="http://xmlns.jcp.org/jsf/composite/patient"
+                xmlns:na="http://xmlns.jcp.org/jsf/composite/template"
+                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
+                >
+
+    <ui:define name="content">
+        <h:panelGroup rendered="#{!(webUserController.hasPrivilege('OpdCollectingCentreBilling') or webUserController.hasPrivilege('LabCashier'))}" >
+            <na:not_authorize />
+        </h:panelGroup>
+
+        <h:panelGroup rendered="#{webUserController.hasPrivilege('OpdCollectingCentreBilling') or webUserController.hasPrivilege('LabCashier')}" styleClass="opdPanel" >
+            <h:form id="form">
+
+                <p:panel>
+                    <f:facet name="header" >
+                        <h:outputLabel  class="mx-2 mt-2" value="Collecting Centre Billing"/>
+                    </f:facet>
+
+                    <h:panelGroup>
+                        <div class="d-flex gap-2 justify-content-end">
+                            <p:outputLabel value="Paper Type" ></p:outputLabel>
+                            <p:selectOneMenu value="#{sessionController.departmentPreference.opdBillPaperType}" style="width: 13em;">
+                                <f:selectItem itemLabel="Please Select Paper Type" />
+                                <f:selectItems value="#{enumController.paperTypes}" />
+                            </p:selectOneMenu>
+                            <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button" title="Redraw Bill"></p:commandButton>
+                        </div>
+
+                        <div class="row ">
+                            <div class="col-md-6">
+                                <p:panel>
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Bill for Collecting Center"  class="mt-2"/>
+                                        <p:commandButton 
+                                            value="Print" 
+                                            class="ui-button-info m-1"
+                                            icon="fa fa-print"
+                                            style="float: right;"
+                                            ajax="false">
+                                            <p:printer target="centerBillPriview" ></p:printer>
+                                        </p:commandButton>
+                                    </f:facet>
+
+                                    <h:panelGroup id="centerBillPriview">
+
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Bill for Collecting Center(CC) size is POS paper')}" >
+                                            <bi:posCCBill_CC bill="#{billReturnController.newlyReturnedBill}" duplicate="false"/>                        
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Bill For Collecting Center(CC) size is FiveFive paper')}" >
+                                                <bi:fiveFiveCCBill_CC bill="#{billReturnController.newlyReturnedBill}" duplicate="false"/>                           
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Bill For Collecting Center(CC) size is FiveFiveCustom1 paper')}" >
+                                                <bi:fiveFiveCCBill_CC_Custom1 bill="#{billReturnController.newlyReturnedBill}" duplicate="false"/>                           
+                                        </h:panelGroup>
+
+                                    </h:panelGroup>
+
+                                </p:panel>
+                            </div>
+                            <div class="col-md-6">
+                                <p:panel>
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Bill for Patient " class="mt-2"/>
+                                        <p:commandButton 
+                                            value="Print Patient" 
+                                            class="ui-button-info m-1"
+                                            icon="fa fa-print"
+                                            process="@this" 
+                                            update="@all" 
+                                            style="float: right;"
+                                            type="button"  
+                                            ajax="false">
+                                            <p:printer target="parinetBillPriview" ></p:printer>
+                                        </p:commandButton>
+                                    </f:facet>
+                                    <h:panelGroup id="parinetBillPriview">
+
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Bill for Patient by CC is POS paper')}" >
+                                            <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
+                                                <bi:posCCBill_Patient bill="#{pp}" duplicate="false"/>                        
+                                            </ui:repeat>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Bill for Patient by CC is FiveFive paper')}" >
+                                            <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
+                                                <bi:fiveFiveCCBill_Patient bill="#{pp}" duplicate="false"/>                        
+                                            </ui:repeat>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Bill for Patient by CC is FiveFiveCustom1 paper')}" >
+                                            <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
+                                                <bi:fiveFiveCCBill_Patient_Custom1 bill="#{pp}" duplicate="false"/>                         
+                                            </ui:repeat>
+                                        </h:panelGroup>
+
+                                    </h:panelGroup>
+
+                                </p:panel>
+                            </div>                            
+                        </div>
+                    </h:panelGroup>
+                </p:panel>
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+</ui:composition>

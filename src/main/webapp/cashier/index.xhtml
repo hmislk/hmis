@@ -9,9 +9,10 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <div class="row" >
-                    <div class="col-2">
+                    <div class="col-2 b-1" style="border: 1px solid red;">
                         <h:form>
                             <p:accordionPanel 
+                                class="m-1 w-100"
                                 widgetVar="basic"
                                 id="accordion"
                                 activeIndex="#{financialTransactionController.tabIndex}"
@@ -42,7 +43,7 @@
                                         ajax="false" 
                                         action="#{financialTransactionController.navigateToCreateShiftEndSummaryBill()}" >
                                     </p:commandButton>
-                                    
+
                                     <p:commandButton 
                                         class="my-1 w-100 ui-button-primary"
                                         value="Handover (OLD)"
@@ -60,7 +61,7 @@
                                         ajax="false" 
                                         action="#{financialTransactionController.navigateToMyDrawer()}">
                                     </p:commandButton>
-                                    
+
                                     <p:commandButton 
                                         class="my-1 w-100 ui-button-primary" 
                                         value="My Drawer History" 
@@ -124,7 +125,7 @@
                                         ajax="false" 
                                         action="#{financialTransactionController.navigateToRecordShiftExcess()}" >
                                     </p:commandButton>
-                                    
+
                                     <p:commandButton 
                                         class="my-1 w-100 ui-button-warning"
                                         value="Shift Shortage Bill Search"
@@ -220,6 +221,15 @@
 
                                     <p:commandButton 
                                         class="my-1 w-100 ui-button-info"
+                                        value="My Handovers"
+                                        icon="pi pi-folder"
+                                        ajax="false" 
+                                        action="#{financialTransactionController.navigateToMyHandovers()}" >
+                                    </p:commandButton>
+
+
+                                    <p:commandButton 
+                                        class="my-1 w-100 ui-button-info"
                                         value="Payment Recording"
                                         icon="pi pi-file"
                                         ajax="false" 
@@ -253,16 +263,16 @@
 
 
                                 <p:tab title="Cash Book">
-                                    
-                                     <p:commandButton 
+
+                                    <p:commandButton 
                                         class="my-1 w-100"
                                         value="Site Cashbook Daily Summary"
                                         icon=""
                                         ajax="false" 
                                         action="#{searchController.navigateToListCashBookEntrySiteSummary}" >
                                     </p:commandButton>
-                                    
-                                    
+
+
                                     <p:commandButton 
                                         class="my-1 w-100"
                                         value="Cash Book Entries"
@@ -281,13 +291,29 @@
                                             ajax="false" 
                                             action="#{financialTransactionController.navigateToMyCashierSummary()}" >
                                         </p:commandButton>
-                                        
+
                                         <p:commandButton 
                                             class="my-1 w-100"
                                             value="My Shift Details"
                                             icon=""
                                             ajax="false" 
                                             action="#{financialTransactionController.navigateToMyCashierSummary()}" >
+                                        </p:commandButton>
+
+                                        <p:commandButton 
+                                            class="my-1 w-100"
+                                            value="My Service Department Revenue Report"
+                                            icon=""
+                                            ajax="false" 
+                                            action="#{financialTransactionController.navigateToMyServiceDepartmentRevenueReportByPeriod()}" >
+                                        </p:commandButton>
+                                        
+                                         <p:commandButton 
+                                            class="my-1 w-100"
+                                            value="My Professional Payments"
+                                            icon=""
+                                            ajax="false" 
+                                            action="#{searchController.navigateToMyProfessionalPayments()}" >
                                         </p:commandButton>
                                         
                                         <p:commandButton 
@@ -316,10 +342,9 @@
                                     </p>
                                 </p:tab>
                             </p:accordionPanel>
-
                         </h:form>
                     </div>
-                    <div class="col-10" >
+                    <div class="col-10 b-1"  >
                         <ui:insert name="subcontent" >
                         </ui:insert>
                     </div>

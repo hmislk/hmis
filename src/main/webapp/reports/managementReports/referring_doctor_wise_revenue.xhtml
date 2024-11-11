@@ -98,12 +98,12 @@
                             </h:panelGroup>
 
                             <p:autoComplete 
-                                completeMethod="#{investigationController.completeInvestigationsWIthoutReportFormats}" 
+                                completeMethod="#{itemController.completeService}" 
                                 var="i" 
                                 itemLabel="#{i.name}"
                                 itemValue="#{i}" 
                                 forceSelection="true" 
-                                value="#{reportController.investigation}"
+                                value="#{reportController.item}"
                                 inputStyleClass="w-100"
                                 class="w-100"
                                 maxResults="15"
@@ -325,7 +325,7 @@
                             </p:column>
 
                             <p:column headerText="Gross Amount" width="5rem">
-                                <h:outputText value="#{item.hosFee + item.proFee + item.discount}" >
+                                <h:outputText value="#{item.hosFee}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                  <f:facet name="footer">
@@ -356,6 +356,17 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
+                            
+                            <p:column headerText="Professional Amount " width="5rem">
+                                <h:outputText value="#{item.proFee}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{reportController.totalProFee}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
 
                             <p:column headerText="Net Amount" width="5rem">
                                 <h:outputText value="#{item.total}" >
@@ -381,7 +392,7 @@
                         <h:panelGroup>
 
 
-                            <div class="row " >
+                            <div class="row w-50" >
                                 <div class="col-3">
                                     <h:outputLabel style="width: 100px; font-weight:bold ">From Date</h:outputLabel><span>:</span>
                                 </div>
@@ -410,6 +421,17 @@
                                     </div>
                                     <div class="col-3">
                                         <h:outputLabel value="#{reportController.institution.name}" ></h:outputLabel>
+                                    </div>
+                                </div>
+                            </h:panelGroup>
+                            
+                            <h:panelGroup rendered="#{reportController.category ne null}">
+                                <div class="row w-50" >
+                                    <div class="col-3">
+                                        <h:outputLabel style="width: 100px ; font-weight:bold ">S. Group</h:outputLabel><span>:</span>
+                                    </div>
+                                    <div class="col-3">
+                                        <h:outputLabel value="#{reportController.category.name}" ></h:outputLabel>
                                     </div>
                                 </div>
                             </h:panelGroup>
@@ -467,8 +489,7 @@
                             </p:column>
 
                             <p:column headerText="Status" width="5rem">
-                                <h:outputText value="#{bi.patientInvestigation.status}" rendered="#{bi.patientInvestigation ne null}" />
-                                <h:outputText value="#{bi.referanceBillItem.patientInvestigation.status}" rendered="#{bi.patientInvestigation eq null}"  />
+                                <h:outputText value="#{patientInvestigationController.getPatientInvestigationFromBillItem(bi).status}" />
                             </p:column>
 
                             <p:column headerText="CC Amt" width="5rem">
@@ -499,6 +520,17 @@
                                 </h:outputText>
                                 <f:facet name="footer">
                                     <h:outputText value="#{reportController.staffFeeTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+                            
+                            <p:column headerText="Dis Amt" width="5rem">
+                                <h:outputText value="#{bi.discount}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{reportController.discountTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>

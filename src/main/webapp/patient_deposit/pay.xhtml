@@ -413,11 +413,11 @@
                                                     styleClass="mr-2">
                                                 </p:badge>
 
-                                                <h:outputLabel value="Account Balance " class="mx-3" rendered="#{patientDepositController.patient.hasAnAccount}"/>
-                                                <h:outputLabel value=" : " class="mx-3" rendered="#{patientDepositController.patient.hasAnAccount}"/>
-                                                <h:outputText value="#{patientDepositController.patient.runningBalance}" rendered="#{patientDepositController.patient.hasAnAccount}">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </h:outputText>
+                                                <h:outputLabel value="Account Balance " class="mx-3" rendered="#{patientDepositController.checkDepositOfThePatient(patientDepositController.patient, sessionController.department) ne null}"/>
+                                                    <h:outputLabel value=" : " class="mx-3" rendered="#{patientDepositController.checkDepositOfThePatient(patientDepositController.patient, sessionController.department) ne null}"/>
+                                                    <h:outputText value="#{patientDepositController.checkDepositOfThePatient(patientDepositController.patient, sessionController.department).balance}" rendered="#{patientDepositController.checkDepositOfThePatient(patientDepositController.patient, sessionController.department) ne null}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
 
                                                 <h:outputLabel value="Area " class="mx-3"/>
                                                 <h:outputLabel value=" : " class="mx-3"/>
@@ -450,7 +450,9 @@
                                             <h:outputLabel value="#{patientDepositController.current.id}" />
                                             <h:outputLabel value="Patient Deposit Balance" />
                                             <h:outputLabel value=":" />
-                                            <h:outputLabel value="#{patientDepositController.current.balance}" />
+                                            <h:outputLabel value="#{patientDepositController.current.balance}" >
+                                                 <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
                                         </h:panelGrid>
                                     </h:panelGroup>
                                 </div>

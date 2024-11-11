@@ -12,6 +12,7 @@ public enum CountedServiceType {
     NONE("NONE"),
     PHARMACY("Pharmacy"),
     STORE("Store"),
+    SUPPLIER_PAYMENT("Supplier Payment"),
     CHANNELLING("Channelling"),
     CHANNELLING_PROFESSIONAL_PAYMENT("Channelling Professional Payment"),
     CHANNELLING_PROFESSIONAL_PAYMENT_RETURN("Channelling Professional Payment Cancellation or Returns"),

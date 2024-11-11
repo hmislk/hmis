@@ -1352,7 +1352,7 @@
                         <p:commandLink 
                             id="supplier_due_search"
                             ajax="false" 
-                            action="/dealorPayment/dealor_due?faces-redirect=true" 
+                            action="/dealerPayment/dealor_due?faces-redirect=true" 
                             rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}"
                             styleClass="svg-link" >
                             <p:graphicImage library="image" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
@@ -1368,7 +1368,7 @@
                         <p:commandLink 
                             id="dealer_due_by_age"
                             ajax="false" 
-                            action="/dealorPayment/dealor_due_age?faces-redirect=true" 
+                            action="/dealerPayment/dealor_due_age?faces-redirect=true" 
                             actionListener="#{dealorDueController.makeNull()}"
                             rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}"
                             styleClass="svg-link" >
@@ -1385,9 +1385,9 @@
                         <p:commandLink 
                             id="payment_by_supplier"
                             ajax="false" 
-                            action="/dealorPayment/bill_dealor_all?faces-redirect=true"
+                            action="/dealerPayment/bill_dealor_all?faces-redirect=true"
                             rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}" 
-                            actionListener="#{pharmacyDealorBill.makeNull()}"
+                            actionListener="#{supplierPaymentController.makeNull()}"
                             styleClass="svg-link" >
                             <p:graphicImage library="image" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="By Supplier" />
@@ -1402,9 +1402,9 @@
                         <p:commandLink 
                             id="payment_by_bill"
                             ajax="false" 
-                            action="/dealorPayment/bill_dealor?faces-redirect=true" 
+                            action="/dealerPayment/bill_dealor?faces-redirect=true" 
                             rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}" 
-                            actionListener="#{pharmacyDealorBill.makeNull()}"
+                            actionListener="#{supplierPaymentController.makeNull()}"
                             styleClass="svg-link" >
                             <p:graphicImage library="image" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="By Bill" />
@@ -1419,7 +1419,7 @@
                         <p:commandLink 
                             id="GRN_payment_approve"
                             ajax="false" 
-                            action="/dealorPayment/search_dealor_payment_pre?faces-redirect=true" 
+                            action="/dealerPayment/search_dealor_payment_pre?faces-redirect=true" 
                             actionListener="#{searchController.makeListNull2()}" 
                             rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}"
                             styleClass="svg-link" >
@@ -1436,7 +1436,7 @@
                         <p:commandLink 
                             id="GRN_payment_done_search"
                             ajax="false" 
-                            action="/dealorPayment/search_dealor_payment?faces-redirect=true" 
+                            action="/dealerPayment/search_dealor_payment?faces-redirect=true" 
                             actionListener="#{searchController.makeListNull2()}" 
                             rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}"
                             styleClass="svg-link" >

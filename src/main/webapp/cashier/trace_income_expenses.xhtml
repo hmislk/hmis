@@ -100,25 +100,16 @@
                                         id="billNo" 
                                         ajax="false" 
                                         value="#{bill.deptId}" 
-                                        action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                                        action="#{billSearch.navigateToViewBillByAtomicBillType()}"
+                                        style="color: #{(bill.billTypeAtomic == 'SUPPLEMENTARY_INCOME' or bill.billTypeAtomic == 'OPERATIONAL_EXPENSES') ? 'blue' : (bill.billTypeAtomic == 'SUPPLEMENTARY_INCOME_CANCELLED' or bill.billTypeAtomic == 'OPERATIONAL_EXPENSES_CANCELLED') ? 'red' : 'black'};">
                                         <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
-                                    </p:commandLink>
-                                </div>
-                                <div>
-                                    <p:commandLink
-                                        id="CancelBillNo"
-                                        ajax="false"
-                                        value="#{bill.cancelledBill.deptId}"
-                                        action="#{billSearch.navigateToViewSingleOpdBill()}"
-                                        rendered="#{bill.cancelled}" style="color: red">
-                                        <f:setPropertyActionListener value="#{bill.cancelledBill}" target="#{billSearch.bill}"/>
                                     </p:commandLink>
                                 </div>
 
                             </p:column>
                             <p:column headerText="Billed At" filterBy="#{bill.billDate}" sortBy="#{bill.billDate}">
                                 <h:panelGroup >
-                                    <p:outputLabel id="billTime1" value="#{bill.createdAt}" >
+                                    <p:outputLabel id="billTime1" value="#{bill.createdAt}" style="color: #{(bill.billTypeAtomic == 'SUPPLEMENTARY_INCOME' or bill.billTypeAtomic == 'OPERATIONAL_EXPENSES') ? 'blue' : (bill.billTypeAtomic == 'SUPPLEMENTARY_INCOME_CANCELLED' or bill.billTypeAtomic == 'OPERATIONAL_EXPENSES_CANCELLED') ? 'red' : 'black'};">
                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
                                     </p:outputLabel>
 
@@ -129,26 +120,30 @@
                                       sortBy="#{bill.creater.name}" 
                                       filterMatchMode="contains"
                                       filterBy="#{bill.creater.name}">
-                                <h:outputLabel value="#{bill.creater.webUserPerson.name}" ></h:outputLabel>
-                                <h:panelGroup rendered="#{bill.cancelled or bill.refunded}" style="display: grid">
+                                <h:outputLabel value="#{bill.creater.webUserPerson.name}" style="color: #{(bill.billTypeAtomic == 'SUPPLEMENTARY_INCOME' or bill.billTypeAtomic == 'OPERATIONAL_EXPENSES') ? 'blue' : (bill.billTypeAtomic == 'SUPPLEMENTARY_INCOME_CANCELLED' or bill.billTypeAtomic == 'OPERATIONAL_EXPENSES_CANCELLED') ? 'red' : 'black'};"></h:outputLabel>
+<!--                                <h:panelGroup rendered="#{bill.cancelled or bill.refunded}" style="display: grid">
                                     <h:outputLabel value="#{bill.cancelledBill.creater.webUserPerson.name}" style="color: red" rendered="#{bill.cancelled}"></h:outputLabel>
                                     <h:outputLabel value="#{bill.refundedBill.creater.webUserPerson.name}" style="color: orange" rendered="#{bill.refunded}"></h:outputLabel>
-                                </h:panelGroup>
+                                </h:panelGroup>-->
                             </p:column>   
 
                             <p:column headerText="Remarks" >  
-                                <h:outputLabel value="#{bill.comments}" ></h:outputLabel>
+                                <p:badge rendered="#{bill.cancelledBill.billTypeAtomic eq 'SUPPLEMENTARY_INCOME_CANCELLED'}" value="Cancelled" severity="danger" styleClass="mr-2"></p:badge>
+                                <p:badge rendered="#{bill.cancelledBill.billTypeAtomic eq 'OPERATIONAL_EXPENSES_CANCELLED'}" value="Cancelled" severity="danger" styleClass="mr-2"></p:badge>
+                                <h:outputText value="#{(bill.billTypeAtomic == 'SUPPLEMENTARY_INCOME_CANCELLED' or bill.billTypeAtomic == 'OPERATIONAL_EXPENSES_CANCELLED') ? bill.billedBill.deptId : ''}" style="color: red"/>
                             </p:column>
 
                             <p:column headerText="Bill Type">
                                 <p:badge rendered="#{bill.billTypeAtomic eq 'SUPPLEMENTARY_INCOME'}" value="Income Bill" severity="success" styleClass="mr-2"></p:badge>
                                 <p:badge rendered="#{bill.billTypeAtomic eq 'OPERATIONAL_EXPENSES'}" value="Expense Bill" severity="warning" styleClass="mr-2"></p:badge>
+                                <p:badge rendered="#{bill.billTypeAtomic eq 'SUPPLEMENTARY_INCOME_CANCELLED'}" value="Cancelled Income Bill" severity="danger" styleClass="mr-2"></p:badge>
+                                <p:badge rendered="#{bill.billTypeAtomic eq 'OPERATIONAL_EXPENSES_CANCELLED'}" value="Cancelled Expense Bill" severity="danger" styleClass="mr-2"></p:badge>
 
                             </p:column>
 
                             <p:column headerText="Value" sortBy="#{bill.total}" 
                                       styleClass="averageNumericColumn">
-                                <h:outputLabel value="#{bill.total}" >
+                                <h:outputLabel value="#{bill.total}" style="color: #{(bill.billTypeAtomic == 'SUPPLEMENTARY_INCOME' or bill.billTypeAtomic == 'OPERATIONAL_EXPENSES') ? 'blue' : (bill.billTypeAtomic == 'SUPPLEMENTARY_INCOME_CANCELLED' or bill.billTypeAtomic == 'OPERATIONAL_EXPENSES_CANCELLED') ? 'red' : 'black'};">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>

@@ -7,38 +7,52 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
-        <ui:composition template="/resources/template/template.xhtml">
-            <ui:define name="content">
+        <ui:composition template="/dealerPayment/index.xhtml">
+            <ui:define name="subcontent">
                 <h:form>
                     <p:panel >
-
                         <f:facet name="header" >
                             <h:outputText styleClass="fa-solid fa-file-invoice"/>
-                            <h:outputLabel value="GRN Supplier Payment Bill Search " class="mx-4"/>    
+                            <h:outputLabel value="Supplier Payment Search" class="mx-4"/>    
                         </f:facet>
                         <div class="row">
                             <div class="col-2">
                                 <h:outputLabel value="From Date"/>
-                                <p:datePicker styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100" inputStyleClass="w-100">      
+                                <p:datePicker
+                                    showTime="true"
+                                    styleClass="dateTimePicker"
+                                    id="fromDate"
+                                    value="#{supplierPaymentController.fromDate}"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                    class="w-100" inputStyleClass="w-100">      
                                 </p:datePicker>
                                 <h:outputLabel value="To Date"/>
-                                <p:datePicker id="toDate" value="#{searchController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100" inputStyleClass="w-100">                                                                              
+                                <p:datePicker 
+                                    id="toDate"
+                                    showTime="true"
+                                    value="#{supplierPaymentController.toDate}" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                    class="w-100" 
+                                    inputStyleClass="w-100">                                                                              
                                 </p:datePicker>
 
                                 <p:commandButton id="btnSearch" 
-                                                 ajax="false" value="Search Pharmacy Payment" 
-                                                 class="my-1 w-100 ui-button-warning" 
-                                                 icon="fas fa-search"
-                                                 action="#{searchController.createPharmacyPaymentPre()}"/>
+                                                 ajax="false" value="List Pharmacy Payment to Settle" 
+                                                 class="my-1 w-100 ui-button-success" 
+                                                 icon="fas fa-pills"
+                                                 action="#{supplierPaymentController.fillAllCreditBillssettled()}"/>
+
                                 <p:commandButton ajax="false" 
+                                                 class="my-1 w-100 ui-button-info" 
+                                                 icon="fas fa-store"
+                                                 value="List Store Payments to Settle"
+                                                 action="#{supplierPaymentController.fillStoreSupplierPayments()}"/>
+
+                                <p:commandButton ajax="false" value="List All Payments to Settle" 
                                                  class="my-1 w-100 ui-button-warning" 
-                                                 icon="fas fa-search"
-                                                 value="Search Store Payment"
-                                                 action="#{searchController.createStorePaymentPre()}"/>
-                                <p:commandButton ajax="false" value="Search All Payment" 
-                                                 class="my-1 w-100 ui-button-warning" 
-                                                 icon="fas fa-search"
-                                                 action="#{searchController.createStorePaharmacyPaymentPre}"/>
+                                                 icon="fas fa-search-dollar"
+                                                 action="#{supplierPaymentController.fillSupplierPayments()}"/>
+
 
                                 <h:outputLabel value="Bill No"/>
                                 <p:inputText autocomplete="off" class="w-100" value="#{billSearch.searchKeyword.billNo}" />
@@ -49,13 +63,12 @@
                                 <h:outputLabel value="Bank"/>
                                 <p:inputText autocomplete="off" class="w-100" value="#{billSearch.searchKeyword.bank}"/>
                                 <h:outputLabel value="Check No"/>
-
                                 <p:inputText autocomplete="off" value="#{billSearch.searchKeyword.number}"/>
                             </div>
                             <div class="col-10">
                                 <p:dataTable 
                                     id="tblBills" 
-                                    value="#{searchController.bills}" 
+                                    value="#{supplierPaymentController.bills}" 
                                     var="bill"  
                                     paginatorPosition="bottom"
                                     rows="10"
@@ -63,7 +76,7 @@
                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                     rowsPerPageTemplate="5,10,15"
                                     >
-                                                               
+
                                     <p:column headerText="Bill No" >                                
                                         <h:outputLabel value="#{bill.deptId}"  ></h:outputLabel>                                    
                                     </p:column>
@@ -71,6 +84,10 @@
                                         <h:outputLabel value="#{bill.toInstitution.name}" />
                                     </p:column>                          
 
+                                     <p:column headerText="Department">                             
+                                        <h:outputLabel value="#{bill.department.name}" />
+                                    </p:column>
+                                    
                                     <p:column headerText="Billed at"  >                                
                                         <h:outputLabel value="#{bill.createdAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
@@ -102,6 +119,11 @@
                                         <h:outputLabel value="#{bill.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{supplierPaymentController.netTotal}">
+                                                <f:convertNumber pattern="#,##0.00;(#,##0.00)" />
+                                            </h:outputText>
+                                        </f:facet>
                                     </p:column>
                                     <p:column headerText="Bank" >                                
                                         <h:outputLabel value="#{bill.bank.name}" >                                        
@@ -111,7 +133,7 @@
                                         <h:outputLabel value="#{bill.chequeRefNo}" >                                       
                                         </h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Cheque Date"  >                                
+                                    <p:column headerText="Cheque Date" sortBy="#{bill.chequeDate}" filterBy="#{bill.chequeDate}"  filterMatchMode="contains">                                
                                         <h:outputLabel value="#{bill.chequeDate}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                         </h:outputLabel>

@@ -193,6 +193,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         }
         if (patient.getId() == null) {
             JsfUtil.addErrorMessage("Entered Patient is Not Registered");
+            return;
         }
         current = getDepositOfThePatient(patientController.getBill().getPatient(), sessionController.getDepartment());
         if (patientController.getBill().getNetTotal() > current.getBalance()) {
@@ -225,6 +226,18 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         if (patientController.validatePaymentMethodData()) {
             return;
         }
+
+        if (current == null) {
+            JsfUtil.addErrorMessage("No current. please start from beginning");
+            return;
+        }
+        if (current.getBalance() == null) {
+            current.setBalance(0.0);
+        }
+        if (patientController.getBill() == null) {
+            JsfUtil.addErrorMessage("No Bill in patient controller. please start from beginning");
+            return;
+        }
         patientController.setBillNetTotal();
         if (current.getBalance() < patientController.getBill().getNetTotal()) {
             JsfUtil.addErrorMessage("Can't Refund a Total More that Deposit");
@@ -254,9 +267,10 @@ public class PatientDepositController implements Serializable, ControllerWithPat
 
         System.out.println("patientController.getBill() = " + patientController.getBill());
         updateBalance(patientController.getBill(), current);
-        billBeanController.createPayment(patientController.getBill(),
+        List<Payment> ps = billBeanController.createPayment(patientController.getBill(),
                 patientController.getBill().getPaymentMethod(),
                 patientController.getPaymentMethodData());
+        drawerController.updateDrawerForOuts(ps);
     }
 
     public void updateBalance(Bill b, PatientDeposit pd) {
@@ -378,6 +392,8 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         PatientDeposit pd = patientDepositFacade.findFirstByJpql(jpql, m);
         System.out.println("pd = " + pd);
 
+        patientController.save(p);
+        
         if (pd == null) {
             pd = new PatientDeposit();
             pd.setBalance(0.0);

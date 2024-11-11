@@ -29,6 +29,7 @@ import com.divudi.entity.BillSession;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Consultant;
+import com.divudi.entity.Doctor;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.ItemFee;
@@ -245,11 +246,12 @@ public class ChannelService {
         }
     }
 
-    public Bill saveBilledBill(boolean forReservedNumbers, Patient patient, SessionInstance session, String refNo, WebUser user) {
+    public Bill saveBilledBill(boolean forReservedNumbers, Patient patient, SessionInstance session, String refNo, WebUser user, Institution creditCompany) {
         saveSelected(patient);
         Bill savingBill = createBill(patient, session);
         BillItem savingBillItemForSession = createSessionItem(savingBill, refNo, session);
         savingBill.setAgentRefNo(refNo);
+        savingBill.setCreditCompany(creditCompany);
 
 //        PriceMatrix priceMatrix;
 //        if (itemsAddedToBooking != null || itemsAddedToBooking.isEmpty()) {
@@ -424,6 +426,19 @@ public class ChannelService {
         return deptId;
     }
 
+    public Institution findCreditCompany(String code, InstitutionType type) {
+
+        String jpql = "Select i from Institution i where i.retired = false "
+                + " and UPPER(i.code) = UPPER(:code) "
+                + " and i.institutionType = :type";
+
+        Map params = new HashMap();
+        params.put("code", code);
+        params.put("type", type);
+
+        return institutionFacade.findFirstByJpql(jpql, params);
+    }
+
     private Bill createBill(Patient patient, SessionInstance session) {
         Bill bill = new BilledBill();
         bill.setStaff(session.getOriginatingSession().getStaff());
@@ -560,14 +575,24 @@ public class ChannelService {
         return itemFeeFacade.findByJpql(sql, m);
     }
 
-    public List<Bill> findBillFromRefNo(String refNo) {
-        String jpql = "Select b from Bill b"
+    public List<Bill> findBillFromRefNo(String refNo, Institution creditCompany, BillClassType b) {
+        Map params = new HashMap();
+        String jpql = "Select b from Bill b "
                 + " where b.agentRefNo = :ref"
-                + " and b.cancelled = false"
                 + " and b.retired = false";
 
-        Map params = new HashMap();
+        if (creditCompany != null) {
+            jpql += " and b.creditCompany = :cc";
+            params.put("cc", creditCompany);
+        }
+
+        if (b != null) {
+            jpql += " and b.billClassType = :bb";
+            params.put("bb", b);
+        }
+
         params.put("ref", refNo);
+
         return billFacade.findByJpql(jpql, params);
 
     }
@@ -600,22 +625,29 @@ public class ChannelService {
         return bs;
     }
 
-    public List<Bill> viewBookingHistorybyDate(String fromDate, String toDate) {
+    public List<Bill> viewBookingHistorybyDate(String fromDate, String toDate, Institution cc, BillClassType b) {
         try {
-            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");
             Date startDate = formatter.parse(fromDate);
             Date endDate = formatter.parse(toDate);
-            Bill b = new Bill();
-            b.getBillTypeAtomic();
+            System.out.println(startDate + "" + endDate);
+
+            Map params = new HashMap();
 
             BillTypeAtomic billType = BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT;
             String jpql = "Select b from Bill b "
                     + " where b.billDate between :fd And :td "
+                    + " and b.creditCompany = :cc "
                     + " and b.billTypeAtomic = :bt";
 
-            Map params = new HashMap();
+            if (b != null) {
+                jpql += " and b.billClassType = :bc";
+                params.put("bc", b);
+            }
+
             params.put("fd", startDate);
             params.put("td", endDate);
+            params.put("cc", cc);
             params.put("bt", billType);
 
             return billFacade.findByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
@@ -632,6 +664,11 @@ public class ChannelService {
         BillItem cItem = cancelBillItems(bs.getBillItem(), cb);
         BillSession cbs = cancelBillSession(bs, cb, cItem);
         bill.getSingleBillSession().getBill().setCancelled(true);
+        
+        if (bill.getPaidBill() != null) {
+            System.out.println("inside");
+            bill.getPaidBill().setCancelled(true);
+        }
         bs.getBill().setCancelledBill(cb);
         getBillFacade().edit(bs.getBill());
         bs.setReferenceBillSession(cbs);
@@ -678,15 +715,17 @@ public class ChannelService {
 
         cb.copy(bill);
         cb.invertValue(bill);
+        cb.setAgentRefNo(bill.getAgentRefNo());
+        cb.setCreditCompany(bill.getCreditCompany());
         cb.setBilledBill(bill);
         cb.setBillDate(new Date());
         cb.setBillTime(new Date());
         cb.setCreatedAt(new Date());
+
         // cb.setCreater(getSessionController().getLoggedUser());
         // cb.setDepartment(getSessionController().getLoggedUser().getDepartment());
         //  cb.setInstitution(getSessionController().getInstitution());
         // cb.setComments(comment);
-
         //     cb.setInsId(billNumberBean.institutionChannelBillNumberGenerator(bill.getInstitution(), cb));
         // String insId = bookingControllerViewScope.generateBillNumberInsId(cb);
         String insId = billNumberBean.institutionChannelBillNumberGenerator(bill.getSingleBillSession().getSessionInstance().getOriginatingSession().getInstitution(), cb);
@@ -728,46 +767,193 @@ public class ChannelService {
 
         return institutionFacade.findByJpql(jpql, params);
     }
-    
-    public List<SessionInstance> findSessionInstancesForDoctor(Institution institution, Long id){
+
+    public List<SessionInstance> findSessionInstancesForDoctor(Institution institution, Long id) {
         String jpql = "Select i from SessionInstance i where i.retired = false"
                 + " and i.originatingSession.institution=:ins "
                 + " and i.cancelled = false and i.completed = false "
                 + " and i.originatingSession.staff.id = :id";
-        
+
         Map params = new HashMap();
         params.put("ins", institution);
         params.put("id", id);
         return sessionInstanceFacade.findByJpql(jpql, params);
-        
-    }
-    
-    public Institution findInstitutionFromId(Long id) {
-        String jpql = "Select i from Institution i where i.retired = false and i.id = :id";
-        Map params = new HashMap();
-        params.put("id", id);
-        return institutionFacade.findFirstByJpql(jpql, params);
+
     }
 
-    public Speciality findSpecilityFromId(Long id) {
-        String jpql = "select s from Speciality s where s.retired=:ret and s.id=:id";
+    public List<Institution> findInstitutionFromId(Long id) {
+        String jpql = "Select i from Institution i where i.retired = false ";
+        Map params = new HashMap();
+
+        if (id != null && !id.toString().isEmpty()) {
+            jpql += "and i.id = :id";
+            params.put("id", id);
+
+        }
+
+        return institutionFacade.findByJpql(jpql, params);
+    }
+
+    public boolean checkHospitalId(Long id) {
+        List<Institution> allHospitals = findInstitutionFromId(null);
+        boolean availableHospitalWithId = false;
+        for (Institution i : allHospitals) {
+            if (i.getId() == id) {
+                availableHospitalWithId = true;
+            }
+        }
+        return availableHospitalWithId;
+    }
+
+    public Long checkSafeParseLong(String value) {
+        try {
+            Long data = Long.valueOf(value);
+            return data;
+        } catch (Exception e) {
+            return null;
+        }
+
+    }
+
+    public List<Speciality> findSpecilityFromId(Long id) {
+        String jpql = "select s from Speciality s where s.retired=:ret ";
         Map<String, Object> params = new HashMap<>();
         params.put("ret", false);
-        params.put("id", id);
-        return specialityFacade.findFirstByJpql(jpql, params);
+
+        if (id != null && !id.toString().isEmpty()) {
+            jpql += " and s.id=:id";
+            params.put("id", id);
+        }
+
+        return specialityFacade.findByJpql(jpql, params);
     }
 
-    public Consultant findConsultantFromName(String name) {
+    public boolean checkSpecialityId(Long id) {
+        List<Speciality> specialities = findSpecilityFromId(null);
+        boolean availableSpecialityWithId = false;
+        for (Speciality s : specialities) {
+            if (s.getId() == id) {
+                availableSpecialityWithId = true;
+            }
+        }
+        return availableSpecialityWithId;
+    }
+
+    public List<Consultant> findConsultantFromName(String name, Long id) {
         StringBuffer jpql = new StringBuffer("select c from Consultant c where c.retired=:ret");
         Map m = new HashMap();
         m.put("ret", false);
-        
-        if(name != null && !name.isEmpty()){
+
+        if (name != null && !name.isEmpty()) {
             jpql.append(" and c.person.name like :name");
-            m.put("name", name);
+            m.put("name", "%" + name + "%");
+        }
+        if (id != null && !id.toString().isEmpty()) {
+            jpql.append(" and c.id =:id");
+            m.put("id", id);
         }
 
-        return consultantFacade.findFirstByJpql(jpql.toString(), m);
+        return consultantFacade.findByJpql(jpql.toString(), m);
+    }
+
+    public List<Doctor> findDoctorsFromName(String name, Long id) {
+        StringBuffer jpql = new StringBuffer("select c from Doctor c where c.retired=:ret");
+        Map m = new HashMap();
+        m.put("ret", false);
+
+        if (name != null && !name.isEmpty()) {
+            jpql.append(" and c.person.name like :name");
+            m.put("name", "%" + name + "%");
+        }
+        if (id != null && !id.toString().isEmpty()) {
+            jpql.append(" and c.id =:id");
+            m.put("id", id);
+        }
+
+        return consultantFacade.findByJpql(jpql.toString(), m);
+    }
+
+    public List<SessionInstance> findSessionInstance(List<Institution> institution, List<Speciality> specialities, List<Doctor> doctorList, Date sessionDate) {
+        List<SessionInstance> sessionInstances;
+        Map<String, Object> m = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("select i from SessionInstance i where i.retired=:ret and i.originatingSession.retired=:ret "
+                + " and i.cancelled = false"
+                + " and i.completed = false");
+
+        // Handle sessionDate equality check
+        if (sessionDate != null) {
+            jpql.append(" and i.sessionDate = :sd ");
+            m.put("sd", sessionDate);
+            System.out.println(sessionDate);
+        } else if (sessionDate == null) {
+            jpql.append(" and i.sessionDate >= :sd ");
+            m.put("sd", new Date());
+        }
+//         
+//        if(fromDate != null){
+//            jpql.append(" and i.sessionDate >= :fd");
+//            m.put("fd", fromDate);
+//        }
+
+        // Additional conditions for consultant, institution, and specialities
+        if (doctorList != null && !doctorList.isEmpty()) {
+            jpql.append(" and i.originatingSession.staff in :os");
+            m.put("os", doctorList);
+        }
+        if (institution != null && !institution.isEmpty()) {
+            jpql.append(" and i.originatingSession.institution in :ins");
+            m.put("ins", institution);
+        }
+        if (specialities != null && !specialities.isEmpty()) {
+            jpql.append(" and i.originatingSession.staff.speciality in :spe ");
+            m.put("spe", specialities);
+        }
+
+        m.put("ret", false);
+
+        sessionInstances = sessionInstanceFacade.findByJpql(jpql.toString(), m, TemporalType.DATE);
+        // System.out.println(jpql.toString()+"\n"+sessionInstances.size()+"\n"+m.values());
+        return sessionInstances;
+    }
+
+    public SessionInstance findNextSessionInstance(List<Institution> institution, List<Speciality> specialities, List<Doctor> doctorList, Date sessionDate) {
+        Map<String, Object> m = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("select i from SessionInstance i where i.retired=:ret and i.originatingSession.retired=:ret "
+                + " and i.cancelled = false"
+                + " and i.completed = false");
+
+        // Handle sessionDate equality check
+        if (sessionDate != null) {
+            jpql.append(" and i.sessionDate > :sd ");
+            m.put("sd", sessionDate);
+            System.out.println(sessionDate);
+        }
+//         
+//        if(fromDate != null){
+//            jpql.append(" and i.sessionDate >= :fd");
+//            m.put("fd", fromDate);
+//        }
+
+        // Additional conditions for consultant, institution, and specialities
+        if (doctorList != null && !doctorList.isEmpty()) {
+            jpql.append(" and i.originatingSession.staff in :os");
+            m.put("os", doctorList);
+        }
+        if (institution != null && !institution.isEmpty()) {
+            jpql.append(" and i.originatingSession.institution in :ins");
+            m.put("ins", institution);
+        }
+        if (specialities != null && !specialities.isEmpty()) {
+            jpql.append(" and i.originatingSession.staff.speciality in :spe ");
+            m.put("spe", specialities);
+        }
+        jpql.append(" order by i.sessionDate asc");
+
+        m.put("ret", false);
+        System.out.println(jpql.toString() + "\n" + m);
+        return sessionInstanceFacade.findFirstByJpql(jpql.toString(), m, TemporalType.DATE);
+        // System.out.println(jpql.toString()+"\n"+sessionInstances.size()+"\n"+m.values());
+
     }
 
     public Bill settleCredit(BillSession preBillSession, String refNo) {

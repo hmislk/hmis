@@ -16,7 +16,13 @@
                         <f:facet name="header" >
                             <h:outputLabel value="Reprint" ></h:outputLabel>
                             <hr/>                           
-                            <p:commandButton ajax="false" value="Cancel" action="credit_company_bill_cancel" disabled="#{creditCompanyBillSearch.bill.cancelled}" >                           
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Cancel" 
+                                action="credit_company_bill_cancel" 
+                                disabled="#{creditCompanyBillSearch.bill.cancelled}" 
+                                class="ui-button-danger" 
+                                icon="fa fa-cancel" >                           
                             </p:commandButton>
 
                         </f:facet>
@@ -70,7 +76,8 @@
 
 
                     <h:panelGroup >
-                        <bi:insRecieve billController ="#{creditCompanyBillSearch}"  bill="#{creditCompanyBillSearch.bill}" dup="true"/>                       
+
+                        <bi:CreditReceiveBill controller="#{creditCompanyBillSearch}"  bill="#{creditCompanyBillSearch.bill}" dup="true"/>
                     </h:panelGroup>
 
 

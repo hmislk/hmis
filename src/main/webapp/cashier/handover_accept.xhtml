@@ -4,8 +4,7 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
 
@@ -66,10 +65,11 @@
                                             <p:outputLabel value="Shift End" />
                                         </h:panelGroup>
                                         <h:panelGroup>
-                                            <p:badge value="Shift Not Yet Ended" 
-                                                     rendered="#{financialTransactionController.bundle.endBill eq null}" 
-                                                     styleClass="ui-badge-danger" 
-                                                     icon="pi pi-times">
+                                            <p:badge 
+                                                value="Shift Not Yet Ended" 
+                                                rendered="#{financialTransactionController.bundle.endBill eq null}" 
+                                                styleClass="ui-badge-danger" 
+                                                icon="pi pi-times">
                                             </p:badge>
 
                                             <p:panelGrid columns="2" rendered="#{financialTransactionController.bundle.endBill ne null}">
@@ -107,22 +107,9 @@
                                                 <div class="col-md-8 text-right">
 
 
-
-
                                                     <p:commandButton 
                                                         rendered="#{webUserController.hasPrivilege('ShiftHandoverAcceptAsMainCashier')}" 
-                                                        value="Accept Handover - Main Cashier" 
-                                                        styleClass="ui-button-warning mx-1" 
-                                                        icon="pi pi-check-circle" 
-                                                        ajax="false" 
-                                                        onclick="return confirm('Are you sure you want to proceed with the handover?');" 
-                                                        action="#{financialTransactionController.acceptHandoverBill()}">
-                                                    </p:commandButton>
-
-
-                                                    <p:commandButton 
-                                                        rendered="#{webUserController.hasPrivilege('ShiftHandoverAcceptAsMainCashier')}" 
-                                                        value="Accept Handover and write to Cashbook - Main Cashier" 
+                                                        value="Accept Handover &amp; Write to Cashbook" 
                                                         styleClass="ui-button-success mx-1" 
                                                         icon="pi pi-check-circle" 
                                                         ajax="false" 
@@ -135,35 +122,10 @@
                                                         action="#{financialTransactionController.rejectToReceiveHandoverBill()}"
                                                         ajax="false"
                                                         onclick="if (!confirm('Are you sure you want to Reject this record?'))
-                                                                        return false;" 
+                                                                    return false;" 
                                                         class="m-1 ui-button-danger"
                                                         icon="pi pi-times-circle">
                                                     </p:commandButton>
-
-
-
-                                                    <p:commandButton 
-                                                        rendered="#{webUserController.hasPrivilege('ShiftHandoverAcceptAsCashier')}" 
-                                                        value="Accept Handover" 
-                                                        styleClass="ui-button-warning mx-1" 
-                                                        icon="pi pi-check-circle" 
-                                                        ajax="false" 
-                                                        onclick="return confirm('Are you sure you want to proceed with the handover?');" 
-                                                        action="#{financialTransactionController.acceptHandoverBill()}">
-                                                    </p:commandButton>
-
-
-                                                    <p:commandButton 
-                                                        value="Accept Handover and write to Cashbook" 
-                                                        rendered="#{webUserController.hasPrivilege('ShiftHandoverAcceptAsCashier')}" 
-                                                        styleClass="ui-button-success mx-1" 
-                                                        icon="pi pi-check-circle" 
-                                                        ajax="false" 
-                                                        onclick="return confirm('Are you sure you want to proceed with the handover?');" 
-                                                        action="#{financialTransactionController.acceptHandoverBillAndWriteToCashbook()}">
-                                                    </p:commandButton>
-
-
 
 
                                                 </div>
@@ -271,8 +233,6 @@
                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
                                     currentPageReportTemplate="(Page {currentPage} of {totalPages})"
                                     paginatorPosition="top">
-
-
 
                                     <p:column headerText="Institution" >
                                         <h:outputText value="#{summary.department.institution.name}" />
@@ -533,9 +493,6 @@
 
                                     </p:column>
 
-
-
-
                                 </p:dataTable>
                             </div>
                         </h:panelGroup>
@@ -543,7 +500,6 @@
                     </p:panel>
 
                 </h:form>
-
 
             </ui:define>
         </ui:composition>

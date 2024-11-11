@@ -2077,7 +2077,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public String navigateToManageBooking(BillSession bs) {
-//        System.out.println("bs = " + bs);
+        System.out.println("bs = " + bs);
         selectedBillSession = bs;
         if (selectedBillSession == null) {
             JsfUtil.addErrorMessage("Please select a Patient");
@@ -2664,7 +2664,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         if (bill.getPaidBill().equals(bill)) {
             CancelledBill cb = createCancelCashBill(bill);
             Payment p = createPaymentForCancellationsAndRefunds(cb, cb.getPaymentMethod());
-            drawerController.updateDrawerForOuts(p);
+            if (cancelPaymentMethod != PaymentMethod.Agent) {
+                drawerController.updateDrawerForOuts(p);
+            }
+
             BillItem cItem = cancelBillItems(billItem, cb);
             BillSession cbs = cancelBillSession(billSession, cb, cItem);
             bill.setCancelled(true);
@@ -3633,9 +3636,13 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         if (printingBill.getBillTypeAtomic()
                 .getBillFinanceType() == BillFinanceType.CASH_IN) {
+
             List<Payment> p = createPayment(printingBill, paymentMethod);
 
-            drawerController.updateDrawerForIns(p);
+            if (printingBill.getBillType() != BillType.ChannelAgent) {
+                drawerController.updateDrawerForIns(p);
+            }
+
         }
 
         sendSmsAfterBooking();
@@ -8701,6 +8708,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public double getCashBalance() {
+        calculateCashBalance();
         return cashBalance;
     }
 

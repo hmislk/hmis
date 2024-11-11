@@ -14,7 +14,7 @@
                     <p:panel header="Income Category Wise Report" class="w-100">
                         <div class="row">
                             <div class="col-md-12">
-                                <h:panelGrid columns="2" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
+                                <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
                                     <h:panelGroup layout="block" styleClass="form-group">
                                         <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
                                         <h:outputLabel value="From" for="fromDate" class="mx-3"/>
@@ -26,6 +26,8 @@
                                         value="#{searchController.fromDate}" 
                                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
                                         />
+
+                                    <p:spacer width="50" ></p:spacer>
 
                                     <h:panelGroup layout="block" styleClass="form-group">
                                         <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
@@ -39,6 +41,18 @@
                                         navigator="false" 
                                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
                                         />
+
+                                    <p:spacer width="50" ></p:spacer>
+                                    <p:spacer width="50" ></p:spacer>
+                                    <p:selectBooleanButton
+                                        onLabel="With Professional Fee" 
+                                        offLabel="without Professional Fee" 
+                                        value="#{searchController.withProfessionalFee}"
+                                        onIcon="pi pi-check" 
+                                        class="w-100"
+                                        offIcon="pi pi-times" 
+                                        >
+                                    </p:selectBooleanButton>
 
                                     <h:panelGroup layout="block" styleClass="form-group">
                                         <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
@@ -54,6 +68,8 @@
                                         <p:ajax process="cmbIns" update="cmbDept" />
                                     </p:selectOneMenu>
 
+                                    <p:spacer width="50" ></p:spacer>
+
                                     <h:panelGroup layout="block" styleClass="form-group">
                                         <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
                                         <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
@@ -66,6 +82,8 @@
                                         <f:selectItem itemLabel="All Departments" />
                                         <f:selectItems value="#{departmentController.getInsDepartments(searchController.institution)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
                                     </p:selectOneMenu>
+
+                                    <p:spacer width="50" ></p:spacer>
 
                                     <h:panelGroup layout="block" styleClass="form-group">
                                         <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
@@ -84,71 +102,104 @@
                                         <h:outputText title="Category" value="&#xf02d;" styleClass="fa mr-2" /> <!-- FontAwesome book icon -->
                                         <h:outputLabel value="Category"  class="mx-3"/>
                                     </h:panelGroup>
-                                    <p:autoComplete value="#{searchController.category}"
-                                                    completeMethod="#{categoryController.completeCategory}" 
-                                                    var="category"
-                                                    class="w-100"
-                                                    inputStyleClass="w-100"
-                                                    itemLabel="#{category.name}"
-                                                    itemValue="#{category}">
+                                    <p:autoComplete 
+                                        value="#{searchController.category}"
+                                        completeMethod="#{categoryController.completeCategory}" 
+                                        var="category"
+                                        class="w-100"
+                                        inputStyleClass="w-100"
+                                        itemLabel="#{category.name}"
+                                        itemValue="#{category}">
                                     </p:autoComplete>
 
+                                    <p:spacer width="50" ></p:spacer>
+
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <i class="fas fa-stethoscope"></i>
+                                        <h:outputLabel value="Visit Type" for="visitType" class="mx-3"/>
+                                    </h:panelGroup>
+                                    <p:selectOneMenu class="w-100" value="#{searchController.visitType}">
+                                        <f:selectItem itemValue="Any" itemLabel="Any"/>
+                                        <f:selectItem itemValue="OP" itemLabel="Out Patients (OP)"/>
+                                        <f:selectItem itemValue="IP" itemLabel="In Patients (IP)"/>
+                                    </p:selectOneMenu>
+
+                                    <p:spacer width="50" ></p:spacer>
+
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <i class="fas fa-credit-card" style="color: green; font-size: 18px;"></i>                                       
+                                        <h:outputLabel value="Payment Type" class="mx-3"/>
+                                    </h:panelGroup>
+                                    <p:selectOneMenu class="w-100" value="#{searchController.methodType}">
+                                        <f:selectItem itemValue="Any" itemLabel="Any"/>
+                                        <f:selectItem itemValue="Credit" itemLabel="Credit"/>
+                                        <f:selectItem itemValue="NonCredit" itemLabel="Non Credit"/>
+                                    </p:selectOneMenu>
 
                                 </h:panelGrid>
 
-                                <p:commandButton id="btnList" class="m-1 ui-button-danger"
-                                                 icon="fas fa-list"
-                                                 ajax="false" value="View List"
-                                                 action="#{searchController.createIncomeBreakdownByCategoryOpd()}" />
+                                <p:commandButton 
+                                    id="btnList" 
+                                    class="m-1 ui-button-danger"
+                                    icon="fas fa-list"
+                                    ajax="false" value="View List"
+                                    action="#{searchController.createIncomeBreakdownByCategoryOpd()}" />
 
-                                <p:commandButton id="btnPdf" class="m-1 ui-button-info"
-                                                 ajax="false"
-                                                 rendered="false"
-                                                 icon="fas fa-file-pdf"
-                                                 value="Export as PDF">
+                                <p:commandButton 
+                                    id="btnPdf" 
+                                    class="m-1 ui-button-info"
+                                    ajax="false"
+                                    rendered="false"
+                                    icon="fas fa-file-pdf"
+                                    value="Export as PDF">
                                     <p:dataExporter type="pdf" target="tbl" fileName="itemized_sale_summary" />
                                 </p:commandButton>
 
-                                <p:commandButton id="btnPrint" class="m-1 ui-button-primary"
-                                                 icon="fas fa-print"
-                                                 ajax="false"
-                                                 value="Print Table">
+                                <p:commandButton 
+                                    id="btnPrint" 
+                                    class="m-1 ui-button-primary"
+                                    icon="fas fa-print"
+                                    ajax="false"
+                                    value="Print Table">
                                     <p:printer target="tbl" />
                                 </p:commandButton>
 
-                                <p:commandButton id="btnExcel" class="m-1 ui-button-success"
-                                                 icon="fas fa-file-excel"
-                                                 ajax="false" value="Export to Excel">
+                                <p:commandButton 
+                                    id="btnExcel" 
+                                    class="m-1 ui-button-success"
+                                    icon="fas fa-file-excel"
+                                    ajax="false" value="Export to Excel">
                                     <p:dataExporter type="xlsx" target="tbl" fileName="itemized_sale_summary" />
                                 </p:commandButton>
-
-
 
                             </div>
 
                         </div>
 
-                        <p:dataTable id="tbl"
-                                     value="#{searchController.bundle.reportTemplateRows}"
-                                     var="row"
-                                     paginator="true"
-                                     rows="10"
-                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     rowsPerPageTemplate="5,10,20"
-                                     rowKey="#{row.id}">
+                        <p:dataTable 
+                            id="tbl"
+                            value="#{searchController.bundle.reportTemplateRows}"
+                            var="row"
+                            paginator="true"
+                            paginatorPosition="bottom"
+                            rows="25"
+                            class="mt-2"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="25,50,100"
+                            rowKey="#{row.id}">
 
                             <f:facet name="header">
                                 <h:outputText value="#{searchController.bundle.name}" />
                             </f:facet>
 
-                            <p:column>
+                            <p:column  style="padding: 7px;">
                                 <f:facet name="header">
                                     <h:outputText value="Category" />
                                 </f:facet>
                                 <h:outputText value="#{row.category.name}" />
                             </p:column>
 
-                            <p:column>
+                            <p:column width="7em" class="text-center" style="padding: 7px;">
                                 <f:facet name="header">
                                     <h:outputText value="Count" />
                                 </f:facet>
@@ -157,7 +208,7 @@
                                 </h:outputText>
                             </p:column>
 
-                            <p:column class="text-end">
+                            <p:column class="text-end" width="12em" style="padding: 7px;">
                                 <f:facet name="header">
                                     <h:outputText value="Gross Value" />
                                 </f:facet>
@@ -171,7 +222,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column class="text-end">
+                            <p:column class="text-end" width="12em" style="padding: 7px;">
                                 <f:facet name="header">
                                     <h:outputText value="Hospital Fee" />
                                 </f:facet>
@@ -185,7 +236,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column class="text-end">
+                            <p:column class="text-end" rendered="#{searchController.withProfessionalFee}" width="12em" style="padding: 7px;">
                                 <f:facet name="header">
                                     <h:outputText value="Professional Fee" />
                                 </f:facet>
@@ -199,7 +250,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column class="text-end">
+                            <p:column class="text-end" width="12em" style="padding: 7px;">
                                 <f:facet name="header">
                                     <h:outputText value="Discount" />
                                 </f:facet>
@@ -213,7 +264,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column class="text-end">
+                            <p:column class="text-end" width="12em" style="padding: 7px;">
                                 <f:facet name="header">
                                     <h:outputText value="Net Amount" />
                                 </f:facet>
@@ -228,7 +279,7 @@
                             </p:column>
 
                             <f:facet name="footer">
-                                <h:outputText value="Profit Margin: " />
+                                <h:outputText value="Profit Margin : " />
                                 <h:outputText value="Neet ot have a cost to calculate the profit margin">
                                 </h:outputText>
                             </f:facet>

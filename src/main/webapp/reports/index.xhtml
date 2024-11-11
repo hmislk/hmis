@@ -79,8 +79,8 @@
                                         <p:commandButton  
                                             class="w-100"  
                                             ajax="false" 
-                                            action="#{searchController.navigateToAllCashierDrawersDetails()}"
-                                            value="4. Drawers" >
+                                            action="#{searchController.navigateToListAllDrawers()}"
+                                            value="4. All Drawers" >
                                         </p:commandButton>
                                         <p:commandButton  
                                             class="w-100"  
@@ -144,12 +144,13 @@
                                         <p:commandButton   class="w-100"  ajax="false" value="22. Profit Matrix" action="/reports/financialReports/profit_matrix_report?faces-redirect=true" />
                                         <p:commandButton   class="w-100"  ajax="false" value="23. Package Report" />
                                         <p:commandButton   class="w-100"  ajax="false" value="24. Debtor Analysis" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="25. Drawer History" action="/reports/financialReports/drawer_history?faces-redirect=true"/>
+                                        <p:commandButton   class="w-100"  ajax="false" value="25. Drawer History By User" action="/reports/financialReports/drawer_history?faces-redirect=true"/>
+                                        <p:commandButton   class="w-100"  ajax="false" value="26. Drawer History" action="/reports/financialReports/all_users_drawer_history?faces-redirect=true"/>
                                         <p:commandButton  
                                             action="#{searchController.navigatToDepartmentRevenueReport}"
                                             class="w-100"  
                                             ajax="false" 
-                                            value="26. Department Revenue" >
+                                            value="27. Department Revenue" >
                                         </p:commandButton>
                                     </div>
                                 </p:tab>
@@ -308,7 +309,7 @@
                                             value="Test Count Report"
                                             action="#{reportController.navigateToLabReportsTestCount()}"/>
                                         <p:commandButton   class="w-100"  ajax="false" value="Test Wise Count" action="#{reportController.navigateToTestWiseCountReports()}" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Lab Bill Item List" action="#{reportController.navigateToLabBillItemList()}" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Lab Bill Item List" action="#{patientInvestigationController.navigateToLabBillItemList()}" />
                                         <p:commandButton   class="w-100"  ajax="false" value="Turn Around Time Details" action="#{reportController.navigateToTurnAroundTimeDetails()}" />
                                         <p:commandButton   class="w-100"  ajax="false" value="Turn Around Time(Hourly)" action="#{reportController.navigateToTurnAroundTimeHourly}"/>
                                         <p:commandButton   class="w-100"  ajax="false" value="Peak Hour Statistics" action="#{reportController.navigateToLabPeakHourStatistics()}"/>

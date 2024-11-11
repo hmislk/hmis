@@ -56,7 +56,7 @@
                                         id="cmdPayment" 
                                         value="#{financialTransactionController.currentPayment.paymentMethod}" >
                                         <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
-                                        <f:selectItems value="#{enumController.paymentMethods}" ></f:selectItems>
+                                        <f:selectItems value="#{enumController.paymentMethodsForIncome}" ></f:selectItems>
                                         <p:ajax process="cmdPayment" update="paymentDetails" ></p:ajax>
                                     </p:selectOneMenu>
 
@@ -126,10 +126,14 @@
                                             <f:selectItem itemLabel="Select Bank"/>
                                             <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
                                             <p:ajax process="@this" ></p:ajax>
-                                        </p:selectOneMenu>               
+                                        </p:selectOneMenu>
+                                        <p:outputLabel value="Slip Date" class="ms-5 m-1"></p:outputLabel>
+                                        <p:calendar class="m-1" value="#{financialTransactionController.currentPayment.paymentDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" id="SlipDate">                            
+                                            <p:ajax process="@this" ></p:ajax>
+                                        </p:calendar>
                                     </h:panelGroup>
-                                    
-                                    
+
+
                                 </h:panelGroup>
 
                             </div>
@@ -173,7 +177,7 @@
                                 <p:column headerText="Details"  >
                                     <h:panelGroup rendered="#{bp.paymentMethod eq 'Card'}">
                                         <h:outputLabel value="Bank Name : #{bp.bank.name}" ></h:outputLabel>
-                                        <h:outputLabel value="Cheque No : #{bp.creditCardRefNo}" ></h:outputLabel>
+                                        <h:outputLabel value="Card Last 4 Digits : #{bp.creditCardRefNo}" ></h:outputLabel>
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{bp.paymentMethod eq 'Cheque'}">
                                         <h:outputLabel value="Bank Name : #{bp.bank.name}" ></h:outputLabel>
@@ -184,6 +188,9 @@
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{bp.paymentMethod eq 'Slip'}">
                                         <h:outputLabel value="Bank Name : #{bp.bank.name}" ></h:outputLabel>
+                                        <h:outputLabel value="Slip Date : #{bp.paymentDate}" >
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"  ></f:convertDateTime>
+                                        </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>
 

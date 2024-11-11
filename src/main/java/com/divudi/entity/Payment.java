@@ -174,6 +174,7 @@ public class Payment implements Serializable {
     @ManyToOne
     private Bill cancelledBill;
 
+    @Transient
     private PaymentHandover transientPaymentHandover;
 
     // New attributes for marking a cheque as paid
@@ -438,6 +439,11 @@ public class Payment implements Serializable {
     }
 
     public Department getDepartment() {
+        if (department == null) {
+            if (bill != null) {
+                department = bill.getDepartment();
+            }
+        }
         return department;
     }
 
@@ -445,7 +451,7 @@ public class Payment implements Serializable {
         this.department = department;
     }
 
-    public Payment copyAttributes() {
+    public Payment createNewPaymentByCopyingAttributes() {
         Payment newPayment = new Payment();
         newPayment.setBill(this.bill);
         newPayment.setWrittenAt(this.writtenAt);
@@ -846,8 +852,6 @@ public class Payment implements Serializable {
         this.chequePaid = chequePaid;
     }
 
-    
-    
     public WebUser getChequeRealizer() {
         return chequeRealizer;
     }

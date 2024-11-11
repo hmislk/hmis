@@ -1,0 +1,105 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="./index.xhtml">
+            <ui:define name="subcontent">
+
+                <h:form >
+                    
+                    <p:panel >
+
+
+                        <div class="row">
+
+                            <div class="col-lg-6">
+                                <p:panel >
+                                <f:facet name="header">
+                                    <h:outputText value="Expense Bill Cancellation Details" ></h:outputText>
+                                </f:facet>
+
+                                <p:panelGrid columns="2" class="w-100">
+                                    <h:outputText value="Bille Date" ></h:outputText>
+                                    <h:outputText value="#{billSearch.bill.createdAt}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                                    </h:outputText>
+
+                                    <h:outputText value="Bille Time" ></h:outputText>
+                                    <h:outputText value="#{billSearch.bill.createdAt}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
+                                    </h:outputText>
+
+                                    <h:outputText value="Billed User" ></h:outputText>
+                                    <h:outputText value="#{billSearch.bill.creater.webUserPerson.name}" >
+                                    </h:outputText>
+
+                                    <h:outputText value="Comment" ></h:outputText>
+                                    <h:outputText value="#{billSearch.bill.comments}" >
+                                    </h:outputText>
+
+                                    <h:outputText value="Total" ></h:outputText>
+                                    <h:outputText value="#{billSearch.bill.netTotal}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputText>
+
+
+                                </p:panelGrid>
+
+                                <p:dataTable id="tblPayments" value="#{financialTransactionController.currentBillPayments}" var="bp" >
+                                    <p:column headerText="Payment Method" >
+                                        <h:outputText value="#{bp.paymentMethod}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Comments" >
+                                        <h:outputText value="#{bp.comments}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Payment Method" >
+                                        <h:outputText value="#{bp.paidValue}" ></h:outputText>
+                                    </p:column>
+                                </p:dataTable>
+                            </p:panel>
+
+                            </div>
+                            
+
+                            <div class="col-lg-6 justify-content-center">
+
+                                <p:panel >
+                                    <f:facet name="header">
+                                        <h:outputText value="Bill Preview" ></h:outputText>
+                                        <p:commandButton 
+                                            style="float: right;"
+                                            ajax="false"
+                                            class="ui-button-info"
+                                            icon="fa fa-print"
+                                            value="Print" >
+                                            <p:printer target="divPrint" />
+                                        </p:commandButton>
+                                    </f:facet>
+                                    <h:panelGrid id="divPrint">
+                                        <div class="d-flex justify-content-center">
+                                            <prints:five_five_paper_with_headings_for_expense_bill_cancellation
+                            payments="#{billSearch.billPayments}"
+                            bill="#{billSearch.bill}"/> 
+                                        </div>
+                                    </h:panelGrid>
+
+                                </p:panel>
+                            </div>
+
+                        </div>
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

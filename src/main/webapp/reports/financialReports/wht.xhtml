@@ -211,7 +211,7 @@
                             </p:commandButton>
                         </div>
                         <br />
-
+                        
 
                         <h:panelGroup >
                             <p:panel header="Individual Receipts Wise WHT Report " rendered="#{searchController.reportType eq 'irs'}">
@@ -445,124 +445,174 @@
                         </h:panelGroup>
 
 
-                        <p:panel id="dtaPr" >
 
+                        <h:panelGroup >
+                            <p:panel header="Monthly Vice Sumary report" rendered="#{searchController.reportType eq 'mr'}">
 
+                                <h:panelGroup>
 
+                                    <div class="row w-75" >
+                                        <div class="col-2">
+                                            <h:outputLabel style="width: 100px; font-weight:bold ">From Date</h:outputLabel><span>:</span>
+                                        </div>
+                                        <div class="col-2">
+                                            <h:outputLabel value="#{reportController.fromDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                            </h:outputLabel>
+                                        </div>
+                                        <div class="col-2">
+                                            <h:outputLabel style="width: 100px ; font-weight:bold ">To Date</h:outputLabel><span>:</span>
+                                        </div>
+                                        <div class="col-2">
+                                            <h:outputLabel value="#{reportController.toDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                            </h:outputLabel>
+                                        </div>
+                                    </div>                     
 
+                                    <h:panelGroup rendered="#{searchController.institution ne null}">
+                                        <div class="row w-75" >
+                                            <div class="col-2">
+                                                <h:outputLabel style="width: 100px ; font-weight:bold ">Branch</h:outputLabel><span>:</span>
+                                            </div>
+                                            <div class="col-2">
+                                                <h:outputLabel value="#{searchController.institution.name}" ></h:outputLabel>
+                                            </div>
+                                            <div class="col-2">
+                                                <h:outputLabel style="width: 100px ; font-weight:bold ">Department</h:outputLabel><span>:</span>
+                                            </div>
+                                            <div class="col-2">
+                                                <h:outputLabel value="#{searchController.department.name}" ></h:outputLabel>
+                                            </div>
+                                            <div class="col-2">
+                                                <h:outputLabel style="width: 100px ; font-weight:bold ">Consultant</h:outputLabel><span>:</span>
+                                            </div>
+                                            <div class="col-2">
+                                                <h:outputLabel value="#{searchController.staff.person.nameWithTitle}" ></h:outputLabel>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
 
-                            <p:dataTable
-                                rendered="#{searchController.reportType eq 'mr'}"
-                                id="dtaPr0" value="" var="pc" rowIndexVar="rowIndex">
-                                <p:column headerText="Doc No">
-                                    <h:outputText value="" ></h:outputText>
-                                </p:column>
-                                <p:column headerText="Consultant">
-                                    <h:outputText value="" ></h:outputText>
-                                </p:column>
-                                <p:column headerText="Speciality" width="">
-                                    <h:outputText value="" ></h:outputText>
-                                </p:column>
-                                <p:column headerText="Total Amt" >
-                                    <h:outputText value="" ></h:outputText>
-                                </p:column>
-                                <p:column headerText="Holding Tax" >
-                                    <h:outputText value="" ></h:outputText>
-                                </p:column>
-                                <p:column headerText="Net Amt" >
-                                    <h:outputText value="" ></h:outputText>
-                                </p:column>
-                                <p:column headerText="Paid To" >
-                                    <h:outputText value="" ></h:outputText>
-                                </p:column>
-                                <p:column headerText="Remarks" >
-                                    <h:outputText value="" ></h:outputText>
-                                </p:column>
-                                <p:column headerText="Paid By" >
-                                    <h:outputText value="" ></h:outputText>
-                                </p:column>
-                                <p:column headerText="Paid Date" >
-                                    <h:outputText value="" ></h:outputText>
-                                </p:column>                       
-                            </p:dataTable><br />
+                                </h:panelGroup>
 
-                            <p:panel id="dtaPr1" rendered="#{searchController.reportType eq 'cr'}" >
-                                <f:facet name="header">
-                                    <h:outputLabel value="Monthly Vice Sumary report" /><br/><br/>
+                                <p:dataTable 
+                                    rowIndexVar="i" 
+                                    id="tbl2"
+                                    value="#{searchController.bundle.reportTemplateRows}" 
+                                    var="row" 
+                                    class="w-100 mt-2"
+                                    rows="20"
+                                    paginator="true" 
+                                    paginatorPosition="bottom"
+                                    paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                                    rowsPerPageTemplate="20,50,{ShowAll|'All'}"
+                                    scrollable="true"
+                                    scrollWidth="100%">
 
-                                    <h:outputLabel value="From Date :"/>
-                                    <br/>
-                                    <h:outputLabel value="To Date :"/>      
-                                    <br/>
-                                    <h:outputLabel value="Branch(Payment Done) :"/>
-                                    <br/>
-                                    <h:outputLabel value="Consultant Name :"/>
-                                    <br/>
-                                </f:facet>
-                                <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print">
-                                </p:commandButton>
-
-
-                                <p:dataTable id="dtaPr2" value="" var="pc" rowIndexVar="rowIndex">
                                     <p:column headerText="Month">
-                                        <h:outputText value="" ></h:outputText>
+                                        <p:outputLabel value="" />
                                     </p:column>
-                                    <p:column headerText="Total Amt">
-                                        <h:outputText value="" ></h:outputText>
-                                    </p:column>
-                                    <p:column headerText="Holding Tax" width="">
-                                        <h:outputText value="" ></h:outputText>
-                                    </p:column>
-                                    <p:column headerText="Net Amt" >
-                                        <h:outputText value="" ></h:outputText>
-                                    </p:column>                        
-                                </p:dataTable>
-                            </p:panel><br/>
-
-
-                            <p:panel id="dtaPr3" rendered="#{searchController.reportType eq 'cr'}">
-                                <f:facet name="header">
-                                    <h:outputLabel value="Consultant Vice Sumary report" /><br/><br/>
-
-                                    <h:outputLabel value="From Date :"/>
-                                    <br/>
-                                    <h:outputLabel value="To Date :"/>      
-                                    <br/>
-                                    <h:outputLabel value="Branch(Payment Done) :"/>
-                                    <br/>
-                                    <h:outputLabel value="Speciality :"/>
-                                    <br/>
-                                    <h:outputLabel value="Consultant Name :"/>
-                                    <br/>
-                                </f:facet>
-                                <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print">
-                                </p:commandButton>
-
-                                <p:dataTable id="dtaPr4" value="" var="pc" rowIndexVar="rowIndex">  
-                                    <p:column headerText="Consultant Name">
-                                        <h:outputText value="" ></h:outputText>
-                                    </p:column>
-                                    <p:column headerText="Total Amt">
+                                    <p:column headerText="Total Amount">
                                         <h:outputText value="" ></h:outputText>
                                     </p:column>
                                     <p:column headerText="Holding Tax" width="">
                                         <h:outputText value="" ></h:outputText>
                                     </p:column>
-                                    <p:column headerText="Net Amt" >
+                                    <p:column headerText="Net Amount" >
                                         <h:outputText value="" ></h:outputText>
-                                    </p:column>                        
+                                    </p:column>                       
                                 </p:dataTable>
+                                <br />
                             </p:panel>
+                        </h:panelGroup>
 
-                        </p:panel>
+                        
+                        <h:panelGroup >
+                            <p:panel header="Consultant Vice Sumary report" rendered="#{searchController.reportType eq 'cr'}">
 
+                                <h:panelGroup>
 
-                        <p:spacer height="5"></p:spacer>
+                                    <div class="row w-75" >
+                                        <div class="col-2">
+                                            <h:outputLabel style="width: 100px; font-weight:bold ">From Date</h:outputLabel><span>:</span>
+                                        </div>
+                                        <div class="col-2">
+                                            <h:outputLabel value="#{reportController.fromDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                            </h:outputLabel>
+                                        </div>
+                                        <div class="col-2">
+                                            <h:outputLabel style="width: 100px ; font-weight:bold ">To Date</h:outputLabel><span>:</span>
+                                        </div>
+                                        <div class="col-2">
+                                            <h:outputLabel value="#{reportController.toDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                            </h:outputLabel>
+                                        </div>
+                                    </div>                     
+
+                                    <h:panelGroup rendered="#{searchController.institution ne null}">
+                                        <div class="row w-75" >
+                                            <div class="col-2">
+                                                <h:outputLabel style="width: 100px ; font-weight:bold ">Branch</h:outputLabel><span>:</span>
+                                            </div>
+                                            <div class="col-2">
+                                                <h:outputLabel value="#{searchController.institution.name}" ></h:outputLabel>
+                                            </div>
+                                            <div class="col-2">
+                                                <h:outputLabel style="width: 100px ; font-weight:bold ">Department</h:outputLabel><span>:</span>
+                                            </div>
+                                            <div class="col-2">
+                                                <h:outputLabel value="#{searchController.department.name}" ></h:outputLabel>
+                                            </div>
+                                            <div class="col-2">
+                                                <h:outputLabel style="width: 100px ; font-weight:bold ">Consultant</h:outputLabel><span>:</span>
+                                            </div>
+                                            <div class="col-2">
+                                                <h:outputLabel value="#{searchController.staff.person.nameWithTitle}" ></h:outputLabel>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
+
+                                </h:panelGroup>
+
+                                <p:dataTable 
+                                    rowIndexVar="i" 
+                                    id="tbl3"
+                                    value="#{searchController.bundle.reportTemplateRows}" 
+                                    var="row" 
+                                    class="w-100 mt-2"
+                                    rows="20"
+                                    paginator="true" 
+                                    paginatorPosition="bottom"
+                                    paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                                    rowsPerPageTemplate="20,50,{ShowAll|'All'}"
+                                    scrollable="true"
+                                    scrollWidth="100%">
+
+                                    
+                                    <p:column headerText="Consultant Name">                        
+                                        <h:outputText value="" ></h:outputText>    
+                                    </p:column>
+                                    <p:column headerText="Total Amount">
+                                        <h:outputText value="" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Holding Tax" width="">
+                                        <h:outputText value="" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Net Amount" >
+                                        <h:outputText value="" ></h:outputText>
+                                    </p:column>                       
+                                </p:dataTable>
+                                <br />
+                            </p:panel>
+                        </h:panelGroup>
+                        
 
                     </p:panel>
-
-                </h:form>
-
+                </h:form>              
             </ui:define>
         </ui:composition>
 

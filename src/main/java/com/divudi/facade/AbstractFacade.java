@@ -160,16 +160,16 @@ public abstract class AbstractFacade<T> {
         return q.getResultList();
     }
 
-    public T findFirstByJpql(String jpql, Map<String, Object> parameters, boolean withoutGettingWholeList) {
-        T t = null;
-        List<T> ts = AbstractFacade.this.findByJpql(jpql, parameters);
-        if (ts != null) {
-            if (!ts.isEmpty()) {
-                t = ts.get(0);
-            }
-        }
-        return t;
-    }
+//    public T findFirstByJpql(String jpql, Map<String, Object> parameters, boolean withoutGettingWholeList) {
+//        T t = null;
+//        List<T> ts = AbstractFacade.this.findByJpql(jpql, parameters);
+//        if (ts != null) {
+//            if (!ts.isEmpty()) {
+//                t = ts.get(0);
+//            }
+//        }
+//        return t;
+//    }
 
     public T findFreshByJpql(String jpql, Map<String, Object> parameters) {
         TypedQuery<T> qry = getEntityManager().createQuery(jpql, entityClass);
@@ -214,6 +214,34 @@ public abstract class AbstractFacade<T> {
         } catch (NoResultException e) {
             return null;
         }
+    }
+    
+    public T findFirstByJpql(String jpql, Map<String, Object> parameters, boolean withoutCache) {
+        TypedQuery<T> qry = getEntityManager().createQuery(jpql, entityClass);
+        Set s = parameters.entrySet();
+        Iterator it = s.iterator();
+        qry.setMaxResults(1);
+        qry.setHint("javax.persistence.cache.storeMode", "REFRESH");
+        while (it.hasNext()) {
+            Map.Entry m = (Map.Entry) it.next();
+            String pPara = (String) m.getKey();
+            if (m.getValue() instanceof Date) {
+                Date pVal = (Date) m.getValue();
+                qry.setParameter(pPara, pVal, TemporalType.DATE);
+//                //////// // System.out.println("Parameter " + pPara + "\tVal" + pVal);
+            } else {
+                Object pVal = (Object) m.getValue();
+                qry.setParameter(pPara, pVal);
+//                //////// // System.out.println("Parameter " + pPara + "\tVal" + pVal);
+            }
+        }
+        try {
+            return qry.getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
+        
+        
     }
 
     public AbstractFacade(Class<T> entityClass) {

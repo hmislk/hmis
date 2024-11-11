@@ -1,5 +1,6 @@
 package com.divudi.bean.common;
 
+import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.bean.membership.MembershipSchemeController;
 import com.divudi.bean.membership.PaymentSchemeController;
@@ -145,6 +146,8 @@ public class BillController implements Serializable {
     private OpdBillController opdBillController;
     @Inject
     PatientDepositController patientDepositController;
+    @Inject
+    DrawerController drawerController;
 
     /**
      * Class Vairables
@@ -1739,10 +1742,14 @@ public class BillController implements Serializable {
         cancellationBatchBill.setCreater(getSessionController().getLoggedUser());
 
         cancellationBatchBill.setTotal(0 - Math.abs(batchBill.getTotal()));
+        cancellationBatchBill.setHospitalFee(0 - Math.abs(batchBill.getHospitalFee()));
+        cancellationBatchBill.setCollctingCentreFee(0 - Math.abs(batchBill.getCollctingCentreFee()));
+        cancellationBatchBill.setProfessionalFee(0 - Math.abs(batchBill.getProfessionalFee()));
         cancellationBatchBill.setGrantTotal(0 - Math.abs(batchBill.getGrantTotal()));
         cancellationBatchBill.setDiscount(0 - Math.abs(batchBill.getDiscount()));
         cancellationBatchBill.setNetTotal(0 - Math.abs(batchBill.getNetTotal()));
         cancellationBatchBill.setPaymentMethod(paymentMethod);
+        System.out.println("cancellationBatchBill.get = " + cancellationBatchBill.getPaymentMethod());
 
         cancellationBatchBill.setForwardReferenceBill(batchBill);
         batchBill.setCancelled(true);
@@ -1768,8 +1775,10 @@ public class BillController implements Serializable {
             patientDepositController.updateBalance(cancellationBatchBill, pd);
         }
 
-        createPaymentForOpdBatchBillCancellation(cancellationBatchBill, paymentMethod);
+        List<Payment> cancelPayments = createPaymentForOpdBatchBillCancellation(cancellationBatchBill, paymentMethod);
 
+        drawerController.updateDrawerForOuts(cancelPayments);
+        
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cancellationBatchBill, getSessionController().getLoggedUser());
         opdBillController.setBills(bills);
         opdBillController.setBatchBill(batchBill);
@@ -2022,6 +2031,9 @@ public class BillController implements Serializable {
             newBillItem.setItem(originalBillItem.getItem());
             newBillItem.setNetValue(0 - originalBillItem.getNetValue());
             newBillItem.setGrossValue(0 - originalBillItem.getGrossValue());
+            newBillItem.setHospitalFee(0 - originalBillItem.getHospitalFee());
+            newBillItem.setCollectingCentreFee(0 - originalBillItem.getCollectingCentreFee());
+            newBillItem.setStaffFee(0 - originalBillItem.getStaffFee());
             newBillItem.setRate(0 - originalBillItem.getRate());
             newBillItem.setVat(0 - originalBillItem.getVat());
             newBillItem.setVatPlusNetValue(0 - originalBillItem.getVatPlusNetValue());

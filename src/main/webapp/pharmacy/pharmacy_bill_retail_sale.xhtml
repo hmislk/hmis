@@ -30,13 +30,15 @@
                             <f:facet name="header" >
                                 <h:outputText styleClass="fas fa-mortar-pestle" />
                                 <h:outputLabel value="Pharmacy Retail Bill (Sale 1)" class="mx-4"></h:outputLabel>
-                                <p:commandButton accesskey="n" 
-                                                 icon="fa fa-plus"
-                                                 value="New Bill"  
-                                                 style="float: right;"
-                                                 ajax="false" action="pharmacy_bill_retail_sale"
-                                                 class="mx-1 ui-button-warning"
-                                                 actionListener="#{pharmacySaleController.resetAll()}"  ></p:commandButton>
+                                <p:commandButton 
+                                    accesskey="n" 
+                                    icon="fa fa-plus"
+                                    value="New Bill"  
+                                    style="float: right;"
+                                    ajax="false" action="pharmacy_bill_retail_sale"
+                                    class="mx-1 ui-button-warning"
+                                    actionListener="#{pharmacySaleController.resetAll()}"  >
+                                </p:commandButton>
                                 <p:commandButton 
                                     ajax="false" 
                                     accesskey="s"
@@ -540,7 +542,7 @@
                                                                         layout="block" 
                                                                         id="multiplePaymentMethods"  rendered="#{pharmacySaleController.paymentMethod eq 'MultiplePaymentMethods'}" 
                                                                         >
-                                                                        <pa:multiple_payment_methods class="w-100" controller="#{pharmacySaleController}"/>
+                                                                        <pa:multiple_payment_methods class="w-100" controller="#{pharmacySaleController}" paymentMethods="#{enumController.paymentMethodsForMultiplePaymentMethod}"/>
 
                                                                     </h:panelGroup>
 
@@ -629,9 +631,9 @@
                     </p:panel>
                 </h:form>
                 <h:form>
-                    
+
                     <p:panel  rendered="#{pharmacySaleController.billPreview}" >
-                        
+
                         <p:commandButton id="nullButton3" value="No Action"
                                          action="#" style="display: none;" ></p:commandButton>
                         <!--<p:defaultCommand  target="btnPrint" />-->  

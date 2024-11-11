@@ -41,15 +41,14 @@
                                     <p:dataExporter type="xlsx" target="tblBills" fileName="opd_search_professional_payment_done"  />
                                 </p:commandButton>
                                 <p:defaultCommand target="btnSearch" />
-                                <h:outputLabel value="User"/>
-                                <h:outputLabel value="#{searchController.reportKeyWord.webUser.name}"/>
+                                
                                 
 
                                 <h:outputLabel value="OPD Bill No"/>
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="w-100 my-1"/>
                                 <h:outputLabel value="Payment Bill No"/>
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.deptId}" class="w-100 my-1"/>
-                                <h:outputLabel value="Bht No"/>
+                                <h:outputLabel value="BHT No"/>
                                 <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.bhtNo}" />
                                 <h:outputLabel value="Patient Name"/>
                                 <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" class="w-100 my-1"/>

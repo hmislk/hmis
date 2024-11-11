@@ -63,53 +63,114 @@
                             <f:selectItems value="#{machineController.items}" var="e" itemLabel="#{e.name}" itemValue="#{e}"/>
                         </p:selectOneMenu>
 
-                        <h:panelGroup class="mx-2">
-                            <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
-                            <h:outputLabel class="mx-3" value=" Institution"/>
-                        </h:panelGroup>
-                        
-                        <p:selectOneMenu filter="true" id="cmdInstitution"
-                                             filterMatchMode="contains"
-                                             style=" max-width: 100%; overflow-x: auto; "
-                                             class="w-100"
-                                             value="#{patientInvestigationController.performingInstitution}">
-                                <f:selectItem itemLabel="All" />
-                                <f:selectItems value="#{institutionController.companies}"
-                                               var="i"
-                                               itemLabel="#{i.name}"
-                                               itemValue="#{i}" />
-                                 <p:ajax process="@this" update="dept" event="itemSelect" />
-                            </p:selectOneMenu>
-                        
-                         <h:panelGroup >
-                            <h:outputText value="&#xf1ad;" styleClass="fa mr-2" />
-                            <h:outputLabel class="mx-3" value="By Site"/>
-                        </h:panelGroup>
+                        <p:spacer ></p:spacer>
+                        <p:spacer ></p:spacer>
 
 
+
+
+
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
+                            <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                        </h:panelGroup>
                         <p:selectOneMenu
-                                id="siteMenu"
-                                styleClass="w-100 form-control"  
-                                value="#{patientInvestigationController.site}" 
-                                filter="true"
-                                filterMatchMode="contains">
-                                <f:selectItem itemLabel="All Sites" />
-                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
-                                <p:ajax process="@this" update="dept" event="itemSelect" />
+                            id="cmbIns"
+                            styleClass="w-100 form-control" 
+                            value="#{patientInvestigationController.orderedInstitution}" 
+                            filter="true">
+                            <f:selectItem itemLabel="All Institutions" />
+                            <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                            <p:ajax process="cmbIns" update="cmbDept" />
+                        </p:selectOneMenu>
+
+
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
+                            <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
+                        </h:panelGroup>
+                        <p:selectOneMenu
+                            id="siteMenu"
+                            styleClass="w-100 form-control"  
+                            value="#{patientInvestigationController.orderedSite}" 
+                            filter="true">
+                            <f:selectItem itemLabel="All Sites" />
+                            <f:selectItems value="#{institutionController.sites}" var="orderedSite" itemLabel="#{orderedSite.name}" itemValue="#{orderedSite}" />
+                            <p:ajax process="siteMenu" update="cmbDept" />
+                        </p:selectOneMenu>
+
+
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                            <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                        </h:panelGroup>
+                        <h:panelGroup id="cmbDept">
+
+                            <!-- Component 1: Without Institution and Site -->
+                            <p:selectOneMenu
+                                rendered="#{patientInvestigationController.orderedInstitution eq null and patientInvestigationController.orderedSite eq null}"
+                                styleClass="w-100 form-control"
+                                value="#{patientInvestigationController.department}"
+                                filterMatchMode="contains"
+                                filter="true">
+                                <f:selectItem itemLabel="All Departments" />
+                                <f:selectItems 
+                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                    var="d"
+                                    itemLabel="#{d.name}"
+                                    itemValue="#{d}" />
                             </p:selectOneMenu>
 
-                        <h:panelGroup class="mx-2">
-                            <i class="fa fa-hospital" aria-hidden="true"></i>
-                            <h:outputLabel class="mx-3" value=" Department"/>
-                        </h:panelGroup>
-                        
-
-                        <h:panelGroup id="gpPDept">
-                            <p:selectOneMenu id="dept" value="#{patientInvestigationController.performingDepartment}" class="w-100" style="max-width: 100%">
-                                <f:selectItem itemLabel="Any"></f:selectItem>
-                                <f:selectItems value="#{departmentController.getInstitutionDepartmentsWithSite(patientInvestigationController.performingInstitution,patientInvestigationController.site)}" var="pdpt" itemLabel="#{pdpt.name}" itemValue="#{pdpt}"></f:selectItems>
+                            <!-- Component 2: With Site Only -->
+                            <p:selectOneMenu
+                                rendered="#{patientInvestigationController.orderedInstitution eq null and patientInvestigationController.orderedSite ne null}"
+                                styleClass="w-100 form-control"
+                                value="#{patientInvestigationController.department}"
+                                filterMatchMode="contains"
+                                filter="true">
+                                <f:selectItem itemLabel="All Departments" />
+                                <f:selectItems 
+                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(patientInvestigationController.orderedSite)}"
+                                    var="d"
+                                    itemLabel="#{d.name}"
+                                    itemValue="#{d}" />
                             </p:selectOneMenu>
+
+                            <!-- Component 3: With Institution Only -->
+                            <p:selectOneMenu
+                                rendered="#{patientInvestigationController.orderedInstitution ne null and patientInvestigationController.orderedSite eq null}"
+                                styleClass="w-100 form-control"
+                                value="#{patientInvestigationController.department}"
+                                filterMatchMode="contains"
+                                filter="true">
+                                <f:selectItem itemLabel="All Departments" />
+                                <f:selectItems 
+                                    value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(patientInvestigationController.orderedInstitution)}"
+                                    var="d"
+                                    itemLabel="#{d.name}"
+                                    itemValue="#{d}" />
+                            </p:selectOneMenu>
+
+                            <!-- Component 4: With Both Institution and Site -->
+                            <p:selectOneMenu
+                                rendered="#{patientInvestigationController.orderedInstitution ne null and patientInvestigationController.orderedSite ne null}"
+                                styleClass="w-100 form-control"
+                                value="#{patientInvestigationController.department}"
+                                filterMatchMode="contains"
+                                filter="true">
+                                <f:selectItem itemLabel="All Departments" />
+                                <f:selectItems 
+                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(patientInvestigationController.orderedInstitution, patientInvestigationController.orderedSite)}"
+                                    var="d"
+                                    itemLabel="#{d.name}"
+                                    itemValue="#{d}" />
+                            </p:selectOneMenu>
+
                         </h:panelGroup>
+
+
+
+
 
                     </h:panelGrid>
 
@@ -211,8 +272,7 @@
 
                     <!-- Status Column -->
                     <p:column headerText="Status" filterBy="#{billItem.patientInvestigation.status}" sortBy="#{billItem.patientInvestigation.status}">
-                        <h:outputLabel value="#{billItem.patientInvestigation.status}" rendered="#{billItem.patientInvestigation ne null}"/>
-                        <h:outputLabel value="#{billItem.referanceBillItem.patientInvestigation.status}" rendered="#{billItem.referanceBillItem.patientInvestigation ne null}" />
+                        <h:outputLabel value="#{patientInvestigationController.getPatientInvestigationFromBillItem(billItem).status}"/>
                     </p:column>
 
 
@@ -333,7 +393,7 @@
                     </p:column>
 
                 </p:dataTable>
-          </h:form>
+            </h:form>
 
         </ui:define>
     </ui:composition>
