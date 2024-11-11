@@ -16,7 +16,7 @@
                             <div class="col-md-12">
                                 <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
                                     <h:panelGroup layout="block" styleClass="form-group">
-                                        <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
+                                        <h:outputText value="&#xf073;" styleClass="fa ml-5" /> 
                                         <h:outputLabel value="From" for="fromDate" class="mx-3"/>
                                     </h:panelGroup>
                                     <p:calendar 
@@ -143,7 +143,7 @@
                                     class="m-1 ui-button-danger"
                                     icon="fas fa-list"
                                     ajax="false" value="View List"
-                                    action="#{searchController.createIncomeBreakdownByCategoryOpd()}" />
+                                    action="#{searchController.createIncomeBreakdownByCategory()}" />
 
                                 <p:commandButton 
                                     id="btnPdf" 
