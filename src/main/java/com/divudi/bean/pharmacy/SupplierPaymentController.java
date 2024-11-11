@@ -98,6 +98,8 @@ public class SupplierPaymentController implements Serializable {
     private PaymentMethodData paymentMethodData;
     private BillItem currentBillItem;
     private Institution institution;
+    private Bill bill;
+    private String comment;
     //List
     private List<BillItem> billItems;
     private List<BillItem> selectedBillItems;
@@ -127,7 +129,14 @@ public class SupplierPaymentController implements Serializable {
 
     public String navigateToDealerDueSearch() {
         bills = new ArrayList<>();
+        netTotal = 0.0;
         return "/dealerPayment/dealor_due?faces-redirect=true";
+    }
+    public String navigateToDealerDueSearchPharmacy() {
+        bills = null;
+        bills = new ArrayList<>();
+        netTotal = 0.0;
+        return "/dealerPayment/dealor_due_pharmacy?faces-redirect=true";
     }
 
     public String navigateToDealerDueByAge() {
@@ -149,10 +158,19 @@ public class SupplierPaymentController implements Serializable {
         makeNull();
         return "/dealerPayment/search_dealor_payment_pre?faces-redirect=true";
     }
+    
+    public String navigateToGRNPaymentApprovePharmacy() {
+        bills = null;
+        bills = new ArrayList<>();
+        netTotal = 0.0;
+        return "/dealerPayment/search_dealor_payment_pharmacy?faces-redirect=true";
+    }
 
     public String navigateToGRNPaymentDoneSearch() {
-        makeNull();
-        return "/dealerPayment/search_dealor_payment?faces-redirect=true";
+        bills = null;
+        bills = new ArrayList<>();
+        netTotal = 0.0;
+        return "/dealerPayment/dealor_payment_done_search?faces-redirect=true";
     }
 
     public String navigateToSupplierPaymentDoneSearch() {
@@ -1248,6 +1266,22 @@ public class SupplierPaymentController implements Serializable {
 
     public void setToDate(Date toDate) {
         this.toDate = toDate;
+    }
+
+    public Bill getBill() {
+        return bill;
+    }
+
+    public void setBill(Bill bill) {
+        this.bill = bill;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 
 }
