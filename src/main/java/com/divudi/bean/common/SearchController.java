@@ -12852,14 +12852,14 @@ public class SearchController implements Serializable {
         bundle = generateItemizedSalesReportOpd();
     }
 
-    public void createIncomeBreakdownByCategoryOpd() {
-        if (isWithProfessionalFee()) {
-            System.out.println("With Professional Fee");
-            bundle = generateIncomeBreakdownByCategoryOpd();
-        } else {
-            System.out.println("Without Professional Fee");
-            bundle = generateIncomeBreakdownByCategoryOpdWithoutProfessionalFee();
-        }
+    public void createIncomeBreakdownByCategory() {
+//        if (isWithProfessionalFee()) {
+//            System.out.println("With Professional Fee");
+            bundle = generateIncomeBreakdownByCategory();
+//        } else {
+//            System.out.println("Without Professional Fee");
+//            bundle = generateIncomeBreakdownByCategoryOpdWithoutProfessionalFee();
+//        }
 
     }
 
@@ -14076,7 +14076,7 @@ public class SearchController implements Serializable {
     @Inject
     EnumController enumController;
 
-    public ReportTemplateRowBundle generateIncomeBreakdownByCategoryOpd() {
+    public ReportTemplateRowBundle generateIncomeBreakdownByCategory() {
         ReportTemplateRowBundle oiBundle = new ReportTemplateRowBundle();
         String jpql = "select bi "
                 + " from BillItem bi "
@@ -14196,8 +14196,23 @@ public class SearchController implements Serializable {
             jpql += " and bi.item.category=:cat ";
             m.put("cat", category);
         }
+        System.out.println("jpql = " + jpql);
+        System.out.println("m = " + m);
 
         List<BillItem> bis = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        System.out.println("bis = " + bis);
+
+        // Debug: Print payment methods of the fetched BillItems
+        for (BillItem bi : bis) {
+            System.out.println("BillItem ID: " + bi.getId());
+            System.out.println("Bill PaymentMethod: " + bi.getBill().getPaymentMethod());
+            if (bi.getBill().getPatientEncounter() != null) {
+                System.out.println("PatientEncounter PaymentMethod: " + bi.getBill().getPatientEncounter().getPaymentMethod());
+            } else {
+                System.out.println("No PatientEncounter");
+            }
+        }
+       
         summarizeBillItemsToIncomeByCategory(oiBundle, bis);
 
         oiBundle.setName("Income Breakdown By Category");
@@ -14215,6 +14230,7 @@ public class SearchController implements Serializable {
         return oiBundle;
     }
 
+    @Deprecated
     public ReportTemplateRowBundle generateIncomeBreakdownByCategoryOpdWithoutProfessionalFee() {
         ReportTemplateRowBundle oiBundle = new ReportTemplateRowBundle();
         String jpql = "select bi "
@@ -15698,6 +15714,7 @@ public class SearchController implements Serializable {
     }
 
     public void summarizeBillItemsToIncomeByCategory(ReportTemplateRowBundle reportBundle, List<BillItem> billItems) {
+        System.out.println("summarizeBillItemsToIncomeByCategory");
         Map<String, ReportTemplateRow> categoryMap = new HashMap<>();
         List<ReportTemplateRow> rowsToAdd = new ArrayList<>();
         double totalNetIncome = 0.0;
@@ -15706,32 +15723,33 @@ public class SearchController implements Serializable {
         double totalHospitalFees = 0.0;
         double totalStaffFees = 0.0;
 
-        for (BillItem billItem : billItems) {
-            if (billItem.getBill() == null || billItem.getBill().getPaymentMethod() == null || billItem.getBill().getPaymentMethod().getPaymentType() == PaymentType.NONE) {
+        for (BillItem iteratingBillItem : billItems) {
+            if (iteratingBillItem.getBill() == null) {
+                System.err.println("No Bill for this iteratingBillItem = " + iteratingBillItem);
                 continue;
             }
 
-            String categoryName = billItem.getItem() != null && billItem.getItem().getCategory() != null ? billItem.getItem().getCategory().getName() : "No Category";
+            String categoryName = iteratingBillItem.getItem() != null && iteratingBillItem.getItem().getCategory() != null ? iteratingBillItem.getItem().getCategory().getName() : "No Category";
             categoryMap.putIfAbsent(categoryName, new ReportTemplateRow());
 
             ReportTemplateRow categoryRow = categoryMap.get(categoryName);
-            if (billItem.getItem() != null) {
-                categoryRow.setCategory(billItem.getItem().getCategory());
+            if (iteratingBillItem.getItem() != null) {
+                categoryRow.setCategory(iteratingBillItem.getItem().getCategory());
             }
 
-            long countModifier = (billItem.getBill().getBillClassType() == BillClassType.CancelledBill || billItem.getBill().getBillClassType() == BillClassType.RefundBill) ? -1 : 1;
-            double grossValue = countModifier * Math.abs(billItem.getGrossValue());
-            double hospitalFee = countModifier * Math.abs(billItem.getHospitalFee());
-            double discount = countModifier * Math.abs(billItem.getDiscount());
-            double staffFee = countModifier * Math.abs(billItem.getStaffFee());
-            double netValue = countModifier * Math.abs(billItem.getNetValue());
+            long countModifier = (iteratingBillItem.getBill().getBillClassType() == BillClassType.CancelledBill || iteratingBillItem.getBill().getBillClassType() == BillClassType.RefundBill) ? -1 : 1;
+            double grossValue = countModifier * Math.abs(iteratingBillItem.getGrossValue());
+            double hospitalFee = countModifier * Math.abs(iteratingBillItem.getHospitalFee());
+            double iteratingDiscount = countModifier * Math.abs(iteratingBillItem.getDiscount());
+            double staffFee = countModifier * Math.abs(iteratingBillItem.getStaffFee());
+            double netValue = countModifier * Math.abs(iteratingBillItem.getNetValue());
 
             totalIncome += grossValue;
             totalNetIncome += netValue;
             totalHospitalFees += hospitalFee;
-            totalDiscount += discount;
+            totalDiscount += iteratingDiscount;
             totalStaffFees += staffFee;
-            updateCategoryRow(categoryRow, countModifier, grossValue, hospitalFee, discount, staffFee, netValue);
+            updateCategoryRow(categoryRow, countModifier, grossValue, hospitalFee, iteratingDiscount, staffFee, netValue);
         }
 
         // Iterate over categoryMap to add each category's row to rowsToAdd
@@ -15746,7 +15764,9 @@ public class SearchController implements Serializable {
         reportBundle.setStaffTotal(totalStaffFees);
     }
 
+    @Deprecated
     public void summarizeBillItemsToIncomeByCategoryWithoutProfessionalFee(ReportTemplateRowBundle reportBundle, List<BillItem> billItems) {
+        System.out.println("summarizeBillItemsToIncomeByCategoryWithoutProfessionalFee = ");
         Map<String, ReportTemplateRow> categoryMap = new HashMap<>();
         List<ReportTemplateRow> rowsToAdd = new ArrayList<>();
         double totalNetIncome = 0.0;
@@ -15754,24 +15774,24 @@ public class SearchController implements Serializable {
         double totalDiscount = 0.0;
         double totalHospitalFees = 0.0;
 
-        for (BillItem billItem : billItems) {
-            if (billItem.getBill() == null || billItem.getBill().getPaymentMethod() == null || billItem.getBill().getPaymentMethod().getPaymentType() == PaymentType.NONE) {
+        for (BillItem loopBillItem : billItems) {
+            if (loopBillItem.getBill() == null || loopBillItem.getBill().getPaymentMethod() == null || loopBillItem.getBill().getPaymentMethod().getPaymentType() == PaymentType.NONE) {
                 continue;
             }
 
-            String categoryName = billItem.getItem() != null && billItem.getItem().getCategory() != null ? billItem.getItem().getCategory().getName() : "No Category";
+            String categoryName = loopBillItem.getItem() != null && loopBillItem.getItem().getCategory() != null ? loopBillItem.getItem().getCategory().getName() : "No Category";
             categoryMap.putIfAbsent(categoryName, new ReportTemplateRow());
 
             ReportTemplateRow categoryRow = categoryMap.get(categoryName);
-            if (billItem.getItem() != null) {
-                categoryRow.setCategory(billItem.getItem().getCategory());
+            if (loopBillItem.getItem() != null) {
+                categoryRow.setCategory(loopBillItem.getItem().getCategory());
             }
 
-            long countModifier = (billItem.getBill().getBillClassType() == BillClassType.CancelledBill || billItem.getBill().getBillClassType() == BillClassType.RefundBill) ? -1 : 1;
-            double grossValue = countModifier * Math.abs(billItem.getGrossValue());
-            double hospitalFee = countModifier * Math.abs(billItem.getHospitalFee());
-            double discount = countModifier * Math.abs(billItem.getDiscount());
-            double netValue = countModifier * Math.abs(billItem.getNetValue());
+            long countModifier = (loopBillItem.getBill().getBillClassType() == BillClassType.CancelledBill || loopBillItem.getBill().getBillClassType() == BillClassType.RefundBill) ? -1 : 1;
+            double grossValue = countModifier * Math.abs(loopBillItem.getGrossValue());
+            double hospitalFee = countModifier * Math.abs(loopBillItem.getHospitalFee());
+            double discount = countModifier * Math.abs(loopBillItem.getDiscount());
+            double netValue = countModifier * Math.abs(loopBillItem.getNetValue());
 
             totalIncome += grossValue;
             totalNetIncome += netValue;
@@ -15792,6 +15812,11 @@ public class SearchController implements Serializable {
     }
 
     private void updateCategoryRow(ReportTemplateRow row, long countModifier, double grossValue, double hospitalFee, double discount, double professionalFee, double netValue) {
+        System.out.println("updateCategoryRow");
+        System.out.println("row = " + row);
+        System.out.println("countModifier = " + countModifier);
+        System.out.println("grossValue = " + grossValue);
+        
         if (row.getItemCount() == null) {
             row.setItemCount(0L);
         }

@@ -16,7 +16,7 @@
                             <div class="col-md-12">
                                 <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
                                     <h:panelGroup layout="block" styleClass="form-group">
-                                        <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
+                                        <h:outputText value="&#xf073;" styleClass="fa ml-5" /> 
                                         <h:outputLabel value="From" for="fromDate" class="mx-3"/>
                                     </h:panelGroup>
                                     <p:calendar 
@@ -143,16 +143,17 @@
                                     class="m-1 ui-button-danger"
                                     icon="fas fa-list"
                                     ajax="false" value="View List"
-                                    action="#{searchController.createIncomeBreakdownByCategoryOpd()}" />
+                                    action="#{searchController.createIncomeBreakdownByCategory()}" />
 
+                                
                                 <p:commandButton 
-                                    id="btnPdf" 
-                                    class="m-1 ui-button-info"
-                                    ajax="false"
-                                    rendered="false"
-                                    icon="fas fa-file-pdf"
-                                    value="Export as PDF">
-                                    <p:dataExporter type="pdf" target="tbl" fileName="itemized_sale_summary" />
+                                    value="Download PDF" 
+                                    ajax="false" 
+                                    icon="pi pi-file-pdf" 
+                                    class="ui-button-info  m-1"
+                                    style="background-color: #17a2b8; border-color: #17a2b8;" 
+                                    onclick="PrimeFaces.monitorDownload(start, stop);">
+                                    <p:fileDownload value="#{searchController.bundleAsPdf}" />
                                 </p:commandButton>
 
                                 <p:commandButton 
@@ -175,6 +176,8 @@
                             </div>
 
                         </div>
+                        
+                        #{searchController.bundle.bundleType}
 
                         <p:dataTable 
                             id="tbl"
