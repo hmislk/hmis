@@ -429,17 +429,17 @@ public class PdfController {
                                     && report.getPatientInvestigation().getBillItem().getBill() != null
                                     && report.getPatientInvestigation().getBillItem().getBill().getDepartment() != null)
                                     ? report.getPatientInvestigation().getBillItem().getBill().getDepartment().getName() : "";
-                            break; 
+                            break;
                         case PerformDepartment:
                             value = (report.getPatientInvestigation() != null && report.getPatientInvestigation().getBillItem() != null
                                     && report.getPatientInvestigation().getBillItem().getBill() != null
-                                    && report.getPatientInvestigation().getBillItem().getBill().getToDepartment()!= null)
+                                    && report.getPatientInvestigation().getBillItem().getBill().getToDepartment() != null)
                                     ? report.getPatientInvestigation().getBillItem().getBill().getToDepartment().getName() : "";
                             break;
                         case BillingInstitution:
                             value = (report.getPatientInvestigation() != null && report.getPatientInvestigation().getBillItem() != null
                                     && report.getPatientInvestigation().getBillItem().getBill() != null
-                                    && report.getPatientInvestigation().getBillItem().getBill().getInstitution()!= null)
+                                    && report.getPatientInvestigation().getBillItem().getBill().getInstitution() != null)
                                     ? report.getPatientInvestigation().getBillItem().getBill().getInstitution().getName() : "";
                             break;
                         case PerformInstitution:
@@ -447,7 +447,7 @@ public class PdfController {
                                     && report.getPatientInvestigation().getBillItem().getBill() != null
                                     && report.getPatientInvestigation().getBillItem().getBill().getToInstitution() != null)
                                     ? report.getPatientInvestigation().getBillItem().getBill().getToInstitution().getName() : "";
-                            break;  
+                            break;
                         case BHT:
                             value = (report.getPatientInvestigation() != null && report.getPatientInvestigation().getEncounter() != null)
                                     ? report.getPatientInvestigation().getEncounter().getBhtNo() : "";
@@ -467,7 +467,7 @@ public class PdfController {
                                 System.out.println("");
                             }
                             value = sampleIds;
-                            
+
                             break;
                         default:
                             break;
@@ -718,8 +718,6 @@ public class PdfController {
         } else {
             for (ReportTemplateRowBundle childBundle : rootBundle.getBundles()) {
                 addDataToPdf(document, childBundle, childBundle.getBundleType());
-                // Optionally, add a page break between tables
-                // document.add(new AreaBreak(AreaBreakType.NEXT_PAGE));
             }
         }
 
@@ -787,6 +785,8 @@ public class PdfController {
             case "netCash":
                 populateTitleBundleForPdf(document, addingBundle);
                 break;
+            case "income_breakdown_by_category":
+                populateTableForIncomeByCategory(document, addingBundle);
             default:
                 table.addCell(new Cell().add(new Paragraph("Data for unknown type"))); // Default handling for unknown types
                 break;
@@ -1108,6 +1108,51 @@ public class PdfController {
                         row.getItem() != null ? row.getItem().getName() : "")));
                 table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(
                         String.valueOf(row.getItemCount()))));
+                table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(
+                        String.format("%.2f", row.getItemHospitalFee())))); // Format as string
+                table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(
+                        String.format("%.2f", row.getItemProfessionalFee())))); // Format as string
+                table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(
+                        String.format("%.2f", row.getItemDiscountAmount())))); // Format as string
+                table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(
+                        String.format("%.2f", row.getItemNetTotal())))); // Format as string
+            }
+
+            // Add the table to the document
+            document.add(table);
+        } else {
+            // Add a paragraph for no data
+            Paragraph noDataParagraph = new Paragraph("No Data for " + addingBundle.getName());
+            document.add(noDataParagraph);
+        }
+    }
+    
+    private void populateTableForIncomeByCategory(Document document, ReportTemplateRowBundle addingBundle) {
+        if (addingBundle.getReportTemplateRows() != null && !addingBundle.getReportTemplateRows().isEmpty()) {
+            // Create a new Table for each call
+            Table table = new Table(new float[]{10, 40, 10, 10, 10, 10, 10}); // Example column widths
+            table.setWidth(100); // Set width to 100% of available space
+
+            // Add title row with bundle name and total
+            table.addCell(new com.itextpdf.layout.element.Cell(1, 6)
+                    .add(new Paragraph(addingBundle.getName())));
+            table.addCell(new com.itextpdf.layout.element.Cell()
+                    .add(new Paragraph(String.format("%.2f", addingBundle.getTotal())))); // Formatting total as a string
+
+            // Add headers
+            String[] headers = {"Category", "Count", "Gross Value", "Hospital Fee", "Professional Fee", "Discount", "Net Amount"};
+            for (String header : headers) {
+                table.addHeaderCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(header)));
+            }
+
+            // Populate table with data rows
+            for (ReportTemplateRow row : addingBundle.getReportTemplateRows()) {
+                table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(
+                        row.getCategory() != null ? row.getCategory().getName() : "")));
+                table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(
+                        String.valueOf(row.getItemCount()))));
+                table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(
+                        String.format("%.2f", row.getItemTotal())))); // Format as string
                 table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(
                         String.format("%.2f", row.getItemHospitalFee())))); // Format as string
                 table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(
