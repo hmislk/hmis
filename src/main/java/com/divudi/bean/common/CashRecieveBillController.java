@@ -32,7 +32,7 @@ import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.CreditBean;
-import com.divudi.ejb.StaffBean;
+import com.divudi.service.StaffService;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
@@ -77,7 +77,7 @@ public class CashRecieveBillController implements Serializable {
     @EJB
     private BillItemFacade billItemFacade;
     @EJB
-    StaffBean staffBean;
+    StaffService staffBean;
     @EJB
     PaymentFacade paymentFacade;
     @Inject

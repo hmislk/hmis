@@ -30,7 +30,7 @@ import com.divudi.data.dataStructure.ComponentDetail;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.CreditBean;
 import com.divudi.ejb.EjbApplication;
-import com.divudi.ejb.StaffBean;
+import com.divudi.service.StaffService;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillEntry;
@@ -99,7 +99,7 @@ public class CreditCompanyBillSearch implements Serializable {
     @EJB
     private BillComponentFacade billCommponentFacade;
     @EJB
-    StaffBean staffBean;
+    StaffService staffBean;
     @EJB
     PaymentFacade paymentFacade;
     @Inject
@@ -272,7 +272,7 @@ public class CreditCompanyBillSearch implements Serializable {
     private CancelledBill createCancelBill() {
         CancelledBill cb = new CancelledBill();
         cb.copy(getBill());
-        cb.invertValue(getBill());
+        cb.invertAndAssignValuesFromOtherBill(getBill());
         
         cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.CashRecieveBill, BillClassType.CancelledBill, BillNumberSuffix.CRDCAN));
         cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.CashRecieveBill, BillClassType.CancelledBill, BillNumberSuffix.CRDCAN));

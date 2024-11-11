@@ -50,6 +50,15 @@
                                                     icon="fa fa-print"
                                                     style="float: right"
                                                     ajax="false">
+                                                    <p:printer target="groupPrint" />
+                                                </p:commandButton>
+                                                <p:commandButton 
+                                                    value="Print Refund Bill" 
+                                                    class="ui-button-info m-1"
+                                                    icon="fa fa-print"
+                                                    rendered="#{billSearch.viewingBill.refunded}"
+                                                    style="float: right"
+                                                    ajax="false">
                                                     <p:printer target="gpPrintPanel" />
                                                 </p:commandButton>
                                             </div>

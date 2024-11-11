@@ -780,7 +780,7 @@ public class Bill implements Serializable {
         this.vat = vat;
     }
 
-    public void invertValue(Bill bill) {
+    public void invertAndAssignValuesFromOtherBill(Bill bill) {
         staffFee = 0 - bill.getStaffFee();
         performInstitutionFee = 0 - bill.getPerformInstitutionFee();
         billerFee = 0 - bill.getBillerFee();
@@ -812,7 +812,7 @@ public class Bill implements Serializable {
         totalStaffFee = 0 - bill.getTotalStaffFee();
     }
 
-    public void invertValue() {
+    public void invertValueOfThisBill() {
         staffFee = 0 - getStaffFee();
         performInstitutionFee = 0 - getPerformInstitutionFee();
         billerFee = 0 - getBillerFee();

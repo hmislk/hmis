@@ -84,7 +84,7 @@ import static com.divudi.data.PaymentMethod.Cheque;
 import static com.divudi.data.PaymentMethod.MultiplePaymentMethods;
 import static com.divudi.data.PaymentMethod.OnlineSettlement;
 import com.divudi.data.dataStructure.ComponentDetail;
-import com.divudi.ejb.StaffBean;
+import com.divudi.service.StaffService;
 import com.divudi.entity.Category;
 import com.divudi.entity.Doctor;
 import com.divudi.entity.Payment;
@@ -184,7 +184,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     @EJB
     private SmsFacade smsFacade;
     @EJB
-    StaffBean staffBean;
+    StaffService staffBean;
     @EJB
     AgentReferenceBookFacade agentReferenceBookFacade;
     /**
@@ -2868,7 +2868,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         CancelledBill cb = new CancelledBill();
 
         cb.copy(bill);
-        cb.invertValue(bill);
+        cb.invertAndAssignValuesFromOtherBill(bill);
         cb.setBilledBill(bill);
         cb.setBillDate(new Date());
         cb.setBillTime(new Date());
@@ -2913,7 +2913,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         cb.copy(bill);
         cb.setPaymentMethod(cancelPaymentMethod);
-        cb.invertValue(bill);
+        cb.invertAndAssignValuesFromOtherBill(bill);
         cb.setBilledBill(bill);
         cb.setBillDate(new Date());
         cb.setBillTime(new Date());
@@ -2961,7 +2961,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         CancelledBill cb = new CancelledBill();
 
         cb.copy(bill);
-        cb.invertValue(bill);
+        cb.invertAndAssignValuesFromOtherBill(bill);
         cb.setBilledBill(bill);
         cb.setBillDate(new Date());
         cb.setBillTime(new Date());
@@ -3004,7 +3004,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         CancelledBill cb = new CancelledBill();
 
         cb.copy(bill);
-        cb.invertValue(bill);
+        cb.invertAndAssignValuesFromOtherBill(bill);
         cb.setBilledBill(bill);
         cb.setBillDate(new Date());
         cb.setBillTime(new Date());
@@ -3645,7 +3645,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         }
 
-        sendSmsAfterBooking();
+        boolean sendSmsAfterBooking = configOptionApplicationController.getBooleanValueByKey("Send SMS after Channel Booking", true);
+        if (sendSmsAfterBooking) {
+            sendSmsAfterBooking();
+        }
 
         if (selectedSessionInstance.isStarted()) {
             sendChannellingStatusUpdateNotificationSms(printingBill.getSingleBillSession());

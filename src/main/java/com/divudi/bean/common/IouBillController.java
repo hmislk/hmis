@@ -513,7 +513,7 @@ public class IouBillController implements Serializable {
     private Bill createIouCashReturnBill() {
         Bill rb = new RefundBill();
         rb.copy(getCurrent());
-        rb.invertValue(getCurrent());
+        rb.invertAndAssignValuesFromOtherBill(getCurrent());
         rb.setBillType(BillType.IouSettle);
         rb.setBillTypeAtomic(BillTypeAtomic.IOU_SETTLE);
         rb.setBilledBill(getCurrent());
