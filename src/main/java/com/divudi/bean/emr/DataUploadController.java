@@ -536,37 +536,20 @@ public class DataUploadController implements Serializable {
                 batch = getCellValueAsString(row.getCell(batchCol));
                 doe = parseDate(getCellValueAsString(row.getCell(doeCol)));
 
-                // Add to current bill item only if necessary fields are available
-                if (amp != null && stockQty > 0 && pp > 0 && sp > 0) {
-                    System.out.println("amp = " + amp);
-                    System.out.println("stockQty = " + stockQty);
-                    getPharmacyPurchaseController().getCurrentBillItem().setItem(amp);
-                    getPharmacyPurchaseController().getCurrentBillItem().setTmpQty(stockQty);
-                    getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRate(pp);
-                    getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(sp);
-                    getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setDoe(doe);
-                    if (batch == null || batch.trim().isEmpty()) {
-                        getPharmacyPurchaseController().setBatch();
-                    } else {
-                        getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setStringValue(batch);
-                    }
-                    getPharmacyPurchaseController().addItem();
+                System.out.println("amp = " + amp);
+                System.out.println("stockQty = " + stockQty);
+                getPharmacyPurchaseController().getCurrentBillItem().setItem(amp);
+                getPharmacyPurchaseController().getCurrentBillItem().setTmpQty(stockQty);
+                getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRate(pp);
+                getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(sp);
+                getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setDoe(doe);
+                if (batch == null || batch.trim().isEmpty()) {
+                    getPharmacyPurchaseController().setBatch();
                 } else {
-                    warningMessages.append("Row ").append(rowIndex).append(": Missing necessary fields - ");
-                    if (amp == null) {
-                        warningMessages.append("Amp not found or created. ");
-                    }
-                    if (stockQty <= 0) {
-                        warningMessages.append("Stock Quantity is missing or invalid. ");
-                    }
-                    if (pp <= 0) {
-                        warningMessages.append("Purchase Rate is missing or invalid. ");
-                    }
-                    if (sp <= 0) {
-                        warningMessages.append("Sale Rate is missing or invalid. ");
-                    }
-                    warningMessages.append("\n");
+                    getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setStringValue(batch);
                 }
+                getPharmacyPurchaseController().addItem();
+
             }
             if (warningMessages.length() > 0) {
                 getPharmacyPurchaseController().setWarningMessage(warningMessages.toString());
