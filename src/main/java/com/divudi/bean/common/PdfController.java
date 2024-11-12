@@ -91,6 +91,7 @@ import com.itextpdf.layout.element.LineSeparator;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.properties.TextAlignment;
+import com.itextpdf.layout.properties.UnitValue;
 import com.itextpdf.text.pdf.qrcode.BitMatrix;
 import java.util.function.Supplier;
 import javax.inject.Inject;
@@ -771,8 +772,8 @@ public class PdfController {
         }
 
         // Create a new Table for each call
-        Table table = new Table(new float[]{10, 40, 15, 15, 10, 10}); // Adjust column widths as needed
-        table.setWidth(100); // Set width to 100% of available space
+        Table table = new Table(new float[]{10, 40, 15, 15, 10, 10}); 
+        table.setWidth(200);
 
         switch (type) {
             case "opdServiceCollection":
@@ -819,6 +820,7 @@ public class PdfController {
                 break;
             case "income_breakdown_by_category":
                 populateTableForIncomeByCategory(document, addingBundle);
+                break;
             default:
                 table.addCell(new Cell().add(new Paragraph("Data for unknown type"))); // Default handling for unknown types
                 break;
@@ -1161,21 +1163,19 @@ public class PdfController {
     
     private void populateTableForIncomeByCategory(Document document, ReportTemplateRowBundle addingBundle) {
         if (addingBundle.getReportTemplateRows() != null && !addingBundle.getReportTemplateRows().isEmpty()) {
-            // Create a new Table for each call
-            Table table = new Table(new float[]{10, 40, 10, 10, 10, 10, 10}); // Example column widths
-            table.setWidth(100); // Set width to 100% of available space
-
-            // Add title row with bundle name and total
-            table.addCell(new com.itextpdf.layout.element.Cell(1, 6)
-                    .add(new Paragraph(addingBundle.getName())));
-            table.addCell(new com.itextpdf.layout.element.Cell()
-                    .add(new Paragraph(String.format("%.2f", addingBundle.getTotal())))); // Formatting total as a string
+            
+            document.add(new Paragraph(addingBundle.getName()));
+            
+            Table table = new Table(new float[]{55, 20, 25, 25, 25, 25, 25});
+            table.setWidth(UnitValue.createPercentValue(100));
 
             // Add headers
             String[] headers = {"Category", "Count", "Gross Value", "Hospital Fee", "Professional Fee", "Discount", "Net Amount"};
             for (String header : headers) {
                 table.addHeaderCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(header)));
             }
+            
+            table.addFooterCell(new Paragraph(String.format("%.2f", addingBundle.getTotal())));
 
             // Populate table with data rows
             for (ReportTemplateRow row : addingBundle.getReportTemplateRows()) {
