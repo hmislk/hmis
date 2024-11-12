@@ -28,7 +28,7 @@ import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 
 import com.divudi.ejb.SmsManagerEjb;
-import com.divudi.ejb.StaffBean;
+import com.divudi.service.StaffService;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillEntry;
@@ -637,7 +637,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 + " where b.backwardReferenceBill.id=:id";
         m.put("id", batchBillId);
         bills = getFacade().findByJpql(jpql, m);
-
+        payments = billService.fetchBillPayments(batchBill);
         for (Bill b : bills) {
             getBillBean().checkBillItemFeesInitiated(b);
         }
@@ -822,7 +822,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         return billNumberGenerator;
     }
 
-    public StaffBean getStaffBean() {
+    public StaffService getStaffBean() {
         return staffBean;
     }
 
@@ -2069,7 +2069,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     }
 
     @EJB
-    StaffBean staffBean;
+    StaffService staffBean;
 
     private void saveBillItemSessions() {
         for (BillEntry be : lstBillEntries) {
@@ -2391,6 +2391,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         return total;
     }
 
+    @Override
     public void recieveRemainAmountAutomatically() {
         //double remainAmount = calculatRemainForMultiplePaymentTotal();
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
@@ -4407,6 +4408,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         departmentOpdItems = null;
         opdItems = null;
         itemApplicationController.reloadItems();
+        itemController.reloadItems();
         getDepartmentOpdItems();
     }
 

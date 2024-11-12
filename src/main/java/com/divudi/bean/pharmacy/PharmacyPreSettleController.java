@@ -553,7 +553,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             BillItem sbi = new BillItem();
 
             sbi.copy(tbi);
-            // sbi.invertValue(tbi);
+            // sbi.invertAndAssignValuesFromOtherBill(tbi);
 
             sbi.setBill(getSaleReturnBill());
             sbi.setReferanceBillItem(tbi);
@@ -675,7 +675,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             BillItem sbi = new BillItem();
 
             sbi.copy(tbi);
-            // sbi.invertValue(tbi);
+            // sbi.invertAndAssignValuesFromOtherBill(tbi);
 
             sbi.setBill(getSaleReturnBill());
             sbi.setReferanceBillItem(tbi);

@@ -923,9 +923,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 return true;
             }
         }
-        if (getPatientRoom().getRoomFacilityCharge() == null) {
-            JsfUtil.addErrorMessage("Select Room ");
-            return true;
+        if(getCurrent().getAdmissionType().isRoomChargesAllowed()){
+            if (getPatientRoom().getRoomFacilityCharge() == null) {
+                JsfUtil.addErrorMessage("Select Room ");
+                return true;
+            }
         }
         if (sessionController.getApplicationPreference().isInwardMoChargeCalculateInitialTime()) {
             if (getPatientRoom().getRoomFacilityCharge().getTimedItemFee().getDurationDaysForMoCharge() == 0.0) {
@@ -1083,8 +1085,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             JsfUtil.addSuccessMessage("Patient Admitted Succesfully");
         }
 
-        PatientRoom currentPatientRoom = getInwardBean().savePatientRoom(getPatientRoom(), null, getPatientRoom().getRoomFacilityCharge(), getCurrent(), getCurrent().getDateOfAdmission(), getSessionController().getLoggedUser());
-        getCurrent().setCurrentPatientRoom(currentPatientRoom);
+         if(getCurrent().getAdmissionType().isRoomChargesAllowed()){
+            PatientRoom currentPatientRoom = getInwardBean().savePatientRoom(getPatientRoom(), null, getPatientRoom().getRoomFacilityCharge(), getCurrent(), getCurrent().getDateOfAdmission(), getSessionController().getLoggedUser());
+            getCurrent().setCurrentPatientRoom(currentPatientRoom);
+         }
+        
         getFacade().edit(getCurrent());
 
         double appointmentFee = 0;

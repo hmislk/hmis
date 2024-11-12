@@ -101,6 +101,7 @@
                                     </h:panelGroup>
 
                                     <p:commandButton 
+                                        rendered="false"
                                         ajax="false" 
                                         value="Cancel All Bills of this Patient" 
                                         action="#{billController.cancellAll}" 
@@ -273,19 +274,31 @@
                                             <div class="row">
                                                 <div class="col-md-2"><h:outputLabel value="Total" ></h:outputLabel></div>
                                                 <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
-                                                <div class="col-md-8"><h:outputLabel value="#{billSearch.bill.total}" ></h:outputLabel></div>
+                                                <div class="col-md-8">
+                                                    <h:outputLabel value="#{billSearch.bill.total}" >
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                </div>
                                             </div>
 
                                             <div class="row">
                                                 <div class="col-md-2"><h:outputLabel value="Discount" ></h:outputLabel></div>
                                                 <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
-                                                <div class="col-md-8"><h:outputLabel value="#{billSearch.bill.discount}" ></h:outputLabel></div>
+                                                <div class="col-md-8">
+                                                    <h:outputLabel value="#{billSearch.bill.discount}" >
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                </div>
                                             </div>
 
                                             <div class="row">
                                                 <div class="col-md-2"><h:outputLabel value="Net Total" ></h:outputLabel></div>
                                                 <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
-                                                <div class="col-md-8"><h:outputLabel value="#{billSearch.bill.netTotal}" ></h:outputLabel></div>
+                                                <div class="col-md-8">
+                                                    <h:outputLabel value="#{billSearch.bill.netTotal}" >
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                </div>
                                             </div>
 
                                             <p:separator/>
@@ -342,15 +355,21 @@
                                         </p:column>
                                         <p:column>
                                             <f:facet name="header">Gross Fee Value</f:facet>
-                                            <h:outputLabel value="#{bip.feeGrossValue}"/>
+                                            <h:outputLabel value="#{bip.feeGrossValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
                                         </p:column>
                                         <p:column>
                                             <f:facet name="header">Discount Fee Value</f:facet>
-                                            <h:outputLabel value="#{bip.feeDiscount}"/>
+                                            <h:outputLabel value="#{bip.feeDiscount}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
                                         </p:column>
                                         <p:column>
                                             <f:facet name="header">Net Fee Value</f:facet>
-                                            <h:outputLabel value="#{bip.feeValue}"/>
+                                            <h:outputLabel value="#{bip.feeValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
                                         </p:column>  
                                         <p:column>
                                             <f:facet name="header">Fee Name</f:facet>
