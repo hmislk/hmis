@@ -155,6 +155,16 @@
                                     onclick="PrimeFaces.monitorDownload(start, stop);">
                                     <p:fileDownload value="#{searchController.bundleAsPdf}" />
                                 </p:commandButton>
+                                
+                                <p:commandButton 
+                                    value="Download PDF" 
+                                    ajax="false" 
+                                    icon="pi pi-file-pdf" 
+                                    class="ui-button-info  m-1"
+                                    style="background-color: #17a2b8; border-color: #17a2b8;" >
+                                    <p:dataExporter fileName="ibc.pdf" target="tbl" type="pdf" ></p:dataExporter>
+                                </p:commandButton>
+                                
 
                                 <p:commandButton 
                                     id="btnPrint" 

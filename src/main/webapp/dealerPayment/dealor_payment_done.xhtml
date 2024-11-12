@@ -7,8 +7,8 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
-        <ui:composition template="/resources/template/template.xhtml">
-            <ui:define name="content">
+        <ui:composition template="/dealerPayment/index.xhtml">
+            <ui:define name="subcontent">
                 <h:form>
                     <p:panel >
                         <f:facet name="header" >
@@ -110,15 +110,6 @@
                                         <h:outputLabel value="#{bill.department.name}" />
                                     </p:column>
 
-                                    <p:column headerText="Billed at"  >                                
-                                        <h:outputLabel value="#{bill.createdAt}" >
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                        </h:outputLabel>                               
-                                    </p:column>  
-                                    <p:column headerText="Billed by" >                               
-                                        <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
-                                        </h:outputLabel>                             
-                                    </p:column> 
                                     <p:column headerText="Approved at"  >                                
                                         <h:outputLabel value="#{bill.approveAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
@@ -130,7 +121,7 @@
                                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                         </h:panelGroup> 
-                                        <br/>
+                                        
                                         <h:panelGroup rendered="#{bill.refunded}" >
                                             <h:outputLabel style="color: orange;" value="Refunded at " />
                                             <h:outputLabel style="color: orange;" rendered="#{bill.refunded}" value="#{bill.refundedBill.createdAt}" >
@@ -147,7 +138,7 @@
                                             <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.name}" >                                       
                                             </h:outputLabel>
                                         </h:panelGroup> 
-                                        <br/>
+                                        
                                         <h:panelGroup rendered="#{bill.refunded}" >
                                             <h:outputLabel style="color: orange;" value="Refunded By " />
                                             <h:outputLabel style="color: orange;" rendered="#{bill.refunded}" value="#{bill.refundedBill.creater.webUserPerson.name}" >
