@@ -290,7 +290,11 @@
                     <p:column headerText="Lab Department" filterBy="#{billItem.bill.toDepartment.name}" sortBy="#{billItem.bill.toDepartment.name}">
                         <h:outputLabel value="#{billItem.bill.toDepartment.name}" />
                     </p:column>
-
+                    
+                     <!-- Billed Department Column -->
+                    <p:column headerText="Billed Department" filterBy="#{billItem.bill.department.name}" sortBy="#{billItem.bill.department.name}">
+                        <h:outputLabel value="#{billItem.bill.department.name}" />
+                    </p:column>
 
                     <!-- Hospital Fee Column -->
                     <p:column headerText="Hospital Fee">
