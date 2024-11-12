@@ -5146,9 +5146,9 @@ public class BillSearch implements Serializable {
         viewingIndividualBillsOfBatchBill = billBean.fetchIndividualBillsOfBatchBill(bill);
         viewingRefundBills = billBean.fetchRefundBillsOfBilledBill(bill);
         viewingBillItems = billService.fetchBillItems(bill);
-        System.out.println("viewingBillItems = " + viewingBillItems);
+//        System.out.println("viewingBillItems = " + viewingBillItems);
         viewingBillFees = billService.fetchBillFees(bill);
-        System.out.println("viewingBillFees = " + viewingBillFees);
+//        System.out.println("viewingBillFees = " + viewingBillFees);
         viewingBillComponents = billBean.fetchBillComponents(bill);
         viewingBillPayments = billBean.fetchBillPayments(bill);
     }
