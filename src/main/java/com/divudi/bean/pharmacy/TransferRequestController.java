@@ -132,9 +132,9 @@ public class TransferRequestController implements Serializable {
             JsfUtil.addErrorMessage("Item is Already Added");
             return true;
         }
-
-        if (getBillItems().size() >= 10) {
-            JsfUtil.addErrorMessage("You Can Only Add 10 Items For this Request.");
+        
+        if (getBillItems().size() >= 50) {
+            JsfUtil.addErrorMessage("You Can Only Add 50 Items For this Request.");
             return true;
         }
 
