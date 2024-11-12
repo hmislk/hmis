@@ -1161,6 +1161,8 @@ public class PharmacyItemExcelManager implements Serializable {
 //        }
 //
 //    }
+    
+    @Deprecated // Use the mathod with the same name in data upload controller
     public String importToExcelWithStock() {
         if (file == null) {
             JsfUtil.addErrorMessage("No File");

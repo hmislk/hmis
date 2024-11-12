@@ -83,11 +83,24 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.VtmFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.bean.pharmacy.PharmacyPurchaseController;
 import com.divudi.data.SymanticHyrachi;
 import com.divudi.data.SymanticType;
+import com.divudi.data.dataStructure.PharmacyImportCol;
+import com.divudi.ejb.PharmacyBean;
 import com.divudi.entity.Doctor;
 import com.divudi.entity.inward.InwardService;
+import com.divudi.entity.pharmacy.Ampp;
+import com.divudi.entity.pharmacy.PharmaceuticalItemCategory;
+import com.divudi.entity.pharmacy.PharmaceuticalItemType;
+import com.divudi.entity.pharmacy.VirtualProductIngredient;
+import com.divudi.entity.pharmacy.Vmpp;
+import com.divudi.facade.AmpFacade;
+import com.divudi.facade.AmppFacade;
+import com.divudi.facade.AtmFacade;
 import com.divudi.facade.FeeFacade;
+import com.divudi.facade.VmpFacade;
+import com.divudi.facade.VmppFacade;
 import com.divudi.java.CommonFunctions;
 import com.mysql.cj.jdbc.interceptors.SessionAssociationInterceptor;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -130,7 +143,10 @@ import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 import org.apache.poi.ss.SpreadsheetVersion;
 
@@ -153,7 +169,7 @@ public class DataUploadController implements Serializable {
     @Inject
     MeasurementUnitController measurementUnitController;
     @Inject
-    InstitutionController institutionController;
+    private InstitutionController institutionController;
     @Inject
     VmpController vmpController;
     @Inject
@@ -206,13 +222,17 @@ public class DataUploadController implements Serializable {
     ClinicalEntityController clinicalEntityController;
     @Inject
     FeeValueController feeValueController;
+    @Inject
+    private PharmacyPurchaseController pharmacyPurchaseController;
 
+    @EJB
+    private PharmacyBean pharmacyBean;
     @EJB
     PatientFacade patientFacade;
     @EJB
     PersonFacade personFacade;
     @EJB
-    VtmFacade vtmFacade;
+    private VtmFacade vtmFacade;
     @EJB
     ItemFeeFacade itemFeeFacade;
     @EJB
@@ -221,6 +241,16 @@ public class DataUploadController implements Serializable {
     ItemFacade itemFacade;
     @EJB
     CategoryFacade categoryFacade;
+    @EJB
+    private AtmFacade atmFacade;
+    @EJB
+    private AmpFacade ampFacade;
+    @EJB
+    private VmpFacade vmpFacade;
+    @EJB
+    private AmppFacade amppFacade;
+    @EJB
+    private VmppFacade vmppFacade;
 
     private Institution institution;
     private Department department;
@@ -270,6 +300,31 @@ public class DataUploadController implements Serializable {
     private List<ClinicalEntity> surgeriesToSave;
     private List<ClinicalEntity> surgeriesToSkiped;
 
+    private int number = 0;
+    private int catCol = 1;
+    private int ampCol = 2;
+    private int codeCol = 3;
+    private int barcodeCol = 4;
+    private int vtmCol = 5;
+    private int strengthOfIssueUnitCol = 6;
+    private int strengthUnitCol = 7;
+    private int issueUnitsPerPackCol = 8;
+    private int issueUnitCol = 9;
+    private int packUnitCol = 10;
+    private int distributorCol = 11;
+    private int manufacturerCol = 12;
+    private int importerCol = 13;
+    private int doeCol = 14;
+    private int batchCol = 15;
+    private int stockQtyCol = 16;
+    private int pruchaseRateCol = 17;
+    private int saleRateCol = 18;
+    private List<PharmacyImportCol> itemNotPresent;
+    private List<String> itemsWithDifferentGenericName;
+    private List<String> itemsWithDifferentCode;
+
+    private int startRow = 1;
+
     public String navigateToRouteUpload() {
         uploadComplete = false;
         return "/admin/institutions/route_upload?faces-redirect=true";
@@ -293,6 +348,234 @@ public class DataUploadController implements Serializable {
     public String navigateToSupplierUpload() {
         uploadComplete = false;
         return "/admin/institutions/supplier_upload?faces-redirect=true";
+    }
+
+    public String importToExcelWithStock() {
+        if (file == null) {
+            JsfUtil.addErrorMessage("No File");
+            return "";
+        }
+        if (file.getFileName() == null) {
+            JsfUtil.addErrorMessage("No File");
+            return "";
+        }
+
+        String strCat;
+        String strAmp;
+        String strCode;
+        String strBarcode;
+        String strGenericName;
+        String strStrength;
+        String strStrengthUnit;
+        String strPackSize;
+        String strIssueUnit;
+        String strPackUnit;
+        String strDistributor;
+        String strManufacturer;
+        String strImporter;
+
+        PharmaceuticalItemCategory cat;
+        PharmaceuticalItemType phType;
+        Vtm vtm;
+        Atm atm;
+        Vmp vmp;
+        Amp amp;
+        Ampp ampp;
+        Vmpp vmpp;
+        VirtualProductIngredient vtmsvmps;
+        MeasurementUnit issueUnit;
+        MeasurementUnit strengthUnit;
+        MeasurementUnit packUnit;
+        double strengthUnitsPerIssueUnit;
+        double issueUnitsPerPack;
+        Institution distributor;
+        Institution manufacturer;
+        Institution importer;
+
+        double stockQty;
+        double pp;
+        double sp;
+        String batch;
+        Date doe;
+
+        try (InputStream in = file.getInputStream(); Workbook workbook = new XSSFWorkbook(in)) {
+            Sheet sheet = workbook.getSheetAt(0);
+            Iterator<Row> rowIterator = sheet.iterator();
+
+            JsfUtil.addSuccessMessage(file.getFileName());
+
+            pharmacyPurchaseController.makeNull();
+
+            int rowIndex = 0;
+            while (rowIterator.hasNext()) {
+                Row row = rowIterator.next();
+                System.out.println("row = " + row);
+                if (rowIndex++ < startRow) {
+                    continue; // Skip header or initial rows as per the startRow value
+                }
+
+                Map<String, Object> m = new HashMap<>();
+
+                // Category
+                Cell catCell = row.getCell(catCol);
+                strCat = getStringCellValue(catCell);
+                if (strCat == null || strCat.trim().isEmpty()) {
+                    continue;
+                }
+                cat = getPharmacyBean().getPharmaceuticalCategoryByName(strCat);
+                if (cat == null) {
+                    continue;
+                }
+                phType = getPharmacyBean().getPharmaceuticalItemTypeByName(strCat);
+
+                // Strength Unit
+                Cell strengthUnitCell = row.getCell(strengthUnitCol);
+                strStrengthUnit = getStringCellValue(strengthUnitCell);
+                strengthUnit = getPharmacyBean().getUnitByName(strStrengthUnit);
+                if (strengthUnit == null) {
+                    continue;
+                }
+
+                // Pack Unit
+                Cell packUnitCell = row.getCell(packUnitCol);
+                strPackUnit = getStringCellValue(packUnitCell);
+                packUnit = getPharmacyBean().getUnitByName(strPackUnit);
+                if (packUnit == null) {
+                    continue;
+                }
+
+                // Issue Unit
+                Cell issueUnitCell = row.getCell(issueUnitCol);
+                strIssueUnit = getStringCellValue(issueUnitCell);
+                issueUnit = getPharmacyBean().getUnitByName(strIssueUnit);
+                if (issueUnit == null) {
+                    continue;
+                }
+
+                // Strength Of A Measurement Unit
+                Cell strengthCell = row.getCell(strengthOfIssueUnitCol);
+                strStrength = getStringCellValue(strengthCell);
+                strengthUnitsPerIssueUnit = parseDouble(strStrength);
+
+                // Issue Units Per Pack
+                Cell packSizeCell = row.getCell(issueUnitsPerPackCol);
+                strPackSize = getStringCellValue(packSizeCell);
+                issueUnitsPerPack = parseDouble(strPackSize);
+
+                // Vtm
+                Cell vtmCell = row.getCell(vtmCol);
+                strGenericName = getStringCellValue(vtmCell);
+                vtm = !strGenericName.isEmpty() ? getPharmacyBean().getVtmByName(strGenericName) : null;
+
+                // Vmp
+                vmp = getPharmacyBean().getVmp(vtm, strengthUnitsPerIssueUnit, strengthUnit, cat);
+                if (vmp == null) {
+                    continue;
+                } else {
+                    vmp.setCategory(phType);
+                    getVmpFacade().edit(vmp);
+                }
+
+                // Code & Barcode
+                strCode = getStringCellValue(row.getCell(codeCol));
+                strBarcode = getStringCellValue(row.getCell(barcodeCol));
+
+                // Distributor
+                strDistributor = getStringCellValue(row.getCell(distributorCol));
+
+                // Amp
+                Cell ampCell = row.getCell(ampCol);
+                strAmp = getStringCellValue(ampCell);
+                m.put("v", vmp);
+                m.put("n", strAmp.toUpperCase());
+                amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where c.retired=false and (c.name)=:n AND c.vmp=:v", m);
+                if (amp == null) {
+                    amp = new Amp();
+                    amp.setName(strAmp);
+                    amp.setCode(strCode);
+                    amp.setBarcode(strBarcode);
+                    amp.setMeasurementUnit(strengthUnit);
+                    amp.setDblValue(strengthUnitsPerIssueUnit);
+                    amp.setCategory(cat);
+                    amp.setVmp(vmp);
+                    getAmpFacade().create(amp);
+                } else {
+                    amp.setRetired(false);
+                    getAmpFacade().edit(amp);
+                }
+
+                if (amp == null) {
+                    continue;
+                }
+
+                // Ampp
+                if (issueUnitsPerPack > 1.0) {
+                    ampp = getPharmacyBean().getAmpp(amp, issueUnitsPerPack, packUnit);
+                }
+                // Set Code and Barcode
+                amp.setCode(strCode);
+                getAmpFacade().edit(amp);
+                amp.setBarcode(strBarcode);
+                getAmpFacade().edit(amp);
+
+                // Manufacturer
+                strManufacturer = getStringCellValue(row.getCell(manufacturerCol));
+                manufacturer = getInstitutionController().getInstitutionByName(strManufacturer, InstitutionType.Manufacturer);
+                amp.setManufacturer(manufacturer);
+
+                // Importer
+                strImporter = getStringCellValue(row.getCell(importerCol));
+                importer = getInstitutionController().getInstitutionByName(strImporter, InstitutionType.Importer);
+                amp.setManufacturer(importer);
+
+                // Stock Quantity, Purchase Rate, Sale Rate, Batch, Date of Expiry
+                stockQty = parseDouble(getStringCellValue(row.getCell(stockQtyCol)));
+                pp = parseDouble(getStringCellValue(row.getCell(pruchaseRateCol)));
+                sp = parseDouble(getStringCellValue(row.getCell(saleRateCol)));
+                batch = getStringCellValue(row.getCell(batchCol));
+                doe = parseDate(getStringCellValue(row.getCell(doeCol)));
+
+                // Add to current bill item
+                System.out.println("amp = " + amp);
+                System.out.println("stockQty = " + stockQty);
+                getPharmacyPurchaseController().getCurrentBillItem().setItem(amp);
+                getPharmacyPurchaseController().getCurrentBillItem().setTmpQty(stockQty);
+                getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRate(pp);
+                getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(sp);
+                getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setDoe(doe);
+                if (batch == null || batch.trim().isEmpty()) {
+                    getPharmacyPurchaseController().setBatch();
+                } else {
+                    getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setStringValue(batch);
+                }
+                getPharmacyPurchaseController().addItem();
+            }
+            JsfUtil.addSuccessMessage("Successful. All the data in Excel File Imported to the database");
+            return "/pharmacy/pharmacy_purchase";
+        } catch (IOException e) {
+            JsfUtil.addErrorMessage(e.getMessage());
+            return "";
+        }
+    }
+
+    private String getStringCellValue(Cell cell) {
+        return (cell != null && cell.getCellType() == CellType.STRING) ? cell.getStringCellValue() : "";
+    }
+
+    private double parseDouble(String value) {
+        try {
+            return Double.parseDouble(value);
+        } catch (NumberFormatException e) {
+            return 0.0;
+        }
+    }
+
+    private Date parseDate(String value) {
+        try {
+            return new SimpleDateFormat("M/d/yyyy", Locale.ENGLISH).parse(value);
+        } catch (Exception e) {
+            return new Date();
+        }
     }
 
     public void uploadRoutes() {
@@ -6379,6 +6662,54 @@ public class DataUploadController implements Serializable {
 
     public void setAgencies(List<Institution> agencies) {
         this.agencies = agencies;
+    }
+
+    public int getStartRow() {
+        return startRow;
+    }
+
+    public void setStartRow(int startRow) {
+        this.startRow = startRow;
+    }
+
+    public PharmacyBean getPharmacyBean() {
+        return pharmacyBean;
+    }
+
+    public void setPharmacyBean(PharmacyBean pharmacyBean) {
+        this.pharmacyBean = pharmacyBean;
+    }
+
+    public VtmFacade getVtmFacade() {
+        return vtmFacade;
+    }
+
+    public AtmFacade getAtmFacade() {
+        return atmFacade;
+    }
+
+    public AmpFacade getAmpFacade() {
+        return ampFacade;
+    }
+
+    public VmpFacade getVmpFacade() {
+        return vmpFacade;
+    }
+
+    public AmppFacade getAmppFacade() {
+        return amppFacade;
+    }
+
+    public VmppFacade getVmppFacade() {
+        return vmppFacade;
+    }
+
+    public PharmacyPurchaseController getPharmacyPurchaseController() {
+        return pharmacyPurchaseController;
+    }
+
+    public InstitutionController getInstitutionController() {
+        return institutionController;
     }
 
 }

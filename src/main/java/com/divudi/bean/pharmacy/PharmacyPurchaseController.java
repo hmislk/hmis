@@ -337,15 +337,23 @@ public class PharmacyPurchaseController implements Serializable {
     }
 
     public void setBatch() {
-        if (getCurrentBillItem().getPharmaceuticalBillItem().getStringValue().trim().equals("")) {
-            Date date = getCurrentBillItem().getPharmaceuticalBillItem().getDoe();
-            DateFormat df = new SimpleDateFormat("ddMMyyyy");
-            String reportDate = df.format(date);
-// Print what date is today!
-            //       //System.err.println("Report Date: " + reportDate);
-            getCurrentBillItem().getPharmaceuticalBillItem().setStringValue(reportDate);
-        }
+        if (getCurrentBillItem() != null) {
+            PharmaceuticalBillItem pharmaceuticalBillItem = getCurrentBillItem().getPharmaceuticalBillItem();
 
+            if (pharmaceuticalBillItem != null) {
+                String stringValue = pharmaceuticalBillItem.getStringValue();
+
+                if (stringValue != null && stringValue.trim().equals("")) {
+                    Date date = pharmaceuticalBillItem.getDoe();
+
+                    if (date != null) {
+                        DateFormat df = new SimpleDateFormat("ddMMyyyy");
+                        String reportDate = df.format(date);
+                        pharmaceuticalBillItem.setStringValue(reportDate);
+                    }
+                }
+            }
+        }
     }
 
     public String errorCheck() {
