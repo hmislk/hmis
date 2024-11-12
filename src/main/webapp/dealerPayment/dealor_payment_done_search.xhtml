@@ -86,19 +86,19 @@
                                     <p:column headerText="Bill No" >                                
                                         <h:commandLink action="reprint_bill_dealor" >
                                             #{bill.deptId}"  
-                                            <f:setPropertyActionListener target="#{supplierPaymentController.bill}" value="#{bill}"/>
+                                            <f:setPropertyActionListener target="#{dealorPaymentBillSearch.bill}" value="#{bill}"/>
                                         </h:commandLink>
                                         <br/>
 
                                         <h:commandLink action="reprint_bill_dealor" style="color: orange;">
                                             #{bill.refundedBill.deptId} 
-                                            <f:setPropertyActionListener target="#{supplierPaymentController.bill.refundedBill}" value="#{bill}"/>
+                                            <f:setPropertyActionListener target="#{dealorPaymentBillSearch.bill.refundedBill}" value="#{bill}"/>
                                         </h:commandLink>
                                         <br/>
                                         
                                         <h:commandLink action="reprint_bill_dealor" style="color: red;">
                                             #{bill.cancelledBill.deptId}  
-                                            <f:setPropertyActionListener target="#{supplierPaymentController.bill.cancelledBill}" value="#{bill}"/>
+                                            <f:setPropertyActionListener target="#{dealorPaymentBillSearch.bill.cancelledBill}" value="#{bill}"/>
                                         </h:commandLink>
 
                                     </p:column>
@@ -204,7 +204,7 @@
                                     </p:column>
                                     <p:column headerText="Action">
                                         <p:commandButton ajax="false" value="Manage" action="reprint_bill_dealor" class="ui-button-info" style="width: 100px;">
-                                            <f:setPropertyActionListener value="#{bill}" target="#{supplierPaymentController.bill}"/>
+                                            <f:setPropertyActionListener value="#{bill}" target="#{dealorPaymentBillSearch.bill}"/>
                                         </p:commandButton>
 
                                     </p:column> 
