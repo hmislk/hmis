@@ -259,7 +259,7 @@
                         icon="fa fa-list-alt">
                     </p:menuitem>
 
-                </p:submeqnu>
+                </p:submenu>
                 <p:submenu id="smMembership"  icon="fa fa-fw fa-id-card"  rendered="#{webUserController.hasPrivilege('MemberShip')}">
                     <p:menuitem ajax="false" action="#{patientController.navigateToAddNewIndividualMembership()}" value="Add Individual Membership" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="#{patientController.navigateToSearchIndividualMembership()}" value="Search Individual Membership" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>
