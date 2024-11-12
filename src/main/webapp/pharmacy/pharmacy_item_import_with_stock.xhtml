@@ -9,9 +9,9 @@
     <ui:define name="subcontent">
         <h:form enctype="multipart/form-data">
             <p:panel>
-                <p:fileUpload value="#{pharmacyItemExcelManager.file}" mode="simple"/>
+                <p:fileUpload value="#{dataUploadController.file}" mode="simple"/>
                 <p:commandButton ajax="false" value="Submit" 
-                                 action="#{pharmacyItemExcelManager.importToExcelWithStock}"/>
+                                 action="#{dataUploadController.importToExcelWithStock}"/>
 
                 <p:panel header="Import Stock from Excel" >
                     <h:outputLabel value="Instructions" ></h:outputLabel>
