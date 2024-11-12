@@ -45,6 +45,33 @@
                                     <h:outputText styleClass="fa fa-money-bill-wave" />
                                     <h:outputText value="Payment" class="mx-4"></h:outputText>
                                 </f:facet>
+                                
+                                    <div class="row my-2 d-flex align-items-center">
+                                    <div class="col-md-4">
+                                        <p:outputLabel value="Select Credit Company" />      
+                                    </div>
+                                    <div class="col-md-8">
+                                        <p:autoComplete widgetVar="aIx" id="acIx" 
+                                                        placeholder="Type the Credit Company Name"
+                                                        forceSelection="true" 
+                                                        value="#{cashRecieveBillController.institution}" 
+                                                        completeMethod="#{institutionController.completeCreditCompany}" 
+                                                        var="ix" itemLabel="#{ix.name}"
+                                                        itemValue="#{ix}" class="w-100"
+                                                        inputStyleClass="w-100"
+                                                        >
+                                            <p:column>
+                                                <h:outputLabel value="#{ix.name}"/>
+                                            </p:column>                                  
+                                            <p:column>
+                                                <h:outputLabel value="#{ix.institutionCode}"/>
+                                            </p:column>
+                                            <f:ajax execute="@this" event="itemSelect" render=":#{p:resolveFirstComponentWithId('items',view).clientId} tot" 
+                                                    listener="#{cashRecieveBillController.selectInstitutionListenerBht()}"/>
+                                        </p:autoComplete>
+                                    </div>
+                                </div>
+                                
                                 <div class="row my-2 d-flex align-items-center">
                                     <div class="col-md-4">
                                         <p:outputLabel value="Payment Method" />      
@@ -76,39 +103,16 @@
                                     </div>
                                 </div>
 
-                                <div class="row my-2 d-flex align-items-center">
+<!--                                <div class="row my-2 d-flex align-items-center">
                                     <div class="col-md-4">
                                         <p:outputLabel value="Comment" />      
                                     </div>
                                     <div class="col-md-8">
                                         <p:inputText class="w-100" value="#{cashRecieveBillController.comment}" id="comment"/>
                                     </div>
-                                </div>
+                                </div>-->
 
-                                <div class="row my-2 d-flex align-items-center">
-                                    <div class="col-md-4">
-                                        <p:outputLabel value="Select Payment" />      
-                                    </div>
-                                    <div class="col-md-8">
-                                        <p:autoComplete widgetVar="aIx" id="acIx" 
-                                                        forceSelection="true" 
-                                                        value="#{cashRecieveBillController.institution}" 
-                                                        completeMethod="#{institutionController.completeCreditCompany}" 
-                                                        var="ix" itemLabel="#{ix.name}"
-                                                        itemValue="#{ix}" class="w-100"
-                                                        inputStyleClass="w-100"
-                                                        >
-                                            <p:column>
-                                                <h:outputLabel value="#{ix.name}"/>
-                                            </p:column>                                  
-                                            <p:column>
-                                                <h:outputLabel value="#{ix.institutionCode}"/>
-                                            </p:column>
-                                            <f:ajax execute="@this" event="itemSelect" render=":#{p:resolveFirstComponentWithId('items',view).clientId} tot" 
-                                                    listener="#{cashRecieveBillController.selectInstitutionListenerBht()}"/>
-                                        </p:autoComplete>
-                                    </div>
-                                </div>
+                            
 
                                 <div class="row my-2">
                                     <div class="col-md-4"></div>
@@ -130,7 +134,7 @@
                                         <p:outputLabel value="Description"/>
                                     </div>
                                     <div class="col-md-8">
-                                        <p:inputTextarea value="#{cashRecieveBillController.current.comments}" class="w-100"/>
+                                        <p:inputTextarea value="#{cashRecieveBillController.comment}" class="w-100"/>
                                     </div>
                                 </div>
                             </p:panel>
