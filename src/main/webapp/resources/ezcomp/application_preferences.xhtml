@@ -111,7 +111,7 @@
                             <h:outputLabel value="Need Phone number for patient registration"></h:outputLabel>
                             <p:selectBooleanButton value="#{sessionController.currentPreference.needPhoneNumberForPatientRegistration}" offLabel="No" onLabel="Yes" ></p:selectBooleanButton>
 
-                            <h:outputLabel value="Need NIC for patient registration"></h:outputLabel>
+                            <h:outputLabel value="Need NIC / Passport for patient registration"></h:outputLabel>
                             <p:selectBooleanButton value="#{sessionController.currentPreference.needNicForPatientRegistration}" offLabel="No" onLabel="Yes" ></p:selectBooleanButton>
 
 
@@ -133,7 +133,7 @@
                                          value="#{sessionController.currentPreference.emailRegex}" >
                             </p:inputText>
 
-                            <h:outputLabel value="Regex pattern for Patient NIC"></h:outputLabel>
+                            <h:outputLabel value="Regex pattern for Patient NIC / Passport"></h:outputLabel>
                             <p:inputText class="form-control"
                                          value="#{sessionController.currentPreference.nicRegex}" >
                             </p:inputText>

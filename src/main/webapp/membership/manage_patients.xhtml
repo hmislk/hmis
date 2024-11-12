@@ -49,7 +49,7 @@
                                                                  itemLabel="Serch Only Registed Patient" >
                                             <f:ajax execute="@this" render="acPt" />
                                         </p:selectBooleanCheckbox>
-                                        <h:outputLabel value="Search by Name/Code/Phone/NIC/PHN" />
+                                        <h:outputLabel value="Search by Name/Code/Phone/NIC / Passport/PHN" />
                                         <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true" 
                                                         value="#{patientController.current}" minQueryLength="4"
                                                         completeMethod="#{patientController.completePatientByNameOrCode}" 
@@ -63,7 +63,7 @@
                                             <p:column headerText="Age">
                                                 <h:outputLabel value="#{apt.age}" />
                                             </p:column>
-                                            <p:column headerText="NIC">
+                                            <p:column headerText="NIC / Passport">
                                                 <h:outputLabel value="#{apt.person.nic}"/>
                                             </p:column>
                                             <p:column headerText="Code">
@@ -211,7 +211,7 @@
                                                 <h:outputLabel value="Phone"/>
                                                 <p:inputText  id="txtNewPtPhone" autocomplete="off" maxlength="11" style="width: 280px;" value="#{patientController.current.person.phone}">
                                                 </p:inputText>
-                                                <h:outputLabel value="NIC" />
+                                                <h:outputLabel value="NIC / Passport" />
                                                 <p:inputText maxlength="12" value="#{patientController.current.person.nic}" style="width: 280px;"/>
                                                 <!--<p:inputText  value="#{patientController.current.person.nic}" />-->
                                                 <h:outputLabel value="Email"/>
