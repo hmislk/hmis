@@ -33,6 +33,14 @@
                                         styleClass="p-button-success"
                                         action="#{supplierPaymentController.navigateToSupplierPaymentDoneSearch}"
                                         rendered="#{webUserController.hasPrivilege('PharmacyGRNPaymentDoneSearch')}" />
+                                    <p:commandButton 
+                                        class="w-100"
+                                        ajax="false"
+                                        value="Approved Payments"
+                                        icon="fas fa-check-circle"
+                                        styleClass="p-button-success"
+                                        action="#{supplierPaymentController.navigateToPaymentDoneSearch()}"
+                                        rendered="#{webUserController.hasPrivilege('PharmacyGRNPaymentDoneSearch')}" />
 
 
                                 </div>
