@@ -269,17 +269,17 @@ public class PatientInvestigationController implements Serializable {
     private PatientInvestigation currentPI;
 
     private boolean printIndividualBarcodes;
-    
+
     public String sampleComponentNames(PatientSample ps) {
         List<PatientSampleComponant> pscList = getPatientSampleComponentsByPatientSample(ps);
         String sampleComponentName = "";
-        for(PatientSampleComponant psc : pscList){
+        for (PatientSampleComponant psc : pscList) {
             sampleComponentName += psc.getNameTranscient();
             sampleComponentName += "  ";
         }
         return sampleComponentName;
     }
-    
+
     public String navigateToPrintBarcodeFromMenu() {
         return "/lab/sample_barcode_printing?faces-redirect=true";
     }
@@ -1769,7 +1769,7 @@ public class PatientInvestigationController implements Serializable {
         this.listingEntity = null;
         clearReportData();
         clearAlternativeReportData();
-        
+
     }
 
     public void clearReportData() {
@@ -2861,11 +2861,9 @@ public class PatientInvestigationController implements Serializable {
 
         //System.out.println("params = " + params);
         //System.out.println("jpql = " + jpql);
-
         items = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
         //System.out.println("items = " + items);
-
         // Initialize totals
         hospitalFeeTotal = 0.0;
         ccFeeTotal = 0.0;
@@ -3056,6 +3054,7 @@ public class PatientInvestigationController implements Serializable {
         btas.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
         btas.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
         btas.add(BillTypeAtomic.OPD_BILL_REFUND);
+        btas.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
         // Starting from BillItem and joining to PatientInvestigation if needed
         jpql = "SELECT b "
                 + " FROM BillItem b "
@@ -3170,7 +3169,7 @@ public class PatientInvestigationController implements Serializable {
         }
 
         if (department != null) {
-            jpql += " AND b.bill.toDepartment = :department ";
+            jpql += " AND b.bill.department = :department ";
             params.put("department", getDepartment());
         }
 
@@ -3191,11 +3190,9 @@ public class PatientInvestigationController implements Serializable {
 
         //System.out.println("jpql = " + jpql);
         //System.out.println("params = " + params);
-
         billItems = billItemFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
         //System.out.println("billItems = " + billItems);
-
         // Initialize totals
         hospitalFeeTotal = 0.0;
         ccFeeTotal = 0.0;
@@ -5138,7 +5135,6 @@ public class PatientInvestigationController implements Serializable {
                         m.put("ixc", ixi.getSampleComponent());
 
                         //System.out.println("j = " + j);
-
                         ptsc = patientSampleComponantFacade.findFirstByJpql(j, m);
                         if (ptsc == null) {
                             ptsc = new PatientSampleComponant();
@@ -5299,7 +5295,6 @@ public class PatientInvestigationController implements Serializable {
                     m.put("pts", pts);
 
                     //System.out.println("j = " + j);
-
                     ptsc = patientSampleComponantFacade.findFirstByJpql(j, m);
                     if (ptsc == null) {
                         ptsc = new PatientSampleComponant();
@@ -5400,7 +5395,6 @@ public class PatientInvestigationController implements Serializable {
                     }
 
                     //System.out.println("ixi.getSample() = " + ixi.getSample());
-
 //                    if (ixi.getSample() == null) {
 //                        continue;
 //                    }
@@ -5472,7 +5466,6 @@ public class PatientInvestigationController implements Serializable {
                     m.put("ixc", ixi.getSampleComponent());
 
                     //System.out.println("j = " + j);
-
                     ptsc = patientSampleComponantFacade.findFirstByJpql(j, m);
                     if (ptsc == null) {
                         ptsc = new PatientSampleComponant();
