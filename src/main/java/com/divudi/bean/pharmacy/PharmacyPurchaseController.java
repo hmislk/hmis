@@ -110,6 +110,8 @@ public class PharmacyPurchaseController implements Serializable {
     private BilledBill bill;
     private BillItem currentBillItem;
     private boolean printPreview;
+    
+    private String warningMessage;
 
     double saleRate;
     double wsRate;
@@ -259,6 +261,7 @@ public class PharmacyPurchaseController implements Serializable {
         currentBillItem = null;
         bill = null;
         billItems = null;
+        warningMessage=null;
     }
 
     public String navigateToAddNewPharmacyWholesaleDirectPurchaseBill() {
@@ -337,15 +340,23 @@ public class PharmacyPurchaseController implements Serializable {
     }
 
     public void setBatch() {
-        if (getCurrentBillItem().getPharmaceuticalBillItem().getStringValue().trim().equals("")) {
-            Date date = getCurrentBillItem().getPharmaceuticalBillItem().getDoe();
-            DateFormat df = new SimpleDateFormat("ddMMyyyy");
-            String reportDate = df.format(date);
-// Print what date is today!
-            //       //System.err.println("Report Date: " + reportDate);
-            getCurrentBillItem().getPharmaceuticalBillItem().setStringValue(reportDate);
-        }
+        if (getCurrentBillItem() != null) {
+            PharmaceuticalBillItem pharmaceuticalBillItem = getCurrentBillItem().getPharmaceuticalBillItem();
 
+            if (pharmaceuticalBillItem != null) {
+                String stringValue = pharmaceuticalBillItem.getStringValue();
+
+                if (stringValue != null && stringValue.trim().equals("")) {
+                    Date date = pharmaceuticalBillItem.getDoe();
+
+                    if (date != null) {
+                        DateFormat df = new SimpleDateFormat("ddMMyyyy");
+                        String reportDate = df.format(date);
+                        pharmaceuticalBillItem.setStringValue(reportDate);
+                    }
+                }
+            }
+        }
     }
 
     public String errorCheck() {
@@ -934,4 +945,14 @@ public class PharmacyPurchaseController implements Serializable {
         this.paymentMethodData = paymentMethodData;
     }
 
+    public String getWarningMessage() {
+        return warningMessage;
+    }
+
+    public void setWarningMessage(String warningMessage) {
+        this.warningMessage = warningMessage;
+    }
+
+    
+    
 }
