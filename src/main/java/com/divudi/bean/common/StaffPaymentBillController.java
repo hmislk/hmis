@@ -1,6 +1,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.DrawerController;
+import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -93,6 +94,8 @@ public class StaffPaymentBillController implements Serializable {
     private BillBeanController billBean;
     @Inject
     DrawerController drawerController;
+    @Inject
+    FinancialTransactionController financialTransactionController;
 
     private List<BillComponent> billComponents;
     private List<BillItem> billItems;
@@ -564,8 +567,6 @@ public class StaffPaymentBillController implements Serializable {
         System.out.println("Due Bill Fees = " + dueBillFees);
         return "/opd/professional_payments/payment_staff_bill?faces-redirect=true";
     }
-    
-    
 
     public String navigateToViewOpdPayProfessionalPayments() {
         recreateModel();
@@ -609,6 +610,15 @@ public class StaffPaymentBillController implements Serializable {
     public void settleBill() {
         if (errorCheck()) {
             return;
+        }
+        if (paymentMethod == PaymentMethod.Cash) {
+            double drawerBalance = financialTransactionController.getLoggedUserDrawer().getCashInHandValue();
+            double paymentAmount = getTotalPayingWithoutWht();
+
+            if (drawerBalance < paymentAmount) {
+                JsfUtil.addErrorMessage("Not enough cash in your drawer to make this payment");
+                return;
+            }
         }
         peformeCalculations();
         Bill newlyCreatedPaymentBill = createPaymentBill();
