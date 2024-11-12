@@ -110,6 +110,8 @@ public class PharmacyPurchaseController implements Serializable {
     private BilledBill bill;
     private BillItem currentBillItem;
     private boolean printPreview;
+    
+    private String warningMessage;
 
     double saleRate;
     double wsRate;
@@ -259,6 +261,7 @@ public class PharmacyPurchaseController implements Serializable {
         currentBillItem = null;
         bill = null;
         billItems = null;
+        warningMessage=null;
     }
 
     public String navigateToAddNewPharmacyWholesaleDirectPurchaseBill() {
@@ -942,4 +945,14 @@ public class PharmacyPurchaseController implements Serializable {
         this.paymentMethodData = paymentMethodData;
     }
 
+    public String getWarningMessage() {
+        return warningMessage;
+    }
+
+    public void setWarningMessage(String warningMessage) {
+        this.warningMessage = warningMessage;
+    }
+
+    
+    
 }

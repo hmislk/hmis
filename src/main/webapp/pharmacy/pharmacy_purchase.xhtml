@@ -38,6 +38,12 @@
                     </div>
                 </f:facet>
 
+                <h:panelGroup rendered="#{pharmacyPurchaseController.warningMessage ne null}" >
+                    <h:inputTextarea
+                        class="text-warning w-100"
+                        readonly="true" 
+                        value="#{pharmacyPurchaseController.warningMessage}" ></h:inputTextarea>
+                </h:panelGroup>
 
                 <div class="row">
                     <div class="col-6">

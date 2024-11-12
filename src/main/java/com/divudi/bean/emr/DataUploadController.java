@@ -397,6 +397,7 @@ public class DataUploadController implements Serializable {
         double sp;
         String batch;
         Date doe;
+        StringBuilder warningMessages = new StringBuilder();
 
         try (InputStream in = file.getInputStream(); Workbook workbook = new XSSFWorkbook(in)) {
             Sheet sheet = workbook.getSheetAt(0);
@@ -454,17 +455,17 @@ public class DataUploadController implements Serializable {
 
                 // Strength Of A Measurement Unit
                 Cell strengthCell = row.getCell(strengthOfIssueUnitCol);
-                strStrength = getStringCellValue(strengthCell);
+                strStrength = getCellValueAsString(strengthCell);
                 strengthUnitsPerIssueUnit = parseDouble(strStrength);
 
                 // Issue Units Per Pack
                 Cell packSizeCell = row.getCell(issueUnitsPerPackCol);
-                strPackSize = getStringCellValue(packSizeCell);
+                strPackSize = getCellValueAsString(packSizeCell);
                 issueUnitsPerPack = parseDouble(strPackSize);
 
                 // Vtm
                 Cell vtmCell = row.getCell(vtmCol);
-                strGenericName = getStringCellValue(vtmCell);
+                strGenericName = getCellValueAsString(vtmCell);
                 vtm = !strGenericName.isEmpty() ? getPharmacyBean().getVtmByName(strGenericName) : null;
 
                 // Vmp
@@ -477,15 +478,15 @@ public class DataUploadController implements Serializable {
                 }
 
                 // Code & Barcode
-                strCode = getStringCellValue(row.getCell(codeCol));
-                strBarcode = getStringCellValue(row.getCell(barcodeCol));
+                strCode = getCellValueAsString(row.getCell(codeCol));
+                strBarcode = getCellValueAsString(row.getCell(barcodeCol));
 
                 // Distributor
-                strDistributor = getStringCellValue(row.getCell(distributorCol));
+                strDistributor = getCellValueAsString(row.getCell(distributorCol));
 
                 // Amp
                 Cell ampCell = row.getCell(ampCol);
-                strAmp = getStringCellValue(ampCell);
+                strAmp = getCellValueAsString(ampCell);
                 m.put("v", vmp);
                 m.put("n", strAmp.toUpperCase());
                 amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where c.retired=false and (c.name)=:n AND c.vmp=:v", m);
@@ -519,36 +520,56 @@ public class DataUploadController implements Serializable {
                 getAmpFacade().edit(amp);
 
                 // Manufacturer
-                strManufacturer = getStringCellValue(row.getCell(manufacturerCol));
+                strManufacturer = getCellValueAsString(row.getCell(manufacturerCol));
                 manufacturer = getInstitutionController().getInstitutionByName(strManufacturer, InstitutionType.Manufacturer);
                 amp.setManufacturer(manufacturer);
 
                 // Importer
-                strImporter = getStringCellValue(row.getCell(importerCol));
+                strImporter = getCellValueAsString(row.getCell(importerCol));
                 importer = getInstitutionController().getInstitutionByName(strImporter, InstitutionType.Importer);
                 amp.setManufacturer(importer);
 
                 // Stock Quantity, Purchase Rate, Sale Rate, Batch, Date of Expiry
-                stockQty = parseDouble(getStringCellValue(row.getCell(stockQtyCol)));
-                pp = parseDouble(getStringCellValue(row.getCell(pruchaseRateCol)));
-                sp = parseDouble(getStringCellValue(row.getCell(saleRateCol)));
-                batch = getStringCellValue(row.getCell(batchCol));
-                doe = parseDate(getStringCellValue(row.getCell(doeCol)));
+                stockQty = parseDouble(getCellValueAsString(row.getCell(stockQtyCol)));
+                pp = parseDouble(getCellValueAsString(row.getCell(pruchaseRateCol)));
+                sp = parseDouble(getCellValueAsString(row.getCell(saleRateCol)));
+                batch = getCellValueAsString(row.getCell(batchCol));
+                doe = parseDate(getCellValueAsString(row.getCell(doeCol)));
 
-                // Add to current bill item
-                System.out.println("amp = " + amp);
-                System.out.println("stockQty = " + stockQty);
-                getPharmacyPurchaseController().getCurrentBillItem().setItem(amp);
-                getPharmacyPurchaseController().getCurrentBillItem().setTmpQty(stockQty);
-                getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRate(pp);
-                getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(sp);
-                getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setDoe(doe);
-                if (batch == null || batch.trim().isEmpty()) {
-                    getPharmacyPurchaseController().setBatch();
+                // Add to current bill item only if necessary fields are available
+                if (amp != null && stockQty > 0 && pp > 0 && sp > 0) {
+                    System.out.println("amp = " + amp);
+                    System.out.println("stockQty = " + stockQty);
+                    getPharmacyPurchaseController().getCurrentBillItem().setItem(amp);
+                    getPharmacyPurchaseController().getCurrentBillItem().setTmpQty(stockQty);
+                    getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRate(pp);
+                    getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(sp);
+                    getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setDoe(doe);
+                    if (batch == null || batch.trim().isEmpty()) {
+                        getPharmacyPurchaseController().setBatch();
+                    } else {
+                        getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setStringValue(batch);
+                    }
+                    getPharmacyPurchaseController().addItem();
                 } else {
-                    getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setStringValue(batch);
+                    warningMessages.append("Row ").append(rowIndex).append(": Missing necessary fields - ");
+                    if (amp == null) {
+                        warningMessages.append("Amp not found or created. ");
+                    }
+                    if (stockQty <= 0) {
+                        warningMessages.append("Stock Quantity is missing or invalid. ");
+                    }
+                    if (pp <= 0) {
+                        warningMessages.append("Purchase Rate is missing or invalid. ");
+                    }
+                    if (sp <= 0) {
+                        warningMessages.append("Sale Rate is missing or invalid. ");
+                    }
+                    warningMessages.append("\n");
                 }
-                getPharmacyPurchaseController().addItem();
+            }
+            if (warningMessages.length() > 0) {
+                getPharmacyPurchaseController().setWarningMessage(warningMessages.toString());
             }
             JsfUtil.addSuccessMessage("Successful. All the data in Excel File Imported to the database");
             return "/pharmacy/pharmacy_purchase";
@@ -560,6 +581,28 @@ public class DataUploadController implements Serializable {
 
     private String getStringCellValue(Cell cell) {
         return (cell != null && cell.getCellType() == CellType.STRING) ? cell.getStringCellValue() : "";
+    }
+
+    private String getCellValueAsString(Cell cell) {
+        if (cell == null) {
+            return "";
+        }
+        switch (cell.getCellType()) {
+            case STRING:
+                return cell.getStringCellValue();
+            case NUMERIC:
+                if (DateUtil.isCellDateFormatted(cell)) {
+                    try {
+                        return new SimpleDateFormat("M/d/yyyy", Locale.ENGLISH).format(cell.getDateCellValue());
+                    } catch (Exception e) {
+                        return new SimpleDateFormat("d/M/yyyy", Locale.ENGLISH).format(cell.getDateCellValue());
+                    }
+                } else {
+                    return String.valueOf(cell.getNumericCellValue());
+                }
+            default:
+                return "";
+        }
     }
 
     private double parseDouble(String value) {
@@ -574,7 +617,11 @@ public class DataUploadController implements Serializable {
         try {
             return new SimpleDateFormat("M/d/yyyy", Locale.ENGLISH).parse(value);
         } catch (Exception e) {
-            return new Date();
+            try {
+                return new SimpleDateFormat("d/M/yyyy", Locale.ENGLISH).parse(value);
+            } catch (Exception ex) {
+                return new Date();
+            }
         }
     }
 
