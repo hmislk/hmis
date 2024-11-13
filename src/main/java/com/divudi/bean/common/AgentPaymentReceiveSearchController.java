@@ -479,7 +479,7 @@ public class AgentPaymentReceiveSearchController implements Serializable {
 
         List<Payment> cancellationPayments = billService.createPayment(cancelledBill, paymentMethod, paymentMethodData);
 
-        drawerController.updateDrawerForOuts(cancellationPayments);
+//        drawerController.updateDrawerForOuts(cancellationPayments);
         agentAndCcApplicationController.updateCcBalance(
                 cancelledBill.getFromInstitution(),
                 0,
