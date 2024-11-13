@@ -271,6 +271,8 @@ public enum Privileges {
     CashTransactionListToCashRecieve("Cash Transaction List to Cash Receive"),
     ShiftHandoverAcceptAsCashier("Shift Handover Accept As Cashier"),
     ShiftHandoverAcceptAsMainCashier("Shift Handover Accept As Main Cashier"),
+    //<editor-fold defaultstate="collapsed" desc="Channel">
+
     ChannellingChannelBooking("Channelling Channel Booking"),
     ChannellingFutureChannelBooking("Channelling Future Channel Booking"),
     ChannellingPastBooking("Channelling Past Booking"),
@@ -332,6 +334,8 @@ public enum Privileges {
     ChannelCashierTransactionExpencess("Channel Cashier Transaction Expenses"),
     ChannelCashierTransactionExpencessSearch("Channel Cashier Transaction Expenses Search"),
     ChannelActiveVat("Channel Active VAT"),
+    //</editor-fold>
+
     //<editor-fold defaultstate="collapsed" desc="Clinis">
     ClinicSession("Clinic Session"),
     ClinicCalendar("Clinic Calendar"),
@@ -340,6 +344,7 @@ public enum Privileges {
     ClinicSchedule("Clinic Schedule"),
     ClinicReports("Clinic Reports"),
     //</editor-fold>
+
     //<editor-fold defaultstate="collapsed" desc="Memberships">
     MemberShip("Membership"),
     MemberShipAdd("Membership Add"),
@@ -358,6 +363,7 @@ public enum Privileges {
     MemberShipMemberDeActive("Membership Deactivate"),
     MemberShipMemberReActive("Membership Reactivate"),
     //</editor-fold>
+
     //<editor-fold defaultstate="collapsed" desc="HR">
     HrAdmin("HR Admin"),
     HrReports("HR Reports"),
@@ -382,13 +388,7 @@ public enum Privileges {
     HrRemoveResignDate("HR Remove Resign Date"),
     //</editor-fold>
 
-    Developers("Developers"),
-    // Cashier
-    AllCashierSummery("All Cashier Summary"),
-    // Administration
-    SearchAll("Search All"),
-    ChangePreferece("Change Preference"),
-    SendBulkSMS("Send Bulk SMS"),
+    //<editor-fold defaultstate="collapsed" desc="Clinical">
     ClinicalAdministrationEditLetter("Clinical Administration Edit Letter"),
     ClinicalPatientAdd("Clinical Patient Add"),
     ClinicalPatientEdit("Clinical Patient Edit"),
@@ -398,6 +398,9 @@ public enum Privileges {
     ClinicalMembershipAdd("Clinical Membership Add"),
     ClinicalMembershipEdit("Clinical Membership Edit"),
     ClinicalPatientPhoneNumberEdit("Clinical Patient Phone Number Edit"),
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Pharmacy">
     // Pharmacy Disbursement
     PharmacyDisburesementMenu("Pharmacy Disbursement Menu"),
     PharmacyDisbursementRequest("Pharmacy Disbursement Request"),
@@ -497,6 +500,22 @@ public enum Privileges {
     PharmacyItemSearch("Pharmacy Item Search"),
     PharmacyGenarateReports("Pharmacy Generate Reports"),
     PharmacySummaryViews("Pharmacy Summary Views"),
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Developers">
+    Developers("Developers"),
+    // Administration
+    SearchAll("Search All"),
+    ChangePreferece("Change Preference"),
+    SendBulkSMS("Send Bulk SMS"),
+    SuperAdmin("Supper Admin"),
+    EditData("Edit Data"),
+    DeleteData("Delete Data"),
+    BillCancel("Bill Cancel"),
+    BillRefund("Bill Refund"),
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Optician">
     // Optician
     Optician("Optician"),
     OpticianPatientManagement("Optician Patient Management"),
@@ -519,7 +538,10 @@ public enum Privileges {
     OphthalmologyProductCatalog("Ophthalmology Product Catalog"),
     @Deprecated
     OphthalmologyRepairManagement("Ophthalmology Repair Management"),
-    // New privileges for couriers
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Collecting Centre">
+    // Privileges for couriers
     Courier("Courier"),
     CourierCollectSamples("Courier Collect Samples"),
     CourierHandoverSamplesToLab("Courier Handover Samples to Lab"),
@@ -528,11 +550,10 @@ public enum Privileges {
     CourierViewStatistics("Courier View Statistics"),
     CourierViewBillReports("Courier View Bill Reports"),
     CourierViewPaymentReports("Courier View Payment Reports"),
-    SuperAdmin("Supper Admin"),
-    EditData("Edit Data"),
-    DeleteData("Delete Data"),
-    BillCancel("Bill Cancel"),
-    BillRefund("Bill Refund"),;
+    //</editor-fold>
+
+    // Cashier
+    AllCashierSummery("All Cashier Summary"),;
 
     private final String label;
 
