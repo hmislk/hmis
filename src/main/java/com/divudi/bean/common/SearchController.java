@@ -12817,10 +12817,9 @@ public class SearchController implements Serializable {
 
     public String navigateToLabReportSearch() {
         patientInvestigations = new ArrayList<>();
-//        getReportKeyWord().setDepartment(getSessionController().getLoggedUser().getDepartment());
         return "/lab/search_for_reporting_ondemand?faces-redirect=true";
     }
-
+    
     public String navigateToListSingleUserBills() {
         processAllFinancialTransactionalBillListBySingleUserByIds();
         return "/cashier/shift_end_summary_bill_list";
@@ -12834,6 +12833,16 @@ public class SearchController implements Serializable {
     public String navigateToListCashBookEntrySiteSummary() {
         cashBookEntries = new ArrayList<>();
         return "/cashier/cash_book_summery_site";
+    }
+    
+    public String navigateToPatientReportSearch() {
+        patientInvestigations = new ArrayList<>();
+        return "/lab/patient_reports_search?faces-redirect=true";
+    }
+    
+    public String navigateToLabAnalytics() {
+        patientInvestigations = new ArrayList<>();
+        return "/reportLab/lab_summeries_index?faces-redirect=true";
     }
 
     public void genarateCashBookEntries() {
