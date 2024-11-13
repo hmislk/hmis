@@ -96,6 +96,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.java.CommonFunctions;
 import com.divudi.light.common.BillLight;
+import com.divudi.service.BillService;
 import com.divudi.service.StaffService;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
@@ -174,6 +175,8 @@ public class BillSearch implements Serializable {
     private StaffFacade staffFacade;
     @EJB
     private PatientFacade patientFacade;
+    @EJB
+    BillService billService;
     /**
      * Controllers
      */
@@ -5142,8 +5145,10 @@ public class BillSearch implements Serializable {
         viewingBill = billBean.fetchBill(bill.getId());
         viewingIndividualBillsOfBatchBill = billBean.fetchIndividualBillsOfBatchBill(bill);
         viewingRefundBills = billBean.fetchRefundBillsOfBilledBill(bill);
-        viewingBillItems = billBean.fetchBillItems(bill);
-        viewingBillFees = billBean.fetchBillFees(bill);
+        viewingBillItems = billService.fetchBillItems(bill);
+//        System.out.println("viewingBillItems = " + viewingBillItems);
+        viewingBillFees = billService.fetchBillFees(bill);
+//        System.out.println("viewingBillFees = " + viewingBillFees);
         viewingBillComponents = billBean.fetchBillComponents(bill);
         viewingBillPayments = billBean.fetchBillPayments(bill);
     }
