@@ -4,6 +4,8 @@ import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.data.dataStructure.DateRange;
 import com.divudi.data.dataStructure.YearMonthDay;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.TimeZone;
 import javax.enterprise.context.ApplicationScoped;
@@ -58,6 +60,13 @@ public class CommonFunctionsController {
             }
         }
         return result.toString().trim();
+    }
+    
+    public static String getDateTimeFormat(Date date) {
+        String s = "";
+        DateFormat d = new SimpleDateFormat("YYYY-MM-dd hh:mm:ss a");
+        s = d.format(date);
+        return s;
     }
 
     public DateRange getDateRangeForOT(Date date) {
