@@ -28,6 +28,15 @@
         </h:panelGroup>
 
         <h:panelGroup rendered="#{not empty cc.attrs.bundle.reportTemplateRows}">
+            <table class="table w-100">
+                <thead>
+                    <tr class="text-light bg-dark">
+                        <th class="text-light bg-dark">
+                            <h:outputText value="#{cc.attrs.bundle.name}" ></h:outputText>
+                        </th>
+                    </tr>
+                </thead>
+            </table>
             <p:dataTable id="tbl"
                          class="w-100 m-2"
                          value="#{cc.attrs.bundle.reportTemplateRows}"
@@ -39,10 +48,6 @@
                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                          rowsPerPageTemplate="5,10,20"
                          rowKey="#{row.id}">
-
-                <f:facet name="header">
-                    <h:outputText value="#{cc.attrs.bundle.name}" />
-                </f:facet>
 
                 <p:column width="2em">
                     <f:facet name="header">
@@ -56,6 +61,7 @@
                     <f:facet name="header">
                         <h:outputText value="Date &amp; Time" />
                     </f:facet>
+                    #{row}
                     <h:outputText value="#{row.bill.createdAt}" >
                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
                     </h:outputText>
