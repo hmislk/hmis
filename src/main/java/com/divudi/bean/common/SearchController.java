@@ -14132,8 +14132,8 @@ public class SearchController implements Serializable {
                 switch (visitType) {
                     case "Any":
                         System.out.println("Credit Any");
-                        jpql += " AND (bi.bill.paymentMethod in :apm OR bi.bill.patientEncounter.paymentMethod in :apm)";
-                        m.put("apm", allMethods);
+                        jpql += " AND (bi.bill.paymentMethod in :cpm OR bi.bill.patientEncounter.paymentMethod in :cpm)";
+                        m.put("cpm", creditPaymentMethods);
                         break;
                     case "OP":
                         System.out.println("Credit OP");
@@ -14159,7 +14159,7 @@ public class SearchController implements Serializable {
                         System.out.println("Credit Any");
                         System.out.println("Credit Any");
                         jpql += " AND (bi.bill.paymentMethod in :apm OR bi.bill.patientEncounter.paymentMethod in :apm)";
-                        m.put("apm", allMethods);
+                        m.put("apm", nonCreditPaymentMethods);
                         break;
                     case "OP":
                         System.out.println("Credit OP");
