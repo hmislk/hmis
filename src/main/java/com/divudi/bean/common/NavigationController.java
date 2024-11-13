@@ -32,6 +32,10 @@ public class NavigationController implements Serializable {
         return "/admin/institutions/department_management?faces-redirect=true";
     }
     
+    public String navigateToManageDepartmentAll() {
+        return "/admin/institutions/department_management_all?faces-redirect=true";
+    }
+    
     public String navigateToManageSite(){
         institutionController.fillAllSites();
         institutionController.prepareAddSite();

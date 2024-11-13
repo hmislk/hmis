@@ -12,7 +12,7 @@
 
                 <h:form >
                     <p:panel header="Route Analysis Report" styleClass="w-100">
-                        <h:panelGrid columns="5" class=" w-100 m-2 my-3">
+                        <h:panelGrid columns="8" class=" w-100">
                             <h:panelGroup >
                                 <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
                                 <h:outputLabel value="From Date"  class="mx-3"/>
@@ -22,7 +22,7 @@
                                           class="w-100 mr-5"
                                           inputStyleClass="w-100"></p:datePicker>
 
-                            <p:spacer width="25"></p:spacer>
+                            <p:spacer width="20"></p:spacer>
 
 
                             <h:panelGroup >
@@ -35,11 +35,22 @@
                                           class="w-100"
                                           inputStyleClass="w-100"></p:datePicker>
 
+                            <p:spacer width="20"></p:spacer>
+                            
+                            <h:panelGroup >
+                                <h:outputText value="&#xf15c;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Report Type"  class="mx-4"/>
+                                <p:outputLabel  />
+                            </h:panelGroup>
+                            <p:selectOneMenu style=" max-width: 100%; overflow-x: auto;" class="w-100">
+                                <f:selectItem itemLabel="Select Type"/>
+                            </p:selectOneMenu>
+
 
 
                             <h:panelGroup >
                                 <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
-                                <h:outputLabel value="Institution/Branch"  class="mx-3"/>
+                                <h:outputLabel value="Institution"  class="mx-3"/>
                             </h:panelGroup>
 
                             <p:selectOneMenu 
@@ -56,8 +67,103 @@
 
                             </p:selectOneMenu>
 
-                            <p:spacer width="50"></p:spacer>
+                            <p:spacer ></p:spacer>
 
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
+                                <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="siteMenu"
+                                styleClass="w-100 form-control"  
+                                value="#{searchController.site}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Sites" />
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                <p:ajax process="siteMenu" update="cmbDept" />
+                            </p:selectOneMenu>
+
+                            <p:spacer ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                            </h:panelGroup>
+                            <h:panelGroup id="cmbDept">
+
+                                <!-- Component 1: Without Institution and Site -->
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution eq null and searchController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 2: With Site Only -->
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution eq null and searchController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 3: With Institution Only -->
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution ne null and searchController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(searchController.institution)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 4: With Both Institution and Site -->
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution ne null and searchController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <p:selectOneMenu
+                                    rendered="false"
+                                    styleClass="w-100 form-control"  
+                                    value="#{searchController.department}" 
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}" 
+                                        var="d" 
+                                        itemLabel="#{d.name}" 
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+                            </h:panelGroup>
 
 
                             <h:panelGroup >
@@ -77,17 +183,7 @@
                                                />
                             </p:selectOneMenu>
 
-
-                            <h:panelGroup >
-                                <h:outputText value="&#xf15c;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
-                                <h:outputLabel value="Report Type"  class="mx-3"/>
-                                <p:outputLabel  />
-                            </h:panelGroup>
-                            <p:selectOneMenu style=" max-width: 100%; overflow-x: auto;" class="w-100">
-                                <f:selectItem itemLabel="Select Type"/>
-                            </p:selectOneMenu>
-                            <p:spacer width="50"></p:spacer>
-
+                            <p:spacer ></p:spacer>
 
                             <h:panelGroup >
                                 <h:outputText value="&#xf1ad;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
@@ -113,25 +209,25 @@
                         <p:commandButton ajax="false" value="Process" action="null"
                                          style="width: 150px"
                                          icon="fas fa-cogs"
-                                         class="ui-button-warning mx-2">
+                                         class="ui-button-warning m-2">
                         </p:commandButton>
 
                         <p:commandButton 
                             icon="fa-solid fa-print"
-                            class="mx-2 ui-button-info"
+                            class="m-2 ui-button-info"
                             style="width: 150px"
                             ajax="false" 
                             value="Print">
                             <p:printer target="tblExport" />
                         </p:commandButton>
-                        <p:commandButton id="btnExcel" class="mx-2 ui-button-success"
+                        <p:commandButton id="btnExcel" class="m-2 ui-button-success"
                                          style="width: 150px"
                                          icon="fas fa-file-excel"
                                          ajax="false" value="Excel">
                             <p:dataExporter type="xlsx" target="tbl" fileName="itemized_sale_summary" />
                         </p:commandButton>
                         <p:commandButton 
-                            class="mx-2 ui-button-danger" 
+                            class="m-2 ui-button-danger" 
                             style="width: 150px"
                             icon="fa-solid fa-file-pdf"
                             ajax="false" 
@@ -142,7 +238,7 @@
 
 
 
-                        <h:panelGrid columns="2" class="my-2">
+                        <h:panelGrid columns="2" class="mb-2">
                             <h:outputLabel value="From Date :  "/>
                             <h:outputLabel value="#{reportController.fromDate}"  >
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
