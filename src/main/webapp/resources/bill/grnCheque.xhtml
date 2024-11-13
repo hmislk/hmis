@@ -1,0 +1,206 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html  xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+       xmlns:h="http://xmlns.jcp.org/jsf/html"
+       xmlns:p="http://primefaces.org/ui"
+       xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bill" type="com.divudi.entity.Bill"/>
+        <cc:attribute name="billController" type="com.divudi.bean.pharmacy.DealorPaymentBillSearch" />
+        <cc:attribute name="dup" type="java.lang.Boolean" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+
+        <div >
+            <div >
+                <div >
+
+                    <h:outputStylesheet name="printing.css" library="css" />
+                    <div class="d-flex justify-content-end">
+                        <p:commandButton 
+                            style="width: 100px" 
+                            value="Print" 
+                            ajax="false" 
+                            action="#"  
+                            class="ui-button-info mb-2"
+                            icon="fa fa-print">
+                            <p:printer target="gpBillPreview" ></p:printer>
+                        </p:commandButton>
+                    </div>
+
+                    <cc:implementation>
+                        <h:outputStylesheet library="css" name="pharmacyA4.css"/>
+                        <div class="d-flex justify-content-end">
+                            <p:commandButton 
+                                style="width: 100px" 
+                                value="Print" 
+                                ajax="false" 
+                                action="#"  
+                                class="ui-button-info mb-2"
+                                icon="fa fa-print">
+                                <!--<p:printer target="gpBillPreview" ></p:printer>-->
+                            </p:commandButton>
+                            <p:commandButton 
+                                style="width: 100px" 
+                                value="Back" 
+                                ajax="false" 
+                                action="#{supplierPaymentController.navigateToGRNPaymentDoneSearch()}"  
+                                class="ui-button-info mb-2 mx-2">
+                            </p:commandButton>
+                            
+                        </div>
+                        <div class="posbill noBorder summeryBorder" >
+
+                            <div class="institutionName">
+                                <h:outputLabel value="#{cc.attrs.bill.creater.department.printingName}"/>
+                            </div>
+                            <div class="institutionName">
+                                <h:outputLabel value="#{cc.attrs.bill.department.name}"/>
+                            </div>
+
+                            <div >
+
+                                <h4 style="color: #000000; text-align: center " >
+                                    <h:outputLabel value="Payment Voucher" style="text-decoration: underline;"/>
+                                </h4>
+
+                                <div class="institutionName">                                                 
+                                    <p:outputLabel value="#{cc.attrs.bill.cancelledBill.deptId} **Cancelled"  
+                                                   rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}"/> 
+                                    <p:outputLabel value="#{cc.attrs.bill.refundedBill.deptId} **Returned"  
+                                                   rendered="#{cc.attrs.bill.refundedBill.deptId ne null}"/> 
+                                    <p:outputLabel value="#{cc.attrs.bill.deptId}" 
+                                                   rendered="#{cc.attrs.bill.cancelledBill.deptId eq null and cc.attrs.bill.refundedBill.deptId eq null}"/>  
+                                    <p:outputLabel value="  **Duplicate" 
+                                                   rendered="#{cc.attrs.bill.cancelledBill.deptId eq null and cc.attrs.dup eq true }" />
+                                </div>
+
+
+                                <div>
+                                    <h:outputLabel value="Payee : " style="text-align: right!important;"/>
+                                    <h:outputLabel value="#{cc.attrs.bill.toInstitution.name}"/>
+                                    <h:outputLabel value="Date :"  style="position: relative; left: 70%;" />
+                                    <h:outputLabel value="#{cc.attrs.bill.createdAt}"  style="position: relative; left: 70%;" >
+                                        <f:convertDateTime pattern="dd MM yyyy hh mm a"/>
+                                    </h:outputLabel>
+
+                                </div>
+
+                                <div>
+
+                                    <p:dataTable value="#{cc.attrs.billItems}" var="bi" sortBy="#{bi.referenceBill.invoiceNumber}">
+
+                                        <p:column headerText="Po Approve">
+                                            <p:outputLabel value="#{bi.referenceBill.referenceBill.createdAt}" style="text-align: center;">
+                                                <f:convertDateTime pattern="dd/mm/yyyy hh:mm a"/>                                
+                                            </p:outputLabel>
+                                        </p:column>                   
+
+
+                                        <p:column headerText="Grn Date">
+                                            <p:outputLabel value="#{bi.referenceBill.createdAt}" style="text-align: center;">
+                                                <f:convertDateTime pattern="dd/mm/yyyy hh:mm a"/>
+
+                                            </p:outputLabel>
+                                        </p:column>
+
+                                        <p:column headerText="Grn Number" >
+                                            <p:outputLabel value="#{bi.referenceBill.deptId}" style="text-align: center;"/>
+                                        </p:column>
+
+
+
+                                        <p:column headerText="Invoice Number" >
+                                            <p:outputLabel value="#{bi.referenceBill.invoiceNumber}" style="text-align: center;"/>
+                                        </p:column>
+
+                                        <p:column headerText="Amount">
+                                            <p:outputLabel value="#{0-bi.referenceBill.netTotal}" style="text-align: right;">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:outputLabel>
+                                        </p:column>
+
+                                    </p:dataTable>
+
+                                </div>
+
+                                <div>
+                                    <h:panelGrid columns="5" styleClass="col-12 W-100" cellpadding="5">
+                                        <p:outputLabel value="Payee:" style="font-weight: bold;" />
+                                        <p:outputLabel value="Bank:" style="font-weight: bold;" />
+                                        <p:outputLabel value="Cheque Date:" style="font-weight: bold;" />
+                                        <p:outputLabel value="Cheque No:" style="font-weight: bold;" />
+                                        <p:outputLabel value="Amount:" style="font-weight: bold;" />
+
+
+                                        <p:outputLabel value="#{cc.attrs.bill.toInstitution.name}" />
+                                        <p:outputLabel value="#{cc.attrs.bill.bank.name}" />
+                                        <p:outputLabel value="#{cc.attrs.bill.chequeDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </p:outputLabel>
+                                        <p:outputLabel value="#{cc.attrs.bill.chequeRefNo}" />
+                                        <p:outputLabel value="#{0 - cc.attrs.bill.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel>
+                                    </h:panelGrid>
+                                </div>
+
+
+                                <div>
+                                    <br></br>
+                                    <h:outputLabel value="Prepared By :" /> 
+                                    <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.nameWithTitle}" style="text-align: right!important;text-decoration: underline; text-decoration-style: dotted;"/>
+                                    <br></br>                
+                                    <br></br>         
+                                    <h:outputLabel value="Approved By :"/>
+                                    <h:outputLabel value="#{cc.attrs.bill.referenceBill.creater.webUserPerson.nameWithTitle}"/>
+                                    <br></br>                                      
+                                    <br></br>
+                                    <h:outputLabel value="Authorized By :"/>
+                                    <h:outputLabel value="................................................................"/>
+                                    <br></br>
+                                    <br></br>
+
+                                    <h:outputLabel value="Cheque No :"/>
+                                    <h:outputLabel value="...................................................................."/>
+                                    <h:outputLabel value="Amount : Rs. #{0-cc.attrs.bill.netTotal} " style="position: absolute; left: 70%;"/>
+                                    <br></br>
+                                    <br></br>                    
+                                    <h:outputLabel value="Received with thanks sum of Rupees  .................................................................................................................................................. #{sessionController.loggedUser.institution.name} "/>
+                                    <br></br>
+
+                                    <!--                    <div >-->
+
+                                    <!--<h:outputLabel value="Date :"  style="position: relative; left: 70%;" />-->
+                                    <!--                        <br/>-->
+                                    <!--                        <h:outputLabel value="Amount : Rs. " style="font-weight: bold;position: relative; left: 70%;"/>-->
+                                    <!--                        <h:outputLabel value="#{0-cc.attrs.bill.netTotal}" style="font-weight: bold;position: relative; left: 71%;">-->
+                                    <!--<f:convertNumber pattern="#,##0.00" />-->
+                                    <!--                        </h:outputLabel>-->
+                                    <!--                        <br/>-->
+                                    <div>
+                                        <h:outputLabel value="Stamp : " style="position: relative; left: 70%; "/>
+                                        <div style="position: relative; border: 1px black dashed!important;height: 60px;width: 50px; left: 75%;">
+                                        </div>
+                                        <!--                        <h:outputLabel value="Stamp " style="position: relative; left: 70%;"/>-->
+                                        <!--                        <br></br>-->
+                                        <h:outputLabel value="Date : " style="position: relative; left: 70%;"/>
+                                        <br></br>
+                                        <h:outputLabel value="Name : " style="position: relative; left: 70%;"/>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </cc:implementation>
+                </div>
+            </div>
+        </div>
+
+
+    </cc:implementation>
+</html>

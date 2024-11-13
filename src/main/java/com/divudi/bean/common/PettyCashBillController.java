@@ -429,7 +429,7 @@ public class PettyCashBillController implements Serializable {
     private Bill createPettyCashReturnBill() {
         Bill rb = new RefundBill();
         rb.copy(getCurrent());
-        rb.invertValue(getCurrent());
+        rb.invertAndAssignValuesFromOtherBill(getCurrent());
         rb.setBillType(BillType.PettyCashReturn);
         rb.setBillTypeAtomic(BillTypeAtomic.PETTY_CASH_RETURN);
         rb.setBilledBill(getCurrent());

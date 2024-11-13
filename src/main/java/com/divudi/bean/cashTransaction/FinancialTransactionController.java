@@ -1234,6 +1234,13 @@ public class FinancialTransactionController implements Serializable {
         return "/cashier/record_shift_excess?faces-redirect=true";
     }
 
+    public String navigateToViewDetailsOfSelectedBundleDuringHandoverInNewWindow() {
+        if (selectedBundle == null) {
+            return null;
+        }
+        return "/cashier/handover_start_all_bill_type_details?faces-redirect=true";
+    }
+
     public String navigateToCashierShiftBillSearch() {
         resetClassVariables();
         return "/cashier/cashier_shift_bill_search?faces-redirect=true";
@@ -2254,11 +2261,11 @@ public class FinancialTransactionController implements Serializable {
         if (currentBill.getBillType() != BillType.OPERATIONAL_EXPENSES) {
             JsfUtil.addErrorMessage("Error");
             return "";
-        }
+        }          
         currentBill.setDepartment(sessionController.getDepartment());
         currentBill.setInstitution(sessionController.getInstitution());
         currentBill.setStaff(sessionController.getLoggedUser().getStaff());
-        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.SUPPLEMENTARY_INCOME);
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.OPERATIONAL_EXPENSES);
         currentBill.setBillDate(new Date());
         currentBill.setBillTime(new Date());
         currentBill.setDeptId(deptId);
@@ -2565,6 +2572,7 @@ public class FinancialTransactionController implements Serializable {
         bundle.selectAllChildBundles();
         bundle.aggregateTotalsFromAllChildBundles();
         bundle.setDenominationTransactions(denominationTransactionController.createDefaultDenominationTransaction());
+        bundle.sortByDateInstitutionSiteDepartmentType();
         return "/cashier/handover_start_all?faces-redirect=true";
     }
 
@@ -3674,6 +3682,7 @@ public class FinancialTransactionController implements Serializable {
                 String handoverKey = (ph != null) ? ph.name() : "No Handover"; // Use the enum name as part of the key
 
                 String key = String.join("-", dateKey, deptKey, userKey, webUserKey, handoverKey);
+                System.err.println("key = " + key);
 
                 ReportTemplateRowBundle b = groupedBundles.getOrDefault(key, new ReportTemplateRowBundle());
                 b.setDenominations(sessionController.findDefaultDenominations());
@@ -5188,8 +5197,19 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Select a Payment Method");
             return;
         }
+        
+        if (currentPayment.getPaymentMethod() == PaymentMethod.Cash) {
+        double drawerBalance = getLoggedUserDrawer().getCashInHandValue();
+        double paymentAmount = currentPayment.getPaidValue();
+
+        if (drawerBalance < paymentAmount) {
+            JsfUtil.addErrorMessage("Not enough cash in your drawer to make this payment");
+            return;
+        }
+    }
+        
         getCurrentBillPayments().add(currentPayment);
-        calculateIncometBillTotal();
+        calculateExpenseBillTotal();
         currentPayment = null;
     }
 
@@ -5336,6 +5356,18 @@ public class FinancialTransactionController implements Serializable {
     private void calculateIncometBillTotal() {
         double total = 0.0;
         for (Payment p : getCurrentBillPayments()) {
+            total += p.getPaidValue();
+        }
+        currentBill.setTotal(total);
+        currentBill.setNetTotal(total);
+    }
+    
+    private void calculateExpenseBillTotal() {
+        double total = 0.0;
+        for (Payment p : getCurrentBillPayments()) {
+            double absolutePaymentValue = Math.abs(p.getPaidValue());
+            double expenseValue = 0 - absolutePaymentValue;
+            p.setPaidValue(expenseValue);
             total += p.getPaidValue();
         }
         currentBill.setTotal(total);

@@ -230,7 +230,7 @@ public class AgentPaymentReceiveSearchController implements Serializable {
         CancelledBill cb = new CancelledBill();
         if (getBill() != null) {
             cb.copy(getBill());
-            cb.invertValue(getBill());
+            cb.invertAndAssignValuesFromOtherBill(getBill());
 
             cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), billType, BillClassType.CancelledBill, billNumberSuffix));
             cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), billType, BillClassType.CancelledBill, billNumberSuffix));
@@ -254,7 +254,7 @@ public class AgentPaymentReceiveSearchController implements Serializable {
         CancelledBill cb = new CancelledBill();
         if (originalBill != null) {
             cb.copy(originalBill);
-            cb.invertValue(originalBill);
+            cb.invertAndAssignValuesFromOtherBill(originalBill);
             String deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.AGENCY_CREDIT_NOTE);
             cb.setDeptId(deptId);
             cb.setInsId(deptId);
@@ -501,7 +501,7 @@ public class AgentPaymentReceiveSearchController implements Serializable {
         }
         CancelledBill cb = new CancelledBill();
         cb.copy(originalCcDepositBill);
-        cb.invertValue(originalCcDepositBill);
+        cb.invertAndAssignValuesFromOtherBill(originalCcDepositBill);
         String deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL);
         cb.setDeptId(deptId);
         cb.setInsId(deptId);

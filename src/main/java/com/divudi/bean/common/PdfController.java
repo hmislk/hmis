@@ -7,9 +7,41 @@ import com.divudi.bean.lab.PatientInvestigationController;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.InvestigationItemValueType;
 import com.divudi.data.ReportItemType;
+import static com.divudi.data.ReportItemType.ApprovedAt;
+import static com.divudi.data.ReportItemType.AutherizedCode;
+import static com.divudi.data.ReportItemType.AutherizedPosition;
+import static com.divudi.data.ReportItemType.AutherizedQualification;
+import static com.divudi.data.ReportItemType.BHT;
+import static com.divudi.data.ReportItemType.BillNo;
+import static com.divudi.data.ReportItemType.BilledDate;
+import static com.divudi.data.ReportItemType.BilledTime;
 import static com.divudi.data.ReportItemType.BillingDepartment;
+import static com.divudi.data.ReportItemType.BillingInstitution;
+import static com.divudi.data.ReportItemType.CollectedOn;
 import static com.divudi.data.ReportItemType.CollectingCenter;
+import static com.divudi.data.ReportItemType.DepartmentBillNo;
+import static com.divudi.data.ReportItemType.InvestigationName;
+import static com.divudi.data.ReportItemType.MRN;
+import static com.divudi.data.ReportItemType.PatientAge;
+import static com.divudi.data.ReportItemType.PatientAgeOnBillDate;
+import static com.divudi.data.ReportItemType.PatientAgeandGender;
+import static com.divudi.data.ReportItemType.PatientName;
+import static com.divudi.data.ReportItemType.PatientSex;
+import static com.divudi.data.ReportItemType.PerformDepartment;
+import static com.divudi.data.ReportItemType.PerformInstitution;
+import static com.divudi.data.ReportItemType.Phn;
+import static com.divudi.data.ReportItemType.Phone;
+import static com.divudi.data.ReportItemType.PrintedAt;
 import static com.divudi.data.ReportItemType.ReceivedAt;
+import static com.divudi.data.ReportItemType.ReceivedOn;
+import static com.divudi.data.ReportItemType.ReferringDoctor;
+import static com.divudi.data.ReportItemType.ReportedDate;
+import static com.divudi.data.ReportItemType.ReportedTime;
+import static com.divudi.data.ReportItemType.SampledAt;
+import static com.divudi.data.ReportItemType.SampledDate;
+import static com.divudi.data.ReportItemType.SampledID;
+import static com.divudi.data.ReportItemType.SampledTime;
+import static com.divudi.data.ReportItemType.Speciman;
 import static com.divudi.data.ReportItemType.VisitType;
 import com.divudi.data.ReportTemplateRow;
 import com.divudi.data.ReportTemplateRowBundle;
@@ -59,6 +91,7 @@ import com.itextpdf.layout.element.LineSeparator;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.properties.TextAlignment;
+import com.itextpdf.layout.properties.UnitValue;
 import com.itextpdf.text.pdf.qrcode.BitMatrix;
 import java.util.function.Supplier;
 import javax.inject.Inject;
@@ -429,17 +462,17 @@ public class PdfController {
                                     && report.getPatientInvestigation().getBillItem().getBill() != null
                                     && report.getPatientInvestigation().getBillItem().getBill().getDepartment() != null)
                                     ? report.getPatientInvestigation().getBillItem().getBill().getDepartment().getName() : "";
-                            break; 
+                            break;
                         case PerformDepartment:
                             value = (report.getPatientInvestigation() != null && report.getPatientInvestigation().getBillItem() != null
                                     && report.getPatientInvestigation().getBillItem().getBill() != null
-                                    && report.getPatientInvestigation().getBillItem().getBill().getToDepartment()!= null)
+                                    && report.getPatientInvestigation().getBillItem().getBill().getToDepartment() != null)
                                     ? report.getPatientInvestigation().getBillItem().getBill().getToDepartment().getName() : "";
                             break;
                         case BillingInstitution:
                             value = (report.getPatientInvestigation() != null && report.getPatientInvestigation().getBillItem() != null
                                     && report.getPatientInvestigation().getBillItem().getBill() != null
-                                    && report.getPatientInvestigation().getBillItem().getBill().getInstitution()!= null)
+                                    && report.getPatientInvestigation().getBillItem().getBill().getInstitution() != null)
                                     ? report.getPatientInvestigation().getBillItem().getBill().getInstitution().getName() : "";
                             break;
                         case PerformInstitution:
@@ -447,7 +480,7 @@ public class PdfController {
                                     && report.getPatientInvestigation().getBillItem().getBill() != null
                                     && report.getPatientInvestigation().getBillItem().getBill().getToInstitution() != null)
                                     ? report.getPatientInvestigation().getBillItem().getBill().getToInstitution().getName() : "";
-                            break;  
+                            break;
                         case BHT:
                             value = (report.getPatientInvestigation() != null && report.getPatientInvestigation().getEncounter() != null)
                                     ? report.getPatientInvestigation().getEncounter().getBhtNo() : "";
@@ -467,7 +500,7 @@ public class PdfController {
                                 System.out.println("");
                             }
                             value = sampleIds;
-                            
+
                             break;
                         default:
                             break;
@@ -718,8 +751,6 @@ public class PdfController {
         } else {
             for (ReportTemplateRowBundle childBundle : rootBundle.getBundles()) {
                 addDataToPdf(document, childBundle, childBundle.getBundleType());
-                // Optionally, add a page break between tables
-                // document.add(new AreaBreak(AreaBreakType.NEXT_PAGE));
             }
         }
 
@@ -741,8 +772,8 @@ public class PdfController {
         }
 
         // Create a new Table for each call
-        Table table = new Table(new float[]{10, 40, 15, 15, 10, 10}); // Adjust column widths as needed
-        table.setWidth(100); // Set width to 100% of available space
+        Table table = new Table(new float[]{10, 40, 15, 15, 10, 10}); 
+        table.setWidth(200);
 
         switch (type) {
             case "opdServiceCollection":
@@ -786,6 +817,9 @@ public class PdfController {
                 break;
             case "netCash":
                 populateTitleBundleForPdf(document, addingBundle);
+                break;
+            case "income_breakdown_by_category":
+                populateTableForIncomeByCategory(document, addingBundle);
                 break;
             default:
                 table.addCell(new Cell().add(new Paragraph("Data for unknown type"))); // Default handling for unknown types
@@ -1108,6 +1142,49 @@ public class PdfController {
                         row.getItem() != null ? row.getItem().getName() : "")));
                 table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(
                         String.valueOf(row.getItemCount()))));
+                table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(
+                        String.format("%.2f", row.getItemHospitalFee())))); // Format as string
+                table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(
+                        String.format("%.2f", row.getItemProfessionalFee())))); // Format as string
+                table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(
+                        String.format("%.2f", row.getItemDiscountAmount())))); // Format as string
+                table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(
+                        String.format("%.2f", row.getItemNetTotal())))); // Format as string
+            }
+
+            // Add the table to the document
+            document.add(table);
+        } else {
+            // Add a paragraph for no data
+            Paragraph noDataParagraph = new Paragraph("No Data for " + addingBundle.getName());
+            document.add(noDataParagraph);
+        }
+    }
+    
+    private void populateTableForIncomeByCategory(Document document, ReportTemplateRowBundle addingBundle) {
+        if (addingBundle.getReportTemplateRows() != null && !addingBundle.getReportTemplateRows().isEmpty()) {
+            
+            document.add(new Paragraph(addingBundle.getName()));
+            
+            Table table = new Table(new float[]{55, 20, 25, 25, 25, 25, 25});
+            table.setWidth(UnitValue.createPercentValue(100));
+
+            // Add headers
+            String[] headers = {"Category", "Count", "Gross Value", "Hospital Fee", "Professional Fee", "Discount", "Net Amount"};
+            for (String header : headers) {
+                table.addHeaderCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(header)));
+            }
+            
+            table.addFooterCell(new Paragraph(String.format("%.2f", addingBundle.getTotal())));
+
+            // Populate table with data rows
+            for (ReportTemplateRow row : addingBundle.getReportTemplateRows()) {
+                table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(
+                        row.getCategory() != null ? row.getCategory().getName() : "")));
+                table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(
+                        String.valueOf(row.getItemCount()))));
+                table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(
+                        String.format("%.2f", row.getItemTotal())))); // Format as string
                 table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(
                         String.format("%.2f", row.getItemHospitalFee())))); // Format as string
                 table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(

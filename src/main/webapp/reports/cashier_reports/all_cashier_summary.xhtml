@@ -66,6 +66,7 @@
                             <p:selectOneMenu class="w-100 " value="#{searchController.institution}" filter="true" >
                                 <f:selectItem itemLabel="All Institution" ></f:selectItem>
                                 <f:selectItems value="#{sessionController.loggableInstitutions}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" ></f:selectItems>
+                                <p:ajax event="itemSelect" process="@this" update="cmbDept"/>
                             </p:selectOneMenu>
 
                             <p:spacer width="20" ></p:spacer>
@@ -74,17 +75,76 @@
                             <p:selectOneMenu class="w-100 "  value="#{searchController.site}" filter="true">
                                 <f:selectItem itemLabel="All Sites" ></f:selectItem>
                                 <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" ></f:selectItems>
-                                <p:ajax event="itemSelect" process="@this" update="dept"/>
+                                <p:ajax event="itemSelect" process="@this" update="cmbDept"/>
                             </p:selectOneMenu>
 
                             <p:spacer width="20" ></p:spacer>
 
                             <h:outputLabel value="Department"/>                                
-                            <p:selectOneMenu class="w-100" style="width: 400px!important;" value="#{searchController.department}" filter="true" id="dept">
-                                <f:selectItem itemLabel="All Departments" ></f:selectItem>
-                                <f:selectItems value="#{departmentController.getInstitutionDepartments(searchController.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" ></f:selectItems>
-                            </p:selectOneMenu>
+                            <h:panelGroup id="cmbDept">
 
+                                <!-- Component 1: Without Institution and Site -->
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution eq null and searchController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 2: With Site Only -->
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution eq null and searchController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 3: With Institution Only -->
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution ne null and searchController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(searchController.institution)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 4: With Both Institution and Site -->
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution ne null and searchController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                
+                            </h:panelGroup>
                             <p:spacer></p:spacer>
 
 
@@ -357,7 +417,6 @@
                                                        summary.voucherValue + 
                                                        summary.iouValue + 
                                                        summary.chequeValue + 
-                                                       summary.patientDepositValue + 
                                                        summary.creditValue + 
                                                        summary.slipValue + 
                                                        summary.ewalletValue }" 
@@ -370,7 +429,6 @@
                                                            searchController.bundle.creditValue + 
                                                            searchController.bundle.voucherValue + 
                                                            searchController.bundle.iouValue + 
-                                                           searchController.bundle.patientDepositValue + 
                                                            searchController.bundle.chequeValue + 
                                                            searchController.bundle.slipValue + 
                                                            searchController.bundle.ewalletValue }" 

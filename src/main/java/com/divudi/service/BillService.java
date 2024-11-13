@@ -2,6 +2,8 @@ package com.divudi.service;
 
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.InstitutionType;
+import com.divudi.data.PaymentMethod;
+import static com.divudi.data.PaymentMethod.None;
 import com.divudi.data.ReportTemplateRow;
 import com.divudi.data.ReportTemplateRowBundle;
 import com.divudi.data.dataStructure.SearchKeyword;
@@ -10,11 +12,13 @@ import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
+import com.divudi.entity.Payment;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
+import com.divudi.facade.PaymentFacade;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -38,11 +42,59 @@ public class BillService {
     private BillItemFacade billItemFacade;
     @EJB
     private BillFeeFacade billFeeFacade;
+    @EJB
+    PaymentFacade paymentFacade;
 
     public void createBillItemFeeBreakdownAsHospitalFeeItemDiscount(List<BillItem> billItems) {
         for (BillItem bi : billItems) {
             createBillItemFeeBreakdownAsHospitalFeeItemDiscount(bi);
         }
+    }
+
+    public List<PaymentMethod> availablePaymentMethodsForCancellation(Bill bill) {
+        List<PaymentMethod> pms = new ArrayList<>();
+        if (bill.getPaymentMethod() == null) {
+            pms.add(PaymentMethod.Cash);
+            return pms;
+        } else if (bill.getPaymentMethod() == PaymentMethod.Cash) {
+            pms.add(PaymentMethod.Cash);
+            return pms;
+        } else if (bill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+            pms.add(PaymentMethod.Cash);
+            pms.add(PaymentMethod.Slip);
+            pms.add(PaymentMethod.MultiplePaymentMethods);
+            return pms;
+        }
+        for (Payment p : fetchBillPayments(bill)) {
+            if (p.getPaymentDate() == null) {
+                continue;
+            }
+            switch (p.getPaymentMethod()) {
+                case Agent:
+                case Card:
+                case Cash:
+                case Cheque:
+                case Credit:
+                case IOU:
+
+                case OnCall:
+                case OnlineSettlement:
+                case PatientDeposit:
+                case PatientPoints:
+                case Slip:
+                case Staff:
+                case Staff_Welfare:
+                case Voucher:
+                case YouOweMe:
+                case ewallet:
+                    pms.add(PaymentMethod.IOU);
+                    break;
+                case None:
+                case MultiplePaymentMethods:
+
+            }
+        }
+        return pms;
     }
 
     public void createBillItemFeeBreakdownAsHospitalFeeItemDiscount(BillItem bi) {
@@ -75,6 +127,50 @@ public class BillService {
         createBillItemFeeBreakdownAsHospitalFeeItemDiscount(allBillItems);
     }
 
+    public List<Bill> fetchIndividualBillsOfBatchBill(Bill batchBill) {
+        System.out.println("batchBill = " + batchBill);
+        String j = "Select b "
+                + " from Bill b "
+                + " where b.backwardReferenceBill=:bb ";
+        Map m = new HashMap();
+        m.put("bb", batchBill);
+        System.out.println("m = " + m);
+        System.out.println("j = " + j);
+        List<Bill> tbs = billFacade.findByJpql(j, m);
+        return tbs;
+    }
+
+    public void saveBill(Bill bill) {
+        saveBill(bill, null);
+    }
+
+    public void saveBill(Bill bill, WebUser creator) {
+        if (bill == null) {
+            return;
+        }
+        if (bill.getId() == null) {
+            if (bill.getCreatedAt() == null) {
+                bill.setCreatedAt(new Date());
+            }
+            if (bill.getCreater() == null && creator != null) {
+                bill.setCreater(creator);
+            }
+            billFacade.create(bill);
+        } else {
+            billFacade.edit(bill);
+        }
+    }
+
+    public Bill reloadBill(Bill bill) {
+        if (bill == null) {
+            return null;
+        }
+        if (bill.getId() == null) {
+            return bill;
+        }
+        return billFacade.findWithoutCache(bill.getId());
+    }
+
     public List<BillFee> fetchBillFees(BillItem billItem) {
         String jpql = "select bf "
                 + "from BillFee bf "
@@ -103,6 +199,20 @@ public class BillService {
             allBillItems.addAll(fetchBillItems(b));
         }
         return allBillItems;
+    }
+
+    public List<Payment> fetchBillPayments(Bill bill) {
+        System.out.println("bill = " + bill);
+        List<Payment> fetchingBillComponents;
+        String jpql;
+        Map params = new HashMap();
+        jpql = "Select p "
+                + " from Payment p "
+                + "where p.bill=:bill "
+                + "order by p.id";
+        params.put("bill", bill);
+        fetchingBillComponents = paymentFacade.findByJpql(jpql, params);
+        return fetchingBillComponents;
     }
 
     public void calculateBillBreakdownAsHospitalCcAndStaffTotalsByBillFees(Bill bill) {

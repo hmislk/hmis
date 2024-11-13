@@ -278,7 +278,7 @@ public class BillReturnController implements Serializable {
         newlyReturnedBill.setInstitution(sessionController.getInstitution());
         newlyReturnedBill.setDepartment(sessionController.getDepartment());
         newlyReturnedBill.setReferenceBill(originalBillToReturn);
-        newlyReturnedBill.invertValue();
+        newlyReturnedBill.invertValueOfThisBill();
 
         String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.OPD_BILL_REFUND);
         newlyReturnedBill.setDeptId(deptId);
@@ -353,6 +353,8 @@ public class BillReturnController implements Serializable {
         Payment returningPayment = new Payment();
         returningPayment.setBill(newlyReturnedBill);
         returningPayment.setPaymentMethod(paymentMethod);
+        returningPayment.setInstitution(sessionController.getInstitution());
+        returningPayment.setDepartment(sessionController.getDepartment());
         returningPayment.setPaidValue(newlyReturnedBill.getNetTotal());
         paymentController.save(returningPayment);
         returningBillPayments.add(returningPayment);
@@ -437,7 +439,7 @@ public class BillReturnController implements Serializable {
         newlyReturnedBill.setInstitution(sessionController.getInstitution());
         newlyReturnedBill.setDepartment(sessionController.getDepartment());
         newlyReturnedBill.setReferenceBill(originalBillToReturn);
-        newlyReturnedBill.invertValue();
+        newlyReturnedBill.invertValueOfThisBill();
 
         String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.CC_BILL_REFUND);
         newlyReturnedBill.setDeptId(deptId);

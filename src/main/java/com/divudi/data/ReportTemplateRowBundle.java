@@ -25,6 +25,8 @@ import com.divudi.entity.cashTransaction.DenominationTransaction;
 import com.divudi.entity.channel.SessionInstance;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -658,6 +660,50 @@ public class ReportTemplateRowBundle implements Serializable {
 
     }
 
+    public void calculateTotalsWithCredit() {
+        System.out.println("calculateTotals = ");
+        resetTotalsAndFlags();
+
+        // Check if the list of rows is not null and not empty
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            // Aggregate values from each row and update transaction flags
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+                addValueAndUpdateFlag("cash", safeDouble(row.getCashValue()));
+                addValueAndUpdateFlag("card", safeDouble(row.getCardValue()));
+                addValueAndUpdateFlag("multiplePaymentMethods", safeDouble(row.getMultiplePaymentMethodsValue()));
+                addValueAndUpdateFlag("staff", safeDouble(row.getStaffValue()));
+                addValueAndUpdateFlag("credit", safeDouble(row.getCreditValue()));
+                addValueAndUpdateFlag("staffWelfare", safeDouble(row.getStaffWelfareValue()));
+                addValueAndUpdateFlag("voucher", safeDouble(row.getVoucherValue()));
+                addValueAndUpdateFlag("iou", safeDouble(row.getIouValue()));
+                addValueAndUpdateFlag("agent", safeDouble(row.getAgentValue()));
+                addValueAndUpdateFlag("cheque", safeDouble(row.getChequeValue()));
+                addValueAndUpdateFlag("slip", safeDouble(row.getSlipValue()));
+                addValueAndUpdateFlag("eWallet", safeDouble(row.getEwalletValue()));
+                addValueAndUpdateFlag("patientDeposit", safeDouble(row.getPatientDepositValue()));
+                addValueAndUpdateFlag("patientPoints", safeDouble(row.getPatientPointsValue()));
+                addValueAndUpdateFlag("onlineSettlement", safeDouble(row.getOnlineSettlementValue()));
+                addValueAndUpdateFlag("grossTotal", safeDouble(row.getGrossTotal()));
+                addValueAndUpdateFlag("discount", safeDouble(row.getDiscount()));
+                addValueAndUpdateFlag("total", safeDouble(row.getTotal()));
+                addValueAndUpdateFlag("hospitalTotal", safeDouble(row.getHospitalTotal()));
+                addValueAndUpdateFlag("staffTotal", safeDouble(row.getStaffTotal()));
+                addValueAndUpdateFlag("ccTotal", safeDouble(row.getCcTotal()));
+            }
+        }
+        total
+                = this.cashValue
+                + this.cardValue
+                + this.voucherValue
+                + this.iouValue
+//                + this.patientDepositValue
+                + this.chequeValue
+                + this.slipValue
+                + this.creditValue
+                + this.eWalletValue;
+
+    }
+
     public void calculateTotalsBySelectedChildBundles() {
         calculateTotalsByChildBundles(true);
     }
@@ -693,7 +739,7 @@ public class ReportTemplateRowBundle implements Serializable {
                     addValueAndUpdateFlag("agent", safeDouble(childBundle.getAgentValue()), safeDouble(childBundle.getAgentHandoverValue()));
                     addValueAndUpdateFlag("cheque", safeDouble(childBundle.getChequeValue()), safeDouble(childBundle.getChequeHandoverValue()));
                     addValueAndUpdateFlag("slip", safeDouble(childBundle.getSlipValue()), safeDouble(childBundle.getSlipHandoverValue()));
-                    addValueAndUpdateFlag("eWallet", safeDouble(childBundle.getEwalletValue()), safeDouble(childBundle.geteWalletHandoverValue()));
+                    addValueAndUpdateFlag("eWallet", safeDouble(childBundle.getEwalletValue()), safeDouble(childBundle.getEwalletHandoverValue()));
                     addValueAndUpdateFlag("patientDeposit", safeDouble(childBundle.getPatientDepositValue()), safeDouble(childBundle.getPatientDepositHandoverValue()));
                     addValueAndUpdateFlag("patientPoints", safeDouble(childBundle.getPatientPointsValue()), safeDouble(childBundle.getPatientPointsHandoverValue()));
                     addValueAndUpdateFlag("onlineSettlement", safeDouble(childBundle.getOnlineSettlementValue()), safeDouble(childBundle.getOnlineSettlementHandoverValue()));
@@ -1878,6 +1924,53 @@ public class ReportTemplateRowBundle implements Serializable {
         return bundles;
     }
 
+    public void sortByDateInstitutionSiteDepartmentType() {
+        if (bundles == null || bundles.isEmpty()) {
+            return;
+        }
+
+        Collections.sort(bundles, new Comparator<ReportTemplateRowBundle>() {
+            @Override
+            public int compare(ReportTemplateRowBundle b1, ReportTemplateRowBundle b2) {
+                // Compare by Date
+                int dateCompare = b1.getDate().compareTo(b2.getDate());
+                if (dateCompare != 0) {
+                    return dateCompare;
+                }
+
+                // Compare by Institution Name
+                String institution1 = b1.getDepartment().getInstitution().getName();
+                String institution2 = b2.getDepartment().getInstitution().getName();
+                int institutionCompare = institution1.compareTo(institution2);
+                if (institutionCompare != 0) {
+                    return institutionCompare;
+                }
+
+                // Compare by Site Name
+                String site1 = b1.getDepartment().getSite().getName();
+                String site2 = b2.getDepartment().getSite().getName();
+                int siteCompare = site1.compareTo(site2);
+                if (siteCompare != 0) {
+                    return siteCompare;
+                }
+
+                // Compare by Department Name
+                String department1 = b1.getDepartment().getName();
+                String department2 = b2.getDepartment().getName();
+                int departmentCompare = department1.compareTo(department2);
+                if (departmentCompare != 0) {
+                    return departmentCompare;
+                }
+
+                // Compare by Type (If applicable)
+                // Assuming there is a 'type' field to be compared as a String or Enum
+                String type1 = b1.getBundleType(); // Adjust this depending on how type is defined
+                String type2 = b2.getBundleType(); // Adjust this depending on how type is defined
+                return type1.compareTo(type2);
+            }
+        });
+    }
+
     public void setBundles(List<ReportTemplateRowBundle> bundles) {
         this.bundles = bundles;
     }
@@ -2076,11 +2169,11 @@ public class ReportTemplateRowBundle implements Serializable {
         this.slipHandoverValue = slipHandoverValue;
     }
 
-    public double geteWalletHandoverValue() {
+    public double getEwalletHandoverValue() {
         return eWalletHandoverValue;
     }
 
-    public void seteWalletHandoverValue(double eWalletHandoverValue) {
+    public void setEwalletHandoverValue(double eWalletHandoverValue) {
         this.eWalletHandoverValue = eWalletHandoverValue;
     }
 

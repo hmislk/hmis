@@ -65,7 +65,7 @@
 
                                         <h:panelGrid columns="2" class="w-100">
 
-                                            <h:outputLabel value="Search by Name/Code/Phone/NIC/PHN" />
+                                            <h:outputLabel value="Search by Name/Code/Phone/NIC / Passport/PHN" />
                                             <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true" 
                                                             value="#{patientController.current}" minQueryLength="4"
                                                             completeMethod="#{patientController.completePatientByNameOrCode}" 
@@ -79,7 +79,7 @@
                                                 <p:column headerText="Age">
                                                     <h:outputLabel value="#{apt.age}" />
                                                 </p:column>
-                                                <p:column headerText="NIC">
+                                                <p:column headerText="NIC / Passport">
                                                     <h:outputLabel value="#{apt.person.nic}"/>
                                                 </p:column>
                                                 <p:column headerText="Code">

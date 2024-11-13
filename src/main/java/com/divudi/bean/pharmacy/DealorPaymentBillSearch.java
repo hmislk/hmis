@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
@@ -99,6 +100,7 @@ public class DealorPaymentBillSearch implements Serializable {
     @Temporal(TemporalType.TIME)
     private Date toDate;
     private String comment;
+    private double netTotal;
     WebUser user;
 
     public void approve() {
@@ -141,23 +143,31 @@ public class DealorPaymentBillSearch implements Serializable {
         JsfUtil.addSuccessMessage("Succesfully Approved");
     }
 
+    @Deprecated
     public void fillDealorPaymentDone() {
         bills = null;
+        netTotal = 0.0;
         String jpql;
         Map params = new HashMap();
 
         jpql = "select b from Bill b "
                 + " where b.retired=false "
+                + " and b.createdAt between :fromDate and :toDate"
                 + " and b.billType = :billTypes "
-                + " and b.billTypeAtomic = :bTA "
-                + " and b.createdAt between :fromDate and :toDate";
+                + " and b.billTypeAtomic = :bTA ";
 
         params.put("billTypes", BillType.GrnPayment);
         params.put("bTA", BillTypeAtomic.SUPPLIER_PAYMENT);
-        params.put("toDate", toDate);
         params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
 
         bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        Iterator<Bill> iterator = bills.iterator();
+        while (iterator.hasNext()) {
+            Bill b = iterator.next();
+            netTotal += b.getNetTotal();
+        }
     }
 
     public WebUser getUser() {
@@ -271,7 +281,7 @@ public class DealorPaymentBillSearch implements Serializable {
 
         cb.setBilledBill(getBill());
         cb.copy(getBill());
-        cb.invertValue(getBill());
+        cb.invertAndAssignValuesFromOtherBill(getBill());
         cb.setNetTotal(0 - Math.abs(cb.getNetTotal()));
         cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.CashRecieveBill, BillClassType.CancelledBill, BillNumberSuffix.CRDCAN));
         cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.CashRecieveBill, BillClassType.CancelledBill, BillNumberSuffix.CRDCAN));
@@ -290,7 +300,7 @@ public class DealorPaymentBillSearch implements Serializable {
         if (cb.getId() == null) {
             getBillFacade().create(cb);
         }
-
+        JsfUtil.addSuccessMessage("Successfully Cancelled");
         return cb;
     }
 
@@ -329,10 +339,11 @@ public class DealorPaymentBillSearch implements Serializable {
             if (wb != null) {
                 getSessionController().setLoggedUser(wb);
                 printPreview = true;
+                JsfUtil.addSuccessMessage("Successfully Returned");
             } else {
                 JsfUtil.addErrorMessage("Cash transaction saving failed.");
             }
-
+             JsfUtil.addSuccessMessage("Successfully Returned");
         } else {
             JsfUtil.addErrorMessage("No Bill to return");
         }
@@ -343,7 +354,7 @@ public class DealorPaymentBillSearch implements Serializable {
 
         rb.setBilledBill(getBill());
         rb.copy(getBill());
-        rb.invertValue(getBill());
+        rb.invertAndAssignValuesFromOtherBill(getBill());
         rb.setNetTotal(0 - Math.abs(rb.getNetTotal()));
         String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.SUPPLIER_PAYMENT_RETURNED);
         rb.setDeptId(deptId);
@@ -351,7 +362,7 @@ public class DealorPaymentBillSearch implements Serializable {
 
         rb.setBillType(BillType.GrnPayment);
         rb.setBillTypeAtomic(BillTypeAtomic.SUPPLIER_PAYMENT_RETURNED);
-        System.out.println("BillTypeAtomic set to: " + rb.getBillTypeAtomic()); 
+        System.out.println("BillTypeAtomic set to: " + rb.getBillTypeAtomic());
 
         rb.setBillDate(new Date());
         rb.setBillTime(new Date());
@@ -916,5 +927,13 @@ public class DealorPaymentBillSearch implements Serializable {
 
     public void setCreditBean(CreditBean creditBean) {
         this.creditBean = creditBean;
+    }
+
+    public double getNetTotal() {
+        return netTotal;
+    }
+
+    public void setNetTotal(double netTotal) {
+        this.netTotal = netTotal;
     }
 }

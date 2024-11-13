@@ -1,0 +1,168 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bill" />
+        <cc:attribute name="dup" />
+    </cc:interface>
+
+    <cc:implementation>
+
+        <style>
+            .receipt-container {
+                max-width: 21cm;
+                padding: 1.5cm;
+                margin: 0 auto;
+                border: 1px solid #000;
+                font-size: 1.1rem;
+            }
+
+            .receipt-header {
+                text-align: center;
+                font-weight: bold;
+                text-decoration: underline;
+                margin-bottom: 20px;
+            }
+
+            .receipt-info, .receipt-details, .receipt-footer {
+                margin-bottom: 15px;
+            }
+
+            .receipt-info div, .receipt-details div {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 8px;
+            }
+
+            .receipt-info div label, .receipt-details div label {
+                flex: 1;
+            }
+
+            .receipt-info div span, .receipt-details div span {
+                flex: 2;
+                text-align: right;
+            }
+
+            .receipt-total {
+                text-align: right;
+                font-weight: bold;
+                font-size: 1.2rem;
+                margin-top: 20px;
+                margin-bottom: 20px;
+            }
+
+            .receipt-footer {
+                text-align: center;
+                font-style: italic;
+            }
+        </style>
+
+
+        <div class="receipt-container">
+
+            <!-- Header Section -->
+            <div class="receipt-header">
+                <h:outputLabel value="#{sessionController.institution.name}" style="font-size: 1.6em" /><br/>
+                <h:outputLabel value="#{sessionController.institution.address}" style="font-size: 1.1em" /><br/>
+                <h:outputLabel value="#{sessionController.institution.phone}" style="font-size: 1.1em" /><br/>
+                <h:outputLabel value="#{sessionController.institution.email} | #{sessionController.institution.web}" style="font-size: 1.0em" /><br/>
+                <h:outputLabel value=" **Duplicate" rendered="#{cc.attrs.dup eq true }"/>
+                <h:outputLabel value=" **Cancelled" rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}"/><br/>
+                <h:outputLabel value="Collecting Centre Credit Note Cancelled"/>
+            </div>
+
+            <!-- Receipt Details -->
+            <div class="receipt-info">
+                <div>
+                    <label>Receipt No:</label>
+                    <span>
+                        <h:outputLabel value="#{cc.attrs.bill.deptId}"/>
+                    </span>        
+                </div>
+                <div>
+                    <label>Date:</label>
+                    <span>
+                        <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billDate}" rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                        </h:outputLabel>                      
+                        <h:outputLabel value="#{cc.attrs.bill.billDate}" rendered="#{cc.attrs.bill.cancelledBill.deptId eq null}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                        </h:outputLabel>
+                    </span>
+                </div>
+                <div>
+                    <label>Time:</label>
+                    <span>
+                        <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billTime}" rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}">
+                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
+                        </h:outputLabel>                        
+                        <h:outputLabel value="#{cc.attrs.bill.billTime}" rendered="#{cc.attrs.bill.cancelledBill.deptId eq null}">
+                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
+                        </h:outputLabel>
+                    </span>
+                </div>
+                <div>
+                    <label>Agency:</label>
+                    <span>
+                        <h:outputLabel value="#{cc.attrs.bill.fromInstitution.name}" />
+                    </span>
+                </div>
+                <div>
+                    <label>Code:</label>
+                    <span>
+                        <h:outputLabel value="#{cc.attrs.bill.fromInstitution.institutionCode}" />
+                    </span>
+                </div>
+
+                <div>
+                    <label>Payment Type:</label>
+                    <span>
+                        <h:outputLabel value="#{cc.attrs.bill.cancelledBill.paymentMethod}" rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}" />
+                        <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" rendered="#{cc.attrs.bill.cancelledBill.deptId eq null}" />
+                    </span>
+                </div>
+
+            </div>
+
+            <!-- Receipt Total -->
+            <div class="receipt-total">
+                <label>Total:</label>
+                <span>
+                    <h:outputLabel value="#{cc.attrs.bill.netTotal}" style="font-size: 1.2rem;">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </h:outputLabel>
+                </span>
+            </div>
+            <div class="receipt-footer my-2">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h:outputLabel value=" Generated by : #{sessionController.loggedUser.name}" />
+                    </div>
+                    <div>
+                        <h:outputLabel value="#{sessionController.currentDate}" >
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                        </h:outputLabel>
+                    </div>
+                </div>
+                <h:panelGroup rendered="#{cc.attrs.dup}">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h:outputLabel value=" Billed by : #{cc.attrs.bill.creater.name}" />
+                        </div>
+                    </div>
+                </h:panelGroup>
+            </div>
+
+
+
+
+        </div>
+
+    </cc:implementation>
+</html>

@@ -32,14 +32,28 @@
                             rowsPerPageTemplate="5,10,15"
                             styleClass="ui-datatable-striped">
 
+
                             <!-- Staff Name Column with Filter -->
                             <p:column headerText="Staff Name"
                                       filterBy="#{dr.drawerUser.staff.person.nameWithTitle}"
                                       filterMatchMode="contains"
                                       sortBy="#{dr.drawerUser.staff.person.nameWithTitle}">
-                                <h:outputText value="#{dr.drawerUser.staff.person.nameWithTitle}" />
+                                <h:commandLink action="#{searchController.navigateToDrawerHistory()}" value="#{dr.drawerUser.staff.person.nameWithTitle}">
+                                    <f:setPropertyActionListener value="#{dr.drawerUser}" target="#{drawerEntryController.webUser}"/>
+                                </h:commandLink> 
                             </p:column>
 
+                            <p:column headerText="Navigate" exportable="false">
+                                <p:commandButton 
+                                    icon="fa fa-tachometer" 
+                                    title="Drawer Dashboard"
+                                    styleClass="m-1"
+                                    ajax="false"
+                                    action="#{searchController.navigateToUserDrawerDashboard()}" >
+                                    <f:setPropertyActionListener value="false" target="#{drawerController.editDrawerAccess}"/>
+                                    <f:setPropertyActionListener value="#{dr}" target="#{searchController.drawer}"/>
+                                </p:commandButton>
+                            </p:column>
                             <!-- Cash Balance Column with Sorting -->
                             <p:column headerText="Cash"
                                       sortBy="#{dr.cashInHandValue}">
@@ -76,6 +90,12 @@
                             <p:column headerText="IOU Balance"
                                       sortBy="#{dr.iouInHandValue}">
                                 <h:outputText value="#{dr.iouInHandValue}">
+                                    <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                </h:outputText>
+                            </p:column>
+                            
+                            <p:column headerText="Grand Total">
+                                <h:outputText value="#{dr.cashInHandValue + dr.cardInHandValue + dr.chequeInHandValue + dr.voucherInHandValue + dr.iouInHandValue}">
                                     <f:convertNumber pattern="#,##0.00"></f:convertNumber>
                                 </h:outputText>
                             </p:column>

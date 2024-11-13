@@ -176,13 +176,22 @@
                                          scrollable="true"
                                          var="bill"
                                          rows="10"
+                                         paginatorAlwaysVisible="false"
                                          paginator="true"
                                          paginatorPosition="top"
                                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                         rowsPerPageTemplate="5,10,15"
+                                         rowsPerPageTemplate="5,10,15,50"
                                          >
 
-                                <p:column headerText="Bill No" >                                
+                                <p:column rendered="#{webUserController.hasPrivilege('Developers')}" headerText="Bill ID" sortBy="#{bill.id}" filterBy="#{bill.id}" filterMatchMode="contains" >                                
+                                    <h:outputLabel value="#{bill.id}"/>
+                                </p:column>
+                                <p:column rendered="#{webUserController.hasPrivilege('Developers')}" headerText="Ins ID" sortBy="#{bill.insId}" filterBy="#{bill.insId}" filterMatchMode="contains" >                                
+                                    <h:outputLabel value="#{bill.insId}"/>
+                                </p:column>
+                                <p:column
+                                    headerText="Bill No" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}" 
+                                          filterMatchMode="contains" >                                
                                     <h:outputLabel value="#{bill.deptId}"/>
                                 </p:column>
                                 <p:column headerText="Bill Class" >                                
@@ -196,7 +205,10 @@
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Status">
+                                <p:column headerText="User">
+                                    <h:outputText value="#{bill.creater.name}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Status" exportable="false">
                                     <h:panelGroup>
                                         <p:badge value="Retired" styleClass="ui-badge-info" rendered="#{bill.retired}" />
                                         <p:badge value="Cancelled" styleClass="ui-badge-danger" rendered="#{bill.cancelled}" />

@@ -61,55 +61,15 @@
 
 
                                 </f:facet>
-                                <div class="row my-2 d-flex align-items-center">
+                                
+                                 <div class="row my-2 d-flex align-items-center">
                                     <div class="col-md-4">
-                                        <p:outputLabel value="Payment Method" />      
-                                    </div>
-                                    <div class="col-md-8">
-                                        <p:selectOneMenu  class="w-100"  id="cmbPs" value="#{cashRecieveBillController.current.paymentMethod}">                                                                     
-                                            <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
-                                            <p:ajax process="cmbPs" update="creditCard cheque slip" event="change" />
-                                        </p:selectOneMenu>
-                                    </div>
-                                </div>
-
-                                <div class="row my-2">
-
-                                    <div class="col-md-10">
-                                        <div>
-                                            <h:panelGroup id="creditCard" style="display: #{cashRecieveBillController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
-                                                <pa:creditCard paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
-                                            </h:panelGroup>
-
-                                            <h:panelGroup id="cheque" style="display: #{cashRecieveBillController.current.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
-                                                <pa:cheque paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
-                                            </h:panelGroup>
-
-                                            <h:panelGroup id="slip" style="display: #{cashRecieveBillController.current.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
-                                                <pa:slip paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
-                                            </h:panelGroup>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="row my-2 d-flex align-items-center">
-                                    <div class="col-md-4">
-                                        <p:outputLabel value="Comment" />      
-                                    </div>
-                                    <div class="col-md-8">
-                                        <p:inputText class="w-100" value="#{cashRecieveBillController.comment}" id="comment"/>
-                                    </div>
-                                </div>
-
-
-
-                                <div class="row my-2 d-flex align-items-center">
-                                    <div class="col-md-4">
-                                        <p:outputLabel value="Select Payment" />      
+                                        <p:outputLabel value="Select Credit Bill" />      
                                     </div>
                                     <div class="col-md-8">
                                         <p:autoComplete widgetVar="aIx" id="acIx" 
                                                         forceSelection="true"
+                                                        placeholder="Type here to get suggestions"
                                                         value="#{cashRecieveBillController.currentBillItem.patientEncounter}" 
                                                         completeMethod="#{admissionController.completeBhtCredit}" 
                                                         var="ix" itemLabel="#{ix.bhtNo}"
@@ -141,6 +101,46 @@
                                         </p:autoComplete>
                                     </div>
                                 </div>
+                                
+                                <div class="row my-2 d-flex align-items-center">
+                                    <div class="col-md-4">
+                                        <p:outputLabel value="Payment Method" />      
+                                    </div>
+                                    <div class="col-md-8">
+                                        <p:selectOneMenu  class="w-100"  id="cmbPs" value="#{cashRecieveBillController.current.paymentMethod}">                                                                     
+                                            <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
+                                            <p:ajax process="cmbPs" update="creditCard cheque slip" event="change" />
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
+
+                                <div class="row my-2">
+
+                                    <div class="col-md-10">
+                                        <div>
+                                            <h:panelGroup id="creditCard" style="display: #{cashRecieveBillController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
+                                                <pa:creditCard paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup id="cheque" style="display: #{cashRecieveBillController.current.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
+                                                <pa:cheque paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup id="slip" style="display: #{cashRecieveBillController.current.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
+                                                <pa:slip paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
+                                            </h:panelGroup>
+                                        </div>
+                                    </div>
+                                </div>
+
+<!--                                <div class="row my-2 d-flex align-items-center">
+                                    <div class="col-md-4">
+                                        <p:outputLabel value="Comment" />      
+                                    </div>
+                                    <div class="col-md-8">
+                                        <p:inputText class="w-100" value="#{cashRecieveBillController.comment}" id="comment"/>
+                                    </div>
+                                </div>-->
 
                                 <div class="row my-2 d-flex align-items-center">
                                     <div class="col-md-4">
@@ -174,7 +174,7 @@
                                         <p:outputLabel value="Description"/>
                                     </div>
                                     <div class="col-md-8">
-                                        <p:inputTextarea value="#{cashRecieveBillController.current.comments}" class="w-100"/>
+                                        <p:inputTextarea value="#{cashRecieveBillController.comment}" class="w-100"/>
                                     </div>
                                 </div>
                             </p:panel>

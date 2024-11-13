@@ -29,13 +29,13 @@
                          style="text-transform:capitalize;"
                          class="w-100">
             </p:inputText>
-            <!--            <p:outputLabel value="NIC"/>-->
+            <!--            <p:outputLabel value="NIC / Passport"/>-->
 <!--            <p:inputText  id="nic" 
                          autocomplete="off" maxlength="11" 
                          value="#{cc.attrs.patient.person.nic}"
                          style="width: 100px;">
             </p:inputText>-->
-            <p:inputText class="w-100" id="nic"  placeholder="NIC" autocomplete="off" maxlength="12" value="#{cc.attrs.patient.person.nic}" />
+            <p:inputText class="w-100" id="nic"  placeholder="NIC / Passport" autocomplete="off" maxlength="12" value="#{cc.attrs.patient.person.nic}" />
             <!--<p:outputLabel value="Sex"/>-->
             <p:selectOneMenu class="w-100" id="txtNewSex"  value="#{cc.attrs.patient.person.sex}">
                 <f:selectItem itemLabel="Select Sex"/>
@@ -80,7 +80,7 @@
         </p:panelGrid>    
         
         <p:tooltip for="txtNewPtName" value="Patient Name"  showDelay="0" hideDelay="0"></p:tooltip>
-        <p:tooltip for="nic" value="NIC No"  showDelay="0" hideDelay="0"></p:tooltip>
+        <p:tooltip for="nic" value="NIC / Passport No"  showDelay="0" hideDelay="0"></p:tooltip>
         <p:tooltip for="calNewPtDob" value="Date Of Birth"  showDelay="0" hideDelay="0"></p:tooltip>
         <p:tooltip for="address" value="Address"  showDelay="0" hideDelay="0"></p:tooltip>
         <p:tooltip for="mno" value="Mobile Number"  showDelay="0" hideDelay="0"></p:tooltip>
