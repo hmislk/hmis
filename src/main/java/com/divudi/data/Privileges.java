@@ -18,6 +18,7 @@ public enum Privileges {
     User("User"),
     Admin("Admin"),
     Channelling("Channelling"),
+    Clinic("Clinics"),
     Clinical("Clinical"),
     Store("Store"),
     Search("Search"),
@@ -331,6 +332,15 @@ public enum Privileges {
     ChannelCashierTransactionExpencess("Channel Cashier Transaction Expenses"),
     ChannelCashierTransactionExpencessSearch("Channel Cashier Transaction Expenses Search"),
     ChannelActiveVat("Channel Active VAT"),
+    //<editor-fold defaultstate="collapsed" desc="Clinis">
+    ClinicSession("Clinic Session"),
+    ClinicCalendar("Clinic Calendar"),
+    ClinicQueue("Clinic Queue"),
+    ClinicDisplay("Clinic Display"),
+    ClinicSchedule("Clinic Schedule"),
+    ClinicReports("Clinic Reports"),
+    //</editor-fold>
+    //<editor-fold defaultstate="collapsed" desc="Memberships">
     MemberShip("Membership"),
     MemberShipAdd("Membership Add"),
     MemberShipEdit("Membership Edit"),
@@ -347,6 +357,8 @@ public enum Privileges {
     MemberShipOpdMemberShipDisOpdMemberShipReport("OPD Membership Report"),
     MemberShipMemberDeActive("Membership Deactivate"),
     MemberShipMemberReActive("Membership Reactivate"),
+    //</editor-fold>
+    //<editor-fold defaultstate="collapsed" desc="HR">
     HrAdmin("HR Admin"),
     HrReports("HR Reports"),
     HrReportsLevel1("HR Reports Level 1"),
@@ -368,6 +380,8 @@ public enum Privileges {
     HrAdditionalForms("HR Additional Forms"),
     HrEditRetiedDate("HR Edit Retired Date"),
     HrRemoveResignDate("HR Remove Resign Date"),
+    //</editor-fold>
+
     Developers("Developers"),
     // Cashier
     AllCashierSummery("All Cashier Summary"),
@@ -514,13 +528,11 @@ public enum Privileges {
     CourierViewStatistics("Courier View Statistics"),
     CourierViewBillReports("Courier View Bill Reports"),
     CourierViewPaymentReports("Courier View Payment Reports"),
-    
     SuperAdmin("Supper Admin"),
     EditData("Edit Data"),
     DeleteData("Delete Data"),
     BillCancel("Bill Cancel"),
-    BillRefund("Bill Refund"),
-    ;
+    BillRefund("Bill Refund"),;
 
     private final String label;
 
