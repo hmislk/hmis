@@ -631,10 +631,10 @@ public class PharmacyPurchaseController implements Serializable {
         if (getBill().getId() == null) {
             getBillFacade().create(getBill());
         }
-        if (getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate() <= 0) {
-            JsfUtil.addErrorMessage("Please enter a purchase rate");
-            return;
-        }
+//        if (getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate() <= 0) {
+//            JsfUtil.addErrorMessage("Please enter a purchase rate");
+//            return;
+//        }
         if (getCurrentBillItem().getPharmaceuticalBillItem().getDoe() == null) {
             JsfUtil.addErrorMessage("Please set the date of expiry");
             return;

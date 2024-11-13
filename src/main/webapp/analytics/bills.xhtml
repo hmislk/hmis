@@ -119,6 +119,8 @@
                                 <h:outputLabel value="Bill Type (Atomic)" for="billTypeAtomic" class="mx-3" />
                             </h:panelGroup>
                             <p:selectOneMenu
+                                filter="true"
+                                filterMatchMode="contains"
                                 id="billTypeAtomic" 
                                 class=""  value="#{searchController.billTypeAtomic}" >
                                 <f:selectItem itemLabel="All Types" ></f:selectItem>
