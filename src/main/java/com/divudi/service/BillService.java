@@ -182,6 +182,19 @@ public class BillService {
         return billFeeFacade.findByJpql(jpql, params);
     }
 
+    public List<BillFee> fetchBillFees(Bill bill) {
+        List<BillFee> fetchingBillFees;
+        String jpql;
+        Map params = new HashMap();
+        jpql = "Select bf "
+                + " from BillFee bf "
+                + "where bf.bill=:bill "
+                + "order by bf.billItem.id";
+        params.put("bill", bill);
+        fetchingBillFees = billFeeFacade.findByJpql(jpql, params);
+        return fetchingBillFees;
+    }
+
     public List<BillItem> fetchBillItems(Bill b) {
         String jpql;
         HashMap params = new HashMap();
