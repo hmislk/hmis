@@ -69,7 +69,7 @@
 
 
                                             </h:panelGrid>
-                                            <div class="d-flex justify-content-end mt-2">
+                                            <div class="d-flex  mt-2">
                                                 <div class="d-flex">
                                                     <p:commandButton 
                                                         ajax="false"
@@ -118,6 +118,7 @@
                                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                     currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
                                     rowsPerPageTemplate="{ShowAll|'All'}"
+                                    scrollable="true"
                                     selectionMode="multiple"
                                     >
 
@@ -135,7 +136,7 @@
 
                                     <p:column selectionBox="true" width="10"></p:column>
 
-                                    <p:column headerText="No" width="3em">
+                                    <p:column headerText="No" width="2em">
                                         <h:outputLabel value="#{bf.bill.singleBillSession.serialNo}">
                                         </h:outputLabel>
                                     </p:column>
@@ -144,7 +145,7 @@
                                         </h:outputLabel>
                                     </p:column>
 
-                                    <p:column headerText="Patient" >
+                                    <p:column headerText="Patient" width="10em">
                                         <h:outputLabel value="#{bf.bill.patient.person.nameWithTitle}" rendered="#{bf.bill.patientEncounter eq null}"/>                                    
                                         <h:outputLabel value="#{bf.bill.patientEncounter.patient.person.nameWithTitle}"/>                                    
                                     </p:column>
@@ -154,7 +155,7 @@
                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                         </h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Status" width="10em">
+                                    <p:column headerText="Status" width="4em">
                                         <p:tag class="m-1" severity="info" rendered="#{bf.bill.paidAmount ne 0.0}" value="PAID" />
                                         <p:tag class="m-1"  severity="secondary" rendered="#{bf.bill.paidAmount eq 0.0}" value="NOT PAID" />
                                         <p:tag class="m-1"  severity="success" rendered="#{bf.bill.singleBillSession.completed}" value="Completed" />
@@ -167,7 +168,7 @@
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Paid to Doctor" width="6em">
+                                    <p:column headerText="Paid to Doctor" width="4em">
                                         <h:outputLabel  value="#{bf.paidValue}" >
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputLabel>
@@ -178,17 +179,17 @@
                                         </h:outputLabel>
                                     </p:column>
 
-                                    <p:column headerText="Bill Type" width="16em">
+                                    <p:column headerText="Bill Type" rendered="true" width="16em">
                                         <h:outputLabel  value="#{bf.bill.billClass}" >
                                         </h:outputLabel>
                                     </p:column>
                                     
-                                    <p:column headerText="Bill Class Type" width="16em">
+                                    <p:column headerText="Bill Class Type" width="6em">
                                         <h:outputLabel  value="#{bf.bill.billType}" >
                                         </h:outputLabel>
                                     </p:column>
                                     
-                                     <p:column headerText="Paid Bill ID" width="16em">
+                                     <p:column headerText="Paid Bill ID" width="8em">
                                          <h:outputLabel  value="#{bf.bill.paidBill}" >
                                         </h:outputLabel>
                                     </p:column>
