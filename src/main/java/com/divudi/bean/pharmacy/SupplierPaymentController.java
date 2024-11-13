@@ -625,6 +625,8 @@ public class SupplierPaymentController implements Serializable {
             params.put("chequeRefNo", chequeNo);
         }
 
+        jpql.append("AND b.billType <> :excludeBillType ");
+        params.put("excludeBillType", BillType.GrnPayment);
         jpql.append("ORDER BY b.id");
 
         // Execute query
