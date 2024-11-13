@@ -208,6 +208,7 @@ public class PatientInvestigationController implements Serializable {
     private Machine equipment;
     private Staff referringDoctor;
     private Investigation investigation;
+    private String itemName;
     private Department department;
     private SearchDateType searchDateType;
     private PatientInvestigationStatus patientInvestigationStatus;
@@ -4843,6 +4844,14 @@ public class PatientInvestigationController implements Serializable {
 
     public void setPrintIndividualBarcodes(boolean printIndividualBarcodes) {
         this.printIndividualBarcodes = printIndividualBarcodes;
+    }
+
+    public String getItemName() {
+        return itemName;
+    }
+
+    public void setItemName(String itemName) {
+        this.itemName = itemName;
     }
 
     /**

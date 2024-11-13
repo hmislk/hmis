@@ -481,6 +481,7 @@
                     </p:submenu>
 
                     <p:submenu 
+                        style="width: 350px;"
                         id="smLabBillingSearch"
                         label="Billing Search"
                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Show the Bill Search in Under the Lab Module', false)}">
@@ -539,14 +540,14 @@
                     
                     <p:menuitem 
                         ajax="false" 
-                        action="/lab/search_reports?faces-redirect=true" 
+                        action="#{searchController.navigateToPatientReportSearch()}" 
                         value="Report Search" 
                         rendered="#{webUserController.hasPrivilege('LabReportPrint')}" >
                     </p:menuitem>
                     
                     <p:menuitem 
                         ajax="false" 
-                        action="/reportLab/lab_summeries_index?faces-redirect=true" 
+                        action="#{searchController.navigateToLabAnalytics()}" 
                         value="Lab Analytics"  
                         rendered="#{webUserController.hasPrivilege('LabSummeries')}" >
                     </p:menuitem>
