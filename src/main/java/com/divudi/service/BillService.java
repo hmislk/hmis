@@ -60,6 +60,8 @@ public class BillService {
     private BillFeeFacade billFeeFacade;
     @EJB
     PaymentFacade paymentFacade;
+    @EJB
+    DrawerService drawerService;
 
     public List<Payment> createPayment(Bill bill, PaymentMethod pm, PaymentMethodData paymentMethodData) {
         List<Payment> ps = new ArrayList<>();
@@ -80,6 +82,7 @@ public class BillService {
                         p.setPaidValue(cd.getPaymentMethodData().getCreditCard().getTotalValue());
                         break;
                     case Cheque:
+                        p.setBank(cd.getPaymentMethodData().getCheque().getInstitution());
                         p.setChequeDate(cd.getPaymentMethodData().getCheque().getDate());
                         p.setChequeRefNo(cd.getPaymentMethodData().getCheque().getNo());
                         p.setPaidValue(cd.getPaymentMethodData().getCheque().getTotalValue());
@@ -164,6 +167,7 @@ public class BillService {
             paymentFacade.create(p);
             ps.add(p);
         }
+        drawerService.updateDrawerForIns(ps);
         return ps;
     }
 
