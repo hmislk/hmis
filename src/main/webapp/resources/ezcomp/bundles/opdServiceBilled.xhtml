@@ -61,7 +61,6 @@
                     <f:facet name="header">
                         <h:outputText value="Date &amp; Time" />
                     </f:facet>
-                    #{row}
                     <h:outputText value="#{row.bill.createdAt}" >
                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
                     </h:outputText>
