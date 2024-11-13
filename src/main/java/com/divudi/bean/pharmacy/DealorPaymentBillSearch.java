@@ -146,7 +146,7 @@ public class DealorPaymentBillSearch implements Serializable {
     @Deprecated
     public void fillDealorPaymentDone() {
         bills = null;
-        netTotal  = 0.0;
+        netTotal = 0.0;
         String jpql;
         Map params = new HashMap();
 
@@ -162,7 +162,7 @@ public class DealorPaymentBillSearch implements Serializable {
         params.put("toDate", toDate);
 
         bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
-        
+
         Iterator<Bill> iterator = bills.iterator();
         while (iterator.hasNext()) {
             Bill b = iterator.next();
@@ -300,7 +300,7 @@ public class DealorPaymentBillSearch implements Serializable {
         if (cb.getId() == null) {
             getBillFacade().create(cb);
         }
-
+        JsfUtil.addSuccessMessage("Successfully Cancelled");
         return cb;
     }
 
@@ -339,10 +339,11 @@ public class DealorPaymentBillSearch implements Serializable {
             if (wb != null) {
                 getSessionController().setLoggedUser(wb);
                 printPreview = true;
+                JsfUtil.addSuccessMessage("Successfully Returned");
             } else {
                 JsfUtil.addErrorMessage("Cash transaction saving failed.");
             }
-
+             JsfUtil.addSuccessMessage("Successfully Returned");
         } else {
             JsfUtil.addErrorMessage("No Bill to return");
         }
