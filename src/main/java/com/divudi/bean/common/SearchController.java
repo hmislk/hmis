@@ -13158,11 +13158,15 @@ public class SearchController implements Serializable {
         collectionForTheDay += getSafeTotal(opdServiceRefunds);
 
         // Generate OPD service collection for credit and add to the main bundle
-        ReportTemplateRowBundle opdServiceCollectionCredit = generatePaymentColumnForCollections(opdBts, creditPaymentMethods);
+        ReportTemplateRowBundle opdServiceCollectionCredit = generatePaymentMethodColumnsByBills(opdBts, creditPaymentMethods);
         opdServiceCollectionCredit.setBundleType("cashierSummaryOpdCredit");
-        opdServiceCollectionCredit.setName("OPD Collection - Credit");
+        opdServiceCollectionCredit.setName("OPD Bills - Credit");
         bundle.getBundles().add(opdServiceCollectionCredit);
         collectionForTheDay += getSafeTotal(opdServiceCollectionCredit);
+
+        
+        
+        
 
         // Generate OPD service cancellations for credit and add to the main bundle
         ReportTemplateRowBundle opdServiceCancellationsCredit = generatePaymentMethodColumnsByBills(opdCancellations, creditPaymentMethods);
@@ -13504,7 +13508,7 @@ public class SearchController implements Serializable {
         // Generate OPD service collection for credit and add to the main bundle
         ReportTemplateRowBundle opdServiceCollectionCredit = generatePaymentMethodColumnsByBills(opdBts, creditPaymentMethods);
         opdServiceCollectionCredit.setBundleType("cashierSummaryOpdCredit");
-        opdServiceCollectionCredit.setName("OPD Collection - Credit");
+        opdServiceCollectionCredit.setName("OPD Bills - Credit");
         bundle.getBundles().add(opdServiceCollectionCredit);
         collectionForTheDay += getSafeTotal(opdServiceCollectionCredit);
 
