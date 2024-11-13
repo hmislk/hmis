@@ -13,6 +13,7 @@ import com.divudi.data.BillType;
 import com.divudi.data.BillTypeAtomic;
 import com.divudi.data.HistoryType;
 import com.divudi.data.PaymentMethod;
+import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.EjbApplication;
@@ -36,6 +37,7 @@ import com.divudi.facade.DrawerFacade;
 import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.RefundBillFacade;
+import com.divudi.service.BillService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -56,6 +58,10 @@ public class AgentPaymentReceiveSearchController implements Serializable {
     private boolean printPreview = false;
     @EJB
     private BillFeeFacade billFeeFacade;
+
+    @EJB
+    BillService billService;
+
     BilledBill bill;
     List<BillEntry> billEntrys;
     List<BillItem> billItems;
@@ -99,6 +105,8 @@ public class AgentPaymentReceiveSearchController implements Serializable {
     EjbApplication ejbApplication;
     @EJB
     PaymentFacade paymentFacade;
+
+    PaymentMethodData paymentMethodData;
 
     private List<BillItem> tempbillItems;
     private String comment;
@@ -155,6 +163,17 @@ public class AgentPaymentReceiveSearchController implements Serializable {
 
     public void setCancelledBillFacade(CancelledBillFacade cancelledBillFacade) {
         this.cancelledBillFacade = cancelledBillFacade;
+    }
+
+    public PaymentMethodData getPaymentMethodData() {
+        if (paymentMethodData == null) {
+            paymentMethodData = new PaymentMethodData();
+        }
+        return paymentMethodData;
+    }
+
+    public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
+        this.paymentMethodData = paymentMethodData;
     }
 
     public PaymentMethod getPaymentMethod() {
@@ -296,8 +315,8 @@ public class AgentPaymentReceiveSearchController implements Serializable {
 
         return false;
     }
-    
-    public String navigateToCancelAgentBillView(){
+
+    public String navigateToCancelAgentBillView() {
         agencyDepositCanellationStarted = false;
         return "agency_deposit_bill_cancellation?faces-redirect=true";
     }
@@ -386,8 +405,8 @@ public class AgentPaymentReceiveSearchController implements Serializable {
                 return;
             }
         }
-        System.out.println(origianlBil.getNetTotal()+"this" );
-        
+        System.out.println(origianlBil.getNetTotal() + "this");
+
 //        cancelBill(BillType.CollectingCentrePaymentReceiveBill, BillNumberSuffix.CCCAN, HistoryType.CollectingCentreDepositCancel, BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL);
         CancelledBill newlyCreatedCancelBill = generateCancelBillForCcDepositBill(origianlBil);
 
@@ -458,8 +477,9 @@ public class AgentPaymentReceiveSearchController implements Serializable {
         origianlBil.setCancelledBill(cancelledBill);
         getBillFacade().editAndCommit(origianlBil);
 
-        Payment payments = createPayment(cancelledBill, paymentMethod);
-        drawerController.updateDrawerForOuts(payments);
+        List<Payment> cancellationPayments = billService.createPayment(cancelledBill, paymentMethod, paymentMethodData);
+
+        drawerController.updateDrawerForOuts(cancellationPayments);
         agentAndCcApplicationController.updateCcBalance(
                 cancelledBill.getFromInstitution(),
                 0,
