@@ -172,7 +172,7 @@
                                     <p:badge value="Pending..." rendered="#{bill.referenceBill.billType == null}"/>
                                     <p:badge value="Approved" rendered="#{bill.referenceBill.billType eq 'GrnPayment'}" severity="success"/>
                                 </p:column> 
-                                <p:column>
+                                <p:column headerText="Action">
                                     <p:commandButton ajax="false" value="Approve" action="reprint_bill_dealor" disabled="#{bill.referenceBill.billType eq 'GrnPayment'}">
                                         <f:setPropertyActionListener value="#{bill}" 
                                                                      target="#{dealorPaymentBillSearch.bill}"/>
