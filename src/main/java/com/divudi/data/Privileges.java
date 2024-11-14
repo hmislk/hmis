@@ -268,7 +268,7 @@ public enum Privileges {
     StoreSummery("Store Summary"),
     StoreAdministration("Store Administration"),
     //</editor-fold>
-    
+
     //<editor-fold defaultstate="collapsed" desc="Channel">
     ChannelAdd("Channel Add"),
     ChannelCancel("Channel Cancel"),
@@ -520,29 +520,6 @@ public enum Privileges {
     PharmacySummaryViews("Pharmacy Summary Views"),
     //</editor-fold>
 
-    //<editor-fold defaultstate="collapsed" desc="Admin">
-    SearchGrand("Search Grand"),
-    AdminManagingUsers("Admin Managing Users"),
-    AdminInstitutions("Admin Institutions"),
-    AdminStaff("Admin Staff"),
-    AdminItems("Admin Items"),
-    AdminPrices("Admin Prices"),
-    AdminFilterWithoutDepartment("Admin Filter Without Department"),
-    //</editor-fold>
-
-    //<editor-fold defaultstate="collapsed" desc="Developers">
-    Developers("Developers"),
-    // Administration
-    SearchAll("Search All"),
-    ChangePreferece("Change Preference"),
-    SendBulkSMS("Send Bulk SMS"),
-    SuperAdmin("Supper Admin"),
-    EditData("Edit Data"),
-    DeleteData("Delete Data"),
-    BillCancel("Bill Cancel"),
-    BillRefund("Bill Refund"),
-    //</editor-fold>
-
     //<editor-fold defaultstate="collapsed" desc="Optician">
     // Optician
     Optician("Optician"),
@@ -580,7 +557,28 @@ public enum Privileges {
     ChangeCreditLimitInCC("Change Credit Limit in Collecting Centre"),
     ChangeCollectingCentre("Change Collecting Centre"),
     //</editor-fold>
-    
+
+    //<editor-fold defaultstate="collapsed" desc="Admin">
+    SearchGrand("Search Grand"),
+    AdminManagingUsers("Admin Managing Users"),
+    AdminInstitutions("Admin Institutions"),
+    AdminStaff("Admin Staff"),
+    AdminItems("Admin Items"),
+    AdminPrices("Admin Prices"),
+    AdminFilterWithoutDepartment("Admin Filter Without Department"),
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Developers">
+    Developers("Developers"),
+    // Administration
+    SearchAll("Search All"),
+    ChangePreferece("Change Preference"),
+    SendBulkSMS("Send Bulk SMS"),
+    SuperAdmin("Supper Admin"),
+    EditData("Edit Data"),
+    DeleteData("Delete Data"),
+    BillCancel("Bill Cancel"),
+    BillRefund("Bill Refund"), //</editor-fold>
     ;
 
     private final String label;
@@ -806,6 +804,15 @@ public enum Privileges {
             case PharmacySummaryViews:
 
                 return "Pharmacy";
+
+            case Clinic:
+            case ClinicCalendar:
+            case ClinicDisplay:
+            case ClinicQueue:
+            case ClinicReports:
+            case ClinicSchedule:
+            case ClinicSession:
+                return "Clinics";
             default:
                 return this.toString();
         }
