@@ -10,7 +10,7 @@
             <ui:define name="subcontent">
                 <h:form class="w-100">
                     <p:panel header="OPD and Inward Due" class="w-100">
-                        <h:panelGrid columns="5" class="w-100" >
+                        <h:panelGrid columns="8" class="w-100" >
 
 
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -34,8 +34,9 @@
                             <p:datePicker value="#{reportController.toDate}"
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"
                                           class="w-100" inputStyleClass="w-100"></p:datePicker>
-                                          
-                                          
+
+                            <p:spacer width="20"></p:spacer>
+
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf1ad;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Company Name / Sponsor" class="mx-3"/>
@@ -49,9 +50,117 @@
                                                ></f:selectItems>
                             </p:selectOneMenu>
 
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
+                                <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="cmbIns"
+                                styleClass="w-100 form-control" 
+                                value="#{searchController.institution}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Institutions" />
+                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                <p:ajax process="cmbIns" update="cmbDept" />
+                            </p:selectOneMenu>
 
-                            <p:spacer width="20"></p:spacer>
+                            <p:spacer ></p:spacer>
 
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
+                                <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="siteMenu"
+                                styleClass="w-100 form-control"  
+                                value="#{searchController.site}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Sites" />
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                <p:ajax process="siteMenu" update="cmbDept" />
+                            </p:selectOneMenu>
+
+                            <p:spacer ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                            </h:panelGroup>
+                            <h:panelGroup id="cmbDept">
+
+                                <!-- Component 1: Without Institution and Site -->
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution eq null and searchController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 2: With Site Only -->
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution eq null and searchController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 3: With Institution Only -->
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution ne null and searchController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(searchController.institution)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 4: With Both Institution and Site -->
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution ne null and searchController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{searchController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+
+                                <p:selectOneMenu
+                                    rendered="false"
+                                    styleClass="w-100 form-control"  
+                                    value="#{searchController.department}" 
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}" 
+                                        var="d" 
+                                        itemLabel="#{d.name}" 
+                                        itemValue="#{d}" />
+                                </p:selectOneMenu>
+                            </h:panelGroup>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf0f8;" styleClass="fa mr-2" />
@@ -66,38 +175,8 @@
                                                ></f:selectItems>
                             </p:selectOneMenu>
 
+                            <p:spacer ></p:spacer>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
-                                <h:outputLabel value="Institution" class="mx-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var="i"
-                                               itemLabel=""
-                                               itemValue=""
-                                               ></f:selectItems>
-                            </p:selectOneMenu>
-
-                            
-                            <p:spacer width="20"></p:spacer>
-
-                            
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf1ad;" styleClass="fa mr-2" />
-                                <h:outputLabel value="Site" class="mx-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var="i"
-                                               itemLabel=""
-                                               itemValue=""
-                                               ></f:selectItems>
-                            </p:selectOneMenu>
-
-                            
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf02b;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Type" class="mx-3"/>
@@ -114,7 +193,7 @@
 
                             <p:spacer width="20"></p:spacer>
 
-                            
+
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf09d;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Payment Mode" class="mx-3"/>
@@ -128,7 +207,7 @@
                                                ></f:selectItems>
                             </p:selectOneMenu>
 
-                            
+
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf0ae;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Status" class="mx-3"/>
@@ -141,40 +220,60 @@
                                                itemValue=""
                                                ></f:selectItems>
                             </p:selectOneMenu>
+                        </h:panelGrid>
 
+                        <p:commandButton 
+                            class="ui-button-warning my-4 mx-2" 
+                            style="width: 150px"
+                            ajax="false" 
+                            value="Process" 
+                            icon="fas fa-cogs" >
+                        </p:commandButton>
 
+                        <p:commandButton 
+                            class="ui-button-info my-4 mx-2" 
+                            style="width: 150px"
+                            icon="fas fa-print" 
+                            ajax="false" 
+                            value="Print">
+                        </p:commandButton>
 
-                        </h:panelGrid><br/>
+                        <p:commandButton 
+                            class="ui-button-success my-4 mx-2" 
+                            style="width: 150px"
+                            icon="fas fa-file-excel" 
+                            ajax="false" 
+                            value="Excel" >
+                        </p:commandButton>
 
-
-
-
-                        <div class="d-flex align-items-center">
-                            <p:commandButton class="ui-button-warning mx-1" ajax="false" value="Process" icon="fas fa-cogs" action="#{reportController.processLabTestCount()}" >
-                            </p:commandButton>
-                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
-                            </p:commandButton>
-                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download" action="#{reportController.downloadLabTestCount}">
-                            </p:commandButton>
-                            <p:commandButton class="ui-button-danger mx-1" icon= "fas fa-file-pdf" ajax="false" value="PDF">
-                            </p:commandButton>
-                        </div><br/><br/>
-
+                        <p:commandButton 
+                            class="ui-button-danger my-4 mx-2" 
+                            style="width: 150px"
+                            icon= "fas fa-file-pdf" 
+                            ajax="false" 
+                            value="PDF">
+                        </p:commandButton>
 
                         <p:panel>
                             <f:facet name="header">
                                 <h:outputLabel value="OPD and Inward Due" /><br/><br/>
 
-                                <h:outputLabel value="Providers Name :"/>
-                                <br/>
-                                <h:outputLabel value="Insuarance Provider :"/>
-                                <br/>
-                                <h:outputLabel value="Total # of claims :"/>
-                                <br/>
-                                <h:outputLabel value="From Date :"/>
-                                <br/>
-                                <h:outputLabel value="To Date :"/>      
-                                <br/>     
+                                <h:panelGrid columns="2" class="mb-2">
+                                    <h:outputLabel value="Providers Name :"/>
+                                    <h:outputLabel/>
+                                    <h:outputLabel value="Insuarance Provider :"/>
+                                    <h:outputLabel/>
+                                    <h:outputLabel value="Total # of claims :"/>
+                                    <h:outputLabel/>
+                                    <h:outputLabel value="From Date :"/>
+                                    <h:outputLabel value="#{reportController.fromDate}"  >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    </h:outputLabel>
+                                    <h:outputLabel value="To Date :"/>   
+                                    <h:outputLabel value="#{reportController.toDate}"  >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    </h:outputLabel>
+                                </h:panelGrid>
                             </f:facet>
 
 
