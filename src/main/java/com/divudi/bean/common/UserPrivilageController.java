@@ -43,8 +43,8 @@ import org.primefaces.model.TreeNode;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical Informatics)
+ * 
  */
 @Named
 @SessionScoped
@@ -341,6 +341,7 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannelActiveVat, "Channel Active Vat"), channelManagementNode);
 
         TreeNode clinicsNode = new DefaultTreeNode(new PrivilegeHolder(null, "Clinics"), allNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.Clinic, "Clinics"), clinicsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicSession, "Clinic Session"), clinicsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicCalendar, "Clinic Calendar"), clinicsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicQueue, "Clinic Queue"), clinicsNode);
