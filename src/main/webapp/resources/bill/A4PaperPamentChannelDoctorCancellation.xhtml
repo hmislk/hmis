@@ -87,20 +87,20 @@
                             <td><h:outputLabel value="Cancellation No." class="billDetailsFiveFive" ></h:outputLabel></td>
                             <td style="text-align: center;" >:</td>
                             <td>
-                                <h:outputLabel value="#{cc.attrs.bill.deptId}" class="billDetailsFiveFive" ></h:outputLabel>
+                                <h:outputLabel value="#{cc.attrs.bill.cancelledBill.deptId}" class="billDetailsFiveFive" ></h:outputLabel>
                             </td>
                             <td width="2%" />
                             <td width="" ><h:outputLabel value="Cancellation Payment Method" class="billDetailsFiveFive" ></h:outputLabel></td>
                             <td style="text-align: center;" >:</td>
                             <td width="">
-                                <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" class="billDetailsFiveFive" />                        
+                                <h:outputLabel value="#{cc.attrs.bill.cancelledBill.paymentMethod}" class="billDetailsFiveFive" />                        
                             </td>
                         </tr>
                         <tr>
                             <td><h:outputLabel value="Cancellation Date" class="billDetailsFiveFive" ></h:outputLabel></td>
                             <td  style="text-align: center;" >:</td>
                             <td>
-                                <h:outputLabel value="#{cc.attrs.bill.billDate}" class="billDetailsFiveFive" >
+                                <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billDate}" class="billDetailsFiveFive" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                 </h:outputLabel>
                             </td>
@@ -108,7 +108,7 @@
                             <td width="" ><h:outputLabel value="Cancellation Time" class="billDetailsFiveFive" ></h:outputLabel></td>
                             <td style="text-align: center;" >:</td>
                             <td width="">
-                                <h:outputLabel value="#{cc.attrs.bill.billTime}"  class="billDetailsFiveFive">
+                                <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billTime}"  class="billDetailsFiveFive">
                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                 </h:outputLabel>
                             </td>
@@ -122,13 +122,13 @@
                             <td><h:outputLabel value="Billing Number" class="billDetailsFiveFive" ></h:outputLabel></td>
                             <td style="text-align: center;" >:</td>
                             <td>
-                                <h:outputLabel value="#{cc.attrs.bill.billedBill.deptId}" class="billDetailsFiveFive" ></h:outputLabel>
+                                <h:outputLabel value="#{cc.attrs.bill.deptId}" class="billDetailsFiveFive" ></h:outputLabel>
                             </td>
                             <td width="2%" />
                             <td width="" ><h:outputLabel value="Billing Payment Method" class="billDetailsFiveFive" ></h:outputLabel></td>
                             <td style="text-align: center;" >:</td>
                             <td width="">
-                                <h:outputLabel value="#{cc.attrs.bill.billedBill.paymentMethod}" class="billDetailsFiveFive" />                        
+                                <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" class="billDetailsFiveFive" />                        
                             </td>
                         </tr>
 
@@ -136,7 +136,7 @@
                             <td><h:outputLabel value="Date" class="billDetailsFiveFive" ></h:outputLabel></td>
                             <td  style="text-align: center;" >:</td>
                             <td>
-                                <h:outputLabel value="#{cc.attrs.bill.billedBill.billDate}" class="billDetailsFiveFive" >
+                                <h:outputLabel value="#{cc.attrs.bill.billDate}" class="billDetailsFiveFive" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                 </h:outputLabel>
                             </td>
@@ -144,7 +144,7 @@
                             <td width="" ><h:outputLabel value="Time" class="billDetailsFiveFive" ></h:outputLabel></td>
                             <td style="text-align: center;" >:</td>
                             <td width="">
-                                <h:outputLabel value="#{cc.attrs.bill.billedBill.billTime}" class="billDetailsFiveFive">
+                                <h:outputLabel value="#{cc.attrs.bill.billTime}" class="billDetailsFiveFive">
                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                 </h:outputLabel>
                             </td>
