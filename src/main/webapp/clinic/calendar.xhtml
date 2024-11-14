@@ -1,0 +1,168 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:ch="http://xmlns.jcp.org/jsf/composite/channel"
+                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+                xmlns:au="http://xmlns.jcp.org/jsf/composite/autocomplete"
+                xmlns:pat="http://xmlns.jcp.org/jsf/composite/patient"
+                xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
+
+    <ui:define name="content">
+        <h:form id="form">
+            <p:panel>
+                <f:facet name="header">
+                    <div class="d-flex justify-content-center">
+                        <h4 style="font-weight: 600;">Schedule Calendar</h4>
+                    </div>
+                </f:facet>
+
+                <div class="d-flex gap-2 mb-3 justify-content-center">
+                    <p:autoComplete
+                        completeMethod="#{specialityController.completeDoctorSpeciality}"
+                        var="r"
+                        value="#{bookingControllerViewScope.speciality}"
+                        class="w-25"
+                        inputStyleClass="w-100"
+                        itemLabel="#{r.name}"
+                        itemValue="#{r}"
+                        placeholder="Select Speciality"
+                        forceSelection="true">
+                        <p:ajax process="@this" update="specialityStaff"/>
+                    </p:autoComplete>
+
+                    <p:autoComplete
+                        id="specialityStaff"
+                        completeMethod="#{bookingControllerViewScope.specialityStaff()}"
+                        var="r"
+                        value="#{bookingControllerViewScope.consultant}"
+                        class="w-25"
+                        inputStyleClass="w-100"
+                        itemLabel="#{r.person.name}"
+                        itemValue="#{r}"
+                        placeholder="Select Consultant"
+                        forceSelection="true">
+                    </p:autoComplete>
+
+                    <p:commandButton
+                        value="Find Sessions"
+                        action="#{bookingControllerViewScope.findSessionsForCalendar()}"
+                        class="ui-button-warning"
+                        icon="fa fa-search">
+                        <p:ajax process="@this" update="schedule test"/>
+                    </p:commandButton>
+
+                </div>
+                <h:panelGroup id="test">
+                    #{bookingControllerViewScope.channelModel.events.size()}
+                    <ui:repeat value="#{bookingControllerViewScope.channelModel.events}" var="ev" rendered="false" >
+                        <div class="d-flex gap-5">
+                            <h:outputLabel value="#{ev.startDate}" ></h:outputLabel>
+                            <h:outputLabel value="#{ev.endDate}" ></h:outputLabel>
+                        </div>
+
+                    </ui:repeat>
+
+                </h:panelGroup>
+
+                <div style="margin-left: 4%; margin-right: 4%;">
+                    <p:schedule 
+                        id="schedule"
+                        styleClass="ui-button-warning"
+                        value="#{bookingControllerViewScope.channelModel}" 
+                        widgetVar="myschedule"
+                        timeZone="#{bookingControllerViewScope.serverTimeZone}" 
+                        clientTimeZone="#{bookingControllerViewScope.serverTimeZone}">
+                        <p:ajax 
+                            event="dateSelect" 
+                            listener="#{bookingControllerViewScope.onDateSelect(selectEvent)}" 
+                            update="eventDetails"
+                            oncomplete="PF('eventDialog').show();"/>
+                        <p:ajax 
+                            event="eventSelect" 
+                            listener="#{bookingControllerViewScope.onEventSelectCal}" 
+                            update="eventDetails"
+                            oncomplete="PF('eventDialog').show();"/>
+
+                    </p:schedule>
+                </div>
+
+                <script>
+                    function centerTopDialog() {
+                        var dialog = PF('eventDialog').jq;
+                        var win = $(window);
+
+                        // Set the dialog position at the top middle of the window
+                        dialog.css({
+                            'top': '15px', // Adjust this value to control how far from the top you want the dialog
+                            'left': (win.width() - dialog.outerWidth()) / 2 + 'px'
+                        });
+                    }
+                </script>
+
+                <p:dialog 
+                    closeOnEscape="true"
+                    widgetVar="eventDialog" 
+                    header="Session Details" 
+                    position="center" 
+                    onShow="centerTopDialog()" 
+                    showEffect="fade"  
+                    width="450" 
+                    hideEffect="fade"  >
+                    <h:panelGroup id="eventDetails"  >
+                        <h:panelGrid  columns="2" cellpadding="7" rendered="#{bookingControllerViewScope.sEvent.data ne null}">
+                            <p:outputLabel style="width: 150px;"  value="Session Name" styleClass="font-bold"/>
+                            <h:outputLabel value="#{commonController.convertToSessionInstance(bookingControllerViewScope.sEvent.data).name}"/>
+
+                            <p:outputLabel value="Session Date" />
+                            <h:outputLabel  value="#{commonController.getSessionInstance(bookingControllerViewScope.sEvent.data).sessionDate}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                            </h:outputLabel>
+
+                            <p:outputLabel value="Start Time" styleClass="font-bold"/>
+                            <h:outputLabel value="#{commonController.convertToSessionInstance(bookingControllerViewScope.sEvent.data).startingTime}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
+                            </h:outputLabel>
+
+                            <p:outputLabel  value="Speciality" styleClass="font-bold"/>
+                            <h:outputLabel value="#{commonController.convertToSessionInstance(bookingControllerViewScope.sEvent.data).staff.speciality.name}"/>
+
+
+                            <p:outputLabel  value="Counsultant" styleClass="font-bold"/>
+                            <h:outputLabel value="#{commonController.convertToSessionInstance(bookingControllerViewScope.sEvent.data).staff.person.nameWithTitle}"/>
+
+                            <p:outputLabel  value="Bookings" styleClass="font-bold"/>
+                            <h:outputLabel value="#{commonController.convertToSessionInstance(bookingControllerViewScope.sEvent.data).bookedPatientCount == null ? '0' : commonController.convertToSessionInstance(bookingControllerViewScope.sEvent.data).bookedPatientCount}"/>
+
+
+                            <p:outputLabel value="Status" />
+                            <h:panelGroup>
+                                <p:badge size="large" value="Cancelled" severity="danger" style="width: 60px;" rendered="#{commonController.getSessionInstance(bookingControllerViewScope.sEvent.data).cancelled}"></p:badge>
+                                <p:badge size="large" class="px-1" value="Arrived" severity="info" rendered="#{commonController.getSessionInstance(bookingControllerViewScope.sEvent.data).arrived and !commonController.getSessionInstance(bookingControllerViewScope.sEvent.data).started}"/>
+                                <p:badge size="large" class="px-1" value="On Going" severity="warning" rendered="#{commonController.getSessionInstance(bookingControllerViewScope.sEvent.data).started and !commonController.getSessionInstance(bookingControllerViewScope.sEvent.data).completed}"/>
+                                <p:badge size="large" class="px-1" value="Completed" severity="success" rendered="#{commonController.getSessionInstance(bookingControllerViewScope.sEvent.data).completed}"/>
+                            </h:panelGroup>
+
+                            #{bookingControllerViewScope.selectedSessionInstance.staff}
+
+
+
+
+                        </h:panelGrid>
+
+                    </h:panelGroup>
+
+                    <div class="d-flex justify-content-end mt-3">
+                        <p:commandButton value="To Booking" accesskey="-"  class="font-bold ui-button-warning"/>
+                    </div>
+                </p:dialog>
+
+
+            </p:panel>
+
+        </h:form>
+    </ui:define>
+</ui:composition>
