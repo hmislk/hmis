@@ -176,6 +176,7 @@ public class SupplierPaymentController implements Serializable {
         netTotal = 0.0;
         return "/dealerPayment/dealor_payment_done_search?faces-redirect=true";
     }
+
     public String navigateToPaymentDoneSearch() {
         bills = null;
         bills = new ArrayList<>();
@@ -669,6 +670,30 @@ public class SupplierPaymentController implements Serializable {
 
         bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
+        Iterator<Bill> iterator = bills.iterator();
+        while (iterator.hasNext()) {
+            Bill b = iterator.next();
+            netTotal += b.getNetTotal();
+        }
+    }
+
+    public void fillDealorPaymentCanceled() {
+        bills = null;
+        netTotal = 0.0;
+        String jpql;
+        Map params = new HashMap();
+
+        jpql = "select b from Bill b "
+                + " where b.retired=false "
+                + " and b.createdAt between :fromDate and :toDate"
+                + " and b.billType = :billTypes "
+                + " and b.billTypeAtomic = :bTA ";
+        params.put("billTypes", BillType.GrnPayment);
+        params.put("bTA", BillTypeAtomic.SUPPLIER_PAYMENT_CANCELLED);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+        
+        bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
         Iterator<Bill> iterator = bills.iterator();
         while (iterator.hasNext()) {
             Bill b = iterator.next();

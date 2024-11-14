@@ -481,6 +481,7 @@
                     </p:submenu>
 
                     <p:submenu 
+                        style="width: 350px;"
                         id="smLabBillingSearch"
                         label="Billing Search"
                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Show the Bill Search in Under the Lab Module', false)}">
@@ -523,12 +524,33 @@
                         value="Sample Management - Lab">
                     </p:menuitem>
 
-                    <p:menuitem ajax="false" action="/lab/receive?faces-redirect=true" actionListener="#{patientInvestigationController.toPrintWorksheets()}" value="Worksheets" rendered="#{webUserController.hasPrivilege('LabSampleReceiving')}" ></p:menuitem>
-                    <p:menuitem ajax="false" action="#{searchController.navigateToLabReportSearch}"  value="Reports/Search" rendered="#{webUserController.hasPrivilege('LabReportSearch')}" ></p:menuitem>
-                    <p:menuitem ajax="false" action="/lab/search_for_reporting_ondemand_institution?faces-redirect=true" value="Reports/Search By Logged Institution" rendered="#{false and webUserController.hasPrivilege('LabReportSearchByLoggedInstitution')}" ></p:menuitem>
-                    <p:menuitem ajax="false" action="/lab/search_for_reporting_ondemand_department?faces-redirect=true" value="Reports/Search By Logged Department" rendered="#{webUserController.hasPrivilege('LabReportSearchByLoggedInstitution')}" ></p:menuitem>
-                    <p:menuitem ajax="false" action="/lab/search_reports?faces-redirect=true" value="Reporting" rendered="#{webUserController.hasPrivilege('LabReporting')}" ></p:menuitem>
-                    <p:menuitem ajax="false" action="/reportLab/lab_summeries_index?faces-redirect=true" value="Lab Analytics"  rendered="#{webUserController.hasPrivilege('LabSummeries')}" ></p:menuitem>
+                    <p:menuitem 
+                        ajax="false" 
+                        action="/lab/receive?faces-redirect=true" 
+                        actionListener="#{patientInvestigationController.toPrintWorksheets()}" 
+                        value="Worksheets" rendered="#{webUserController.hasPrivilege('LabSampleReceiving')}" >
+                    </p:menuitem>
+                    
+                    <p:menuitem 
+                        ajax="false" 
+                        action="#{searchController.navigateToLabReportSearch}"  
+                        value="Report Management" 
+                        rendered="#{webUserController.hasPrivilege('LabReportSearch')}" >
+                    </p:menuitem>
+                    
+                    <p:menuitem 
+                        ajax="false" 
+                        action="#{searchController.navigateToPatientReportSearch()}" 
+                        value="Report Search" 
+                        rendered="#{webUserController.hasPrivilege('LabReportPrint')}" >
+                    </p:menuitem>
+                    
+                    <p:menuitem 
+                        ajax="false" 
+                        action="#{searchController.navigateToLabAnalytics()}" 
+                        value="Lab Analytics"  
+                        rendered="#{webUserController.hasPrivilege('LabSummeries')}" >
+                    </p:menuitem>
                 </p:submenu>
 
                 <p:menuitem 

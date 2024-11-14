@@ -12817,10 +12817,9 @@ public class SearchController implements Serializable {
 
     public String navigateToLabReportSearch() {
         patientInvestigations = new ArrayList<>();
-//        getReportKeyWord().setDepartment(getSessionController().getLoggedUser().getDepartment());
         return "/lab/search_for_reporting_ondemand?faces-redirect=true";
     }
-
+    
     public String navigateToListSingleUserBills() {
         processAllFinancialTransactionalBillListBySingleUserByIds();
         return "/cashier/shift_end_summary_bill_list";
@@ -12834,6 +12833,16 @@ public class SearchController implements Serializable {
     public String navigateToListCashBookEntrySiteSummary() {
         cashBookEntries = new ArrayList<>();
         return "/cashier/cash_book_summery_site";
+    }
+    
+    public String navigateToPatientReportSearch() {
+        patientInvestigations = new ArrayList<>();
+        return "/lab/patient_reports_search?faces-redirect=true";
+    }
+    
+    public String navigateToLabAnalytics() {
+        patientInvestigations = new ArrayList<>();
+        return "/reportLab/lab_summeries_index?faces-redirect=true";
     }
 
     public void genarateCashBookEntries() {
@@ -12853,7 +12862,11 @@ public class SearchController implements Serializable {
     }
 
     public void createIncomeBreakdownByCategory() {
-        bundle = generateIncomeBreakdownByCategory();
+        if(withProfessionalFee){
+            bundle = generateIncomeBreakdownByCategoryWithProfessionalFee();
+        }else{
+            bundle = generateIncomeBreakdownByCategoryWithOutProfessionalFee();
+        }
     }
 
     public void generateDailyReturn() {
@@ -14070,7 +14083,161 @@ public class SearchController implements Serializable {
     @Inject
     EnumController enumController;
 
-    public ReportTemplateRowBundle generateIncomeBreakdownByCategory() {
+    public ReportTemplateRowBundle generateIncomeBreakdownByCategoryWithProfessionalFee() {
+        ReportTemplateRowBundle oiBundle = new ReportTemplateRowBundle();
+        String jpql = "select bi "
+                + " from BillItem bi "
+                + " where bi.bill.retired=:br "
+                + " and bi.bill.createdAt between :fd and :td ";
+        Map m = new HashMap();
+        m.put("br", false);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        List<BillTypeAtomic> btas = new ArrayList();
+
+        List<BillTypeAtomic> obtas = BillTypeAtomic.findByServiceType(ServiceType.OPD);
+        List<BillTypeAtomic> ibtas = BillTypeAtomic.findByServiceType(ServiceType.INWARD);
+
+        if (null != visitType) {
+            switch (visitType) {
+                case "Any":
+                    System.out.println("Any");
+                    btas.addAll(obtas);
+                    btas.addAll(ibtas);
+                    break;
+                case "OP":
+                    System.out.println("OPD");
+                    btas.addAll(obtas);
+                    break;
+                case "IP":
+                    System.out.println("IP");
+                    btas.addAll(ibtas);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        oiBundle.setDescription("Bill Types Listed: " + btas.size());
+        if (!btas.isEmpty()) {
+            jpql += " and bi.bill.billTypeAtomic in :bts ";
+            m.put("bts", btas);
+        }
+
+        List<PaymentMethod> creditPaymentMethods = enumController.getPaymentTypeOfPaymentMethods(PaymentType.CREDIT);
+        List<PaymentMethod> nonCreditPaymentMethods = enumController.getPaymentTypeOfPaymentMethods(PaymentType.NON_CREDIT);
+
+        List<PaymentMethod> allMethods = new ArrayDeque();
+        allMethods.addAll(creditPaymentMethods);
+        allMethods.addAll(nonCreditPaymentMethods);
+
+        if ("Any".equals(methodType)) {
+            System.out.println("Any");
+        } else if ("Credit".equals(methodType)) {
+            System.out.println("Credit");
+
+            if (null != visitType) {
+                switch (visitType) {
+                    case "Any":
+                        System.out.println("Credit Any");
+                        jpql += " AND (bi.bill.paymentMethod in :cpm OR bi.bill.patientEncounter.paymentMethod in :cpm)";
+                        m.put("cpm", creditPaymentMethods);
+                        break;
+                    case "OP":
+                        System.out.println("Credit OP");
+                        jpql += " AND bi.bill.paymentMethod in :cpm ";
+                        m.put("cpm", creditPaymentMethods);
+                        break;
+                    case "IP":
+                        System.out.println("Credit IP");
+                        jpql += " AND bi.bill.patientEncounter.paymentMethod in :cpm ";
+                        m.put("cpm", creditPaymentMethods);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+        } else if ("NonCredit".equals(methodType)) {
+            System.out.println("Non Credit");
+
+            if (null != visitType) {
+                switch (visitType) {
+                    case "Any":
+                        System.out.println("Credit Any");
+                        System.out.println("Credit Any");
+                        jpql += " AND (bi.bill.paymentMethod in :apm OR bi.bill.patientEncounter.paymentMethod in :apm)";
+                        m.put("apm", nonCreditPaymentMethods);
+                        break;
+                    case "OP":
+                        System.out.println("Credit OP");
+                        jpql += " AND bi.bill.paymentMethod in :ncpm ";
+                        m.put("ncpm", nonCreditPaymentMethods);
+                        break;
+                    case "IP":
+                        System.out.println("Credit IP");
+                        jpql += " AND bi.bill.patientEncounter.paymentMethod in :ncpm ";
+                        m.put("ncpm", nonCreditPaymentMethods);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+        }
+
+        if (department != null) {
+            jpql += " and bi.bill.department=:dep ";
+            m.put("dep", department);
+        }
+        if (institution != null) {
+            jpql += " and bi.bill.department.institution=:ins ";
+            m.put("ins", institution);
+        }
+        if (site != null) {
+            jpql += " and bi.bill.department.site=:site ";
+            m.put("site", site);
+        }
+        if (category != null) {
+            jpql += " and bi.item.category=:cat ";
+            m.put("cat", category);
+        }
+        System.out.println("jpql = " + jpql);
+        System.out.println("m = " + m);
+
+        List<BillItem> bis = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        System.out.println("bis = " + bis);
+
+        // Debug: Print payment methods of the fetched BillItems
+        for (BillItem bi : bis) {
+            System.out.println("BillItem ID: " + bi.getId());
+            System.out.println("Bill PaymentMethod: " + bi.getBill().getPaymentMethod());
+            if (bi.getBill().getPatientEncounter() != null) {
+                System.out.println("PatientEncounter PaymentMethod: " + bi.getBill().getPatientEncounter().getPaymentMethod());
+            } else {
+                System.out.println("No PatientEncounter");
+            }
+        }
+
+        summarizeBillItemsToIncomeByCategory(oiBundle, bis);
+
+        oiBundle.setName("Income Breakdown By Category - With Professional Fee");
+        oiBundle.setBundleType("income_breakdown_by_category_with_professional_fee");
+
+        oiBundle.getReportTemplateRows().stream()
+                .forEach(rtr -> {
+                    rtr.setInstitution(institution);
+                    rtr.setDepartment(department);
+                    rtr.setSite(site);
+                    rtr.setFromDate(fromDate);
+                    rtr.setToDate(toDate);
+                });
+
+        return oiBundle;
+    }
+
+    public ReportTemplateRowBundle generateIncomeBreakdownByCategoryWithOutProfessionalFee() {
         ReportTemplateRowBundle oiBundle = new ReportTemplateRowBundle();
         String jpql = "select bi "
                 + " from BillItem bi "
@@ -14209,8 +14376,8 @@ public class SearchController implements Serializable {
 
         summarizeBillItemsToIncomeByCategory(oiBundle, bis);
 
-        oiBundle.setName("Income Breakdown By Category");
-        oiBundle.setBundleType("income_breakdown_by_category");
+        oiBundle.setName("Income Breakdown By Category - Without Professional Fee");
+        oiBundle.setBundleType("income_breakdown_by_category_with_out_professional_fee");
 
         oiBundle.getReportTemplateRows().stream()
                 .forEach(rtr -> {
@@ -14224,151 +14391,7 @@ public class SearchController implements Serializable {
         return oiBundle;
     }
 
-    @Deprecated
-    public ReportTemplateRowBundle generateIncomeBreakdownByCategoryOpdWithoutProfessionalFee() {
-        ReportTemplateRowBundle oiBundle = new ReportTemplateRowBundle();
-        String jpql = "select bi "
-                + " from BillItem bi "
-                + " where bi.bill.retired=:br "
-                + " and bi.bill.createdAt between :fd and :td ";
-        Map<String, Object> m = new HashMap<>();
-        m.put("br", false);
-        m.put("fd", fromDate);
-        m.put("td", toDate);
-
-        List<BillTypeAtomic> btas = new ArrayList<>();
-
-        List<BillTypeAtomic> obtas = BillTypeAtomic.findByServiceType(ServiceType.OPD);
-        List<BillTypeAtomic> ibtas = BillTypeAtomic.findByServiceType(ServiceType.INWARD);
-
-        if (visitType != null) {
-            switch (visitType) {
-                case "Any":
-                    btas.addAll(obtas);
-                    btas.addAll(ibtas);
-                    break;
-                case "OP":
-                    btas.addAll(obtas);
-                    break;
-                case "IP":
-                    btas.addAll(ibtas);
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        oiBundle.setDescription("Bill Types Listed: " + btas.size());
-        if (!btas.isEmpty()) {
-            jpql += " and bi.bill.billTypeAtomic in :bts ";
-            m.put("bts", btas);
-        }
-
-        // Define credit and non-credit payment methods
-        List<PaymentMethod> creditPaymentMethods = Arrays.asList(
-                PaymentMethod.Credit,
-                PaymentMethod.Staff
-        // Add any other credit payment methods used in your system
-        );
-
-        List<PaymentMethod> nonCreditPaymentMethods = Arrays.asList(
-                PaymentMethod.Cash,
-                PaymentMethod.Card,
-                PaymentMethod.Cheque,
-                PaymentMethod.Slip,
-                PaymentMethod.ewallet,
-                PaymentMethod.Voucher,
-                PaymentMethod.Agent,
-                PaymentMethod.PatientDeposit,
-                PaymentMethod.PatientPoints,
-                PaymentMethod.OnlineSettlement,
-                PaymentMethod.YouOweMe
-        // Add any other non-credit payment methods
-        );
-
-        System.out.println("methodType = " + methodType);
-        System.out.println("visitType = " + visitType);
-
-        if (methodType != null) {
-            switch (methodType) {
-                case "Any":
-                    // No additional conditions needed
-                    break;
-                case "Credit":
-//                    jpql += " AND ("
-//                            + " (bi.bill.paymentMethod in :cpm) "
-//                            + " OR "
-//                            + " (bi.bill.patientEncounter is not null AND bi.bill.patientEncounter.paymentMethod in :cpm) "
-//                            + ")";
-
-                    jpql += " AND bi.bill.paymentMethod in :cpm ";
-
-                    m.put("cpm", creditPaymentMethods);
-                    break;
-                case "NonCredit":
-                    jpql += " AND ("
-                            + " (bi.bill.paymentMethod in :ncpm) "
-                            + " OR "
-                            + " (bi.bill.patientEncounter is not null AND bi.bill.patientEncounter.paymentMethod in :ncpm) "
-                            + ")";
-                    m.put("ncpm", nonCreditPaymentMethods);
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        if (department != null) {
-            jpql += " and bi.bill.department=:dep ";
-            m.put("dep", department);
-        }
-        if (institution != null) {
-            jpql += " and bi.bill.department.institution=:ins ";
-            m.put("ins", institution);
-        }
-        if (site != null) {
-            jpql += " and bi.bill.department.site=:site ";
-            m.put("site", site);
-        }
-        if (category != null) {
-            jpql += " and bi.item.category=:cat ";
-            m.put("cat", category);
-        }
-
-        System.out.println("jpql = " + jpql);
-        System.out.println("m = " + m);
-
-        List<BillItem> bis = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
-        System.out.println("bis = " + bis);
-
-        // Debug: Print payment methods of the fetched BillItems
-        for (BillItem bi : bis) {
-            System.out.println("BillItem ID: " + bi.getId());
-            System.out.println("Bill PaymentMethod: " + bi.getBill().getPaymentMethod());
-            if (bi.getBill().getPatientEncounter() != null) {
-                System.out.println("PatientEncounter PaymentMethod: " + bi.getBill().getPatientEncounter().getPaymentMethod());
-            } else {
-                System.out.println("No PatientEncounter");
-            }
-        }
-
-        summarizeBillItemsToIncomeByCategoryWithoutProfessionalFee(oiBundle, bis);
-
-        oiBundle.setName("Income Breakdown By Category Without Professional Fee");
-        oiBundle.setBundleType("income_breakdown_by_category");
-
-        oiBundle.getReportTemplateRows().stream()
-                .forEach(rtr -> {
-                    rtr.setInstitution(institution);
-                    rtr.setDepartment(department);
-                    rtr.setSite(site);
-                    rtr.setFromDate(fromDate);
-                    rtr.setToDate(toDate);
-                });
-
-        return oiBundle;
-    }
-
+    
     public ReportTemplateRowBundle generateOpdProfessionalFees(String paymentStatusStr) {
         PaymentStatus paymentStatus = PaymentStatus.ALL;
         if (paymentStatusStr != null) {
