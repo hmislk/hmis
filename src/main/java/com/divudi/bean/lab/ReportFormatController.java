@@ -258,13 +258,13 @@ public class ReportFormatController implements Serializable {
     public StreamedContent getImage() throws IOException {
         FacesContext context = FacesContext.getCurrentInstance();
         if (context.getCurrentPhaseId() == PhaseId.RENDER_RESPONSE) {
-            // So, we're rendering the HTML. Return a stub StreamedContent so that it will generate right URL.
-            return DefaultStreamedContent.builder().build();
-        } else if (getUpload() == null) {
-            return DefaultStreamedContent.builder().build();
+            return DefaultStreamedContent.builder().contentType("image/png").stream(() -> new ByteArrayInputStream(new byte[0])).build();
+        } else if (getUpload() == null || getUpload().getBaImage() == null) {
+            // Return a placeholder StreamedContent when no image is available
+            return DefaultStreamedContent.builder().contentType("image/png").stream(() -> new ByteArrayInputStream(new byte[0])).build();
         } else {
             String imageType = getUpload().getFileType();
-            if (imageType == null || imageType.trim().equals("")) {
+            if (imageType == null || imageType.trim().isEmpty()) {
                 imageType = "image/png";
             }
             return DefaultStreamedContent.builder()
