@@ -260,10 +260,7 @@ public class AgentAndCcPaymentController implements Serializable {
         String deptId;
 
         deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(
-                getSessionController().getInstitution(),
-                getSessionController().getDepartment(),
-                BillType.CollectingCentrePaymentReceiveBill,
-                BillClassType.BilledBill);
+                getSessionController().getDepartment(), BillTypeAtomic.CC_PAYMENT_RECEIVED_BILL);
 
         getCurrent().setInsId(deptId);
         getCurrent().setDeptId(deptId);
