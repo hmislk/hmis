@@ -340,6 +340,14 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannelCashCancelRestriction, "Channel Cash Cancel Restriction"), channelManagementNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannelActiveVat, "Channel Active Vat"), channelManagementNode);
 
+        TreeNode clinicsNode = new DefaultTreeNode(new PrivilegeHolder(null, "Clinics"), allNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicSession, "Clinic Session"), clinicsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicCalendar, "Clinic Calendar"), clinicsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicQueue, "Clinic Queue"), clinicsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicDisplay, "Clinic Display"), clinicsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicSchedule, "Clinic Schedule"), clinicsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicReports, "Clinic Reports"), clinicsNode);
+
         // Payment Privileges
         TreeNode paymentNode = new DefaultTreeNode(new PrivilegeHolder(null, "Payment"), allNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.Payment, "Payment Menu"), paymentNode);
@@ -505,12 +513,12 @@ public class UserPrivilageController implements Serializable {
         TreeNode cashTransactionMenuNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.CashTransaction, "Cash Transaction Menu"), cashTransactionNode);
         TreeNode cashInNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.CashTransactionCashIn, "Cash In"), cashTransactionNode);
         TreeNode cashOutNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.CashTransactionCashOut, "Cash Out"), cashTransactionNode);
-        
+
         TreeNode handoverAcceptAsCashier = new DefaultTreeNode(new PrivilegeHolder(Privileges.ShiftHandoverAcceptAsCashier, "Shift Handover Accept As A Cashier"), cashTransactionNode);
         TreeNode handoverAcceptAsMainCashier = new DefaultTreeNode(new PrivilegeHolder(Privileges.ShiftHandoverAcceptAsMainCashier, "Shift Handover Accept As Main Cashier"), cashTransactionNode);
 
         TreeNode listToCashReceiveNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.CashTransactionListToCashRecieve, "List To Cash Receive"), cashTransactionNode);
-        
+
         TreeNode PettyCashBillApprove = new DefaultTreeNode(new PrivilegeHolder(Privileges.PettyCashBillApprove, "Petty Cash Bill Approval"), cashTransactionNode);
         TreeNode PettyCashBillCancellationApprove = new DefaultTreeNode(new PrivilegeHolder(Privileges.PettyCashBillCancellationApprove, "Petty Cash Bill Cancellation Approval"), cashTransactionNode);
 
@@ -618,7 +626,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode deleteData = new DefaultTreeNode(new PrivilegeHolder(Privileges.DeleteData, "Delete Data"), superAdminNode);
         TreeNode billCancel = new DefaultTreeNode(new PrivilegeHolder(Privileges.BillCancel, "Bill Cancel "), superAdminNode);
         TreeNode billRefund = new DefaultTreeNode(new PrivilegeHolder(Privileges.BillRefund, "Bill Refund"), superAdminNode);
-        
+
         return root;
     }
 
