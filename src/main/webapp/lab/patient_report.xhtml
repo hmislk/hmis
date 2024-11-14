@@ -95,25 +95,29 @@
                                             <p:printer target="divPrint" />
                                         </p:commandButton>
                                         <p:spacer width="80" ></p:spacer>
-                                        <p:commandButton    value="Back to Report Search" 
-                                                            action="/lab/search_for_reporting_ondemand?faces-redirect=true" 
-                                                            icon="fa-solid fa-arrow-left"
-                                                            class="mx-1 ui-button-secondary"
-                                                            ajax="false"   >
+                                        <p:commandButton    
+                                            value="Back to Report Search" 
+                                            action="/lab/search_for_reporting_ondemand?faces-redirect=true" 
+                                            icon="fa-solid fa-arrow-left"
+                                            class="mx-1 ui-button-secondary"
+                                            ajax="false"   >
                                         </p:commandButton>
-                                        <p:commandButton    value="Patient Report Search" 
-                                                            icon="fa-solid fa-search"
-                                                            class=" ui-button-warning"
-                                                            action="#{patientReportController.patientReportSearch}" ajax="false" >
+                                        <p:commandButton    
+                                            value="Patient Report Search" 
+                                            icon="fa-solid fa-search"
+                                            class=" ui-button-warning"
+                                            action="#{patientReportController.patientReportSearch}" ajax="false" >
                                         </p:commandButton>
 
-                                        <p:commandButton    value="To Approve List" 
-                                                            icon="fa-solid fa-list"
-                                                            class="mx-1 ui-button-success"
-                                                            action="#{searchController.listReportsAwaitingApproval()}" ajax="false"   >
+                                        <p:commandButton    
+                                            value="To Approve List" 
+                                            icon="fa-solid fa-list"
+                                            class="mx-1 ui-button-success"
+                                            action="#{searchController.listReportsAwaitingApproval()}" ajax="false"   >
                                         </p:commandButton>
                                         <p:commandButton  
-                                            ajax="false" value="Back"
+                                            ajax="false" 
+                                            value="Back"
                                             action="/lab/generate_barcode_p?faces-redirect=true"
                                             icon="fa-solid fa-arrow-left"
                                             class=""
@@ -170,9 +174,9 @@
                                         <table >               
                                             <ui:repeat  
                                                 value="#{patientReportController.currentPatientReport.patientReportItemValues}" 
-                                                        var="pvcal"  
+                                                var="pvcal"  
 
-                                                        >
+                                                >
 
                                                 <h:panelGroup   rendered="#{pvcal.investigationItem.ixItemType eq 'Calculation'}">
                                                     <tr>
