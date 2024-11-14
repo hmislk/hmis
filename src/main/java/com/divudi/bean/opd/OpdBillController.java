@@ -3690,6 +3690,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     public void setPatient(Patient patient) {
         this.patient = patient;
         selectPaymentSchemeAsPerPatientMembership();
+        
     }
 
     private void selectPaymentSchemeAsPerPatientMembership() {
@@ -3701,6 +3702,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         }else{
             paymentScheme = patient.getPerson().getMembershipScheme().getPaymentScheme();
         }
+        listnerForPaymentMethodChange();
     }
 
     public Doctor getReferredBy() {
