@@ -103,6 +103,8 @@ public class SupplierPaymentController implements Serializable {
     private Institution institution;
     private Bill bill;
     private String comment;
+    private Institution toInstitution;
+    private Institution bank;
     //List
     private List<BillItem> billItems;
     private List<BillItem> selectedBillItems;
@@ -631,6 +633,70 @@ public class SupplierPaymentController implements Serializable {
             jpql.append("AND b.chequeRefNo = :chequeRefNo ");
             params.put("chequeRefNo", chequeNo);
         }
+        if (toInstitution != null) {
+            jpql.append("AND b.toInstitution = :supplier ");
+            params.put("supplier", toInstitution);
+        }
+        if (bank != null) {
+            jpql.append("AND b.bank = :bank ");
+            params.put("bank", bank);
+        }
+
+        jpql.append("AND b.billType <> :excludeBillType ");
+        params.put("excludeBillType", BillType.GrnPayment);
+        jpql.append("ORDER BY b.id");
+
+        // Execute query
+        bills = getBillFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        // Calculate net total
+//        netTotal = bills.stream()
+//                .mapToDouble(Bill::getNetTotal)
+//                .sum();
+        Iterator<Bill> iterator = bills.iterator();
+        while (iterator.hasNext()) {
+            Bill b = iterator.next();
+            netTotal += b.getNetTotal();
+        }
+
+    }
+
+    public void fillAllCreditBillssettledByChequeDate() {
+        bills = null;
+        netTotal = 0.0;
+
+        // Ensure dates are not null
+        if (chequeFromDate == null || chequeToDate == null) {
+            throw new IllegalArgumentException("fromDate and toDate must be set");
+        }
+
+        // Build JPQL query
+        StringBuilder jpql = new StringBuilder("SELECT b FROM Bill b "
+                + "WHERE b.retired = false "
+                + "AND b.cancelled = false "
+                + "AND b.refunded = false "
+                + "AND b.chequeDate BETWEEN :chequeFromDate AND :chequeToDate "
+                + "AND (b.billType = :billType OR b.billTypeAtomic = :billTypeAtomic) ");
+
+        // Initialize parameters map
+        Map<String, Object> params = new HashMap<>();
+        params.put("chequeFromDate", chequeFromDate);
+        params.put("chequeToDate", chequeToDate);
+        params.put("billType", BillType.GrnPaymentPre);
+        params.put("billTypeAtomic", BillTypeAtomic.SUPPLIER_PAYMENT);
+
+        if (chequeNo != null && !chequeNo.trim().isEmpty()) {
+            jpql.append("AND b.chequeRefNo = :chequeRefNo ");
+            params.put("chequeRefNo", chequeNo);
+        }
+        if (toInstitution != null) {
+            jpql.append("AND b.toInstitution = :supplier ");
+            params.put("supplier", toInstitution);
+        }
+        if (bank != null) {
+            jpql.append("AND b.bank = :bank ");
+            params.put("bank", bank);
+        }
 
         jpql.append("AND b.billType <> :excludeBillType ");
         params.put("excludeBillType", BillType.GrnPayment);
@@ -692,7 +758,7 @@ public class SupplierPaymentController implements Serializable {
         params.put("bTA", BillTypeAtomic.SUPPLIER_PAYMENT_CANCELLED);
         params.put("fromDate", fromDate);
         params.put("toDate", toDate);
-        
+
         bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
         Iterator<Bill> iterator = bills.iterator();
         while (iterator.hasNext()) {
@@ -1365,6 +1431,22 @@ public class SupplierPaymentController implements Serializable {
 
     public void setChequeNo(String chequeNo) {
         this.chequeNo = chequeNo;
+    }
+
+    public Institution getToInstitution() {
+        return toInstitution;
+    }
+
+    public void setToInstitution(Institution toInstitution) {
+        this.toInstitution = toInstitution;
+    }
+
+    public Institution getBank() {
+        return bank;
+    }
+
+    public void setBank(Institution bank) {
+        this.bank = bank;
     }
 
 }
