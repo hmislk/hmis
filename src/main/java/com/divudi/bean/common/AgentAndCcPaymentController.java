@@ -47,6 +47,7 @@ import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.PaymentFacade;
+import com.divudi.service.BillService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -93,6 +94,8 @@ public class AgentAndCcPaymentController implements Serializable {
     PaymentFacade paymentFacade;
     @EJB
     CashTransactionBean cashTransactionBean;
+    @EJB
+    BillService billService;
 
     @Inject
     private BillBeanController billBean;
@@ -289,8 +292,8 @@ public class AgentAndCcPaymentController implements Serializable {
             }
         }
 
-        List<Payment> ps = createPayment(current, getCurrent().getPaymentMethod());
-        drawerController.updateDrawerForIns(ps);
+        List<Payment> ps = billService.createPayment(current, getCurrent().getPaymentMethod(), paymentMethodData);
+//        drawerController.updateDrawerForIns(ps); //Done through bill service
         collectingCentreApplicationController.updateCcBalance(
                 current.getFromInstitution(),
                 0,
@@ -391,8 +394,8 @@ public class AgentAndCcPaymentController implements Serializable {
         System.out.println(current.getFromInstitution().getBallance());
         saveBillItem();
 
-        List<Payment> p = createPayment(current, getCurrent().getPaymentMethod());
-        drawerController.updateDrawerForIns(p);
+        List<Payment> p = billService.createPayment(current, getCurrent().getPaymentMethod(), paymentMethodData);
+//        drawerController.updateDrawerForIns(p); > Done during bill Service
 //        collectingCentreApplicationController.updateCcBalance(
 //                current.getFromInstitution(),
 //                0,
@@ -530,7 +533,7 @@ public class AgentAndCcPaymentController implements Serializable {
 
         saveBill(billType, billNumberSuffix);
         saveBillItem();
-        createPayment(current, getCurrent().getPaymentMethod());
+        billService.createPayment(current, getCurrent().getPaymentMethod(), paymentMethodData);
         //for channel agencyHistory Update
         createAgentHistory(getCurrent().getFromInstitution(), getCurrent().getNetTotal(), historyType, getCurrent());
         //for channel agencyHistory Update
@@ -666,116 +669,115 @@ public class AgentAndCcPaymentController implements Serializable {
         return "";
     }
 
-    public List<Payment> createPayment(Bill bill, PaymentMethod pm) {
-        List<Payment> ps = new ArrayList<>();
-        if (bill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
-            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
-                Payment p = new Payment();
-                p.setBill(bill);
-                p.setInstitution(getSessionController().getInstitution());
-                p.setDepartment(getSessionController().getDepartment());
-                p.setCreatedAt(new Date());
-                p.setCreater(getSessionController().getLoggedUser());
-                p.setPaymentMethod(cd.getPaymentMethod());
-
-                switch (cd.getPaymentMethod()) {
-                    case Card:
-                        p.setBank(cd.getPaymentMethodData().getCreditCard().getInstitution());
-                        p.setCreditCardRefNo(cd.getPaymentMethodData().getCreditCard().getNo());
-                        p.setPaidValue(cd.getPaymentMethodData().getCreditCard().getTotalValue());
-                        break;
-                    case Cheque:
-                        p.setChequeDate(cd.getPaymentMethodData().getCheque().getDate());
-                        p.setChequeRefNo(cd.getPaymentMethodData().getCheque().getNo());
-                        p.setPaidValue(cd.getPaymentMethodData().getCheque().getTotalValue());
-                        break;
-                    case Cash:
-                        p.setPaidValue(cd.getPaymentMethodData().getCash().getTotalValue());
-                        break;
-                    case ewallet:
-                        break;
-                    case Agent:
-                        break;
-                    case Credit:
-                        break;
-                    case PatientDeposit:
-                        break;
-                    case Slip:
-                        p.setPaidValue(cd.getPaymentMethodData().getSlip().getTotalValue());
-                        p.setBank(cd.getPaymentMethodData().getSlip().getInstitution());
-                        p.setRealizedAt(cd.getPaymentMethodData().getSlip().getDate());
-                        break;
-                    case OnCall:
-                        break;
-                    case OnlineSettlement:
-                        break;
-                    case Staff:
-                        p.setPaidValue(cd.getPaymentMethodData().getStaffCredit().getTotalValue());
-                        if (cd.getPaymentMethodData().getStaffCredit().getToStaff() != null) {
-                            staffBean.updateStaffCredit(cd.getPaymentMethodData().getStaffCredit().getToStaff(), cd.getPaymentMethodData().getStaffCredit().getTotalValue());
-                            JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
-                        }
-                        break;
-                    case YouOweMe:
-                        break;
-                    case MultiplePaymentMethods:
-                        break;
-                }
-
-                paymentFacade.create(p);
-                ps.add(p);
-            }
-        } else {
-            Payment p = new Payment();
-            p.setBill(bill);
-            p.setInstitution(getSessionController().getInstitution());
-            p.setDepartment(sessionController.getDepartment());
-            p.setCreatedAt(new Date());
-            p.setCreater(getSessionController().getLoggedUser());
-            p.setPaymentMethod(pm);
-
-            switch (pm) {
-                case Card:
-                    p.setBank(paymentMethodData.getCreditCard().getInstitution());
-                    p.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
-                    break;
-                case Cheque:
-                    p.setChequeDate(paymentMethodData.getCheque().getDate());
-                    p.setChequeRefNo(paymentMethodData.getCheque().getNo());
-                    break;
-                case Cash:
-                    break;
-                case ewallet:
-                    break;
-                case Agent:
-                    break;
-                case Credit:
-                    break;
-                case PatientDeposit:
-                    break;
-                case Slip:
-                    p.setBank(paymentMethodData.getSlip().getInstitution());
-                    p.setRealizedAt(paymentMethodData.getSlip().getDate());
-                case OnCall:
-                    break;
-                case OnlineSettlement:
-                    break;
-                case Staff:
-                    break;
-                case YouOweMe:
-                    break;
-                case MultiplePaymentMethods:
-                    break;
-            }
-
-            p.setPaidValue(p.getBill().getNetTotal());
-            paymentFacade.create(p);
-            cashBookEntryController.writeCashBookEntryAtPaymentCreation(p);
-            ps.add(p);
-        }
-        return ps;
-    }
-
+//    public List<Payment> createPayment(Bill bill, PaymentMethod pm) {
+//        List<Payment> ps = new ArrayList<>();
+//        if (bill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+//            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+//                Payment p = new Payment();
+//                p.setBill(bill);
+//                p.setInstitution(getSessionController().getInstitution());
+//                p.setDepartment(getSessionController().getDepartment());
+//                p.setCreatedAt(new Date());
+//                p.setCreater(getSessionController().getLoggedUser());
+//                p.setPaymentMethod(cd.getPaymentMethod());
+//
+//                switch (cd.getPaymentMethod()) {
+//                    case Card:
+//                        p.setBank(cd.getPaymentMethodData().getCreditCard().getInstitution());
+//                        p.setCreditCardRefNo(cd.getPaymentMethodData().getCreditCard().getNo());
+//                        p.setPaidValue(cd.getPaymentMethodData().getCreditCard().getTotalValue());
+//                        break;
+//                    case Cheque:
+//                        p.setChequeDate(cd.getPaymentMethodData().getCheque().getDate());
+//                        p.setChequeRefNo(cd.getPaymentMethodData().getCheque().getNo());
+//                        p.setPaidValue(cd.getPaymentMethodData().getCheque().getTotalValue());
+//                        break;
+//                    case Cash:
+//                        p.setPaidValue(cd.getPaymentMethodData().getCash().getTotalValue());
+//                        break;
+//                    case ewallet:
+//                        break;
+//                    case Agent:
+//                        break;
+//                    case Credit:
+//                        break;
+//                    case PatientDeposit:
+//                        break;
+//                    case Slip:
+//                        p.setPaidValue(cd.getPaymentMethodData().getSlip().getTotalValue());
+//                        p.setBank(cd.getPaymentMethodData().getSlip().getInstitution());
+//                        p.setRealizedAt(cd.getPaymentMethodData().getSlip().getDate());
+//                        break;
+//                    case OnCall:
+//                        break;
+//                    case OnlineSettlement:
+//                        break;
+//                    case Staff:
+//                        p.setPaidValue(cd.getPaymentMethodData().getStaffCredit().getTotalValue());
+//                        if (cd.getPaymentMethodData().getStaffCredit().getToStaff() != null) {
+//                            staffBean.updateStaffCredit(cd.getPaymentMethodData().getStaffCredit().getToStaff(), cd.getPaymentMethodData().getStaffCredit().getTotalValue());
+//                            JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
+//                        }
+//                        break;
+//                    case YouOweMe:
+//                        break;
+//                    case MultiplePaymentMethods:
+//                        break;
+//                }
+//
+//                paymentFacade.create(p);
+//                ps.add(p);
+//            }
+//        } else {
+//            Payment p = new Payment();
+//            p.setBill(bill);
+//            p.setInstitution(getSessionController().getInstitution());
+//            p.setDepartment(sessionController.getDepartment());
+//            p.setCreatedAt(new Date());
+//            p.setCreater(getSessionController().getLoggedUser());
+//            p.setPaymentMethod(pm);
+//
+//            switch (pm) {
+//                case Card:
+//                    p.setBank(paymentMethodData.getCreditCard().getInstitution());
+//                    p.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
+//                    break;
+//                case Cheque:
+//                    p.setChequeDate(paymentMethodData.getCheque().getDate());
+//                    p.setChequeRefNo(paymentMethodData.getCheque().getNo());
+//                    break;
+//                case Cash:
+//                    break;
+//                case ewallet:
+//                    break;
+//                case Agent:
+//                    break;
+//                case Credit:
+//                    break;
+//                case PatientDeposit:
+//                    break;
+//                case Slip:
+//                    p.setBank(paymentMethodData.getSlip().getInstitution());
+//                    p.setRealizedAt(paymentMethodData.getSlip().getDate());
+//                case OnCall:
+//                    break;
+//                case OnlineSettlement:
+//                    break;
+//                case Staff:
+//                    break;
+//                case YouOweMe:
+//                    break;
+//                case MultiplePaymentMethods:
+//                    break;
+//            }
+//
+//            p.setPaidValue(p.getBill().getNetTotal());
+//            paymentFacade.create(p);
+//            cashBookEntryController.writeCashBookEntryAtPaymentCreation(p);
+//            ps.add(p);
+//        }
+//        return ps;
+//    }
     public Bill getCurrent() {
         if (current == null) {
             current = new BilledBill();
