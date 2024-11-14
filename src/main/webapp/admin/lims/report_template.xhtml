@@ -79,9 +79,11 @@
 
                                     <f:facet name="header" >
                                         Item Details
-                                        <p:commandButton id="btnSave" value="Save" action="#{commonReportItemController.saveSelected()}" 
-                                                         ajax="false"
-                                                         update="pPreview pDetails dtbItem">
+                                        <p:commandButton 
+                                            id="btnSave" 
+                                            value="Save" action="#{commonReportItemController.saveSelected()}" 
+                                            ajax="false"
+                                            update="pPreview pDetails dtbItem">
                                         </p:commandButton>
 
                                     </f:facet>
@@ -223,15 +225,15 @@
                                 </p:panel>
 
                             </h:panelGroup>
-                            
+
                             <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
-                                    <p:printer target="priview" />
-                                </p:commandButton>
+                                <p:printer target="priview" />
+                            </p:commandButton>
 
                             <h:panelGroup id="pPreview"  >
                                 <div style="border: 1px solid black; margin: 0px; padding: 0px;background-color: white!important;width:21.0cm!important; height: 29.7cm!important; position: relative; " >
                                     <h:panelGroup id="priview"  >
-                                    <ez:common_report commonReportFormat="#{commonReportItemController.category}" showBorders="#{commonReportItemController.showBorders}"/>
+                                        <ez:common_report commonReportFormat="#{commonReportItemController.category}" showBorders="#{commonReportItemController.showBorders}"/>
                                     </h:panelGroup>
                                 </div>
                             </h:panelGroup>

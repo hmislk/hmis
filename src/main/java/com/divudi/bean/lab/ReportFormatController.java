@@ -16,6 +16,7 @@ import com.divudi.entity.Upload;
 import com.divudi.entity.lab.ReportFormat;
 import com.divudi.facade.ReportFormatFacade;
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.data.UploadType;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.Serializable;
@@ -58,6 +59,15 @@ public class ReportFormatController implements Serializable {
     private List<ReportFormat> items = null;
     private Upload upload;
     String selectText = "";
+
+    private String fileUrl;
+    private String viewImageType;
+
+    public String navigateToReportTemplateImageUpload() {
+        viewImageType = "UPLOADIMAGE";
+        makeNull();
+        return "/admin/lims/report_template_image_upload?faces-redirect=true";
+    }
 
     public List<ReportFormat> getSelectedItems() {
         selectedItems = getFacade().findByJpql("select c from ReportFormat c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
@@ -143,21 +153,44 @@ public class ReportFormatController implements Serializable {
         }
     }
 
+    public void makeNull() {
+        current = null;
+        fileUrl = null;
+    }
+
     public void removeUploadedFile() {
         if (getUpload() == null || getUpload().getId() == null) {
             JsfUtil.addErrorMessage("Select Category");
             return;
         }
-        byte[] fileBytes;
         try {
             getUpload().setBaImage(null);
             uploadController.saveUpload(getUpload());
-
+            JsfUtil.addSuccessMessage("Removed Successfully");
         } catch (Exception ex) {
             Logger.getLogger(PhotoCamBean.class.getName()).log(Level.SEVERE, null, ex);
             JsfUtil.addErrorMessage("Error");
             return;
         }
+    }
+
+    public void removeUrlFile() {
+        System.out.println("URL");
+        getUpload().setFileUrl(null);
+        uploadController.saveUpload(getUpload());
+        System.out.println("URL End");
+        JsfUtil.addSuccessMessage("Removed Successfully");
+
+    }
+
+    public void saveFileUrl() {
+        if (getUpload() == null || getUpload().getId() == null) {
+            JsfUtil.addErrorMessage("Select Category");
+            return;
+        }
+        getUpload().setFileUrl(fileUrl);
+        uploadController.saveUpload(getUpload());
+        JsfUtil.addSuccessMessage("Save Successfullt");
     }
 
     public ReportFormat getCurrent() {
@@ -173,7 +206,7 @@ public class ReportFormatController implements Serializable {
                 + " where f.retired=:ret"
                 + " order by f.id desc";
         Map params = new HashMap();
-        params.put("ret",false);
+        params.put("ret", false);
         ReportFormat r = getFacade().findFirstByJpql(jpql, params);
         if (r == null) {
             r = new ReportFormat();
@@ -267,6 +300,22 @@ public class ReportFormatController implements Serializable {
 
     public void setUpload(Upload upload) {
         this.upload = upload;
+    }
+
+    public String getFileUrl() {
+        return fileUrl;
+    }
+
+    public void setFileUrl(String fileUrl) {
+        this.fileUrl = fileUrl;
+    }
+
+    public String getViewImageType() {
+        return viewImageType;
+    }
+
+    public void setViewImageType(String viewImageType) {
+        this.viewImageType = viewImageType;
     }
 
     /**
