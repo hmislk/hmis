@@ -169,7 +169,11 @@
                             <p:column headerText="CC Code" filterMatchMode="contains" sortBy="#{c.institution.code}" filterBy="#{c.institution.code}" >
                                 <h:outputText value="#{c.institution.code}" ></h:outputText>
                             </p:column>
-                            <p:column headerText="CC Name" filterMatchMode="contains" sortBy="#{c.institution.name}" filterBy="#{c.institution.name}">
+                            <p:column 
+                                headerText="CC Name" 
+                                filterMatchMode="contains" 
+                                sortBy="#{c.institution.name}" 
+                                filterBy="#{c.institution.name}">
                                 <h:outputText value="#{c.institution.name}" ></h:outputText>
                             </p:column>
                             <p:column headerText="CC Route" filterMatchMode="contains" sortBy="#{c.institution.route.name}" filterBy="#{c.institution.route.name}">

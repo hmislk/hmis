@@ -8,7 +8,7 @@ import com.divudi.entity.cashTransaction.Drawer;
 import com.divudi.entity.cashTransaction.DrawerEntry;
 import com.divudi.facade.DrawerEntryFacade;
 import com.divudi.java.CommonFunctions;
-import com.divudi.service.DrawerEntryService;
+import com.divudi.service.DrawerService;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -37,7 +37,7 @@ public class DrawerEntryController implements Serializable {
     @EJB
     DrawerEntryFacade ejbFacade;
     @EJB
-    private DrawerEntryService service;
+    private DrawerService service;
 
     @Inject
     private SessionController sessionController;
@@ -178,11 +178,11 @@ public class DrawerEntryController implements Serializable {
         this.current = current;
     }
 
-    public DrawerEntryService getService() {
+    public DrawerService getService() {
         return service;
     }
 
-    public void setService(DrawerEntryService service) {
+    public void setService(DrawerService service) {
         this.service = service;
     }
 

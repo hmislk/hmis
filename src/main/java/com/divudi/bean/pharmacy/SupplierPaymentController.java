@@ -91,6 +91,9 @@ public class SupplierPaymentController implements Serializable {
 
     private Date fromDate;
     private Date toDate;
+    private Date chequeFromDate;
+    private Date chequeToDate;
+    private String chequeNo;
     //Atribtes
     private boolean printPreview;
     private SearchKeyword searchKeyword;
@@ -98,6 +101,8 @@ public class SupplierPaymentController implements Serializable {
     private PaymentMethodData paymentMethodData;
     private BillItem currentBillItem;
     private Institution institution;
+    private Bill bill;
+    private String comment;
     //List
     private List<BillItem> billItems;
     private List<BillItem> selectedBillItems;
@@ -127,7 +132,15 @@ public class SupplierPaymentController implements Serializable {
 
     public String navigateToDealerDueSearch() {
         bills = new ArrayList<>();
+        netTotal = 0.0;
         return "/dealerPayment/dealor_due?faces-redirect=true";
+    }
+
+    public String navigateToDealerDueSearchPharmacy() {
+        bills = null;
+        bills = new ArrayList<>();
+        netTotal = 0.0;
+        return "/dealerPayment/dealor_due_pharmacy?faces-redirect=true";
     }
 
     public String navigateToDealerDueByAge() {
@@ -150,9 +163,25 @@ public class SupplierPaymentController implements Serializable {
         return "/dealerPayment/search_dealor_payment_pre?faces-redirect=true";
     }
 
+    public String navigateToGRNPaymentApprovePharmacy() {
+        bills = null;
+        bills = new ArrayList<>();
+        netTotal = 0.0;
+        return "/dealerPayment/search_dealor_payment_pharmacy?faces-redirect=true";
+    }
+
     public String navigateToGRNPaymentDoneSearch() {
-        makeNull();
-        return "/dealerPayment/search_dealor_payment?faces-redirect=true";
+        bills = null;
+        bills = new ArrayList<>();
+        netTotal = 0.0;
+        return "/dealerPayment/dealor_payment_done_search?faces-redirect=true";
+    }
+
+    public String navigateToPaymentDoneSearch() {
+        bills = null;
+        bills = new ArrayList<>();
+        netTotal = 0.0;
+        return "/dealerPayment/dealor_payment_done?faces-redirect=true";
     }
 
     public String navigateToSupplierPaymentDoneSearch() {
@@ -570,37 +599,61 @@ public class SupplierPaymentController implements Serializable {
     public void fillAllCreditBillssettled() {
         bills = null;
         netTotal = 0.0;
-        String jpql;
-        Map params = new HashMap();
 
-        jpql = "select b from Bill b "
-                + " where b.retired=false "
-                + " and (b.billType = :billTypes or b.billTypeAtomic = :btas)  "
-                + " and b.cancelled = false "
-                + " and b.refunded = false  "
-                + " and b.createdAt between :fromDate and :toDate ";
+        // Ensure dates are not null
+        if (fromDate == null || toDate == null) {
+            throw new IllegalArgumentException("fromDate and toDate must be set");
+        }
 
+        // Build JPQL query
+        StringBuilder jpql = new StringBuilder("SELECT b FROM Bill b "
+                + "WHERE b.retired = false "
+                + "AND b.cancelled = false "
+                + "AND b.refunded = false "
+                + "AND b.createdAt BETWEEN :fromDate AND :toDate "
+                + "AND (b.billType = :billType OR b.billTypeAtomic = :billTypeAtomic) ");
+
+        // Initialize parameters map
+        Map<String, Object> params = new HashMap<>();
         params.put("fromDate", fromDate);
         params.put("toDate", toDate);
-        params.put("billTypes", BillType.GrnPaymentPre);
-        params.put("btas", BillTypeAtomic.SUPPLIER_PAYMENT);
+        params.put("billType", BillType.GrnPaymentPre);
+        params.put("billTypeAtomic", BillTypeAtomic.SUPPLIER_PAYMENT);
 
-        bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        // Append optional filters if they are provided
+        if (chequeFromDate != null && chequeToDate != null) {
+            jpql.append("AND b.chequeDate BETWEEN :chequeFromDate AND :chequeToDate ");
+            params.put("chequeFromDate", chequeFromDate);
+            params.put("chequeToDate", chequeToDate);
+        }
 
+        if (chequeNo != null && !chequeNo.trim().isEmpty()) {
+            jpql.append("AND b.chequeRefNo = :chequeRefNo ");
+            params.put("chequeRefNo", chequeNo);
+        }
+
+        jpql.append("AND b.billType <> :excludeBillType ");
+        params.put("excludeBillType", BillType.GrnPayment);
+        jpql.append("ORDER BY b.id");
+
+        // Execute query
+        bills = getBillFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        // Calculate net total
+//        netTotal = bills.stream()
+//                .mapToDouble(Bill::getNetTotal)
+//                .sum();
         Iterator<Bill> iterator = bills.iterator();
         while (iterator.hasNext()) {
             Bill b = iterator.next();
-            if (b.getBillType() == BillType.GrnPayment) {
-                iterator.remove();
-            } else {
-                netTotal += b.getNetTotal();
-            }
+            netTotal += b.getNetTotal();
         }
 
     }
+
     public void fillDealorPaymentDone() {
         bills = null;
-        netTotal  = 0.0;
+        netTotal = 0.0;
         String jpql;
         Map params = new HashMap();
 
@@ -616,7 +669,31 @@ public class SupplierPaymentController implements Serializable {
         params.put("toDate", toDate);
 
         bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        Iterator<Bill> iterator = bills.iterator();
+        while (iterator.hasNext()) {
+            Bill b = iterator.next();
+            netTotal += b.getNetTotal();
+        }
+    }
+
+    public void fillDealorPaymentCanceled() {
+        bills = null;
+        netTotal = 0.0;
+        String jpql;
+        Map params = new HashMap();
+
+        jpql = "select b from Bill b "
+                + " where b.retired=false "
+                + " and b.createdAt between :fromDate and :toDate"
+                + " and b.billType = :billTypes "
+                + " and b.billTypeAtomic = :bTA ";
+        params.put("billTypes", BillType.GrnPayment);
+        params.put("bTA", BillTypeAtomic.SUPPLIER_PAYMENT_CANCELLED);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
         
+        bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
         Iterator<Bill> iterator = bills.iterator();
         while (iterator.hasNext()) {
             Bill b = iterator.next();
@@ -1248,6 +1325,46 @@ public class SupplierPaymentController implements Serializable {
 
     public void setToDate(Date toDate) {
         this.toDate = toDate;
+    }
+
+    public Bill getBill() {
+        return bill;
+    }
+
+    public void setBill(Bill bill) {
+        this.bill = bill;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public Date getChequeFromDate() {
+        return chequeFromDate;
+    }
+
+    public void setChequeFromDate(Date chequeFromDate) {
+        this.chequeFromDate = chequeFromDate;
+    }
+
+    public Date getChequeToDate() {
+        return chequeToDate;
+    }
+
+    public void setChequeToDate(Date chequeToDate) {
+        this.chequeToDate = chequeToDate;
+    }
+
+    public String getChequeNo() {
+        return chequeNo;
+    }
+
+    public void setChequeNo(String chequeNo) {
+        this.chequeNo = chequeNo;
     }
 
 }
