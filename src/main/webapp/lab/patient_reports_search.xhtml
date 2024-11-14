@@ -1,0 +1,248 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:na="http://xmlns.jcp.org/jsf/composite/template"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form >
+                    <h:panelGroup rendered="#{not webUserController.hasPrivilege('LabReportPrint')}">
+                        <na:not_authorize />
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{webUserController.hasPrivilege('LabReportPrint')}" >
+                        <p:panel>
+                            <f:facet name="header">
+                                <h:outputLabel value="Search Patient Report" ></h:outputLabel>
+                            </f:facet>
+
+                            <div class="row">
+                                <div class="col-10">
+                                    <h:panelGrid columns="4" class="w-100" style="font-weight: bolder">
+
+                                        <h:panelGrid columns="1" class="w-100">
+                                            <h:outputLabel class="w-100" value="From Date"/>
+                                            <p:datePicker 
+                                                inputStyleClass="w-100" 
+                                                id="fromDate" 
+                                                showTime="true" 
+                                                value="#{patientInvestigationController.fromDate}" 
+                                                class="w-100" 
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                        </h:panelGrid>
+
+                                        <h:panelGrid columns="1" class="w-100">
+                                            <h:outputLabel class="w-100" value="To Date"/>
+                                            <p:datePicker 
+                                                id="toDate" 
+                                                inputStyleClass="w-100" 
+                                                showTime="true" 
+                                                value="#{patientInvestigationController.toDate}" 
+                                                class="w-100" 
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                        </h:panelGrid>
+
+                                        <h:panelGrid columns="1" class="w-100">
+                                            <h:outputLabel class="w-100" value="Investigation"/>
+                                            <p:inputText class="w-100" value="#{patientInvestigationController.itemName}"/>
+                                        </h:panelGrid>
+
+                                        <h:panelGrid columns="1" class="w-100">
+                                            <h:outputLabel class="w-100" value="Patient Name"/>
+                                            <p:inputText class="w-100" value="#{patientInvestigationController.patientName}"/>
+                                        </h:panelGrid>
+
+                                        <h:panelGrid columns="1" class="w-100">
+                                            <h:outputLabel class="w-100" value="Referring Doctor"/>
+                                            <p:autoComplete 
+                                                inputStyleClass="w-100" 
+                                                class="w-100"
+                                                id="acReferringDoctor"
+                                                value="#{patientInvestigationController.referringDoctor}"
+                                                completeMethod="#{doctorController.completeDoctor}" 
+                                                var="rd" 
+                                                itemLabel="#{rd.person.nameWithTitle}" 
+                                                itemValue="#{rd}">
+                                            </p:autoComplete>
+                                        </h:panelGrid>
+
+                                        <h:panelGrid columns="1" class="w-100">
+                                            <h:outputLabel class="w-100" value="Type"/>
+                                            <p:selectOneMenu class="w-100" value="#{patientInvestigationController.type}">
+                                                <f:selectItem itemLabel="Any"/>
+                                                <f:selectItem itemValue="OP" itemLabel="Out Patients (OP)"/>
+                                                <f:selectItem itemValue="IP" itemLabel="In Patients (IP)"/>
+                                                <f:selectItem itemValue="CC" itemLabel="Collecting Centre (CC)"/>
+                                            </p:selectOneMenu>
+                                        </h:panelGrid>
+
+                                        <h:panelGrid columns="1" class="w-100">
+                                            <h:outputLabel class="w-100" value="By Collection Center"/>
+                                            <p:autoComplete 
+                                                converter="deal" 
+                                                value="#{patientInvestigationController.collectionCenter}"
+                                                id="acCollectionCenter"
+                                                completeMethod="#{institutionController.completeCollectingCenter}" 
+                                                var="vt" 
+                                                itemLabel="#{vt.name}" 
+                                                itemValue="#{vt}" 
+                                                maxResults="15" 
+                                                class="w-100"
+                                                forceSelection="true"
+                                                inputStyleClass="form-control">
+                                                <p:column style="padding: 6px;">#{vt.code}</p:column>
+                                                <p:column style="padding: 6px;">#{vt.name}</p:column>
+                                            </p:autoComplete>
+                                        </h:panelGrid>
+
+                                    </h:panelGrid>
+                                </div>
+                                <div class="col-2">
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        action="#{patientInvestigationController.searchPatientInvestigations}" 
+                                        value="Search Reports" 
+                                        icon="fas fa-file-medical" 
+                                        styleClass="my-1 ui-button-danger w-100">
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        action="#{patientInvestigationController.clearFilters}" 
+                                        value="Clear"  
+                                        icon="fas fa-eraser" 
+                                        styleClass="ui-button-secondary my-1 w-100">
+                                    </p:commandButton>
+                                </div>
+                            </div>
+
+                            <p:dataTable  
+                                id="tblBills" 
+                                value="#{patientInvestigationController.items}" 
+                                var="pi"  
+                                rows="50"
+                                class="mt-3"
+                                rowKey="#{pi.id}"
+                                rowIndexVar="rowIndex"
+                                paginator="true"
+                                paginatorPosition="bottom"
+                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="50,100,250"
+                                >
+
+                                <p:column headerText="No" style="vertical-align: top; width: 3em; padding: 8px;">
+                                    <h:outputLabel value="#{rowIndex + 1}" />
+                                </p:column>
+
+                                <p:column headerText="Type" style="vertical-align: top; width: 4em; padding: 8px;">
+                                    <p:badge value="OP" styleClass="ui-badge-info" rendered="#{pi.billItem.bill.ipOpOrCc eq 'OP'}" />
+                                    <p:badge value="CC" styleClass="ui-badge-warning" rendered="#{pi.billItem.bill.ipOpOrCc eq 'CC'}" />
+                                    <p:badge value="IP" styleClass="ui-badge-danger" rendered="#{pi.billItem.bill.ipOpOrCc eq 'IP'}" />
+                                </p:column>
+
+                                <p:column style="vertical-align: top; padding: 8px; width: 16em;" headerText="Bill No" styleClass="alignTop" >
+                                    <h:outputLabel 
+                                        id="lblBillNo" 
+                                        value="#{pi.billItem.bill.deptId}" 
+                                        styleClass="#{pi.billItem.bill.cancelled or pi.billItem.refunded ? 'redtext':''}">
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column  style="vertical-align: top; padding: 8px; width: 24em;" headerText="Patient" styleClass="alignTop" >
+                                    <h:outputLabel value="#{pi.billItem.bill.patient.person.nameWithTitle}" rendered="#{!webUserController.hasPrivilege('OpdBillSearchEdit')}"></h:outputLabel>
+                                    <h:commandLink 
+                                        rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit')}"
+                                        value="#{pi.billItem.bill.patient.person.nameWithTitle}" 
+                                        action="patient" 
+                                        style="text-decoration:underline;"
+                                        styleClass="#{pi.billItem.bill.cancelled or pi.billItem.refunded ? 'redtext':''}"
+                                        >
+                                        <f:setPropertyActionListener value="#{pi.billItem.bill.patient}" target="#{patientController.current}"/>
+                                    </h:commandLink>
+                                </p:column>
+
+                                <p:column  style="vertical-align: top; padding: 8px; width: 12em;" headerText="Patient Age" styleClass="alignTop" >
+                                    <h:outputLabel value="#{pi.billItem.bill.patient.age}" ></h:outputLabel>
+                                </p:column>
+
+                                <p:column style="vertical-align: top; padding: 8px;;" headerText="Investigation"  styleClass="alignTop" >
+                                    <h:outputLabel 
+                                        rendered="#{not webUserController.hasPrivilege('Developers')}" 
+                                        value="#{pi.investigation.name}">
+                                    </h:outputLabel>
+                                    <p:commandLink 
+                                        value="#{pi.investigation}" 
+                                        rendered="#{webUserController.hasPrivilege('Developers')}" 
+                                        action="#{investigationController.navigateToManageInvestigation()}">
+                                        <f:setPropertyActionListener value="#{pi.investigation}" target="#{investigationController.current}"/>
+                                    </p:commandLink>
+                                </p:column>
+
+
+                                <p:column  style="vertical-align: top; width: 10em; padding: 8px;" >
+                                    <f:facet name="header">
+                                        <div class="d-flex justify-content-between">
+                                            <h:outputText value="Status" style="text-align: center; display: block; width: 10em" />
+                                            <h:outputText value="Action" style="text-align: center; display: block; width: 10em" />
+                                        </div>
+                                    </f:facet>
+                                    <ui:repeat value="#{patientReportController.approvedPatientReports(pi)}" var="dpr">
+                                        <div class="d-flex justify-content-between">
+                                            <div style="text-align: center; display: block; width: 10em">
+                                                <div class="d-flex justify-content-center">
+                                                    <p:badge value="not Created" styleClass="ui-badge-danger" rendered="#{dpr.id eq null }"/>
+                                                    <p:badge value="Created" styleClass="ui-badge-warning" rendered="#{!dpr.approved}"/>
+                                                    <p:badge value="Approved" styleClass="ui-badge-success" rendered="#{dpr.approved}"/>
+                                                </div> 
+                                            </div>
+                                            <div style="display: flex; justify-content: center; align-items: center; flex-direction: row; width: 10em" class="gap-3">
+                                                <p:commandLink 
+                                                    id="cmdOldReportPrint1" 
+                                                    ajax="false" 
+                                                    action="/collecting_centre/courier/patient_report_print?faces-redirect=true" 
+                                                    disabled="#{!dpr.approved}" 
+                                                    rendered="#{!sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed}">
+                                                    <p:graphicImage library="image" style="height: 25px; width: 25px;" name="print.jpg" styleClass="standedicon" ></p:graphicImage>
+                                                    <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}">
+                                                    </f:setPropertyActionListener>
+                                                </p:commandLink>
+                                                <p:commandLink 
+                                                    id="cmdOldReportPrint2" 
+                                                    ajax="false" 
+                                                    action="/collecting_centre/courier/patient_report_print?faces-redirect=true" 
+                                                    disabled="#{!dpr.approved or dpr.pi.billItem.bill.backwardReferenceBill.balance ne 0}" 
+                                                    rendered="#{sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed}">
+                                                    <p:graphicImage style="height: 25px; width: 25px;" library="image" name="print.jpg" styleClass="standedicon" ></p:graphicImage>
+                                                    <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}">
+                                                    </f:setPropertyActionListener>
+                                                </p:commandLink>
+                                                <p:graphicImage 
+                                                    rendered="false"
+                                                    id="imgPrinted" 
+                                                    library="image" 
+                                                    name="print_ok.png" 
+                                                    style="height: 25px; width: 25px; #{dpr.approved ? '':'opacity: 0.1;'}" >
+                                                </p:graphicImage>
+                                            </div>
+
+                                        </div>
+
+                                    </ui:repeat>
+                                </p:column>
+
+                            </p:dataTable>
+
+                        </p:panel>
+                    </h:panelGroup>
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

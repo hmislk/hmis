@@ -353,6 +353,16 @@ public class PatientReportController implements Serializable {
         m.put("pi", pi);
         return getFacade().findByJpql(j, m);
     }
+    
+    public List<PatientReport> approvedPatientReports(PatientInvestigation pi) {
+        String j = "select r from PatientReport r "
+                + " where r.patientInvestigation=:pi"
+                + " and r.returned =:ret";
+        Map m = new HashMap();
+        m.put("pi", pi);
+        m.put("ret", false);
+        return getFacade().findByJpql(j, m);
+    }
 
     public String toViewMyReports() {
         String j = "select r from PatientReport r "

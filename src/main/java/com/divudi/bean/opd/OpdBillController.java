@@ -3689,6 +3689,20 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     @Override
     public void setPatient(Patient patient) {
         this.patient = patient;
+        selectPaymentSchemeAsPerPatientMembership();
+        
+    }
+
+    private void selectPaymentSchemeAsPerPatientMembership() {
+        if (patient == null) {
+            return;
+        }
+        if(patient.getPerson().getMembershipScheme()==null){
+            paymentScheme=null;
+        }else{
+            paymentScheme = patient.getPerson().getMembershipScheme().getPaymentScheme();
+        }
+        listnerForPaymentMethodChange();
     }
 
     public Doctor getReferredBy() {

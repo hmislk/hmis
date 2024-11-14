@@ -27,6 +27,7 @@
                     icon="pi pi-home"
                     title="Home">
                 </p:menuitem>
+
                 <p:submenu 
                     id="smOpd"
                     icon="fa fa-fw fa-user-md"
@@ -260,6 +261,7 @@
                     </p:menuitem>
 
                 </p:submenu>
+
                 <p:submenu id="smMembership"  icon="fa fa-fw fa-id-card"  rendered="#{webUserController.hasPrivilege('MemberShip')}">
                     <p:menuitem ajax="false" action="#{patientController.navigateToAddNewIndividualMembership()}" value="Add Individual Membership" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="#{patientController.navigateToSearchIndividualMembership()}" value="Search Individual Membership" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>
@@ -481,6 +483,7 @@
                     </p:submenu>
 
                     <p:submenu 
+                        style="width: 350px;"
                         id="smLabBillingSearch"
                         label="Billing Search"
                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Show the Bill Search in Under the Lab Module', false)}">
@@ -523,12 +526,33 @@
                         value="Sample Management - Lab">
                     </p:menuitem>
 
-                    <p:menuitem ajax="false" action="/lab/receive?faces-redirect=true" actionListener="#{patientInvestigationController.toPrintWorksheets()}" value="Worksheets" rendered="#{webUserController.hasPrivilege('LabSampleReceiving')}" ></p:menuitem>
-                    <p:menuitem ajax="false" action="#{searchController.navigateToLabReportSearch}"  value="Reports/Search" rendered="#{webUserController.hasPrivilege('LabReportSearch')}" ></p:menuitem>
-                    <p:menuitem ajax="false" action="/lab/search_for_reporting_ondemand_institution?faces-redirect=true" value="Reports/Search By Logged Institution" rendered="#{false and webUserController.hasPrivilege('LabReportSearchByLoggedInstitution')}" ></p:menuitem>
-                    <p:menuitem ajax="false" action="/lab/search_for_reporting_ondemand_department?faces-redirect=true" value="Reports/Search By Logged Department" rendered="#{webUserController.hasPrivilege('LabReportSearchByLoggedInstitution')}" ></p:menuitem>
-                    <p:menuitem ajax="false" action="/lab/search_reports?faces-redirect=true" value="Reporting" rendered="#{webUserController.hasPrivilege('LabReporting')}" ></p:menuitem>
-                    <p:menuitem ajax="false" action="/reportLab/lab_summeries_index?faces-redirect=true" value="Lab Analytics"  rendered="#{webUserController.hasPrivilege('LabSummeries')}" ></p:menuitem>
+                    <p:menuitem 
+                        ajax="false" 
+                        action="/lab/receive?faces-redirect=true" 
+                        actionListener="#{patientInvestigationController.toPrintWorksheets()}" 
+                        value="Worksheets" rendered="#{webUserController.hasPrivilege('LabSampleReceiving')}" >
+                    </p:menuitem>
+
+                    <p:menuitem 
+                        ajax="false" 
+                        action="#{searchController.navigateToLabReportSearch}"  
+                        value="Report Management" 
+                        rendered="#{webUserController.hasPrivilege('LabReportSearch')}" >
+                    </p:menuitem>
+
+                    <p:menuitem 
+                        ajax="false" 
+                        action="#{searchController.navigateToPatientReportSearch()}" 
+                        value="Report Search" 
+                        rendered="#{webUserController.hasPrivilege('LabReportPrint')}" >
+                    </p:menuitem>
+
+                    <p:menuitem 
+                        ajax="false" 
+                        action="#{searchController.navigateToLabAnalytics()}" 
+                        value="Lab Analytics"  
+                        rendered="#{webUserController.hasPrivilege('LabSummeries')}" >
+                    </p:menuitem>
                 </p:submenu>
 
                 <p:menuitem 
@@ -845,6 +869,7 @@
                     <p:menuitem  ajax="false" action="#{pharmacyController.navigateToPharmacyAnalytics()}"  value="Pharmacy Analytics" icon="fas fa-list-ul" rendered="#{webUserController.hasPrivilege('PharmacySummaryViews')}" ></p:menuitem>
 
                 </p:submenu>
+
                 <p:submenu id="smTheatre"  icon="fa fa-fw fa-cut" rendered="#{webUserController.hasPrivilege('Theatre')}" >
                     <p:menuitem  ajax="false"  action="#{surgeryBillController.navigateToAddSurgeriesFromMenu()}"
                                  value="Add Surgeries"
@@ -1091,6 +1116,62 @@
                         icon="fa fa-list-alt">
                     </p:menuitem>
                 </p:submenu>
+
+                <p:submenu
+                    id="smClinics"
+                    icon="fa fa-fw fa-clinic-medical" 
+                    rendered="#{webUserController.hasPrivilege('Clinic')}">                                
+
+                    <p:menuitem 
+                        ajax="false"  
+                        value="Clinic Sessions"  
+                        action="#{clinicController.navigateToClinicSessions()}" 
+                        icon="fa fa-calendar-alt" 
+                        rendered="#{webUserController.hasPrivilege('ClinicSession')}" >
+                    </p:menuitem>
+
+                    <p:menuitem 
+                        ajax="false"  
+                        value="Clinic Calendar"  
+                        action="#{clinicController.navigateToClinicCalendar()}" 
+                        icon="fa fa-calendar" 
+                        rendered="#{webUserController.hasPrivilege('ClinicCalendar')}" >
+                    </p:menuitem>
+
+                    <p:menuitem 
+                        ajax="false"  
+                        value="Clinic Queue"  
+                        action="#{clinicController.navigateToClinicQueue()}" 
+                        icon="fa fa-users" 
+                        rendered="#{webUserController.hasPrivilege('ClinicQueue')}" >
+                    </p:menuitem>
+
+                    <p:menuitem 
+                        ajax="false"  
+                        value="Clinic Display"  
+                        action="#{clinicController.navigateToClinicDisplay()}" 
+                        icon="fa fa-tv" 
+                        rendered="#{webUserController.hasPrivilege('ClinicDisplay')}" >
+                    </p:menuitem>
+
+                    <p:menuitem  
+                        ajax="false"  
+                        value="Scheduling Clinics"
+                        action="#{clinicController.navigateToClinicSchedule()}" 
+                        icon="fa fa-calendar-plus" 
+                        rendered="#{webUserController.hasPrivilege('ClinicSchedule')}" >
+                    </p:menuitem>
+
+                    <p:menuitem 
+                        ajax="false" 
+                        value="Reports" 
+                        action="#{clinicController.navigateToClinicReports()}" 
+                        icon="fa fa-file-medical" 
+                        rendered="#{webUserController.hasPrivilege('ClinicReports')}" >
+                    </p:menuitem>
+
+                </p:submenu>
+
 
                 <p:submenu id="smOpdOptician"  icon="fa fa-eye" rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Optician Module')}"  >
                     <p:menuitem value="Patient Management" action="#{opticianController.navigateToOpticianPatientManagement()}" ajax="false" icon="fa fa-users" />
