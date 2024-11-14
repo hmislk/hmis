@@ -660,8 +660,8 @@ public class SupplierPaymentController implements Serializable {
         }
 
     }
-    
-     public void fillAllCreditBillssettledByChequeDate() {
+
+    public void fillAllCreditBillssettledByChequeDate() {
         bills = null;
         netTotal = 0.0;
 
@@ -758,7 +758,7 @@ public class SupplierPaymentController implements Serializable {
         params.put("bTA", BillTypeAtomic.SUPPLIER_PAYMENT_CANCELLED);
         params.put("fromDate", fromDate);
         params.put("toDate", toDate);
-        
+
         bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
         Iterator<Bill> iterator = bills.iterator();
         while (iterator.hasNext()) {
