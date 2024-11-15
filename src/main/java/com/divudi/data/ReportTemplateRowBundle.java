@@ -323,6 +323,24 @@ public class ReportTemplateRowBundle implements Serializable {
         }
     }
 
+    public ReportTemplateRowBundle createBundleByAggregatingMonthlyTotalsFromBills(ReportTemplateRowBundle billBundle) {
+        ReportTemplateRowBundle newlyCreatedBundle = new ReportTemplateRowBundle();
+        List<ReportTemplateRow> monthlyTotalRows = new ArrayList<>();
+        for (ReportTemplateRow row : billBundle.getReportTemplateRows()) {
+            if (row.getBill() == null) {
+                continue;
+            }
+            Date date = row.getBill().getCreatedAt(); //This returns a TimeStamp
+            Double total = row.getBill().getTotal();
+            Double tax = row.getBill().getTax();
+            Double netToDouble = row.getBill().getNetTotal();
+            ReportTemplateRow monthRow = new ReportTemplateRow();
+            monthRow.setDate(date);
+        }
+        newlyCreatedBundle.setReportTemplateRows(monthlyTotalRows);
+        return newlyCreatedBundle;
+    }
+
     public void aggregateTotalsFromSelectedChildBundles() {
         resetTotals(); // Resets all totals before computation
 
@@ -696,7 +714,7 @@ public class ReportTemplateRowBundle implements Serializable {
                 + this.cardValue
                 + this.voucherValue
                 + this.iouValue
-//                + this.patientDepositValue
+                //                + this.patientDepositValue
                 + this.chequeValue
                 + this.slipValue
                 + this.creditValue
