@@ -2187,7 +2187,7 @@ public class FinancialTransactionController implements Serializable {
         resetClassVariables();
         handoverValuesCreated = false;
         findNonClosedShiftStartFundBillIsAvailable();
-        fillPaymentsFromShiftStartToNowNotYetStartedToEntereToCashbook();
+        fillPaymentsFromViewHandoverAcceptBillOld();
         currentBill = new Bill();
         currentBill.setBillType(BillType.CashHandoverCreateBill);
         currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE);
@@ -2516,6 +2516,65 @@ public class FinancialTransactionController implements Serializable {
         financialReportByPayments = new FinancialReport(atomicBillTypeTotalsByPayments);
 
     }
+    
+     public void fillPaymentsFromViewHandoverAcceptBillOld() {
+        paymentsFromShiftSratToNow = new ArrayList<>();
+        Map<String, Object> m = new HashMap<>();
+        String jpql = "SELECT p "
+                + "FROM Payment p "
+                + "WHERE p.retired = :ret "
+                + "AND p.handoverCreatedBill = :hcb ";
+        m.put("hcb", selectedBill);
+
+        jpql += "ORDER BY p.id DESC";
+
+        m.put("ret", false);
+        System.out.println("jpql = " + jpql);
+        paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m);
+
+        atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
+        currentBillPayments = paymentsFromShiftSratToNow;
+        Set<Department> uniqueDepartments = new HashSet<>();
+        Set<LocalDate> uniqueDates = new HashSet<>();
+
+        for (Payment p : paymentsFromShiftSratToNow) {
+            Bill bill = p.getBill();
+            if (bill == null) {
+                continue;
+            }
+
+            if (bill.getBillTypeAtomic() == null) {
+            } else {
+                Department dept = bill.getDepartment();
+                if (dept != null) {
+                    uniqueDepartments.add(dept);
+                } else {
+                }
+
+                if (p.getCreatedAt() != null) {
+                    LocalDate createdDateOnly = p.getCreatedAt().toInstant()
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate();
+                    uniqueDates.add(createdDateOnly);
+                } else {
+                }
+
+                atomicBillTypeTotalsByPayments.addOrUpdateAtomicRecord(bill.getBillTypeAtomic(), p.getPaymentMethod(), p.getPaidValue());
+            }
+        }
+
+        cashbookDepartments = new ArrayList<>(uniqueDepartments);
+
+        // Convert Set<LocalDate> to List<Date>
+        cashbookDates = new ArrayList<>();
+        for (LocalDate localDate : uniqueDates) {
+            Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+            cashbookDates.add(date); // Add converted Date to the list
+        }
+
+        financialReportByPayments = new FinancialReport(atomicBillTypeTotalsByPayments);
+    }
+
 
     public void fillPaymentsFromShiftStartToNowNotYetStartedToEntereToCashbook() {
         paymentsFromShiftSratToNow = new ArrayList<>();
