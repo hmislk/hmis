@@ -124,6 +124,10 @@
                                     <h:outputLabel value="Doctor" for="scStaff" class="mx-3" />
                                 </h:panelGroup>
                                 <h:panelGroup id="scStaff">
+                                    <h:outputLabel 
+                                        value="#{staff.person.nameWithTitle}" 
+                                        rendered="#{searchController.speciality eq null}"
+                                        class="mx-3" />
                                     <p:selectOneMenu  
                                         value="#{searchController.staff}" 
                                         filter="true" 
