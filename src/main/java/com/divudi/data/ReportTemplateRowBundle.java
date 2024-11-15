@@ -20,6 +20,7 @@ import static com.divudi.data.PaymentMethod.ewallet;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Department;
 import com.divudi.entity.ReportTemplate;
+import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.cashTransaction.DenominationTransaction;
 import com.divudi.entity.channel.SessionInstance;
@@ -33,6 +34,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.*;
 
 /**
  *
@@ -321,6 +326,99 @@ public class ReportTemplateRowBundle implements Serializable {
                 hasOnlineSettlementTransaction |= childBundle.hasOnlineSettlementTransaction;
             }
         }
+    }
+
+    public ReportTemplateRowBundle createBundleByAggregatingMonthlyTotalsFromBills() {
+        ReportTemplateRowBundle newlyCreatedBundle = new ReportTemplateRowBundle();
+        Map<String, ReportTemplateRow> monthlyTotalsMap = new HashMap<>();
+
+        for (ReportTemplateRow row : this.getReportTemplateRows()) {
+            if (row.getBill() == null) {
+                continue;
+            }
+
+            // Extract date and financial data from the bill
+            Date date = row.getBill().getCreatedAt();
+            Double grossTotal = row.getBill().getTotal();
+            Double tax = row.getBill().getTax();
+            Double netTotal = row.getBill().getNetTotal();
+
+            // Convert Date to LocalDate to extract month and year
+            LocalDate localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            int month = localDate.getMonthValue();
+            int year = localDate.getYear();
+
+            // Create a unique key for each month-year combination
+            String key = year + "-" + month;
+
+            // Retrieve or create the ReportTemplateRow for the current month
+            ReportTemplateRow monthRow = monthlyTotalsMap.get(key);
+            if (monthRow == null) {
+                monthRow = new ReportTemplateRow();
+                // Set the date to the first day of the month
+                LocalDate firstDayOfMonth = LocalDate.of(year, month, 1);
+                Date firstDayDate = Date.from(firstDayOfMonth.atStartOfDay(ZoneId.systemDefault()).toInstant());
+                monthRow.setDate(firstDayDate);
+                monthRow.setTotal(0.0);
+                monthRow.setTax(0.0);
+                monthRow.setGrossTotal(0.0);
+                monthlyTotalsMap.put(key, monthRow);
+            }
+
+            // Aggregate the totals
+            monthRow.setTotal(monthRow.getTotal() + netTotal);
+            monthRow.setTax(monthRow.getTax() + tax);
+            monthRow.setGrossTotal(monthRow.getGrossTotal() + grossTotal);
+        }
+
+        // Collect the aggregated monthly totals into a list
+        List<ReportTemplateRow> monthlyTotalRows = new ArrayList<>(monthlyTotalsMap.values());
+        newlyCreatedBundle.setReportTemplateRows(monthlyTotalRows);
+        return newlyCreatedBundle;
+    }
+
+    public ReportTemplateRowBundle createBundleByAggregatingConsultantTotalsFromBills() {
+        ReportTemplateRowBundle newlyCreatedBundle = new ReportTemplateRowBundle();
+        Map<Long, ReportTemplateRow> staffTotalsMap = new HashMap<>();
+
+        for (ReportTemplateRow row : this.getReportTemplateRows()) {
+            if (row.getBill() == null) {
+                continue;
+            }
+
+            // Extract financial data from the bill
+            Double grossTotal = row.getBill().getTotal();
+            Double tax = row.getBill().getTax();
+            Double netTotal = row.getBill().getNetTotal();
+            Staff staff = row.getBill().getStaff();
+
+            if (staff == null) {
+                continue; // Skip if no staff assigned
+            }
+
+            Long staffId = staff.getId();
+
+            // Retrieve or create the ReportTemplateRow for the current staff
+            ReportTemplateRow staffRow = staffTotalsMap.get(staffId);
+            if (staffRow == null) {
+                staffRow = new ReportTemplateRow();
+                staffRow.setStaff(staff);
+                staffRow.setTotal(0.0);
+                staffRow.setTax(0.0);
+                staffRow.setGrossTotal(0.0);
+                staffTotalsMap.put(staffId, staffRow);
+            }
+
+            // Aggregate the totals
+            staffRow.setTotal(staffRow.getTotal() + netTotal);
+            staffRow.setTax(staffRow.getTax() + tax);
+            staffRow.setGrossTotal(staffRow.getGrossTotal() + grossTotal);
+        }
+
+        // Collect the aggregated staff totals into a list
+        List<ReportTemplateRow> staffTotalRows = new ArrayList<>(staffTotalsMap.values());
+        newlyCreatedBundle.setReportTemplateRows(staffTotalRows);
+        return newlyCreatedBundle;
     }
 
     public void aggregateTotalsFromSelectedChildBundles() {
@@ -696,7 +794,7 @@ public class ReportTemplateRowBundle implements Serializable {
                 + this.cardValue
                 + this.voucherValue
                 + this.iouValue
-//                + this.patientDepositValue
+                //                + this.patientDepositValue
                 + this.chequeValue
                 + this.slipValue
                 + this.creditValue

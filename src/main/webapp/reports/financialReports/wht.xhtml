@@ -211,10 +211,11 @@
                             </p:commandButton>
                         </div>
                         <br />
-                        
+
 
                         <h:panelGroup >
-                            <p:panel header="Individual Receipts Wise WHT Report " rendered="#{searchController.reportType eq 'irs'}">
+                            <p:panel header="Individual Receipts Wise WHT Report " 
+                                     rendered="#{searchController.reportType eq 'individualReceipts'}">
 
                                 <h:panelGroup>
 
@@ -330,6 +331,7 @@
                                               sortBy="#{row.bill.creater.webUserPerson.name}" 
                                               filterBy="#{row.bill.creater.webUserPerson.name}">
                                         <p:outputLabel value="#{row.bill.creater.webUserPerson.name}" />
+                                        <p:outputLabel value="&nbsp;(#{row.bill.creater.name})" />
                                     </p:column>
 
                                     <p:column headerText="Date" width="10em" style="text-align: left;" rendered="false">
@@ -438,6 +440,20 @@
                                             </h:panelGroup>
                                         </div>
                                     </p:column>
+
+                                    <p:column title="Actions" rendered="#{webUserController.hasPrivilege('Developers')}">
+                                        <p:commandButton 
+                                            value="Admin" 
+                                            icon="fa fa-shield-alt" 
+                                            class="m-1 ui-button-danger" 
+                                            style="width: 100px;"
+                                            action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
+                                            ajax="false" 
+                                            >
+                                            <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}" />
+                                        </p:commandButton>
+                                    </p:column>
+
                                 </p:dataTable>
 
                             </p:panel>
@@ -447,7 +463,8 @@
 
 
                         <h:panelGroup >
-                            <p:panel header="Monthly Vice Sumary report" rendered="#{searchController.reportType eq 'mr'}">
+                            <p:panel header="Monthly Vice Sumary report" 
+                                     rendered="#{searchController.reportType eq 'monthlySummary'}">
 
                                 <h:panelGroup>
 
@@ -511,25 +528,35 @@
                                     scrollWidth="100%">
 
                                     <p:column headerText="Month">
-                                        <p:outputLabel value="" />
+                                        <p:outputLabel value="#{row.date}">
+                                            <f:convertDateTime pattern="yyyy MMMMM" ></f:convertDateTime>
+                                        </p:outputLabel>
                                     </p:column>
                                     <p:column headerText="Total Amount">
-                                        <h:outputText value="" ></h:outputText>
+                                        <h:outputText value="#{row.grossTotal}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputText>
                                     </p:column>
                                     <p:column headerText="Holding Tax" width="">
-                                        <h:outputText value="" ></h:outputText>
+                                        <h:outputText value="#{row.tax}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputText>
                                     </p:column>
                                     <p:column headerText="Net Amount" >
-                                        <h:outputText value="" ></h:outputText>
+                                        <h:outputText value="#{row.total}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputText>
                                     </p:column>                       
                                 </p:dataTable>
                                 <br />
                             </p:panel>
                         </h:panelGroup>
 
-                        
+
                         <h:panelGroup >
-                            <p:panel header="Consultant Vice Sumary report" rendered="#{searchController.reportType eq 'cr'}">
+                            <p:panel 
+                                header="Consultant Vice Sumary report" 
+                                rendered="#{searchController.reportType eq 'consultantSummary'}">
 
                                 <h:panelGroup>
 
@@ -592,24 +619,30 @@
                                     scrollable="true"
                                     scrollWidth="100%">
 
-                                    
+
                                     <p:column headerText="Consultant Name">                        
-                                        <h:outputText value="" ></h:outputText>    
+                                        <h:outputText value="#{row.staff.person.nameWithTitle}" ></h:outputText>    
                                     </p:column>
                                     <p:column headerText="Total Amount">
-                                        <h:outputText value="" ></h:outputText>
+                                        <h:outputText value="#{row.grossTotal}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputText>
                                     </p:column>
-                                    <p:column headerText="Holding Tax" width="">
-                                        <h:outputText value="" ></h:outputText>
+                                    <p:column headerText="Holding Tax" >
+                                        <h:outputText value="#{row.tax}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputText>
                                     </p:column>
                                     <p:column headerText="Net Amount" >
-                                        <h:outputText value="" ></h:outputText>
-                                    </p:column>                       
+                                        <h:outputText value="#{row.total}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputText>
+                                    </p:column>                          
                                 </p:dataTable>
                                 <br />
                             </p:panel>
                         </h:panelGroup>
-                        
+
 
                     </p:panel>
                 </h:form>              

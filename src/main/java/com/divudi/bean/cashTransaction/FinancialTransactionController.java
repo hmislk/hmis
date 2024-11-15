@@ -2932,8 +2932,8 @@ public class FinancialTransactionController implements Serializable {
         financialReportByPayments = new FinancialReport(atomicBillTypeTotalsByPayments);
 
     }
-
-    public void fillPaymentsFromViewHandoverAcceptBillOld() {
+    
+     public void fillPaymentsFromViewHandoverAcceptBillOld() {
         paymentsFromShiftSratToNow = new ArrayList<>();
         Map<String, Object> m = new HashMap<>();
         String jpql = "SELECT p "
@@ -2946,7 +2946,7 @@ public class FinancialTransactionController implements Serializable {
 
         m.put("ret", false);
         System.out.println("jpql = " + jpql);
-        paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        paymentsFromShiftSratToNow = paymentFacade.findByJpql(jpql, m);
 
         atomicBillTypeTotalsByPayments = new AtomicBillTypeTotals();
         currentBillPayments = paymentsFromShiftSratToNow;
@@ -2990,6 +2990,9 @@ public class FinancialTransactionController implements Serializable {
 
         financialReportByPayments = new FinancialReport(atomicBillTypeTotalsByPayments);
     }
+
+
+    
 
     public void fillPaymentsFromShiftStartToNowNotYetStartedToEntereToCashbook() {
         paymentsFromShiftSratToNow = new ArrayList<>();

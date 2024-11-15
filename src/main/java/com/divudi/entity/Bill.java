@@ -831,6 +831,7 @@ public class Bill implements Serializable {
         staffFee = 0 - getStaffFee();
         hospitalFee = 0 - getHospitalFee();
         grnNetTotal = 0 - getGrnNetTotal();
+        tax = 0 - getTax();
         vatPlusNetTotal = 0 - getVatPlusNetTotal();
         billTotal = 0 - getBillTotal();
         refundAmount = 0 - getRefundAmount();
@@ -890,6 +891,7 @@ public class Bill implements Serializable {
         this.hospitalFee = bill.getHospitalFee();
         this.margin = bill.getMargin();
         this.vat = bill.getVat();
+        this.tax=bill.getTax();
         this.billTotal = bill.getBillTotal();
         this.vatPlusNetTotal = bill.getVatPlusNetTotal();
     }

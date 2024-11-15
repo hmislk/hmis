@@ -453,6 +453,11 @@ public class SearchController implements Serializable {
         return "/analytics/financial_transaction_summary_Users_PaymentMethod?faces-redirect=true";
     }
 
+    public String navigateToWhtReport() {
+        reportType = "individualReceipts";
+        return "/reports/financialReports/wht?faces-redirect=true";
+    }
+
     public String navigateToFinancialTransactionSummaryByDepartment() {
         department = sessionController.getDepartment();
         billSummaryRows = null;
@@ -1072,7 +1077,7 @@ public class SearchController implements Serializable {
         bundle = new ReportTemplateRowBundle();
         return "/reports/cashier_reports/cashier_summary?faces-redirect=true";
     }
-    
+
     public String navigatToStaffWelfareBills() {
         resetAllFiltersExceptDateRange();
         bundle = new ReportTemplateRowBundle();
@@ -7988,9 +7993,8 @@ public class SearchController implements Serializable {
             billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN);
             billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION);
         }
-        bundle = createBundleForBills(billTypesAtomics, institution, department, null, null, null, null);
+        bundle = createBundleForBills(billTypesAtomics, institution, department, site, null, null, null, null, speciality, staff);
         bundle.calculateTotalNetTotalTaxByBills();
-        reportType = "irs";
     }
 
     public void processWhtMonthlySymmary() {
@@ -8020,10 +8024,8 @@ public class SearchController implements Serializable {
             billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN);
             billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION);
         }
-        bundle = createBundleForBills(billTypesAtomics, institution, department, null, null, null, null);
-        bundle.calculateTotalNetTotalTaxByBills();
-        reportType = "mr";
-
+        bundle = createBundleForBills(billTypesAtomics, institution, department, site, null, null, null, null, speciality, staff);
+        bundle = bundle.createBundleByAggregatingMonthlyTotalsFromBills();
     }
 
     public void processWhtConsultantSymmary() {
@@ -8053,10 +8055,8 @@ public class SearchController implements Serializable {
             billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN);
             billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION);
         }
-        bundle = createBundleForBills(billTypesAtomics, institution, department, null, null, null, null);
-        bundle.calculateTotalNetTotalTaxByBills();
-        reportType = "cr";
-
+        bundle = createBundleForBills(billTypesAtomics, institution, department, site, null, null, null, null, speciality, staff);
+        bundle = bundle.createBundleByAggregatingConsultantTotalsFromBills();
     }
 
     public void updateToStaffForChannelProfessionalPaymentBills() {
@@ -8684,11 +8684,36 @@ public class SearchController implements Serializable {
     }
 
     public ReportTemplateRowBundle createBundleForBills(List<BillTypeAtomic> billTypesAtomics,
-            Institution ins, Department dep,
+            Institution ins,
+            Department dep,
             Institution fromIns,
             Department fromDep,
             Institution toIns,
             Department toDep) {
+        return createBundleForBills(
+                billTypesAtomics,
+                ins,
+                dep,
+                null,
+                fromIns,
+                fromDep,
+                toIns,
+                toDep,
+                null,
+                null
+        );
+    }
+
+    public ReportTemplateRowBundle createBundleForBills(List<BillTypeAtomic> billTypesAtomics,
+            Institution ins,
+            Department dep,
+            Institution site,
+            Institution fromIns,
+            Department fromDep,
+            Institution toIns,
+            Department toDep,
+            Speciality paramSpeciality,
+            Staff paramStaff) {
         ReportTemplateRowBundle outputBundle = new ReportTemplateRowBundle();
         List<ReportTemplateRow> outputRows;
         bills = null;
@@ -8711,6 +8736,11 @@ public class SearchController implements Serializable {
             params.put("dep", dep);
         }
 
+        if (site != null) {
+            jpql += " and b.department.site=:site ";
+            params.put("site", site);
+        }
+
         if (toDep != null) {
             jpql += " and b.toDepartment=:todep ";
             params.put("todep", toDep);
@@ -8729,6 +8759,16 @@ public class SearchController implements Serializable {
         if (toIns != null) {
             jpql += " and b.toInstitution=:toins ";
             params.put("toins", toIns);
+        }
+
+        if (paramStaff != null) {
+            jpql += " and b.staff=:staff ";
+            params.put("staff", paramStaff);
+        }
+
+        if (paramSpeciality != null) {
+            jpql += " and b.staff.speciality=:speciality ";
+            params.put("speciality", paramSpeciality);
         }
 
         jpql += " order by b.createdAt desc  ";
@@ -12825,7 +12865,7 @@ public class SearchController implements Serializable {
         patientInvestigations = new ArrayList<>();
         return "/lab/search_for_reporting_ondemand?faces-redirect=true";
     }
-    
+
     public String navigateToListSingleUserBills() {
         processAllFinancialTransactionalBillListBySingleUserByIds();
         return "/cashier/shift_end_summary_bill_list";
@@ -12840,12 +12880,12 @@ public class SearchController implements Serializable {
         cashBookEntries = new ArrayList<>();
         return "/cashier/cash_book_summery_site";
     }
-    
+
     public String navigateToPatientReportSearch() {
         patientInvestigations = new ArrayList<>();
         return "/lab/patient_reports_search?faces-redirect=true";
     }
-    
+
     public String navigateToLabAnalytics() {
         patientInvestigations = new ArrayList<>();
         return "/reportLab/lab_summeries_index?faces-redirect=true";
@@ -12868,24 +12908,21 @@ public class SearchController implements Serializable {
     }
 
     public void createIncomeBreakdownByCategory() {
-        if(withProfessionalFee){
+        if (withProfessionalFee) {
             bundle = generateIncomeBreakdownByCategoryWithProfessionalFee();
-        }else{
+        } else {
             bundle = generateIncomeBreakdownByCategoryWithOutProfessionalFee();
         }
     }
-    
+
     public void generateStaffWelfareBillReport() {
         bundle = new ReportTemplateRowBundle();
         bundle.setName("Staff Welfare");
         bundle.setBundleType("billList");
-        
-        
-        
+
         List<PaymentMethod> staffPaymentMethods = new ArrayList<>();
         staffPaymentMethods.add(PaymentMethod.Staff_Welfare);
-        
-      
+
         List<BillTypeAtomic> opdBts = new ArrayList<>();
         opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
         opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
@@ -12899,10 +12936,7 @@ public class SearchController implements Serializable {
 
         bundle = generatePaymentMethodColumnsByBills(opdBts, staffPaymentMethods);
         bundle.calculateTotalByBills();
-       
 
-        
-        
     }
 
     public void generateDailyReturn() {
@@ -13212,10 +13246,6 @@ public class SearchController implements Serializable {
         opdServiceCollectionCredit.setName("OPD Bills - Credit");
         bundle.getBundles().add(opdServiceCollectionCredit);
         collectionForTheDay += getSafeTotal(opdServiceCollectionCredit);
-
-        
-        
-        
 
         // Generate OPD service cancellations for credit and add to the main bundle
         ReportTemplateRowBundle opdServiceCancellationsCredit = generatePaymentMethodColumnsByBills(opdCancellations, creditPaymentMethods);
@@ -14427,7 +14457,6 @@ public class SearchController implements Serializable {
         return oiBundle;
     }
 
-    
     public ReportTemplateRowBundle generateOpdProfessionalFees(String paymentStatusStr) {
         PaymentStatus paymentStatus = PaymentStatus.ALL;
         if (paymentStatusStr != null) {
