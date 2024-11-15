@@ -214,7 +214,8 @@
 
 
                         <h:panelGroup >
-                            <p:panel header="Individual Receipts Wise WHT Report " rendered="#{searchController.reportType eq 'individualReceipts'}">
+                            <p:panel header="Individual Receipts Wise WHT Report " 
+                                     rendered="#{searchController.reportType eq 'individualReceipts'}">
 
                                 <h:panelGroup>
 
@@ -462,7 +463,8 @@
 
 
                         <h:panelGroup >
-                            <p:panel header="Monthly Vice Sumary report" rendered="#{searchController.reportType eq 'mr'}">
+                            <p:panel header="Monthly Vice Sumary report" 
+                                     rendered="#{searchController.reportType eq 'monthlySummary'}">
 
                                 <h:panelGroup>
 
@@ -526,16 +528,24 @@
                                     scrollWidth="100%">
 
                                     <p:column headerText="Month">
-                                        <p:outputLabel value="" />
+                                        <p:outputLabel value="#{row.date}">
+                                            <f:convertDateTime pattern="yyyy MMMMM" ></f:convertDateTime>
+                                        </p:outputLabel>
                                     </p:column>
                                     <p:column headerText="Total Amount">
-                                        <h:outputText value="" ></h:outputText>
+                                        <h:outputText value="#{row.grossTotal}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputText>
                                     </p:column>
                                     <p:column headerText="Holding Tax" width="">
-                                        <h:outputText value="" ></h:outputText>
+                                        <h:outputText value="#{row.tax}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputText>
                                     </p:column>
                                     <p:column headerText="Net Amount" >
-                                        <h:outputText value="" ></h:outputText>
+                                        <h:outputText value="#{row.total}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputText>
                                     </p:column>                       
                                 </p:dataTable>
                                 <br />
